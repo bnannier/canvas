@@ -3,6 +3,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
+import { useHover } from "../../style/hover.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -18,10 +19,9 @@ import { type Variant } from "./tabs.styles.js";
 // Three looks, picked by boolean prop (first match wins):
 //   - underline (default): each trigger is muted text; the active one gets the
 //     foreground/brand color and an indicator beneath it. The native shape
-//     differs per OS: Android draws an underline rule (a 3px brand `primary`
-//     bar with muted inactive labels); iOS and web draw a gray capsule track
-//     with a raised pill on the selected tab (no underline), which under glass
-//     is a control-layer pane behind the selected label.
+//     differs per OS: the web (and iOS, which ships no in-page tabs control and
+//     takes the web skin) draws a 2px glowing `primary` bar on the row's rule,
+//     Android Material 3's 3dp bar.
 //   - `pills`: the row is a muted track; the active trigger is an elevated/tonal
 //     background pill while the rest sit flat and muted.
 //   - `vertical`: the triggers stack into a left-aligned column rail; the active
@@ -73,6 +73,13 @@ export interface TabsSkin {
    * ring itself is the kit Pressable's (the palette's `ring`). No-op natively.
    */
   focusRing?: ViewStyle;
+  /** The opacity of a disabled trigger. */
+  disabledOpacity: number;
+  /** The vertical rail's width (capped at 40% of its container) and the gap between its rows. */
+  railWidth: number;
+  railGap: number;
+  /** The label of a resting underline tab under the pointer (the web only); null where there is none. */
+  hoverLabel: ((t: ColorTokens) => TextStyle) | null;
 
   // --- underline ---
   // `dark` lets the selected-pill fill follow the scheme (iOS: a white thumb in
@@ -181,13 +188,13 @@ function disabledOf(item: TabItem): boolean {
 // vertical: flex-col items-stretch gap-1; width w-full (block) or w-[180px].
 // The fixed rail flexes down (to a 96px floor, never past 40% of the row) so a
 // narrow container keeps most of its width for the panel instead of overflowing.
-function verticalRail(block: boolean): ViewStyle {
-  if (block) return { flexDirection: "column", alignItems: "stretch", gap: 4, width: "100%" };
+function verticalRail(block: boolean, width: number, gap: number): ViewStyle {
+  if (block) return { flexDirection: "column", alignItems: "stretch", gap, width: "100%" };
   return {
     flexDirection: "column",
     alignItems: "stretch",
-    gap: 4,
-    width: 180,
+    gap,
+    width,
     maxWidth: "40%",
     minWidth: 96,
     flexShrink: 1,
@@ -253,6 +260,9 @@ export function createTabs(skin: TabsSkin) {
 
   function Trigger({ label, badge, selected, variant, block, disabled, onPress, itemProps, onLayout }: TriggerProps) {
     const theme = useMaterialTheme({ layer: "control" });
+    // Only a resting underline tab answers the pointer (the skin's hover label, web only).
+    const hoverLabel = variant === "underline" && !selected ? skin.hoverLabel : null;
+    const { hovered, target: hoverTarget } = useHover(hoverLabel != null);
     const { tokens, dark } = theme;
     // Under glass the SELECTED tab with a fill of its own is a CONTROL-layer pane: the
     // GlassPane paints the material behind its label (the Pressable keeps its tap,
@@ -291,7 +301,7 @@ export function createTabs(skin: TabsSkin) {
         skin.verticalTrigger(tokens, selected),
         skin.verticalFill(tokens, selected),
         skin.focusRing,
-        disabled ? s.disabledDim : null,
+        disabled ? s.disabledDim(skin.disabledOpacity) : null,
       ];
       return (
         // Round the vertical trigger's bounded Android ripple to its corners via this
@@ -329,7 +339,7 @@ export function createTabs(skin: TabsSkin) {
         skin.pillsTrigger(tokens, selected),
         skin.pillsFill(tokens, selected, dark),
         skin.focusRing,
-        disabled ? s.disabledDim : null,
+        disabled ? s.disabledDim(skin.disabledOpacity) : null,
       ];
       return (
         // Round the pill trigger's bounded Android ripple to its capsule corners via this
@@ -365,15 +375,15 @@ export function createTabs(skin: TabsSkin) {
     const container: StyleProp<ViewStyle> = [
       skin.underlineTrigger(tokens, selected, dark),
       skin.focusRing,
-      disabled ? s.disabledDim : null,
+      disabled ? s.disabledDim(skin.disabledOpacity) : null,
     ];
     const puck = puckOf(container);
     return (
       // Round the underline trigger's bounded Android ripple to its corners via this
-      // RippleClip parent (Android only; iOS draws a capsule pill instead). Block-mode flex
+      // RippleClip parent (Android only; iOS draws a capsule pill instead), and is the hover target, which never moves. Block-mode flex
       // moves here so the tab still shares the row width. The absolute bottom indicator stays
       // inside the Pressable, which fills this wrapper.
-      <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null} onLayout={onLayout}>
+      <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null} onLayout={onLayout} {...hoverTarget}>
         <Pressable
           ref={itemRef}
           {...(rovingProps as object)}
@@ -387,7 +397,7 @@ export function createTabs(skin: TabsSkin) {
           style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         >
           {puck}
-          <Text style={[skin.underlineLabel(tokens, selected), inkOf(container)]}>{label}</Text>
+          <Text style={[skin.underlineLabel(tokens, selected), hovered && !disabled && hoverLabel ? hoverLabel(tokens) : null, inkOf(container)]}>{label}</Text>
           {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
           <View style={skin.underlineIndicator(tokens, selected)} />
         </Pressable>
@@ -559,7 +569,7 @@ export function createTabs(skin: TabsSkin) {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
       return withResponsiveProbe(
-        <View accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block), style]}>
+        <View accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block, skin.railWidth, skin.railGap), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}

@@ -166,8 +166,8 @@ describe("option-list menus are dense glass under glass", () => {
     // shift on mode changes and the material covers the card's whole footprint (GP-1).
     const glass = await readCard(true);
     expect(glass).toContain("border-width: 0px");
-    expect(glass).toContain("padding: 9px");
-    expect(solid).toContain("padding: 8px");
+    expect(glass).toContain("padding: 5px");
+    expect(solid).toContain("padding: 4px");
     expect(glass).toMatch(/border-color: rgba\(0, 0, 0, 0(?:\.0+)?\)/);
   });
 
@@ -235,11 +235,12 @@ describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
     const dialog = container.querySelector('[role="alertdialog"]') as HTMLElement;
     // The role node's own fill is the dimming scrim; the panel's material sits inside it.
     expect(dialog.style.backgroundColor).not.toBe("");
-    expect(materialLayers(dialog)).toBe(1);
+    // The panel's own material, and the tone tile's (an Emblem is a control surface).
+    expect(materialLayers(dialog)).toBe(2);
     expect(rgbaOf(underFillOf(dialog))).toEqual(DENSE);
   });
 
-  it("Toast renders Dark Factory's pill through the material as an inverse surface", async () => {
+  it("Toast renders the v4 card through the material at the dense tint", async () => {
     const { container } = render(
       <ThemeProvider light glass>
         <Toast success message="Project saved" description="All changes are live." />
@@ -248,9 +249,8 @@ describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
     await waitFor(() => expect(container.querySelector('[role="status"]')).not.toBeNull());
     const region = container.querySelector('[role="status"]') as HTMLElement;
     expect(materialLayers(region)).toBe(1);
-    // The pill (`inverse`) at the dense token's own alpha, so its light ink keeps its contrast.
-    const theme = { tokens: lightColors, glass: WEB_TINTS.light };
-    expect(rgbaOf(underFillOf(region))).toEqual(rgbaOf(inverseDenseTint(theme, lightColors.inverse!)));
+    // The card is no inverse surface: the dense layer's own tint.
+    expect(rgbaOf(underFillOf(region))).toEqual(rgbaOf(WEB_TINTS.light["glass-tint-dense"]));
   });
 
   it("the M3 snackbar and the Tooltip bubble are INVERSE surfaces: their own fill at the dense alpha, so their inverse text stays legible", async () => {
@@ -331,7 +331,8 @@ describe("the functional-layer overlays keep the sheer tint", () => {
     await waitFor(() => expect(container.querySelector('[role="listbox"]')).not.toBeNull());
     const { card, surface } = anchored(container, '[role="listbox"]');
     expect(rgbaOf(card.style.backgroundColor)).toEqual([0, 0, 0, 0]);
-    expect(materialLayers(surface)).toBe(1);
+    // The palette's own material, and the search row's `esc` Kbd on the control layer.
+    expect(materialLayers(surface)).toBe(2);
     expect(rgbaOf(underFillOf(surface))).toEqual(FUNCTIONAL);
   });
 });

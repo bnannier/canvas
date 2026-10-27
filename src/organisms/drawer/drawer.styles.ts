@@ -21,8 +21,11 @@ import { platformShape } from "../../style/platform-shape.js";
 //     modal-sheet elevation level 1 (1dp). The bottom sheet caps at 640dp (56dp margins beyond) and the side
 //     sheet at 400dp (M3 docked width tokens); a 32x4 M3 drag handle tops the
 //     bottom sheet. The scrim is the M3 standard scrim (~0.32).
-//   Web: an opaque `card` panel at the sheet corner on its inner edge, with a 1px
-//     `border` hairline there and the xl shade, over a 0.5 black scrim.
+//   Web: the v4 hand-off's panel in the overlay material (the `popover` fill, a 1px
+//     `field-border` hairline on its inner edge, the lg shadow) at the sheet corner on
+//     its inner edge, a side drawer at most 70% of the window, a 36x5 grabber atop the
+//     bottom sheet, over a 0.5 black scrim; `plain` is the `card` panel on the `border`
+//     hairline.
 //
 // The skins paint the SOLID `card` fill; under glass the shell renders the panel
 // through GlassSurface as a FUNCTIONAL-layer surface (the sheet material over the
@@ -109,19 +112,29 @@ function panelBase(t: ColorTokens): ViewStyle {
   return { backgroundColor: t.card, overflow: "hidden" };
 }
 
-// ---------- Web: an opaque sheet at the sheet corner ----------
-// An opaque `card` surface with the 22px sheet corner on the edge that faces the
-// content (the bottom sheet rounds its top corners, the side drawer its inner
-// corners), a 1px `border` hairline on that edge, the ambient xl shade, under a
-// 0.5 black scrim.
+// ---------- Web: the v4 hand-off's panel ----------
+// Its Drawer renderer: the overlay material (`popover` under the `field-border` hairline
+// on the edge that faces the content, the lg shade) with the sheet corner on that edge,
+// a side drawer capped at 70% of the window, the bottom sheet topped by a 36x5 grabber
+// in the field hairline's colour; `plain` is the `card` surface on the `border` hairline.
 export const webSkin: DrawerSkin = {
-  plainPanel: (edge, width, t) => ({ width, maxWidth: "100%", height: "100%", backgroundColor: t.card, boxShadow: `${edge === "left" ? 30 : -30}px 0 80px -30px rgba(0,0,0,0.4)` }),
+  plainPanel: (edge, width, t) => ({
+    width,
+    maxWidth: "100%",
+    height: "100%",
+    backgroundColor: t.card,
+    borderColor: t.border,
+    ...(edge === "left" ? { borderEndWidth: 1 } : { borderStartWidth: 1 }),
+    boxShadow: `${edge === "left" ? 30 : -30}px 0 80px -30px rgba(0,0,0,0.4)`,
+  }),
   scrimOpacity: () => 0.5,
   sheetMaxWidth: null,
-  handle: null,
+  handle: (edge, t) => (edge === "bottom"
+    ? { width: 36, height: 5, borderRadius: 9999, alignSelf: "center", marginTop: 10, backgroundColor: t["field-border"] }
+    : null),
   triggerMinHeight: null,
   panelShape: (edge, width, t) => {
-    const base = panelBase(t);
+    const base = { ...panelBase(t), backgroundColor: t.popover };
     const r = shape.web.sheet;
     if (edge === "bottom") {
       return {
@@ -129,10 +142,10 @@ export const webSkin: DrawerSkin = {
         width: "100%",
         maxHeight: "85%",
         borderTopWidth: 1,
-        borderColor: t.border,
+        borderColor: t["field-border"],
         borderTopStartRadius: r,
         borderTopEndRadius: r,
-        ...shadow("xl", t),
+        ...shadow("lg", t),
       };
     }
     if (edge === "top") {
@@ -141,21 +154,22 @@ export const webSkin: DrawerSkin = {
         width: "100%",
         maxHeight: "85%",
         borderBottomWidth: 1,
-        borderColor: t.border,
+        borderColor: t["field-border"],
         borderBottomStartRadius: r,
         borderBottomEndRadius: r,
-        ...shadow("xl", t),
+        ...shadow("lg", t),
       };
     }
     return {
       ...base,
       width,
+      maxWidth: "70%",
       height: "100%",
-      borderColor: t.border,
+      borderColor: t["field-border"],
       ...(edge === "right"
         ? { borderStartWidth: 1, borderTopStartRadius: r, borderBottomStartRadius: r }
         : { borderEndWidth: 1, borderTopEndRadius: r, borderBottomEndRadius: r }),
-      ...shadow("xl", t),
+      ...shadow("lg", t),
     };
   },
 };

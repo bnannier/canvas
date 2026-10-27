@@ -1,9 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
 import { type DimensionValue, type Insets } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { leastLine, useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { inlineSide, slopSides, splitSeam } from "../../style/touch-seam.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -11,8 +12,8 @@ import { type State, type StepsSkin } from "./steps.styles.js";
 // connectors, plus the vertical and progress-bar layouts), the layout
 // precedence, the per-step state derivation, the press handlers, and the
 // accessibility all live here once; a platform file supplies only its skin (the
-// circle/connector colors, the connector cap, the current-step emphasis, and
-// the press feedback) and calls createSteps.
+// marker, connector and label colors, and the press feedback and touch target)
+// and calls createSteps.
 //
 // Boolean-prop API: layout is a single axis with `progress` and `vertical`
 // opting out of the default horizontal layout (first-match precedence,
@@ -76,14 +77,14 @@ function stateOf(index: number, current: number): State {
 // The seams between the circles (src/style/touch-seam.ts). React Native gives a point two
 // touch areas admit to the later sibling, so each circle's slop stops at its share of the gap
 // to the next circle, measured from the Steps' own geometry: across a horizontal connector,
-// at least its two margins (the connector can shrink to nothing, and a label only widens a
-// column); down a vertical rail, a row's least height less the circle (the rail's circle and
-// connector margins, or the label line, an optional description line and the spacing under
+// at least its two margins and its least length (a label beside a marker only widens the
+// gap); down a vertical rail, a row's least height less the circle (the rail's circle and
+// least connector, or the label line, an optional description line and the spacing around
 // them, whichever is taller). Both circles of a seam carry the same slop, so each keeps at
 // most half the gap.
 const CIRCLE = s.circleBase.height as number;
-const ACROSS = 2 * (s.horizontalConnector.marginHorizontal as number);
-const RAIL = CIRCLE + 2 * (s.verticalConnector.marginVertical as number);
+const ACROSS = 2 * (s.horizontalConnector.marginHorizontal as number) + (s.horizontalConnector.minWidth as number);
+const RAIL = CIRCLE + (s.verticalConnector.minHeight as number);
 
 /** A circle's gap to the neighboring circle on each side it has one, in logical sides. */
 interface CircleSeams {
@@ -138,12 +139,17 @@ export function createSteps(skin: StepsSkin) {
     const surfaced = circle.backgroundColor != null && circle.backgroundColor !== "transparent";
     const current = state === "current";
     const shape = [s.circleBase, circle];
-    const circleStyle = surfaced ? paneStyle(theme, shape, current) : shape;
+    // An open ring (the current and upcoming markers) paints no surface, so glass leaves it
+    // as solid draws it; in solid mode it still takes Increase Contrast's weight, its own
+    // colour kept for the current step's state ring and `foreground` for the rest.
+    const circleStyle = surfaced || !isGlass(theme) ? paneStyle(theme, shape, current) : shape;
     const pane = surfaced ? <GlassPane static layer="control" shape={shape} stateBorder={current} brand={state === "completed" ? tokens.primary : undefined} /> : null;
     const glyph = (
-      <Text style={[s.glyphBase, skin.glyphState(tokens, state)]}>
-        {state === "completed" ? "✓" : String(index + 1)}
-      </Text>
+      state === "completed" ? (
+        <Icon check decorative size={s.checkSize} color={skin.glyphState(tokens, state).color as string} />
+      ) : (
+        <Text style={[s.glyphBase, skin.glyphState(tokens, state)]}>{String(index + 1)}</Text>
+      )
     );
     if (onPress) {
       // The disc's pane is a child of this Pressable: where it renders, the ripple draws in
@@ -241,7 +247,7 @@ export function createSteps(skin: StepsSkin) {
     const railGap = (step: Step) => {
       const note = step.description != null ? leastLine((skin.verticalDescription(tokens).lineHeight as number | undefined) ?? 0) : 0;
       const label = step.label !== "" ? leastLine((s.labelBase.lineHeight as number | undefined) ?? 0) : 0;
-      const content = label + note + ((s.verticalContentSpacing.paddingBottom as number | undefined) ?? 0);
+      const content = label + note + ((s.verticalContent.paddingTop as number | undefined) ?? 0) + ((s.verticalContentSpacing.paddingBottom as number | undefined) ?? 0);
       return Math.max(RAIL, content) - CIRCLE;
     };
 
@@ -264,7 +270,7 @@ export function createSteps(skin: StepsSkin) {
                     <View style={[s.verticalConnector, skin.connector(tokens, state === "completed"), PASS_THROUGH]} />
                   ) : null}
                 </View>
-                <View style={[s.flex1, !isLast ? s.verticalContentSpacing : null]}>
+                <View style={[s.flex1, s.verticalContent, !isLast ? s.verticalContentSpacing : null]}>
                   <Text style={[s.labelBase, skin.labelState(tokens, state)]}>{step.label}</Text>
                   {step.description != null ? (
                     <Text style={skin.verticalDescription(tokens)}>{step.description}</Text>
@@ -293,7 +299,7 @@ export function createSteps(skin: StepsSkin) {
                   seams={{ start: i > 0 ? ACROSS : undefined, end: !isLast ? ACROSS : undefined }}
                 />
                 <View style={PASS_THROUGH}>
-                  <Text style={[s.labelBaseXs, skin.labelState(tokens, state)]}>{step.label}</Text>
+                  <Text numberOfLines={1} style={[s.labelBaseXs, skin.labelState(tokens, state)]}>{step.label}</Text>
                 </View>
               </View>
               {!isLast ? (

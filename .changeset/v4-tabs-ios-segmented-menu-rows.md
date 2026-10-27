@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+Tabs on iOS take the v4 hand-off's iOS row: UISegmentedControl, the HIG's control for switching between closely related subviews. Underline and pills draw a capsule track inset 3 with capsule segments (13pt labels, 600 selected) and a raised thumb (white in light, a lifted gray in dark); vertical is a 220pt grouped rail of 15pt rows at a 10pt corner. The web menus share one v4 recipe: Dropdown and RowMenu draw the hand-off's panel (the `card` fill, the md shadow, a 4px inset), 8px menu-row corners, 400 14px labels, the mono eyebrow and shortcut, and the `secondary` hover wash, and the Dropdown sits 6px under its trigger; Select's and Autocomplete's web option rows and RowMenu's trigger round at 8 too, and Popover's compact card takes the same panel. The hand-off's corners land elsewhere: Command's panel at 18 and its rows at 9, the Alert callout at 14, the AlertDialog at 24 on the web and 14 on iOS, and the EmptyState at 18 with its glyph tile at 16 on every platform. Select, Autocomplete and Input share one focus-halo colour helper. Look changes with no public API, so a patch.

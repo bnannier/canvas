@@ -2,7 +2,7 @@ import { SEGMENTED_METER } from "./progress.styles.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useFillStyle, useHugStyle, useReducedMotion, supportsNativeDriver, statusColors, GlassPane, isGlass, innerFill, paneHost, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useFillStyle, useReducedMotion, supportsNativeDriver, statusColors, GlassPane, isGlass, innerFill, paneHost, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so the track/fill colors follow
@@ -104,9 +104,12 @@ function clampValue(value: number | undefined): number {
 // edge (marginLeft:auto) with a min gap so a long title never touches it. These are the
 // control's own anatomy, not a call-site restyle.
 const ROOT_STACK: ViewStyle = { gap: 8 };
-const HEADER_COLUMN: ViewStyle = { gap: 2 };
+const HEADER_COLUMN: ViewStyle = { gap: 4 };
 const TITLE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center" };
 const VALUE_READOUT_LAYOUT: TextStyle = { marginLeft: "auto", paddingLeft: 8 };
+// The iOS indeterminate form: the spinner beside the stacked header, 10 px apart.
+const SPINNER_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10 };
+const SPINNER_TEXT: ViewStyle = { flexShrink: 1, minWidth: 0 };
 
 // What a platform skin owns: the track height per size, the track (inactive)
 // fill, the active fill, the header text type (label/description/value readout), the
@@ -120,6 +123,8 @@ export interface ProgressSkin {
   trackColor: (tokens: ColorTokens) => string;
   /** Active (filled) bar color. */
   fillColor: (tokens: ColorTokens) => string;
+  /** An optional glow under the active fill, in the fill's color (the web's halo). */
+  fillGlow?: (color: string) => ViewStyle;
   /** The title line rendered above the track (canonical 14/20 medium, foreground). */
   label: (tokens: ColorTokens) => TextStyle;
   /** The muted secondary line under the title (canonical 12/16, muted-foreground). */
@@ -152,6 +157,7 @@ export interface ProgressParts {
   IndeterminateSpinner?: ComponentType<{
     small?: boolean;
     large?: boolean;
+    muted?: boolean;
     accessibilityLabel?: string;
     testID?: string;
   }>;
@@ -172,7 +178,6 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const glass = isGlass(theme);
     // FILL, appended after the skin's width:"100%" (the row-sharing pair).
     const widthStyle = useFillStyle("Progress", props);
-    const hugStyle = useHugStyle();
 
     const height = skin.height[size];
     // The track and the fill are capsules on every platform: 9999 clamps to half the bar.
@@ -184,6 +189,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     // anatomies alike.
     const fillColor = tone === "default" ? skin.fillColor(tokens) : toneFill(tone, tokens);
     const fraction = clampValue(value);
+    const glow = skin.fillGlow ? skin.fillGlow(fillColor) : null;
 
     // Measured track width, needed to slide the indeterminate bar in absolute px (a
     // translateX is the cross-platform-safe way to move it; animating `left`/`width` is
@@ -299,18 +305,20 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
 
     if (props.segments != null && !indeterminate) {
       const count = Number.isFinite(props.segments) ? Math.max(0, Math.floor(props.segments)) : 0;
+      // A segment fills once the value reaches its trailing edge (with a hair of slack
+      // for a value that lands exactly on it), as the hand-off counts them.
       const meter = <View accessibilityRole="progressbar" accessibilityLabel={accessibilityName}
         accessibilityValue={{ min: 0, max: 100, now: Math.round(fraction * 100) }}
         aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(fraction * 100)}
-        testID={hasHeader ? undefined : testID} style={[SEGMENTED_METER.row, hugStyle, hasHeader ? null : style]}>
-        {Array.from({ length: count }, (_, i) => <View key={i} style={[SEGMENTED_METER.dash, { backgroundColor: i < fraction * count ? fillColor : tokens.border }]} />)}
+        testID={hasHeader ? undefined : testID} style={[SEGMENTED_METER.row, hasHeader ? null : widthStyle, hasHeader ? null : style]}>
+        {Array.from({ length: count }, (_, i) => <View key={i} style={[SEGMENTED_METER.segment, { height, backgroundColor: (i + 1) / count <= fraction + 0.00001 ? fillColor : trackColor }]} />)}
       </View>;
       return hasHeader ? <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>{header}{meter}</View> : meter;
     }
 
     if (indeterminate && IndeterminateSpinner) {
       const spinner = (
-        <IndeterminateSpinner small={props.small} large={props.large} accessibilityLabel={accessibilityName} />
+        <IndeterminateSpinner small={props.small} large={props.large} muted accessibilityLabel={accessibilityName} />
       );
       // Bare, the spinner stays centered in the field slot (byte-identical to the
       // original). With a header it sits left-aligned under the stacked title.
@@ -321,10 +329,12 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
           </View>
         );
       }
+      // With a header the activity indicator leads the title line, as iOS sets a
+      // spinner beside its "Loading" label.
       return (
-        <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>
-          {header}
-          <View style={{ alignItems: "flex-start" }}>{spinner}</View>
+        <View testID={testID} style={[SPINNER_ROW, widthStyle, style]}>
+          {spinner}
+          <View style={SPINNER_TEXT}>{header}</View>
         </View>
       );
     }
@@ -381,7 +391,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
         {segmented ? null : <GlassPane static layer="control" shape={{ borderRadius: radius }} />}
         {indeterminate ? (
           <Animated.View
-            style={{
+            style={[{
               position: "absolute",
               top: 0,
               bottom: 0,
@@ -389,7 +399,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
               borderRadius: radius,
               backgroundColor: fillColor,
               transform: [{ translateX }],
-            }}
+            }, glow]}
           />
         ) : segmented ? (
           <>
@@ -474,7 +484,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
           // Continuous (iOS/web): full-width fill translated left so its rounded trailing
           // edge sits at `fraction` of the track (eased), clipped by the container overflow.
           <Animated.View
-            style={{
+            style={[{
               position: "absolute",
               top: 0,
               bottom: 0,
@@ -483,17 +493,17 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
               borderRadius: radius,
               backgroundColor: fillColor,
               transform: [{ translateX: activeTranslateX }],
-            }}
+            }, glow]}
           />
         ) : (
           // Pre-measurement fallback: static percent-width fill so the value paints at once.
           <View
-            style={{
+            style={[{
               height: "100%",
               width: `${fraction * 100}%`,
               borderRadius: radius,
               backgroundColor: fillColor,
-            }}
+            }, glow]}
           />
         )}
       </View>

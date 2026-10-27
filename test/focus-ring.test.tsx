@@ -274,10 +274,9 @@ describe("the themed focus ring", () => {
         expect(outline(knob, "style")).toBe("solid");
         expect(outline(knob, "width")).toBe(`${FOCUS_RING_WIDTH}px`);
         expect(outline(knob, "offset")).toBe(AROUND);
-        // The focus is no border: the knob keeps its resting border, which under glass is
-        // padding of the same width (GP-1), so its box never changes.
-        expect(knob.style.borderWidth).toBe(glass ? "0px" : "1px");
-        if (glass) expect(knob.style.padding).toBe("1px");
+        // The focus is no border: the hand-off's knob has none, and the ring adds none, so
+        // its box never changes.
+        expect(knob.style.borderWidth || "0px").toBe("0px");
         // A pointer press ends the keyboard mark, as :focus-visible does.
         act(() => { fireEvent.pointerDown(root); });
         expect(outline(knob, "width")).toBe("");

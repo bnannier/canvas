@@ -5,6 +5,8 @@ import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, legibleWash, withInnerFill } from "../../style/index.js";
 import { contrastStyle } from "../../style/glass-surface/glass-surface.shared.js";
+import { useHover } from "../../style/hover.js";
+import { Icon } from "../icon/icon.js";
 import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
@@ -15,9 +17,8 @@ import { useRadioGroup } from "./radio-context.js";
 // a group forms, press feedback) and calls createRadio. Every skin is hand-drawn from
 // the brand tokens, so no platform default color ever leaks in.
 //
-// On the web and Android a radio is a circular control that fills with a centered dot
-// when it is the chosen option; selecting swaps the ring from the neutral border to
-// primary and reveals the primary dot. iOS has no radio button, so its skin marks the
+// On the web and Android a radio is a circular control that marks the chosen option in
+// the accent: the web's ring thickens around a hollow center, Android's rings a dot. iOS has no radio button, so its skin marks the
 // choice the way an iOS picker does: the label leads and the chosen row carries a
 // trailing check, and a RadioGroup's options form one inset-grouped list (the
 // design language's "one job, different control"). The group (one selected option at
@@ -58,7 +59,7 @@ export interface RadioProps {
    * inside a `<RadioGroup>`.
    */
   card?: boolean;
-  // Size (pick one; default is the 16px control).
+  // Size (pick one; default is the 18px control on the web).
   small?: boolean;
   large?: boolean;
   /** Dim the control and block presses. */
@@ -76,20 +77,22 @@ export function sizeOf(p: RadioProps): Size {
   return "default";
 }
 
-/** A radio button: a circular control that fills with a centered dot when chosen. */
+/** A radio button: a circular control that marks the chosen option in the accent. */
 export interface RingMark {
   kind: "ring";
   /** The circular control. `checked` swaps the neutral border for primary. `nudge` aligns the ring to a label's first line. */
   ring: (tokens: ColorTokens, size: Size, checked: boolean, nudge: boolean) => ViewStyle;
-  /** The centered fill dot, rendered only when checked. */
-  dot: (tokens: ColorTokens, size: Size) => ViewStyle;
+  /** The centered fill dot, rendered only when checked; null where the chosen ring is hollow. */
+  dot: ((tokens: ColorTokens, size: Size) => ViewStyle) | null;
+  /** An unchosen ring's look under a hovering pointer (the web's soft accent ring); omit for none. */
+  hover?: (tokens: ColorTokens) => ViewStyle;
 }
 
 /** A checkmark row (iOS, which has no radio button): the label leads and the chosen option carries a trailing check. */
 export interface CheckMark {
   kind: "check";
-  /** The trailing check glyph shown on the chosen option. */
-  glyph: (tokens: ColorTokens, size: Size) => TextStyle;
+  /** The trailing check glyph shown on the chosen option: its color, size, and the width of the column it ends. */
+  glyph: (tokens: ColorTokens, size: Size) => { color: string; size: number; width: number };
 }
 
 /** The inset-grouped list a RadioGroup's options form on a platform whose single choice is a checkmark list. */
@@ -120,6 +123,10 @@ export interface RadioSkin {
    * `checked`, it applies Card's own `selected` treatment (primary border + soft tint).
    */
   card: (tokens: ColorTokens, checked: boolean) => ViewStyle;
+  /** The space between the mark and the text. */
+  rowGap: number;
+  /** The space between a group's options: plain rows, and card tiles. */
+  groupGap: { plain: number; card: number };
   /**
    * The inset-grouped list a RadioGroup's plain options form (iOS's inline picker), or
    * null where a group stays a stack of controls (the web and Android).
@@ -134,21 +141,22 @@ export interface RadioSkin {
 }
 
 // The pressable row: control beside an optional label, control top-aligned so a
-// multi-line label hangs from the ring's first line.
-const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
+// multi-line label hangs from the ring's first line. The skin sets the gap.
+const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start" };
 
 // A checkmark row: the text takes the row and the check trails at its end, centered on
 // the row the way iOS centers a cell's accessory beside a two-line title.
-const CHECK_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 12 };
+const CHECK_ROW: ViewStyle = { flexDirection: "row", alignItems: "center" };
 const CHECK_TEXT: ViewStyle & TextStyle = { flexGrow: 1 };
-// The check keeps its width on an unchosen row, so choosing an option never reflows its label.
-const CHECK_HIDDEN: TextStyle = { opacity: 0 };
+// The check ends its column, and keeps it on an unchosen row, so choosing an option never
+// reflows its label.
+const CHECK_CELL: ViewStyle = { flexShrink: 0, flexDirection: "row", justifyContent: "flex-end" };
+const CHECK_HIDDEN: ViewStyle = { opacity: 0 };
 
-// Stacks the title over its description beside the ring. The 8px gap matches the
-// kit's default column spacing (the arrangement callers used to hand-compose), so
-// the built-in layout reproduces the established look. `flexShrink` lets a long
-// description wrap within the row instead of forcing the row wider.
-const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
+// Stacks the title over its description beside the ring, the description right under it
+// (the line heights carry the spacing). `flexShrink` lets a long description wrap within
+// the row instead of forcing the row wider.
+const TEXT_COLUMN: ViewStyle = { flexShrink: 1, minWidth: 0 };
 
 /** Build a Radio component from a platform skin.
  * @ref Ref to the interactive radio row, preserving group navigation. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
@@ -184,6 +192,9 @@ export function createRadio(skin: RadioSkin) {
       onChange?.(true, event);
     };
     const keyboard = useSpaceActivation(disabled, handlePress);
+    // The web rings an unchosen ring while a pointer hovers the row; the row never moves,
+    // so it is its own hover target (src/style/hover.tsx).
+    const { hovered, target: hoverTarget } = useHover(mark.kind === "ring" && mark.hover != null && !disabled);
 
     // Card mode: the whole control renders inside selectable Card chrome and the entire
     // card is the tap target. The chrome (border + tint) tracks isChecked, so choosing
@@ -208,10 +219,12 @@ export function createRadio(skin: RadioSkin) {
       ? { focusable: roving.focusable, tabIndex: roving.tabIndex }
       : {};
 
-    const rowBox = [mark.kind === "check" ? CHECK_ROW : ROW, cell ? cell.cell : null];
+    const rowBox = [mark.kind === "check" ? CHECK_ROW : ROW, { gap: skin.rowGap }, cell ? cell.cell : null];
+    const glyph = mark.kind === "check" ? mark.glyph(tokens, size) : null;
     const control = (
       <Pressable
         ref={hostRef}
+        {...hoverTarget}
         {...(rovingProps as object)}
         {...({ ...keyboard, onKeyDown: (event: Parameters<typeof keyboard.onKeyDown>[0]) => {
           keyboard.onKeyDown(event);
@@ -247,8 +260,8 @@ export function createRadio(skin: RadioSkin) {
       >
         {cardChrome ? <GlassPane layer="content" shape={cardChrome} stateBorder={isChecked} tint={isChecked ? legibleWash(theme, "selection", { layer: "content" }) : undefined} /> : null}
         {mark.kind === "ring" ? (
-          <View style={contrastStyle(theme, mark.ring(tokens, size, isChecked, hasText))}>
-            {isChecked ? <View style={mark.dot(tokens, size)} /> : null}
+          <View style={[contrastStyle(theme, mark.ring(tokens, size, isChecked, hasText)), hovered && !isChecked && mark.hover ? mark.hover(tokens) : null]}>
+            {isChecked && mark.dot ? <View style={mark.dot(tokens, size)} /> : null}
           </View>
         ) : null}
         {hasText ? (
@@ -261,10 +274,12 @@ export function createRadio(skin: RadioSkin) {
             <Text style={[skin.label(tokens, size, !!disabled), mark.kind === "check" ? CHECK_TEXT : null]}>{children}</Text>
           )
         ) : null}
-        {mark.kind === "check" ? (
+        {glyph ? (
           // The row's checked state already names the choice, so the glyph is hidden
           // from assistive technology (it would otherwise join the row's name).
-          <Text aria-hidden style={[mark.glyph(tokens, size), isChecked ? null : CHECK_HIDDEN]}>✓</Text>
+          <View aria-hidden importantForAccessibility="no-hide-descendants" style={[CHECK_CELL, { width: glyph.width }, isChecked ? null : CHECK_HIDDEN]}>
+            <Icon check decorative size={glyph.size} color={glyph.color} />
+          </View>
         ) : null}
       </Pressable>
     );

@@ -1,178 +1,115 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shape, shadow } from "../../style/index.js";
+import { type ColorTokens, shadow, shape, widths } from "../../style/index.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
+import { platformShape } from "../../style/platform-shape.js";
 
-// Co-located EmptyState skins, one per platform. EmptyState is a "Light"
-// treatment: identical structure and semantic colors (those live below as the
-// shared tone helpers); only the bordered card's RADIUS, the column DENSITY/
-// SPACING, and the title/description TYPE TRACKING shift per OS. The BRAND survives
-// on every platform (the `success` green wash and the `primary` action Button stay
-// the same); React Native gives no native empty-state control on iOS (SwiftUI's
-// ContentUnavailableView is code-only) or Android (Material 3 dropped the M1/M2
-// empty-states pattern), so there is no native shape to match — each skin keeps the
-// established structure and applies only the platform's own surface conventions:
-//   iOS (HIG): a continuous-corner bordered card (the iOS card corner with
-//     borderCurve:"continuous", the grouped-inset feel), SF Pro Text tracking on the
-//     title (16pt: -0.31) and description (14pt: -0.15); press feedback is N/A (the
-//     surface has no pressable of its own; the action is the iOS-skinned Button atom).
-//   Android (Material 3): an M3 medium-shape card (the Android card corner), M3 type roles
-//     (title-medium 16/24/500/+0.15, body-medium 14/20/+0.25); the action is the
-//     M3-skinned Button atom, which carries its own ripple, so this surface adds none.
-//   Web: a dashed drop-zone card at the card corner, padding 16/24 (compact) or
-//     24/40, a 16/500 title and a 14 `muted-foreground` description, no extra
-//     tracking.
+// Co-located EmptyState skins, one per platform. EmptyState is a "Light" treatment: React
+// Native gives no native empty-state control on iOS (SwiftUI's ContentUnavailableView is
+// code-only) or Android (Material 3 dropped the M1/M2 empty-states pattern), so every
+// platform draws the Canvas v4 hand-off's empty state (`K.def('empty-state')` in
+// tools/v4/handoff/cv-kit-overlays.js) and the native skins share the web skin's parts,
+// differing only in the face:
+//
+//   A centered column padded 40 by 24 (24 by 24 compact) with a 12 px rhythm (8 compact)
+//   at the web row's empty-state corner; `bordered`
+//   draws a 1.5 px dashed `field-border` edge, `elevated` the `card` fill under the
+//   medium shade. The glyph sits on a 52 px tile (40 compact) at the card corner in the accent's soft wash
+//   with the accent's ink (the success wash and green when `success`), a 22 px glyph
+//   (18). The title is 500 19 (16 compact), in the display face on the web, tracked
+//   -0.01em; the description 400 14 / 21 in the muted ink capped at 320 px; the action
+//   sits 4 px further down.
 
 export type Tone = "success" | "default";
+export type Density = "compact" | "default";
 
-// The contract a platform skin fulfills. The shell renders the centered column,
-// the optional bordered card, the icon disc, the title/description, and the action
-// spacing; the skin maps the active platform's radius/density/type onto each piece.
+// The contract a platform skin fulfills. The shell renders the centered column, the
+// optional bordered or elevated surface, the glyph tile, the title, the description and
+// the action; the skin maps each piece's measure and type.
 export interface EmptyStateSkin {
-  /** The centered column wrapper. */
-  container: ViewStyle;
+  /** The centered column wrapper: its corner, padding and rhythm, per density. */
+  container: Record<Density, ViewStyle>;
+  /** The elevated surface's fill and shade. */
   elevated: (t: ColorTokens) => ViewStyle;
-  /** The bordered card shape (radius + border width); fill/color is shared. */
+  /** The bordered surface's edge (corner + width + style); its color is shared. */
   borderedBase: ViewStyle;
-  /** Bordered card padding by density (compact tightens it for dense table cells). */
-  borderedPad: Record<"compact" | "default", ViewStyle>;
-  /** The round icon disc base (size + shape + bottom inset); fill is shared by tone. */
-  discBase: ViewStyle;
-  /** The glyph type inside the disc; color is shared by tone. */
+  /** The glyph tile (size + corner), per density; its fill is shared by tone. */
+  discBase: Record<Density, ViewStyle>;
+  /** The glyph's size inside the tile, per density; its color is shared by tone. */
+  glyphSize: Record<Density, number>;
+  /** A text-character glyph's type. */
   glyph: TextStyle;
-  /** Title type (size / line-height / weight / tracking + alignment + color). */
-  title: (t: ColorTokens) => TextStyle;
-  /** Description type (size / line-height / tracking + inset + alignment + color). */
+  /** Title type, per density (size / line-height / weight / tracking / face + color). */
+  title: (t: ColorTokens, density: Density) => TextStyle;
+  /** Description type (size / line-height + alignment + color + measure). */
   description: (t: ColorTokens) => TextStyle;
-  /** The action button's inset above it. */
+  /** The action button's inset above it (on top of the column's rhythm). */
   actionSpacing: ViewStyle;
 }
 
 // ---- Shared, platform-neutral color logic (the same on every OS) -------------
-// The bordered card's border color follows the semantic `border` token. The
-// `success` tone paints the disc and glyph green from the semantic `success`
-// token (so it follows light/dark), while the default tone stays on the semantic
-// muted / muted-foreground tokens so it follows light/dark/glass.
 
+/** The bordered surface's edge color: the field boundary (the hand-off's `--ln2`). */
 export function borderedSurface(tokens: ColorTokens): ViewStyle {
-  return { borderColor: tokens.border };
+  return { borderColor: tokens["field-border"] };
 }
 
-// Disc fill per tone: a 10% green wash when success, the muted token otherwise.
+/** The glyph tile's fill per tone: the success wash, or the accent's soft wash. */
 export function discTone(tokens: ColorTokens, tone: Tone): ViewStyle {
-  return tone === "success"
-    ? { backgroundColor: alpha(tokens.success, 0.1) }
-    : { backgroundColor: tokens.muted };
+  return { backgroundColor: tone === "success" ? tokens["success-soft"] : tokens["primary-soft"] };
 }
 
+/** The glyph's color per tone: the solid green, or the accent's text ink. */
 export function glyphTone(tokens: ColorTokens, tone: Tone): TextStyle {
-  return tone === "success" ? { color: tokens["success-text"] ?? tokens.success } : { color: tokens["muted-foreground"] };
+  return { color: tone === "success" ? tokens.success : tokens["primary-text"] };
 }
 
-// ---- Shared layout fragments reused across the skins -------------------------
-const ELEVATED = (tokens: ColorTokens): ViewStyle => ({ borderRadius: shape.web.card, borderWidth: 0, backgroundColor: tokens.card, paddingVertical: 44, paddingHorizontal: 32, ...shadow("empty", tokens) });
+// ---- The hand-off's measures, shared by every skin -----------------------------
 
-const CONTAINER: ViewStyle = { alignItems: "center" };
-
-const DISC: ViewStyle = {
-  marginBottom: 12,
-  height: 48,
-  width: 48,
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: 9999,
-};
-
+// The column and its edge at the empty-state corner, the glyph tile at the card corner.
+const containerAt = (radius: number): Record<Density, ViewStyle> => ({
+  default: { alignItems: "center", borderRadius: radius, paddingVertical: 40, paddingHorizontal: 24, gap: 12 },
+  compact: { alignItems: "center", borderRadius: radius, paddingVertical: 24, paddingHorizontal: 24, gap: 8 },
+});
+const borderedAt = (radius: number): ViewStyle => ({ borderRadius: radius, borderWidth: 1.5, borderStyle: "dashed" });
+const discAt = (radius: number): Record<Density, ViewStyle> => ({
+  default: { height: 52, width: 52, borderRadius: radius, alignItems: "center", justifyContent: "center" },
+  compact: { height: 40, width: 40, borderRadius: radius, alignItems: "center", justifyContent: "center" },
+});
+const ELEVATED = (tokens: ColorTokens): ViewStyle => ({ backgroundColor: tokens.card, ...shadow("md", tokens) });
+const GLYPH_SIZE: Record<Density, number> = { default: 22, compact: 18 };
 const GLYPH: TextStyle = { fontSize: 20, lineHeight: 28 };
-
-const ACTION_SPACING: ViewStyle = { marginTop: 16 };
-
-// ---- Web (the dashed drop-zone card) ------------------------------------------
-export const webSkin: EmptyStateSkin = {
-  container: CONTAINER,
-  elevated: ELEVATED,
-  // The drop zone: the card corner and a dashed hairline.
-  borderedBase: { borderRadius: shape.web.card, borderWidth: 1, borderStyle: "dashed" },
-  borderedPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 24 },
-    default: { paddingHorizontal: 24, paddingVertical: 40 },
-  },
-  discBase: DISC,
-  glyph: GLYPH,
-  title: (tokens) => ({
-    textAlign: "center",
-    fontSize: 15,
-    lineHeight: 19.5,
-    fontWeight: "700",
-    color: tokens.foreground,
-  }),
-  description: (tokens) => ({
-    marginTop: 6,
-    textAlign: "center",
-    fontSize: 12.5,
-    lineHeight: 18.75,
-    fontWeight: "500",
-    color: tokens["muted-foreground"],
-  }),
-  actionSpacing: ACTION_SPACING,
+// 500 at 19 (16 compact), the display face's normal leading, tracked -0.01em.
+const TITLE: Record<Density, TextStyle> = {
+  default: { fontSize: 19, lineHeight: 23, fontWeight: "500", letterSpacing: -0.19 },
+  compact: { fontSize: 16, lineHeight: 20, fontWeight: "500", letterSpacing: -0.16 },
 };
+const description = (tokens: ColorTokens): TextStyle => ({
+  textAlign: "center",
+  fontSize: 14,
+  lineHeight: 21,
+  fontWeight: "400",
+  maxWidth: widths.xs,
+  color: tokens["muted-foreground"],
+});
+const ACTION_SPACING: ViewStyle = { marginTop: 4 };
 
-// ---- iOS (HIG): continuous-corner grouped-inset feel, SF Pro Text tracking ---
-export const iosSkin: EmptyStateSkin = {
-  container: CONTAINER,
+const skinAt = (radius: number, discRadius: number, fontFamily?: string): EmptyStateSkin => ({
+  container: containerAt(radius),
   elevated: ELEVATED,
-  // The superellipse corner curve of Apple's grouped-inset surfaces (iOS-only prop).
-  borderedBase: { borderRadius: shape.ios.card, borderWidth: 1, borderCurve: "continuous" },
-  borderedPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 24 },
-    default: { paddingHorizontal: 24, paddingVertical: 32 },
-  },
-  discBase: DISC,
+  borderedBase: borderedAt(radius),
+  discBase: discAt(discRadius),
+  glyphSize: GLYPH_SIZE,
   glyph: GLYPH,
-  title: (tokens) => ({
-    textAlign: "center",
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.31,
-    color: tokens.foreground,
-  }),
-  description: (tokens) => ({
-    marginTop: 4,
-    textAlign: "center",
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: -0.15,
-    color: tokens["muted-foreground"],
-  }),
+  title: (tokens, density) => ({ textAlign: "center", ...TITLE[density], ...(fontFamily ? { fontFamily } : null), color: tokens.foreground }),
+  description,
   actionSpacing: ACTION_SPACING,
-};
+});
 
-// ---- Android (Material 3): M3 medium shape, M3 type roles --------------------
-export const androidSkin: EmptyStateSkin = {
-  container: CONTAINER,
-  elevated: ELEVATED,
-  borderedBase: { borderRadius: shape.android.card, borderWidth: 1 },
-  borderedPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 24 },
-    default: { paddingHorizontal: 24, paddingVertical: 32 },
-  },
-  discBase: DISC,
-  glyph: GLYPH,
-  title: (tokens) => ({
-    // M3 title-medium: 16/24, weight 500, +0.15 tracking.
-    textAlign: "center",
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "500",
-    letterSpacing: 0.15,
-    color: tokens.foreground,
-  }),
-  description: (tokens) => ({
-    marginTop: 4,
-    textAlign: "center",
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.25,
-    color: tokens["muted-foreground"],
-  }),
-  actionSpacing: ACTION_SPACING,
-};
+/** Web: the hand-off's empty state, its title in the display face. */
+export const webSkin: EmptyStateSkin = skinAt(platformShape.web.emptyState, shape.web.card, DISPLAY_FONT);
+// The native title: the web skin's, in the platform's own face.
+const nativeTitle: EmptyStateSkin["title"] = (tokens, density) => ({ textAlign: "center", ...TITLE[density], color: tokens.foreground });
+/** iOS: no native empty-state control; the web skin's parts, in SF Pro. */
+export const iosSkin: EmptyStateSkin = { ...webSkin, title: nativeTitle };
+/** Android: no Material 3 empty state; the web skin's parts, in Roboto. */
+export const androidSkin: EmptyStateSkin = { ...webSkin, title: nativeTitle };

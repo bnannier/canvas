@@ -4,14 +4,17 @@ An interactive pill for filter chips, tags, and selectable tokens. It carries an
 optional leading icon and a label, becomes tappable with `onPress`, and grows a
 trailing "×" remove button with `onRemove`.
 
-A Chip is a LOW-emphasis tag, not a call to action: the neutral chip is Dark
-Factory's quiet pill (the soft surface color under the foreground), and a
-coloured chip is its soft pill (the color's wash under the color's ink, the
-recipe Alert and the other toned surfaces share). A selected filter chip is Dark
-Factory's selected chip, the solid primary (the tonal primary on Android, where
-Material 3 draws its selected filter chip). The chip owns that whole look, so no
-call site hand-composes a `borderRadius` + `backgroundColor` + padding
-Pressable.
+A Chip is a LOW-emphasis tag, not a call to action: the neutral chip is a 28 px
+outlined pill (the raised neutral fill inside a hairline, its label at weight
+500). A status chip is its soft pill (the status wash under the status ink, the
+recipe Alert and the other toned surfaces share); a palette hue is that hue's
+16% wash inside the same hue at 30%, under a deep ink in the hue that holds
+4.5:1 on the wash. A selectable chip rests as the bare pill in the field border,
+and once selected it is the accent's soft wash in the accent ink, inside an
+accent edge and leading with a check. On Android the chip is Material 3's: a 32dp outlined
+container at the 8dp chip corner, its selected filter chip tonal with an 18dp
+check and no outline. The chip owns that whole look, so no call site
+hand-composes a `borderRadius` + `backgroundColor` + padding Pressable.
 
 Two orthogonal axes drive the look:
 
@@ -22,13 +25,17 @@ Two orthogonal axes drive the look:
   names read the theme's status colors (`statusColors`), so a success chip matches a
   success Badge and Alert; `info` is the primary color. Precedence when more than one
   is set: status names first, then hues in the order above.
-- **Emphasis**. `outline` drops the fill for a border-only chip in the same color;
-  `primary` is the primary color's soft pill. These compose with any color, e.g.
-  `<Chip blue outline>`.
+- **Emphasis**. `outline` drops the fill for the field-border edge around the
+  color's ink; `primary` is the solid accent; `secondary` is the higher raised
+  fill with no edge (on Android, the filled chip beside the bare outlined
+  container that is its idle chip). `neutral` is the muted tag with no edge;
+  `gray` is the same muted fill and ink inside the chip's own edge. `outline` composes with any color,
+  e.g. `<Chip blue outline>`. Precedence: a color wins over `primary`, and
+  `outline` wins over `primary`'s fill.
 
-`count` adds an extra-bold, dimmed trailing count and the denser filter inset.
-Web labels retain Argus’s exact 11/14.3 metrics and idle hover wash. `start` pins
-a chip when its host layout does not publish a Canvas sizing context.
+`count` adds a dimmed trailing count in the mono face. A hovering pointer
+brightens the chip on the web. `start` pins a chip when its host layout does not
+publish a Canvas sizing context.
 
 `steadyPress` retains the resting opacity during a press, while selection,
 hover feedback and the native ripple keep working.
@@ -100,14 +107,34 @@ matches without threading the color through.
 
 ### Selectable
 
-A selectable chip is Dark Factory's filter chip: the quiet pill at rest and the solid
-primary once selected.
+A selectable chip is a filter chip: the outlined pill at rest, and the accent's soft
+wash inside an accent edge, leading with a check, once selected.
 
 ```tsx
 <Row>
   <Chip selectable defaultSelected>Design</Chip>
   <Chip selectable>Engineering</Chip>
 </Row>
+```
+
+### Pick one
+
+`ChipGroup` makes a set of chips a single choice: wrap `<Chip value="…">` options in it
+and exactly one is selected, the selected filter chip's look. It is a radiogroup of
+radio chips and ONE tab stop: Tab lands on the chosen chip (the first one when nothing
+is chosen), the arrow keys move the choice and wrap, Home and End take the ends, and a
+disabled chip is skipped. Controlled via `value` + `onChange`, uncontrolled via
+`defaultValue`, the RadioGroup contract. `label` renders a heading that also names the
+group; `accessibilityLabel` names it when the heading is already on the page. The group
+draws no chrome of its own: it wraps its chips 8 px apart, and fills its parent.
+
+```tsx
+<ChipGroup label="Density" defaultValue="comfortable">
+  <Chip value="compact">Compact</Chip>
+  <Chip value="comfortable">Comfortable</Chip>
+  <Chip value="spacious">Spacious</Chip>
+  <Chip value="custom" disabled>Custom</Chip>
+</ChipGroup>
 ```
 
 ## Do & Don't
@@ -131,4 +158,4 @@ primary once selected.
 
 ## Touch area
 
-On Android a tappable Chip's touch area grows to the 48dp minimum without the chip changing size: 7dp above and below the 34dp chip, and nothing sideways once it is 48dp wide. On iOS it keeps 11pt of extra touch area on every side, which clears the 44pt minimum around the 25pt chip. The remove "×" pads out to the minimum on both, biased away from the label. Inside one chip the two never overlap: the chip splits the gap between its label and its "×", so a tap on the label never removes it. Between chips, React Native's own rule applies: where two touch areas overlap, the later chip takes the tap. Android chips that meet the minimum's width reach nothing sideways, so a Row of them never overlaps; on iOS two tappable chips closer than 22pt do, and a tap on the edge of one toggles the next. Leave room between chips on iOS where a mistaken toggle matters.
+On Android a tappable Chip's touch area grows to the 48dp minimum without the chip changing size: 8dp above and below the 32dp chip, and nothing sideways once it is 48dp wide. On iOS it keeps 8pt of extra touch area on every side, which clears the 44pt minimum around the 28pt chip. The remove "×" pads out to the minimum on both, biased away from the label. Inside one chip the two never overlap: the chip splits the gap between its label and its "×", so a tap on the label never removes it. Between chips, React Native's own rule applies: where two touch areas overlap, the later chip takes the tap. Android chips that meet the minimum's width reach nothing sideways, so a Row of them never overlaps; on iOS two tappable chips closer than 16pt do, and a tap on the edge of one toggles the next. Leave room between chips on iOS where a mistaken toggle matters.

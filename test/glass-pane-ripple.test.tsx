@@ -195,7 +195,7 @@ describe("on Android a pane host's press shows over its pane", () => {
     { name: "Chip: a tappable filter", node: <><AndroidChip onPress={() => {}}>Filter</AndroidChip><AndroidChip selectable defaultSelected>Picked</AndroidChip></>, forward: 2 },
     // A Checkbox's box is a mark with no pane (GS-5), so its ripple stays solid's.
     { name: "Checkbox: the indeterminate box keeps solid's ripple (GS-5)", node: <AndroidCheckbox indeterminate>Some</AndroidCheckbox>, forward: 0 },
-    { name: "Steps: the pressable completed and current discs", node: <AndroidSteps steps={[{ label: "Account" }, { label: "Profile" }]} defaultCurrent={1} onStepPress={() => {}} />, forward: 2 },
+    { name: "Steps: the pressable completed disc (the current ring is open)", node: <AndroidSteps steps={[{ label: "Account" }, { label: "Profile" }]} defaultCurrent={1} onStepPress={() => {}} />, forward: 1 },
     { name: "Alert: the dismiss button's borderless ripple", node: <AndroidAlert title="Saved" dismissible />, forward: 1 },
     { name: "Input: the clear and reveal buttons", node: <><AndroidInput label="Search" clearable defaultValue="canvas" /><AndroidInput label="Password" secureTextEntry passwordToggle /></>, forward: 2 },
     { name: "Avatar: a pressable tile", node: <AndroidAvatar onPress={() => {}} accessibilityLabel="Account" />, forward: 1 },

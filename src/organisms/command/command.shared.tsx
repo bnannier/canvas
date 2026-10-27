@@ -27,9 +27,9 @@ import * as s from "./command.styles.js";
 // it), then one or more groups of result rows. Groups left with no matching row
 // drop out, heading included; a query matching nothing shows a muted "No
 // results" row. Each group can carry an optional uppercase heading; each row is
-// a leading icon glyph + a label + an optional trailing shortcut rendered as a
-// Kbd cap. The active row (a flat index across the visible rows) is highlighted
-// with the accent surface and resets to the first row on each keystroke.
+// a leading icon glyph + a label + an optional trailing shortcut in mono text. The
+// active row (a flat index across the visible rows) is highlighted with the accent's
+// soft wash and resets to the first row on each keystroke.
 //
 // In BARE mode (no `trigger`) this is the OPEN, inline palette card on its own:
 // no Modal, no scrim. `open` (default true) gates whether the card renders, so
@@ -39,11 +39,10 @@ import * as s from "./command.styles.js";
 // stacking context and is never overpainted by a later sibling or clipped by an
 // ancestor; it falls back to the inline absolute anchor with no OverlayProvider.
 //
-// Command is a "Light" platform treatment: ONE structure with small per-OS
-// touches (row density/height, type, and press feedback). The panel material
-// (GlassSurface), the card shell, the trigger, the group heading, the footer, and
-// the Kbd caps are shared and identical across platforms; only the search row and
-// the result rows are re-skinned.
+// Command is the v4 hand-off's palette on every platform, with small per-OS touches
+// (the row minimum, the press feedback). The panel material (GlassSurface), the card
+// shell, the trigger, the group heading, the footer and the `esc` cap are shared and
+// identical across platforms; only the search row and the result rows are skinned.
 //
 // Style is configured through semantic boolean props (Canvas's only styling
 // API); there are no string-enum props.
@@ -56,7 +55,7 @@ export interface CommandItem {
   /** Optional leading Canvas glyph, named from the kit icon set (e.g. `"file"`,
    *  `"folder"`, `"save"`). Rendered through the `Icon` atom. */
   icon?: IconName;
-  /** Optional trailing keyboard shortcut, rendered in a Kbd cap. */
+  /** Optional trailing keyboard shortcut, rendered as mono text. */
   shortcut?: string;
 }
 
@@ -285,7 +284,7 @@ export function createCommand(skin: CommandSkin) {
     const cardContent = (
       <>
         <View accessibilityRole="search" style={skin.searchRow(tokens, searchFocused)}>
-          <Icon search muted decorative size={skin.searchGlyphSize} />
+          <Icon search color={skin.searchGlyphColor(tokens)} decorative size={skin.searchGlyphSize} />
           <TextInput
             ref={searchRef}
             onKeyPress={onSearchKeyPress}
@@ -310,6 +309,7 @@ export function createCommand(skin: CommandSkin) {
             // The search input drives the listbox highlight; point AT to the active row.
             {...({ "aria-activedescendant": activeId } as object)}
           />
+          <Kbd>esc</Kbd>
         </View>
 
         <OverlayScrollView testID={testID ? `${testID}-results` : undefined} style={s.results} ref={results.listRef} onLayout={results.onLayout} onScroll={results.onScroll} onContentSizeChange={results.scrollActiveIntoView} scrollEventThrottle={16}>
@@ -319,7 +319,7 @@ export function createCommand(skin: CommandSkin) {
           </View>
         ) : null}
 
-        <View ref={results.listContentRef} collapsable={false} nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName}>
+        <View ref={results.listContentRef} collapsable={false} nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} style={total > 0 ? s.resultsContent : undefined}>
         {visibleGroups.map((group, gi) => (
           <View key={`group-${gi}`} role="group" aria-label={group.heading ?? undefined}>
             {group.heading != null ? <Text style={s.groupHeading(tokens)}>{group.heading}</Text> : null}
@@ -360,14 +360,14 @@ export function createCommand(skin: CommandSkin) {
                   accessibilityState={{ selected: isActive }}
                   aria-selected={isActive}
                 >
-                  {item.icon != null ? <Icon {...{ [item.icon]: true }} size={skin.iconSize} decorative /> : null}
+                  {item.icon != null ? <Icon {...{ [item.icon]: true }} color={skin.iconColor(tokens, isActive)} size={skin.iconSize} decorative /> : null}
                   {item.description != null ? (
                     <View style={s.rowText}>
                       <Text numberOfLines={1} style={[skin.rowLabel(tokens), s.stackedLabel]}>{item.label}</Text>
                       <Text numberOfLines={1} style={s.rowDescription(tokens)}>{item.description}</Text>
                     </View>
                   ) : <Text style={skin.rowLabel(tokens)}>{item.label}</Text>}
-                  {item.shortcut != null ? <Kbd>{item.shortcut}</Kbd> : null}
+                  {item.shortcut != null ? <Text style={skin.shortcut(tokens, isActive)}>{item.shortcut}</Text> : null}
                 </Pressable>
               );
             })}
@@ -378,19 +378,9 @@ export function createCommand(skin: CommandSkin) {
 
         {footer ? (
           <View style={s.footerBar(tokens)}>
-            <View style={s.footerHint}>
-              <Kbd>↑</Kbd>
-              <Kbd>↓</Kbd>
-              <Text style={s.footerText(tokens)}>to navigate</Text>
-            </View>
-            <View style={s.footerHint}>
-              <Kbd>↵</Kbd>
-              <Text style={s.footerText(tokens)}>to select</Text>
-            </View>
-            <View style={s.footerHint}>
-              <Kbd>esc</Kbd>
-              <Text style={s.footerText(tokens)}>to close</Text>
-            </View>
+            <Text style={s.footerText(tokens)}>↑↓ move</Text>
+            <Text style={s.footerText(tokens)}>↵ open</Text>
+            <Text style={s.footerText(tokens)}>esc close</Text>
           </View>
         ) : null}
       </>

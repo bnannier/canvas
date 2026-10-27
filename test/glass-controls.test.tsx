@@ -32,12 +32,12 @@ import { Sidebar as IosSidebar } from "../src/organisms/sidebar/sidebar.ios.tsx"
 import { Navbar } from "../src/organisms/navbars/navbars.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { TabBar as IosTabBar } from "../src/organisms/tab-bar/tab-bar.ios.tsx";
-import { alpha, channelsOf, composite, contrastRatio } from "../src/style/color.ts";
+import { alpha, channelsOf, composite, contrastRatio, oklchHex, oklchOf } from "../src/style/color.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
-import { frameBedsFor, lightColors, palette } from "../src/style/tokens.ts";
+import { darkColors, frameBedsFor, lightColors, palette } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { statusColors } from "../src/style/status.ts";
-import { HUE_SOFT } from "../src/atoms/chip/chip.shared.tsx";
+import { HUE_ANGLE, hueChip } from "../src/atoms/chip/chip.shared.tsx";
 import { LOOKS, glassSets, lookProps } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
 import { webSkin as webRadioSkin, androidSkin as androidRadioSkin } from "../src/atoms/radio/radio.styles.ts";
@@ -161,10 +161,9 @@ describe("brand-tinted glass pucks", () => {
     // The track's own pane is the first material; the selected tab's puck follows.
     const fills = Array.from(strip.querySelectorAll('[data-testid="glass-material"]')).map((material) => rgbaOf(fillOfMaterial(material).fill?.style.backgroundColor ?? ""));
     expect(fills[0]).toEqual(rgbaOf(LIGHT["glass-tint"]));
-    // The web shares the capsule segmented control with iOS: the puck carries the
-    // raised thumb's fill (the light scheme's `background`) at the selection tint's
-    // opacity ceiling, not a brand tint.
-    expect(fills).toContainEqual(rgbaOf(selectionTint({ backgroundColor: lightColors.background }, false)!));
+    // The web pills' thumb is the hand-off's `card`: the puck carries that fill at the
+    // selection tint's opacity ceiling, not a brand tint.
+    expect(fills).toContainEqual(rgbaOf(selectionTint({ backgroundColor: lightColors.card }, false)!));
     const selected = strip.querySelector('[aria-selected="true"]') as HTMLElement;
     const label = Array.from(selected.querySelectorAll("*")).find((n) => n.textContent === "Overview" && (n as HTMLElement).style.color) as HTMLElement;
     expect(rgbaOf(label.style.color)).toEqual(rgbaOf(alpha(lightColors.foreground, 1)));
@@ -247,15 +246,15 @@ describe("hue washes", () => {
     const soft = container.querySelector('[data-testid="soft"]') as HTMLElement;
     expect(rgbaOf(underFillOf(soft))).toEqual(rgbaOf(statusColors(lightColors, "error").wash));
     const chip = container.querySelector('[data-testid="chip"]') as HTMLElement;
-    expect(rgbaOf(underFillOf(chip))).toEqual(rgbaOf(alpha(palette["blue-500"], HUE_SOFT.light)));
+    expect(rgbaOf(underFillOf(chip))).toEqual(rgbaOf(hueChip("blue", lightColors, false).wash));
     const chipLabel = Array.from(chip.querySelectorAll("*")).find((n) => n.textContent === "Design" && (n as HTMLElement).style.color) as HTMLElement;
-    expect(rgbaOf(chipLabel.style.color)).toEqual(rgbaOf(alpha(palette["blue-800"], 1)));
+    expect(rgbaOf(chipLabel.style.color)).toEqual(rgbaOf(alpha(hueChip("blue", lightColors, false).ink, 1)));
     // A keycap is the plain control material.
     expect(rgbaOf(underFillOf(container.querySelector('[data-testid="kbd"]') as HTMLElement))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 
-  it("holds every hue's deeper label at 4.5:1 over its chip wash on the page, a content pane and a control puck, in every palette", () => {
-    const hues = Object.keys(palette).filter((k) => k.endsWith("-500")).map((k) => k.slice(0, -4));
+  it("holds every hue's solved label at 4.5:1 over its chip wash on the page, a content pane and a control puck, in every palette", () => {
+    const hues = Object.keys(HUE_ANGLE) as (keyof typeof HUE_ANGLE)[];
     expect(hues.length).toBeGreaterThan(10);
     // The panes differ by platform: the web frost's tints and the native set.
     for (const look of LOOKS) {
@@ -264,8 +263,7 @@ describe("hue washes", () => {
         const dark = look.scheme === "dark";
         const bases = [t.background, composite(g["glass-tint-content"], t.background), composite(g["glass-tint-control"], composite(g["glass-tint-content"], t.background))];
         for (const hue of hues) {
-          const wash = alpha(palette[`${hue}-500`], dark ? HUE_SOFT.dark : HUE_SOFT.light);
-          const ink = palette[`${hue}-${dark ? 300 : 800}`];
+          const { wash, ink } = hueChip(hue, t, dark);
           for (const base of bases) {
             expect(contrastRatio(composite(wash, base), ink), `${platform} ${scheme} ${hue} over ${base}`).toBeGreaterThanOrEqual(4.5);
           }
@@ -298,10 +296,16 @@ describe("hue washes", () => {
     }
   });
 
-  it("the solid recipe's 700/400 label is what the deeper step replaces (it dips under 4.5:1 on the wash)", () => {
-    const wash = alpha(palette["orange-500"], HUE_SOFT.light);
-    expect(contrastRatio(composite(wash, lightColors.background), palette["orange-700"])).toBeLessThan(4.5);
-    expect(contrastRatio(composite(wash, lightColors.background), palette["orange-800"])).toBeGreaterThanOrEqual(4.5);
+  it("walks the hand-off's hue ink only where it dips under 4.5:1 on the wash (the light page's teal), and keeps it where it reads", () => {
+    const mixed = (t: typeof lightColors, h: number) => {
+      const [lt, ct] = oklchOf(t.foreground)!;
+      return oklchHex(0.64 * 0.72 + lt * 0.28, 0.17 * 0.72 + ct * 0.28, h);
+    };
+    const teal = hueChip("teal", lightColors, false);
+    expect(contrastRatio(composite(teal.wash, lightColors.background), mixed(lightColors, HUE_ANGLE.teal))).toBeLessThan(4.5);
+    expect(teal.ink).not.toBe(mixed(lightColors, HUE_ANGLE.teal));
+    expect(contrastRatio(composite(teal.wash, lightColors.background), teal.ink)).toBeGreaterThanOrEqual(4.5);
+    expect(hueChip("red", darkColors, true).ink).toBe(mixed(darkColors, HUE_ANGLE.red));
   });
 });
 
@@ -422,7 +426,7 @@ describe("state washes", () => {
     const items = [{ key: "home", label: "Home", icon: () => <Icon home size={22} /> }, { key: "search", label: "Search", icon: () => <Icon search size={22} /> }];
     const hosts = [
       <Tabs pills tabs={["General", "Security"]} />,
-      <IosTabs tabs={["General", "Security"]} />,
+      <IosTabs pills tabs={["General", "Security"]} />,
       <Sidebar defaultActive="Dashboard" items={[{ label: "Dashboard" }, { label: "Inbox" }]} />,
       <IosSidebar defaultActive="Dashboard" items={[{ label: "Dashboard" }, { label: "Inbox" }]} />,
       <Navbar brand="Canvas" links={["Dashboard", "Users"]} />,
@@ -657,12 +661,12 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
     for (const l of LOOKS) {
       const t = l.tokens;
       const web: [string, string][] = [
-        ["web radio ring", String(webRadioSkin.mark.kind === "ring" ? webRadioSkin.mark.ring(t, "base", false, true).borderColor : "")],
+        ["web radio ring", String(webRadioSkin.mark.kind === "ring" ? webRadioSkin.mark.ring(t, "default", false, true).borderColor : "")],
         ["web checkbox box", String(webCheckboxSkin.box(t, false, "base").borderColor)],
         ["web off track", String(webSwitchSkin.track(t, l.scheme === "dark", false, "base").borderColor)],
       ];
       const native: [string, string][] = [
-        ["android radio ring", String(androidRadioSkin.mark.kind === "ring" ? androidRadioSkin.mark.ring(t, "base", false, true).borderColor : "")],
+        ["android radio ring", String(androidRadioSkin.mark.kind === "ring" ? androidRadioSkin.mark.ring(t, "default", false, true).borderColor : "")],
         ["android checkbox box", String(androidCheckboxSkin.box(t, false, "base").borderColor)],
         ["android off track", String(androidSwitchSkin.track(t, l.scheme === "dark", false, "base").borderColor)],
       ];
@@ -680,7 +684,7 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
     }
   });
 
-  it("draws the checked web Radio as solid does under glass: a 2 px primary ring around a primary dot", async () => {
+  it("draws the checked web Radio as solid does under glass: the hand-off's 5 px primary ring around a hollow center", async () => {
     const { container } = await renderGlass(
       <>
         <Radio checked testID="pick" accessibilityLabel="Pro" />
@@ -689,11 +693,9 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
     );
     const ring = (container.querySelector('[data-testid="pick"]') as HTMLElement).firstElementChild as HTMLElement;
     expect(materialLayers(ring)).toBe(0);
-    expect(ring.style.borderWidth || ring.style.borderTopWidth).toBe("2px");
+    expect(ring.style.borderWidth || ring.style.borderTopWidth).toBe("5px");
     expect(rgbaOf(ring.style.borderColor || ring.style.borderTopColor)).toEqual(rgbaOf(alpha(lightColors.primary, 1)));
-    const dot = ring.firstElementChild as HTMLElement;
-    expect(rgbaOf(dot.style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.primary, 1)));
-    expect(ring.children).toHaveLength(1);
+    expect(ring.children).toHaveLength(0);
   });
 });
 

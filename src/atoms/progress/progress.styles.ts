@@ -1,67 +1,55 @@
-import { platformShape } from "../../style/platform-shape.js";
 import { alpha, tabularNums, type ColorTokens, type TextStyle, type ViewStyle } from "../../style/index.js";
-import { actionFill } from "../../style/action.js";
-import { typeScale } from "../../style/type-scale.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { type ProgressSkin, type Size } from "./progress.shared.js";
 
 // Co-located Progress skins, one per platform, all driven by the brand tokens (passed in
-// from useTheme so they follow light/dark). A progress bar is a meter, so its active fill
-// is the call-to-action `action` color on every platform (Dark Factory fills its meters
-// with its green accent), never a platform default. Only the native SHAPE of the bar
-// (track thickness and the inactive-track tone) changes per OS, matched to each
-// platform's real progress reference; the bar is a capsule on every platform:
+// from useTheme so they follow light/dark). The fill is the accent (`primary`) on every
+// platform, or the tone's solid color; only the native SHAPE of the bar (track thickness
+// and the inactive-track tone) and the header's type change per OS, as the Canvas v4
+// hand-off draws them (`K.def('progress')` in tools/v4/handoff/cv-kit-overlays.js and its
+// `K.PF` rows in cv-kit-platform.js). The bar is a capsule on every platform:
 //
-//   iOS (UIProgressView / SwiftUI ProgressView, iOS 27 kit Progress Indicators, Table
-//     View Row symbol): a THIN ~4pt track with FULLY ROUNDED ends (radius = height/2 → a
-//     capsule). The inactive track is a NEUTRAL GRAY system fill — rgba(120,120,120,0.2)
-//     in Light, rgba(120,120,128,0.36) (Fills/Dark/1 Primary) in Dark — never a tint of
-//     the progress color; only the fill carries the accent.
-//   Android (Material 3 linear progress indicator): a 4dp track, fully rounded ends, the
-//     inactive track on the `secondary`/container tone (the secondary-container mapping),
-//     plus the M3 segmented anatomy: a 4dp GAP between the active indicator and the
-//     track, and the 4x4dp stop indicator dot in the active color at the trailing edge
-//     (rendered by the shell via trackGap/stopIndicator; determinate only, per M3).
-//   Web: Dark Factory's meter: a slim FULLY ROUNDED bar (6px at the base size) whose
-//     rest is its line color (`border`, the rest of its dot meter), in its dense label
-//     type.
+//   iOS (UIProgressView / SwiftUI ProgressView): a THIN 4pt track (3 / 6 small / large)
+//     on a NEUTRAL gray system fill, the subtle ink at 25%, never a tint of the progress
+//     color; indeterminate is the activity indicator (progress.ios.tsx). The header is
+//     500 14 / 20 with the percent at 400 in the muted ink.
+//   Android (Material 3 linear progress indicator): a 4dp track (3 / 8), the inactive
+//     track on the raised surface, a 4dp GAP between the active indicator and the track,
+//     and the 4x4dp stop indicator dot (rendered by the shell via trackGap/stopIndicator;
+//     determinate only, per M3). The header is iOS's.
+//   Web: a 6px bar (4 / 10) on the raised surface whose fill glows in its own color, a
+//     500 13 label and the percent at 500 12 in the mono face; `segments` splits the bar
+//     into equal capsules 4px apart.
 
 // iOS: a thin 4pt bar across all sizes, nudged up/down a hair by the size axis so `small`
 // and `large` still read as distinct without ever losing the hairline iOS feel.
 const IOS_HEIGHT: Record<Size, number> = { small: 3, base: 4, large: 6 };
 
-// Android (M3): the M3 linear indicator is 4dp; the size axis steps it 3/4/8 so the axis
-// is meaningful while the default stays on the M3 4dp spec. Every platform's bar is a
-// capsule (the shell rounds it fully).
+// Android (M3): the M3 linear indicator is 4dp; the size axis steps it 3/4/8.
 const ANDROID_HEIGHT: Record<Size, number> = { small: 3, base: 4, large: 8 };
 
-// Web (Dark Factory): 6px default, fully rounded; the size axis steps it 4/6/8 while
-// keeping the rounded ends.
-const WEB_HEIGHT: Record<Size, number> = { small: 4, base: 6, large: 8 };
+// Web: 6px default, 4 small, 10 large.
+const WEB_HEIGHT: Record<Size, number> = { small: 4, base: 6, large: 10 };
 
-// Header type shared across every platform (the label is brand type, not a platform face,
-// matching Checkbox/Radio/Switch). The canonical scale: the title line is 14/20 medium
-// foreground; the description sits one step below at 12/16 muted; the trailing percent
-// readout tracks the title line (14/20) in the muted tone with tabular figures so the
-// digits do not jitter as the value ticks. Every skin points at these, so all three
-// platforms share the header type while keeping their own bar shape.
+// The native header (iOS and Android): the title line at 500 14 / 20 in the foreground,
+// the percent at 400 14 / 20 in the muted ink with tabular figures (so the digits do not
+// jitter as the value ticks), the description one step below in the subtle ink.
 function label(t: ColorTokens): TextStyle {
   return { fontWeight: "500", flexShrink: 1, color: t.foreground, fontSize: 14, lineHeight: 20 };
 }
 function description(t: ColorTokens): TextStyle {
-  return { color: t["muted-foreground"], fontSize: 12, lineHeight: 16 };
+  return { color: t["subtle-foreground"], fontSize: 12, lineHeight: 16 };
 }
 function valueReadout(t: ColorTokens): TextStyle {
-  return { color: t["muted-foreground"], fontSize: 14, lineHeight: 20, ...tabularNums() };
+  return { color: t["muted-foreground"], fontSize: 14, lineHeight: 20, fontWeight: "400", ...tabularNums() };
 }
 
 export const iosSkin: ProgressSkin = {
   height: IOS_HEIGHT,
-  // iOS trackTint: a NEUTRAL translucent system fill, never a wash of the progressTint.
-  // The iOS 27 kit track is rgba(120,120,120,0.2) in Light and rgba(120,120,128,0.36) in
-  // Dark; a 25% wash of the neutral `muted-foreground` token (#71717b light / #9f9fa9
-  // dark) lands on both effective grays while staying on the theme's neutral ramp.
-  trackColor: (t: ColorTokens) => alpha(t["muted-foreground"], 0.25),
-  fillColor: (t: ColorTokens) => actionFill(t),
+  // iOS trackTint: a NEUTRAL translucent system fill (the hand-off's subtle ink at 25%),
+  // never a wash of the progressTint.
+  trackColor: (t: ColorTokens) => alpha(t["subtle-foreground"] ?? t["muted-foreground"], 0.25),
+  fillColor: (t: ColorTokens) => t.primary,
   label,
   description,
   valueReadout,
@@ -70,10 +58,10 @@ export const iosSkin: ProgressSkin = {
 
 export const androidSkin: ProgressSkin = {
   height: ANDROID_HEIGHT,
-  // M3 inactive track = secondary container; the `secondary` token is the closest
-  // semantic surface in light and dark. Active indicator + stop indicator = the action fill.
-  trackColor: (t: ColorTokens) => t.secondary,
-  fillColor: (t: ColorTokens) => actionFill(t),
+  // The inactive track on the raised surface (the hand-off's `--sf4`); the active
+  // indicator and the stop indicator are the accent.
+  trackColor: (t: ColorTokens) => t["surface-raised"] ?? t.secondary,
+  fillColor: (t: ColorTokens) => t.primary,
   label,
   description,
   valueReadout,
@@ -85,29 +73,33 @@ export const androidSkin: ProgressSkin = {
   stopIndicator: true,
 };
 
-// Dark Factory's dense type for the web header: the label, its muted line, and the value.
-function dfLabel(t: ColorTokens): TextStyle {
-  return { ...typeScale.label, flexShrink: 1, color: t.foreground };
+// The web header: a 500 13 label in the foreground, a 400 12 description in the subtle
+// ink, and the percent at 500 12 in the mono face and the muted ink.
+function webLabel(t: ColorTokens): TextStyle {
+  return { fontSize: 13, lineHeight: 17, fontWeight: "500", flexShrink: 1, color: t.foreground };
 }
-function dfDescription(t: ColorTokens): TextStyle {
-  return { ...typeScale.caption, fontWeight: "500", color: t["muted-foreground"] };
+function webDescription(t: ColorTokens): TextStyle {
+  return { fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["subtle-foreground"] };
 }
-function dfValueReadout(t: ColorTokens): TextStyle {
-  return { ...typeScale.label, color: t["muted-foreground"], ...tabularNums() };
+function webValueReadout(t: ColorTokens): TextStyle {
+  return { fontSize: 12, lineHeight: 16, fontWeight: "500", fontFamily: MONO_FONT, color: t["muted-foreground"], ...tabularNums() };
 }
 
 export const webSkin: ProgressSkin = {
   height: WEB_HEIGHT,
-  // Dark Factory: its line color as the rest of the meter, the call-to-action as the fill.
-  trackColor: (t: ColorTokens) => t.border,
-  fillColor: (t: ColorTokens) => actionFill(t),
-  label: dfLabel,
-  description: dfDescription,
-  valueReadout: dfValueReadout,
-  indeterminateWidth: 0.3,
+  // The raised surface as the rest of the bar (`--sf4`), the accent as the fill.
+  trackColor: (t: ColorTokens) => t["surface-raised"] ?? t.secondary,
+  fillColor: (t: ColorTokens) => t.primary,
+  // The fill's glow: a 12px halo of its own color at 60%, clipped to the rail.
+  fillGlow: (color: string) => ({ boxShadow: `0px 0px 12px ${alpha(color, 0.6)}` }),
+  label: webLabel,
+  description: webDescription,
+  valueReadout: webValueReadout,
+  indeterminateWidth: 0.38,
 };
 
-export const SEGMENTED_METER: { row: ViewStyle; dash: ViewStyle } = {
-  row: { flexDirection: "row", gap: 3 },
-  dash: { width: 13, height: 5, borderRadius: platformShape.web.cell },
+/** The segmented bar: equal capsules 4px apart, each the track's height. */
+export const SEGMENTED_METER: { row: ViewStyle; segment: ViewStyle } = {
+  row: { flexDirection: "row", gap: 4 },
+  segment: { flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 9999 },
 };

@@ -213,7 +213,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     useHardwareBack(open && overlay, escapeScope.onRequestClose);
 
     // The confirm/cancel footer. Three platform shapes:
-    //   - web (footerKind "buttons", no skin.textButton): the outline Cancel +
+    //   - web (footerKind "buttons", no skin.textButton): the ghost Cancel +
     //     primary/destructive Confirm Button row.
     //   - Android (footerKind "buttons", skin.textButton set): flat text buttons,
     //     Cancel then Confirm, in `primary-text`, with a ripple.
@@ -278,16 +278,16 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
         </View>
       ) : (
         <View style={skin.footer(tokens)}>
-          {/* Web: outline Cancel + primary/destructive Confirm Button row. */}
-          <Button outline small onPress={cancel}>
+          {/* Web: the hand-off's ghost Cancel + primary/destructive Confirm Button row. */}
+          <Button ghost onPress={cancel}>
             {cancelLabel}
           </Button>
           {destructive ? (
-            <Button destructive small onPress={confirm}>
+            <Button destructive onPress={confirm}>
               {confirmLabel}
             </Button>
           ) : (
-            <Button primary small onPress={confirm}>
+            <Button primary onPress={confirm}>
               {confirmLabel}
             </Button>
           )}
@@ -350,7 +350,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                   {form ? (
                     <>
                       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-                        <View style={{ flex: 1, gap: 3 }}>
+                        <View style={{ flex: 1, gap: 4 }}>
                           {title != null ? <Text nativeID={titleId} role="heading" style={skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
                           {description ? <Text nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
                         </View>

@@ -2,7 +2,9 @@
 
 Increment, decrement, or type a number in a bounded range. A − button, an editable numeric center field, and a + button, controlled by `value` and clamped to `min` / `max` by `step`. This is the ± numeric control (the iOS UIStepper idiom); for a multi-step progress indicator see Steps.
 
-Pass `label` to title the control from above, and `required` to mark it: the label takes a decorative destructive star, and a screen reader hears the control as required, from `aria-required` on the web's numeric field and from its name ("Quantity, required") on iOS and Android.
+On the web the control is one 40 px box (32 `small`, 48 `large`) at the control corner with square ± cells and the value in the mono face; on iOS the capsule [ − | + ] pill with the value to its left; on Android Material 3's outlined circular icon buttons around the value.
+
+Pass `label` to title the control from above, `description` for a secondary line under it, and `required` to mark it: the label takes a decorative destructive star, and a screen reader hears the control as required, from `aria-required` on the web's numeric field and from its name ("Quantity, required") on iOS and Android.
 
 ## Usage
 
@@ -59,13 +61,13 @@ Pass `label` to title the control from above, and `required` to mark it: the lab
 
 ### Bounds
 
-**Do** — Set `min` and `max` so the buttons disable at the edges and the value can never leave the valid range.
+**Do**: Set `min` and `max` so the buttons disable at the edges and the value can never leave the valid range.
 
 ```tsx
 <Stepper label="Quantity" defaultValue={1} min={1} max={9} onChange={() => {}} />
 ```
 
-**Don't** — Leaving the range unbounded lets the user push the count below zero or past what the form can accept.
+**Don't**: Leaving the range unbounded lets the user push the count below zero or past what the form can accept.
 
 ```tsx
 <Stepper defaultValue={1} onChange={() => {}} />
@@ -73,13 +75,13 @@ Pass `label` to title the control from above, and `required` to mark it: the lab
 
 ### Step
 
-**Do** — Match `step` to the real increment, so each tap moves the value by an amount that makes sense for the field.
+**Do**: Match `step` to the real increment, so each tap moves the value by an amount that makes sense for the field.
 
 ```tsx
 <Stepper defaultValue={30} min={0} max={120} step={5} onChange={() => {}} />
 ```
 
-**Don't** — A step of 1 on a field that only takes round numbers makes the user tap many times to reach a usable value.
+**Don't**: A step of 1 on a field that only takes round numbers makes the user tap many times to reach a usable value.
 
 ```tsx
 <Stepper defaultValue={30} min={0} max={120} step={1} onChange={() => {}} />

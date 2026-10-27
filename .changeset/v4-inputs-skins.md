@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+The Inputs take the Canvas v4 hand-off's look (no new public props). Textarea: the sunken well with the hover edge and the focus halo, a 1.55 line, four rows by default, the 11 px mono count; iOS keeps its card box with a tabular "N/max" count, Android its M3 filled field at a 16 dp inset with the count in the supporting-text row. Select and Autocomplete: the 32/40/48 sunken trigger, the 34 px menu rows with a trailing accent check, the soft-wash match highlight. Listbox: one look on every platform, the selected row on the accent wash with a trailing check (multi-select no longer shows a Checkbox). InputOTP: separate 36/44/52 sunken cells with the accent halo on the active one. PhoneInput: the country chip, dial code and mono number inside the field. Field, Form and FilterPanel: the 13 px muted label, the subtle message with a leading alert glyph on error, the ruled actions row with a ghost Cancel, the ruled FormSection, and the 280 px filter panel with mono eyebrows, plain counts and a "Clear N" link.

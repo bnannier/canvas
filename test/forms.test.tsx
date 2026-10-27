@@ -8,6 +8,8 @@ import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Form, FormSection } from "../src/molecules/form/form.tsx";
+import { webSkin as formWeb, iosSkin as formIos, androidSkin as formAndroid } from "../src/molecules/form/form.styles.ts";
+import { lightColors } from "../src/style/tokens.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -200,5 +202,44 @@ describe("Form (composition)", () => {
     expect(screen.getByPlaceholderText("Ada")).toBeTruthy();
     expect(screen.getByPlaceholderText("King")).toBeTruthy();
     expect(screen.getByPlaceholderText("ada@example.com")).toBeTruthy();
+  });
+});
+
+// The form is the v4 hand-off's (cv-kit-inputs.js `K.def('form')`, cv-kit-code2.js
+// `O('form')` and its FormSection) on every platform: the native builds alias the web skin.
+describe("Form follows the v4 hand-off", () => {
+  const t = lightColors;
+  it("aliases the web skin on iOS and Android", () => {
+    expect(formIos).toBe(formWeb);
+    expect(formAndroid).toBe(formWeb);
+  });
+  it("keeps a 16px row rhythm and sets the actions 20 below the rows over a 14px inset and a border rule, 8 apart", () => {
+    expect(formWeb.stack).toEqual({ gap: 16 });
+    expect(formWeb.actions(t)).toMatchObject({ marginTop: 4, paddingTop: 14, borderTopWidth: 1, borderTopColor: t.border, justifyContent: "flex-end", gap: 8 });
+  });
+  it("closes a section with an 18px inset and a border rule, 14 between its parts, under a 500 15px title and a 13px subtle description", () => {
+    expect(formWeb.section(t)).toEqual({ gap: 14, paddingBottom: 18, borderBottomWidth: 1, borderBottomColor: t.border });
+    expect(formWeb.sectionTitle(t)).toMatchObject({ fontSize: 15, fontWeight: "500", color: t.foreground });
+    expect(formWeb.sectionDescription(t)).toMatchObject({ marginTop: 4, fontSize: 13, lineHeight: 19.5, color: t["subtle-foreground"] });
+  });
+  it("dims a disabled form to 0.5", () => {
+    const { container } = ui(
+      <Form disabled submitLabel="Save" cancelLabel="Cancel">
+        <Input label="Email" />
+      </Form>,
+    );
+    expect((container.querySelector('[role="form"]') as HTMLElement).style.opacity).toBe("0.5");
+  });
+  it("gives a FormSection the whole row in the two-column flow", () => {
+    const { container } = ui(
+      <Form twoColumn>
+        <Input label="First" />
+        <FormSection title="Notifications">
+          <Checkbox>Email</Checkbox>
+        </FormSection>
+      </Form>,
+    );
+    const section = container.querySelector('[aria-label="Notifications"]') as HTMLElement;
+    expect((section.parentElement as HTMLElement).style.flexBasis).toBe("100%");
   });
 });

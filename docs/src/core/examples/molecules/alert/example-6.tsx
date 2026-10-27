@@ -3,11 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Button, Icon } = scope;
+  const { Alert, Button } = scope;
   return (
 <Alert
   warning
-  icon={<Icon alertTriangle size={16} />}
   title="Action required"
   description="Your trial expires in 3 days."
   actions={<Button primary small>Upgrade plan</Button>}

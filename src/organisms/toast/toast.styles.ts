@@ -1,29 +1,28 @@
-import { inverseFill, inverseInk, inversePrimary, inverseStatus } from "../../style/inverse.js";
+import { primaryText } from "../../style/primary-text.js";
+import { inverseFill, inverseInk, inversePrimary } from "../../style/inverse.js";
 import { type ViewStyle } from "react-native";
 import { type ColorTokens, alpha, platformMinTarget, shadow, shape } from "../../style/index.js";
-import { typeScale } from "../../style/type-scale.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type ToastSkin } from "./toast.shared.js";
 
-// Co-located Toast skins. Under glass the shell renders the capsule through
-// GlassSurface as a DENSE-layer surface; a capsule painted on the inverse surface (all
-// of them now) takes the inverse dense tint, so its light ink keeps its contrast.
+// Co-located Toast skins, as the Canvas v4 hand-off draws them (`K.def('toast')` in
+// tools/v4/handoff/cv-kit-overlays.js and its `K.PF` row in cv-kit-platform.js). Under
+// glass the shell renders the capsule through GlassSurface as a DENSE-layer surface; the
+// Android snackbar, painted on the inverse surface, takes the inverse dense tint, so its
+// light ink keeps its contrast.
 //
-//   Web and iOS: Dark Factory's toast pill. The same deep `inverse` fill in every palette
-//     and scheme, a pill while it carries no description (a long message wraps inside
-//     the capsule) and the sheet corner once a description sits under the message, 11 x 18 padding, Dark Factory's toast
-//     shadow, the message in its strong body (12.5 / 700) in `inverse-foreground`. Dark
-//     Factory's toast carries nothing else, so the kit's extra parts take the inks the
-//     Material 3 snackbar already solved for the pill: the description in the pill's
-//     ink at 0.7, the action in `inverse-primary`, the dismiss in the pill's ink, and the
-//     intent glyphs in the dark scheme's status inks (inverseStatus). Press = DF's 0.9
-//     dim. iOS has no toast control, so it takes this skin; its action and dismiss reach
-//     the 44pt HIG target through hitSlop.
-//   Android (Material 3 snackbar): a bar at the snackbar corner (M3 extra-small) in
-//     the same inverse fill with its white ink, 14sp body, NO leading intent glyph (the
-//     M3 snackbar anatomy has none), the action in `inverse-primary`, the close x in
-//     the pill's ink at the 24dp spec size, trailing padding 8dp beside a trailing control, 48dp touch targets
-//     via hitSlop, press = ripple in the pill's ink.
+//   Web and iOS: the hand-off's toast card. The overlay panel (the `popover` fill under a
+//     1 px `field-border` edge and the large shade) at the web card role, padded 12 by 14,
+//     up to 380 px wide; the 18 px intent glyph (a sparkle in the accent on the neutral
+//     toast) 12 px before a 500 14 message over a 400 13 / 19.5 muted description, and
+//     the action in 600 13 accent ink. A `brief` toast hugs its one line, centred. iOS
+//     has no toast control, so it takes this skin; its action and dismiss reach the 44pt
+//     HIG target through hitSlop.
+//   Android (Material 3 snackbar): a bar at the snackbar corner (M3 extra-small) in the
+//     inverse fill with its own ink, 14sp body, NO leading intent glyph (the M3 snackbar
+//     anatomy has none), the action in `inverse-primary`, the close x in the bar's ink at
+//     the 24dp spec size, trailing padding 8dp beside a trailing control, 48dp touch
+//     targets via hitSlop, press = ripple in the bar's ink.
 
 const ICON_SIZE = 18;
 // M3 snackbar close icon: 24dp (inside a 48dp trailing target).
@@ -47,9 +46,12 @@ function capsule(t: ColorTokens, radius: number): ViewStyle {
     minHeight: 48,
     maxWidth: MAX_WIDTH,
     backgroundColor: t.popover,
-    ...shadow("lg", t),
+    boxShadow: SNACKBAR_SHADOW,
   };
 }
+
+// The hand-off's snackbar shade: a deep drop under the bar.
+const SNACKBAR_SHADOW = "0px 12px 32px -10px rgba(0, 0, 0, 0.55)";
 
 // The snackbar's text action and close icon are Material 3 buttons, stadium-shaped.
 const m3ActionButton = (): ViewStyle => ({
@@ -72,48 +74,71 @@ const m3DismissButton = (): ViewStyle => ({
   justifyContent: "center",
 });
 
-// ---------- Dark Factory's toast pill (web, and iOS, which has no toast control) ----------
-const PILL_ACTION_HEIGHT = 26; // 5 + 16 + 5
-const PILL_DISMISS = 24;
+// ---------- The hand-off's toast card (web, and iOS, which has no toast control) ----------
+const CARD_ACTION_HEIGHT = 21; // 2 + 17 + 2
+const CARD_DISMISS = 24;
 // The platform's minimum touch target on iOS (44pt HIG); none on the web, which is
 // pointer-first. Half the shortfall on every edge keeps each control centred in its area.
 const MIN_TARGET = platformMinTarget();
 const slopTo = (height: number) => (MIN_TARGET == null ? null : Math.ceil((MIN_TARGET - height) / 2));
-// Dark Factory's toast shadow: a deep, tight drop under the pill.
-const PILL_SHADOW = "0px 20px 40px -16px rgba(0, 0, 0, 0.55)";
+// The hand-off's toast width.
+const CARD_WIDTH = 380;
 
-export const webSkin: ToastSkin = {
-  container: (t, hasTrailing, hasDescription) => ({
+// The overlay panel: the `popover` fill under a 1 px field-border edge and the large shade.
+const panel = (t: ColorTokens): ViewStyle => ({
+  backgroundColor: t.popover,
+  borderWidth: 1,
+  borderColor: t["field-border"],
+  ...shadow("lg", t),
+});
+
+const cardSkin = (radius: number): ToastSkin => ({
+  container: (t) => ({
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: radius,
+    width: "100%",
+    maxWidth: CARD_WIDTH,
+    ...panel(t),
+  }),
+  briefContainer: (t) => ({
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingVertical: 11,
-    paddingStart: 18,
-    paddingEnd: hasTrailing ? 12 : 18,
-    borderRadius: hasDescription ? shape.web.sheet : shape.web.pill,
-    maxWidth: MAX_WIDTH,
-    backgroundColor: inverseFill(t),
-    boxShadow: PILL_SHADOW,
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: radius,
+    maxWidth: "100%",
+    ...panel(t),
   }),
-  briefContainer: (t) => ({ flexDirection: "row", alignItems: "center", paddingVertical: 11, paddingHorizontal: 18, borderRadius: shape.web.pill, maxWidth: "100%", backgroundColor: inverseFill(t), boxShadow: PILL_SHADOW }),
-  briefMessage: (t) => ({ ...typeScale.bodyStrong, lineHeight: 16.25, color: inverseInk(t) }),
+  briefMessage: (t) => ({ fontSize: 14, lineHeight: 18, fontWeight: "500", color: t.foreground }),
   intentIcon: true,
-  iconSize: 16,
-  intentColor: (t, intent) => (intent === "info" ? inversePrimary(t) : inverseStatus(t, intent)),
-  message: (t) => ({ ...typeScale.bodyStrong, lineHeight: 17, color: inverseInk(t) }),
-  description: (t) => ({ ...typeScale.caption, color: alpha(inverseInk(t), 0.7) }),
-  actionButton: () => ({ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 9999, alignItems: "center", justifyContent: "center" }),
-  actionLabel: (t) => ({ ...typeScale.label, lineHeight: 16, fontWeight: "700", color: inversePrimary(t) }),
-  actionHitSlop: slopTo(PILL_ACTION_HEIGHT),
-  dismissButton: () => ({ width: PILL_DISMISS, height: PILL_DISMISS, borderRadius: 9999, alignItems: "center", justifyContent: "center" }),
-  dismissIconSize: 14,
-  dismissColor: (t) => alpha(inverseInk(t), 0.7),
-  dismissHitSlop: slopTo(PILL_DISMISS),
-  pressedOpacity: 0.9,
+  neutralIcon: true,
+  iconSize: 18,
+  iconSlot: { paddingTop: 1 },
+  intentColor: (t, intent) =>
+    intent === "info" ? primaryText(t) : intent === "success" ? t.success : intent === "warning" ? t.warning : t.destructive,
+  message: (t) => ({ fontSize: 14, lineHeight: 18, fontWeight: "500", color: t.foreground }),
+  description: (t) => ({ fontSize: 13, lineHeight: 19.5, fontWeight: "400", color: t["muted-foreground"] }),
+  textGap: 0,
+  actionButton: () => ({ paddingHorizontal: 4, paddingVertical: 2, borderRadius: shape.web.control, alignItems: "center", justifyContent: "center" }),
+  actionLabel: (t) => ({ fontSize: 13, lineHeight: 17, fontWeight: "600", color: primaryText(t) }),
+  actionHitSlop: slopTo(CARD_ACTION_HEIGHT),
+  dismissButton: () => ({ width: CARD_DISMISS, height: CARD_DISMISS, borderRadius: shape.web.control, marginTop: -3, alignItems: "center", justifyContent: "center" }),
+  dismissIconSize: 16,
+  dismissColor: (t) => t["subtle-foreground"] ?? t["muted-foreground"],
+  dismissHitSlop: slopTo(CARD_DISMISS),
+  pressedOpacity: 0.7,
   ripple: null,
-};
+});
 
-// iOS has no toast control: the web skin.
+/** The web toast: the card at the web card role. */
+export const webSkin: ToastSkin = cardSkin(shape.web.card);
+
+// iOS has no toast control (PLATFORM-REFERENCES.md): the web skin.
 export const iosSkin: ToastSkin = webSkin;
 
 // ---------- Android (Material 3 snackbar): a small-radius bar ----------

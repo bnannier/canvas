@@ -50,8 +50,8 @@ describe("the seed each control takes from its skin", () => {
   });
 
   it("a Steps circle, a RowMenu trigger and the Pagination cells: their fixed sizes", () => {
-    expect(seedSlop(ANDROID, styleBox(circleBase))).toEqual({ top: 8, bottom: 8, left: 8, right: 8 });
-    expect(seedSlop(IOS, styleBox(circleBase))).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(seedSlop(ANDROID, styleBox(circleBase))).toEqual({ top: 10, bottom: 10, left: 10, right: 10 });
+    expect(seedSlop(IOS, styleBox(circleBase))).toEqual({ top: 8, bottom: 8, left: 8, right: 8 });
     expect(seedSlop(ANDROID, styleBox(StyleSheet.flatten(rowMenuAndroid.trigger)))).toEqual({ top: 4, bottom: 4, left: 4, right: 4 });
     expect(seedSlop(IOS, styleBox(StyleSheet.flatten(rowMenuIos.trigger)))).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
     // A page abuts its neighbors, so it grows vertically only.

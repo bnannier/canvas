@@ -11,16 +11,16 @@ Audit checklist for `/components/tabs`. The facts block and the variants table a
 | Source files | `tabs.android.tsx`, `tabs.ios.tsx`, `tabs.md`, `tabs.shared.tsx`, `tabs.styles.ts`, `tabs.tsx` |
 | Implementation | its own source directory, `src/organisms/tabs/` (5 TypeScript modules) |
 | Exports | Tabs |
-| Platform entries | iOS: web build: Tabs. Android: own build: Tabs (builds from its own androidSkin) |
-| Platform-skins registry | iOS: none; Android: Tabs |
-| Reference row | `tabs` (Full, Built). iOS: none (iOS has no in-page tabs control; iOS switches closely related subviews with a segmented control, and the tab bar is app-level navigation, see the tab-bar row). Android: link [tabs (Android)](https://m3.material.io/components/tabs/overview). Web: link [tabs (Web)](https://headlessui.com/react/tabs) |
+| Platform entries | iOS: own build: Tabs (builds from its own iosSkin). Android: own build: Tabs (builds from its own androidSkin) |
+| Platform-skins registry | iOS: Tabs; Android: Tabs |
+| Reference row | `tabs` (Full, Built). iOS: link [tabs (iOS)](https://developer.apple.com/design/human-interface-guidelines/segmented-controls) (UISegmentedControl: the HIG's control for switching between closely related subviews, the in-page tabs job; the tab bar is app-level navigation, see the tab-bar row). Android: link [tabs (Android)](https://m3.material.io/components/tabs/overview). Web: link [tabs (Web)](https://headlessui.com/react/tabs) |
 | Materials manifest | Tabs: organisms, static + liquid + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | Tabs.items (Renamed: `tabs`), Tabs.value (Renamed: `active`), Tabs.onChange (Renamed: `onChangeText`, `onSelect`, `onValueChange`) |
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled tab (web row; desktop). |
+| Interaction states | recipes: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled tab (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: items render 77x32; they abut, so the fix is vertical slop |
 | Tests importing it | 19: `test/a11y-state.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/focus-ring.test.tsx`, `test/focus-runtime.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/keyboard-nav.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/narrow-modes.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/tabs-overflow.test.tsx`, `test/text-contrast.test.tsx`, `test/web-frost-paint-order.test.tsx` |

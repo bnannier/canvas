@@ -1,16 +1,14 @@
-import { fieldEyebrow } from "../../style/field-label.js";
 import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
-import { MENU_ICON, MENU_OFFSET, MENU_ROW_GAP, menuDetail, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
-import { typeScale } from "../../style/type-scale.js";
+import { MENU_ICON, MENU_ROW_GAP, menuDetail, menuIconColor, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
 
 // Co-located Dropdown skins, one per platform, all driven by the theme tokens (passed
 // in from useTheme so they follow the palette and the scheme). Under glass the shell
 // asks AnchoredOverlay for the DENSE layer, so the menu reads as the densest material
 // and its rows stay legible; in solid mode each skin paints its own card. Menus exist
 // on both platforms, so iOS and Android keep their own shapes in the theme's colours
-// (the design language's item 3), and the web takes Dark Factory's menu:
+// (the design language's item 3), and the web takes the v4 hand-off's:
 //   iOS (iOS 26 / Liquid Glass pull-down menu): a very rounded panel (the iOS menu
 //     corner, `popover` fill, no border, soft shadow), rows about 44pt tall with 17pt labels,
 //     hairline `border` separators between groups, destructive rows in
@@ -20,10 +18,12 @@ import { typeScale } from "../../style/type-scale.js";
 //     `popover`, shadow md, paddingVertical 8), rows about 48dp tall with 14sp labels
 //     and a leading icon gutter, an android_ripple (alpha(primary, 0.12) state layer) on rows, no
 //     separators; a disabled row dims to 0.38.
-//   Web: Dark Factory's menu (src/style/menu-look.ts): the `popover` card at the menu
-//     corner with an 8px inset, its popover shadow and hairline, 33px rows 2px apart at
-//     the control corner with 12.5 / 700 labels, the instant `hover` wash, the eyebrow section
-//     heading, the caption shortcut, and a disabled row in the muted ink rather than a dim.
+//   Web: the v4 hand-off's menu (its Dropdown renderer, through the web menu recipe it
+//     shares with RowMenu): the `card` panel at the menu corner with the `border` hairline
+//     and the md shadow, a 4px inset, 36px rows (30 compact) at the menu-row corner with
+//     14 / 400 labels and 15px icons in the subtle ink, the `secondary` wash under a
+//     hovered row, the mono eyebrow section heading, the mono shortcut, and a disabled
+//     row in the muted ink rather than a dim; 6 below the trigger.
 
 // The contract a platform skin fulfills. The shell renders the wrapper, the
 // trigger, the optional backdrop, the menu card, the optional section label, the
@@ -39,6 +39,8 @@ export interface DropdownSkin {
     section: (t: ColorTokens) => TextStyle;
     note: (t: ColorTokens) => ViewStyle;
     noteText: (t: ColorTokens) => TextStyle;
+    /** The compact row's own box, over `itemRow`. */
+    row?: ViewStyle;
   };
   /** The floating menu card: shape, fill, border (or lack of), shadow, padding.
    *  The shell supplies the measured minWidth inline. */
@@ -71,12 +73,14 @@ export interface DropdownSkin {
   itemTextType: TextStyle;
   /** Leading Canvas icon size (px), sized to sit with the label per platform. */
   iconSize: number;
+  /** The ink of a resting row's leading icon; the label's ink when omitted. */
+  iconColor?: (t: ColorTokens) => string;
   /** Item label color; branches on `destructive`. Icons retain their graphic role. */
   itemTextColor: (t: ColorTokens, dark: boolean, destructive: boolean) => TextStyle;
   /** Trailing keyboard shortcut, right-aligned and muted. */
   shortcut: (t: ColorTokens) => TextStyle;
   /** Standoff between the trigger and the menu card, in px. Skin-owned rather than
-   *  caller-owned: it is a platform number (Dark Factory's 8 on the web, 4 on the native
+   *  caller-owned: it is a platform number (the hand-off's 6 on the web, 4 on the native
    *  menus, which the account pill's menu raises to 6 for its taller trigger), and a
    *  spacing prop on a public component would be the re-spacing escape hatch. */
   menuGap: number;
@@ -108,37 +112,46 @@ export const wrapperLifted: ViewStyle = { zIndex: 50 };
 // The custom-trigger Pressable: keeps the chip from stretching.
 export const customTrigger: ViewStyle = { alignSelf: "flex-start" };
 
-// ---------- Web: Dark Factory's menu (src/style/menu-look.ts) ----------
+// ---------- Web: the v4 hand-off's menu ----------
+// Its Dropdown renderer over K.panel, through the web menu recipe (src/style/menu-look.ts,
+// which the web RowMenu shares): the panel, rows 36 high (30 compact) with a 10 glyph gap,
+// the eyebrow section label, the mono shortcut and the inset group rule. The menu sits 6
+// below the trigger.
+const WEB_MENU_GAP = 6;
+const webRow: ViewStyle = { ...menuRow, gap: 10, minHeight: 36 };
+
 export const webSkin: DropdownSkin = {
   reference: {
-    card: (t) => menuPanel(t, true),
-    label: { fontSize: 12.5, lineHeight: 16.25, fontWeight: "700" },
-    description: (t) => ({ fontSize: 10.5, lineHeight: 13.65, fontWeight: "600", color: t["muted-foreground"], marginTop: 1 }),
-    detail: (t) => ({ fontSize: 11, lineHeight: 14.85, fontWeight: "600", color: t["muted-foreground"] }),
-    section: (t) => ({ ...fieldEyebrow(t), paddingTop: 6, paddingHorizontal: 10, paddingBottom: 4 }),
+    card: (t) => menuPanel(t),
+    label: menuRowLabel,
+    description: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["muted-foreground"], marginTop: 1 }),
+    detail: menuDetail,
+    section: menuSection,
     note: (t) => ({ borderTopWidth: 1, borderTopColor: t.border, marginTop: 4, paddingTop: 8, paddingHorizontal: 10, paddingBottom: 6 }),
-    noteText: (t) => ({ fontSize: 11, lineHeight: 15.95, fontWeight: "500", color: t["muted-foreground"] }),
+    noteText: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["muted-foreground"] }),
+    row: { minHeight: 30 },
   },
-  menuCard: menuPanel,
+  menuCard: (t) => menuPanel(t),
   menuLabel: menuSection,
   // The header shares the row gutter (10), so the identity block, the eyebrow and the row
   // labels start on one column.
   menuHeader: { paddingHorizontal: 10, paddingTop: 6, paddingBottom: 6, gap: 2 },
-  menuHeaderTitle: (t) => ({ ...menuRowLabel, color: t["popover-foreground"] }),
-  menuHeaderDescription: (t) => ({ ...typeScale.caption, color: t["muted-foreground"] }),
+  menuHeaderTitle: (t) => ({ fontSize: 14, lineHeight: 18, fontWeight: "500", color: t["popover-foreground"] }),
+  menuHeaderDescription: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["muted-foreground"] }),
   separator: menuSeparator,
-  itemRow: menuRow,
+  itemRow: webRow,
   itemPressed: menuRowPressed,
   itemHover: menuRowHover,
   rowGap: MENU_ROW_GAP,
   itemTextType: menuRowLabel,
   iconSize: MENU_ICON,
+  iconColor: menuIconColor,
   itemTextColor: (t, _dark, destructive) => {
     if (destructive) return { color: destructiveText(t) };
-    return { color: t["popover-foreground"] };
+    return { color: t.foreground };
   },
   shortcut: menuDetail,
-  menuGap: MENU_OFFSET,
+  menuGap: WEB_MENU_GAP,
   disabledOpacity: 0.5, // the hand-off's --p-disabled on web
   disabledRow: { opacity: 1, muted: true },
   pressedOpacity: null, // web tints the row fill on press, no opacity dim

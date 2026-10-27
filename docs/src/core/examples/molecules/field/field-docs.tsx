@@ -22,7 +22,7 @@ export const docs: ComponentDocs = {
   dir: "field",
   category: "molecules",
   overview: [
-    "When the row wraps a single field-family control that has no label of its own, Field hands the label down to it rather than drawing one alongside, so each platform still places it its own way: a static title above on web and iOS, the floating in-container label on Android, and `required` goes down with it. Over any other control (a Switch, a group) Field draws the label above with its star, and on iOS and Android the label says \"required\" in its own name. Set `error` and it replaces `helper` in the same slot, so the row never changes height and nothing below it jumps.",
+    "When the row wraps a single field-family control that has no label of its own, Field hands the label down to it rather than drawing one alongside, so each platform still places it its own way: a static title above on web and iOS, the floating in-container label on Android, and `required` goes down with it. Over any other control (a Switch, a group) Field draws the label above with its star, and on iOS and Android the label says \"required\" in its own name. Set `error` and it replaces `helper` in the same slot, so the row never changes height and nothing below it jumps; on the web an error leads with a small alert glyph.",
   ],
   examples: [
     { label: "Default", code: "<Field label=\"Email\" helper=\"We'll never share your email.\">\n  <Input placeholder=\"you@example.com\" />\n</Field>", render: e_molecules_field_example_0 },
@@ -48,6 +48,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["alert"],"states":[],"aria":["aria-describedby"],"touchTarget":[]},
-  tokens: ["destructive","foreground","muted-foreground"],
+  tokens: ["destructive","foreground","muted-foreground","subtle-foreground"],
   related: ["input","phone-input","row-column","switch","form","select","textarea","container"],
 };

@@ -1,8 +1,11 @@
 # PhoneInput
 
 A phone number field: the Input's box with a country segment at its start (the
-chosen country's flag and a caret, which open a list of countries with their
-names and dial codes) and that country's dial code inline before the number.
+chosen country and a caret, which open a list of countries with their names and
+dial codes) and that country's dial code inline before the number. On the web the
+segment is a small chip inside the field naming the country by its ISO code, and
+the dial code and the number are set in the mono face; on iOS and Android it is the
+country's flag.
 
 The number and the country are each controlled (`value` / `country`) or
 self-managed (`defaultValue` / `defaultCountry`), the segment defaults to the

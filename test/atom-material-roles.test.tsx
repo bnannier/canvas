@@ -20,7 +20,9 @@ import * as IOSIdentity from "../src/atoms/avatar/avatar.ios.tsx";
 import * as AndroidIdentity from "../src/atoms/avatar/avatar.android.tsx";
 import { Emblem } from "../src/atoms/emblem/emblem.tsx";
 import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
-import { identityDisc, identityHue } from "../src/style/identity-hue.ts";
+import { identityHue } from "../src/style/identity-hue.ts";
+import { initialsDisc } from "../src/atoms/avatar/avatar.shared.tsx";
+import { lightColors } from "../src/style/tokens.ts";
 import { channelsOf } from "../src/style/color.ts";
 import { WEB_FROST, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 
@@ -171,8 +173,8 @@ describe("identity material ownership", () => {
     });
 
     // The overflow counter and the Emblem are static identity frost; an initials disc paints
-    // its identity gradient over the material, like a photo keeps its pixels.
-    it(`${platform} paints static identity frost, keeps the initials disc's gradient and leaves photo pixels untouched`, () => {
+    // its identity wash over the material, like a photo keeps its pixels.
+    it(`${platform} paints static identity frost, keeps the initials disc's wash and leaves photo pixels untouched`, () => {
       browser({ frost: true });
       render(mode(<>
         <Avatar name="Rachel Chen" testID="identity" />
@@ -186,10 +188,9 @@ describe("identity material ownership", () => {
         expect(frostOf(painted[0])?.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
       }
       for (const id of ["identity", "photo"]) expect(materials(screen.getByTestId(id))).toHaveLength(0);
-      // The disc's solid stand-in is its gradient's midpoint (the SVG itself renders to
-      // fragments in this harness).
-      const disc = identityDisc(identityHue("Rachel Chen"));
-      expect(channelsOf(screen.getByTestId("identity").style.backgroundColor)?.slice(0, 3)).toEqual(channelsOf(disc.mid)?.slice(0, 3));
+      // The disc is the hand-off's identity wash, its own fill under glass as in solid.
+      const disc = initialsDisc(identityHue("Rachel Chen"), lightColors.background, false);
+      expect(channelsOf(screen.getByTestId("identity").style.backgroundColor)).toEqual(channelsOf(disc.wash));
       expect(screen.getByLabelText("Photo")).toBeDefined();
     });
   }

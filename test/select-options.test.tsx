@@ -110,25 +110,30 @@ describe("Select with value/label options", () => {
 });
 
 // The selection mark is decorative: the row's selected state says it is chosen, so the
-// "✓" never joins the option's accessible name and is hidden from every platform's tree.
+// check never joins the option's accessible name and is hidden from every platform's tree.
 describe("Select selection mark", () => {
+	// The web draws a trailing check, iOS UIMenu's leading check in its own slot, and the
+	// Material 3 menu marks a chosen row with its fill alone.
 	const skins = [
-		["web (leading gutter)", Select],
-		["iOS (trailing check)", IosSelect],
-		["Android", AndroidSelect],
+		["web (trailing check)", Select, 1],
+		["iOS (leading check)", IosSelect, 1],
+		["Android (no check)", AndroidSelect, 0],
 	] as const;
-	for (const [name, Component] of skins) {
+	for (const [name, Component, marks] of skins) {
 		it(`keeps the checkmark out of the selected option's name on ${name}`, () => {
-			const { getByRole, getAllByText } = ui(
+			const { getByRole } = ui(
 				<Component open options={[{ value: "a", label: "Default" }, { value: "b", label: "Flag", leading: "🏁" }]} value="a" />,
 			);
 			const option = getByRole("option", { name: "Default", hidden: true });
 			expect(option.getAttribute("aria-selected")).toBe("true");
-			expect(getByRole("option", { name: "🏁 Flag", hidden: true })).toBeDefined();
-			expect(getAllByText("✓").length).toBe(1);
-			for (const mark of getAllByText("✓")) {
-				expect(mark.closest('[aria-hidden="true"]')).not.toBeNull();
-			}
+			const other = getByRole("option", { name: "🏁 Flag", hidden: true });
+			// A check glyph is the decorative Icon, which hides its own glyph inside its
+			// hidden root; an empty mark slot holds no such pair.
+			const checks = (row: HTMLElement) =>
+				[...row.querySelectorAll('[aria-hidden="true"] > [aria-hidden="true"]')].filter((node) => !node.querySelector('[aria-hidden="true"]'));
+			expect(checks(option).length).toBe(marks);
+			expect(checks(other).length).toBe(0);
+			expect(option.textContent).toBe("Default");
 		});
 	}
 });

@@ -1,6 +1,6 @@
 # Avatar
 
-A photo when the account has one, falling back to one or two initials on an identity disc: the name resolves to one of ten hues, and the disc is that hue's diagonal blend from a pale tint to a deeper, warmer neighbour, so one person keeps one colour on every platform and stays distinct in a stack or list. The initials are bold, about a third of the disc, in near-black, which holds 4.5:1 on both ends of every blend.
+A photo when the account has one, falling back to one or two initials on an identity disc: the name resolves to one of ten hues (or `hue` picks one), and the disc is that hue's soft wash under initials in the same hue, so one person keeps one colour on every platform and stays distinct in a stack or list. The initials sit at weight 600, 38% of the disc, and their ink is held to 4.5:1 on the wash in both schemes.
 
 Like a photo, the disc is identity content: it keeps its colours under glass, where only the neutral tile of an avatar with no name or initials takes the control material. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
 
@@ -13,7 +13,9 @@ reference initials metrics, including the existing 9px annotation glyph.
 white reference initials; `bold` uses the 700 weight. `sheen`, `mediumSheen`, and
 `strongSheen` add the 2, 2.5 and 3px conic ring (strongest wins). `inverse` is the
 translucent white identity disc, `orchid` the account gradient, and `glow` its
-selected account ring. The original default sizes and separator `ring` remain.
+selected account ring. These reference discs keep the identity gradient. On the four
+stock sizes, `glow` is a 2px gap in the page colour inside the accent's soft glow, and
+`ring` stays the separator ring a stack draws between discs.
 
 ## Usage
 
@@ -60,7 +62,7 @@ Each name resolves to one of ten hues through a stable hash, so the same person 
 
 ### Sizes
 
-Four steps: `tiny` (24px), `small` (28px), the default 40px row avatar, and `large` (48px). The initials take about a third of the disc, and a little more on the two small ones (10px on `tiny`, 11px on `small`) so a pair of letters still reads there. `small` is the disc `AvatarMenu` builds its capsule around, so a standalone small avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
+Four steps: `tiny` (20px), `small` (28px), the default 40px row avatar, and `large` (56px). The initials take 38% of the disc (11, 15 and 21px), and 10px on `tiny`, the kit's smallest type. `rounded` squares the disc with corners at 28% of its size. `small` is the disc `AvatarMenu` builds its capsule around, so a standalone small avatar and the one inside a pill are the same circle. Precedence when several are passed: `tiny` beats `small` beats `large`.
 
 ```tsx
 <Row relaxed alignCenter>

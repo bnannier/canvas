@@ -116,8 +116,15 @@ export interface ToastSkin {
   /** Single-line application pill geometry and type; omitted skins retain their native shape. */
   briefContainer?: (t: ColorTokens) => ViewStyle;
   briefMessage?: (t: ColorTokens) => TextStyle;
+  /** Draw the accent's sparkle on the neutral toast too (the web card); omitted, the
+   *  neutral toast carries no glyph. */
+  neutralIcon?: boolean;
   /** The intent icon glyph size, in px. */
   iconSize: number;
+  /** The glyph slot's offset on the message's first line. */
+  iconSlot?: ViewStyle;
+  /** The gap between the message and the description; omitted, 2 px. */
+  textGap?: number;
   /** The intent glyph's ink, where the capsule's own fill needs one of its own (the
    *  inverse pill); null keeps each intent's status token. */
   intentColor: ((t: ColorTokens, intent: "success" | "error" | "warning" | "info") => string) | null;
@@ -165,14 +172,14 @@ export function intentOf(p: {
   return "neutral";
 }
 
-// The auto intent icon: a glyph + the Icon color boolean that tints it. Neutral
-// carries no icon (the message stands alone).
-function IntentIcon({ intent, size, color }: { intent: Intent; size: number; color?: string }): ReactNode {
+// The auto intent icon: a glyph + the Icon color boolean that tints it. Neutral carries
+// the accent's sparkle where the skin asks for it (`neutral`), else no icon.
+function IntentIcon({ intent, size, color, neutral }: { intent: Intent; size: number; color?: string; neutral?: string }): ReactNode {
   if (intent === "success") return color ? <Icon circleCheck color={color} size={size} /> : <Icon circleCheck success size={size} />;
   if (intent === "error") return color ? <Icon circleX color={color} size={size} /> : <Icon circleX destructive size={size} />;
-  if (intent === "warning") return color ? <Icon alertTriangle color={color} size={size} /> : <Icon alertTriangle warning size={size} />;
+  if (intent === "warning") return color ? <Icon circleAlert color={color} size={size} /> : <Icon circleAlert warning size={size} />;
   if (intent === "info") return color ? <Icon info color={color} size={size} /> : <Icon info primary size={size} />;
-  return null;
+  return neutral ? <Icon sparkles color={neutral} size={size} /> : null;
 }
 
 /** Options for the imperative toast() call: the toast content plus a lifetime. */
@@ -249,7 +256,8 @@ export function createToastSystem(skin: ToastSkin) {
     // The auto intent glyph only where the skin's anatomy carries one (the M3
     // snackbar has no leading icon); an explicit `icon` prop always wins.
     const intentInk = skin.intentColor && intent !== "neutral" ? skin.intentColor(tokens, intent) : undefined;
-    const auto = skin.intentIcon ? <IntentIcon intent={intent} size={skin.iconSize} color={intentInk} /> : null;
+    const neutralInk = skin.neutralIcon && skin.intentColor ? skin.intentColor(tokens, "info") : undefined;
+    const auto = skin.intentIcon ? <IntentIcon intent={intent} size={skin.iconSize} color={intentInk} neutral={neutralInk} /> : null;
     const glyph = icon !== undefined ? icon : auto;
     const hasTrailing = action != null || onDismiss != null;
     const hasDescription = description != null && description !== "";
@@ -265,8 +273,8 @@ export function createToastSystem(skin: ToastSkin) {
 
     const content = (
       <>
-        {glyph != null && glyph !== false ? <View style={ICON_SLOT}>{glyph}</View> : null}
-        <View style={TEXT_COL}>
+        {glyph != null && glyph !== false ? <View style={[ICON_SLOT, props.brief ? null : skin.iconSlot]}>{glyph}</View> : null}
+        <View style={[TEXT_COL, skin.textGap != null ? { gap: skin.textGap } : null]}>
           <Text style={props.brief && skin.briefMessage ? skin.briefMessage(tokens) : skin.message(tokens)} numberOfLines={props.brief ? 1 : 2}>
             {message}
           </Text>

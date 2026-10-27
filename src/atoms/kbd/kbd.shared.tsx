@@ -2,11 +2,11 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { Fragment, type ReactNode } from "react";
 import { View, Text, useHugStyle, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle } from "../../style/index.js";
 
-// Shared Kbd shell. Kbd is a keyboard shortcut indicator: a small bordered, slightly
-// raised key cap with monospace-ish small text. A single key comes from `children`
-// (<Kbd>Esc</Kbd>); a whole shortcut comes from `keys` (<Kbd keys="⌘ K" />), which
-// renders one cap per key with a separator between them so the component owns the
-// composition instead of pushing a Row + N caps + N-1 separators onto every call site.
+// Shared Kbd shell. Kbd is a keyboard shortcut indicator: a small bordered, raised key
+// cap with a mono label. A single key comes from `children` (<Kbd>Esc</Kbd>); a whole
+// shortcut comes from `keys` (<Kbd keys="⌘ K" />), which renders one cap per key (and
+// "then" between the caps of a sequence) so the component owns the composition instead
+// of pushing a Row + N caps + N-1 separators onto every call site.
 //
 // The cap has one fixed look (no size or intent variants), so there are no boolean
 // axes to map: the structure, accessibility, and token-driven colors live here once,
@@ -23,6 +23,8 @@ export interface KbdSkin {
   capBox: ViewStyle;
   /** The key label type (size / line-height / weight / tracking). */
   labelType: TextStyle;
+  /** The "then" between the caps of a sequence. */
+  separatorType: TextStyle;
   /** The chord wrapper: a centered row holding each cap and its separator. */
   chordRow: ViewStyle;
 }
@@ -31,15 +33,15 @@ export interface KbdProps {
   /** A single key label, rendered as one cap. Ignored when `keys` is set. */
   children?: ReactNode;
   /**
-   * A multi-key shortcut, rendered as one cap per key with a separator between them.
+   * A multi-key shortcut (a combo, pressed together), rendered as one cap per key.
    * Pass a whitespace-separated string (`"⌘ K"`) or an array (`["⌘", "K"]`). A single
    * entry renders one cap, identical to passing that key as `children`. When set, `keys`
    * takes precedence over `children`.
    */
   keys?: string | string[];
   /**
-   * Render a key SEQUENCE (press one, then the next), separating caps with a gap
-   * instead of the default `+` combo joiner. Only affects the `keys` form.
+   * Render a key SEQUENCE (press one, then the next): the caps are separated by "then".
+   * Only affects the `keys` form.
    */
   sequence?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -48,21 +50,20 @@ export interface KbdProps {
   style?: LayoutStyle;
 }
 
-// The cap surface: the muted fill and the hairline border color (platform-neutral,
-// token-driven so the cap follows light/dark). Under glass the cap is a static pane at control density: it drops both (a GlassPane's material and rim carry them).
-function capSurface(tokens: ColorTokens, glass: boolean): ViewStyle {
-  return glass ? { borderColor: "transparent", backgroundColor: "transparent" } : { borderColor: tokens.border, backgroundColor: tokens.muted };
+// The cap surface: the raised neutral fill inside the field border (platform-neutral,
+// token-driven so the cap follows light/dark). Under glass the cap is a static pane at
+// control density: paneStyle drops both (a GlassPane's material and rim carry them).
+function capSurface(tokens: ColorTokens): ViewStyle {
+  return { borderColor: tokens["field-border"] ?? tokens.input, backgroundColor: tokens.secondary };
 }
 
-// The label color: muted foreground (platform-neutral, token-driven). The chord
-// separator ("+") reuses this so it matches the key labels.
+// The key label is the foreground ink; a sequence's "then" the subtle ink.
 function labelColor(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"] };
+  return { color: tokens.foreground };
 }
-
-// A key sequence gets a touch more air between caps than a combo, so the "then" pause
-// reads (a combo keeps its caps snug around the "+"). Internal only.
-const SEQUENCE_GAP: ViewStyle = { gap: 8 };
+function separatorColor(tokens: ColorTokens): TextStyle {
+  return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
+}
 
 /** Normalize `keys` into a clean list of key labels, or null when unset/empty. */
 function keyList(keys: string | string[] | undefined): string[] | null {
@@ -86,18 +87,18 @@ export function createKbd(skin: KbdSkin) {
     if (list == null || list.length === 1) {
       const label = list != null ? list[0] : children;
       return (
-        <View testID={testID} style={[paneStyle(theme, [skin.capBox, capSurface(tokens, false)]), hug, style]}>
+        <View testID={testID} style={[paneStyle(theme, [skin.capBox, capSurface(tokens)]), hug, style]}>
           {pane}
           {label != null ? <Text style={[skin.labelType, labelColor(tokens)]}>{label}</Text> : null}
         </View>
       );
     }
 
-    // Chord: one cap per key with a separator between them. The whole shortcut reads
-    // as a single accessible name (e.g. "⌘+K"), so a screen reader announces the
-    // shortcut once instead of each cap in turn; the caps and separators are hidden
-    // from the tree as decorative.
-    const name = list.join(sequence ? " " : "+");
+    // Chord: one cap per key, and "then" between the caps of a sequence. The whole
+    // shortcut reads as a single accessible name (e.g. "⌘+K", "G then C"), so a screen
+    // reader announces the shortcut once instead of each cap in turn; the caps and
+    // separators are hidden from the tree as decorative.
+    const name = list.join(sequence ? " then " : "+");
     return (
       <View
         testID={testID}
@@ -110,21 +111,21 @@ export function createKbd(skin: KbdSkin) {
         role="img"
         accessibilityLabel={name}
         aria-label={name}
-        style={[skin.chordRow, sequence ? SEQUENCE_GAP : null, hug, style]}
+        style={[skin.chordRow, hug, style]}
       >
         {list.map((key, i) => (
           <Fragment key={i}>
-            {i > 0 && !sequence ? (
+            {i > 0 && sequence ? (
               <Text
-                style={[skin.labelType, labelColor(tokens)]}
+                style={[skin.separatorType, separatorColor(tokens)]}
                 importantForAccessibility="no-hide-descendants"
                 aria-hidden
               >
-                +
+                then
               </Text>
             ) : null}
             <View
-              style={[paneStyle(theme, [skin.capBox, capSurface(tokens, false)])]}
+              style={[paneStyle(theme, [skin.capBox, capSurface(tokens)])]}
               importantForAccessibility="no-hide-descendants"
               aria-hidden
             >

@@ -92,5 +92,5 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/organisms/sidebar/sidebar.shared.tsx", name: "Sidebar", optionalPane: true, node: <Sidebar defaultActive="Dashboard" items={[{ label: "Dashboard" }, { label: "Inbox" }]} /> },
   { file: "src/organisms/steps/steps.shared.tsx", name: "Steps", node: <Steps steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]} defaultCurrent={1} /> },
   { file: "src/organisms/tab-bar/tab-bar.shared.tsx", name: "TabBar", node: <TabBar items={[{ key: "home", label: "Home", icon: () => <Icon home size={22} /> }, { key: "search", label: "Search", icon: () => <Icon search size={22} /> }]} /> },
-  { file: "src/organisms/tabs/tabs.shared.tsx", name: "Tabs", node: <Tabs tabs={["General", "Security"]} /> },
+  { file: "src/organisms/tabs/tabs.shared.tsx", name: "Tabs", node: <Tabs pills tabs={["General", "Security"]} /> },
 ];

@@ -8,3 +8,5 @@ import { webSkin } from "./chip.styles.js";
  */
 export const Chip = createChip(webSkin);
 export type { ChipProps } from "./chip.shared.js";
+// The pick-one set of chips draws no chrome of its own, so every platform shares it.
+export { ChipGroup, type ChipGroupProps } from "./chip-group.js";

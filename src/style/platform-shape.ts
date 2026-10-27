@@ -25,27 +25,35 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  *   candlestick's body (1). The kit's own web parts no Dark Factory role covers keep their
  *   corner as a role of their own: a standalone table's header band (10), the ghost a
  *   drag lifts (12), a conversation's composer surface (20) and its user bubble (18),
- *   tailed at 6 on the top end toward its author, and the pager's cells (8, the v4
- *   hand-off's pagination renderer: its pages, arrows and rows-per-page trigger), and the
+ *   tailed at 6 on the top end toward its author, the pager's cells (8, the v4
+ *   hand-off's pagination renderer: its pages, arrows and rows-per-page trigger), a menu's
+ *   row (8, the v4 hand-off's menu rows: Select's and Autocomplete's options, RowMenu's
+ *   rows and its square trigger, the Dropdown's rows; iOS and Android run their menu rows
+ *   full bleed), the command palette's panel (18) and its rows (9), the alert callout
+ *   (14), the alert dialog (24) and the empty state (18), the v4 hand-off's renderers
+ *   for each, the `rounded` avatar square (the hand-off's 28% of its disc: 6, 8, 11 and 16
+ *   on the 20, 28, 40 and 56 discs), and the
  *   sidebar's (the v4 hand-off's rail: a nav row at 9, 8 in the compact docs rail, the
  *   bordered rail card at 12 and the floating one at 14).
  * - iOS rounds the action sheet at 34 (the iOS 27 kit's Action Sheets symbol), an inset
- *   grouped list or well at 26, a calendar event at 6, and the search field's well at 10
- *   (the v4 hand-off's iOS search field).
+ *   grouped list or well at 26, a calendar event at 6, the search field's well at 10
+ *   (the v4 hand-off's iOS search field), a grouped rail's row at 10 (the hand-off's
+ *   iOS vertical tabs), and the UIAlertController alert at 14 (the hand-off's iOS alert
+ *   dialog).
  * - Android draws each Material 3 component at the step of the M3 scale its spec names: a
  *   chip, an event chip and the slider track at small, a plain tooltip and a snackbar at
- *   extra-small, the navigation drawer and a side sheet at large, a carousel item at
+ *   extra-small, the navigation drawer at large, a carousel item at
  *   extra-large. The tab indicator rounds its top corners at its own 3dp height, and the
  *   slider's track segments round their edge at the handle gap at 2dp. The kit's own
- *   Android parts take a step of the same scale: a board lane at large, the separated code
- *   cells and a list's icon box at medium, the compact list row's icon box at small.
+ *   Android parts take a step of the same scale: a board lane at large, a list's icon box
+ *   at medium, the compact list row's icon box at small.
  *
  * Kit-internal: the package does not export it. Promoting a role to `shape` is a change to
  * the public table.
  */
 export const platformShape = {
-  web: { insetRow: 10, brandMark: 9, referenceCard: 9, pageCell: 8, key: 6, tooltip: 8, event: 8, bar: 8, mark: 4, cell: 2, candle: 1, tableHeader: 10, dragGhost: 12, composer: 20, bubble: 18, bubbleTail: 6, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14 },
-  ios: { actionSheet: 34, groupedList: 26, event: 6, searchField: 10 },
+  web: { insetRow: 10, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, referenceCard: 9, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, tooltip: 8, event: 8, bar: 8, mark: 4, cell: 2, candle: 1, tableHeader: 10, dragGhost: 12, composer: 20, bubble: 18, bubbleTail: 6, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14 },
+  ios: { actionSheet: 34, groupedList: 26, event: 6, searchField: 10, navRow: 10, alertDialog: 14 },
   android: {
     chip: M3.small,
     event: M3.small,
@@ -53,10 +61,8 @@ export const platformShape = {
     tooltip: M3.extraSmall,
     snackbar: M3.extraSmall,
     navigationDrawer: M3.large,
-    sideSheet: M3.large,
     lane: M3.large,
     carouselItem: M3.extraLarge,
-    codeCell: M3.medium,
     iconBox: M3.medium,
     compactIconBox: M3.small,
     tabIndicator: 3,

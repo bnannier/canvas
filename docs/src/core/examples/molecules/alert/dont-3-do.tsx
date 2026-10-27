@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Alert } = scope;
   return (
-<Alert destructive icon="✕" title="Something went wrong" description="Could not save your changes. Please try again." />
+<Alert destructive title="Something went wrong" description="Could not save your changes. Please try again." />
   );
 }

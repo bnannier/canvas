@@ -1,21 +1,24 @@
 # FilterPanel
 
-Sidebar filter rail: grouped checkbox options with count badges and a Clear
-header.
+Sidebar filter rail: grouped checkbox options under mono group headings, each
+with its count, and a "Clear N" action in the header while any filter is on.
 
 Add `responsive` and at and below `drawerBreakpoint` (default `sm` = 640) the
-docked panel collapses to a "Filters (n)" outline button that opens the same
+docked panel collapses to a small secondary "Filters" button, carrying the live
+count, that opens the same
 panel inside a start-edge drawer, so a phone keeps its width for the results;
 `open` / `defaultOpen` / `onOpenChange` drive the drawer for controlled use.
 
 On iOS an option row marks a chosen filter the way an iOS list does: the label
 leads, the count follows, and a trailing check closes the row. The web and
-Android lead each row with the platform's selection checkbox.
+Android lead each row with the platform's selection checkbox. The native rows
+keep the platform's touch height (44 pt, 48 dp).
 
 ## Usage
 
 ```tsx
 <FilterPanel
+  bordered
   groups={[
     { title: "Status", options: [
       { label: "Active", checked: true, count: "128" },
@@ -35,7 +38,7 @@ Android lead each row with the platform's selection checkbox.
 ### Responsive drawer
 
 At desktop widths this renders the docked panel unchanged; at and below the
-`sm` breakpoint it renders the "Filters (n)" trigger and the panel opens in a
+`sm` breakpoint it renders the "Filters" trigger with its count and the panel opens in a
 drawer.
 
 ```tsx

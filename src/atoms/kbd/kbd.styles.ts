@@ -1,46 +1,45 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { typeScale } from "../../style/type-scale.js";
+import { MONO_FONT } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type KbdSkin } from "./kbd.shared.js";
 
 // Per-OS Kbd skins. Kbd is a "Shared" treatment: neither iOS nor Material 3 ships a
-// native keyboard-key cap, so all three platforms render ONE look: Dark Factory's key
-// cap (a hairline-bordered, muted-fill 20px cap with its 6px key corner and a small bold
-// label, the density of its other small labels). The iOS and Android skins therefore
-// reference the SAME values as the web skin; the token-driven surface (border + muted
-// fill) and label color live in kbd.shared.tsx.
-//
-// Manrope has no modifier glyphs (⌘ ⇧ ⌥ ⌃ ↵), so a cap draws them in the platform's
-// fallback face; the kit's Icon set has only ⌘ of them, and one icon among text glyphs
-// would mix two drawing methods in one chord.
+// native keyboard-key cap, so all three platforms render ONE look, the Canvas v4
+// hand-off's key cap (`K.def('kbd')` in tools/v4/handoff/cv-kit-controls.js): a 24px
+// cap at least 24 wide with 6px sides, the 6px key corner, the raised neutral fill inside
+// the field border with a 2px bottom edge (the key's depth), and a 500 12px mono label in
+// the foreground ink. Caps sit 4px apart; a sequence says "then" between them in the
+// 400 11px interface face, in the subtle ink. The iOS and Android skins reference the
+// SAME values as the web skin; the token-driven colors live in kbd.shared.tsx.
 
 // The key-cap box: a centered row, fixed cap height, a minimum width so a single glyph
-// still reads as a key, Dark Factory's 6px key corner (its `radius.key`), a hairline
-// border, and snug horizontal padding.
+// still reads as a key, the 6px key corner, the 1px edge with its 2px bottom, and 6px sides.
 const CAP_BOX: ViewStyle = {
   flexDirection: "row",
-  height: 20,
-  minWidth: 20,
+  height: 24,
+  minWidth: 24,
   alignItems: "center",
   justifyContent: "center",
   borderRadius: platformShape.web.key,
   borderWidth: 1,
-  paddingHorizontal: 5,
+  borderBottomWidth: 2,
+  paddingHorizontal: 6,
 };
 
-// The key label: Dark Factory's micro size (10.5/14) in bold, as its small counts and
-// tags are set.
-const LABEL_TYPE: TextStyle = { ...typeScale.micro, fontWeight: "700" };
+// The key label: the hand-off's 500 12px mono glyph.
+const LABEL_TYPE: TextStyle = { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500" };
 
-// The chord wrapper: a centered row that lays out each cap and its "+" separator with
-// a snug gap (spacing-1, matching the docs' old Row `tight`). A sequence widens this
-// gap in the shell.
+// The "then" between the caps of a sequence: 400 11px in the interface face.
+const SEPARATOR_TYPE: TextStyle = { fontSize: 11, lineHeight: 14, fontWeight: "400" };
+
+// The chord wrapper: a centered row with the hand-off's 4px between caps.
 const CHORD_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 4 };
 
-// Web: Dark Factory's key cap (the search field's "⌘ K" hint, Command's shortcuts).
+// Web: the hand-off's key cap (the search field's "⌘ K" hint, Command's shortcuts).
 export const webSkin: KbdSkin = {
   capBox: CAP_BOX,
   labelType: LABEL_TYPE,
+  separatorType: SEPARATOR_TYPE,
   chordRow: CHORD_ROW,
 };
 

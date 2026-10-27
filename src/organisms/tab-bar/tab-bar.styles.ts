@@ -1,95 +1,78 @@
-import { StyleSheet } from "react-native";
-import { alpha, customShadow, shadow, type ColorTokens, type ViewStyle } from "../../style/index.js";
+import { alpha, shadow, type ColorTokens, type ViewStyle } from "../../style/index.js";
 import { type TabBarSkin } from "./tab-bar.shared.js";
 
-// Per-OS TabBar skins. iOS = the iOS 26 floating Liquid Glass tab bar; web = the same
-// capsule (the owner's call, 2026-09-18: the web tab bar is to look like the iOS one
-// with liquid glass); Android = the Material 3 navigation bar. Colors are token-driven:
-// the bar's fill comes from `fill`, the active label's color is applied by the shared
-// shell, and the skin carries shape, label type, the active indicator and press feedback.
+// Per-OS TabBar skins, the v4 hand-off's (its `tab-bar` renderer in
+// tools/v4/handoff/cv-kit-inputs.js, which draws the web and iOS alike and Android apart).
+// The bar's fill comes from `fill`, the labels' ink from `labelColor`, and the skin carries
+// shape, label type, the active indicator and press feedback.
 
-// Blend two hex colors by `t` (0 = a, 1 = b): the dark scheme's selected capsule is the
-// track lifted toward the ink, the same layering the iOS segmented Tabs use, so the
-// capsule reads lighter than the bar in both schemes while staying token-driven.
-function mix(a: string, b: string, t: number): string {
-  const parse = (c: string) => {
-    const h = c.replace("#", "");
-    const full = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
-    return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
-  };
-  const [ar, ag, ab] = parse(a);
-  const [br, bg, bb] = parse(b);
-  const ch = (x: number, y: number) => Math.round(x + (y - x) * t);
-  return `rgb(${ch(ar, br)}, ${ch(ag, bg)}, ${ch(ab, bb)})`;
-}
-
-// The iOS 26 floating tab bar: a capsule inset 16pt from the sides, hovering 8pt above
-// the bottom edge (or reaching 12pt into a safe-area inset, so on a device with a home
-// indicator the capsule's bottom sits 22pt up, clear of the indicator), 58pt tall with a
-// 4pt inset around the destination cells, a soft ambient shadow so the solid capsule
-// reads as lifted. The selected destination is a capsule covering its whole cell: a
-// raised white thumb on the muted track in light, a lifted gray one in dark, the same
-// thumb the segmented Tabs raise. Under glass the bar is the functional-layer material
-// (real Liquid Glass on iOS 26, the frost on the web and Android) and the active
-// destination paints a static control-layer pane where it is. Icons 22pt over ~10pt SF labels;
-// press = dim.
+// The floating capsule (the web and iOS 26's floating tab bar): 62 tall, inset 6 around
+// five cells 2 apart, fully round, on a 1px `field-border` rim (the hand-off's ln2) with the
+// lg shadow. It floats 16 from the container's sides and 8 above its bottom edge (or reaches
+// 12 into a safe-area inset, so on a device with a home indicator its bottom sits 22 up,
+// clear of the indicator). The active destination is a capsule covering its whole cell in
+// the accent's soft wash under the accent's text ink; the rest read `muted-foreground`;
+// labels are 500 10 under the glyph, 2 below it. Under glass the bar is the
+// functional-layer material (real Liquid Glass on iOS 26, the hand-off's frost on the web)
+// and the active cell a static control-layer pane where it is. Solid paints the bar the
+// opaque `card` the hand-off's glass fill tints. Press = dim.
+const FLOATING_INSET = 6;
 function floatingBar(t: ColorTokens): ViewStyle {
-  return { borderWidth: StyleSheet.hairlineWidth, borderRadius: 9999, paddingTop: 4, paddingHorizontal: 4, minHeight: 58, ...shadow("md", t) };
+  return { borderWidth: 1, borderRadius: 9999, paddingTop: FLOATING_INSET, paddingHorizontal: FLOATING_INSET, minHeight: 62, ...shadow("lg", t) };
 }
 const FLOATING: NonNullable<TabBarSkin["floating"]> = { horizontal: 16, bottom: 8, clearance: 12 };
-const CELL_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 2, opacity: 0.18, elevation: 2 });
 
 function floatingFill(t: ColorTokens): { backgroundColor: string; borderColor: string } {
-  return { backgroundColor: t.muted, borderColor: t.border };
+  return { backgroundColor: t.card, borderColor: t["field-border"] ?? t.input };
 }
 
-function cellThumb(t: ColorTokens, dark: boolean): ViewStyle {
-  return { borderRadius: 9999, ...CELL_SHADOW, backgroundColor: dark ? mix(t.muted, t.foreground, 0.28) : t.background };
+const softOf = (t: ColorTokens): string => t["primary-soft"] ?? alpha(t.primary, 0.16);
+
+function cellWash(t: ColorTokens): ViewStyle {
+  return { borderRadius: 9999, backgroundColor: softOf(t) };
 }
 
 export const iosSkin: TabBarSkin = {
   bar: floatingBar,
   fill: floatingFill,
   floating: FLOATING,
-  item: { flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 6, borderRadius: 9999 },
-  label: (active) => ({ fontSize: 10, lineHeight: 13, fontWeight: active ? "600" : "500", letterSpacing: -0.2 }),
+  cellGap: 2,
+  item: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2, paddingVertical: 6, borderRadius: 9999 },
+  label: () => ({ fontSize: 10, lineHeight: 13, fontWeight: "500" }),
   ripple: null,
   pressedOpacity: 0.6,
-  pill: cellThumb,
+  pill: cellWash,
   pillCovers: "cell",
 };
 
-// Web: the iOS 26 capsule as is, with the web's slightly larger label (11pt against the
-// phone's 10) since a desktop browser sits farther from the eye than a phone. The former
-// docked web bar with its M3 icon pill is gone; a web app shell that pairs this bar with a
-// Sidebar still marks the current destination the same way at both widths, since the
-// Sidebar's active row is a filled surface too.
+// Web: the same capsule, the browser's own press dim.
 export const webSkin: TabBarSkin = {
   ...iosSkin,
-  label: (active) => ({ fontSize: 11, lineHeight: 14, fontWeight: active ? "600" : "500", letterSpacing: -0.1 }),
+  label: () => ({ fontSize: 10, lineHeight: 13, fontWeight: "500" }),
   pressedOpacity: 0.7,
 };
 
-// Material 3 navigation bar: docked and full-bleed, taller, M3 label type with positive
-// tracking, brand ripple, no top hairline (M3 elevates the bar instead).
+// Material 3 navigation bar: docked and full-bleed, 80 tall on the `popover` surface (the
+// hand-off's sf2) under a 1px `border` top rule; each destination a 64x32 stadium indicator
+// in the accent's soft wash behind its glyph, 4 above a 500 12 label, the active label in
+// `foreground` and the rest in `muted-foreground`; brand ripple.
 export const androidSkin: TabBarSkin = {
-  bar: () => ({ borderTopWidth: 0, paddingTop: 8, minHeight: 64 }),
-  item: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 10 },
-  label: (active) => ({ fontSize: 12, lineHeight: 16, fontWeight: active ? "600" : "500", letterSpacing: 0.5 }),
+  bar: () => ({ borderTopWidth: 1, paddingTop: 12, minHeight: 80 }),
+  fill: (t) => ({ backgroundColor: t.popover, borderColor: t.border }),
+  item: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 0 },
+  label: () => ({ fontSize: 12, lineHeight: 16, fontWeight: "500" }),
+  labelColor: (t, active) => (active ? t.foreground : t["muted-foreground"]),
   ripple: (t: ColorTokens) => ({ color: alpha(t.primary, 0.12), borderless: true, radius: 36 }),
   pressedOpacity: null,
-  // M3 active-indicator pill: 56x32dp, fully rounded (a capsule). Fill is a tonal brand
-  // tint (alpha(primary, 0.16)) standing in for M3's secondary-container: this shadcn
-  // token set has no secondary-container, and the flat `secondary` gray is nearly the bar
-  // fill, so it would not read as a pill. It carries NO insets: an absolutely-positioned
-  // child with no left/top is placed by the parent's alignItems/justifyContent, so the
-  // centering wrapper puts it dead-center behind the icon on native Android AND web alike
-  // (percentage left/top + negative margins centered on RN Web but drifted on native).
+  // The active indicator: 64x32, fully rounded. It carries NO insets: an absolutely
+  // positioned child with no left/top is placed by the parent's alignItems/justifyContent,
+  // so the centering wrapper puts it dead-center behind the icon on native Android AND web
+  // alike (percentage left/top + negative margins centered on RN Web but drifted on native).
   pill: (t: ColorTokens): ViewStyle => ({
     position: "absolute",
-    width: 56,
+    width: 64,
     height: 32,
     borderRadius: 9999,
-    backgroundColor: alpha(t.primary, 0.16),
+    backgroundColor: softOf(t),
   }),
 };

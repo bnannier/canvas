@@ -17,7 +17,8 @@ export const docs: ComponentDocs = {
   dir: "stepper",
   category: "atoms",
   overview: [
-    "Pass `label` to title the control from above, and `required` to mark it: the label takes a decorative destructive star, and a screen reader hears the control as required, from `aria-required` on the web's numeric field and from its name (\"Quantity, required\") on iOS and Android.",
+    "On the web the control is one 40 px box (32 `small`, 48 `large`) at the control corner with square ± cells and the value in the mono face; on iOS the capsule [ − | + ] pill with the value to its left; on Android Material 3's outlined circular icon buttons around the value.",
+    "Pass `label` to title the control from above, `description` for a secondary line under it, and `required` to mark it: the label takes a decorative destructive star, and a screen reader hears the control as required, from `aria-required` on the web's numeric field and from its name (\"Quantity, required\") on iOS and Android.",
   ],
   examples: [
     { label: "Default", code: "<Stepper defaultValue={3} max={10} />", render: e_atoms_stepper_example_0 },
@@ -38,6 +39,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["button"],"states":["disabled"],"aria":["aria-describedby","aria-disabled","aria-label","aria-labelledby","aria-required"],"touchTarget":["hitSlop"]},
-  tokens: ["background","border","destructive","foreground","muted-foreground","primary","ring","secondary"],
+  tokens: ["accent","destructive","foreground","muted-foreground","popover","primary","primary-soft","primary-text","ring","secondary","subtle-foreground"],
   related: ["row-column","button","button-group","switch","checkbox","radio","slider","chip"],
 };

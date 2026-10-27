@@ -102,6 +102,18 @@ const CASES: SkinCase[] = [
   { name: "Button", dir: "atoms/button", file: "button", children: "Save" },
   { name: "Checkbox", dir: "atoms/checkbox", file: "checkbox", props: { checked: false, description: "Secondary line" }, children: "Accept" },
   { name: "Chip", dir: "atoms/chip", file: "chip", children: "Filter" },
+  {
+    // Re-exported unchanged on every platform, but each entry's own export, so a dropped
+    // re-export fails here; its chips are that entry's own Chip.
+    name: "ChipGroup",
+    dir: "atoms/chip",
+    file: "chip",
+    props: { label: "Plan", defaultValue: "pro" },
+    children: (mod) => [
+      createElement(mod.Chip as never, { key: "a", value: "free" }, "Free"),
+      createElement(mod.Chip as never, { key: "b", value: "pro" }, "Pro"),
+    ],
+  },
   { name: "Autocomplete", dir: "atoms/autocomplete", file: "autocomplete", props: { options: ["Apple", "Banana"], open: true, label: "Fruit", required: true } },
   { name: "Divider", dir: "atoms/divider", file: "divider" },
   { name: "Dropdown", dir: "atoms/dropdown", file: "dropdown", props: { label: "Menu", items: [{ label: "One" }, { label: "Two" }] } },
@@ -427,31 +439,32 @@ for (const platform of PLATFORMS) {
       });
     }
 
-    // iOS lists mark a chosen row with a trailing check (the design language's item 5,
-    // "one job, different control"), so the iOS multi-select row composes no Checkbox.
-    if (platform === "ios") {
-      it("Listbox multi-select marks each chosen row with a trailing check and no Checkbox artwork", async () => {
-        const { Listbox } = await import("../src/atoms/listbox/listbox.ios.tsx");
-        for (const checked of [false, true]) {
-          const list = render(
-            <ThemeProvider><Listbox multi items={[{ label: "Choice" }]} selected={checked ? [0] : []} /></ThemeProvider>,
-          );
-          const row = list.getByRole("checkbox", { name: "Choice" });
-          const marks = [...row.querySelectorAll<HTMLElement>('[aria-hidden="true"]')];
-          expect(marks.map((mark) => mark.textContent)).toEqual(["✓"]);
-          expect(marks[0].style.opacity === "0").toBe(!checked);
-          expect(row.querySelector('[role], [tabindex], button, input')).toBeNull();
-          list.unmount();
-        }
-      });
-    } else {
-      // The indicator is a selection visual, so it mirrors the SELECTION Checkbox: a
+    // Neither iOS nor Material 3 ships a listbox (PLATFORM-REFERENCES.md), so every
+    // platform draws the hand-off's list: a chosen row carries a trailing check in its
+    // own hidden slot, in single and multi select alike, and no Checkbox artwork.
+    it("Listbox multi-select marks each chosen row with a trailing check and no Checkbox artwork", async () => {
+      const suffix = platform === "web" ? "" : `.${platform}`;
+      const { Listbox } = await import(`../src/atoms/listbox/listbox${suffix}.tsx`);
+      for (const checked of [false, true]) {
+        const list = render(
+          <ThemeProvider><Listbox multi items={[{ label: "Choice" }]} selected={checked ? [0] : []} /></ThemeProvider>,
+        );
+        const row = list.getByRole("checkbox", { name: "Choice" });
+        const slot = row.lastElementChild as HTMLElement;
+        expect(slot.getAttribute("aria-hidden")).toBe("true");
+        expect(slot.childElementCount).toBe(checked ? 1 : 0);
+        expect(row.querySelector('[role], [tabindex], button, input')).toBeNull();
+        list.unmount();
+      }
+    });
+
+    if (platform !== "ios") {
+      // The FilterPanel's decorative indicator mirrors the SELECTION Checkbox: a
       // one-setting Checkbox is the switch on Android (the design language's item 5).
-      it("Listbox and its private indicator keep the platform selection Checkbox artwork without its interaction", async () => {
+      it("the private Checkbox indicator keeps the platform selection Checkbox artwork without its interaction", async () => {
         const suffix = platform === "web" ? "" : `.${platform}`;
         const { Checkbox } = await import(`../src/atoms/checkbox/checkbox${suffix}.tsx`);
         const { CheckboxIndicator } = await import(`../src/atoms/checkbox/indicator/index${suffix}.tsx`);
-        const { Listbox } = await import(`../src/atoms/listbox/listbox${suffix}.tsx`);
         for (const checked of [false, true]) {
           for (const disabled of [false, true]) {
             const publicControl = render(
@@ -467,16 +480,6 @@ for (const platform of PLATFORMS) {
             expect(getComputedStyle(indicator).opacity).toBe(expectedOpacity);
             expect(decorative.container.querySelector('[role], [tabindex], button, input')).toBeNull();
             decorative.unmount();
-
-            const list = render(
-              <ThemeProvider><Listbox multi items={[{ label: "Choice" }]} selected={checked ? [0] : []} disabled={disabled} /></ThemeProvider>,
-            );
-            const row = list.getByRole("checkbox", { name: "Choice" });
-            const composedIndicator = row.querySelector('[aria-hidden="true"]')?.firstElementChild as HTMLElement;
-            expect(composedIndicator.firstElementChild?.outerHTML).toBe(expectedArtwork);
-            expect(getComputedStyle(composedIndicator).opacity).toBe(expectedOpacity);
-            expect(composedIndicator.querySelector('[role], [tabindex], button, input')).toBeNull();
-            list.unmount();
           }
         }
       });
@@ -496,7 +499,7 @@ const isComponentName = (name: string) => /^[A-Z]/.test(name) && /[a-z]/.test(na
 /** Platform-entry components with no row, keyed `<dir>/<file>#<export>`, each with why. */
 const EXEMPT: Record<string, string> = {
   "atoms/checkbox/indicator/index#CheckboxIndicator":
-    "an internal part with an Android entry only (no iOS file for a row to load); the Listbox indicator test above mounts it on the web and Android against the platform Checkbox",
+    "an internal part with an Android entry only (no iOS file for a row to load); the indicator test above mounts it on the web and Android against the platform Checkbox",
 };
 
 async function platformEntryComponents(): Promise<{ key: string; entry: string }[]> {

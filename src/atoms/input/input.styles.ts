@@ -1,10 +1,10 @@
 import { fieldEyebrow } from "../../style/field-label.js";
 import { primaryText } from "../../style/primary-text.js";
-import { fieldBorder, fieldErrorFill } from "../../style/field-colors.js";
+import { fieldBorder, fieldErrorFill, focusHaloColor } from "../../style/field-colors.js";
 import { typeRoles } from "../../style/type-scale.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, FOCUS_RESET, MONO_FONT, activeIndicator, alpha, channelsOf, shape, type FloatingLabelStyles } from "../../style/index.js";
+import { type ColorTokens, FOCUS_RESET, MONO_FONT, activeIndicator, alpha, shape, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Input skins, one per platform, drawn to the Canvas v4 hand-off
 // (tools/v4/handoff/cv-kit-inputs.js `K.def('input')`, and its iOS and Android rows
@@ -171,18 +171,6 @@ function webFill(t: ColorTokens): string {
   return t["surface-sunken"] ?? t["field-fill"] ?? t.card;
 }
 
-/**
- * The accent halo around a focused web field: the hand-off's `--ion-ring`, the accent at
- * 35% (28% light). Canvas's `ring` is the solid accent, so the halo is derived from the
- * `glow` token (the accent at 50%, 40% light) at 0.7 of its alpha, which lands on both
- * schemes' values without a scheme flag; a token map without `glow` takes the ring at 35%.
- */
-function ringHalo(t: ColorTokens): string {
-  const g = t.glow ? channelsOf(t.glow) : null;
-  if (!g) return alpha(t.ring, 0.35);
-  return `rgba(${g[0]}, ${g[1]}, ${g[2]}, ${Math.round(g[3] * 0.7 * 1000) / 1000})`;
-}
-
 // ---------- Web: the hand-off's sunken field box ----------
 // The border by state, shared by the web and iOS boxes: the shell resolves the token
 // KEY (error > focus > hover > input); at rest the box reads the `field-border` hairline
@@ -272,7 +260,7 @@ export const webSkin: InputSkin = {
   labelGap: 6,
   referenceLabel: fieldEyebrow,
   hover: true,
-  focusHalo: (t, error) => ({ boxShadow: `0 0 0 4px ${error ? (t["destructive-soft"] ?? alpha(t.destructive, 0.14)) : ringHalo(t)}` }),
+  focusHalo: (t, error) => ({ boxShadow: `0 0 0 4px ${error ? (t["destructive-soft"] ?? alpha(t.destructive, 0.14)) : focusHaloColor(t)}` }),
   readOnlyField: () => ({ borderStyle: "dashed", backgroundColor: "transparent" }),
   placeholder: subtleInk,
   disabledOpacity: 0.45,

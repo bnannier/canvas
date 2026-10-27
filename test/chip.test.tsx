@@ -35,3 +35,117 @@ describe("Chip", () => {
     expect(container.querySelectorAll('[role="button"]').length).toBe(1);
   });
 });
+
+// The hand-off's chip (`K.def('chip')` in tools/v4/handoff/cv-kit-controls.js, its Android
+// row in cv-kit-platform.js), pinned as the skins and the shell render it.
+import { StyleSheet } from "react-native";
+import { webSkin, iosSkin, androidSkin } from "../src/atoms/chip/chip.styles.ts";
+import { Chip as AndroidChip } from "../src/atoms/chip/chip.android.tsx";
+import { darkColors, lightColors } from "../src/style/tokens.ts";
+import { alpha, channelsOf, oklchHex } from "../src/style/color.ts";
+import { hueChip } from "../src/atoms/chip/chip.shared.tsx";
+import { statusColors } from "../src/style/status.ts";
+
+const at = (c: HTMLElement, id: string) => c.querySelector(`[data-testid="${id}"]`) as HTMLElement;
+const rgb = (c: string) => channelsOf(c)?.slice(0, 3);
+
+describe("Chip takes the hand-off's look", () => {
+  it("web: a 28px full-round pill, 6 between elements, a 500 13px label, 12px sides", () => {
+    const base = StyleSheet.flatten(webSkin.base);
+    expect(base.height).toBe(28);
+    expect(base.borderRadius).toBeGreaterThanOrEqual(999);
+    expect(base.borderWidth).toBe(1);
+    expect(base.gap).toBe(6);
+    expect(webSkin.labelType).toMatchObject({ fontSize: 13, fontWeight: "500" });
+    expect(webSkin.sidePadding).toEqual({ text: 12, icon: 8, remove: 6 });
+    expect(webSkin.countType).toMatchObject({ fontSize: 11, fontWeight: "500", opacity: 0.7 });
+    expect(webSkin.removeSize).toBe(18);
+    expect(webSkin.removeGlyph).toBe(11);
+    expect(webSkin.hoverBrightness).toBe(1.12);
+    expect(webSkin.disabledOpacity).toBe(0.4);
+    expect(webSkin.selectedCheck).toEqual({ size: 13, replacesIcon: false });
+  });
+
+  it("iOS ships no chip, so its skin is the web skin", () => {
+    expect(iosSkin).toBe(webSkin);
+  });
+
+  it("Android: the 32dp M3 chip at the 8dp corner, 16dp sides (8 beside an icon), label-large, 0.38 disabled", () => {
+    const base = StyleSheet.flatten(androidSkin.base);
+    expect(base.height).toBe(32);
+    expect(base.borderRadius).toBe(8);
+    expect(base.gap).toBe(8);
+    expect(androidSkin.labelType).toMatchObject({ fontSize: 14, lineHeight: 20, fontWeight: "500" });
+    expect(androidSkin.sidePadding).toEqual({ text: 16, icon: 8, remove: 8 });
+    expect(androidSkin.selectedCheck).toEqual({ size: 18, replacesIcon: true });
+    expect(androidSkin.disabledOpacity).toBe(0.38);
+  });
+
+  it("web: the idle chip is the raised neutral fill inside the hairline; outline is the field border on nothing", () => {
+    const { container } = ui(<><Chip testID="idle">A</Chip><Chip testID="out" outline>B</Chip><Chip testID="ok" success outline>C</Chip></>);
+    expect(rgb(at(container, "idle").style.backgroundColor)).toEqual(rgb(lightColors.secondary));
+    expect(channelsOf(at(container, "idle").style.borderColor)).toEqual(channelsOf(lightColors.border));
+    expect(at(container, "out").style.backgroundColor).toMatch(/^$|transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
+    expect(channelsOf(at(container, "out").style.borderColor)).toEqual(channelsOf(lightColors["field-border"]!));
+    // A toned outline keeps the tone's ink inside the same edge.
+    expect(channelsOf(at(container, "ok").style.borderColor)).toEqual(channelsOf(lightColors["field-border"]!));
+    const ink = [...at(container, "ok").querySelectorAll("*")].find((n) => n.textContent === "C" && (n as HTMLElement).style.color) as HTMLElement;
+    expect(rgb(ink.style.color)).toEqual(rgb(statusColors(lightColors, "success").ink));
+  });
+
+  it("the muted tag is the neutral fill with no edge in the muted ink", () => {
+    const { container } = ui(<Chip testID="n" neutral>N</Chip>);
+    expect(rgb(at(container, "n").style.backgroundColor)).toEqual(rgb(lightColors.secondary));
+    expect(at(container, "n").style.borderColor).toMatch(/transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
+  });
+
+  it("the remove control is an 18px disc around the glyph, and the side beside it is 6px", () => {
+    const { container } = ui(<Chip testID="r" onRemove={() => {}}>Role</Chip>);
+    const disc = screen.getByLabelText("Remove Role");
+    expect(disc.style.width).toBe("18px");
+    expect(disc.style.height).toBe("18px");
+    expect(disc.style.backgroundColor).toBe("rgba(127, 127, 127, 0.18)");
+    const s = at(container, "r").style;
+    expect(s.paddingInlineEnd || s.paddingRight).toBe("6px");
+    expect(s.paddingInlineStart || s.paddingLeft).toBe("12px");
+  });
+
+  it("a count is the mono numeral", () => {
+    ui(<Chip count={12}>Design</Chip>);
+    const count = screen.getByText("12");
+    expect(count.style.fontSize).toBe("11px");
+    expect(count.style.fontWeight).toBe("500");
+  });
+
+  it("Android: the idle chip is the bare container inside the field border; `secondary` fills it with no edge", () => {
+    const { container } = ui(<><AndroidChip testID="a">A</AndroidChip><AndroidChip testID="s" secondary>S</AndroidChip></>);
+    expect(at(container, "a").style.backgroundColor).toMatch(/^$|transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
+    expect(channelsOf(at(container, "a").style.borderColor)).toEqual(channelsOf(lightColors["field-border"]!));
+    expect(rgb(at(container, "s").style.backgroundColor)).toEqual(rgb(lightColors.secondary));
+    expect(at(container, "s").style.borderColor).toMatch(/transparent|rgba\(0, 0, 0, 0(\.0+)?\)/);
+  });
+});
+
+describe("Chip's colour flags and neutral emphases, as the hand-off's override draws them", () => {
+  const paint = (el: HTMLElement) => [channelsOf(el.style.backgroundColor), channelsOf(el.style.borderTopColor || el.style.borderColor)];
+  it("a free hue is its oklch wash at 16% inside the same colour at 30%, under its solved ink", () => {
+    render(<ThemeProvider dark solid><Chip red testID="red">Bug</Chip></ThemeProvider>);
+    const chip = hueChip("red", darkColors, true);
+    expect(chip.wash).toBe(alpha(oklchHex(0.7, 0.15, 25), 0.16));
+    expect(chip.edge).toBe(alpha(oklchHex(0.7, 0.15, 25), 0.3));
+    expect(paint(screen.getByTestId("red"))).toEqual([channelsOf(chip.wash), channelsOf(chip.edge)]);
+  });
+
+  it("`secondary` is the higher raised fill with no edge; a selectable chip at rest is the bare container in the field border", () => {
+    render(<ThemeProvider light solid>
+      <Chip secondary testID="sec">Two</Chip>
+      <Chip selectable testID="rest">Engineering</Chip>
+      <Chip gray testID="gray">Archived</Chip>
+      <Chip neutral testID="neutral">Skipped</Chip>
+    </ThemeProvider>);
+    expect(paint(screen.getByTestId("sec"))).toEqual([channelsOf(lightColors["surface-raised"]!), [0, 0, 0, 0]]);
+    expect(paint(screen.getByTestId("rest"))).toEqual([[0, 0, 0, 0], channelsOf(lightColors["field-border"]!)]);
+    expect(paint(screen.getByTestId("gray"))).toEqual([channelsOf(lightColors.secondary), channelsOf(lightColors.border)]);
+    expect(paint(screen.getByTestId("neutral"))).toEqual([channelsOf(lightColors.secondary), [0, 0, 0, 0]]);
+  });
+});

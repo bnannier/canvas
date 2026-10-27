@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
@@ -10,6 +10,8 @@ import { Field as FieldWeb } from "../src/molecules/field/field.tsx";
 import { Field as FieldIOS } from "../src/molecules/field/field.ios.tsx";
 import { iosSkin, webSkin, androidSkin } from "../src/molecules/phone-input/phone-input.styles.ts";
 import { layoutEntrance } from "./entrance-layout.ts";
+import { MONO_FONT } from "../src/style/mono.ts";
+import { webSkin as inputWeb } from "../src/atoms/input/input.styles.ts";
 
 // PhoneInput: the country segment (flag + caret) opens a country list, picking a row
 // swaps the inline dial code, and the number field is a real phone-pad input the
@@ -162,5 +164,46 @@ describe("the iOS country segment follows the field state", () => {
       expect(typeof skin.field.groupContainer).toBe("function");
       expect(typeof skin.menu.panel).toBe("function");
     }
+  });
+});
+
+describe("the web country chip follows the v4 hand-off", () => {
+  const t = lightColors;
+  const state = { focused: false, error: false };
+  it("is a chip 8 from the well's edge, 70% of the box tall, 8 inset, at the 6px key corner on `muted`", () => {
+    expect(webSkin.country(t, state, "base")).toMatchObject({ marginStart: 8, height: 28, paddingHorizontal: 8, gap: 6, borderRadius: 6, backgroundColor: t.muted });
+    expect(webSkin.country(t, state, "small").height).toBe(22);
+    expect(webSkin.country(t, state, "large").height).toBe(34);
+  });
+  it("names the country by its ISO code in the 500 12px mono face, beside a 12px subtle chevron", () => {
+    expect(webSkin.code!(t)).toMatchObject({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "500" });
+    expect(webSkin.caretIcon).toBe(12);
+    expect(webSkin.caret(t, false).color).toBe(t["subtle-foreground"]);
+  });
+  it("sets the dial code in the subtle ink and both it and the number in the mono face, 8 apart", () => {
+    expect(webSkin.dial(t)).toMatchObject({ color: t["subtle-foreground"], paddingStart: 8 });
+    expect(webSkin.numberFace).toEqual({ fontFamily: MONO_FONT });
+    expect(webSkin.numberGap).toBe(8);
+  });
+  it("keeps the flag and the ▾ caret natively, where the box is the platform's own field", () => {
+    for (const skin of [iosSkin, androidSkin]) {
+      expect(skin.code).toBeUndefined();
+      expect(skin.caretIcon).toBeUndefined();
+    }
+  });
+  it("renders the code, not the flag, on the web, and the flag natively", () => {
+    const { unmount } = ui(<PhoneInputWeb label="Phone" defaultCountry="DE" />);
+    expect(screen.getByText("DE")).toBeTruthy();
+    expect(screen.queryByText(flagOf("DE"))).toBeNull();
+    unmount();
+    ui(<PhoneInputIOS label="Phone" defaultCountry="DE" />);
+    expect(screen.getByText(flagOf("DE"))).toBeTruthy();
+  });
+  it("haloes the focused web box in the Input's accent halo", () => {
+    ui(<PhoneInputWeb label="Phone" testID="phone" />);
+    const field = screen.getByTestId("phone");
+    act(() => (field as HTMLInputElement).focus());
+    const box = field.parentElement!.parentElement as HTMLElement;
+    expect(box.style.boxShadow).toBe(inputWeb.focusHalo!(lightColors, false)!.boxShadow as string);
   });
 });

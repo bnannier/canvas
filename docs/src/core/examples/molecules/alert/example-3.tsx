@@ -7,7 +7,6 @@ export default function Example(scope: ExampleScope) {
   return (
 <Alert
   destructive
-  icon="✕"
   title="Something went wrong"
   description="Could not save your changes. Please try again."
 />

@@ -4,7 +4,7 @@ Inline notification banners: info, success, warning, and destructive, plus a ful
 
 A banner fills the parent it is given, so a column of alerts is the same measure top to bottom and a banner over a form lines up with the fields; a Container step sets the measure when the layout calls for one.
 
-A toned banner is Dark Factory's soft panel: the tone's wash with no border, the title in the tone's color, the body in the foreground, and the icon in the tone's solid color, from `statusColors` (the helper Badge and every toned surface read). The neutral banner is the card with a hairline.
+A banner is a soft callout: the tone's wash under a 1px edge of the tone's color, the tone's own glyph in that color, a foreground title and a muted body, from `statusColors` (the helper Badge and every toned surface read). The neutral banner is the quiet muted surface with an info glyph in the muted ink. Pass `icon` to draw another glyph (an `<Icon />` takes the tone's color and the banner's 18px size), or `icon={null}` to draw none.
 
 ## Usage
 
@@ -13,7 +13,6 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Alert
   info
-  icon={<Icon info size={16} />}
   title="Heads up"
   description="Maintenance window scheduled for Sunday 2:00 UTC."
 />
@@ -26,7 +25,6 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Alert
   success
-  icon="✓"
   title="All set"
   description="Your changes have been saved successfully."
 />
@@ -37,7 +35,6 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Alert
   warning
-  icon={<Icon alertTriangle size={16} />}
   title="Action required"
   description="Your trial expires in 3 days."
 />
@@ -48,7 +45,6 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Alert
   destructive
-  icon="✕"
   title="Something went wrong"
   description="Could not save your changes. Please try again."
 />
@@ -58,7 +54,7 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 
 ```tsx
 <Alert
-  icon={<Icon bell size={16} />}
+  icon={<Icon bell />}
   title="Scheduled maintenance"
   description="The dashboard may be briefly unavailable on Sunday between 2:00 and 3:00 UTC."
 />
@@ -69,7 +65,6 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Alert
   info
-  icon={<Icon info size={16} />}
   title="Heads up"
   description="Maintenance window scheduled for Sunday 2:00 UTC."
   dismissible
@@ -81,7 +76,6 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Alert
   warning
-  icon={<Icon alertTriangle size={16} />}
   title="Action required"
   description="Your trial expires in 3 days."
   actions={<Button primary small>Upgrade plan</Button>}
@@ -116,13 +110,13 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 **Do**: Reserve info for passive, non-urgent context (notices, tips); escalate to warning or destructive when action is required.
 
 ```tsx
-<Alert info icon={<Icon info size={16} />} title="Heads up" description="Maintenance window scheduled for Sunday 2:00 UTC." />
+<Alert info title="Heads up" description="Maintenance window scheduled for Sunday 2:00 UTC." />
 ```
 
 **Don't**: Dressing an act-now message in the neutral info tone hides the urgency; users skim past it like an FYI.
 
 ```tsx
-<Alert info icon={<Icon info size={16} />} title="Trial expires today" description="Upgrade now or you'll lose access to your projects." />
+<Alert info title="Trial expires today" description="Upgrade now or you'll lose access to your projects." />
 ```
 
 ### success
@@ -132,7 +126,6 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Alert
   success
-  icon="✓"
   title="Saved"
   description="Your changes have been saved successfully."
   dismissible
@@ -142,7 +135,7 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 **Don't**: A success banner pinned with no way to dismiss it lingers as visual noise long after the action is done.
 
 ```tsx
-<Alert success icon="✓" title="Saved" description="Your changes have been saved successfully." />
+<Alert success title="Saved" description="Your changes have been saved successfully." />
 ```
 
 ### warning
@@ -152,7 +145,6 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 ```tsx
 <Alert
   warning
-  icon={<Icon alertTriangle size={16} />}
   title="Action required"
   description="Your trial expires in 3 days. Upgrade to keep your projects."
   actions={<Button primary small>Upgrade plan</Button>}
@@ -162,7 +154,7 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 **Don't**: A warning with no specifics or next step leaves the user guessing what to fix and by when.
 
 ```tsx
-<Alert warning icon={<Icon alertTriangle size={16} />} title="Action required" description="Something needs your attention." />
+<Alert warning title="Action required" description="Something needs your attention." />
 ```
 
 ### destructive
@@ -170,11 +162,11 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 **Do**: Match the variant to the severity: reserve destructive for genuine failures, success for confirmations.
 
 ```tsx
-<Alert destructive icon="✕" title="Something went wrong" description="Could not save your changes. Please try again." />
+<Alert destructive title="Something went wrong" description="Could not save your changes. Please try again." />
 ```
 
 **Don't**: Using the destructive variant for non-errors cries wolf; users learn to tune out red and miss real failures.
 
 ```tsx
-<Alert destructive icon="✕" title="Saved" description="Your changes have been saved successfully." />
+<Alert destructive title="Saved" description="Your changes have been saved successfully." />
 ```

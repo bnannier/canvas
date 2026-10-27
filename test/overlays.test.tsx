@@ -929,15 +929,15 @@ describe("Dropdown", () => {
     expect(webSkin.menuHeader).toEqual({ paddingHorizontal: 10, paddingTop: 6, paddingBottom: 6, gap: 2 });
     expect(iosSkin.menuHeader).toEqual({ paddingHorizontal: 16, paddingVertical: 6, gap: 2 });
     expect(androidSkin.menuHeader).toEqual({ paddingHorizontal: 16, paddingVertical: 8, gap: 2 });
-    // iOS and Android set the header at 14/20 medium over 12/16; the web in Dark
-    // Factory's menu row label over its caption. Each line reads its semantic token.
+    // iOS and Android set the header at 14/20 medium over 12/16; the web at the v4
+    // menu's 14 / 500 over a 12/16 muted line. Each line reads its semantic token.
     const t = { "popover-foreground": "PF", "muted-foreground": "MF" } as unknown as ColorTokens;
     for (const skin of [iosSkin, androidSkin]) {
       expect(skin.menuHeaderTitle(t)).toEqual({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: "PF" });
       expect(skin.menuHeaderDescription(t)).toEqual({ fontSize: 12, lineHeight: 16, color: "MF" });
     }
-    expect(webSkin.menuHeaderTitle(t)).toEqual({ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: "PF" });
-    expect(webSkin.menuHeaderDescription(t)).toEqual({ fontSize: 11, lineHeight: 15, fontWeight: "600", color: "MF" });
+    expect(webSkin.menuHeaderTitle(t)).toEqual({ fontSize: 14, lineHeight: 18, fontWeight: "500", color: "PF" });
+    expect(webSkin.menuHeaderDescription(t)).toEqual({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: "MF" });
   });
 
   it("renders the identity header on the iOS and Android builds too", async () => {

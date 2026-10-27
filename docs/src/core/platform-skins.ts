@@ -15,8 +15,6 @@ import { Button as ButtonIOS } from "../../../src/atoms/button/button.ios.js";
 import { Button as ButtonAndroid } from "../../../src/atoms/button/button.android.js";
 import { Checkbox as CheckboxIOS } from "../../../src/atoms/checkbox/checkbox.ios.js";
 import { Checkbox as CheckboxAndroid } from "../../../src/atoms/checkbox/checkbox.android.js";
-import { Listbox as ListboxIOS } from "../../../src/atoms/listbox/listbox.ios.js";
-import { Listbox as ListboxAndroid } from "../../../src/atoms/listbox/listbox.android.js";
 import { Radio as RadioIOS, RadioGroup as RadioGroupIOS } from "../../../src/atoms/radio/radio.ios.js";
 import { Radio as RadioAndroid, RadioGroup as RadioGroupAndroid } from "../../../src/atoms/radio/radio.android.js";
 import { Input as InputIOS } from "../../../src/atoms/input/input.ios.js";
@@ -45,6 +43,7 @@ import { Spinner as SpinnerIOS } from "../../../src/atoms/spinner/spinner.ios.js
 import { Spinner as SpinnerAndroid } from "../../../src/atoms/spinner/spinner.android.js";
 import { TabBar as TabBarIOS } from "../../../src/organisms/tab-bar/tab-bar.ios.js";
 import { TabBar as TabBarAndroid } from "../../../src/organisms/tab-bar/tab-bar.android.js";
+import { Tabs as TabsIOS } from "../../../src/organisms/tabs/tabs.ios.js";
 import { Tabs as TabsAndroid } from "../../../src/organisms/tabs/tabs.android.js";
 import { Steps as StepsIOS } from "../../../src/organisms/steps/steps.ios.js";
 import { Steps as StepsAndroid } from "../../../src/organisms/steps/steps.android.js";
@@ -82,8 +81,8 @@ import { EmptyState as EmptyStateIOS } from "../../../src/molecules/empty-state/
 import { EmptyState as EmptyStateAndroid } from "../../../src/molecules/empty-state/empty-state.android.js";
 import { Feed as FeedIOS } from "../../../src/molecules/feeds/feeds.ios.js";
 import { Feed as FeedAndroid } from "../../../src/molecules/feeds/feeds.android.js";
-import { Form as FormIOS, FormSection as FormSectionIOS } from "../../../src/molecules/form/form.ios.js";
-import { Form as FormAndroid, FormSection as FormSectionAndroid } from "../../../src/molecules/form/form.android.js";
+import { Form as FormIOS } from "../../../src/molecules/form/form.ios.js";
+import { Form as FormAndroid } from "../../../src/molecules/form/form.android.js";
 import { GridList as GridListIOS } from "../../../src/molecules/grid-lists/grid-lists.ios.js";
 import { GridList as GridListAndroid } from "../../../src/molecules/grid-lists/grid-lists.android.js";
 import { MediaObject as MediaObjectIOS } from "../../../src/molecules/media-objects/media-objects.ios.js";
@@ -127,17 +126,17 @@ import { Video as VideoAndroid } from "../../../src/atoms/video/video.android.js
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
-    Video: VideoIOS, Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Listbox: ListboxIOS, Radio: RadioIOS, RadioGroup: RadioGroupIOS,
+    Video: VideoIOS, Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Radio: RadioIOS, RadioGroup: RadioGroupIOS,
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, Wizard: WizardIOS, AlertDialog: AlertDialogIOS,
-    Spinner: SpinnerIOS, TabBar: TabBarIOS, Steps: StepsIOS,
+    Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS,
     AvatarMenu: AvatarMenuIOS,
     Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
     Accordion: AccordionIOS, ActionSheet: ActionSheetIOS,
     ActionPanel: ActionPanelIOS, Card: CardIOS, CardMedia: CardMediaIOS, CardTitle: CardTitleIOS, DescriptionList: DescriptionListIOS,
-    EmptyState: EmptyStateIOS, Field: FieldIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
+    EmptyState: EmptyStateIOS, Field: FieldIOS, Feed: FeedIOS, Form: FormIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, PhoneInput: PhoneInputIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Chat: ChatIOS, ChatThread: ChatThreadIOS, ChatMessage: ChatMessageIOS, ChatComposer: ChatComposerIOS, Markdown: MarkdownIOS, Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
@@ -147,7 +146,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     DashboardGrid: DashboardGridIOS, GeoMap: GeoMapIOS,
   },
   android: {
-    Video: VideoAndroid, Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Listbox: ListboxAndroid, Radio: RadioAndroid, RadioGroup: RadioGroupAndroid,
+    Video: VideoAndroid, Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid, RadioGroup: RadioGroupAndroid,
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, Wizard: WizardAndroid, AlertDialog: AlertDialogAndroid,
@@ -157,7 +156,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
     Accordion: AccordionAndroid, ActionSheet: ActionSheetAndroid,
     ActionPanel: ActionPanelAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, CardTitle: CardTitleAndroid, DescriptionList: DescriptionListAndroid,
-    EmptyState: EmptyStateAndroid, Field: FieldAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
+    EmptyState: EmptyStateAndroid, Field: FieldAndroid, Feed: FeedAndroid, Form: FormAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, PhoneInput: PhoneInputAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Chat: ChatAndroid, ChatThread: ChatThreadAndroid, ChatMessage: ChatMessageAndroid, ChatComposer: ChatComposerAndroid, Markdown: MarkdownAndroid, Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,

@@ -20,7 +20,7 @@ Audit checklist for `/components/slider`. The facts block and the variants table
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
+| Interaction states | recipes: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | adopted in `slider.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 16: `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/design-rules-skins.test.ts`, `test/feedback.test.tsx`, `test/focus-ring.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/interaction-override.test.tsx`, `test/keyboard-nav.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/slider-glass.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/ws3-a11y-theming.test.tsx` |

@@ -2,9 +2,11 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { type ReactNode, useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
+import { GlassSurface, Portal, Pressable, Text, View, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
+import { Emblem } from "../../atoms/emblem/emblem.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import * as s from "./alert-dialog.styles.js";
 import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
 import { type Width, type AlertDialogSkin } from "./alert-dialog.styles.js";
@@ -185,14 +187,13 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
     // consumes native Back through the same cancellation policy as Escape.
     useHardwareBack(open && overlay, escapeScope.onRequestClose);
 
-    // The action row. iOS renders two capsule buttons side by side (no divider)
-    // drawn by the skin; Android renders a right-aligned row of flat M3 TEXT
-    // buttons (no fill); web renders a right-aligned row of the shell's Buttons
-    // (an outline Cancel + a primary/destructive filled Confirm).
+    // The action row. iOS renders the UIAlertController's two action cells drawn by
+    // the skin; the web and Android render the hand-off's row of the shell's Buttons
+    // (a secondary Cancel + a primary/destructive Confirm).
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const actionRow =
       skin.actionLayout === "capsule" ? (
-        <View style={skin.capsuleRow!}>
+        <View style={[skin.capsuleRow!, skin.capsuleRowColor?.(tokens)]}>
           <Pressable
             onPress={handleCancel}
             accessibilityRole="button"
@@ -222,51 +223,17 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
             <Text style={skin.confirmLabelStyle!(tokens, !!destructive)}>{confirmLabel}</Text>
           </Pressable>
         </View>
-      ) : skin.textButton != null ? (
-        // Android (M3): flat TEXT buttons, Cancel then Confirm — no fill, brand
-        // `primary` labels, a destructive confirm in the `destructive`
-        // red, each with an android_ripple. This keeps the destructive confirm a
-        // red LABEL on a transparent button (never a filled red button) and
-        // mirrors the plain Dialog's Android footer.
-        <View style={skin.actions}>
-          {/* Android: the bounded text-button ripple is clipped to the br20 outline by
-              this RippleClip parent (a node can't clip its own ripple). Bare wrapper —
-              the text button is shrink-wrap with no outer layout to move. */}
-          <RippleClip shape={cornerRadii(skin.textButton)}>
-            <Pressable
-              onPress={handleCancel}
-              accessibilityRole="button"
-              android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
-              style={skin.textButton}
-            >
-              <Text style={skin.textButtonLabel!(tokens, false)}>{cancelLabel}</Text>
-            </Pressable>
-          </RippleClip>
-          <RippleClip shape={cornerRadii(skin.textButton)}>
-            <Pressable
-              onPress={handleConfirm}
-              disabled={confirmGated}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: confirmGated }}
-              aria-disabled={confirmGated || undefined}
-              android_ripple={skin.textButtonRipple ? skin.textButtonRipple(tokens) : undefined}
-              style={[skin.textButton, confirmGated ? { opacity: 0.38 } : null]}
-            >
-              <Text style={skin.textButtonLabel!(tokens, !!destructive)}>{confirmLabel}</Text>
-            </Pressable>
-          </RippleClip>
-        </View>
       ) : (
         <View style={skin.actions}>
-          <Button {...skin.cancelButton} small={skin.buttonSmall} onPress={handleCancel}>
+          <Button {...skin.cancelButton} small={skin.buttonSmall} block={skin.blockButtons} onPress={handleCancel}>
             {cancelLabel}
           </Button>
           {destructive ? (
-            <Button destructive small={skin.buttonSmall} disabled={confirmGated} onPress={handleConfirm}>
+            <Button destructive small={skin.buttonSmall} block={skin.blockButtons} disabled={confirmGated} onPress={handleConfirm}>
               {confirmLabel}
             </Button>
           ) : (
-            <Button primary small={skin.buttonSmall} disabled={confirmGated} onPress={handleConfirm}>
+            <Button primary small={skin.buttonSmall} block={skin.blockButtons} disabled={confirmGated} onPress={handleConfirm}>
               {confirmLabel}
             </Button>
           )}
@@ -317,7 +284,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
                 blur never samples the dim, and this node, which holds the card, wears
                 neither (a blur here would cut the card's frost off from the page). */}
             {scrim.layer}
-            <View style={[s.cardBase, s.panelWidth[width], style]}>
+            <View style={[s.cardBase, s.panelWidth[width], skin.panelWidth, style]}>
             {/* An alert dialog takes the DENSE layer of the glass model: the same
                 material as a Dialog, under the model's densest tint. It is the prompt
                 that stops the user to confirm a destructive action, and under the
@@ -334,6 +301,14 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
                   passthrough View on web/Android). Neither wrapper adds layout. */}
               <View ref={panelRef} tabIndex={-1}>
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+                  <View style={skin.content}>
+                  {skin.emblem != null ? (
+                    // The hand-off's tone tile: a trash glyph on the destructive wash, else
+                    // info on the accent's.
+                    <View style={skin.emblem}>
+                      {destructive ? <Emblem destructive><Icon trash2 decorative /></Emblem> : <Emblem primary><Icon info decorative /></Emblem>}
+                    </View>
+                  ) : null}
                   {title != null ? (
                     <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
                       {title}
@@ -366,6 +341,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
 />
                     </View>
                   ) : null}
+                  </View>
                   {actionRow}
                 </KeyboardAvoidingView>
               </View>

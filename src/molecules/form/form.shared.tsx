@@ -1,4 +1,4 @@
-import { Children, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
+import { Children, isValidElement, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
 import { type Role } from "react-native";
 import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type TextStyle, type ViewStyle, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -11,18 +11,17 @@ import * as s from "./form.styles.js";
 // Form contributes only what the group needs as a whole:
 //   - the vertical rhythm between rows (and the optional two-column flow that
 //     collapses to one column on phones, desktop-first),
-//   - the actions row: a primary submit + an outline cancel composed from the kit
+//   - the actions row: a primary submit + a ghost cancel composed from the kit
 //     Button, rendered when a label is given,
 //   - form semantics for assistive tech, and Enter-to-submit on the web.
 // It deliberately owns NO field state and collects no values: `onSubmit` is a
 // plain callback, and the caller reads its own state (this keeps every atom
 // decoupled from Form and its API identical inside or outside one).
 //
-// Form is a "Light" platform treatment. Neither iOS nor Android ships a native
-// form control (PLATFORM-REFERENCES.md): SwiftUI Form renders as a grouped inset
-// list, and Material 3 composes forms from text fields, selection controls, and
-// buttons. So the per-OS touches are conventions only (SF type/rhythm on iOS, M3
-// type tracking on Android), and the WEB look is kept verbatim.
+// Neither iOS nor Android draws a form of its own (PLATFORM-REFERENCES.md): SwiftUI's
+// Form is a grouped inset list and Material 3 has no form component, so every platform
+// takes the hand-off's web form (form.styles.ts), and the composed fields and Buttons
+// bring the platform's shapes.
 
 // The submit/cancel Button the Form composes, typed as the atom component so the
 // public atom API is preserved across every build path. Each platform's thin
@@ -40,12 +39,14 @@ export interface FormSkin {
   sectionTitle: (t: ColorTokens) => TextStyle;
   /** The muted supporting line under a section heading. */
   sectionDescription: (t: ColorTokens) => TextStyle;
-  /** The right-aligned actions row. */
-  actions: ViewStyle;
+  /** The right-aligned actions row, with its rule above. */
+  actions: (t: ColorTokens) => ViewStyle;
   /** The form's stacked rhythm (gap between rows). */
   stack: ViewStyle;
-  /** A section's internal rhythm (header block to rows, row to row). */
-  sectionStack: ViewStyle;
+  /** A section: its internal rhythm (header block to rows, row to row) and its closing rule. */
+  section: (t: ColorTokens) => ViewStyle;
+  /** The whole form's opacity while `disabled`. */
+  disabledOpacity: number;
 }
 
 export interface FormSectionProps {
@@ -75,7 +76,7 @@ export interface FormProps extends MeasureProps {
   twoColumn?: boolean;
   /** Label for the primary submit button. Passing it (or `cancelLabel`) renders the actions row. */
   submitLabel?: string;
-  /** Renders an outline cancel button before the submit button. */
+  /** Renders a ghost cancel button before the submit button. */
   cancelLabel?: string;
   /**
    * Fired when the submit button is pressed, and on the web when Enter is
@@ -85,7 +86,7 @@ export interface FormProps extends MeasureProps {
   onSubmit?: () => void;
   /** Fired when the cancel button is pressed. */
   onCancel?: () => void;
-  /** Disables the actions row and Enter-to-submit. */
+  /** Disables the actions row and Enter-to-submit, and dims the form. */
   disabled?: boolean;
   /**
    * The form's name for assistive tech, a brief statement of its purpose ("Sign in",
@@ -106,7 +107,7 @@ export interface FormProps extends MeasureProps {
  * legend).
  */
 export function createFormSection(skin: FormSkin) {
-  return function FormSection({ title, description, children, testID, style }: FormSectionProps) {
+  function FormSection({ title, description, children, testID, style }: FormSectionProps) {
     const { tokens } = useTheme();
     // Programmatic grouping: a screen reader hears the title as the group's name
     // and the controls as members of it. Both the RN accessibilityLabel and the
@@ -116,7 +117,7 @@ export function createFormSection(skin: FormSkin) {
         ? ({ role: "group" as const, accessibilityLabel: title, "aria-label": title } as const)
         : {};
     return (
-      <View testID={testID} {...nameProps} style={[skin.sectionStack, style]}>
+      <View testID={testID} {...nameProps} style={[skin.section(tokens), style]}>
         {title != null || description != null ? (
           <View>
             {title != null ? <Text style={skin.sectionTitle(tokens)}>{title}</Text> : null}
@@ -126,8 +127,15 @@ export function createFormSection(skin: FormSkin) {
         {children}
       </View>
     );
-  };
+  }
+  // Marks a section for the two-column flow, which gives it the whole row.
+  (FormSection as SectionMarked).formSection = true;
+  return FormSection;
 }
+
+type SectionMarked = { formSection?: boolean };
+const isSection = (child: ReactNode): boolean =>
+  isValidElement(child) && typeof child.type === "function" && (child.type as SectionMarked).formSection === true;
 
 /** Build a Form component from a platform skin (plus the platform-correct Button its actions row composes; defaults to the web base when omitted). */
 export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) {
@@ -136,6 +144,7 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     // The landmark's name, set as both the RN prop and its aria alias (FormSection's
     // dual-alias precedent). An unnamed form renders exactly the markup it did before.
     const nameProps = accessibilityLabel != null ? { accessibilityLabel, "aria-label": accessibilityLabel } : null;
+    const { tokens } = useTheme();
 
     // The two-column flow: rows wrap into a two-up grid in wide CONTAINERS and
     // collapse to a single full-width column in narrow ones (desktop-first). The
@@ -156,7 +165,7 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
         style={{ flexDirection: twoUp ? "row" : "column", flexWrap: "wrap", gap: s.twoColumnGap }}
       >
         {Children.toArray(children).map((child, i) => (
-          <View key={i} style={[twoUp ? s.flex1 : s.flexAuto, s.twoColumnItem]}>
+          <View key={i} style={isSection(child) ? s.fullRowItem : [twoUp ? s.flex1 : s.flexAuto, s.twoColumnItem]}>
             {child}
           </View>
         ))}
@@ -167,9 +176,9 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
 
     const actions =
       submitLabel != null || cancelLabel != null ? (
-        <View style={skin.actions}>
+        <View style={skin.actions(tokens)}>
           {cancelLabel != null ? (
-            <Button outline disabled={disabled} onPress={onCancel}>
+            <Button ghost disabled={disabled} onPress={onCancel}>
               {cancelLabel}
             </Button>
           ) : null}
@@ -242,7 +251,7 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     }, [enterActive, formId]);
 
     return (
-      <View ref={rootRef} nativeID={formId} testID={testID} role={FORM} {...nameProps} style={[skin.stack, fill, style]}>
+      <View ref={rootRef} nativeID={formId} testID={testID} role={FORM} {...nameProps} style={[skin.stack, disabled ? { opacity: skin.disabledOpacity } : null, fill, style]}>
         {rows}
         {actions}
       </View>

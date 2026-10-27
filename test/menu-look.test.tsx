@@ -3,96 +3,125 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
 import { alpha } from "../src/style/color.ts";
+import { shadow } from "../src/style/index.ts";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import * as dropdownSkins from "../src/atoms/dropdown/dropdown.styles.ts";
 import * as rowMenuSkins from "../src/organisms/row-menu/row-menu.styles.ts";
-import { menuPanel, menuRow, menuRowHover, menuRowLabel, menuSection, menuSeparator, MENU_OFFSET, MENU_ROW_GAP } from "../src/style/menu-look.ts";
+import { menuDetail, menuPanel, menuRow, menuRowHover, menuRowLabel, menuSection, menuSeparator, MENU_ICON, MENU_ROW_GAP } from "../src/style/menu-look.ts";
 import { View } from "react-native";
 
-// The web Dropdown and RowMenu are Dark Factory's menu (SKN-5a): its Popover panel of
-// MenuItems, read from one recipe (src/style/menu-look.ts) so the two cannot drift. iOS
-// and Android keep their platform menus.
+// The web Dropdown and RowMenu take the v4 hand-off's menu through one recipe
+// (src/style/menu-look.ts): its panel, rows, eyebrow, shortcut, rule and washes; each keeps
+// its renderer's row height, glyph gap and standoff. iOS and Android keep their platform menus.
 
 afterEach(cleanup);
 
 const t = lightColors;
 const flat = (value: string) => value.replace(/\s/g, "");
 const rgbaOf = (hex: string) => flat(alpha(hex, 1)).replace(/,1\)$/, ",1.00)");
-// The scheme's hover wash (the hand-off's `--hover`), as react-native-web prints it.
-const wash = (() => {
-  const [r, g, b, a] = lightColors.hover!.match(/[\d.]+/g)!;
-  return new RegExp(`rgba\\(${r},\\s*${g},\\s*${b},\\s*${Number(a).toFixed(2)}\\)`);
-})();
 const ITEMS = [
   { label: "Rename", icon: "pencil" as const },
   { label: "Archive", disabled: true },
   { label: "Delete", destructive: true, separatorBefore: true },
 ];
 
-describe("Dark Factory's menu on the web", () => {
-  it("is one recipe in both web menus", () => {
-    const dropdown = dropdownSkins.webSkin;
-    const rowMenu = rowMenuSkins.webSkin;
-    expect(dropdown.menuCard(t)).toEqual(menuPanel(t));
-    expect(rowMenu.menuCard(t)).toEqual(menuPanel(t));
-    expect(dropdown.itemRow).toBe(menuRow);
-    expect(rowMenu.itemRow).toBe(menuRow);
-    expect(dropdown.itemTextType).toBe(menuRowLabel);
-    expect(rowMenu.rowTextSize).toBe(menuRowLabel);
-    expect(dropdown.menuLabel(t)).toEqual(menuSection(t));
-    expect(rowMenu.menuLabel(t)).toEqual(menuSection(t));
-    expect(dropdown.separator?.(t)).toEqual(menuSeparator(t));
-    expect(rowMenu.separator(t)).toEqual(menuSeparator(t));
-    expect([dropdown.menuGap, rowMenu.menuGap]).toEqual([MENU_OFFSET, MENU_OFFSET]);
-    expect([dropdown.rowGap, rowMenu.rowGap]).toEqual([MENU_ROW_GAP, MENU_ROW_GAP]);
+describe("the v4 menu on the web", () => {
+  it("gives the Dropdown and the RowMenu one recipe", () => {
+    for (const s of [dropdownSkins.webSkin, rowMenuSkins.webSkin]) {
+      expect(s.menuCard(t)).toEqual(menuPanel(t));
+      expect(s.menuLabel(t)).toEqual(menuSection(t));
+      expect(s.separator?.(t)).toEqual(menuSeparator(t));
+      expect(s.itemHover).toBe(menuRowHover);
+      expect(s.itemRow).toMatchObject(menuRow);
+      expect([s.iconSize, s.rowGap]).toEqual([MENU_ICON, MENU_ROW_GAP]);
+    }
+    expect(dropdownSkins.webSkin.itemTextType).toEqual(menuRowLabel);
+    expect(rowMenuSkins.webSkin.rowTextSize).toEqual(menuRowLabel);
+    expect(dropdownSkins.webSkin.shortcut(t)).toEqual(menuDetail(t));
   });
 
-  it("draws Dark Factory's panel and rows", () => {
-    // The panel's corner is the hand-off's menu radius (16) and its shade the ladder's lg step.
-    expect(menuPanel(t)).toMatchObject({ borderRadius: 16, padding: 8, borderWidth: 1, borderColor: t.border, backgroundColor: t.popover, boxShadow: expect.stringContaining("30px 80px -16px") });
-    expect(menuRow).toMatchObject({ borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, gap: 10 });
-    expect(menuRowLabel).toMatchObject({ fontSize: 12.5, lineHeight: 17, fontWeight: "700" });
-    expect(menuSection(t)).toMatchObject({ fontSize: 10, fontWeight: "700", textTransform: "uppercase", color: t["muted-foreground"] });
-    expect([MENU_OFFSET, MENU_ROW_GAP]).toEqual([8, 2]);
+  it("draws the v4 hand-off's menu for the web Dropdown (its `dropdown` renderer)", () => {
+    const s = dropdownSkins.webSkin;
+    // The panel: K.panel, sf on the ln hairline at the menu corner, the md shade, inset 4.
+    expect(s.menuCard(t)).toMatchObject({ borderRadius: 16, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, padding: 4, boxShadow: shadow("md", t).boxShadow });
+    // The rows: 36 tall (30 compact), inset 10, gap 10, at 8, 400 14 labels, 15px tx3 glyphs.
+    expect(s.itemRow).toMatchObject({ minHeight: 36, paddingHorizontal: 10, gap: 10, borderRadius: 8 });
+    expect(s.reference?.row).toEqual({ minHeight: 30 });
+    expect(s.itemTextType).toEqual({ fontSize: 14, lineHeight: 18, fontWeight: "400" });
+    expect([s.iconSize, s.iconColor?.(t)]).toEqual([15, t["subtle-foreground"]]);
+    // The mono eyebrow, the mono shortcut, the inset rule, the sf3 hover.
+    expect(s.menuLabel(t)).toMatchObject({ fontSize: 11, fontWeight: "500", letterSpacing: 0.88, textTransform: "uppercase", paddingTop: 6, paddingHorizontal: 10, paddingBottom: 4, color: t["subtle-foreground"] });
+    expect(s.shortcut(t)).toMatchObject({ fontSize: 11, fontWeight: "400", color: t["subtle-foreground"] });
+    expect(s.separator?.(t)).toEqual({ height: 1, marginTop: 4, marginBottom: 4, marginHorizontal: 6, backgroundColor: t.border });
+    expect(s.itemHover?.(t)).toEqual({ backgroundColor: t.secondary });
+    // 6 below the trigger, the rows touching.
+    expect([s.menuGap, s.rowGap]).toEqual([6, 0]);
   });
 
-  it("washes a resting row at once on hover, never a disabled one, and mutes a disabled row instead of dimming it", () => {
+  it("draws the v4 hand-off's row menu on the web (its `row-menu` renderer)", () => {
+    const s = rowMenuSkins.webSkin;
+    // The trigger: a 32px square at 8 on the 1px ln2 edge, a 16px glyph in tx, sf3 while open.
+    expect(s.trigger).toMatchObject({ width: 32, height: 32, borderWidth: 1, borderRadius: 8 });
+    expect(s.triggerEdge?.(t)).toEqual({ borderColor: t["field-border"] });
+    expect(s.triggerOpen?.(t)).toEqual({ backgroundColor: t.secondary });
+    expect([s.triggerIconSize, s.triggerIconColor(t)]).toEqual([16, t.foreground]);
+    // The panel: sf on the ln hairline, inset 4, the md shade, 220 wide, 8 below the trigger.
+    expect(s.menuCard(t)).toMatchObject({ borderWidth: 1, borderColor: t.border, backgroundColor: t.card, padding: 4, boxShadow: shadow("md", t).boxShadow });
+    expect([s.menuMinWidth, s.menuGap, s.rowGap]).toEqual([220, 8, 0]);
+    // The rows: 34 tall at 8, inset 10, a 15px tx3 glyph 8 from a 400 14px label.
+    expect(s.itemRow).toMatchObject({ minHeight: 34, paddingHorizontal: 10, gap: 8, borderRadius: 8 });
+    expect(s.rowTextSize).toEqual({ fontSize: 14, lineHeight: 18, fontWeight: "400" });
+    expect([s.iconSize, s.iconColor?.(t)]).toEqual([15, t["subtle-foreground"]]);
+  });
+
+  it("draws the hand-off's panel and rows (K.panel and its menu rows)", () => {
+    // K.panel: sf on the ln hairline at the menu corner (16), the md shade, inset 4.
+    expect(menuPanel(t)).toEqual({ borderRadius: 16, padding: 4, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, ...shadow("md", t) });
+    // The Popover's compact card draws the hairline as an outside ring instead.
+    expect(menuPanel(t, true)).toMatchObject({ borderWidth: 0, boxShadow: `${shadow("md", t).boxShadow}, 0 0 0 1px ${t.border}` });
+    expect(menuRow).toEqual({ flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 10 });
+    expect(menuRowLabel).toEqual({ fontSize: 14, lineHeight: 18, fontWeight: "400" });
+    expect(menuSection(t)).toMatchObject({ fontSize: 11, fontWeight: "500", letterSpacing: 0.88, textTransform: "uppercase", color: t["subtle-foreground"] });
+    expect(menuDetail(t)).toMatchObject({ fontSize: 11, fontWeight: "400", color: t["subtle-foreground"] });
+    expect(menuSeparator(t)).toEqual({ height: 1, marginTop: 4, marginBottom: 4, marginHorizontal: 6, backgroundColor: t.border });
+    expect([MENU_ICON, MENU_ROW_GAP]).toEqual([15, 0]);
+  });
+
+  it("washes a resting Dropdown row at once on hover, never a disabled one, and mutes a disabled row instead of dimming it", () => {
     render(<ThemeProvider light solid><Dropdown trigger="Actions" items={ITEMS} /></ThemeProvider>);
     fireEvent.click(screen.getByRole("button", { name: "Actions" }));
     const [rename, archive] = screen.getAllByRole("menuitem");
+    const sf3 = rgbaOf(t.secondary);
     expect(rename.style.getPropertyValue("transition-property")).toBe("");
     fireEvent.pointerEnter(rename, { pointerType: "mouse" });
-    expect(rename.style.backgroundColor).toMatch(wash);
+    expect(flat(rename.style.backgroundColor)).toBe(sf3);
     fireEvent.pointerLeave(rename);
-    expect(rename.style.backgroundColor).not.toMatch(wash);
+    expect(flat(rename.style.backgroundColor)).not.toBe(sf3);
     fireEvent.pointerEnter(archive, { pointerType: "mouse" });
-    expect(archive.style.backgroundColor).not.toMatch(wash);
+    expect(flat(archive.style.backgroundColor)).not.toBe(sf3);
     expect(archive.style.opacity).toBe("");
     const label = screen.getByText("Archive");
     expect(flat(label.style.color)).toBe(rgbaOf(t["muted-foreground"]));
   });
 
-  it("gives the RowMenu the same rows, and Dark Factory's plain icon button as its trigger", () => {
+  it("gives the RowMenu the same hover wash on its rows, and the hand-off's edged icon button as its trigger", () => {
     render(<ThemeProvider light solid><RowMenu items={ITEMS} /></ThemeProvider>);
     const trigger = screen.getByRole("button", { name: "More options" });
-    expect(trigger.style.width).toBe("28px");
+    expect(trigger.style.width).toBe("32px");
     fireEvent.pointerEnter(trigger, { pointerType: "mouse" });
-    expect(trigger.style.backgroundColor).toMatch(wash);
+    expect(flat(trigger.style.backgroundColor)).toBe(rgbaOf(t.secondary));
     fireEvent.click(trigger);
     const [rename, archive] = screen.getAllByRole("menuitem");
     fireEvent.pointerEnter(rename, { pointerType: "mouse" });
-    expect(rename.style.backgroundColor).toMatch(wash);
+    expect(flat(rename.style.backgroundColor)).toBe(rgbaOf(t.secondary));
     expect(archive.style.opacity).toBe("");
-    expect(rowMenuSkins.webSkin.triggerIconColor(t)).toBe(t["muted-foreground"]);
   });
 });
 
-describe("the hover fallback", () => {
-  it("washes a row in `accent` for a token map without the optional `hover` role", () => {
-    const { hover: _omit, ...legacy } = t;
-    expect(menuRowHover(legacy as typeof t)).toEqual({ backgroundColor: t.accent });
-    expect(menuRowHover(t)).toEqual({ backgroundColor: t.hover });
+describe("the hover wash", () => {
+  it("is the `secondary` fill, the hand-off's sf3 active row", () => {
+    expect(menuRowHover(t)).toEqual({ backgroundColor: t.secondary });
   });
 });
 
@@ -117,13 +146,13 @@ describe("the platform menus", () => {
     }
     // Inside a plain View (a stretching parent that is not a kit layout container, like a
     // table cell) the anchor may stretch, but it starts the trigger, so the trigger and
-    // its hover target keep the 28px box.
+    // its hover target keep the 32px box.
     render(<ThemeProvider light solid><View style={{ width: 300 }}><RowMenu items={ITEMS} testID="menu" /></View></ThemeProvider>);
     const root = screen.getByTestId("menu");
     expect(root.style.alignItems).toBe("flex-start");
     expect(root.style.alignSelf).toBe("");
     const trigger = screen.getByRole("button", { name: "More options" });
-    expect(trigger.style.width).toBe("28px");
+    expect(trigger.style.width).toBe("32px");
     expect(trigger.parentElement).not.toBe(root.parentElement);
   });
 });

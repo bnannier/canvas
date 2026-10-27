@@ -2,6 +2,12 @@
 
 Catalyst-style confirmation dialog: a centered panel over a dimmed backdrop, which glass on the web also blurs, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.
 
+On the web and Android the panel leads with a tone tile (a trash glyph on the
+destructive wash, otherwise an info glyph on the accent's), then a display title over
+its description, and closes on two equal buttons: a secondary Cancel and the primary or
+destructive confirm. On iOS it is the system alert: centered text over a two-cell action
+row under a hairline, the confirm in the error ink when destructive.
+
 Browser Escape and iOS accessibility escape cancel the dialog, clear its
 confirmation field and request `open=false`. The confirmation text gates only
 the confirm action; cancellation remains available while confirm is disabled.

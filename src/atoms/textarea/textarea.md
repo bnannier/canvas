@@ -12,9 +12,15 @@ name ("Bio, required") on iOS and Android. The box fills the parent it is given;
 own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container
 step sets its measure.
 
-Android uses the same opaque muted surface as the other filled fields. Its label
-uses `primary-text` when focused and `destructive-text` on error. The over-limit
-character count also uses `destructive-text` on every platform.
+The box is the single-line Input's on each platform. On the web it is the sunken
+well with a 1 px hairline that steps to the subtle ink on hover, takes the `ring`
+edge and a 4 px accent halo on focus and the `destructive` edge on error, with a
+400 value on a 1.55 line; the count is an 11 px mono caption ("12 / 280"). iOS keeps
+its 8 pt `card` box with the error wash and a tabular count ("12/280"). Android uses
+the same opaque muted surface as the other filled fields, and its count sits at the
+end of the supporting-text row. Its label uses `primary-text` when focused and
+`destructive-text` on error. The over-limit character count also uses
+`destructive-text` on every platform. Without `rows` the field starts four rows tall.
 
 Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.

@@ -7,7 +7,8 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import { View, Text, useTheme, LabelContent, labelA11y, requiredName, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
+import { View, Text, useTheme, LabelContent, labelA11y, requiredName, type LayoutStyle, type MeasureProps, type ViewStyle, useFillStyle } from "../../style/index.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import { type FieldSkin } from "./field.styles.js";
 
 // Shared Field shell. A form row: a label, the control, and one message line under it.
@@ -61,6 +62,10 @@ interface Delegable {
   "aria-describedby"?: string;
 }
 
+// The message row: the optional glyph centred on the text's line, the text taking the rest.
+const MESSAGE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center" };
+const MESSAGE_TEXT = { flexShrink: 1 } as const;
+
 export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]) {
   function Field(props: FieldProps) {
     const { label, helper, error, required, children, testID, style } = props;
@@ -99,6 +104,11 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
         })
       : children;
 
+    // The message line: an errored one leads with the skin's alert glyph (the web's), in
+    // the message's own ink, and under a delegated filled field it keeps the skin's inset.
+    const messageStyle = skin.message(tokens, isError);
+    const glyph = isError ? skin.errorGlyph : undefined;
+
     return (
       <View testID={testID} style={[skin.stack, fill, style]}>
         {label != null && !delegate ? (
@@ -111,14 +121,17 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
         ) : null}
         {control}
         {message != null && message !== "" ? (
-          <Text
-            nativeID={messageId}
-            accessibilityRole={isError ? "alert" : undefined}
-            role={isError ? "alert" : undefined}
-            style={skin.message(tokens, isError)}
-          >
-            {message}
-          </Text>
+          <View style={[MESSAGE_ROW, glyph ? { gap: glyph.gap } : null, delegate && skin.delegatedInset ? { paddingHorizontal: skin.delegatedInset } : null]}>
+            {glyph ? <Icon circleAlert color={messageStyle.color as string} size={glyph.size} decorative /> : null}
+            <Text
+              nativeID={messageId}
+              accessibilityRole={isError ? "alert" : undefined}
+              role={isError ? "alert" : undefined}
+              style={[messageStyle, MESSAGE_TEXT]}
+            >
+              {message}
+            </Text>
+          </View>
         ) : null}
       </View>
     );

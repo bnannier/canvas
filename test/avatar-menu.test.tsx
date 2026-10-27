@@ -99,9 +99,8 @@ const withLayout = async (run: () => Promise<void>) => {
   }
 };
 
-// The disc the capsule is drawn around: Avatar's `tiny` step, the size the web
-// hand-off puts inside its identity pill.
-const DISC = 24;
+// Avatar's `tiny` step: the hand-off's 20px disc (`K.def('avatar')`).
+const DISC = 20;
 
 describe("AvatarMenu pill", () => {
   it("renders the name over the email inside one capsule trigger", () => {
@@ -468,10 +467,8 @@ describe("AvatarMenu: Dark Factory's identity pill on every platform", () => {
 });
 
 describe("Avatar tiny: the identity pill's disc", () => {
-  // The kit's own scale is {tiny 24, small 28, default 40, large 48}; the
-  // hand-off's is {24, 32, 40}. `tiny` is the step that meets the hand-off's
-  // 24px avatar without re-scaling the three sizes already shipped.
-  it("renders a 24px disc", () => {
+  // The kit's scale is the v4 hand-off's: {tiny 20, small 28, default 40, large 56}.
+  it("renders a 20px disc", () => {
     const { container } = ui(<Avatar tiny name={NAME} testID="disc" />);
     expect(at(container, "disc").style.width).toBe(`${DISC}px`);
     expect(at(container, "disc").style.height).toBe(`${DISC}px`);
@@ -482,11 +479,11 @@ describe("Avatar tiny: the identity pill's disc", () => {
     expect(at(container, "disc").style.width).toBe(`${DISC}px`);
   });
 
-  // Dark Factory sets initials at a third of the disc, 8px on a 24px disc; the kit's 10px
-  // source floor holds the tiny disc's initials there, bold, on every platform (one skin).
-  it("holds the tiny disc's initials at the 10px floor, bold, on every platform", () => {
+  // The hand-off sets initials at 38% of the disc at weight 600, 8px on a 20px disc; the
+  // kit's 10px source floor holds the tiny disc's initials there, on every platform (one skin).
+  it("holds the tiny disc's initials at the 10px floor, weight 600, on every platform", () => {
     for (const skin of [webSkin, iosSkin, androidSkin]) {
-      expect(skin.labelType.tiny).toMatchObject({ fontSize: 10, lineHeight: 10, fontWeight: "800" });
+      expect(skin.labelType.tiny).toMatchObject({ fontSize: 10, lineHeight: 10, fontWeight: "600" });
     }
     expect(iosSkin).toBe(webSkin);
     expect(androidSkin).toBe(webSkin);

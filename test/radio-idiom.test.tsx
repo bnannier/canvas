@@ -18,9 +18,10 @@ const load = async (platform: Platform) => {
   return { Radio: mod.Radio as ElementType, RadioGroup: mod.RadioGroup as ElementType };
 };
 
-/** The trailing check glyph inside a radio row, or null when the row draws a ring. */
+/** The trailing check glyph's cell inside a radio row (the row's first hidden node: a ring
+ *  row hides nothing), or null when the row draws a ring. */
 function checkOf(row: HTMLElement): HTMLElement | null {
-  return [...row.querySelectorAll<HTMLElement>("[aria-hidden]")].find((node) => node.textContent === "✓") ?? null;
+  return row.querySelector<HTMLElement>('[aria-hidden="true"]');
 }
 const shown = (glyph: HTMLElement | null) => glyph != null && glyph.style.opacity !== "0";
 
@@ -94,7 +95,7 @@ describe("an iOS RadioGroup", () => {
 
 describe("the ring platforms", () => {
   for (const platform of ["web", "android"] as const) {
-    it(`keep the ring and dot on ${platform}, with the options stacked and no list section`, async () => {
+    it(`keep the ring on ${platform}, with the options stacked and no list section`, async () => {
       const { Radio, RadioGroup } = await load(platform);
       render(
         <ThemeProvider>
@@ -111,8 +112,55 @@ describe("the ring platforms", () => {
         // The first child is the ring, a circle.
         expect((row.firstElementChild as HTMLElement).style.borderRadius).toBe("9999px");
       }
-      // The chosen ring holds its dot.
-      expect(screen.getByRole("radio", { name: "Pro" }).firstElementChild?.childElementCount).toBeGreaterThan(0);
+      // The chosen ring marks the choice: Android's holds its dot, the web's thickens to 30%
+      // of its 18px around a hollow center (the hand-off's `K.def('radio')`).
+      const chosen = screen.getByRole("radio", { name: "Pro" }).firstElementChild as HTMLElement;
+      if (platform === "android") expect(chosen.childElementCount).toBeGreaterThan(0);
+      else {
+        expect(chosen.childElementCount).toBe(0);
+        expect(chosen.style.borderTopWidth || chosen.style.borderWidth).toBe("5px");
+        expect(chosen.style.width).toBe("18px");
+      }
     });
   }
+});
+
+describe("the hand-off's Radio geometry", () => {
+  it("web: an 18px ring at a 1.5px edge, 12px from the 500 14px title, options 12 apart and cards 8", async () => {
+    const { Radio, RadioGroup } = await load("web");
+    render(
+      <ThemeProvider>
+        <RadioGroup defaultValue="pro" testID="plain">
+          <Radio value="hobby" description="Ships every few weeks">Hobby</Radio>
+          <Radio value="pro">Pro</Radio>
+        </RadioGroup>
+        <RadioGroup defaultValue="a" testID="cards">
+          <Radio value="a" card>A</Radio>
+          <Radio value="b" card>B</Radio>
+        </RadioGroup>
+      </ThemeProvider>,
+    );
+    const hobby = screen.getByRole("radio", { name: /Hobby/ });
+    const ring = hobby.firstElementChild as HTMLElement;
+    expect(ring.style.width).toBe("18px");
+    expect(ring.style.borderTopWidth || ring.style.borderWidth).toBe("1.5px");
+    expect(hobby.style.gap).toBe("12px");
+    expect(screen.getByText("Hobby").style.fontSize).toBe("14px");
+    expect(screen.getByText("Hobby").style.fontWeight).toBe("500");
+    expect(screen.getByText("Ships every few weeks").style.fontSize).toBe("12px");
+    const groups = screen.getAllByRole("radiogroup");
+    expect(groups[0].style.gap).toBe("12px");
+    expect(groups[1].style.gap).toBe("8px");
+    const card = screen.getByRole("radio", { name: "A" });
+    expect(card.style.borderTopLeftRadius || card.style.borderRadius).toBe("12px");
+    expect(card.style.paddingTop).toBe("12px");
+    expect(card.style.paddingLeft || card.style.paddingInlineStart).toBe("14px");
+  });
+
+  it("iOS: the grouped section keeps the 26pt corner inside a hairline, and the check is the label size plus 4", async () => {
+    const { iosSkin } = await import("../src/atoms/radio/radio.styles.ts");
+    const { lightColors } = await import("../src/style/tokens.ts");
+    expect(iosSkin.list!.section(lightColors)).toMatchObject({ borderRadius: 26, borderWidth: 1 });
+    expect(iosSkin.mark.kind === "check" ? iosSkin.mark.glyph(lightColors, "default") : null).toMatchObject({ size: 18, width: 22 });
+  });
 });

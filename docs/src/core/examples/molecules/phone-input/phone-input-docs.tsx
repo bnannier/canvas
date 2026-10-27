@@ -43,6 +43,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["button","option"],"states":["disabled","expanded","selected"],"aria":["aria-controls","aria-describedby","aria-expanded","aria-haspopup","aria-invalid","aria-label","aria-labelledby","aria-required","aria-selected"],"touchTarget":[]},
-  tokens: ["border","destructive","input","muted","muted-foreground","primary","ring"],
+  tokens: ["destructive","foreground","input","muted","muted-foreground","primary","ring","subtle-foreground"],
   related: ["field","row-column","typography","input","text-input","textarea","select","input-otp"],
 };

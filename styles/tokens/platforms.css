@@ -53,32 +53,35 @@
   --p-switch-thumb-shadow:none;
   /* Pills and tiles */
   --p-badge-radius:9999px;--p-badge-font:12px;--p-badge-weight:500;--p-badge-tracking:0px;
-  --p-chip-radius:9999px;--p-chip-pad-x:10px;--p-chip-pad-y:4px;--p-chip-font:11px;--p-chip-gap:7px;
-  /* Chip glyphs (chip.styles.ts: 12px web/iOS remove glyph; the M3 selected checkmark shows on Android only) */
-  --p-chip-remove:12px;--p-chip-check-display:none /* @kind other */;--p-chip-check-size:18px;
-  --p-avatar-square-radius:10px;
+  --p-chip-radius:9999px;--p-chip-pad-x:12px;--p-chip-pad-y:4.5px;--p-chip-font:13px;--p-chip-gap:6px;
+  /* Chip glyphs (chip.styles.ts: the web/iOS 11px remove glyph in its 18px disc; the selected chip leads with a 13px check) */
+  --p-chip-remove:11px;--p-chip-check-display:inline-flex /* @kind other */;--p-chip-check-size:13px;
+  /* Avatar `rounded` square (avatar.styles.ts, every platform: the hand-off's 28% of the disc; 11px on the 40px default, 6 / 8 / 16 on tiny / small / large) */
+  --p-avatar-square-radius:11px;
   /* Banners and overlays */
-  --p-alert-radius:12px;--p-alert-tracking:0px;
+  --p-alert-radius:14px;--p-alert-tracking:0px;
   --p-overlay-radius:20px;--p-sheet-radius:22px;
-  /* Popover (popover.styles.tsx webSkin, Android too: Dark Factory's panel, a 12px card with
-     the 1px hairline and the popover shadow, Dark Factory's heading over its body, no beak) */
-  --p-popover-radius:16px;--p-popover-border:1px;--p-popover-shadow:var(--shadow-lg);--p-popover-beak-display:none /* @kind other */;
+  /* Popover (popover.styles.tsx webSkin, Android too: the v4 panel, a 280px card at the menu
+     shape with the field-border hairline and the lg shadow, a display heading, the diamond beak) */
+  --p-popover-radius:16px;--p-popover-border:1px;--p-popover-shadow:var(--shadow-lg);--p-popover-beak-display:block /* @kind other */;
   /* Spinner (spinner.styles.tsx webSkin: the ActivityIndicator arc ring; iOS swaps in the spoke ring) */
   --p-spinner-arc-display:inline-block /* @kind other */;--p-spinner-spokes-display:none /* @kind other */;
-  /* Tabs — underline rule, 2px brand indicator */
-  --p-tab-track-bg:transparent;--p-tab-track-radius:9999px;--p-tab-track-pad:0px;--p-tab-rule:1px;
-  --p-tab-item-radius:9999px;--p-tab-item-pad-x:16px;--p-tab-item-pad-y:12px;
+  /* Tabs (tabs.styles.ts webSkin, the v4 renderer): 40px tabs 24 apart on the 1px rule, 500 14px,
+     the 2px accent indicator with its glow */
+  --p-tab-track-bg:transparent;--p-tab-track-radius:0px;--p-tab-track-pad:0px;--p-tab-rule:1px;
+  --p-tab-item-radius:0px;--p-tab-item-pad-x:0px;--p-tab-item-pad-y:10px;--p-tab-gap:24px;
   --p-tab-selected-bg:transparent;--p-tab-selected-shadow:none;
   --p-tab-indicator-h:2px;--p-tab-font:14px;--p-tab-lh:20px;
   --p-tab-label-selected:var(--foreground);
-  /* Tabs pills + vertical (tabs.styles.ts webSkin: muted radius-8 track with a raised white thumb; accent-filled rail) */
-  --p-tab-pill-track-radius:9999px;--p-tab-pill-track-pad:8px;--p-tab-pill-gap:8px;
-  --p-tab-pill-radius:9999px;--p-tab-pill-pad-x:16px;--p-tab-pill-pad-y:10px;
-  --p-tab-pill-selected-bg:color-mix(in oklab, var(--primary) 14%, transparent);--p-tab-pill-selected-shadow:none;
+  /* Tabs pills + vertical (webSkin): a secondary 12px track inset 4 of 34px pills at 9, the active one a
+     card thumb on the sm shadow; a 200px rail whose active row is the accent's soft wash */
+  --p-tab-pill-track-radius:12px;--p-tab-pill-track-pad:4px;--p-tab-pill-gap:4px;
+  --p-tab-pill-radius:9px;--p-tab-pill-pad-x:12px;--p-tab-pill-pad-y:8px;
+  --p-tab-pill-selected-bg:var(--card);--p-tab-pill-selected-shadow:var(--shadow-sm);
   --p-tab-pill-label:var(--muted-foreground);--p-tab-pill-selected-weight:500;
-  --p-tab-v-radius:10px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:12px;--p-tab-v-font:14px;--p-tab-v-lh:20px;
+  --p-tab-v-radius:9px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:8px;--p-tab-v-font:13px;--p-tab-v-lh:18px;
   --p-tab-v-weight:500;--p-tab-v-selected-weight:500;
-  --p-tab-v-selected-fill:var(--accent);--p-tab-v-selected-label:var(--accent-foreground);--p-tab-v-label:var(--muted-foreground);
+  --p-tab-v-selected-fill:var(--primary-soft);--p-tab-v-selected-label:var(--primary-text);--p-tab-v-label:var(--muted-foreground);
   /* Sidebar (sidebar.styles.ts webSkin: the v4 rail; compact is 30px rows at 8px, 1px apart,
      a 600 active label and a 0 10 6 title inset) */
   --p-side-w:232px;--p-side-w-collapsed:64px;--p-side-fill:var(--surface-sunken) /* @kind other */;
@@ -113,8 +116,8 @@
   --p-min-target:0px;
   /* Breadcrumb (breadcrumb.styles.ts webSkin: no tracking, font-medium current page) */
   --p-crumb-tracking:0px;--p-crumb-sep-tracking:0px;--p-crumb-current-weight:500;
-  /* EmptyState (empty-state.styles.ts webSkin: 8px bordered card, no tracking) */
-  --p-empty-radius:16px;--p-empty-title-tracking:0px;--p-empty-desc-tracking:0px;
+  /* EmptyState (empty-state.styles.ts webSkin: the v4 column at the empty-state corner, 18) */
+  --p-empty-radius:18px;--p-empty-title-tracking:-0.19px;--p-empty-desc-tracking:0px;
   /* Sidebar row colors (sidebar.styles.ts webSkin: the accent's soft wash and text ink on the
      active row, the secondary ink at rest, the subtle mono eyebrow) */
   --p-side-active-fill:var(--primary-soft);--p-side-active-label:var(--primary-text);
@@ -163,24 +166,24 @@
   /* Toast (toast.styles.ts webSkin, iOS too: Dark Factory's toast pill, `inverse` in every
      scheme, a pill for one line and the sheet corner once a description wraps, 12.5/700
      message, the description in the pill's ink at 0.7) */
-  --p-toast-radius:9999px;--p-toast-radius-multiline:22px;--p-toast-fill:var(--inverse);--p-toast-label:var(--inverse-foreground);
-  --p-toast-msg:12.5px;--p-toast-msg-lh:17px;--p-toast-msg-weight:700;--p-toast-msg-tracking:0px;
-  --p-toast-desc:11px;--p-toast-desc-lh:15px;--p-toast-desc-color:color-mix(in oklab, var(--inverse-foreground) 70%, transparent);--p-toast-desc-tracking:0px;
-  --p-toast-gap:10px;--p-toast-pad-x:18px;--p-toast-pad-y:11px;--p-toast-shadow:0px 20px 40px -16px rgba(0,0,0,0.55);
-  --p-toast-glyph:flex;--p-toast-glyph-size:16px;
+  --p-toast-radius:16px;--p-toast-radius-multiline:16px;--p-toast-fill:var(--popover);--p-toast-label:var(--foreground);
+  --p-toast-msg:14px;--p-toast-msg-lh:18px;--p-toast-msg-weight:500;--p-toast-msg-tracking:0px;
+  --p-toast-desc:13px;--p-toast-desc-lh:19.5px;--p-toast-desc-color:var(--muted-foreground);--p-toast-desc-tracking:0px;
+  --p-toast-gap:12px;--p-toast-pad-x:14px;--p-toast-pad-y:12px;--p-toast-shadow:var(--shadow-lg);
+  --p-toast-glyph:flex;--p-toast-glyph-size:18px;
   /* EmptyState (empty-state.styles.ts webSkin) */
   --p-empty-pad-x:24px;--p-empty-pad-y:40px;
-  --p-empty-title:16px;--p-empty-title-lh:24px;--p-empty-title-weight:500;
+  --p-empty-title:19px;--p-empty-title-lh:23px;--p-empty-title-weight:500;
   /* Radio (radio.styles.ts webSkin) */
   --p-radio-ring-small:16px;--p-radio-ring-default:20px;--p-radio-ring-large:24px;
   --p-radio-dot-small:6px;--p-radio-dot-default:8px;--p-radio-dot-large:10px;--p-radio-border:2px;--p-radio-rest-border:var(--input);
   --p-radio-section-radius:0px;
   /* Textarea + field captions (textarea.styles.ts webSkin) */
-  --p-textarea-fill:var(--background);--p-textarea-underline-rest:var(--input);--p-field-caption-tracking:0px;
-  /* Form (form.styles.ts webSkin) */
-  --p-form-stack:16px;--p-form-section-stack:12px;--p-form-actions-gap:8px;
-  --p-form-title:14px;--p-form-title-lh:20px;--p-form-title-weight:600;--p-form-title-tracking:0px;
-  --p-form-desc:12px;--p-form-desc-lh:16px;--p-form-desc-tracking:0px;
+  --p-textarea-fill:var(--surface-sunken);--p-textarea-underline-rest:var(--input);--p-field-caption-tracking:0px;
+  /* Form (form.styles.ts webSkin, the v4 hand-off's form on every platform) */
+  --p-form-stack:16px;--p-form-section-stack:14px;--p-form-actions-gap:8px;
+  --p-form-title:15px;--p-form-title-lh:20px;--p-form-title-weight:500;--p-form-title-tracking:0px;
+  --p-form-desc:13px;--p-form-desc-lh:19.5px;--p-form-desc-tracking:0px;
   /* Breadcrumb (breadcrumb.styles.ts webSkin) */
   /* TabBar (tab-bar.styles.ts webSkin: mirrors the iOS look, except it takes M3's
      active-indicator pill so a web shell's bar and rail agree on "you are here";
@@ -190,15 +193,15 @@
   --p-tabbar-pill-w:48px;--p-tabbar-pill-h:28px;--p-tabbar-pill-opacity:1 /* @kind other */;
   --p-tabbar-inset-x:0px;--p-tabbar-inset-b:0px;--p-tabbar-radius:9999px;--p-tabbar-item-radius:9999px;
   --p-tabbar-fill:var(--popover) /* @kind other */;--p-tabbar-pad-bottom:0px;
-  /* Select (select.styles.ts webSkin) */
-  --p-select-h:48px;--p-select-radius:10px;--p-select-radius-bottom:10px;--p-select-border:1px;--p-select-underline:0px;
-  --p-select-border-color:var(--input);--p-select-underline-rest:var(--input);--p-select-fill:var(--card);--p-select-pad-x:16px;
-  --p-select-font:14px;--p-select-lh:20px;--p-select-chevron:"▾" /* @kind other */;--p-select-chevron-color:var(--muted-foreground);--p-select-chevron-weight:400;
-  --p-select-panel-max:280px;--p-select-panel-radius:16px;--p-select-panel-border:1px;--p-select-panel-pad-x:8px;--p-select-panel-pad-y:8px;
-  --p-select-panel-shadow:var(--shadow-lg);
-  --p-select-row-radius:10px;--p-select-row-pad-x:12px;--p-select-row-pad-y:10px;--p-select-row-gap:10px;--p-select-row-min-h:0px;
-  --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--accent);
-  --p-select-check-color:var(--popover-foreground);--p-select-check-weight:400;
+  /* Select (select.styles.ts webSkin: the v4 sunken field, the panel's 34px rows, a trailing check) */
+  --p-select-h:40px;--p-select-radius:10px;--p-select-radius-bottom:10px;--p-select-border:1px;--p-select-underline:0px;
+  --p-select-border-color:var(--field-border);--p-select-underline-rest:var(--field-border);--p-select-fill:var(--surface-sunken);--p-select-pad-x:12px;
+  --p-select-font:14px;--p-select-lh:20px;--p-select-chevron:"chevron-down" /* @kind other */;--p-select-chevron-color:var(--subtle-foreground);--p-select-chevron-weight:400;
+  --p-select-panel-max:280px;--p-select-panel-radius:16px;--p-select-panel-border:1px;--p-select-panel-pad-x:4px;--p-select-panel-pad-y:4px;
+  --p-select-panel-shadow:var(--shadow-md);
+  --p-select-row-radius:8px;--p-select-row-pad-x:10px;--p-select-row-pad-y:0px;--p-select-row-gap:8px;--p-select-row-min-h:34px;
+  --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--muted);
+  --p-select-check-color:var(--primary-text);--p-select-check-weight:400;
   /* AvatarMenu identity pill (avatar.styles.ts webMenuSkin, every platform: Dark Factory's
      pill, bare at rest, the accent fill under the pointer and while open, a 28px disc in
      the viewer's violet glow, 12/700 name over the 10.5/600 muted email, a static chevron) */
@@ -208,64 +211,67 @@
   --p-idpill-open-border-color:transparent;
   --p-idpill-name:12px;--p-idpill-name-lh:14px;--p-idpill-name-weight:700;--p-idpill-tracking:0px;
   --p-idpill-disc:28px;--p-idpill-glow:0px 0px 0px 2px var(--card), 0px 0px 0px 3.5px var(--primary);
-  /* Autocomplete (autocomplete.styles.ts webSkin) */
-  --p-ac-h:48px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-border:1px;--p-ac-underline:0px;
-  --p-ac-border-color:var(--input);--p-ac-underline-rest:var(--input);--p-ac-fill:var(--card);--p-ac-pad-x:16px;
-  --p-ac-font:14px;--p-ac-lh:20px;--p-ac-chevron:var(--muted-foreground);
-  --p-ac-menu-max:280px;--p-ac-menu-radius:16px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:8px;--p-ac-menu-pad-y:8px;
-  --p-ac-menu-shadow:var(--shadow-lg);
-  --p-ac-row-radius:10px;--p-ac-row-pad-x:12px;--p-ac-row-pad-y:10px;--p-ac-row-gap:10px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
-  --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:var(--accent);
-  --p-ac-check-w:14px;--p-ac-check-color:var(--popover-foreground);
-  /* Dropdown and RowMenu menus (src/style/menu-look.ts: Dark Factory's menu, 33px rows 2px
-     apart at a 10px corner with 12.5/700 labels, the uppercase eyebrow section heading, the
-     caption shortcut, the instant hover wash; a disabled row takes the muted ink, no dim) */
-  --p-menu-radius:16px;--p-menu-border:1px;--p-menu-pad-x:8px;--p-menu-pad-y:8px;--p-menu-shadow:var(--shadow-lg);
-  --p-menu-label-font:10px;--p-menu-label-lh:13px;--p-menu-label-weight:700;--p-menu-label-tracking:1.6px;--p-menu-label-pad-x:10px;--p-menu-label-pad-y:4px;
+  /* Autocomplete (autocomplete.styles.ts webSkin: the v4 sunken field, the panel's 34px rows, no check) */
+  --p-ac-h:40px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-border:1px;--p-ac-underline:0px;
+  --p-ac-border-color:var(--field-border);--p-ac-underline-rest:var(--field-border);--p-ac-fill:var(--surface-sunken);--p-ac-pad-x:12px;
+  --p-ac-font:14px;--p-ac-lh:20px;--p-ac-chevron:var(--subtle-foreground);
+  --p-ac-menu-max:280px;--p-ac-menu-radius:16px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:4px;--p-ac-menu-pad-y:4px;
+  --p-ac-menu-shadow:var(--shadow-md);
+  --p-ac-row-radius:8px;--p-ac-row-pad-x:10px;--p-ac-row-pad-y:0px;--p-ac-row-gap:0px;--p-ac-row-min-h:34px;--p-ac-row-separator:0px;
+  --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:var(--muted);
+  --p-ac-check-w:0px;--p-ac-check-color:transparent;
+  /* Dropdown menu (dropdown.styles.ts webSkin: the v4 menu, the card panel with its hairline
+     and the md shadow at a 4px inset, 36px rows at the control corner with 14/400 labels,
+     the uppercase mono eyebrow section heading, the mono shortcut, the secondary hover wash;
+     a disabled row takes the muted ink, no dim) */
+  --p-menu-radius:16px;--p-menu-border:1px;--p-menu-pad-x:4px;--p-menu-pad-y:4px;--p-menu-shadow:var(--shadow-md);
+  --p-menu-label-font:11px;--p-menu-label-lh:14px;--p-menu-label-weight:500;--p-menu-label-tracking:0.88px;--p-menu-label-pad-x:10px;--p-menu-label-pad-y:4px;
   --p-menu-label-transform:uppercase /* @kind other */;
   --p-menu-sep-h:1px;--p-menu-sep-margin:4px;
-  --p-menu-row-radius:10px;--p-menu-row-pad-x:10px;--p-menu-row-pad-y:8px;--p-menu-row-gap:10px;--p-menu-row-min-h:0px;
-  --p-menu-row-font:12.5px;--p-menu-row-lh:17px;--p-menu-row-weight:700;--p-menu-row-spacing:2px;--p-menu-row-hover:var(--hover);
-  --p-menu-shortcut-font:11px;--p-menu-shortcut-lh:15px;--p-menu-shortcut-weight:600;--p-menu-shortcut-tracking:0px;
+  --p-menu-row-radius:8px;--p-menu-row-pad-x:10px;--p-menu-row-pad-y:9px;--p-menu-row-gap:10px;--p-menu-row-min-h:36px;
+  --p-menu-row-font:14px;--p-menu-row-lh:18px;--p-menu-row-weight:400;--p-menu-row-spacing:0px;--p-menu-row-hover:var(--secondary);
+  --p-menu-shortcut-font:11px;--p-menu-shortcut-lh:14px;--p-menu-shortcut-weight:400;--p-menu-shortcut-tracking:0px;
   /* Tooltip (tooltip.styles.ts webSkin, iOS too: the inverse bubble in Dark Factory's type) */
   --p-tip-radius:8px;--p-tip-shadow:var(--shadow-md);--p-tip-weight:600;--p-tip-min-h:0px;
-  /* Dialog (dialog.styles.ts webSkin) */
-  --p-dialog-scrim:rgba(0,0,0,0.6);--p-dialog-radius:20px;--p-dialog-border:1px;--p-dialog-shadow:var(--shadow-xl);
-  --p-dialog-title:18px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
-  --p-dialog-body:14px;--p-dialog-body-lh:20px;--p-dialog-body-gap:8px;--p-dialog-footer-gap:8px;--p-dialog-footer-top:24px;
+  /* Dialog (dialog.styles.ts webSkin: the v4 panel, 22 padding, an 18px display heading) */
+  --p-dialog-scrim:rgba(0,0,0,0.6);--p-dialog-radius:20px;--p-dialog-border:1px;--p-dialog-shadow:var(--shadow-lg);
+  --p-dialog-title:18px;--p-dialog-title-lh:22.5px;--p-dialog-title-weight:600;
+  --p-dialog-body:14px;--p-dialog-body-lh:21px;--p-dialog-body-gap:4px;--p-dialog-footer-gap:8px;--p-dialog-footer-top:14px;
   --p-alert-btn-flex:0 0 auto /* @kind other */;--p-alert-btn-min-h:0px;--p-alert-btn-pad:6px 12px;--p-alert-btn-radius:10px;
   --p-alert-btn-font:13px;--p-alert-btn-lh:18px;--p-alert-btn-weight:500;--p-alert-btn-tracking:0px;
   --p-alert-cancel-border:1px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--foreground);
   --p-alert-confirm-fill:var(--primary);--p-alert-confirm-label:var(--primary-foreground);
   --p-alert-confirm-destructive-fill:var(--destructive);--p-alert-confirm-destructive-label:var(--destructive-foreground);
-  /* AlertDialog (alert-dialog.styles.ts webSkin — its own skin) */
-  --p-ad-scrim:rgba(0,0,0,0.6);--p-ad-radius:20px;--p-ad-border:1px;--p-ad-shadow:var(--shadow-xl);
-  --p-ad-title:18px;--p-ad-title-lh:28px;--p-ad-title-weight:500;
-  --p-ad-desc:14px;--p-ad-desc-lh:20px;--p-ad-desc-gap:8px;
-  --p-ad-actions-justify:flex-end /* @kind other */;--p-ad-actions-gap:8px;
-  --p-ad-btn-flex:0 0 auto /* @kind other */;--p-ad-btn-min-h:0px;--p-ad-btn-pad:6px 12px;--p-ad-btn-radius:10px;--p-ad-btn-font:13px;--p-ad-btn-lh:18px;
-  --p-ad-cancel-border:1px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--foreground);--p-ad-cancel-weight:500;
+  /* AlertDialog (alert-dialog.styles.ts webSkin: the v4 alert at 24, a tone tile, a 20px display
+     title, two equal Buttons, a secondary Cancel and the primary/destructive confirm) */
+  --p-ad-scrim:rgba(0,0,0,0.6);--p-ad-radius:24px;--p-ad-border:1px;--p-ad-shadow:var(--shadow-lg);
+  --p-ad-title:20px;--p-ad-title-lh:25px;--p-ad-title-weight:600;
+  --p-ad-desc:14px;--p-ad-desc-lh:21px;--p-ad-desc-gap:6px;
+  --p-ad-actions-justify:stretch /* @kind other */;--p-ad-actions-gap:8px;
+  --p-ad-btn-flex:1 1 0 /* @kind other */;--p-ad-btn-min-h:0px;--p-ad-btn-pad:6px 12px;--p-ad-btn-radius:10px;--p-ad-btn-font:13px;--p-ad-btn-lh:18px;
+  --p-ad-cancel-border:1px;--p-ad-cancel-fill:var(--secondary);--p-ad-cancel-label:var(--secondary-foreground);--p-ad-cancel-weight:500;
   --p-ad-confirm-fill:var(--primary);--p-ad-confirm-label:var(--primary-foreground);--p-ad-confirm-weight:500;
   --p-ad-confirm-destructive-fill:var(--destructive);--p-ad-confirm-destructive-label:var(--destructive-foreground);
   /* Drawer (drawer.styles.ts webSkin) */
-  --p-drawer-scrim:rgba(0,0,0,0.5);--p-drawer-border:1px;--p-drawer-shadow:var(--shadow-xl);
+  --p-drawer-scrim:rgba(0,0,0,0.5);--p-drawer-border:1px;--p-drawer-shadow:var(--shadow-lg);
   --p-drawer-side-radius:22px;--p-drawer-sheet-radius:22px;--p-drawer-sheet-max:none /* @kind other */;
-  --p-drawer-handle-w:0px;--p-drawer-handle-h:0px;--p-drawer-handle-top:0px;
-  /* ActionSheet (action-sheet.styles.ts webSkin — the iOS idiom on web too) */
-  --p-sheet-scrim:rgba(0,0,0,0.4);--p-sheet-stack-pad:8px;--p-sheet-stack-gap:8px;
-  --p-sheet-card-radius:20px;--p-sheet-card-radius-top:20px;--p-sheet-card-pad:0px;--p-sheet-shadow:var(--shadow-lg);
-  --p-sheet-cancel-layout:separateCard /* @kind other */;--p-sheet-cancel-inset:0px;--p-sheet-cancel-radius:20px;--p-sheet-cancel-min-h:57px;--p-sheet-cancel-label:var(--popover-foreground);
+  --p-drawer-handle-w:36px;--p-drawer-handle-h:5px;--p-drawer-handle-top:10px;
+  /* ActionSheet (action-sheet.styles.ts webSkin: the v4 hand-off's two cards at the menu
+     corner, 54px rows in the accent's ink under field hairlines) */
+  --p-sheet-scrim:rgba(0,0,0,0.4);--p-sheet-stack-pad:10px;--p-sheet-stack-gap:8px;
+  --p-sheet-card-radius:16px;--p-sheet-card-radius-top:16px;--p-sheet-card-pad:0px;--p-sheet-shadow:var(--shadow-lg);
+  --p-sheet-cancel-layout:separateCard /* @kind other */;--p-sheet-cancel-inset:0px;--p-sheet-cancel-radius:16px;--p-sheet-cancel-min-h:54px;--p-sheet-cancel-label:var(--primary-text);
   --p-sheet-handle-display:none /* @kind other */;
-  --p-sheet-header-pad:14px 16px;--p-sheet-header-align:center /* @kind other */;--p-sheet-header-gap:2px;--p-sheet-title-align:center /* @kind other */;
-  --p-sheet-title:13px;--p-sheet-title-lh:18px;--p-sheet-title-weight:600;--p-sheet-title-tracking:0px;--p-sheet-title-color:var(--muted-foreground);
-  --p-sheet-msg:13px;--p-sheet-msg-lh:18px;--p-sheet-msg-tracking:0px;--p-sheet-msg-color:var(--muted-foreground);
+  --p-sheet-header-pad:12px 16px;--p-sheet-header-align:center /* @kind other */;--p-sheet-header-gap:0px;--p-sheet-title-align:center /* @kind other */;
+  --p-sheet-title:13px;--p-sheet-title-lh:17px;--p-sheet-title-weight:600;--p-sheet-title-tracking:0px;--p-sheet-title-color:var(--muted-foreground);
+  --p-sheet-msg:13px;--p-sheet-msg-lh:17px;--p-sheet-msg-tracking:0px;--p-sheet-msg-color:var(--muted-foreground);
   --p-sheet-divider-h:1px;--p-sheet-rows-gap:0px;
-  --p-sheet-row-min-h:57px;--p-sheet-row-pad-x:16px;--p-sheet-row-radius:0px;--p-sheet-row-fill:transparent;
-  --p-sheet-row-font:17px;--p-sheet-row-lh:22px;--p-sheet-row-weight:400;--p-sheet-row-tracking:0px;
-  --p-sheet-row-label:var(--popover-foreground);--p-sheet-row-align:center /* @kind other */;--p-sheet-row-justify:center /* @kind other */;--p-sheet-row-text-align:center /* @kind other */;
-  /* Command palette (command.styles.ts webSkin) */
-  --p-cmd-radius:16px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:8px;--p-cmd-search-min-h:0px;--p-cmd-glyph:16px;
-  --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:10px;--p-cmd-row-min-h:40px;--p-cmd-row-font:14px;--p-cmd-row-lh:20px;--p-cmd-row-tracking:0px;
+  --p-sheet-row-min-h:54px;--p-sheet-row-pad-x:16px;--p-sheet-row-radius:0px;--p-sheet-row-fill:transparent;
+  --p-sheet-row-font:18px;--p-sheet-row-lh:23px;--p-sheet-row-weight:400;--p-sheet-row-tracking:0px;
+  --p-sheet-row-label:var(--primary-text);--p-sheet-row-align:center /* @kind other */;--p-sheet-row-justify:center /* @kind other */;--p-sheet-row-text-align:center /* @kind other */;
+  /* Command palette (command.styles.ts webSkin: the v4 palette, a 48 search row, 38 rows) */
+  --p-cmd-radius:18px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:0px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:48px;--p-cmd-glyph:17px;
+  --p-cmd-row-pad-x:10px;--p-cmd-row-pad-y:0px;--p-cmd-row-min-h:38px;--p-cmd-row-font:14px;--p-cmd-row-lh:18px;--p-cmd-row-tracking:0px;
   /* Accordion (accordion.styles.ts webSkin — Radix/shadcn) */
   --p-acc-container-radius:0px;--p-acc-container-border:0px;--p-acc-container-fill:transparent;
   --p-acc-card-radius:16px;--p-acc-card-inset:20px;--p-acc-sep-inset:0px;
@@ -274,7 +280,8 @@
   --p-acc-desc:12px;--p-acc-desc-lh:16px;--p-acc-desc-tracking:0px;
   --p-acc-chevron:16px;--p-acc-chevron-glyph:"chevron-down" /* @kind other */;--p-acc-chevron-spin:180deg /* @kind other */;
   --p-acc-content:14px;--p-acc-content-lh:22px;--p-acc-content-tracking:0px;--p-acc-content-pad-top:0px;--p-acc-content-pad-bottom:16px;
-  /* Steps (steps.styles.ts webSkin; the progress layout's 6px muted track and 500-weight caption) */
+  /* Steps (steps.styles.ts, every platform: the v4 hand-off's 28px markers, 2px square connectors,
+     the 6px surface-raised progress track and 500-weight caption) */
   --p-steps-current-fill:transparent;--p-steps-connector-radius:0px;--p-steps-desc:12px;--p-steps-desc-lh:16px;
   --p-steps-track-h:6px;--p-steps-caption-weight:500;
   /* Pagination (pagination.styles.ts webSkin, every platform: the v4 hand-off's pager, 8-cornered
@@ -305,15 +312,15 @@
   --p-stepper-field-left-display:none /* @kind other */;--p-stepper-field-inline-display:inline-flex /* @kind other */;
   --p-stepper-divider-display:inline-flex /* @kind other */;--p-stepper-divider-w:1px;--p-stepper-divider-inset:0px;--p-stepper-divider-color:var(--border);
   --p-stepper-group-radius:10px;--p-stepper-group-border:1px;--p-stepper-group-fill:var(--background);--p-stepper-group-gap:0px;--p-stepper-outer-gap:0px;
-  /* InputOTP (input-otp.styles.ts webSkin — shadcn input-otp) */
-  --p-otp-seam:0px;--p-otp-seam-active:0px;--p-otp-shared-edge:0 /* @kind other */;--p-otp-gap-small:0px;--p-otp-gap-base:0px;--p-otp-gap-large:0px;
-  --p-otp-w-small:40px;--p-otp-w-base:48px;--p-otp-w-large:56px;
-  --p-otp-h-small:40px;--p-otp-h-base:48px;--p-otp-h-large:56px;
-  --p-otp-radius:10px;--p-otp-inner-radius:0px;--p-otp-fill:var(--card);
-  --p-otp-rest-border:1px;--p-otp-active-border:1px;--p-otp-rest-border-color:var(--input);--p-otp-active-border-color:var(--ring);
-  --p-otp-active-ring:0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent) /* @kind other */;
-  --p-otp-digit-small:15px;--p-otp-digit-base:18px;--p-otp-digit-large:22px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0px;
-  --p-otp-caret:var(--foreground);--p-otp-caret-blink:none /* @kind other */;
+  /* InputOTP (input-otp.styles.ts webSkin: the v4 hand-off's separated sunken cells, the accent halo when active) */
+  --p-otp-seam:1px;--p-otp-seam-active:1px;--p-otp-shared-edge:1 /* @kind other */;--p-otp-gap-small:8px;--p-otp-gap-base:8px;--p-otp-gap-large:8px;
+  --p-otp-w-small:36px;--p-otp-w-base:44px;--p-otp-w-large:52px;
+  --p-otp-h-small:42px;--p-otp-h-base:52px;--p-otp-h-large:61px;
+  --p-otp-radius:10px;--p-otp-inner-radius:10px;--p-otp-fill:var(--surface-sunken);
+  --p-otp-rest-border:1px;--p-otp-active-border:1px;--p-otp-rest-border-color:var(--field-border);--p-otp-active-border-color:var(--ring);
+  --p-otp-active-ring:0 0 0 4px color-mix(in oklab, var(--glow) 70%, transparent) /* @kind other */;
+  --p-otp-digit-small:16px;--p-otp-digit-base:20px;--p-otp-digit-large:23px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0px;
+  --p-otp-caret:var(--ring);--p-otp-caret-blink:none /* @kind other */;
   /* DescriptionList (description-lists.styles.ts webSkin) */
   --p-dl-radius:16px;--p-dl-shadow:var(--shadow-sm);--p-dl-pad:24px;--p-dl-row-gap:12px;
   --p-dl-row-align:baseline /* @kind other */;--p-dl-row-min-h:0px;--p-dl-divided-pad:12px;
@@ -393,22 +400,29 @@
   --p-stat-label:14px;--p-stat-label-lh:20px;--p-stat-label-tracking:-0.15px;--p-stat-value:24px;--p-stat-value-lh:30px;--p-stat-value-weight:600;--p-stat-value-tracking:-0.5px;
   /* Breadcrumb (breadcrumb.styles.ts iosSkin: SF tracking at 14pt, semibold current page) */
   --p-crumb-tracking:-0.15px;--p-crumb-sep-tracking:-0.15px;--p-crumb-current-weight:600;
-  /* EmptyState (empty-state.styles.ts iosSkin: 12pt continuous card, SF tracking) */
-  --p-empty-radius:12px;--p-empty-title-tracking:-0.31px;--p-empty-desc-tracking:-0.15px;
+  /* EmptyState (empty-state.styles.ts iosSkin: the web skin's parts, in SF Pro) */
+  --p-empty-radius:18px;--p-empty-title-tracking:-0.19px;--p-empty-desc-tracking:0px;
   --p-overlay-radius:28px;--p-sheet-radius:38px;
   /* Popover (iOS 27, Liquid Glass): a largely rounded ~26pt borderless card with the anchor beak */
   --p-popover-radius:26px;--p-popover-border:0px;--p-popover-beak-display:block /* @kind other */;
   /* Spinner (iOS): the UIActivityIndicatorView ring of fading spokes */
   --p-spinner-arc-display:none /* @kind other */;--p-spinner-spokes-display:inline-block /* @kind other */;
-  --p-tab-track-bg:var(--muted);--p-tab-track-radius:9999px;--p-tab-track-pad:3px;--p-tab-rule:0px;
-  --p-tab-item-radius:9999px;--p-tab-item-pad-x:14px;--p-tab-item-pad-y:7px;
-  --p-tab-selected-bg:var(--background);--p-tab-selected-shadow:0px 1px 2px rgba(0,0,0,0.18);
+  /* Tabs (tabs.styles.ts iosSkin, the hand-off's K.PF ios row): UISegmentedControl, a secondary
+     capsule inset 3 of capsule segments 7 / 14, 13pt (600 selected), the raised thumb on a
+     0 1 2 shadow (white in light, the track lifted toward the ink in dark, below); vertical a
+     220pt grouped rail of 9 / 12 rows at 10, 15pt (600 selected, 400 at rest), the selected
+     row the secondary wash */
+  --p-tab-track-bg:var(--secondary);--p-tab-track-radius:9999px;--p-tab-track-pad:3px;--p-tab-rule:0px;
+  --p-tab-item-radius:9999px;--p-tab-item-pad-x:14px;--p-tab-item-pad-y:7px;--p-tab-gap:0px;
+  --p-tab-selected-bg:var(--card);--p-tab-selected-shadow:0px 1px 2px rgba(0,0,0,0.18);
   --p-tab-indicator-h:0px;--p-tab-font:13px;--p-tab-lh:18px;
-  /* Tabs pills + vertical (iOS 27): capsule segmented track with the raised thumb; 8pt 15pt rail */
   --p-tab-pill-track-radius:9999px;--p-tab-pill-track-pad:3px;--p-tab-pill-gap:0px;
   --p-tab-pill-radius:9999px;--p-tab-pill-pad-x:14px;--p-tab-pill-pad-y:7px;
-  --p-tab-pill-selected-shadow:0px 1px 2px rgba(0,0,0,0.18);--p-tab-pill-label:var(--foreground);--p-tab-pill-selected-weight:600;
-  --p-tab-v-radius:10px;--p-tab-v-pad-y:9px;--p-tab-v-font:15px;--p-tab-v-weight:400;--p-tab-v-selected-weight:600;--p-tab-v-label:var(--foreground);
+  --p-tab-pill-selected-bg:var(--card);--p-tab-pill-selected-shadow:0px 1px 2px rgba(0,0,0,0.18);
+  --p-tab-pill-label:var(--foreground);--p-tab-pill-selected-weight:600;
+  --p-tab-v-radius:10px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:9px;--p-tab-v-font:15px;--p-tab-v-lh:20px;
+  --p-tab-v-weight:400;--p-tab-v-selected-weight:600;
+  --p-tab-v-selected-fill:var(--secondary);--p-tab-v-selected-label:var(--foreground);--p-tab-v-label:var(--foreground);
   /* Sidebar — iOS 27: capsule rows, primary-tinted icons, sentence-case headers */
   --p-side-row-h:auto;--p-side-row-radius:9999px;--p-side-row-pad-x:12px;--p-side-row-pad-y:8px;--p-side-row-gap:10px;--p-side-label:15px;--p-side-label-lh:20px;--p-side-icon:17px;
   --p-side-title:13px;--p-side-title-lh:18px;--p-side-title-weight:600;--p-side-title-transform:none /* @kind other */;--p-side-title-tracking:0px;
@@ -475,14 +489,9 @@
   --p-stepper-field-left-display:inline-flex /* @kind other */;--p-stepper-field-inline-display:none /* @kind other */;
   --p-stepper-divider-inset:4px;--p-stepper-divider-color:color-mix(in oklab, var(--foreground) 30%, transparent);
   --p-stepper-group-radius:9999px;--p-stepper-group-border:0px;--p-stepper-group-fill:var(--secondary);
-  /* InputOTP — iOS: separated 44x52pt filled cells, 2pt primary ring when active */
-  --p-otp-seam:1px;--p-otp-seam-active:2px;--p-otp-shared-edge:1 /* @kind other */;--p-otp-gap-small:6px;--p-otp-gap-base:8px;--p-otp-gap-large:10px;
-  --p-otp-w-small:38px;--p-otp-w-base:44px;--p-otp-w-large:52px;
-  --p-otp-h-small:44px;--p-otp-h-base:52px;--p-otp-h-large:60px;
-  --p-otp-radius:8px;--p-otp-inner-radius:8px;--p-otp-fill:var(--secondary);
-  --p-otp-rest-border:0px;--p-otp-active-border:2px;--p-otp-rest-border-color:transparent;--p-otp-active-border-color:var(--primary);
-  --p-otp-active-ring:none /* @kind other */;--p-otp-digit-weight:600;
-  --p-otp-caret:var(--primary);--p-otp-caret-blink:canvas-caret 1s steps(2,start) infinite /* @kind other */;
+  /* InputOTP: iOS ships no code field, so the web cells at the 8pt iOS field corner; the caret blinks */
+  --p-otp-radius:8px;--p-otp-inner-radius:8px;
+  --p-otp-caret-blink:canvas-caret 1s steps(2,start) infinite /* @kind other */;
   /* Accordion — iOS: the default IS a 12pt continuous inset-grouped card */
   --p-acc-container-radius:12px;--p-acc-container-border:1px;--p-acc-container-fill:var(--card);
   --p-acc-card-radius:12px;--p-acc-card-inset:16px;--p-acc-sep-inset:16px;
@@ -491,8 +500,6 @@
   --p-acc-desc:13px;--p-acc-desc-lh:18px;--p-acc-desc-tracking:-0.08px;
   --p-acc-chevron:15px;--p-acc-chevron-glyph:"chevron-right" /* @kind other */;--p-acc-chevron-spin:90deg /* @kind other */;
   --p-acc-content:15px;--p-acc-content-lh:21px;--p-acc-content-tracking:-0.24px;--p-acc-content-pad-top:2px;--p-acc-content-pad-bottom:14px;
-  /* Steps — iOS: rounded connector caps, larger progress caption */
-  --p-steps-connector-radius:9999px;--p-steps-desc:13px;--p-steps-desc-lh:18px;--p-steps-caption-weight:600;
   /* ActionSheet — iOS 27: one 34pt continuous container of detached capsules */
   --p-sheet-card-radius:34px;--p-sheet-card-pad:14px;
   --p-sheet-cancel-inset:14px;--p-sheet-cancel-radius:9999px;--p-sheet-cancel-min-h:56px;--p-sheet-cancel-label:var(--foreground);
@@ -502,9 +509,9 @@
   --p-sheet-divider-h:0px;--p-sheet-rows-gap:10px;
   --p-sheet-row-min-h:48px;--p-sheet-row-radius:9999px;--p-sheet-row-fill:color-mix(in oklab, var(--foreground) 10%, transparent);
   --p-sheet-row-weight:500;--p-sheet-row-tracking:-0.43px;--p-sheet-row-label:var(--foreground);
-  /* Command (iOS): the web menu corner (16) with the continuous curve, 44pt rows at 17/22 */
-  --p-cmd-radius:16px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:44px;--p-cmd-glyph:20px;
-  --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:11px;--p-cmd-row-min-h:44px;--p-cmd-row-font:17px;--p-cmd-row-lh:22px;--p-cmd-row-tracking:-0.4px;
+  /* Command (iOS): the web palette corner (18) with the continuous curve, 44pt rows at 17/22 */
+  --p-cmd-radius:18px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:0px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:48px;--p-cmd-glyph:17px;
+  --p-cmd-row-pad-x:10px;--p-cmd-row-pad-y:0px;--p-cmd-row-min-h:44px;--p-cmd-row-font:14px;--p-cmd-row-lh:18px;--p-cmd-row-tracking:0px;
   /* Dialog — iOS 27 alert: borderless 28pt card, 30% scrim, capsule actions */
   --p-dialog-scrim:rgba(0,0,0,0.3);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:var(--shadow-lg);
   --p-dialog-title:20px;--p-dialog-title-lh:25px;--p-dialog-title-weight:700;
@@ -514,34 +521,33 @@
   --p-alert-btn-font:17px;--p-alert-btn-lh:22px;--p-alert-btn-weight:600;
   --p-alert-cancel-border:0px;--p-alert-cancel-fill:var(--secondary);--p-alert-cancel-label:var(--secondary-foreground);
   --p-alert-confirm-destructive-fill:var(--secondary);--p-alert-confirm-destructive-label:var(--destructive-text);
-  /* AlertDialog — iOS 27: borderless 28pt card, two equal capsules; a destructive confirm keeps the GRAY fill and reds only its label */
-  --p-ad-scrim:rgba(0,0,0,0.4);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:var(--shadow-lg);
-  --p-ad-title:20px;--p-ad-title-lh:25px;--p-ad-title-weight:700;
-  --p-ad-desc:16px;--p-ad-desc-lh:21px;
-  --p-ad-actions-justify:stretch /* @kind other */;--p-ad-actions-gap:12px;
-  --p-ad-btn-flex:1 1 0 /* @kind other */;--p-ad-btn-min-h:50px;--p-ad-btn-pad:14px 16px;--p-ad-btn-radius:9999px;--p-ad-btn-font:17px;--p-ad-btn-lh:22px;
-  --p-ad-cancel-border:0px;--p-ad-cancel-fill:var(--secondary);--p-ad-cancel-label:var(--secondary-foreground);--p-ad-cancel-weight:400;
-  --p-ad-confirm-weight:600;--p-ad-confirm-destructive-fill:var(--secondary);--p-ad-confirm-destructive-label:var(--destructive-text);
+  /* AlertDialog — the UIAlertController alert as the v4 hand-off's iOS row, at 14: centered text, a 44pt two-cell action row under a hairline, accent-ink labels, a destructive confirm in the error ink */
+  --p-ad-scrim:rgba(0,0,0,0.4);--p-ad-radius:14px;--p-ad-border:1px;--p-ad-shadow:var(--shadow-lg);
+  --p-ad-title:17px;--p-ad-title-lh:21px;--p-ad-title-weight:600;
+  --p-ad-desc:13px;--p-ad-desc-lh:18px;
+  --p-ad-actions-justify:stretch /* @kind other */;--p-ad-actions-gap:0px;
+  --p-ad-btn-flex:1 1 0 /* @kind other */;--p-ad-btn-min-h:44px;--p-ad-btn-pad:0px;--p-ad-btn-radius:0px;--p-ad-btn-font:17px;--p-ad-btn-lh:22px;
+  --p-ad-cancel-border:0px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--primary-text);--p-ad-cancel-weight:400;
+  --p-ad-confirm-fill:transparent;--p-ad-confirm-label:var(--primary-text);
+  --p-ad-confirm-weight:600;--p-ad-confirm-destructive-fill:transparent;--p-ad-confirm-destructive-label:var(--destructive-text);
   /* Drawer — iOS 27 sheets: lineless, 38pt continuous, soft 0/15/50 elevation, grabber */
   --p-drawer-scrim:rgba(0,0,0,0.2);--p-drawer-border:0px;--p-drawer-shadow:0px 15px 50px rgba(0,0,0,0.18);
   --p-drawer-side-radius:38px;--p-drawer-sheet-radius:38px;
   --p-drawer-handle-w:60px;--p-drawer-handle-h:4px;--p-drawer-handle-top:5px;
-  /* Autocomplete (autocomplete.styles.ts iosSkin: a filled 8pt continuous field, the 26pt menu, check-only selection) */
-  --p-ac-h:44px;--p-ac-radius:8px;--p-ac-radius-bottom:8px;--p-ac-fill:var(--secondary);
-  --p-ac-font:15px;--p-ac-lh:20px;--p-ac-chevron:var(--primary);
-  --p-ac-menu-max:260px;--p-ac-menu-radius:26px;--p-ac-menu-border:0px;--p-ac-menu-pad-x:0px;--p-ac-menu-pad-y:6px;
-  --p-ac-row-radius:0px;--p-ac-row-pad-x:16px;--p-ac-row-pad-y:11px;--p-ac-row-gap:10px;--p-ac-row-min-h:42px;--p-ac-row-separator:1px;
-  --p-ac-row-font:17px;--p-ac-row-lh:22px;--p-ac-row-selected:transparent;
-  --p-ac-check-w:18px;--p-ac-check-color:var(--primary);
-  /* Select — iOS 26 pop-up button + Liquid Glass menu */
-  --p-select-h:44px;--p-select-radius:8px;--p-select-radius-bottom:8px;--p-select-border-color:var(--border);--p-select-pad-x:14px;
-  --p-select-font:15px;--p-select-lh:20px;--p-select-chevron:"⇅" /* @kind other */;--p-select-chevron-color:var(--primary);--p-select-chevron-weight:600;
-  --p-select-panel-max:320px;--p-select-panel-radius:26px;--p-select-panel-border:0px;--p-select-panel-pad-x:0px;--p-select-panel-pad-y:4px;
-  --p-select-row-radius:0px;--p-select-row-pad-x:16px;--p-select-row-pad-y:11px;--p-select-row-gap:10px;--p-select-row-min-h:42px;
+  /* Autocomplete (autocomplete.styles.ts iosSkin: iOS ships no combo box, so the web look at the iOS field and card corners) */
+  --p-ac-h:44px;--p-ac-radius:8px;--p-ac-radius-bottom:8px;
+  --p-ac-menu-radius:12px;
+  --p-ac-row-radius:8px;
+  /* Select: the iOS pop-up button (the Input's field box) and its menu, a leading check in the label's ink */
+  --p-select-h:44px;--p-select-radius:8px;--p-select-radius-bottom:8px;--p-select-fill:var(--card);--p-select-pad-x:12px;
+  --p-select-font:16px;--p-select-lh:24px;--p-select-chevron:"chevrons-up-down" /* @kind other */;--p-select-chevron-color:var(--subtle-foreground);--p-select-chevron-weight:400;
+  --p-select-panel-max:320px;--p-select-panel-radius:26px;--p-select-panel-border:1px;--p-select-panel-pad-x:0px;--p-select-panel-pad-y:6px;
+  --p-select-panel-shadow:var(--shadow-lg);
+  --p-select-row-radius:0px;--p-select-row-pad-x:12px;--p-select-row-pad-y:0px;--p-select-row-gap:6px;--p-select-row-min-h:44px;
   --p-select-row-font:17px;--p-select-row-lh:22px;--p-select-row-selected-fill:transparent;
-  --p-select-check-color:var(--primary);--p-select-check-weight:600;
+  --p-select-check-color:var(--foreground);--p-select-check-weight:400;
   /* Dropdown — iOS 26 pull-down menu: 26pt borderless panel, 44pt rows */
-  --p-menu-radius:26px;--p-menu-border:0px;--p-menu-pad-x:0px;--p-menu-pad-y:6px;
+  --p-menu-radius:26px;--p-menu-border:0px;--p-menu-pad-x:0px;--p-menu-pad-y:6px;--p-menu-shadow:var(--shadow-lg);
   --p-menu-label-font:13px;--p-menu-label-lh:18px;--p-menu-label-weight:600;--p-menu-label-tracking:0px;--p-menu-label-pad-x:16px;--p-menu-label-pad-y:6px;
   --p-menu-label-transform:none /* @kind other */;
   --p-menu-sep-margin:6px;
@@ -557,10 +563,6 @@
   --p-radio-row-min-h:44px;--p-radio-row-pad-x:16px;--p-radio-row-pad-y:11px;--p-radio-section-radius:26px;
   /* Textarea — iOS: the same white reference box as the Input */
   --p-textarea-fill:var(--card);--p-field-caption-tracking:-0.08px;
-  /* Form — SwiftUI Form / HIG "Entering data": footnote-emphasized headings, roomier stack */
-  --p-form-stack:20px;--p-form-actions-gap:12px;
-  --p-form-title:13px;--p-form-title-lh:18px;--p-form-title-tracking:-0.08px;
-  --p-form-desc:13px;--p-form-desc-lh:18px;--p-form-desc-tracking:-0.08px;
   /* TabBar — iOS 26 FLOATS the tab bar in the Liquid Glass layer: a capsule inset from the
      display edges, no hairline, content passing beneath it. Not an edge-to-edge bar. */
   --p-tabbar-h:56px;--p-tabbar-item-pad-y:6px;--p-tabbar-label:10px;--p-tabbar-label-lh:13px;--p-tabbar-label-tracking:-0.2px;
@@ -623,17 +625,17 @@
   /* Switch (switch.styles.ts androidSkin, M3 unselected anatomy): a 2dp outlined muted track with a small centered 16dp muted-foreground dot handle, no fill */
   --p-switch-off-track:var(--muted);--p-switch-off-ring:inset 0 0 0 2px var(--border);--p-switch-thumb-inset:4px;
   --p-switch-thumb-off-fill:var(--muted-foreground);--p-switch-thumb-off-x:6px;
-  --p-chip-radius:8px;--p-chip-pad-x:16px;--p-chip-pad-y:6px;--p-chip-font:14px;--p-chip-gap:8px;
+  --p-chip-radius:8px;--p-chip-pad-x:16px;--p-chip-pad-y:5px;--p-chip-font:14px;--p-chip-gap:8px;
   /* Chip (M3): 18dp remove glyph; the selected filter chip leads with an 18dp check and drops its
      outline (the border-color token resolves only here; web/iOS fall back to the tone border). */
-  --p-chip-remove:18px;--p-chip-check-display:inline-flex /* @kind other */;--p-chip-selected-border-color:transparent;
+  --p-chip-remove:18px;--p-chip-check-display:inline-flex /* @kind other */;--p-chip-check-size:18px;--p-chip-selected-border-color:transparent;
   --p-overlay-radius:28px;--p-sheet-radius:28px;
   --p-tab-item-pad-y:12px;--p-tab-indicator-h:3px;--p-tab-label-selected:var(--primary-text);
   /* Tabs pills + vertical (M3): capsule tonal primary-12% fills with brand labels, flat (no thumb shadow) */
   --p-tab-pill-track-radius:9999px;--p-tab-pill-radius:9999px;--p-tab-pill-pad-x:14px;--p-tab-pill-pad-y:7px;
-  --p-tab-pill-selected-bg:color-mix(in oklab, var(--primary) 12%, transparent);--p-tab-pill-selected-shadow:none;
+  --p-tab-pill-selected-bg:var(--primary-soft);--p-tab-pill-selected-shadow:none;
   --p-tab-v-radius:9999px;--p-tab-v-pad-x:14px;--p-tab-v-pad-y:9px;
-  --p-tab-v-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-tab-v-selected-label:var(--primary-text);
+  --p-tab-v-selected-fill:var(--primary-soft);--p-tab-v-selected-label:var(--primary-text);
   /* Sidebar — M3 navigation drawer: tonal pills, 72dp rail */
   --p-side-w-collapsed:72px;
   --p-side-row-h:auto;--p-side-row-radius:9999px;--p-side-row-pad-x:16px;--p-side-row-pad-y:16px;--p-side-row-gap:12px;
@@ -703,74 +705,63 @@
   --p-stepper-field-font:16px;--p-stepper-field-lh:24px;
   --p-stepper-divider-display:none /* @kind other */;
   --p-stepper-group-radius:0px;--p-stepper-group-border:0px;--p-stepper-group-fill:transparent;--p-stepper-group-gap:8px;
-  /* InputOTP — M3: separated 52x56dp outlined cells, 2dp primary outline when active */
-  --p-otp-seam:1px;--p-otp-seam-active:2px;--p-otp-shared-edge:1 /* @kind other */;--p-otp-gap-small:6px;--p-otp-gap-base:8px;--p-otp-gap-large:12px;
-  --p-otp-w-small:44px;--p-otp-w-base:52px;--p-otp-w-large:60px;
-  --p-otp-h-small:48px;--p-otp-h-base:56px;--p-otp-h-large:64px;
-  --p-otp-radius:12px;--p-otp-inner-radius:12px;--p-otp-fill:transparent;
-  --p-otp-rest-border:1px;--p-otp-active-border:2px;--p-otp-rest-border-color:var(--border);--p-otp-active-border-color:var(--primary);
-  --p-otp-active-ring:none /* @kind other */;--p-otp-digit-base:16px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0.15px;
-  --p-otp-caret:var(--primary);--p-otp-caret-blink:canvas-caret 1s steps(2,start) infinite /* @kind other */;
+  /* InputOTP: Material 3 has no pin input, so the web cells at the 4dp M3 field corner; the caret blinks */
+  --p-otp-radius:4px;--p-otp-inner-radius:4px;
+  --p-otp-caret-blink:canvas-caret 1s steps(2,start) infinite /* @kind other */;
   /* Accordion — M3 expandable list rows: flush 56dp rows, full-bleed dividers */
   --p-acc-header-pad-x:16px;--p-acc-header-pad-y:16px;
   --p-acc-title:16px;--p-acc-title-lh:24px;--p-acc-title-weight:500;--p-acc-title-tracking:0.15px;
   --p-acc-desc:14px;--p-acc-desc-lh:20px;--p-acc-desc-tracking:0.25px;
   --p-acc-chevron:24px;
   --p-acc-content:14px;--p-acc-content-lh:20px;--p-acc-content-tracking:0.25px;--p-acc-content-pad-bottom:16px;
-  /* Steps — M3: flat connector caps, a 12% tonal backing on the current step */
-  --p-steps-current-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-steps-connector-radius:0px;--p-steps-track-h:4px;
   /* ActionSheet — M3 modal bottom sheet: one 28dp sheet, drag handle, Cancel as the last row */
   --p-sheet-scrim:rgba(0,0,0,0.32);--p-sheet-stack-pad:0px;--p-sheet-stack-gap:0px;
-  --p-sheet-card-radius:0px;--p-sheet-card-radius-top:28px;--p-sheet-card-pad:0px 0px 8px;--p-sheet-shadow:none;
+  --p-sheet-card-radius:0px;--p-sheet-card-radius-top:28px;--p-sheet-card-pad:10px 8px 16px;--p-sheet-shadow:none;
   --p-sheet-cancel-layout:lastRow /* @kind other */;--p-sheet-cancel-radius:0px;
   --p-sheet-handle-display:block /* @kind other */;
-  --p-sheet-header-pad:8px 24px 12px;--p-sheet-header-align:flex-start /* @kind other */;--p-sheet-header-gap:4px;--p-sheet-title-align:left /* @kind other */;
-  --p-sheet-title:16px;--p-sheet-title-lh:24px;--p-sheet-title-weight:500;--p-sheet-title-tracking:0.15px;--p-sheet-title-color:var(--popover-foreground);
-  --p-sheet-msg:14px;--p-sheet-msg-lh:20px;--p-sheet-msg-tracking:0px;
+  --p-sheet-header-pad:0px 16px 8px;--p-sheet-header-align:flex-start /* @kind other */;--p-sheet-header-gap:2px;--p-sheet-title-align:left /* @kind other */;
+  --p-sheet-title:14px;--p-sheet-title-lh:18px;--p-sheet-title-weight:500;--p-sheet-title-tracking:0px;--p-sheet-title-color:var(--muted-foreground);
+  --p-sheet-msg:13px;--p-sheet-msg-lh:17px;--p-sheet-msg-tracking:0px;
   --p-sheet-divider-h:0px;
-  --p-sheet-row-min-h:56px;--p-sheet-row-pad-x:24px;
-  --p-sheet-row-font:16px;--p-sheet-row-lh:24px;--p-sheet-row-tracking:0.5px;--p-sheet-row-label:var(--popover-foreground);
+  --p-sheet-row-min-h:52px;--p-sheet-row-pad-x:16px;
+  --p-sheet-row-font:16px;--p-sheet-row-lh:20px;--p-sheet-row-tracking:0px;--p-sheet-row-label:var(--popover-foreground);
   --p-sheet-row-justify:flex-start /* @kind other */;--p-sheet-row-text-align:left /* @kind other */;
   /* Command — M3: 48dp rows at 16/24 +0.5 */
-  --p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:12px;--p-cmd-search-min-h:48px;--p-cmd-glyph:20px;
-  --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:12px;--p-cmd-row-min-h:48px;--p-cmd-row-font:16px;--p-cmd-row-lh:24px;--p-cmd-row-tracking:0.5px;
-  /* Dialog — M3 basic dialog: 28dp elevated card, 32% scrim, flat text-button actions */
-  --p-dialog-scrim:rgba(0,0,0,0.32);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:var(--shadow-lg);
-  --p-dialog-title:22px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
-  --p-dialog-body-gap:12px;--p-dialog-footer-top:24px;
+  --p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:0px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:48px;--p-cmd-glyph:17px;
+  --p-cmd-row-pad-x:10px;--p-cmd-row-pad-y:0px;--p-cmd-row-min-h:48px;--p-cmd-row-font:14px;--p-cmd-row-lh:18px;--p-cmd-row-tracking:0px;
+  /* Dialog — M3 basic dialog as the v4 hand-off's Android row: the web panel at 28dp, 32% scrim, flat text-button actions */
+  --p-dialog-scrim:rgba(0,0,0,0.32);--p-dialog-radius:28px;--p-dialog-border:1px;--p-dialog-shadow:var(--shadow-lg);
+  --p-dialog-title:18px;--p-dialog-title-lh:22.5px;--p-dialog-title-weight:600;
+  --p-dialog-body-gap:4px;--p-dialog-footer-top:14px;
   --p-alert-btn-min-h:40px;--p-alert-btn-pad:10px 12px;--p-alert-btn-radius:9999px;--p-alert-btn-tracking:0.1px;
   --p-alert-cancel-border:0px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--primary-text);
   --p-alert-confirm-fill:transparent;--p-alert-confirm-label:var(--primary-text);
   --p-alert-confirm-destructive-fill:transparent;--p-alert-confirm-destructive-label:var(--destructive-text);
-  /* AlertDialog — M3: 28dp elevated card, headline-small title, flat TEXT actions */
-  --p-ad-scrim:rgba(0,0,0,0.32);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:var(--shadow-md);
-  --p-ad-title:24px;--p-ad-title-lh:32px;--p-ad-title-weight:400;--p-ad-desc-gap:16px;
-  --p-ad-btn-min-h:40px;--p-ad-btn-pad:10px 12px;--p-ad-btn-radius:9999px;
-  --p-ad-cancel-border:0px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--primary-text);
-  --p-ad-confirm-fill:transparent;--p-ad-confirm-label:var(--primary-text);
-  --p-ad-confirm-destructive-fill:transparent;--p-ad-confirm-destructive-label:var(--destructive-text);
+  /* AlertDialog — the v4 hand-off's Android row: the web alert at the 28dp dialog corner, two equal M3 Buttons */
+  --p-ad-scrim:rgba(0,0,0,0.32);--p-ad-radius:28px;--p-ad-border:1px;--p-ad-shadow:var(--shadow-lg);
+  --p-ad-btn-radius:9999px;
   /* Drawer — M3 sheets: lineless, side 16dp / bottom 28dp, level-1 elevation, 32x4 handle */
   --p-drawer-scrim:rgba(0,0,0,0.32);--p-drawer-border:0px;--p-drawer-shadow:var(--shadow-sm);
   --p-drawer-side-radius:16px;--p-drawer-sheet-radius:28px;--p-drawer-sheet-max:640px /* @kind other */;
   --p-drawer-handle-w:32px;--p-drawer-handle-h:4px;--p-drawer-handle-top:16px;
-  /* Autocomplete — M3 exposed dropdown: filled 56dp field, 4dp elevated menu, 48dp rows */
+  /* Autocomplete: the M3 exposed dropdown, the filled field, the M3 menu, 48dp rows on a 10% state layer */
   --p-ac-h:56px;--p-ac-radius:4px;--p-ac-radius-bottom:0px;--p-ac-border:0px;--p-ac-underline:1px;
   --p-ac-border-color:transparent;--p-ac-underline-rest:var(--muted-foreground);
-  --p-ac-fill:var(--muted);--p-ac-pad-x:16px;--p-ac-font:16px;--p-ac-lh:24px;
+  --p-ac-fill:var(--muted);--p-ac-pad-x:16px;--p-ac-font:16px;--p-ac-lh:24px;--p-ac-chevron:var(--muted-foreground);
   --p-ac-menu-max:280px;--p-ac-menu-radius:4px;--p-ac-menu-border:0px;--p-ac-menu-pad-x:0px;--p-ac-menu-pad-y:8px;
   --p-ac-menu-shadow:var(--shadow-md);
-  --p-ac-row-radius:0px;--p-ac-row-pad-x:16px;--p-ac-row-pad-y:12px;--p-ac-row-gap:12px;--p-ac-row-min-h:48px;
-  --p-ac-check-w:16px;--p-ac-check-color:var(--primary);
-  /* Select — M3 exposed dropdown: filled 56dp trigger, 4dp elevated menu */
+  --p-ac-row-radius:0px;--p-ac-row-pad-x:12px;--p-ac-row-pad-y:0px;--p-ac-row-gap:0px;--p-ac-row-min-h:48px;
+  --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:color-mix(in oklab, var(--foreground) 10%, transparent);
+  /* Select: the M3 exposed dropdown, the filled trigger, the drop-down triangle, the M3 menu, no check */
   --p-select-h:56px;--p-select-radius:4px;--p-select-radius-bottom:0px;--p-select-border:0px;--p-select-underline:1px;
   --p-select-border-color:transparent;--p-select-underline-rest:var(--muted-foreground);
   --p-select-fill:var(--muted);--p-select-pad-x:16px;--p-select-font:16px;--p-select-lh:24px;
-  --p-select-chevron:"⌄" /* @kind other */;--p-select-panel-max:280px;--p-select-panel-radius:4px;--p-select-panel-border:0px;--p-select-panel-pad-y:8px;--p-select-panel-pad-x:0px;
+  --p-select-chevron:"arrow-drop-down" /* @kind other */;--p-select-chevron-color:var(--muted-foreground);--p-select-panel-max:280px;--p-select-panel-radius:4px;--p-select-panel-border:0px;--p-select-panel-pad-y:8px;--p-select-panel-pad-x:0px;
   --p-select-panel-shadow:var(--shadow-md);
-  --p-select-row-radius:0px;--p-select-row-pad-x:16px;--p-select-row-pad-y:12px;--p-select-row-gap:12px;--p-select-row-min-h:48px;
+  --p-select-row-radius:0px;--p-select-row-pad-x:12px;--p-select-row-pad-y:0px;--p-select-row-gap:12px;--p-select-row-min-h:48px;
   --p-select-row-font:14px;--p-select-row-lh:20px;
-  --p-select-row-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);
-  --p-select-check-color:var(--primary);--p-select-check-weight:700;
+  --p-select-row-selected-fill:color-mix(in oklab, var(--foreground) 10%, transparent);
+  --p-select-check-color:var(--primary);--p-select-check-weight:400;
   /* Dropdown — M3 menu: 4dp elevated surface, 48dp rows, no dividers */
   --p-menu-radius:4px;--p-menu-border:0px;--p-menu-pad-x:0px;--p-menu-pad-y:8px;--p-menu-shadow:var(--shadow-md);
   --p-menu-label-font:12px;--p-menu-label-lh:16px;--p-menu-label-weight:500;--p-menu-label-tracking:0.5px;--p-menu-label-pad-x:16px;--p-menu-label-pad-y:8px;
@@ -788,8 +779,6 @@
   /* Textarea: M3 opaque muted filled surface with a visible resting indicator */
   --p-textarea-fill:var(--muted);
   --p-textarea-underline-rest:var(--muted-foreground);--p-field-caption-tracking:0.4px;
-  /* Form — M3: prominent 700 title weight, body-small description */
-  --p-form-title-weight:700;--p-form-desc-tracking:0.4px;
   /* Breadcrumb — M3 body/label tracking */
   --p-crumb-tracking:0.1px;--p-crumb-sep-tracking:0.5px;
   /* TabBar — M3 navigation bar: 80dp edge-to-edge, no hairline, 56x32dp active-indicator pill.
@@ -818,10 +807,10 @@
   --p-toast-radius:4px;--p-toast-radius-multiline:4px;--p-toast-fill:var(--inverse);--p-toast-label:var(--inverse-foreground);
   --p-toast-msg:14px;--p-toast-msg-lh:20px;--p-toast-msg-weight:400;--p-toast-msg-tracking:0px;
   --p-toast-desc:13px;--p-toast-desc-lh:18px;--p-toast-desc-color:color-mix(in oklab, var(--inverse-foreground) 70%, transparent);--p-toast-gap:8px;
-  --p-toast-pad-x:16px;--p-toast-pad-y:12px;--p-toast-shadow:var(--shadow-lg);
+  --p-toast-pad-x:16px;--p-toast-pad-y:12px;--p-toast-shadow:0px 12px 32px -10px rgba(0,0,0,0.55);
   --p-toast-glyph:none;
-  /* EmptyState — M3 medium shape, title-medium */
-  --p-empty-radius:12px;--p-empty-title-weight:500;--p-empty-title-tracking:0.15px;--p-empty-desc-tracking:0.25px;
+  /* EmptyState (empty-state.styles.ts androidSkin: the web skin's parts, in Roboto) */
+  --p-empty-radius:18px;--p-empty-title-weight:500;--p-empty-title-tracking:-0.19px;--p-empty-desc-tracking:0px;
   --p-min-target:48px;
 
   /* Board (board.styles.ts androidSkin: 16dp surface-container wells, M3 type) */
@@ -838,10 +827,11 @@
   --p-drag-handle-size:40px;--p-drag-handle-radius:9999px;--p-drag-handle-icon:20px;
 
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
-  --p-acc-card-radius:12px;--p-cmd-radius:16px;--p-table-radius:12px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
+  --p-acc-card-radius:12px;--p-cmd-radius:18px;--p-table-radius:12px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
 }
 
 /* iOS skin values that resolve PER SCHEME upstream: the drawer scrim
-   (scrimOpacity(scheme): 0.2 light, 0.48 dark) and the switch off-track
-   (switch.styles.ts IOS_OFF_TRACK, systemGray3: #c7c7cc light, #48484a dark). */
-.dark [data-platform="ios"],[data-platform="ios"].dark{--p-drawer-scrim:rgba(0,0,0,0.48);--p-switch-off-track:#48484a}
+   (scrimOpacity(scheme): 0.2 light, 0.48 dark), the switch off-track
+   (switch.styles.ts IOS_OFF_TRACK, systemGray3: #c7c7cc light, #48484a dark) and the Tabs
+   segmented thumb (tabs.styles.ts iosThumb: the track lifted 28% toward the ink in dark). */
+.dark [data-platform="ios"],[data-platform="ios"].dark{--p-drawer-scrim:rgba(0,0,0,0.48);--p-switch-off-track:#48484a;--p-tab-selected-bg:color-mix(in srgb, var(--foreground) 28%, var(--secondary));--p-tab-pill-selected-bg:color-mix(in srgb, var(--foreground) 28%, var(--secondary))}

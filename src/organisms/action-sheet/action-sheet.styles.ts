@@ -2,6 +2,7 @@ import { destructiveText } from "../../style/destructive-text.js";
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, surfaceRipple, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { primaryText } from "../../style/primary-text.js";
 
 // Co-located ActionSheet skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when the
@@ -20,14 +21,18 @@ import { platformShape } from "../../style/platform-shape.js";
 //     `destructive` only, no hairline dividers). Cancel is a SEPARATE detached
 //     capsule below it, aligned with the action buttons. ~8pt side inset, capped at
 //     640 on wide viewports. Press = opacity dim (~0.8).
-//   Android (Material 3 modal bottom sheet): a SINGLE sheet rounded on top at the
-//     Material 3 sheet corner that spans the width, a 32x4 drag handle at the top,
-//     then left-aligned list items at 16sp; the destructive item tints its label red. Cancel is the LAST row in
-//     the same sheet (M3 has no separate cancel card). Flat (the sheet's own
-//     elevation comes from the scrim), press = android_ripple (neutral state layer).
-//   Web: two separated cards at the dialog corner with a centered gray header and
-//     hairline-divided rows, since no web library ships an action sheet. The stack is capped at 640 and centered so it never renders edge-to-edge
-//     on a wide desktop window. Press = opacity dim.
+//   Android (Material 3 modal bottom sheet, as the v4 hand-off's Android row draws it):
+//     a SINGLE `popover` sheet rounded on top at the Material 3 sheet corner under a
+//     `border` hairline, a 32x4 drag handle, a 14 / 500 muted title and a 13 muted
+//     message, then left-aligned 52dp list items at 16sp; the destructive item tints
+//     its label red. Cancel is the LAST row in the same sheet (M3 has no separate
+//     cancel card). Press = android_ripple (neutral state layer).
+//   Web (the hand-off's renderer): two separated cards at the menu corner in the
+//     overlay material, 10 off the window's edges and 8 apart, a centered 13px header
+//     (a 600 muted title over a muted message), 54px rows under `field-border`
+//     hairlines with 18px labels in the accent's ink (a destructive one in the error
+//     ink), and a separate 600 Cancel card. The stack is capped at 640 and centered so
+//     it never renders edge-to-edge on a wide desktop window. Press = opacity dim.
 
 // Ordinary action labels use the surface foreground for readable text in both
 // schemes. Destructive actions retain their semantic red.
@@ -117,41 +122,52 @@ export const scrimDim = StyleSheet.create({
 // scrim reaches the dismiss control.
 export const scrimContent: ViewStyle = { zIndex: 1 };
 
-// ---------- Web: two separated cards (the earlier iOS action sheet) ----------
-// No web library ships an action sheet, so the kit's web look is the iOS idiom:
-// two separated cards at the dialog corner anchored to the bottom, a centered gray header,
-// hairline-divided ~17pt foreground action rows, a red destructive label, and a
-// separate bold Cancel card. Press = opacity dim.
-const WEB_RADIUS = shape.web.dialog;
+// ---------- Web: the v4 hand-off's two cards ----------
+// No web library ships an action sheet, so the hand-off draws the classic iOS idiom: two
+// cards at the menu corner in the overlay material (the `popover` fill, the
+// `field-border` hairline, the lg shadow), 10 off the window's edges and 8 apart; a
+// centered 13px header 12 / 16 in; 54px rows each under a `field-border` hairline with
+// 18 / 400 labels in the accent's ink, a destructive label in the error ink; and a
+// separate 54px Cancel card at 600. Press = opacity dim.
+const WEB_RADIUS = shape.web.menu;
 // Cap the bottom stack so it never spans a wide desktop window edge-to-edge (an
 // uncapped action sheet reads as broken at ~2000px). 640 mirrors the M3 bottom-sheet
 // max-width; alignSelf centers it in the scrim.
 const STACK_MAX_WIDTH = 640;
+const webCard = (t: ColorTokens): ViewStyle => ({
+  borderRadius: WEB_RADIUS,
+  borderWidth: 1,
+  borderColor: t["field-border"],
+  backgroundColor: t.popover,
+  overflow: "hidden",
+  ...shadow("lg", t),
+});
 export const webSkin: ActionSheetSkin = {
   scrimOpacity: 0.4,
   cancelLayout: "separateCard",
   // paddingBottom keeps the Cancel card off the viewport edge (the safe-area inset
   // is 0 on web); Android stays flush per M3, so the padding lives in these skins.
-  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 8, paddingVertical: 8, gap: 8 },
-  actionsCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg", t) }),
-  cancelCard: (t) => ({ borderRadius: WEB_RADIUS, backgroundColor: t.popover, ...shadow("lg", t) }),
+  stack: { width: "100%", maxWidth: STACK_MAX_WIDTH, alignSelf: "center", paddingHorizontal: 10, paddingVertical: 10, gap: 8 },
+  actionsCard: webCard,
+  cancelCard: webCard,
   handle: null,
-  header: { paddingVertical: 14, paddingHorizontal: 16, alignItems: "center" },
-  headerTitle: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t["muted-foreground"], textAlign: "center" }),
-  headerMessage: (t) => ({ marginTop: 2, fontSize: 13, lineHeight: 18, color: t["muted-foreground"], textAlign: "center" }),
-  divider: (t) => ({ height: 1, backgroundColor: t.border }),
-  row: { minHeight: 57, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  header: { paddingVertical: 12, paddingHorizontal: 16, alignItems: "center" },
+  headerTitle: (t) => ({ fontSize: 13, lineHeight: 17, fontWeight: "600", color: t["muted-foreground"], textAlign: "center" }),
+  // The muted ink: the hand-off's subtle one falls under 4.5:1 on the light glass sheet.
+  headerMessage: (t) => ({ fontSize: 13, lineHeight: 17, color: t["muted-foreground"], textAlign: "center" }),
+  divider: (t) => ({ height: 1, backgroundColor: t["field-border"] }),
+  row: { minHeight: 54, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
   rowFill: null,
   rowLabel: (t, destructive, disabled) => ({
-    fontSize: 17,
-    lineHeight: 22,
+    fontSize: 18,
+    lineHeight: 23,
     fontWeight: "400",
     textAlign: "center",
-    color: destructive ? destructiveText(t) : t["popover-foreground"],
+    color: destructive ? destructiveText(t) : primaryText(t),
     opacity: disabled ? 0.4 : 1,
   }),
-  cancelRow: { minHeight: 57, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
-  cancelLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", textAlign: "center", color: t["popover-foreground"] }),
+  cancelRow: { minHeight: 54, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  cancelLabel: (t) => ({ fontSize: 18, lineHeight: 23, fontWeight: "600", textAlign: "center", color: primaryText(t) }),
   pressedOpacity: 0.8,
   ripple: null,
 };
@@ -225,12 +241,13 @@ export const iosSkin: ActionSheetSkin = {
 };
 
 // ---------- Android (Material 3 modal bottom sheet): one rounded-top sheet ----------
-// M3 has no action sheet; the equivalent is a modal bottom sheet of list items. A
-// SINGLE sheet spans the width and rounds its top corners 28dp, with a 32x4 drag
-// handle at the top. The header sits left-aligned, then left-aligned list items at
-// 16sp (the destructive item tints its label red). Cancel folds into the SAME
-// sheet as its last list row (no separate cancel card). Press = android_ripple
-// (neutral state layer); the sheet is flat (the scrim supplies the separation).
+// M3 has no action sheet; the equivalent is a modal bottom sheet of list items, as the
+// hand-off's Android row draws it: a SINGLE `popover` sheet across the width, rounded on
+// top at the Material 3 sheet corner under a `border` hairline, inset 10 / 8 / 16, a
+// 32x4 drag handle (the subtle ink at half strength, 14 above the header), a 14 / 500
+// muted title 2 over a 13 muted message, then 52dp left-aligned list items 16 in at
+// 16sp (the destructive item tints its label red). Cancel folds into the SAME sheet as
+// its last list row. Press = android_ripple (neutral state layer).
 const ANDROID_RADIUS = shape.android.sheet;
 export const androidSkin: ActionSheetSkin = {
   scrimOpacity: 0.32,
@@ -242,41 +259,39 @@ export const androidSkin: ActionSheetSkin = {
   actionsCard: (t) => ({
     borderTopStartRadius: ANDROID_RADIUS,
     borderTopEndRadius: ANDROID_RADIUS,
+    borderTopWidth: 1,
+    borderColor: t.border,
     backgroundColor: t.popover,
-    paddingBottom: 8,
+    paddingTop: 10,
+    paddingHorizontal: 8,
+    paddingBottom: 16,
   }),
   cancelCard: null,
-  // The M3 drag handle: a 32x4 capsule, centered at the top, in the on-surface
-  // color at low alpha (the M3 "surfaceContainerHighest on-surface variant" cue).
-  // M3 pads it 22dp top AND bottom so the handle sits in a ~48dp touch zone.
   handle: (t) => ({
     width: 32,
     height: 4,
     borderRadius: 9999,
     alignSelf: "center",
-    marginTop: 22,
-    marginBottom: 22,
-    backgroundColor: alpha(t["muted-foreground"], 0.4),
+    marginBottom: 14,
+    backgroundColor: alpha(t["subtle-foreground"] ?? t["muted-foreground"], 0.5),
   }),
-  header: { paddingTop: 8, paddingBottom: 12, paddingHorizontal: 24, alignItems: "flex-start" },
-  // M3 title-medium: 16/24/500 with +0.15 tracking.
-  headerTitle: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t["popover-foreground"] }),
-  headerMessage: (t) => ({ marginTop: 4, fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
+  header: { paddingBottom: 8, paddingHorizontal: 16, gap: 2, alignItems: "flex-start" },
+  headerTitle: (t) => ({ fontSize: 14, lineHeight: 18, fontWeight: "500", color: t["muted-foreground"] }),
+  // The muted ink: the hand-off's subtle one falls under 4.5:1 on the light glass sheet.
+  headerMessage: (t) => ({ fontSize: 13, lineHeight: 17, color: t["muted-foreground"] }),
   // M3 list items are flush (no hairline rules between rows).
   divider: null,
-  row: { minHeight: 56, flexDirection: "row", alignItems: "center", paddingHorizontal: 24 },
+  row: { minHeight: 52, flexDirection: "row", alignItems: "center", gap: 16, paddingHorizontal: 16 },
   rowFill: null,
-  // M3 body-large: 16/24/400 with +0.5 tracking.
   rowLabel: (t, destructive, disabled) => ({
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 20,
     fontWeight: "400",
-    letterSpacing: 0.5,
     color: destructive ? destructiveText(t) : t["popover-foreground"],
     opacity: disabled ? 0.38 : 1,
   }),
-  cancelRow: { minHeight: 56, flexDirection: "row", alignItems: "center", paddingHorizontal: 24 },
-  cancelLabel: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "400", letterSpacing: 0.5, color: t["popover-foreground"] }),
+  cancelRow: { minHeight: 52, flexDirection: "row", alignItems: "center", paddingHorizontal: 16 },
+  cancelLabel: (t) => ({ fontSize: 16, lineHeight: 20, fontWeight: "400", color: t["popover-foreground"] }),
   pressedOpacity: null,
   // Route the neutral M3 state-layer ripple through the shared helper (same output
   // as the previous inline value; keeps the ripple definition in one place).

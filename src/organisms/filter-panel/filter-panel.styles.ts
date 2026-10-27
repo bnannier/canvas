@@ -1,280 +1,163 @@
 import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { surfaceRipple, type ColorTokens, shape } from "../../style/index.js";
+import { surfaceRipple, type ColorTokens, MONO_FONT } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { fieldBorder } from "../../style/field-colors.js";
 import { type CheckboxIndicatorProps } from "../../atoms/checkbox/indicator/shared.js";
-import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 
-// Per-OS FilterPanel skins. FilterPanel is a "Light" treatment: identical
-// structure and semantic colors (those live in filter-panel.shared.tsx); only the
-// panel radius, spacing density, group-heading tracking, and the press feedback on
-// the OWN option rows shift per OS. The atom looks (the Checkbox box and the count
-// Badge) are NOT re-skinned here: the platform Checkbox/Badge are passed into
-// createFilterPanel by each wrapper.
+// Per-OS FilterPanel skins, drawn to the Canvas v4 hand-off (tools/v4/handoff/cv-kit-inputs.js
+// `K.def('filter-panel')`, its code-driven groups in cv-kit-code2.js and its responsive
+// collapse in cv-kit-code7.js). One structure lives in filter-panel.shared.tsx; the panel
+// itself is the hand-off's on every platform, in the platform's face, and only the option
+// rows change per OS: how a chosen filter is marked, their touch height and their press
+// feedback. The atoms the rows compose (the Checkbox mark, the Clear and trigger Buttons)
+// are not re-skinned here: each platform entry passes its own.
 //
-//   Web: the bordered panel at the card corner, a 12 / 16 inset, 12 / 20 stacks,
-//     12px / +0.4 tracking uppercase group headings, no row press feedback (the row
-//     is a plain View).
-//   iOS (HIG): filters live in a sheet/popover built from standard controls, so
-//     the panel reads as an iOS grouped surface: the iOS card corner, the
-//     group heading uses SF-style footnote tracking (slightly tighter), the option
-//     row marks a chosen filter the way an iOS list does (the label leads, the
-//     count follows, and a trailing check in the accent closes the row), and the
-//     row dims to ~0.8 opacity on press (the iOS press idiom).
-//   Android (Material 3): the side-sheet surface: the side sheet corner (M3 large),
-//     the group heading uses M3 title-small tracking (+0.1) and is NOT uppercased
-//     (M3 section headers are sentence/Title case), and the option row shows a
-//     native ripple state layer instead of an opacity dim.
+//   The panel: 280 wide, the floating rail's corner, a `field-border` hairline over the `card`
+//     fill when `bordered` (a content pane under glass), a 16px inset (12 compact) and a
+//     14px rhythm (10 compact). The header is "Filters" in 600 14px with the live count's
+//     "Clear N" text action at its end, shown only while a filter is on. A group heading
+//     is the 500 11px mono eyebrow, tracked 0.08em, uppercase, in the subtle ink, 8 above
+//     its options (4 compact). A row is the mark and its label, then the count in 400
+//     12px mono, subtle, 10 from the label.
+//   Web: the rows are the content's own height, 8 apart (4 compact), the web Checkbox
+//     mark leading each, and they take no press feedback.
+//   iOS: iOS has no checkbox (one job, different control): a chosen filter is the list's
+//     trailing check after its count, in the accent, and the row is the 44pt list row,
+//     dimming to 0.8 on press.
+//   Android: the Material 3 checkbox leads each row, the row is 48dp tall, and a press
+//     draws the native ripple.
 
 export type Density = "compact" | "base";
 
 // The atoms FilterPanel composes are passed in per platform (see createFilterPanel).
 export type CheckboxComponent = ComponentType<CheckboxIndicatorProps>;
-export type BadgeComponent = ComponentType<BadgeProps>;
 export type ButtonComponent = ComponentType<ButtonProps>;
 
-// The only thing a platform skin owns: the panel shape, the density paddings/gaps,
-// the header/group/row layout fragments, the group-heading type, and the press
-// feedback mode for the OWN option rows. Everything else is the shell.
+// What a platform skin owns: the panel shape, the density paddings/gaps, the header,
+// group and row fragments and their type, and the press feedback on the OWN option rows.
 export interface FilterPanelSkin {
   /** Fixed panel width + column layout, shared by both surfaces. */
   panelBase: ViewStyle;
-  /** `bordered` card chrome: radius + border + card fill (radius is per-OS). */
+  /** `bordered` card chrome: radius + border + card fill. */
   borderedSurface: (tokens: ColorTokens) => ViewStyle;
   /** Panel inset per density. */
   panelPad: Record<Density, ViewStyle>;
   /** Vertical rhythm between header and groups, and between groups, per density. */
   panelStack: Record<Density, ViewStyle>;
-  /** Row spacing inside a group + between a group's title and options, per density. */
+  /** Between a group's heading and its options, per density. */
   groupGap: Record<Density, ViewStyle>;
-  /** Header row: title cluster left, Clear right. */
+  /** Between a group's options, per density. */
+  optionGap: Record<Density, ViewStyle>;
+  /** Header row: the title left, Clear right. */
   headerRow: ViewStyle;
-  /** Title + active-count cluster. */
-  titleCluster: ViewStyle;
   /** "Filters" heading type. */
   titleText: (tokens: ColorTokens) => TextStyle;
   /** A group column (title above its option list). */
   groupColumn: ViewStyle;
-  /** Group heading type (the per-OS tracking/case touch lives here). */
+  /** Group heading type. */
   groupTitle: (tokens: ColorTokens) => TextStyle;
-  /** One option row: the mark and label left, optional count badge right. */
+  /** One option row: the mark and label left, the optional count right. */
   optionRow: ViewStyle;
+  /** The option's count: plain mono text at the row's end. */
+  countText: (tokens: ColorTokens) => TextStyle;
   /**
    * How an option row marks its selection: the platform's selection Checkbox beside
    * the label (the web and Android), or the label alone with a trailing check after
    * its count (iOS lists).
    */
   optionMark: { kind: "indicator" } | { kind: "trailing"; label: (tokens: ColorTokens) => TextStyle; check: (tokens: ColorTokens) => TextStyle };
-  /** iOS/web dim the row on press; Android uses a ripple instead (null). */
+  /** iOS dims the row on press; the web takes none and Android uses a ripple instead (null). */
   rowPressedOpacity: number | null;
   /** Android ripple over the option row; null on iOS/web. */
   rowRipple: ((tokens: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
-// --- shared layout fragments (identical across platforms) -------------------
+// --- the hand-off's panel, shared by every platform ----------------------------
 
-// Fixed panel width (w-[280px]) and column layout; capped so the panel shrinks
-// inside narrower parents (which is all a phone screen is) instead of overflowing.
+/** The hand-off's tx3: the eyebrow and the counts. */
+function subtleInk(t: ColorTokens): string {
+  return t["subtle-foreground"] ?? t["muted-foreground"];
+}
+
+// The 280 rail, capped so it shrinks inside a narrower parent instead of overflowing.
 const PANEL_BASE: ViewStyle = { width: 280, maxWidth: "100%", flexDirection: "column" };
 
-// Android side-sheet container token: 256dp width (M3 side sheets docked-modal
-// container width; max 400dp). The web/iOS panel keeps the established 280 rail.
-const ANDROID_PANEL_BASE: ViewStyle = { width: 256, maxWidth: "100%", flexDirection: "column" };
+// The hand-off's floating rail corner (its filter panel's too), the ln2 hairline
+// and the `card` fill.
+function borderedSurface(tokens: ColorTokens): ViewStyle {
+  return { borderRadius: platformShape.web.floatingRail, borderWidth: 1, borderColor: fieldBorder(tokens), backgroundColor: tokens.card };
+}
 
-// Header row: title cluster on the left, the Clear action on the right.
-const HEADER_ROW: ViewStyle = {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-};
+const PANEL_PAD: Record<Density, ViewStyle> = { compact: { padding: 12 }, base: { padding: 16 } };
+const PANEL_STACK: Record<Density, ViewStyle> = { compact: { gap: 10 }, base: { gap: 14 } };
+const GROUP_GAP: Record<Density, ViewStyle> = { compact: { gap: 4 }, base: { gap: 8 } };
+// A native row is the platform's touch height, which carries the rhythm on its own.
+const NATIVE_OPTION_GAP: Record<Density, ViewStyle> = { compact: { gap: 0 }, base: { gap: 0 } };
 
-// Title + active-count cluster (a row with a small gap).
-const TITLE_CLUSTER: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
-
-// A group column (the title above its option list).
+const HEADER_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 };
 const GROUP_COLUMN: ViewStyle = { flexDirection: "column" };
+const OPTION_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10 };
 
-// One option row: checkbox on the left, optional count badge on the right.
-const OPTION_ROW: ViewStyle = {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 8,
-};
-
-// The native option rows raise the tap target to the platform minimum while
-// keeping the same centered checkbox/label/count layout (alignItems center holds
-// the visual rhythm). iOS HIG minimum interactive target = 44pt; M3 = 48dp.
-const IOS_OPTION_ROW: ViewStyle = { ...OPTION_ROW, minHeight: 44 };
-const ANDROID_OPTION_ROW: ViewStyle = { ...OPTION_ROW, minHeight: 48 };
-
-// Panel inset per density (p-3 compact / p-4 base). Shared by web/iOS.
-const PANEL_PAD: Record<Density, ViewStyle> = {
-  compact: { padding: 12 },
-  base: { padding: 16 },
-};
-
-// Android inset: M3 side sheets use 24dp start/end padding. Only the base density
-// takes the wider inset (the compact density keeps the tighter 12dp all-around).
-const ANDROID_PANEL_PAD: Record<Density, ViewStyle> = {
-  compact: { padding: 12 },
-  base: { paddingHorizontal: 24, paddingVertical: 16 },
-};
-
-// Vertical rhythm between the header and groups, and between groups
-// (gap-3 compact / gap-5 base).
-const PANEL_STACK: Record<Density, ViewStyle> = {
-  compact: { gap: 12 },
-  base: { gap: 20 },
-};
-
-// Row spacing inside a group, and between a group's title and its options
-// (gap-1.5 compact / gap-2 base).
-const GROUP_GAP: Record<Density, ViewStyle> = {
-  compact: { gap: 6 },
-  base: { gap: 8 },
-};
-
-// "Filters" heading: small, semibold, on the foreground token (web/established look).
 function titleText(tokens: ColorTokens): TextStyle {
   return { fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground };
 }
 
-// iOS: same 14/20 semibold header, plus SF Pro Text tracking at 14pt = -0.15.
-function iosTitleText(tokens: ColorTokens): TextStyle {
-  return {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-    letterSpacing: -0.15,
-    color: tokens.foreground,
-  };
+// The mono eyebrow: 500 11px, tracked 0.08em (0.88px), uppercase, subtle.
+function groupTitle(tokens: ColorTokens): TextStyle {
+  return { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "500", letterSpacing: 0.88, textTransform: "uppercase", color: subtleInk(tokens) };
 }
 
-// Android: M3 title-small = 14/20, weight 500 (600 is not an M3 role weight),
-// tracking +0.1.
-function androidTitleText(tokens: ColorTokens): TextStyle {
-  return {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "500",
-    letterSpacing: 0.1,
-    color: tokens.foreground,
-  };
+function countText(tokens: ColorTokens): TextStyle {
+  return { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400", color: subtleInk(tokens) };
 }
 
-// ---------- Web: the bordered panel at the card corner ----------
-export const webSkin: FilterPanelSkin = {
+const PANEL = {
   panelBase: PANEL_BASE,
-  // `bordered` wraps the panel as a rounded card: the card corner on the card
-  // fill. The card token follows light/dark (and stays solid under glass), so read it
-  // from tokens rather than hardcoding its hex.
-  borderedSurface: (tokens) => ({
-    borderRadius: shape.web.card,
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-  }),
+  borderedSurface,
   panelPad: PANEL_PAD,
   panelStack: PANEL_STACK,
   groupGap: GROUP_GAP,
   headerRow: HEADER_ROW,
-  titleCluster: TITLE_CLUSTER,
   titleText,
   groupColumn: GROUP_COLUMN,
-  // Extra-small, medium, uppercase, wide tracking, muted.
-  groupTitle: (tokens) => ({
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-    color: tokens["muted-foreground"],
-  }),
+  groupTitle,
+  countText,
+} as const;
+
+// ---------- Web: the hand-off's rows ----------
+export const webSkin: FilterPanelSkin = {
+  ...PANEL,
+  optionGap: GROUP_GAP,
   optionRow: OPTION_ROW,
   optionMark: { kind: "indicator" },
-  // The web row was a plain View with no press feedback; keep it inert.
   rowPressedOpacity: null,
   rowRipple: null,
 };
 
-// ---------- iOS (HIG): grouped sheet/popover surface, dim on press ----------
+// ---------- iOS: the list's trailing check, 44pt rows, dim on press ----------
 export const iosSkin: FilterPanelSkin = {
-  panelBase: PANEL_BASE,
-  // iOS grouped surfaces are softly rounded; bump the card radius to 12, with the
-  // continuous (superellipse) corner curve HIG surfaces use (RN iOS-only, no-op on
-  // web/Android).
-  borderedSurface: (tokens) => ({
-    borderRadius: shape.ios.card,
-    borderCurve: "continuous",
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-  }),
-  panelPad: PANEL_PAD,
-  panelStack: PANEL_STACK,
-  groupGap: GROUP_GAP,
-  headerRow: HEADER_ROW,
-  titleCluster: TITLE_CLUSTER,
-  titleText: iosTitleText,
-  groupColumn: GROUP_COLUMN,
-  // SF-style footnote header: uppercase, slightly tighter tracking than web.
-  groupTitle: (tokens) => ({
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    textTransform: "uppercase",
-    letterSpacing: 0.2,
-    color: tokens["muted-foreground"],
-  }),
-  // 44pt minimum tap target (HIG); the checkbox stays centered.
-  optionRow: IOS_OPTION_ROW,
-  // The label keeps the Checkbox's label type at its base size (what the row showed
-  // beside the box), and the check is that size in semibold, in the accent.
+  ...PANEL,
+  optionGap: NATIVE_OPTION_GAP,
+  optionRow: { ...OPTION_ROW, minHeight: 44 },
+  // The label is the hand-off's 400 14px row label; the check is that size in semibold,
+  // in the accent.
   optionMark: {
     kind: "trailing",
-    label: (tokens) => ({ fontWeight: "500", fontSize: 14, lineHeight: 20, color: tokens.foreground }),
+    label: (tokens) => ({ fontWeight: "400", fontSize: 14, lineHeight: 20, color: tokens.foreground }),
     check: (tokens) => ({ fontWeight: "600", fontSize: 14, lineHeight: 20, color: tokens.primary }),
   },
-  // iOS press idiom: dim the row to ~0.8.
   rowPressedOpacity: 0.8,
   rowRipple: null,
 };
 
-// ---------- Android (Material 3): side-sheet surface, ripple on press ----------
+// ---------- Android: the M3 checkbox, 48dp rows, the ripple ----------
 export const androidSkin: FilterPanelSkin = {
-  // M3 side sheets docked-modal container width token = 256dp.
-  panelBase: ANDROID_PANEL_BASE,
-  // M3 side sheets / large containers use the large shape (16dp).
-  borderedSurface: (tokens) => ({
-    borderRadius: platformShape.android.sideSheet,
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-  }),
-  // M3 side sheets: 24dp start/end padding on the standard (base) density.
-  panelPad: ANDROID_PANEL_PAD,
-  panelStack: PANEL_STACK,
-  groupGap: GROUP_GAP,
-  headerRow: HEADER_ROW,
-  titleCluster: TITLE_CLUSTER,
-  // M3 title-small (14/20/500/+0.1) for the "Filters" header.
-  titleText: androidTitleText,
-  groupColumn: GROUP_COLUMN,
-  // M3 label-medium (12/16/500/+0.5) group heading, Title case (NOT uppercased,
-  // which is the M3 convention for list/section subheaders).
-  groupTitle: (tokens) => ({
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    letterSpacing: 0.5,
-    color: tokens["muted-foreground"],
-  }),
-  // 48dp minimum tap target (M3); the checkbox stays centered.
-  optionRow: ANDROID_OPTION_ROW,
+  ...PANEL,
+  optionGap: NATIVE_OPTION_GAP,
+  optionRow: { ...OPTION_ROW, minHeight: 48 },
   optionMark: { kind: "indicator" },
-  // M3 row press is a ripple state layer, not an opacity dim.
   rowPressedOpacity: null,
   rowRipple: (tokens) => surfaceRipple(tokens),
 };

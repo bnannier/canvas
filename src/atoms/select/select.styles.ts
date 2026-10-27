@@ -1,108 +1,126 @@
-import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
+import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, activeIndicator, shape, type FloatingLabelStyles } from "../../style/index.js";
-import { fieldEyebrow } from "../../style/field-label.js";
-import { fieldBorder } from "../../style/field-colors.js";
+import { fieldBorder, focusHaloColor } from "../../style/field-colors.js";
+import { primaryText } from "../../style/primary-text.js";
+import { platformShape } from "../../style/platform-shape.js";
+import { typeRoles } from "../../style/type-scale.js";
 
-// Co-located Select skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark). The option-list panel is
-// an option list, so the shell asks AnchoredOverlay for the DENSE layer (`dense`):
-// in solid mode the panel paints the skin's `popover` fill, and under glass it takes
-// the material under the model's densest tint, so its options stay legible and the
-// page never reads through between them. The BRAND survives
-// on every platform (the open/focus accent and the selected-row indicator are the
-// brand tokens, never a platform default); only the native SHAPE, sizing,
-// fill, border/underline treatment, and press feedback change per OS:
-//   iOS: the "iOS Mobile Input Fields" reference's country select (see
-//     input.styles.ts): the same white `card` box as the Input (the iOS field corner,
-//     the 1pt gray-300 `field-border` hairline, `ring` when open), ~44pt tall, a 16pt
-//     value, and a trailing ▾ caret in `muted-foreground`; press = opacity dim
-//     (~0.8). The menu is the very rounded Liquid Glass popover (the iOS menu corner,
-//     `popover`, soft shadow, ~17pt rows ~42pt tall, hairline group separators);
-//     the selected row shows a LEADING brand checkmark.
-//   Android (Material 3 exposed dropdown): a filled trigger (subtle `muted`
-//     fill, the Material 3 field corner on TOP, flat bottom) with a bottom active-indicator
-//     underline (1dp `muted-foreground` at rest -> 2dp `primary` when open) and a trailing
-//     chevron-down; press = android_ripple. The menu is an elevated surface
-//     (the Material 3 menu corner, `popover`, soft shadow); pressed rows tint with the ripple
-//     (alpha(primary, 0.12) state layer) and the selected row is tinted.
-//   Web: a `card` trigger at the field corner with a 1px `field-border` hairline
-//     (`ring` when open), 40/48/56 tall, a trailing ▾ chevron in `muted-foreground`;
-//     the menu is a bordered popover at the menu corner (`border`, shadow-lg, an 8px
-//     inset) around rows at the control corner, and the selected row carries the
-//     `accent` fill with a LEADING ✓ in the gutter.
+// Co-located Select skins, one per platform, drawn to the Canvas v4 hand-off
+// (tools/v4/handoff/cv-kit-inputs.js `K.def('select')` with its code-driven options in
+// cv-kit-code2.js, and the iOS and Android rows `P.select` in cv-kit-platform.js). The
+// option-list panel is an option list, so the shell asks AnchoredOverlay for the DENSE
+// layer (`dense`): in solid mode the panel paints the skin's own fill, and under glass it
+// takes the material under the model's densest tint. A select is a job iOS (the pop-up
+// button and its menu) and Android (the Material 3 exposed dropdown menu) both ship a
+// control for, so both keep their native shape, in the hand-off's colours:
+//   Web: the hand-off's sunken field: a `surface-sunken` box at the web field corner with
+//     the 1px `field-border` hairline, 40 tall (32 small, 48 large), a 12px inset (10
+//     small), a 400 14px value (13 small) and a 16px `subtle-foreground` chevron-down
+//     (14 small) that turns over while the list is open. Hover steps the hairline to
+//     `subtle-foreground`; the open list and keyboard focus paint the `ring` edge, and
+//     keyboard focus adds the 4px accent halo; `soft` is the `muted` fill with no edge.
+//     The label above is the 500 13px `label` role in `muted-foreground`, 6px over the
+//     field. The list is the hand-off's panel 6px below: the `card` fill, the `border`
+//     hairline, the menu corner, the md shadow and a 4px inset around 34px rows, a 400
+//     14px label, the chosen row on the `muted` wash with a trailing 14px check in the
+//     accent ink. Disabled dims to 0.45. `dense` is the 32px field with a 600 13px value
+//     and 30px rows, under the 10px eyebrow label.
+//   iOS: the hand-off's field box (the Input's): a `card` box at the iOS field corner with
+//     the 1pt `field-border` hairline (the open list does not tint it), 44pt tall (36
+//     small, 50 large), a 16pt value, a 16pt `subtle-foreground` up-down chevron. The menu
+//     is the iOS pop-up menu: 250pt wide, 6pt below the field, the iOS menu corner, the
+//     `popover` fill, the `field-border` hairline and the lg shadow, 44pt rows of 17pt
+//     labels with a 22pt leading slot holding the chosen row's 16pt check in the label's
+//     ink; no separators and no row fill. Press dims (0.8); disabled dims to 0.5.
+//   Android (Material 3 exposed dropdown): the filled field (the `muted` fill, the
+//     Material 3 field corner on top, a flat bottom, the 1dp `muted-foreground` indicator
+//     thickening to 2dp `primary` while open), 56dp tall (48 small, 60 large), 16dp in
+//     from the start and 12dp from the end, the 24dp drop-down triangle in
+//     `muted-foreground`, turned over while open. The menu is the M3 menu 4dp below: the
+//     `popover` fill at the M3 menu corner, the md shadow, an 8dp vertical inset, 48dp
+//     rows 12dp in with a 14sp label, the chosen row on the foreground's 10% state layer,
+//     no check. The ripple is the press; disabled dims to 0.38.
 
 export type Size = "small" | "default" | "large";
 
-// Type scale per size, shared by the label, the trigger value, and the option
-// rows (text-xs / text-sm / text-base). Brand type, not a platform face.
-const TEXT_SIZE: Record<Size, TextStyle> = {
-  small: { fontSize: 12, lineHeight: 16 },
-  default: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
-  large: { fontSize: 16, lineHeight: 24 },
-};
-function textType(size: Size): TextStyle {
-  return TEXT_SIZE[size];
+/** The trailing disclosure: which glyph, its size and ink, and whether it turns over while open. */
+export interface SelectDisclosure {
+  /** chevronDown (web), chevronsUpDown (iOS) or the Material drop-down triangle (Android). */
+  glyph: "chevronDown" | "chevronsUpDown" | "triangle";
+  /** The glyph's box (px); the triangle is drawn 10x5 centered in it. */
+  size: (size: Size) => number;
+  color: (t: ColorTokens, open: boolean) => string;
+  /** The glyph turns over (180 degrees) while the list is open. */
+  flips: boolean;
 }
 
-// The contract a platform skin fulfills. The shell resolves size + the open and
-// hasValue/selected states and passes them in; the skin maps them to RN style
-// objects. `selectedSide` tells the shell where to render the selection
-// indicator (a leading gutter glyph on web, a trailing brand check on iOS), and
-// `selectedGlyph` is the character it draws there.
+// The contract a platform skin fulfills. The shell resolves size + the open, hover,
+// focus and selected states and passes them in; the skin maps them to RN style objects.
+// `selectedSide` tells the shell where the selection mark goes (a trailing check on the
+// web, a leading slot on iOS, none on Android, which marks the chosen row with its
+// state layer), and `indicator` is that mark's ink and size.
 export interface SelectSkin extends FloatingLabelStyles<Size> {
-  /** Dense web field and unadorned option-list anatomy. Native skins retain their platform control. */
+  /** The dense web field and its compact option rows. Native skins retain their platform control. */
   reference?: {
-    trigger: (t: ColorTokens, open: boolean) => ViewStyle;
+    trigger: (t: ColorTokens, open: boolean, hovered?: boolean, focused?: boolean) => ViewStyle;
     value: (t: ColorTokens) => TextStyle;
     label: (t: ColorTokens) => TextStyle;
-    panel: (t: ColorTokens) => ViewStyle;
-    row: ViewStyle;
+    row: (t: ColorTokens, selected: boolean) => ViewStyle;
     option: (t: ColorTokens, selected: boolean) => TextStyle;
+    /** The dense chevron's size (px). */
+    chevron: number;
   };
-  /** Type scale per size; label, trigger value, and rows share it so they line up. */
+  /** Type scale per size; the trigger value shares it. */
   text: (size: Size) => TextStyle;
-  /** The stacked (above-trigger) label type, used on iOS + web (`floatingLabel:
-   *  false`). On Android the label FLOATS inside the trigger instead (see
+  /** The stacked (above-trigger) label type and its gap to the trigger, used on iOS + web
+   *  (`floatingLabel: false`). On Android the label FLOATS inside the trigger instead (see
    *  FloatingLabelStyles: `floatingLabel`, `labelRest`/`labelFloated`/`labelReserve`). */
   label: (t: ColorTokens, size: Size) => TextStyle;
-  /** The INLINE label type: a muted small label rendered as a leading cluster
-   *  INSIDE the trigger row (before the value) when `inline` is set alongside
-   *  `label`, for a toolbar-style labeled select. Per-OS type; not the persistent
-   *  above/floating placement. */
+  /** The INLINE label type: a muted label rendered as a leading cluster INSIDE the
+   *  trigger row (before the value) when `inline` is set alongside `label`. */
   inlineLabel: (t: ColorTokens, size: Size) => TextStyle;
-  /** The trigger surface: shape, fill, border/underline; `open` lights the active state. */
-  trigger: (t: ColorTokens, size: Size, open: boolean) => ViewStyle;
+  /**
+   * The trigger surface: shape, fill, border/underline. `open` lights the active state;
+   * `hovered` and `focused` (keyboard focus) are read only by a skin that draws them (the
+   * web's hover edge and focus edge).
+   */
+  trigger: (t: ColorTokens, size: Size, open: boolean, hovered?: boolean, focused?: boolean) => ViewStyle;
+  /** The `soft` trigger's fill and edge, over the trigger; a skin that omits it fills with `field-fill`. */
+  soft?: (t: ColorTokens) => ViewStyle;
+  /** A pointer hover steps the resting edge (web only; native pointer hover waits on the owner). */
+  hover?: boolean;
+  /** The halo a keyboard-focused trigger wears in place of the kit's ring, or none (the platform owns focus). */
+  focusHalo?: (t: ColorTokens) => ViewStyle;
   /** The leading cluster inside the trigger (optional icon + value/placeholder). */
   triggerValue: ViewStyle;
-  /** The trigger value text: foreground when a value is selected, muted otherwise. */
+  /** The trigger value text: foreground when a value is selected, the placeholder ink otherwise. */
   valueText: (t: ColorTokens, size: Size, hasValue: boolean) => TextStyle;
-  /** The trailing chevron glyph. Different character per platform; `open` lets
-   *  Android tint it with the brand `primary` when the menu is expanded. */
-  chevron: (t: ColorTokens, size: Size, open: boolean) => TextStyle;
-  /** The chevron character (▾ on web, ⌄ on Android, chevron-up-down on iOS). */
-  chevronGlyph: string;
-  /** The open option list surface: card visuals only (fill, border, shadow,
-   *  radius, padding, maxHeight). AnchoredOverlay paints it on the DENSE layer (the
-   *  skin's fill in solid mode, the material under the densest tint under glass) and
-   *  supplies the on-page position; the inline no-host fallback adds PANEL_ANCHOR
-   *  for the absolute anchoring. */
+  /** The trailing disclosure glyph. */
+  disclosure: SelectDisclosure;
+  /** The leading globe glyph's size (px) and ink, for `icon`. */
+  icon: { size: number; color: (t: ColorTokens) => string };
+  /** The open option list surface: card visuals only (fill, border, shadow, radius,
+   *  padding, maxHeight). AnchoredOverlay paints it on the DENSE layer and supplies the
+   *  on-page position; the inline no-host fallback adds PANEL_ANCHOR. */
   panel: (t: ColorTokens) => ViewStyle;
-  /** An option row. `selected` carries the active tint. */
+  /** The space between the trigger and the open list. */
+  panelGap: number;
+  /** A menu of its own width (the iOS pop-up menu); omitted, the list is at least the trigger's width. */
+  panelWidth?: number;
+  /** An option row. `selected` carries the chosen row's fill. */
   optionRow: (t: ColorTokens, selected: boolean) => ViewStyle;
-  /**
-   * Optional hairline group separator applied to every row after the first, so
-   * the menu reads as iOS's separated item groups. Skins that omit it (web,
-   * Android) render borderless rows exactly as before.
-   */
+  /** An optional hairline separator above every row after the first. */
   rowSeparator?: (t: ColorTokens) => ViewStyle;
-  /** The fill applied on press (web/iOS dim via this; Android uses a ripple). */
+  /** The fill applied on press (web/iOS; Android uses a ripple). */
   optionPressed: (t: ColorTokens) => ViewStyle;
-  /** Option row text (label + the indicator glyph). */
+  /** Option row text. */
   optionText: (t: ColorTokens, size: Size) => TextStyle;
-  /** The selected-row indicator glyph (✓) styled in the platform's accent. */
+  /** The selection mark's ink (`color`) and size (`fontSize`, the check glyph's px). */
   indicator: (t: ColorTokens, size: Size) => TextStyle;
-  /** Which side the selection indicator renders on. */
-  selectedSide: "leading" | "trailing";
+  /** Where the selection mark renders; "none" marks the chosen row with its fill alone. */
+  selectedSide: "leading" | "trailing" | "none";
+  /** The leading mark's slot width (iOS), which every row reserves so labels line up. */
+  markSlot?: number;
   /** Opacity applied to the trigger when disabled. */
   disabledOpacity: number;
   /** iOS/web dim the trigger + rows on press; Android uses a ripple instead (null). */
@@ -112,15 +130,14 @@ export interface SelectSkin extends FloatingLabelStyles<Size> {
 }
 
 // The control owns the full width of its slot; `relative` makes it the
-// positioning context for the floating option list. The escape-hatch `style`
-// (mainly width) is applied after this by the shell.
+// positioning context for the floating option list.
 export const root: ViewStyle = { position: "relative", width: "100%" };
 
 // When the list is open, the root is lifted into its own stacking context above
 // sibling content. react-native-web gives every positioned View an implicit
 // stacking context, so the panel's own `zIndex` is scoped INSIDE the `relative`
 // root and cannot rise above a later sibling. Raising the root's zIndex while
-// open lifts the whole control — trigger and panel together — above everything
+// open lifts the whole control, trigger and panel together, above everything
 // painted after it.
 export const rootLifted: ViewStyle = { zIndex: 50 };
 
@@ -130,11 +147,9 @@ const TRIGGER_ROW: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "space-between",
-  // A minimum gutter between the value cluster and the trailing chevron. In a
-  // fixed-width field `space-between` pushes them to opposite edges and the free
-  // space far exceeds this, so it has no visible effect; when `fit` collapses the
-  // trigger to its content width there is no free space to distribute, and this
-  // keeps the chevron from jamming against the value (the toolbar `inline`+`fit` case).
+  // The hand-off's 8px gap between the value cluster and the trailing chevron (Android
+  // takes M3's 12). In a fixed-width field `space-between` already pushes them apart;
+  // when `fit` collapses the trigger to its content it keeps the chevron off the value.
   gap: 8,
 };
 
@@ -142,259 +157,233 @@ const TRIGGER_ROW: ViewStyle = {
 // renders in place, absolutely positioned below the trigger (the kit's pre-portal
 // behavior). With a provider, AnchoredOverlay portals the card over the page,
 // anchors it below the trigger, and adds the outside-tap dismiss backdrop instead.
-// `start:0,end:0` pins the fallback to the trigger's width; the `marginTop`
-// supplies the trigger-to-panel gap in this fallback (AnchoredOverlay's `gap` does
-// it when hosted). The skins own the card's shape/fill/shadow only.
 export const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
 
-// ---------- Web: a stacked label over the field box, and a bordered menu card ----------
-// Trigger height per size; mirrors the Input control's footprint (36 / 40 / 48).
-const WEB_TRIGGER_BOX: Record<Size, number> = { small: 36, default: 40, large: 48 };
-export const webSkin: SelectSkin = {
-  reference: {
-    trigger: (t, open) => ({ ...TRIGGER_ROW, borderRadius: shape.web.field, borderWidth: 1, borderColor: open ? t.ring : t.border, paddingVertical: 10, paddingHorizontal: 12 }),
-    value: (t) => ({ fontSize: 13, lineHeight: 16.9, fontWeight: "600", color: t.foreground }),
-    label: (t) => ({ ...fieldEyebrow(t), marginBottom: 6 }),
-    panel: (t) => ({ overflow: "hidden", borderRadius: shape.web.menu, backgroundColor: t.card, padding: 8, boxShadow: `0 26px 50px -20px ${t.shade ?? "rgba(0, 0, 0, 0.2)"}, 0 0 0 1px ${t.border}` }),
-    row: { flexDirection: "row", alignItems: "center", borderRadius: shape.web.control, paddingVertical: 8, paddingHorizontal: 10 },
-    option: (t, selected) => ({ fontSize: 12.5, lineHeight: 16.25, fontWeight: "700", color: selected ? (t.action ?? t.primary) : t.foreground, flex: 1 }),
-  },
-  text: textType,
-  label: (t) => ({ marginBottom: 6, fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: t["muted-foreground"] }),
-  // Inline (toolbar) label: a muted medium-weight small label; no marginBottom
-  // since it sits beside the value in the trigger row, not above it.
-  inlineLabel: (t, size) => ({ fontWeight: "500", color: t["muted-foreground"], ...TEXT_SIZE[size] }),
-  // The resting `field-border` hairline turning `ring` while the list is open, as Dark
-  // Factory's select frame does (the trigger's keyboard focus shows the kit's ring).
-  trigger: (t, size, open) => ({
-    ...TRIGGER_ROW,
-    borderRadius: shape.web.field,
-    borderWidth: 1,
-    borderColor: open ? t.ring : t.border,
-    backgroundColor: t.card,
-    paddingHorizontal: 12,
-    height: WEB_TRIGGER_BOX[size],
-  }),
-  triggerValue: { flexDirection: "row", alignItems: "center", gap: 8 },
-  valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...TEXT_SIZE[size] }),
-  chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
-  chevronGlyph: "▾",
-  // The list: a card at the menu corner with an 8px inset around 40px rows (at the
-  // default size).
-  panel: (t) => ({
+/** The hand-off's tertiary ink (tx3): the placeholder, the chevron, the leading glyph. */
+function subtleInk(t: ColorTokens): string {
+  return t["subtle-foreground"] ?? t["muted-foreground"];
+}
+
+// ---------- Web: the hand-off's sunken field and its panel ----------
+const WEB_TRIGGER_BOX: Record<Size, number> = { small: 32, default: 40, large: 48 };
+// The hand-off's value: 400 14px, 13px on the small field (the large field keeps 14).
+const WEB_TEXT: Record<Size, TextStyle> = {
+  small: { fontSize: 13, lineHeight: 18, fontWeight: "400" },
+  default: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
+  large: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
+};
+// The edge by state: the open list or keyboard focus `ring`, a hovered field the subtle
+// ink, else the `field-border` hairline.
+function webEdge(t: ColorTokens, open: boolean, hovered = false, focused = false): string {
+  return open || focused ? t.ring : hovered ? subtleInk(t) : fieldBorder(t);
+}
+// The hand-off's panel (K.panel): the `card` fill, the `border` hairline, the menu
+// corner, the md shadow and a 4px inset.
+function webPanel(t: ColorTokens): ViewStyle {
+  return {
     maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
     borderRadius: shape.web.menu,
     borderWidth: 1,
     borderColor: t.border,
-    backgroundColor: t.popover,
-    padding: 8,
-    ...shadow("lg", t),
+    backgroundColor: t.card,
+    padding: 4,
+    ...shadow("md", t),
+  };
+}
+// A 34px row (30 dense), 10px in, the hand-off's 8px row gap, at the web menu row's 8 corner.
+function webRow(height: number): ViewStyle {
+  return { flexDirection: "row", alignItems: "center", gap: 8, minHeight: height, borderRadius: platformShape.web.menuRow, paddingHorizontal: 10 };
+}
+
+export const webSkin: SelectSkin = {
+  reference: {
+    trigger: (t, open, hovered, focused) => ({
+      ...TRIGGER_ROW,
+      height: 32,
+      borderRadius: shape.web.field,
+      borderWidth: 1,
+      borderColor: webEdge(t, open, hovered, focused),
+      backgroundColor: t["surface-sunken"] ?? t.card,
+      paddingHorizontal: 10,
+    }),
+    value: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t.foreground }),
+    // The hand-off's eyebrow label: 700 10/13 at 0.16em, uppercase, the subtle ink, 4px over the field.
+    label: (t) => ({ fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: subtleInk(t), marginBottom: 4 }),
+    row: (t, selected) => ({ ...webRow(30), ...(selected ? { backgroundColor: t.muted } : null) }),
+    option: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "400", color: t.foreground, flex: 1 }),
+    chevron: 14,
+  },
+  text: (size) => WEB_TEXT[size],
+  label: (t) => ({ ...typeRoles.label, color: t["muted-foreground"], marginBottom: 6 }),
+  // Inline (toolbar) label: the 500 13px label beside the value.
+  inlineLabel: (t) => ({ ...typeRoles.label, color: t["muted-foreground"] }),
+  trigger: (t, size, open, hovered, focused) => ({
+    ...TRIGGER_ROW,
+    borderRadius: shape.web.field,
+    borderWidth: 1,
+    borderColor: webEdge(t, open, hovered, focused),
+    backgroundColor: t["surface-sunken"] ?? t.card,
+    paddingHorizontal: size === "small" ? 10 : 12,
+    height: WEB_TRIGGER_BOX[size],
   }),
-  // A row at the control corner, as a Dropdown menu's rows; the soft `accent` fill
-  // marks the selected one.
-  optionRow: (t, selected) => ({
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderRadius: shape.web.control,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    ...(selected ? { backgroundColor: t.accent } : null),
-  }),
-  optionPressed: (t) => ({ backgroundColor: t.accent }),
-  optionText: (t, size) => ({ color: t["popover-foreground"], ...TEXT_SIZE[size] }),
-  indicator: (t, size) => ({ color: t["popover-foreground"], ...TEXT_SIZE[size] }),
-  selectedSide: "leading",
-  disabledOpacity: 0.5,
+  // The hand-off's soft field: the `muted` fill with no edge.
+  soft: (t) => ({ backgroundColor: t.muted, borderColor: "transparent" }),
+  hover: true,
+  focusHalo: (t) => ({ boxShadow: `0 0 0 4px ${focusHaloColor(t)}` }),
+  triggerValue: { flexDirection: "row", alignItems: "center", gap: 8 },
+  valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : subtleInk(t), ...WEB_TEXT[size] }),
+  disclosure: { glyph: "chevronDown", size: (size) => (size === "small" ? 14 : 16), color: (t) => subtleInk(t), flips: true },
+  icon: { size: 16, color: subtleInk },
+  panel: webPanel,
+  panelGap: 6,
+  // The chosen row sits on the `muted` wash (the hand-off's sf3).
+  optionRow: (t, selected) => ({ ...webRow(34), ...(selected ? { backgroundColor: t.muted } : null) }),
+  optionPressed: (t) => ({ backgroundColor: t.muted }),
+  optionText: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: t.foreground }),
+  // The trailing 14px check in the accent ink.
+  indicator: (t) => ({ fontSize: 14, lineHeight: 20, color: primaryText(t) }),
+  selectedSide: "trailing",
+  disabledOpacity: 0.45,
   pressedOpacity: 0.9,
   ripple: null,
-  // The label sits ABOVE the trigger.
   floatingLabel: false,
 };
 
-// ---------- iOS 26 (Liquid Glass) pop-up button + menu ----------
-// Apple's iOS 26 pop-up button is a PLAIN, lightly outlined row (not a heavy
-// filled gray capsule): the value text followed by a trailing chevron-up-down
-// disclosure, drawn as the reference's field box: `card` fill, the resting
-// `field-border` hairline, `ring` when open, 44pt tall, the iOS field corner. The
-// MENU it opens is the Liquid Glass surface from Apple's kit: a VERY rounded
-// popover (26pt continuous corners), `popover` fill, a soft drop shadow, ~17pt
-// rows that are ~42pt tall (the kit's iPhone "Menu Item, Title" is 198x42), with
-// a hairline group separator between rows. The SELECTED row is marked by a
-// LEADING brand checkmark (the kit's "Menu Item - Selectable" puts the check on
-// the leading edge), in `primary`.
-const IOS_MENU_RADIUS = shape.ios.menu;
+// ---------- iOS: the pop-up button and its menu ----------
+// The hand-off's iOS row (cv-kit-platform.js `P.select.ios`): the Input's field box with
+// an up-down chevron, and the pop-up menu.
 const IOS_TRIGGER_BOX: Record<Size, number> = { small: 36, default: 44, large: 50 };
-// The reference's 16pt value (the same ladder as the Input's iOS skin).
+// The hand-off's field type (the Input's iOS ladder).
 const IOS_TEXT: Record<Size, TextStyle> = {
   small: { fontSize: 13, lineHeight: 16 },
   default: { fontSize: 16, lineHeight: 24 },
   large: { fontSize: 17, lineHeight: 26 },
 };
-// The above-trigger label: the reference's 14pt regular secondary title.
+// The above-trigger label: the hand-off's 14pt regular secondary title, 8pt over the field.
 const IOS_LABEL: Record<Size, TextStyle> = {
   small: { fontSize: 12, lineHeight: 16 },
-  default: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
+  default: { fontSize: 14, lineHeight: 20 },
   large: { fontSize: 16, lineHeight: 24 },
 };
-// Menu rows hold the iOS body size (17pt) regardless of the trigger's size axis,
-// matching the kit's fixed menu type.
+// Menu rows hold the iOS body size (17pt) whatever the trigger's size.
 const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
 export const iosSkin: SelectSkin = {
   text: (size) => IOS_TEXT[size],
   label: (t, size) => ({ marginBottom: 8, fontWeight: "400", letterSpacing: -0.15, color: t["muted-foreground"], ...IOS_LABEL[size] }),
-  // Inline (toolbar) label: iOS uses a regular-weight secondary label beside the
-  // value (the iOS bar/toolbar caption read), tinted `muted-foreground`.
-  inlineLabel: (t, size) => ({ fontWeight: "400", color: t["muted-foreground"], ...IOS_TEXT[size] }),
-  // The reference's select trigger: the Input's white box (see input.styles.ts),
-  // its resting hairline turning `ring` while the list is open.
-  trigger: (t, size, open) => ({
+  inlineLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "500", color: t["muted-foreground"] }),
+  // The field box: `card`, the 8pt corner, the resting hairline (the open menu leaves it).
+  trigger: (t, size) => ({
     ...TRIGGER_ROW,
     borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
-    borderColor: open ? t.ring : fieldBorder(t),
+    borderColor: fieldBorder(t),
     backgroundColor: t.card,
     paddingHorizontal: 12,
     height: IOS_TRIGGER_BOX[size],
   }),
   triggerValue: { flexDirection: "row", alignItems: "center", gap: 8 },
-  valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...IOS_TEXT[size] }),
-  // The trailing disclosure is the reference's gray caret (its Icon/Default), a
-  // small filled ▾ in `muted-foreground`, unchanged while the list is open.
-  chevron: (t, size) => ({ color: t["muted-foreground"], ...IOS_TEXT[size] }),
-  chevronGlyph: "▾",
-  // The Liquid Glass menu: very rounded (26pt), `popover`, soft shadow, and
-  // CLIPPED to those corners so a pressed row, the full-bleed separators, and any
-  // option scrolled under the cap cannot poke past them. iOS still draws the soft
-  // shadow outside these bounds: the iOS Dropdown menuCard has shipped the same
-  // clip alongside shadow("lg") since the Liquid Glass rework.
+  valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : subtleInk(t), ...IOS_TEXT[size] }),
+  disclosure: { glyph: "chevronsUpDown", size: () => 16, color: (t) => subtleInk(t), flips: false },
+  icon: { size: 18, color: subtleInk },
+  // The pop-up menu: the iOS menu corner, the `popover` fill (the material under glass),
+  // the `field-border` hairline, the lg shadow, a 6pt vertical inset, clipped to its corners.
   panel: (t) => ({
     maxHeight: 320,
-    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
-    borderRadius: IOS_MENU_RADIUS,
+    overflow: "hidden",
+    borderRadius: shape.ios.menu,
+    borderCurve: "continuous",
+    borderWidth: 1,
+    borderColor: fieldBorder(t),
     backgroundColor: t.popover,
-    paddingVertical: 4,
+    paddingVertical: 6,
     ...shadow("lg", t),
   }),
-  // No row tint at rest on iOS; the selection is shown by the leading check and
-  // rows are separated by hairlines (see rowSeparator). ~42pt tall per the kit.
-  optionRow: (_t, _selected) => ({
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    minHeight: 42,
-  }),
-  // Hairline group separator between rows, in `border` (the iOS opaque-separator
-  // read), inset to clear the leading text gutter as the kit shows.
-  rowSeparator: (t) => ({ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.border }),
+  panelGap: 6,
+  panelWidth: 250,
+  // 44pt rows, 12pt in at the start and 16 at the end, a 6pt gap after the mark slot.
+  optionRow: () => ({ flexDirection: "row", alignItems: "center", gap: 6, minHeight: 44, paddingStart: 12, paddingEnd: 16 }),
   optionPressed: (t) => ({ backgroundColor: t.secondary }),
-  optionText: (t, _size) => ({ color: t["popover-foreground"], ...IOS_ROW_TEXT }),
-  // The selected-row checkmark is the brand `primary`, LEADING-aligned (iOS 26
-  // selectable menu marks the leading edge).
-  indicator: (t, _size) => ({ color: t.primary, fontWeight: "600", ...IOS_ROW_TEXT }),
+  optionText: (t) => ({ color: t.foreground, ...IOS_ROW_TEXT }),
+  // The chosen row's 16pt check, in the label's ink.
+  indicator: (t) => ({ fontSize: 16, lineHeight: 22, color: t.foreground }),
   selectedSide: "leading",
-  // iOS disabled control alpha: ~0.4 (the kit's disabled Menu Item is markedly
-  // dimmer than 50%), matching the iOS Button's disabled treatment.
-  disabledOpacity: 0.4,
+  markSlot: 22,
+  disabledOpacity: 0.5,
   pressedOpacity: 0.8,
   ripple: null,
-  // iOS (HIG): the label sits ABOVE the trigger, rendered from `label` above.
   floatingLabel: false,
 };
 
-// ---------- Android (Material 3 exposed dropdown): filled field, top radius, active indicator ----------
-// M3 exposed dropdown menu: a filled trigger (subtle `muted` fill ~
-// surface-container-highest), the TOP corners rounded ~4dp and a flat bottom,
-// with a bottom active-indicator underline — 1dp `input` at rest, 2dp `primary`
-// (brand) when open — and a trailing dropdown arrow (chevron-down). The menu is
-// an elevated surface (4dp, `popover`, soft shadow); pressed rows tint with the
-// ripple (alpha(primary, 0.12) state layer) and the selected row is tinted.
+// ---------- Android (Material 3 exposed dropdown) ----------
+// The hand-off's Android row (cv-kit-platform.js `aField` and `P.select.android`).
 const ANDROID_TOP_RADIUS = shape.android.field;
 const ANDROID_TRIGGER_BOX: Record<Size, number> = { small: 48, default: 56, large: 60 };
+// M3 body type with its 0.5 tracking, per size.
 const ANDROID_TEXT: Record<Size, TextStyle> = {
-  small: { fontSize: 14, lineHeight: 20 },
-  default: { fontSize: 16, lineHeight: 24 },
-  large: { fontSize: 18, lineHeight: 26 },
-};
-// M3 supporting-text label scale, a notch below the field type.
-const ANDROID_LABEL: Record<Size, TextStyle> = {
-  small: { fontSize: 12, lineHeight: 16 },
-  default: { fontSize: 12, lineHeight: 16 },
-  large: { fontSize: 14, lineHeight: 20 },
+  small: { fontSize: 14, lineHeight: 20, letterSpacing: 0.5 },
+  default: { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 },
+  large: { fontSize: 18, lineHeight: 26, letterSpacing: 0.5 },
 };
 export const androidSkin: SelectSkin = {
   text: (size) => ANDROID_TEXT[size],
-  label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...ANDROID_LABEL[size] }),
-  // Inline (toolbar) label: the M3 label-medium scale (a notch below the field
-  // type), tinted on-surface-variant (`muted-foreground`), beside the value.
-  inlineLabel: (t, size) => ({ fontWeight: "500", color: t["muted-foreground"], ...ANDROID_LABEL[size] }),
+  label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...ANDROID_TEXT[size] }),
+  inlineLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["muted-foreground"] }),
   trigger: (t, size, open) => ({
     ...TRIGGER_ROW,
+    gap: 12,
     borderTopStartRadius: ANDROID_TOP_RADIUS,
     borderTopEndRadius: ANDROID_TOP_RADIUS,
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
-    // Clip the Material ripple to the rounded top outline (without this the bounded
-    // android_ripple paints a rectangle past the top corners).
+    // Clip the Material ripple to the rounded top outline.
     overflow: "hidden",
-    // M3 active indicator: a clear rest baseline (on-surface-variant ~ muted-foreground)
-    // thickening to the brand primary on open. activeIndicator reserves a constant band
-    // below the content so the 1dp -> 2dp thickening never reflows the centered value text.
+    // The M3 active indicator: the `muted-foreground` baseline thickening to `primary`
+    // while open; activeIndicator keeps a constant band so the value never reflows.
     ...activeIndicator({ active: open, restColor: t["muted-foreground"], activeColor: t.primary }),
     backgroundColor: t.muted,
-    paddingHorizontal: 16,
-    // A floor, not a height: the trigger grows when a larger text size makes its value
-    // line and the floating label's reserve taller than the M3 container.
+    paddingStart: 16,
+    paddingEnd: 12,
+    // A floor, not a height: the trigger grows when a larger text size needs it.
     minHeight: ANDROID_TRIGGER_BOX[size],
   }),
   triggerValue: { flexDirection: "row", alignItems: "center", gap: 8 },
   valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...ANDROID_TEXT[size] }),
-  // The trailing dropdown arrow tints with the brand `primary` when open, muted at rest.
-  chevron: (t, size, open) => ({ color: open ? t.primary : t["muted-foreground"], ...ANDROID_TEXT[size] }),
-  chevronGlyph: "⌄",
+  // The Material drop-down triangle in its 24dp box, turned over while open.
+  disclosure: { glyph: "triangle", size: () => 24, color: (t) => t["muted-foreground"], flips: true },
+  icon: { size: 18, color: subtleInk },
+  // The M3 menu: the `popover` fill at the M3 menu corner, the md shadow, an 8dp inset.
   panel: (t) => ({
     maxHeight: 280,
-    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
+    overflow: "hidden",
     borderRadius: shape.android.menu,
     backgroundColor: t.popover,
     paddingVertical: 8,
     ...shadow("md", t),
   }),
+  panelGap: 4,
+  // 48dp rows 12dp in; the chosen row sits on the foreground's 10% state layer.
   optionRow: (t, selected) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
     minHeight: 48,
-    ...(selected ? { backgroundColor: alpha(t.primary, 0.12) } : null),
+    ...(selected ? { backgroundColor: alpha(t.foreground, 0.1) } : null),
   }),
-  // The M3 pressed state layer: the brand primary at ~12% alpha (the ripple tint).
-  optionPressed: (t) => ({ backgroundColor: alpha(t.primary, 0.12) }),
-  optionText: (t, _size) => ({ color: t["popover-foreground"], ...ANDROID_TEXT["small"] }),
-  indicator: (t, _size) => ({ color: t.primary, fontWeight: "700", ...ANDROID_TEXT["small"] }),
-  selectedSide: "leading",
-  disabledOpacity: 0.38, // M3 disabled opacity
-  pressedOpacity: null, // Android uses a ripple instead
-  ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
-  // Android (Material 3 exposed dropdown): the IN-CONTAINER FLOATING label,
-  // identical geometry to the M3 Input. At rest it sits vertically centered like
-  // the trigger's placeholder (body per size); once the menu opens OR a value is
-  // selected it floats to the top, shrinking to body-small (12sp). The shell
-  // reserves `labelReserve` of top padding so the value clears the floated label,
-  // and drives translateY + scale on the transform driver (`labelFloated`'s
-  // fontSize supplies the scale ratio only). M3 body tracking: body-large 0.5,
-  // body-medium 0.25, body-small 0.4.
+  optionPressed: (t) => ({ backgroundColor: alpha(t.foreground, 0.1) }),
+  optionText: (t) => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: t.foreground }),
+  indicator: (t) => ({ fontSize: 16, lineHeight: 20, color: t.primary }),
+  selectedSide: "none",
+  disabledOpacity: 0.38,
+  pressedOpacity: null,
+  ripple: (t) => ({ color: alpha(t.foreground, 0.1), borderless: false }),
+  // The IN-CONTAINER FLOATING label, the M3 Input's geometry: centered like the
+  // placeholder at rest, floating to body-small (12sp) once the menu opens or a value is
+  // chosen; `labelReserve` is the top padding the value gives up for it.
   floatingLabel: true,
-  labelRest: (_t, size) => {
-    if (size === "large") return { fontSize: 18, lineHeight: 26, letterSpacing: 0.5 };
-    if (size === "small") return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 };
-    return { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 };
-  },
-  labelFloated: (_t, _size) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
+  labelRest: (_t, size) => ANDROID_TEXT[size],
+  labelFloated: () => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
   labelReserve: (size) => ({ paddingTop: size === "large" ? 26 : size === "small" ? 20 : 24 }),
 };

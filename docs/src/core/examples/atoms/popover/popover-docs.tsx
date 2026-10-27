@@ -18,8 +18,8 @@ export const docs: ComponentDocs = {
   dir: "popover",
   category: "atoms",
   overview: [
-    "On the web and Android the panel is Dark Factory's: a 12px card with a hairline and its soft popover shadow, Dark Factory's heading over its body in the muted ink. iOS keeps the iPad popover, a rounder borderless card with a beak toward its trigger, in the same type.",
-    "The triggered card opens below its button by default and above it with `top`; either way it flips to the other side when its own lacks room, and the iOS beak follows the side it took. At phone width a triggered card that can close is presented as a sheet on the bottom edge of the window, over the tab bar and a dimming scrim that glass on the web also blurs, its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and the Material 3 bottom sheet on Android.",
+    "On the web and Android the panel is the v4 card: 280 wide at the menu corner, the field hairline and the large shadow, a 15px display heading over its 14px description in the muted ink, and in solid mode a small diamond beak on the edge facing its trigger. iOS keeps the iPad popover, a rounder borderless card with a tapered beak toward its trigger.",
+    "The triggered card opens below its button by default and above it with `top`; either way it flips to the other side when its own lacks room, and the beak follows the side it took. At phone width a triggered card that can close is presented as a sheet on the bottom edge of the window, over the tab bar and a dimming scrim that glass on the web also blurs, its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and the Material 3 bottom sheet on Android.",
     "In glass mode the triggered card is a functional-layer glass panel beside its button, and the sheet a dense-layer one, legible over its scrim; focus enters once the card's placement has committed, and the `inline` card is a static in-flow panel. Solid mode paints the skin's own panel.",
     "An existing control can own the trigger: pass its `anchorRef` and drive `open` with `onOpenChange`. The popover then adds no trigger or layout wrapper. Name custom content with `accessibilityLabel`. `compact` uses the original Argus panel inset and outside hairline on web, with scrolling contents; `comfortable` gives its filter panel more room. `panelWidth` and `maxHeight` bound the overlay. `anchored` keeps a floating card at narrow widths, and `alignEnd` follows the trigger’s trailing edge.",
   ],
@@ -53,6 +53,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["dialog"],"states":[],"aria":["aria-describedby","aria-label","aria-labelledby","aria-modal"],"touchTarget":[]},
-  tokens: ["border","muted-foreground","popover","popover-foreground"],
+  tokens: ["border","field-border","muted-foreground","popover","popover-foreground"],
   related: ["input","typography","row-column","dialog","alert-dialog","drawer","action-sheet","tooltip"],
 };

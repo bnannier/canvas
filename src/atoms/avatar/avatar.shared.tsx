@@ -7,6 +7,7 @@ import { actionFill } from "../../style/action.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { identityDisc, identityHue, type IdentityDisc } from "../../style/identity-hue.js";
+import { alpha, composite, contrastRatio, oklchHex } from "../../style/color.js";
 import { Image } from "../image/image.js";
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
@@ -19,10 +20,13 @@ import { Image } from "../image/image.js";
 // It is a circle by default (the consistent shape across topbars, identity rows,
 // and menus), optionally a rounded square.
 //
-// The initials fallback is Dark Factory's identity disc: the name resolves to one of its
-// stage hues, and the disc is that hue's diagonal blend from a pale tint to a deeper,
-// warmer neighbour (src/style/identity-hue.ts), drawn with react-native-svg so every
-// platform paints the same gradient. The initials sit in bold at a third of the disc.
+// The initials fallback is the Canvas v4 hand-off's (`K.def('avatar')`): the name resolves
+// to an identity hue (src/style/identity-hue.ts, or the `hue` prop), and the disc is that
+// hue's soft wash, oklch(0.72 0.14 h) at 22%, under its ink, oklch(0.82 0.12 h) walked in
+// lightness until it holds 4.5:1 on the wash over the page (the hand-off's ink already does
+// on the dark page; on the light page it darkens). The initials sit at weight 600. Argus's
+// reference geometry (`annotation` .. `spotlight`) keeps Dark Factory's identity gradient,
+// drawn with react-native-svg so every platform paints the same blend.
 // iOS and Android have no native avatar control (the iOS 27 kit and Material 3 both lack
 // one), so every platform takes this look; the press feedback stays each platform's own
 // (the Android ripple, the iOS and web dim).
@@ -40,8 +44,8 @@ export type Shape = "circle" | "rounded";
 // null; iOS and web set `pressedOpacity` and leave `ripple` null, so the press
 // feedback never double-signals.
 export interface AvatarSkin {
-  /** Corner radius for the `rounded` (square) shape; the circle is always 9999. */
-  roundedRadius: number;
+  /** Corner radius for the `rounded` (square) shape per size; the circle is always 9999. */
+  roundedRadius: Record<Size, number>;
   /** Initials type per size (weight / size / line-height / tracking). */
   labelType: Record<Size, TextStyle>;
   /** Android ripple config for the pressable trigger (null where there is no ripple). */
@@ -101,7 +105,7 @@ export interface AvatarProps {
    * photo-only or pressable avatar that has no `name`.
    */
   accessibilityLabel?: string;
-  // Size (pick one; default is the 40px row avatar, `tiny` the 24px disc a capsule holds). Precedence: `tiny` > `small` > `large`.
+  // Size (pick one; default is the 40px row avatar, `tiny` the 20px disc, `small` 28, `large` 56). Precedence: `tiny` > `small` > `large`.
   tiny?: boolean;
   small?: boolean;
   large?: boolean;
@@ -118,16 +122,12 @@ export interface AvatarProps {
   style?: LayoutStyle;
 }
 
-// Diameter per size: tiny is the disc that sits inside a capsule (the AvatarMenu
-// identity pill) or a dense toolbar, small the inline topbar/stack size, default
-// the 40px row avatar, large the identity-header size. Platform-neutral.
-//
-// 24 is the size the web design spec draws inside its identity pill, and it is what
-// keeps the capsule's inset right on every platform: the pill is 32/36/40 tall on
-// web/iOS/Android, so a 24 disc leaves the design spec's 4/6/8 of breathing room
-// (measured from the outer edge, the 1px hairline included, since RN sizes a box
-// the way `box-sizing: border-box` does).
-const BOX: Record<Size, number> = { tiny: 24, small: 28, default: 40, large: 48 };
+// Diameter per size, the hand-off's four steps: tiny the 20px disc of a dense row or
+// toolbar, small the 28px inline topbar/stack size (the disc AvatarMenu builds its pill
+// around), default the 40px row avatar, large the 56px identity-header size.
+// Platform-neutral; Skeleton's avatar placeholder reads it too.
+export const AVATAR_DIAMETER: Record<Size, number> = { tiny: 20, small: 28, default: 40, large: 56 };
+const BOX = AVATAR_DIAMETER;
 const CIRCLE_RADIUS = 9999;
 // Width of the separator ring (and the matching "+N" chip border) drawn in the
 // background color when avatars overlap in a stack. A thin hairline, owned once.
@@ -157,8 +157,32 @@ function initialsFrom(text: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function radiusFor(skin: AvatarSkin, shape: Shape): number {
-  return shape === "rounded" ? skin.roundedRadius : CIRCLE_RADIUS;
+function radiusFor(skin: AvatarSkin, shape: Shape, size: Size): number {
+  return shape === "rounded" ? skin.roundedRadius[size] : CIRCLE_RADIUS;
+}
+
+// The hand-off's initials disc for a hue on a page: the hue's 22% wash, and its ink walked
+// in oklch lightness from 0.82 (darker on a light page, lighter on a dark one) until it
+// holds the 4.5:1 text floor on the wash over the page. Cached per hue and page.
+const WASH = { l: 0.72, c: 0.14, alpha: 0.22 } as const;
+const INK = { l: 0.82, c: 0.12 } as const;
+const TEXT_FLOOR = 4.5;
+const DISCS = new Map<string, { wash: string; ink: string }>();
+export function initialsDisc(hue: number, page: string, dark: boolean): { wash: string; ink: string } {
+  const key = `${hue}:${page}:${dark ? 1 : 0}`;
+  const hit = DISCS.get(key);
+  if (hit) return hit;
+  const wash = alpha(oklchHex(WASH.l, WASH.c, hue), WASH.alpha);
+  const bed = composite(wash, page);
+  let l: number = INK.l;
+  let ink = oklchHex(l, INK.c, hue);
+  while (contrastRatio(ink, bed) < TEXT_FLOOR && l > 0 && l < 1) {
+    l = Math.round((l + (dark ? 0.01 : -0.01)) * 100) / 100;
+    ink = oklchHex(l, INK.c, hue);
+  }
+  const disc = { wash, ink };
+  DISCS.set(key, disc);
+  return disc;
 }
 
 function containerStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size, shape: Shape, ring: boolean, background: string): ViewStyle {
@@ -170,7 +194,7 @@ function containerStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size, shape
     backgroundColor: background,
     width: BOX[size],
     height: BOX[size],
-    borderRadius: radiusFor(skin, shape),
+    borderRadius: radiusFor(skin, shape, size),
     // No ring-* equivalent in RN; a thin background-colored border is the stand-in
     // for ring ring-background, the separator outline used when avatars overlap.
     ...(ring ? { borderWidth: RING_WIDTH, borderColor: tokens.background } : null),
@@ -179,8 +203,8 @@ function containerStyle(tokens: ColorTokens, skin: AvatarSkin, size: Size, shape
 
 // The photo fills the container exactly; the parent's overflow-hidden clips it to
 // the shape (RN clips children to a parent's borderRadius).
-function imageStyle(skin: AvatarSkin, shape: Shape): ImageStyle {
-  return { width: "100%", height: "100%", borderRadius: radiusFor(skin, shape) };
+function imageStyle(skin: AvatarSkin, shape: Shape, size: Size): ImageStyle {
+  return { width: "100%", height: "100%", borderRadius: radiusFor(skin, shape, size) };
 }
 
 function labelStyle(skin: AvatarSkin, size: Size, foreground: string): TextStyle {
@@ -216,7 +240,7 @@ export function createAvatar(skin: AvatarSkin) {
   return function Avatar(props: AvatarProps) {
     const { src, uri, name, initials, children, ring, accessibilityLabel, onPress, testID, style } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
-    const { tokens } = theme;
+    const { tokens, dark } = theme;
     const size = sizeOf(props);
     const shape = shapeOf(props);
     const reference = referenceSizeOf(props);
@@ -245,22 +269,28 @@ export function createAvatar(skin: AvatarSkin) {
     // glyph-less trigger is a plain control puck.
     const colored = glyph !== "";
     const discHue = props.hue ?? identityHue(identity);
-    const identityPaint = identityDisc(discHue);
     const paint = referencePaintOf(props);
-    const disc = colored ? paint === "logo" ? { from: actionFill(tokens), to: tokens.ring, mid: actionFill(tokens), ink: "#ffffff" } : paint === "orchid" ? { from: "#d9b8ea", to: "#b559a6", mid: "#d9b8ea", ink: "#ffffff" } : identityPaint : null;
+    // Argus's reference geometry and paints keep their gradient; a stock disc is the
+    // hand-off's flat wash.
+    const gradient = colored && (referenceGeometry != null || paint !== "identity");
+    const disc = gradient ? paint === "logo" ? { from: actionFill(tokens), to: tokens.ring, mid: actionFill(tokens), ink: "#ffffff" } : paint === "orchid" ? { from: "#d9b8ea", to: "#b559a6", mid: "#d9b8ea", ink: "#ffffff" } : identityDisc(discHue) : null;
+    const wash = colored && !gradient ? initialsDisc(discHue, tokens.background, dark) : null;
     const gradientId = `avatar-disc-${useId().replace(/:/g, "")}`;
-    const background = disc ? disc.mid : tokens.muted;
-    const foreground = props.whiteInk || props.inverse ? "#ffffff" : disc ? disc.ink : tokens["muted-foreground"];
+    const background = disc ? disc.mid : wash ? wash.wash : tokens.muted;
+    const foreground = props.whiteInk || props.inverse ? "#ffffff" : disc ? disc.ink : wash ? wash.ink : tokens["muted-foreground"];
+    const identityFill = disc != null || wash != null;
     const shapeStyle = { ...containerStyle(tokens, skin, size, shape, !!ring, background), width: diameter, height: diameter,
       ...(props.inverse || referenceGeometry != null ? { backgroundColor: "transparent" } : null),
       ...(props.logo ? { borderRadius: platformShape.web.brandMark, boxShadow: `0 10px 18px -8px ${tokens.glow ?? tokens.ring}` } : null),
-      ...(props.glow ? { boxShadow: `0 0 0 2px ${tokens.card}, 0 0 0 3.5px ${tokens.primary}` } : null),
+      // The glow: Argus's account disc keeps its card gap and accent ring; a stock disc takes
+      // the hand-off's 2px page gap inside an 18px accent glow.
+      ...(props.glow ? { boxShadow: referenceGeometry != null ? `0 0 0 2px ${tokens.card}, 0 0 0 3.5px ${tokens.primary}` : `0 0 0 2px ${tokens.background}, 0 0 18px ${tokens.glow ?? tokens.ring}` } : null),
     };
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;
     // The separator ring is a border a tile keeps under glass, over its pane, which sits
     // flush inside it (paneStyle's and GlassPane's `stateBorder`).
-    const container: StyleProp<ViewStyle> = [showPhoto || disc ? shapeStyle : paneStyle(theme, shapeStyle, !!ring), separator, style];
-    const pane = showPhoto || disc ? null : <GlassPane static layer="control" shape={shapeStyle} stateBorder={!!ring} />;
+    const container: StyleProp<ViewStyle> = [showPhoto || identityFill ? shapeStyle : paneStyle(theme, shapeStyle, !!ring), separator, style];
+    const pane = showPhoto || identityFill ? null : <GlassPane static layer="control" shape={shapeStyle} stateBorder={!!ring} />;
     const fill = props.inverse ? <View style={[DISC_FILL, { borderRadius: 9999, backgroundColor: "rgba(255,255,255,0.2)", boxShadow: "inset 0 0 0 3px rgba(255,255,255,0.7)" }]} /> : !showPhoto && disc ? <DiscGradient disc={disc} id={gradientId} /> : null;
     const innerRing = sheen ? <View style={[DISC_FILL, { borderRadius: 9999, boxShadow: `inset 0 0 0 ${sheen}px ${tokens.card}` }]} /> : null;
     const wrap = (node: ReactNode) => sheen ? <View style={{ width: diameter + sheen * 2, height: diameter + sheen * 2, alignItems: "center", justifyContent: "center" }}><ConicRing size={diameter + sheen * 2} width={sheen} hue={discHue} />{node}</View> : node;
@@ -277,7 +307,7 @@ export function createAvatar(skin: AvatarSkin) {
       inner = (
         <Image
           cover
-          style={imageStyle(skin, shape)}
+          style={imageStyle(skin, shape, size)}
           source={typeof photo === "number" ? photo : { uri: photo }}
           onError={() => setFailedPhoto(photo)}
           accessibilityLabel={label}

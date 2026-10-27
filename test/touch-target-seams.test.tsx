@@ -41,7 +41,7 @@ const byLabel = (label: string): NodeRecord | undefined =>
 const sides = (record: NodeRecord | undefined) => slopSides(record?.props.hitSlop as Insets | number | undefined);
 const gapOf = (style: ViewStyle | ViewStyle[]) => (StyleSheet.flatten(style) as ViewStyle).gap as number;
 // A step circle's own 32pt/dp box, as the device lays it out.
-const CIRCLE_FRAME = { width: 32, height: 32 };
+const CIRCLE_FRAME = { width: 28, height: 28 };
 const rendered = (ui: ReactElement, platformMin: number | null = null, frame?: Parameters<typeof renderAndLayout>[2]) => {
   cleanup();
   records.clear();
@@ -202,7 +202,7 @@ describe("inside a kit component, two controls split the gap between them", () =
   });
 
   it("horizontal Steps: each circle keeps its share of the connector's margins toward the next", async () => {
-    const across = 2 * (stepsStyles.horizontalConnector.marginHorizontal as number);
+    const across = 2 * (stepsStyles.horizontalConnector.marginHorizontal as number) + (stepsStyles.horizontalConnector.minWidth as number);
     for (const [path, min] of [["../src/organisms/steps/steps.android.tsx", 48], ["../src/organisms/steps/steps.ios.tsx", 44]] as const) {
       const Steps = await load(path, "Steps");
       rendered(<Steps steps={[{ label: "Cart" }, { label: "Ship" }, { label: "Pay" }]} onStepPress={noop} />, null, CIRCLE_FRAME);
@@ -210,22 +210,22 @@ describe("inside a kit component, two controls split the gap between them", () =
       expect(circles.length).toBe(3);
       for (let i = 0; i + 1 < circles.length; i += 1) expectSeam(circles[i], circles[i + 1], across);
       // The margins hold both platforms' whole slop: nothing is given up.
-      expect(sides(circles[1]).left).toBe((min - 32) / 2);
+      expect(sides(circles[1]).left).toBe((min - 28) / 2);
     }
   });
 
   it("vertical Steps: each circle keeps its share of the rail between it and the next", async () => {
     const Steps = await load("../src/organisms/steps/steps.android.tsx", "Steps");
-    // A one-line step's row is at least its label line and the spacing under it: 44dp, so
-    // the circles sit at least 12dp apart and each keeps 6dp of its 8dp toward the other.
+    // A step's row is at least its marker and the connector's least 22dp, so the 28dp
+    // markers sit at least 22dp apart and each keeps the whole 10dp of its slop.
     rendered(<Steps vertical steps={[{ label: "Cart" }, { label: "Ship" }, { label: "Pay" }]} onStepPress={noop} />, null, CIRCLE_FRAME);
     const circles = [...records.values()].filter((r) => r.kind === "pressable" && r.props.accessibilityRole === "button");
-    expect(circles.map((c) => [sides(c).top, sides(c).bottom])).toEqual([[8, 6], [6, 6], [6, 8]]);
-    // A description line under a step leaves the whole slop on that seam.
+    expect(circles.map((c) => [sides(c).top, sides(c).bottom])).toEqual([[10, 10], [10, 10], [10, 10]]);
+    // A description line under a step only widens the seam.
     rendered(<Steps vertical steps={[{ label: "Cart", description: "Review items" }, { label: "Ship" }]} onStepPress={noop} />, null, CIRCLE_FRAME);
     const [first, second] = [...records.values()].filter((r) => r.kind === "pressable" && r.props.accessibilityRole === "button");
-    expect(sides(first).bottom).toBe(8);
-    expect(sides(second).top).toBe(8);
+    expect(sides(first).bottom).toBe(10);
+    expect(sides(second).top).toBe(10);
   });
 
   it("a Board card: the grip and the menu trigger split the cluster's gap", async () => {
@@ -253,15 +253,15 @@ describe("inside a kit component, two controls split the gap between them", () =
   });
 
   it("a horizontal step's label takes no touches, so its circle keeps the slop that reaches over it", async () => {
-    // The label sits the column's gap under its circle, closer than the circle's Android slop
-    // reaches: as a later sibling it would take the taps there.
+    // The label sits the column's gap beside its circle, as close as the circle's Android slop
+    // reaches: as a later sibling it would take the taps at that edge.
     const gap = gapOf(stepsStyles.horizontalColumn);
-    expect((48 - (stepsStyles.circleBase.height as number)) / 2).toBeGreaterThan(gap);
+    expect((48 - (stepsStyles.circleBase.height as number)) / 2).toBeGreaterThanOrEqual(gap);
     const Steps = await load("../src/organisms/steps/steps.android.tsx", "Steps");
     rendered(<Steps steps={[{ label: "Cart" }, { label: "Ship" }, { label: "Pay" }]} onStepPress={noop} />);
     const passThrough = [...records.values()].filter((r) => {
       const flat = (StyleSheet.flatten(r.props.style as ViewStyle) ?? {}) as ViewStyle;
-      return r.kind === "view" && flat.pointerEvents === "none" && flat.height !== 1 && flat.width !== 1;
+      return r.kind === "view" && flat.pointerEvents === "none" && flat.height !== 2 && flat.width !== 2;
     });
     expect(passThrough.length, "a pass-through view around each label").toBe(3);
   });
@@ -272,7 +272,7 @@ describe("inside a kit component, two controls split the gap between them", () =
       rendered(<Steps vertical={vertical} steps={[{ label: "Cart" }, { label: "Ship" }]} onStepPress={noop} />);
       const connectors = [...records.values()].filter((r) => {
         const flat = StyleSheet.flatten(r.props.style as ViewStyle) ?? {};
-        return r.kind === "view" && (flat.height === 1 || flat.width === 1);
+        return r.kind === "view" && (flat.height === 2 || flat.width === 2);
       });
       expect(connectors.length, vertical ? "the vertical connector" : "the horizontal connector").toBe(1);
       expect((StyleSheet.flatten(connectors[0]!.props.style as ViewStyle) as ViewStyle).pointerEvents).toBe("none");

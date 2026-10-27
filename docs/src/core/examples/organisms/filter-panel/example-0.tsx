@@ -6,6 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { FilterPanel } = scope;
   return (
 <FilterPanel
+  bordered
   groups={[
     { title: "Status", options: [
       { label: "Active", checked: true, count: "128" },

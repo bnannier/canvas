@@ -16,6 +16,7 @@ export const docs: ComponentDocs = {
   category: "organisms",
   overview: [
     "The search row is a real input: typing filters the grouped rows to the matching labels, and a query that matches nothing shows a muted \"No results\" row.",
+    "On every platform the palette is the v4 card: 520 wide at an 18-pixel corner, a 48-pixel search row with an `esc` cap over a hairline, mono eyebrows over 38-pixel rows (44 on iOS, 48 on Android) with quiet icons and mono shortcuts, the accent's soft wash under the active row, and an optional footer of mono hints. Neither iOS nor Android ships a command palette, so both take this look in their own face.",
     "In glass mode the triggered palette is a functional-layer glass card under the search bar, with its own search field; the search editor keeps focus while typing filters the rows. Solid mode paints the skin's own palette.",
     "The search placeholder names the input and its result list. Supply `accessibilityLabel` when a more specific purpose is needed. `defaultActive={-1}` starts without a highlighted result: Enter selects nothing until navigation or hovering chooses a row. Either arrow key starts at the first result from this state. Controlled indices above the visible result count clamp to the last match; negative, fractional and non-finite indices leave no active result.",
     "Use `filtered` when a search service or index supplies ranked groups; Command keeps those rows and their order instead of filtering their labels again. An item's `description` supplies its secondary text. `emptyMessage` provides both the initial prompt and the no-match message.",
@@ -38,6 +39,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["button","group","option","search"],"states":["expanded","selected"],"aria":["aria-activedescendant","aria-controls","aria-expanded","aria-label","aria-selected"],"touchTarget":[]},
-  tokens: ["accent","border","foreground","input","muted-foreground","popover","primary","ring"],
+  tokens: ["accent","border","field-border","foreground","input","muted-foreground","popover","primary","primary-soft","ring","subtle-foreground"],
   related: ["card","dialog","alert-dialog","drawer","action-sheet","popover","tooltip","dropdown"],
 };

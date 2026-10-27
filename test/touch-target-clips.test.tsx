@@ -222,43 +222,43 @@ describe("a tappable Chip's touch area", () => {
   it("on Android is the 48dp minimum, measured from the chip, and its RippleClip carries the same", async () => {
     const Chip = await chip("android");
     expect(chipAndroid.bodyMinTarget).toBe(TOUCH_TARGET.android);
-    // The fixture's 94.5 x 34dp chip: 7dp above and below, nothing sideways.
-    const [found] = renderAndLayout(<Chip onPress={noop} accessibilityLabel="Tappable">Tappable</Chip>, null, { width: 94.5, height: 34 });
-    expect(found!.pressable.props.hitSlop).toEqual({ top: 7, bottom: 7, left: 0, right: 0 });
+    // The fixture's 94.5 x 32dp chip: 8dp above and below, nothing sideways.
+    const [found] = renderAndLayout(<Chip onPress={noop} accessibilityLabel="Tappable">Tappable</Chip>, null, { width: 94.5, height: 32 });
+    expect(found!.pressable.props.hitSlop).toEqual({ top: 8, bottom: 8, left: 0, right: 0 });
     expect(found!.clip?.props.hitSlop).toEqual(found!.pressable.props.hitSlop);
   });
 
-  it("on iOS keeps its fixed 11pt, which clears the 44pt minimum around the 25pt pill", async () => {
+  it("on iOS keeps its fixed 8pt, which clears the 44pt minimum around the 28pt pill", async () => {
     const Chip = await chip("ios");
-    const [found] = renderAndLayout(<Chip onPress={noop} accessibilityLabel="Tappable">Tappable</Chip>, null, { width: 70, height: 25 });
+    const [found] = renderAndLayout(<Chip onPress={noop} accessibilityLabel="Tappable">Tappable</Chip>, null, { width: 70, height: 28 });
     expect(found!.pressable.props.hitSlop).toBe(chipWeb.bodyHitSlop);
     const pill = styleBox(StyleSheet.flatten(chipWeb.base), chipWeb.labelType.lineHeight);
-    expect(pill.height).toBe(24.3);
+    expect(pill.height).toBe(28);
     expect(pill.height! + 2 * chipWeb.bodyHitSlop!).toBeGreaterThanOrEqual(TOUCH_TARGET.ios);
   });
 
   it("on Android, beside a remove glyph, reaches the pill's whole target, and the pill carries what reaches past it", async () => {
     const Chip = await chip("android");
-    // The 100 x 34dp pill: the label body inside its 1dp border and 16dp padding, the 18dp
-    // glyph centered 9dp from its end.
+    // The 100 x 32dp pill: the label body centered inside its 1dp border and 16dp padding,
+    // the 18dp glyph 9dp from its end.
     const frames: Record<string, { x: number; y: number; width: number; height: number }> = {
-      pill: { x: 0, y: 0, width: 100, height: 34 },
-      Both: { x: 17, y: 7, width: 40, height: 20 },
-      "Remove Both": { x: 73, y: 8, width: 18, height: 18 },
+      pill: { x: 0, y: 0, width: 100, height: 32 },
+      Both: { x: 17, y: 6, width: 40, height: 20 },
+      "Remove Both": { x: 73, y: 7, width: 18, height: 18 },
     };
     renderAndLayout(<Chip onPress={noop} onRemove={noop} accessibilityLabel="Both">Both</Chip>, null,
       (r: NodeRecord) => frames[r.kind === "view" ? "pill" : String(r.props.accessibilityLabel)] ?? null);
-    // 7 above and below the pill; toward the glyph, half the 8dp gap.
+    // 8 above and below the pill; toward the glyph, half the 8dp gap.
     expect(find("Both")?.props.hitSlop).toEqual({ top: 14, bottom: 14, left: 17, right: 4 });
     expect(find("Remove Both")?.props.hitSlop).toEqual({ ...chipAndroid.removeHitSlop, left: 4 });
     const pill = [...records.values()].find((r) => r.kind === "view" && r.clips);
-    expect(pill?.props.hitSlop).toEqual({ top: 7, bottom: 7, left: 0, right: 13 });
+    expect(pill?.props.hitSlop).toEqual({ top: 8, bottom: 8, left: 0, right: 13 });
   });
 
   it("on Android reaches the pill's target before the first layout too: its padding and border plus the shortfall", async () => {
     const Chip = await chip("android");
     renderAndLayout(<Chip onPress={noop} onRemove={noop} accessibilityLabel="Both">Both</Chip>, null, null);
-    // 7dp of padding and border above and below, 7 more to 48; 17dp at the start; the glyph's
+    // The body centered 6dp in the 32dp pill, 8 more to 48; 17dp at the start; the glyph's
     // side split.
     expect(find("Both")?.props.hitSlop).toEqual({ top: 14, bottom: 14, left: 17, right: 4 });
   });
@@ -269,9 +269,9 @@ describe("a tappable Chip's touch area", () => {
       const Chip = await chip("android");
       // Right to left the glyph sits at the pill's left end, 9dp in, its long side outward.
       renderAndLayout(<Chip onRemove={noop}>Tag</Chip>, null,
-        (r: NodeRecord) => (r.kind === "view" ? { width: 100, height: 34 } : r.props.accessibilityLabel === "Remove Tag" ? { x: 9, y: 8, width: 18, height: 18 } : null));
+        (r: NodeRecord) => (r.kind === "view" ? { width: 100, height: 32 } : r.props.accessibilityLabel === "Remove Tag" ? { x: 9, y: 7, width: 18, height: 18 } : null));
       const pill = [...records.values()].find((r) => r.kind === "view" && r.clips);
-      expect(pill?.props.hitSlop).toEqual({ top: 7, bottom: 7, left: chipAndroid.removeHitSlop.right - 9, right: 0 });
+      expect(pill?.props.hitSlop).toEqual({ top: 8, bottom: 8, left: chipAndroid.removeHitSlop.right - 9, right: 0 });
     } finally {
       spy.mockRestore();
     }

@@ -11,9 +11,9 @@ Audit checklist for `/components/form`. The facts block and the variants table a
 | Source files | `form.android.tsx`, `form.ios.tsx`, `form.md`, `form.shared.tsx`, `form.styles.ts`, `form.tsx` |
 | Implementation | its own source directory, `src/molecules/form/` (5 TypeScript modules) |
 | Exports | Form, FormSection |
-| Platform entries | iOS: own build: Form (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js)); FormSection (builds from its own iosSkin). Android: own build: Form (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js)); FormSection (builds from its own androidSkin) |
-| Platform-skins registry | iOS: Form, FormSection; Android: Form, FormSection |
-| Reference row | `form` (Light, Built). iOS: link [form (iOS)](https://developer.apple.com/design/human-interface-guidelines/entering-data) (no kit symbol; SwiftUI Form renders as a grouped inset list). Android: none (Material 3 has no form component; forms are composed from text fields, selection controls, and buttons). Web: link [form (Web)](https://ui.shadcn.com/docs/forms) (shadcn Forms guide; React Hook Form and TanStack Form integrations) |
+| Platform entries | iOS: web build: FormSection; own build: Form (injects platform parts (../../atoms/button/button.ios.js)). Android: web build: FormSection; own build: Form (injects platform parts (../../atoms/button/button.android.js)) |
+| Platform-skins registry | iOS: Form; Android: Form |
+| Reference row | `form` (Shared, Built). iOS: link [form (iOS)](https://developer.apple.com/design/human-interface-guidelines/entering-data) (no kit symbol; SwiftUI Form renders as a grouped inset list). Android: none (Material 3 has no form component; forms are composed from text fields, selection controls, and buttons). Web: link [form (Web)](https://ui.shadcn.com/docs/forms) (shadcn Forms guide; React Hook Form and TanStack Form integrations) |
 | Materials manifest | Form: molecules, inherited; verification inherited-composition, semantic-state. FormSection: molecules, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

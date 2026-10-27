@@ -45,14 +45,15 @@ export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = W
     const hook = (part: string) => testID ? `${testID}-${part}` : undefined;
     const { width, onLayout } = useContainerWidth();
     const narrowFooter = width <= breakpoints.sm;
-    const saveStatus = status ? <Typography small muted>{status}</Typography> : null;
+    // The hand-off's status: 12px mono meta in the subtle ink.
+    const saveStatus = status ? <Typography caption mono subtle>{status}</Typography> : null;
     return <Dialog form workspace overlay open={open} title={title} description={description}
       panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID}
       workspaceHeader={<Steps stacks steps={steps} current={current} testID={hook("steps")} />}
       footer={<Column comfortable><Divider /><View onLayout={onLayout} testID={hook("footer")} style={skin.footer}>
         {narrowFooter && status ? <Row center>{saveStatus}</Row> : null}
         <Row alignCenter testID={hook("footer-buttons")}>
-          <Row fill start>{previous ? <Button shrink outline iconLeft={<Icon chevronLeft decorative size={14} />} disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}</Row>
+          <Row fill start>{previous ? <Button shrink ghost iconLeft={<Icon chevronLeft decorative size={14} />} disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}</Row>
           {!narrowFooter && status ? <Row center alignCenter>{saveStatus}</Row> : null}
           <Row fill end>{actions}</Row>
         </Row>

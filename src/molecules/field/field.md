@@ -11,7 +11,8 @@ platform still places it its own way: a static title above on web and iOS, the
 floating in-container label on Android, and `required` goes down with it. Over
 any other control (a Switch, a group) Field draws the label above with its star,
 and on iOS and Android the label says "required" in its own name. Set `error` and it replaces `helper` in
-the same slot, so the row never changes height and nothing below it jumps.
+the same slot, so the row never changes height and nothing below it jumps; on the
+web an error leads with a small alert glyph.
 
 ## Usage
 

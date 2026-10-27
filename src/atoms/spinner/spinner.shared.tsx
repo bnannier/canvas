@@ -9,14 +9,14 @@ import { type Tone, TONE_TOKEN } from "./spinner.styles.js";
 // (size/tone precedence, the continuous-rotation animation, accessibility, and
 // the component-owned label pairing) lives here once; a platform file supplies
 // only its rendered shape + label/description type (a SpinnerSkin) and calls
-// createSpinner. The web skin keeps the current ActivityIndicator look; the iOS
-// skin draws the ring of fading spokes (UIActivityIndicatorView); the Android
-// skin draws the single sweeping arc (M3 CircularProgressIndicator).
+// createSpinner. The web skin draws the hand-off's ring; the iOS skin draws the ring
+// of fading spokes (UIActivityIndicatorView); the Android skin draws the single
+// sweeping arc (M3 CircularProgressIndicator).
 
 export interface SpinnerProps {
   /**
    * Optional label rendered beside (or below) the indicator in the spinner's
-   * canonical muted small type. Supplying it turns the bare indicator into a
+   * 500 14 foreground type. Supplying it turns the bare indicator into a
    * component-owned loading pairing, so the caller never hand-composes a
    * Row/Column + Typography beside a <Spinner />. A bare <Spinner /> (no
    * children) is unchanged.
@@ -36,7 +36,7 @@ export interface SpinnerProps {
   // Size (pick one; default sits between small and large).
   small?: boolean;
   large?: boolean;
-  // Tone (pick one; default is the foreground arc color).
+  // Tone (pick one; default is the accent).
   primary?: boolean;
   muted?: boolean;
   foreground?: boolean;
@@ -55,16 +55,24 @@ export function toneOf(p: SpinnerProps): Tone {
   if (p.primary) return "primary";
   if (p.muted) return "muted";
   if (p.foreground) return "foreground";
-  return "foreground";
+  return "primary";
 }
 
-// Three distinct diameters (px) so each size axis value renders a different
-// spinner. Precedence within the size axis: large > small > default (first
-// match wins). Kept identical to the original component.
+export type Size = "small" | "base" | "large";
+
+// The size axis. Precedence: large > small > default (first match wins).
+export function sizeKeyOf(p: SpinnerProps): Size {
+  if (p.large) return "large";
+  if (p.small) return "small";
+  return "base";
+}
+
+// The web and iOS diameters (px); the Android skin carries M3's own.
+const DEFAULT_SIZES: Record<Size, number> = { small: 14, base: 20, large: 32 };
+
+/** The diameter a spinner draws at, for the web and iOS skins. */
 export function sizeOf(p: SpinnerProps): number {
-  if (p.large) return 32;
-  if (p.small) return 16;
-  return 20;
+  return DEFAULT_SIZES[sizeKeyOf(p)];
 }
 
 // What a platform skin owns: how it draws the spinner for a given diameter and
@@ -72,13 +80,15 @@ export function sizeOf(p: SpinnerProps): number {
 // value (0..1, mapped to 0..360deg by the skin if it spins the whole shape). The
 // skin returns a ready-to-mount node.
 export interface SpinnerSkin {
+  /** The diameter per size step. */
+  sizes?: Record<Size, number>;
   render: (args: {
     size: number;
     color: string;
     rotate: Animated.Value;
     tokens: ColorTokens;
   }) => ReactElement;
-  /** The label text beside/below the indicator, in the canonical muted small type. */
+  /** The label text beside/below the indicator (500 14, the foreground). */
   label: (tokens: ColorTokens) => TextStyle;
   /** The muted secondary description line rendered under the label when present. */
   description: (tokens: ColorTokens) => TextStyle;
@@ -96,13 +106,13 @@ export interface SpinnerSkin {
 // label in a snug row, vertically centered. Stacked: the indicator over a
 // centered label column (the panel / section-loader form). The 8px gap is the
 // kit's snug spacing, matching the Row/Column callers used to hand-compose.
-const INLINE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
-const STACKED_COLUMN: ViewStyle = { flexDirection: "column", alignItems: "center", gap: 8 };
+const INLINE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10 };
+const STACKED_COLUMN: ViewStyle = { flexDirection: "column", alignItems: "center", gap: 10 };
 // The text sub-group (label over an optional description). `flexShrink` lets a
 // long label wrap within the inline row instead of forcing it wider; the stacked
 // form centers its lines under the indicator.
-const INLINE_TEXT: ViewStyle = { flexShrink: 1, gap: 2 };
-const STACKED_TEXT: ViewStyle = { alignItems: "center", gap: 2 };
+const INLINE_TEXT: ViewStyle = { flexShrink: 1 };
+const STACKED_TEXT: ViewStyle = { alignItems: "center" };
 const CENTER_TEXT: TextStyle = { textAlign: "center" };
 
 /** Build a Spinner component from a platform skin. */
@@ -111,8 +121,8 @@ export function createSpinner(skin: SpinnerSkin) {
     const { children, description, stacked, accessibilityLabel, testID } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);
-    const size = sizeOf(props);
-    const color = tokens[TONE_TOKEN[tone]];
+    const size = (skin.sizes ?? DEFAULT_SIZES)[sizeKeyOf(props)];
+    const color = tokens[TONE_TOKEN[tone]] ?? tokens["muted-foreground"];
     // Whether the control carries any label text at all (label and/or description).
     const hasText = children != null || description != null;
 
@@ -170,7 +180,7 @@ export function createSpinner(skin: SpinnerSkin) {
     if (!hasText) return indicator;
 
     // Labeled: a Pressable-free group owning the row/column, gap, alignment, and
-    // the canonical muted type. The group carries the progressbar role + name.
+    // the label type. The group carries the progressbar role + name.
     return (
       <View
         testID={testID}

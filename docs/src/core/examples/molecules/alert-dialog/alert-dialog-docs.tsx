@@ -24,6 +24,7 @@ export const docs: ComponentDocs = {
   dir: "alert-dialog",
   category: "molecules",
   overview: [
+    "On the web and Android the panel leads with a tone tile (a trash glyph on the destructive wash, otherwise an info glyph on the accent's), then a display title over its description, and closes on two equal buttons: a secondary Cancel and the primary or destructive confirm. On iOS it is the system alert: centered text over a two-cell action row under a hairline, the confirm in the error ink when destructive.",
     "Browser Escape and iOS accessibility escape cancel the dialog, clear its confirmation field and request `open=false`. The confirmation text gates only the confirm action; cancellation remains available while confirm is disabled. An open child overlay handles dismissal first. A controlled owner can refuse closure without passing that request to a parent or calling `onConfirm`.",
   ],
   examples: [
@@ -48,6 +49,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["alertdialog","button","group","heading"],"states":["disabled"],"aria":["aria-describedby","aria-disabled","aria-labelledby","aria-modal"],"touchTarget":[]},
-  tokens: ["border","foreground","muted-foreground","popover","popover-foreground","primary","primary-foreground","secondary","secondary-foreground"],
+  tokens: ["field-border","muted-foreground","popover","popover-foreground"],
   related: ["row-column","button","alert","dialog","drawer","action-sheet","popover","tooltip"],
 };

@@ -65,6 +65,8 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   Checkbox: { kind: "component", docs: "components/checkbox" },
   CheckboxProps: { kind: "type", docs: "components/checkbox" },
   Chip: { kind: "component", docs: "components/chip" },
+  ChipGroup: { kind: "component", docs: "components/chip" },
+  ChipGroupProps: { kind: "type", docs: "components/chip" },
   ChipProps: { kind: "type", docs: "components/chip" },
   Container: { kind: "component", docs: "components/container" },
   ContainerProps: { kind: "type", docs: "components/container" },

@@ -75,6 +75,10 @@ export interface TabBarSkin {
   item: ViewStyle;
   /** Label type per active state (size/line-height/weight/tracking; the color is applied by shared). */
   label: (active: boolean) => TextStyle;
+  /** The label's ink per active state; the accent's text ink active and `muted-foreground` at rest when left out. */
+  labelColor?: (tokens: ColorTokens, active: boolean) => string;
+  /** The space between the destination cells (none when left out). */
+  cellGap?: number;
   /** Android press ripple (null on iOS/web, which dim instead). */
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean; radius?: number }) | null;
   /** iOS/web press dim (null on Android, where the ripple carries it). */
@@ -90,6 +94,9 @@ export interface TabBarSkin {
   pill: ((tokens: ColorTokens, dark: boolean) => ViewStyle) | null;
   pillCovers?: "icon" | "cell";
 }
+
+// The glyph's wrapper over an icon pill: positioned, so it paints after the pill.
+const ICON_OVER_PILL: ViewStyle = { position: "relative" };
 
 export function createTabBar(skin: TabBarSkin) {
   return function TabBar({ items, active, defaultActive, onSelect, bottomInset = 0, style, testID }: TabBarProps) {
@@ -126,7 +133,7 @@ export function createTabBar(skin: TabBarSkin) {
     ];
     const bar = (
       <GlassSurface style={floating ? barStyle : [barStyle, style]}>
-        <View accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row" }}>
+        <View accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row", gap: skin.cellGap ?? 0 }}>
           {items.map((it) => {
             const isActive = it.key === activeKey;
             return (
@@ -159,12 +166,15 @@ export function createTabBar(skin: TabBarSkin) {
                         ? <GlassSurface layer="control" tint={pillTint} pointerEvents="none" style={pill} />
                         : <View style={[pill, { pointerEvents: "none" }]} />
                     ) : null}
-                    {it.icon(isActive)}
+                    {/* The absolute pill is positioned, so on the web it paints over an in-flow
+                        glyph (its frost would blur the glyph away); a positioned glyph after it
+                        paints on top, as later siblings do natively. */}
+                    {!cellPill && isActive ? <View style={ICON_OVER_PILL}>{it.icon(isActive)}</View> : it.icon(isActive)}
                   </View>
                 ) : (
                   it.icon(isActive)
                 )}
-                <Text numberOfLines={1} style={[skin.label(isActive), { color: isActive ? primaryText(tokens) : tokens["muted-foreground"] }]}>{it.label}</Text>
+                <Text numberOfLines={1} style={[skin.label(isActive), { color: skin.labelColor ? skin.labelColor(tokens, isActive) : isActive ? primaryText(tokens) : tokens["muted-foreground"] }]}>{it.label}</Text>
               </Pressable>
             );
           })}

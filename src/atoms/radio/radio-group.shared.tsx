@@ -25,8 +25,9 @@ import type { RadioSkin } from "./radio.shared.js";
 const RADIOGROUP: Role = "radiogroup";
 
 // Default column stack and the optional row layout. Defined here (component
-// internals) the way Radio defines its own row; this is not a call-site restyle.
-const COLUMN: ViewStyle = { flexDirection: "column", gap: 12 };
+// internals) the way Radio defines its own row; this is not a call-site restyle. The
+// column's gap is the skin's (`groupGap`: plain rows, or card tiles).
+const COLUMN: ViewStyle = { flexDirection: "column" };
 const ROW: ViewStyle = { flexDirection: "row", flexWrap: "wrap", rowGap: 12, columnGap: 20 };
 
 // A labeled group stacks its header over the options; the header keeps the label
@@ -112,7 +113,8 @@ export function createRadioGroup(skin: RadioSkin) {
     const activeIndex = value === undefined ? 0 : Math.max(0, values.indexOf(value));
 
     // The list section holds plain options only: selectable cards are tiles of their own.
-    const list = skin.list != null && options.length > 0 && !options.some((child) => child.props.card) ? skin.list : null;
+    const cards = options.some((child) => child.props.card);
+    const list = skin.list != null && options.length > 0 && !cards ? skin.list : null;
 
     // A disabled option is the hook's to skip (APG radio group): the arrows, Home and End
     // never select it, and it is never the group's tab stop.
@@ -182,7 +184,7 @@ export function createRadioGroup(skin: RadioSkin) {
         testID={hasHeader ? undefined : props.testID}
         role={RADIOGROUP}
         {...nameProps}
-        style={hasHeader ? (props.row ? ROW : COLUMN) : [props.row ? ROW : COLUMN, fill, props.style]}
+        style={[props.row ? ROW : [COLUMN, { gap: cards ? skin.groupGap.card : skin.groupGap.plain }], hasHeader ? null : [fill, props.style]]}
       >
         {props.children}
       </View>

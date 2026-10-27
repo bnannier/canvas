@@ -82,7 +82,7 @@ export interface DrawerProps {
   bottom?: boolean;
   /** A sheet spanning the width, dropping from the top. */
   top?: boolean;
-  /** Width of a side drawer in px (default 288). Ignored for the bottom/top sheet. */
+  /** Width of a side drawer in px (default 300). Ignored for the bottom/top sheet. */
   width?: number;
   /** Accessible name for the modal surface. Required when the drawer has no trigger whose label can name it. */
   accessibilityLabel?: string;
@@ -114,7 +114,7 @@ export function edgeOf(p: DrawerProps): Edge {
  */
 export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButton) {
   return function Drawer(props: DrawerProps) {
-    const { children, open: openProp, onOpenChange, trigger, width = 288, accessibilityLabel, testID, style } = props;
+    const { children, open: openProp, onOpenChange, trigger, width = 300, accessibilityLabel, testID, style } = props;
     const { tokens, scheme } = useTheme();
     // Under glass on the web the scrim also blurs what it dims (GS-6); null everywhere else.
     const scrimFrost = useScrimFrost();
@@ -224,7 +224,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     const panelShape = plain ? skin.plainPanel!(edge, width + sideInset, tokens) : skin.panelShape(edge, width, tokens);
     const panelBody = structured ? <>
       {props.header != null ? <View style={{ borderBottomWidth: 1, borderBottomColor: tokens.border }}>{props.header}</View> : null}
-      <OverlayScrollView style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }} contentContainerStyle={props.navigation ? { flexGrow: 1 } : { paddingVertical: 20, paddingHorizontal: 24, gap: 22, ...(props.footer ? null : { paddingBottom: 0 }) }} keyboardShouldPersistTaps="handled">
+      <OverlayScrollView style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }} contentContainerStyle={props.navigation ? { flexGrow: 1 } : { padding: 18, gap: 14, ...(props.footer ? null : { paddingBottom: 0 }) }} keyboardShouldPersistTaps="handled">
         {children}
       </OverlayScrollView>
       {props.footer ? <View style={{ borderTopWidth: 1, borderTopColor: tokens.border }}>{props.footer}</View> : null}

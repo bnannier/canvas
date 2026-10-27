@@ -37,6 +37,9 @@ const triggerAt = (box: Box) => (node: Element) => node.getAttribute("data-testi
 const hosted = (node: ReactNode) => render(<ThemeProvider light solid><OverlayProvider>{node}</OverlayProvider></ThemeProvider>);
 // The held card's placement wrapper and parts, read before the reveal releases the hold.
 const held = async (role: string) => hostedEntranceParts(await screen.findByRole(role, { hidden: true }));
+// The web Popover draws its beak in solid mode, so it floats the beak's overhang plus the
+// hand-off's clearance off its trigger (`arrowGap`, the renderer's 10 px gap).
+const GAP = webSkin.arrowGap!;
 
 describe("Popover's top anchors above its trigger (AO-3, P3e)", () => {
   it("places the card above the trigger, and below by default", async () => {
@@ -45,7 +48,7 @@ describe("Popover's top anchors above its trigger (AO-3, P3e)", () => {
       fireEvent.click(screen.getByRole("button", { name: "Rename" }));
       const parts = await held("dialog");
       // Its bottom edge the gap above the trigger's top.
-      expect((parts.entrance as HTMLElement).style.bottom).toBe(`${844 - (500 - 4)}px`);
+      expect((parts.entrance as HTMLElement).style.bottom).toBe(`${844 - (500 - GAP)}px`);
       expect((parts.entrance as HTMLElement).style.top).toBe("");
     });
     cleanup();
@@ -53,7 +56,7 @@ describe("Popover's top anchors above its trigger (AO-3, P3e)", () => {
       hosted(<Popover testID="trigger" trigger="Rename" title="Rename project" />);
       fireEvent.click(screen.getByRole("button", { name: "Rename" }));
       const parts = await held("dialog");
-      expect((parts.entrance as HTMLElement).style.top).toBe(`${500 + 32 + 4}px`);
+      expect((parts.entrance as HTMLElement).style.top).toBe(`${500 + 32 + GAP}px`);
     });
   });
 
@@ -64,7 +67,7 @@ describe("Popover's top anchors above its trigger (AO-3, P3e)", () => {
       const parts = await held("dialog");
       layoutHostedEntrance(parts.content, { width: 260, height: 200 });
       await settle();
-      expect((parts.entrance as HTMLElement).style.top).toBe(`${20 + 32 + 4}px`);
+      expect((parts.entrance as HTMLElement).style.top).toBe(`${20 + 32 + GAP}px`);
     });
   });
 
@@ -220,14 +223,14 @@ describe("the phone sheet (AO-6)", () => {
     await withBoxes(triggerAt({ x: 40, y: 200, width: 120, height: 32 }), async () => {
       hosted(<Popover testID="trigger" trigger="Rename" title="Rename project" />);
       fireEvent.click(screen.getByRole("button", { name: "Rename" }));
-      expect(((await held("dialog")).entrance as HTMLElement).style.top).toBe(`${200 + 32 + 4}px`);
+      expect(((await held("dialog")).entrance as HTMLElement).style.top).toBe(`${200 + 32 + GAP}px`);
     });
     cleanup();
     act(() => resizeViewport(390, 844));
     await withBoxes(triggerAt({ x: 40, y: 200, width: 120, height: 32 }), async () => {
       // Pinned open (it cannot close): a sheet would cover the page for good.
       hosted(<Popover testID="trigger" open trigger="Rename" title="Rename project" />);
-      expect(((await held("dialog")).entrance as HTMLElement).style.top).toBe(`${200 + 32 + 4}px`);
+      expect(((await held("dialog")).entrance as HTMLElement).style.top).toBe(`${200 + 32 + GAP}px`);
     });
     cleanup();
     await withBoxes(triggerAt({ x: 40, y: 200, width: 120, height: 32 }), async () => {
