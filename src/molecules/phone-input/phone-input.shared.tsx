@@ -33,6 +33,7 @@ import { useRowFocus } from "../../style/use-row-focus.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
 import { root, rootLifted, PANEL_ANCHOR } from "../../atoms/select/select.styles.js";
 import { type TextEntryProps } from "../../atoms/input/input.shared.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import { PHONE_COUNTRIES, flagOf, type PhoneCountry } from "./countries.js";
 import { type PhoneInputSkin, type Size } from "./phone-input.styles.js";
 
@@ -218,18 +219,21 @@ export function createPhoneInput(skin: PhoneInputSkin) {
 
     const boxShape = field.groupContainer(tokens, borderColor, active, isError);
     const boxSurface = entryMaterial.stateSurface(boxShape, active || isError);
+    // The focused box wears the field's halo (the web's accent halo), except while an
+    // errored box shows the kit's keyboard ring instead, as the Input does.
+    const halo = active && field.focusHalo && !(isError && errorFrame.focused) ? field.focusHalo(tokens, isError) : null;
     const box = (
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
-        style={[boxSurface.style, { minHeight: field.groupedHeight(size) }, isError && !disabled ? errorFrame.ring() : null]}
+        style={[boxSurface.style, { minHeight: field.groupedHeight(size) }, halo, isError && !disabled ? errorFrame.ring() : null]}
       >
         <GlassPane {...entryMaterial.paneProps} stateBorder={boxSurface.keepsBorder} shape={boxShape} tint={isError ? legibleWash(theme, "error", entryMaterial.paneProps) : undefined} />
         <Pressable
           ref={countryRef}
           onPress={() => setOpen(!open)}
           disabled={!editable}
-          style={({ pressed }) => [entryMaterial.inkFill(skin.country(tokens, state)), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
+          style={({ pressed }) => [entryMaterial.inkFill(skin.country(tokens, state, size)), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
           android_ripple={ripple}
           accessibilityRole="button"
           accessibilityLabel={segmentName}
@@ -240,13 +244,21 @@ export function createPhoneInput(skin: PhoneInputSkin) {
           aria-controls={open ? listId : undefined}
           testID={props.testID != null ? `${props.testID}-country` : undefined}
         >
-          <Text style={skin.flag(size)}>{selected ? (selected.flag ?? flagOf(selected.code)) : ""}</Text>
-          <Text style={skin.caret(tokens, open)}>{skin.caretGlyph}</Text>
+          {skin.code ? (
+            <Text style={skin.code(tokens)}>{selected?.code ?? ""}</Text>
+          ) : (
+            <Text style={skin.flag(size)}>{selected ? (selected.flag ?? flagOf(selected.code)) : ""}</Text>
+          )}
+          {skin.caretIcon != null ? (
+            <Icon chevronDown size={skin.caretIcon} color={skin.caret(tokens, open).color as string} decorative />
+          ) : (
+            <Text style={skin.caret(tokens, open)}>{skin.caretGlyph}</Text>
+          )}
         </Pressable>
 
         <View style={NUMBER_AREA}>
           {selected ? (
-            <Text style={[text, skin.dial(tokens), { alignSelf: "center" }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <Text style={[text, skin.numberFace, skin.dial(tokens), { alignSelf: "center" }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               {selected.dialCode}
             </Text>
           ) : null}
@@ -256,13 +268,16 @@ export function createPhoneInput(skin: PhoneInputSkin) {
               field.groupField(tokens, { leadingIcon: false, trailingIcon: false, hasPrefix: false, hasSuffix: false }),
               { paddingStart: skin.numberGap },
               text,
+              // The number takes the skin's face; the placeholder (an empty field) keeps the
+              // interface face, as the hand-off sets its prompt.
+              number ? skin.numberFace : null,
               FOCUS_RESET,
             ]}
             textAlignVertical="center"
             value={number}
             onChangeText={setNumber}
             placeholder={placeholder}
-            placeholderTextColor={tokens["muted-foreground"]}
+            placeholderTextColor={field.placeholder(tokens)}
             // Disabled reaches the browser as disabled (out of the tab order) and VoiceOver
             // and TalkBack as dimmed; read-only stays focusable on the web.
             {...entry}

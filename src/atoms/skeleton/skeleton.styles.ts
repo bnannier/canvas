@@ -9,15 +9,17 @@ import { type SkeletonSkin } from "./skeleton.shared.js";
 // carries only the placeholder corner radii; the iOS and Android skins reference
 // the web skin verbatim, so the three columns stay byte-identical.
 //
-// Radii match Dark Factory's shapes: a 6px line placeholder reads as plain content, a
-// pill button placeholder matches its pill buttons, a round avatar mirrors the avatar
-// circle, and a card-cornered surface (14) matches the real card.
+// Radii are the Canvas v4 hand-off's (`K.def('skeleton')` in
+// tools/v4/handoff/cv-kit-overlays.js): the key role on a line, the control role on a
+// button placeholder and the card's media block, a round avatar, the card role on the card
+// frame.
 
 export const webSkin: SkeletonSkin = {
   lineRadius: platformShape.web.key,
-  buttonRadius: shape.web.pill,
+  buttonRadius: shape.web.control,
   avatarRadius: 9999,
   cardRadius: shape.web.card,
+  mediaRadius: shape.web.control,
 };
 
 // Shared treatment: identical to web on every platform (no native skeleton to match).

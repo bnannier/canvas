@@ -1,30 +1,35 @@
 import { type TextStyle } from "react-native";
-import { controlRipple, platformDisabledDim, platformMinTarget, shape, type ColorTokens } from "../../style/index.js";
+import { controlRipple, platformDisabledDim, platformMinTarget, type ColorTokens } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type AvatarSkin, type Size } from "./avatar.shared.js";
 import { type AvatarMenuSkin } from "./avatar-menu.shared.js";
 import { webHover } from "../../style/hover.js";
 
-// The Avatar skin. No platform ships an avatar control, so every platform takes Dark
-// Factory's identity disc (the gradient and the initials' ink live in avatar.shared.tsx and
-// src/style/identity-hue.ts) and the native skins are the web skin: bold (800) initials at
-// a third of the disc (about 0.4 on the two small discs), one line tall, and the control
-// corner for the `rounded` square. The press feedback stays each
-// platform's own: the ripple is Android's (a no-op elsewhere), the dim the rest's (the
-// shell skips it on Android), and the touch target each platform's minimum (44pt HIG, 48dp
-// Material, a 44px floor for touch on the web).
+// The Avatar skin. No platform ships an avatar control, so every platform takes the
+// Canvas v4 hand-off's avatar (`K.def('avatar')` in tools/v4/handoff/cv-kit-controls.js)
+// and the native skins are the web skin: initials at weight 600 and 38% of the disc (on
+// the 10px source floor at `tiny`, where the hand-off draws 8), one line tall, over the
+// identity hue's soft wash (avatar.shared.tsx), and a `rounded` square at 28% of the disc.
+// The press feedback stays each platform's own: the ripple is Android's (a no-op
+// elsewhere), the dim the rest's (the shell skips it on Android), and the touch target each
+// platform's minimum (44pt HIG, 48dp Material, a 44px floor for touch on the web).
 
-// Initials per size, one line tall. Dark Factory sets them at a third of the disc and at
-// about 0.4 of its small discs (12 on its 30px avatars), so the two small sizes take that
-// ratio: 10 on the 24px disc (the kit's floor) and 11 on the 28px one.
+// Initials per size, one line tall: round(diameter x 0.38) on the 20/28/40/56 discs.
 const LABEL: Record<Size, TextStyle> = {
-  tiny: { fontWeight: "800", fontSize: 10, lineHeight: 10 },
-  small: { fontWeight: "800", fontSize: 11, lineHeight: 11 },
-  default: { fontWeight: "800", fontSize: 13, lineHeight: 13 },
-  large: { fontWeight: "800", fontSize: 16, lineHeight: 16 },
+  tiny: { fontWeight: "600", fontSize: 10, lineHeight: 10 },
+  small: { fontWeight: "600", fontSize: 11, lineHeight: 11 },
+  default: { fontWeight: "600", fontSize: 15, lineHeight: 15 },
+  large: { fontWeight: "600", fontSize: 21, lineHeight: 21 },
 };
 
 export const webSkin: AvatarSkin = {
-  roundedRadius: shape.web.control,
+  // The `rounded` square, the hand-off's round(diameter x 0.28) per disc: 6 / 8 / 11 / 16.
+  roundedRadius: {
+    tiny: platformShape.web.avatarSquareTiny,
+    small: platformShape.web.avatarSquareSmall,
+    default: platformShape.web.avatarSquare,
+    large: platformShape.web.avatarSquareLarge,
+  },
   labelType: LABEL,
   ripple: (tokens: ColorTokens) => controlRipple(tokens),
   pressedOpacity: 0.9,

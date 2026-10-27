@@ -97,7 +97,10 @@ describe("primary-text compatibility", () => {
         const expected = cssColor(primaryText(colorsByScheme[scheme]));
         expect(cssColor(screen.getByText("AB").style.color)).toBe(expected);
         expect(screen.getByText("AB").style.fontSize).toBe("14px");
-        expect(cssColor(screen.getByText("Home").style.color)).toBe(expected);
+        // The Android bar labels its active item in the hand-off's `--tx` (foreground); the
+        // accent rides on the 64x32 pill behind the icon instead.
+        const caption = platform === "android" ? cssColor(colorsByScheme[scheme].foreground) : expected;
+        expect(cssColor(screen.getByText("Home").style.color)).toBe(caption);
       });
     }
   }

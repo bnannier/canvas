@@ -29,6 +29,7 @@ import {
   paneStyle,
   paneRipple,
   isGlass,
+  withInnerFill,
   PANE_SIBLING_INPUT,
 } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
@@ -37,6 +38,7 @@ import { PINNED_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
 import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
+import { useHover } from "../../style/hover.js";
 import { addDecimal } from "./stepper.math.js";
 import { rowSeam } from "../../style/touch-seam.js";
 import { stepperAccessibility } from "./stepper.accessibility.js";
@@ -125,12 +127,14 @@ export interface StepperSkin {
   groupShowsFocus?: boolean;
   /** One ± button cell; `side` lets the skin round the matching outer corner. */
   button: (t: ColorTokens, size: Size, side: "left" | "right", disabled: boolean, pressed: boolean) => ViewStyle;
+  /** A ± button's wash under a hovering pointer; omit for none. */
+  buttonHover?: (t: ColorTokens) => ViewStyle;
   /** The editable center field surface (and its type scale). */
   field: (t: ColorTokens, size: Size, disabled: boolean) => TextStyle;
   /** Divider line between a button and the value (null = no separator on this skin). */
   divider: ((t: ColorTokens, disabled: boolean) => ViewStyle) | null;
-  /** The ± glyph color token and px size for a given size/state. */
-  glyph: (t: ColorTokens, size: Size, disabled: boolean) => { color: keyof ColorTokens; size: number };
+  /** The ± glyph color and px size; `off` is a button at its bound (or the whole control disabled). */
+  glyph: (t: ColorTokens, size: Size, off: boolean) => { color: string; size: number };
   /**
    * Web dims a ± button on press. null on Android (ripple carries the feedback)
    * and on iOS (the skin's `button` paints a highlight fill on the pressed half
@@ -147,6 +151,8 @@ export interface StepperSkin {
   hitSlop: ((size: Size) => number) | null;
   /** Layout order: the iOS HIG puts the value field to the LEFT of the [ − | + ] pill. */
   fieldOnLeft: boolean;
+  /** The control's opacity when disabled (solid mode). */
+  disabledOpacity: number;
   /**
    * The persistent label rendered ABOVE the control (the canonical field-label
    * type, matching Input's label scale): iOS the SF field-label (semibold 600,
@@ -156,20 +162,8 @@ export interface StepperSkin {
    * component-owned title above, at the M3 label type.
    */
   labelAbove: (t: ColorTokens, size: Size) => TextStyle;
-  /** The muted secondary description line under the label (per-OS supporting-text type). */
+  /** The secondary description line under the control (per-OS supporting-text type). */
   description: (t: ColorTokens, size: Size) => TextStyle;
-}
-
-// Map a glyph color token to the Icon atom's boolean color prop. A disabled (at-bound)
-// button dims its glyph to `muted` regardless of the skin's active color, so the
-// disabled state reads on every platform.
-function glyphColorProps(token: keyof ColorTokens, disabled: boolean): Record<string, boolean> {
-  if (disabled) return { muted: true };
-  if (token === "primary") return { primary: true };
-  if (token === "muted-foreground") return { muted: true };
-  if (token === "destructive") return { destructive: true };
-  // `foreground` is the Icon default (no color boolean needed).
-  return {};
 }
 
 // Size precedence when more than one is passed: first match wins (large > small).
@@ -219,7 +213,10 @@ export function createStepper(skin: StepperSkin) {
     const groupFill = (StyleSheet.flatten(groupShape) as ViewStyle).backgroundColor;
     const groupSurfaced = groupFill != null && groupFill !== "transparent";
     const liquidActions = !groupSurfaced && isGlass(actionTheme);
-    const disabledInk = liquidActions && disabled ? { opacity: 0.5 } : null;
+    const disabledInk = liquidActions && disabled ? { opacity: skin.disabledOpacity } : null;
+    // A hovering pointer washes the ± button under it (src/style/hover.tsx).
+    const minusHover = useHover(skin.buttonHover != null && !disabled);
+    const plusHover = useHover(skin.buttonHover != null && !disabled);
     // The web box shows the value field's focus as a state border, drawn once by the
     // text-entry material (the box's own border, or the clear well's overlay).
     const groupSurface = groupSurfaced ? entryMaterial.stateSurface(groupShape, focused && !!skin.groupShowsFocus) : null;
@@ -336,7 +333,9 @@ export function createStepper(skin: StepperSkin) {
       setDraft(null);
     };
 
-    const glyph = skin.glyph(tokens, size, !!disabled);
+    const minusGlyph = skin.glyph(tokens, size, atMin);
+    const plusGlyph = skin.glyph(tokens, size, atMax);
+    const hoverWash = (hovered: boolean) => (hovered && skin.buttonHover ? withInnerFill(actionTheme, skin.buttonHover(tokens)) : null);
     // A ± button's own puck (`buttonPane`) is a child of its Pressable: where it renders, the
     // ripple draws in the foreground, over it (`paneRipple`).
     const ripple = paneRipple(liquidActions, skin.ripple ? skin.ripple(tokens) : undefined);
@@ -370,6 +369,7 @@ export function createStepper(skin: StepperSkin) {
     const MinusButton = (
       <RippleClip shape={cornerRadii(skin.button(tokens, size, "left", atMin, false))} hitSlop={minusSlop}>
         <Pressable
+          {...minusHover.target}
           onPress={decrement}
           disabled={atMin}
           accessibilityRole="button"
@@ -380,13 +380,14 @@ export function createStepper(skin: StepperSkin) {
           hitSlop={minusSlop}
           style={({ pressed }) => [
             groupSurfaced ? skin.button(tokens, size, "left", atMin, pressed) : paneStyle(actionTheme, skin.button(tokens, size, "left", atMin, pressed)),
+            hoverWash(minusHover.hovered && !atMin),
             !liquidActions && skin.pressedOpacity != null && pressed && !atMin ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
           {({ pressed }) => <>
             {buttonPane(skin.button(tokens, size, "left", atMin, false))}
             <View style={[disabledInk, liquidActions && skin.pressedOpacity != null && pressed && !atMin ? { opacity: skin.pressedOpacity } : null]}>
-              <Icon minus decorative {...glyphColorProps(glyph.color, atMin)} size={glyph.size} />
+              <Icon minus decorative color={minusGlyph.color} size={minusGlyph.size} />
             </View>
           </>}
         </Pressable>
@@ -396,6 +397,7 @@ export function createStepper(skin: StepperSkin) {
     const PlusButton = (
       <RippleClip shape={cornerRadii(skin.button(tokens, size, "right", atMax, false))} hitSlop={plusSlop}>
         <Pressable
+          {...plusHover.target}
           onPress={increment}
           disabled={atMax}
           accessibilityRole="button"
@@ -406,13 +408,14 @@ export function createStepper(skin: StepperSkin) {
           hitSlop={plusSlop}
           style={({ pressed }) => [
             groupSurfaced ? skin.button(tokens, size, "right", atMax, pressed) : paneStyle(actionTheme, skin.button(tokens, size, "right", atMax, pressed)),
+            hoverWash(plusHover.hovered && !atMax),
             !liquidActions && skin.pressedOpacity != null && pressed && !atMax ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
           {({ pressed }) => <>
             {buttonPane(skin.button(tokens, size, "right", atMax, false))}
             <View style={[disabledInk, liquidActions && skin.pressedOpacity != null && pressed && !atMax ? { opacity: skin.pressedOpacity } : null]}>
-              <Icon plus decorative {...glyphColorProps(glyph.color, atMax)} size={glyph.size} />
+              <Icon plus decorative color={plusGlyph.color} size={plusGlyph.size} />
             </View>
           </>}
         </Pressable>
@@ -470,7 +473,7 @@ export function createStepper(skin: StepperSkin) {
             alignItems: "center",
             // With a label the outer wrapper carries the disabled dim (so the label
             // dims with the control, matching Input); bare, the group dims itself.
-            opacity: label == null && disabled && !liquidActions ? 0.5 : 1,
+            opacity: label == null && disabled && !liquidActions ? skin.disabledOpacity : 1,
           },
           label != null ? null : hug,
           // The style escape hatch rides the outer wrapper when a label is present
@@ -506,20 +509,21 @@ export function createStepper(skin: StepperSkin) {
     // No label: return the bare control without an extra layout wrapper.
     if (label == null) return control;
 
-    // With a label: a component-owned title (and optional muted description) ABOVE
-    // the control, mirroring Input's above-field placement. The wrapper owns the
-    // style escape hatch and the disabled dim so the label dims with the control.
+    // With a label: a component-owned title ABOVE the control, mirroring Input's
+    // above-field placement, and the optional description UNDER it (the hand-off's
+    // stepper). The wrapper owns the outer layout and the disabled dim so the label dims
+    // with the control.
     return (
-      <View style={[{ gap: 6 }, hug, disabled && !liquidActions ? { opacity: 0.5 } : null, style]}>
+      <View style={[{ gap: 6 }, hug, disabled && !liquidActions ? { opacity: skin.disabledOpacity } : null, style]}>
         <Text nativeID={labelId} style={[skin.labelAbove(tokens, size), disabledInk]} {...labelA11y(label, true)}>
           <LabelContent label={label} required={required} starColor={tokens.destructive} />
         </Text>
+        {control}
         {description != null ? (
           <Text nativeID={descId} style={[skin.description(tokens, size), disabledInk]}>
             {description}
           </Text>
         ) : null}
-        {control}
       </View>
     );
   });

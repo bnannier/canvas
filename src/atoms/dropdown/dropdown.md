@@ -2,9 +2,10 @@
 
 Floating menus triggered by a button: actions, options, navigation.
 
-On the web the menu is Dark Factory's: a card of bold rows that take the hover wash
-at once, an uppercase eyebrow over a section, muted shortcuts in their own column, and a
-disabled row in the muted ink rather than faded. iOS and Android keep their platform
+On the web the menu is the v4 panel: a card with a hairline and a soft shadow, 36-pixel
+rows with quiet icons that take a raised wash under the pointer at once, a mono uppercase
+eyebrow over a section, mono shortcuts in their own column, destructive rows in the
+destructive ink, and a disabled row in the muted ink rather than faded. iOS and Android keep their platform
 menus (the iOS pull-down menu, the Material 3 menu) in the theme's colours.
 
 In glass mode the menu is a dense-layer glass card under its trigger (or above it
@@ -13,8 +14,9 @@ name and state, and a selection commits and closes the menu the moment a row is
 pressed. AvatarMenu and the collapsed Navbar menu are built on Dropdown. Solid
 mode paints the skin's own menu.
 
-`compact steadyPress` preserves the original Argus web menu: an outside hairline,
-12.5-pixel bold labels, selected action ink, muted counts, and descriptions.
+`compact` tightens the web rows to 30 pixels and lets the menu scroll inside
+`maxHeight`; with `steadyPress` a press does not tint the row. Selected rows take the
+action ink.
 Items can carry a stored `value`, `detail`, `description`, `selected` state, and a
 `sectionBefore` heading. `keepOpen` leaves refresh-style commands open. A `note`
 adds a muted footer. `menuWidth` and `maxHeight` bound the scrolling menu.

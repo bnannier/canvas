@@ -58,7 +58,7 @@ import { revealTravel, type RevealProps } from "../../src/atoms/reveal/reveal.sh
 import { sizeOf as selectSize, fieldOf as selectField, optionsOf as selectOptions } from "../../src/atoms/select/select.shared.tsx";
 import { lineHeight, avatarDiameter, buttonSize as skeletonButton, shapeOf as skeletonShape, lengthOf } from "../../src/atoms/skeleton/skeleton.shared.tsx";
 import { sizeOf as sliderSize } from "../../src/atoms/slider/slider.shared.tsx";
-import { toneOf as spinnerTone, sizeOf as spinnerSize } from "../../src/atoms/spinner/spinner.shared.tsx";
+import { toneOf as spinnerTone, sizeKeyOf as spinnerSize } from "../../src/atoms/spinner/spinner.shared.tsx";
 import { sizeOf as stepperSize } from "../../src/atoms/stepper/stepper.shared.tsx";
 import { sizeOf as swatchSize, stretchesOf, paletteOf } from "../../src/atoms/swatch/swatch.shared.tsx";
 import { sizeOf as switchSize } from "../../src/atoms/switch/switch.shared.tsx";
@@ -366,7 +366,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Skeleton.length", components: ["Skeleton"], pages: ["skeleton"], resolver: "src/atoms/skeleton/skeleton.shared.tsx#lengthOf", members: ["short", "long"], resolve: lengthOf, notes: ["Applies to the text shape only."] }),
   subject({ id: "Slider.size", components: ["Slider"], pages: ["slider"], resolver: "src/atoms/slider/slider.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: sliderSize }),
   subject({ id: "Spinner.tone", components: ["Spinner"], pages: ["spinner"], resolver: "src/atoms/spinner/spinner.shared.tsx#toneOf", members: ["primary", "muted", "foreground"], resolve: spinnerTone }),
-  subject({ id: "Spinner.size", components: ["Spinner"], pages: ["spinner"], resolver: "src/atoms/spinner/spinner.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: spinnerSize }),
+  subject({ id: "Spinner.size", components: ["Spinner"], pages: ["spinner"], resolver: "src/atoms/spinner/spinner.shared.tsx#sizeKeyOf", members: SIZES_LARGE_FIRST, resolve: spinnerSize }),
   subject({ id: "Stepper.size", components: ["Stepper"], pages: ["stepper"], resolver: "src/atoms/stepper/stepper.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: stepperSize }),
   subject({ id: "Swatch.size", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#sizeOf", members: SIZES, resolve: swatchSize }),
   subject({ id: "Swatch.stretch", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#stretchesOf", rule: true, members: ["block", "circle", "inline"], resolve: stretchesOf }),

@@ -94,6 +94,8 @@
   "Checkbox": "value",
   "CheckboxProps": "type",
   "Chip": "value",
+  "ChipGroup": "value",
+  "ChipGroupProps": "type",
   "ChipProps": "type",
   "CodeBlock": "value",
   "CodeBlockProps": "type",

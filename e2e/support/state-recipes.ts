@@ -2061,6 +2061,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   emblem: { static: true, reason: "A decorative identity mark: it takes no input." },
   autocomplete: {
+    // The web field's edge steps up to the subtle ink under a resting pointer.
+    hover: hover("default", byRole("combobox")),
     focus: focus("default", byRole("combobox")),
     // Pressed on its own surface (the chevron that toggles the list) and inside the list it opens.
     pressed: [
@@ -2158,6 +2160,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     disabled: disabled("disabled", byRole("option", "Backend")),
   },
   stepper: {
+    // The web skin washes a step button under the pointer (stepper.styles.ts `webSkin.buttonHover`).
+    hover: hover("default", byRole("button", "Increase")),
     focus: focus("default", byRole("spinbutton")),
     pressed: pressed("default", byRole("button", "Increase")),
     disabled: disabled("disabled", byRole("spinbutton")),
@@ -2175,12 +2179,18 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   progress: { static: true, reason: "A meter: it shows a value and takes no input." },
   qrcode: { static: true, reason: "A code image: it takes no input." },
   radio: {
+    // The web ring takes the hand-off's 6px accent halo under the pointer (radio.styles.ts `webSkin.ring.hover`).
+    hover: hover("default", byRole("radio", "Hobby")),
     focus: focus("default", stopIn(byRole("radiogroup"), "radio")),
     pressed: pressed("default", byRole("radio", "Hobby")),
   },
   reveal: { static: true, reason: "An entrance transition around its content: it takes no input." },
   select: {
-    hover: hover("densefield", byRole("option", "Architect"), { within: overlay("select") }),
+    hover: [
+      // The web trigger's edge steps up to the subtle ink under a resting pointer.
+      hover("default", byRole("button", "Country")),
+      hover("densefield", byRole("option", "Architect"), { within: overlay("select") }),
+    ],
     focus: [
       focus("default", byRole("button", "Country")),
       // Focus enters the list at the selected option (United States), the arrows move it.
@@ -2195,6 +2205,9 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   skeleton: { static: true, reason: "A loading placeholder: it takes no input." },
   slider: {
+    // The web thumb takes the hand-off's 8px accent halo under the pointer (slider.styles.ts
+    // `webSkin.thumb`, active on hover as on press).
+    hover: hover("default", byRole("slider")),
     focus: focus("default", byRole("slider")),
     // The web thumb takes a pressed ring (slider.styles.ts `webSkin.thumb`, from the shell's
     // PanResponder). The pointer goes down on the thumb itself, so the value stays, and comes
@@ -2208,6 +2221,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   spinner: { static: true, reason: "A loading indicator: it takes no input." },
   textarea: {
+    // The web field's edge steps up to the subtle ink under a resting pointer.
+    hover: hover("default", byRole("textbox")),
     focus: focus("default", byRole("textbox")),
     invalid: invalid("charactercounter", byRole("textbox"), { type: "x".repeat(281), how: "281 characters typed against the soft cap of 280" }),
     disabled: disabled("disabled", byRole("textbox")),
@@ -2266,16 +2281,15 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("dismissible", byRole("button", "Dismiss")),
   },
   "alert-dialog": {
-    // Its own action buttons are the iOS build's capsules and the Android build's text buttons
-    // (`skin.actionLayout`, `skin.textButton`); the web build's are kit Buttons, whose own
-    // recipes capture their focus and press. So the focus is applied on the iOS and Android
-    // rows, and the press on the iOS row alone: the text buttons press with `android_ripple`
-    // alone, which react-native-web never draws (judged on devices).
-    focus: focus("default", byRole("button", "Cancel"), { within: overlay("alert-dialog"), rows: NATIVE_ROWS }),
+    // Its own action buttons are the iOS build's UIAlertController actions
+    // (`skin.actionLayout`); the web and Android builds' are kit Buttons (the hand-off's
+    // alert dialog), whose own recipes capture their focus and press. So the focus and the
+    // press are applied on the iOS row alone.
+    focus: focus("default", byRole("button", "Cancel"), { within: overlay("alert-dialog"), rows: IOS_ROW }),
     pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("alert-dialog"), rows: IOS_ROW }),
     open: open("default", overlay("alert-dialog"), ALL_ROWS, viaRecipe("alert-dialog")),
     // `withInput` keeps the confirm disabled until its token is typed in the dialog's field: the
-    // kit Button it hands `disabled` on the web row, its own capsule and text button on the others.
+    // kit Button it hands `disabled` on the web and Android rows, its own action on the iOS row.
     disabled: disabled("bodyfield", byRole("button", "Delete"), { within: overlay("alert-dialog"), rows: ALL_ROWS, how: "the dialog opens, then its Delete button, disabled until DELETE is typed in its field" }),
   },
   card: {
@@ -2521,6 +2535,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("default", byRole("tab", "Search")),
   },
   tabs: {
+    // A resting underline tab's label steps to `foreground` under the pointer (the web skin's hoverLabel).
+    hover: hover("default", byRole("tab", "Security")),
     focus: focus("default", stopIn(byRole("tablist"), "tab")),
     pressed: pressed("default", byRole("tab", "Security")),
     disabled: disabled("disabledtab", byRole("tab", "Billing")),

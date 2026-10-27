@@ -4,9 +4,9 @@ A custom select whose options stay on screen: single or multi-select, an optiona
 
 The list fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
-One job, a platform's own control: iOS marks a choice in a list with a trailing check, so there every chosen row carries a check at its end (in single and multi select alike) and no row is filled for being chosen. The web and Android lead the row with the mark: a violet checkmark with the chosen label in the same violet in single-select, the platform's selection checkbox in multi-select (the Material 3 box on Android).
+Neither iOS nor Material 3 ships a listbox, so every platform draws the Canvas v4 list, in its own face: a chosen row sits on the accent's soft wash with a 16px check at its end in the accent ink, in single and multi select alike, and the check's slot is kept on every row so a choice never reflows a label.
 
-The rows are Dark Factory's menu rows on every platform: bold labels at an 8px corner that take the hover wash at once on the web, a muted second line, and a bordered list in Dark Factory's panel.
+The rows are 10px in with a 500 14px label (13px small) over a 400 12px detail in the subtle ink, rounded concentric inside a bordered list, which is the `popover` fill behind the `field-border` hairline at the tile corner with a 4px inset. A pressed row takes the `muted` wash, and on the web a row under the pointer takes the hover wash at once.
 
 Single-select exposes a list of selectable options. With `multi`, it exposes a checkbox group: each row owns its label, checked state, and tap target. Give either mode a meaningful `accessibilityLabel`; the fallback is "Options". Arrow keys and Home/End move focus within one tab stop. Single-select follows focus, while multi-select keeps the current selection until Enter or Space toggles the focused row.
 

@@ -3,6 +3,7 @@ import { scrimFill } from "../../style/scrim.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/index.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
 
 // Co-located Dialog skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when the
@@ -18,29 +19,29 @@ import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/inde
 //     action buttons (a gray `secondary` Cancel capsule + a `primary`
 //     Confirm capsule; a destructive confirm is a gray capsule with `destructive`
 //     red text), NO hairline dividers; press = opacity dim (~0.8).
-//   Android (Material 3 basic dialog): a card (the Material 3 dialog corner,
-//     `popover` elevated surface, shadow lg) over a ~0.32 black scrim; a LEFT-aligned ~22pt title,
-//     a 14sp body, and TEXT-button actions (no fill) bottom-RIGHT in a row
-//     (Cancel then Confirm) in `primary-text`, an android_ripple on each, and
-//     NO dividers.
-//   Web: a bordered card at the dialog corner (`border`, `popover` fill, xl
-//     shadow) over the theme's scrim; an 18/28 medium left title, a 14/20 muted
-//     body, and a right-aligned action row of an outline Cancel + a
-//     primary/destructive Confirm Button.
+//   Android (Material 3 basic dialog, as the v4 hand-off's Android row draws it): the
+//     web panel at the Material 3 dialog corner over a ~0.32 black scrim, the web
+//     heading in Roboto, and TEXT-button actions (no fill) bottom-RIGHT in a row
+//     (Cancel then Confirm) in `primary-text`, an android_ripple on each, no dividers.
+//   Web: the v4 hand-off's panel: the overlay material (`popover` fill, the
+//     `field-border` hairline, the lg shadow) at the dialog corner, 22 padding, an 18px
+//     display heading (600, -0.015em) over its 14/1.5 muted description, 14 between
+//     the parts, and a right-aligned action row of a ghost Cancel + a primary/destructive
+//     Confirm Button.
 
 export type Size = "xs" | "small" | "medium" | "default" | "large" | "wide";
 
 // The dialog card's max width per size, narrowest to widest, drawn from the
-// shared width scale (src/style/tokens.ts `widths`): the default sits one step
-// wider than `medium`, roomy enough for a short form; `xs`/`small` tighten the
-// panel for a terse message, `large`/`wide` open it up for a longer form.
+// shared width scale (src/style/tokens.ts `widths`), each the step nearest the v4
+// hand-off's width (xs 300, small 360, the default 420, medium 440, large 520, wide
+// 600): the default and `medium` share the md step.
 export const PANEL_MAX_WIDTH: Record<Size, number> = {
   xs: widths.xs,
   small: widths.sm,
   medium: widths.md,
-  default: widths.lg,
-  large: widths.xl,
-  wide: widths.xxl,
+  default: widths.md,
+  large: widths.lg,
+  wide: widths.xl,
 };
 
 // How the footer renders its actions. The web/Android footer is a horizontal
@@ -188,38 +189,42 @@ export function cardWidth(size: Size): ViewStyle {
   return { width: "100%", maxWidth: PANEL_MAX_WIDTH[size] };
 }
 
-// ---------- Web: a bordered card at the dialog corner ----------
-// A card at the dialog corner (`border`, `popover` fill, the ambient xl shade) under
-// the theme's scrim; an 18/28 medium title over a 14/20 muted body, and a
-// right-aligned action row (gap 8, 24 above) of an outline Cancel + a primary/
-// destructive Confirm Button.
+// ---------- Web: the v4 hand-off's panel ----------
+// Its Dialog renderer: the overlay material at the dialog corner, 22 padding and a 14
+// gap; the heading is ttl(18): the display face at 600 with -0.015em tracking on its
+// 1.25 line; the description dsc(): 14/1.5 in the muted ink, 4 under the heading.
+const WEB_TITLE: TextStyle = { fontFamily: DISPLAY_FONT, fontSize: 18, lineHeight: 22.5, fontWeight: "600", letterSpacing: -0.27 };
+const WEB_BODY: TextStyle = { fontSize: 14, lineHeight: 21, fontWeight: "400" };
+const webPanel = (t: ColorTokens): ViewStyle => ({
+  borderRadius: shape.web.dialog,
+  borderWidth: 1,
+  borderColor: t["field-border"],
+  backgroundColor: t.popover,
+  padding: 22,
+  ...shadow("lg", t),
+});
 export const webSkin: DialogSkin = {
   form: {
-    card: (t) => ({ borderRadius: shape.web.dialog, borderWidth: 0, backgroundColor: t.card, paddingTop: 28, paddingHorizontal: 28, paddingBottom: 10, ...shadow("xl", t) }),
-    title: (t) => ({ fontSize: 17, lineHeight: 21.25, fontWeight: "700", letterSpacing: -0.17, color: t.foreground }),
-    description: (t) => ({ fontSize: 12, lineHeight: 16.2, fontWeight: "600", color: t["muted-foreground"] }),
+    card: webPanel,
+    title: (t) => ({ ...WEB_TITLE, color: t["popover-foreground"] }),
+    description: (t) => ({ ...WEB_BODY, color: t["muted-foreground"] }),
   },
   backdrop: (t) => ({ borderRadius: shape.web.dialog, backgroundColor: scrimFill(t, 0.6) }),
-  card: (t) => ({
-    borderRadius: shape.web.dialog,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.popover,
-    ...shadow("xl", t),
-  }),
-  title: (t) => ({ fontSize: 18, lineHeight: 28, fontWeight: "500", color: t["popover-foreground"] }),
-  body: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginTop: 8 }),
+  card: webPanel,
+  title: (t) => ({ ...WEB_TITLE, color: t["popover-foreground"] }),
+  body: (t) => ({ ...WEB_BODY, color: t["muted-foreground"], marginTop: 4 }),
   footerKind: "buttons",
-  footer: () => ({ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }),
+  footer: () => ({ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 14 }),
   capsule: null,
   capsuleLabel: null,
   capsulePressedOpacity: null,
   textButton: null,
   textButtonLabel: null,
   textButtonRipple: null,
-  formBody: { marginTop: 20 },
-  fieldLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground, marginBottom: 6 }),
-  fieldLabelGap: { marginTop: 16 },
+  // The hand-off's form field: a 13 / 500 muted label 6 over its field, 14 under the text.
+  formBody: { marginTop: 14 },
+  fieldLabel: (t) => ({ fontSize: 13, lineHeight: 17, fontWeight: "500", color: t["muted-foreground"], marginBottom: 6 }),
+  fieldLabelGap: { marginTop: 14 },
   amountRow: { flexDirection: "row", alignItems: "center" },
   currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
 };
@@ -294,23 +299,19 @@ export const iosSkin: DialogSkin = {
   currency: (t) => ({ fontSize: 15, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
 };
 
-// ---------- Android (Material 3 basic dialog): 28 radius, left title, text-button row ----------
-// M3 basic dialog: a card (28dp radius) over the `popover` ELEVATED surface (soft
-// shadow) on a ~0.32 black scrim; a LEFT-aligned ~22sp title, a 14sp body, and
-// TEXT-button actions (no fill) bottom-RIGHT in a row (Cancel then Confirm) in
-// `primary-text`, an android_ripple on each, and NO dividers.
+// ---------- Android (Material 3 basic dialog): the web panel at 28, a text-button row ----------
+// The hand-off's Android row: the web panel and heading (in Roboto) at the Material 3
+// dialog corner on a ~0.32 black scrim, and TEXT-button actions (no fill) bottom-RIGHT in
+// a row (Cancel then Confirm): 40 high, 12 in, 14 / 500 in `primary-text`, an
+// android_ripple on each, and NO dividers.
 const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: DialogSkin = {
   backdrop: (t) => ({ borderRadius: ANDROID_RADIUS, backgroundColor: scrimFill(t, 0.32) }),
-  card: (t) => ({
-    borderRadius: ANDROID_RADIUS,
-    backgroundColor: t.popover,
-    ...shadow("lg", t),
-  }),
-  title: (t) => ({ fontSize: 22, lineHeight: 28, fontWeight: "500", color: t["popover-foreground"] }),
-  body: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginTop: 12 }),
+  card: (t) => ({ ...webPanel(t), borderRadius: ANDROID_RADIUS }),
+  title: (t) => ({ ...WEB_TITLE, fontFamily: undefined, color: t["popover-foreground"] }),
+  body: (t) => ({ ...WEB_BODY, color: t["muted-foreground"], marginTop: 4 }),
   footerKind: "buttons",
-  footer: () => ({ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: 24 }),
+  footer: () => ({ flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: 14 }),
   capsule: null,
   capsuleLabel: null,
   capsulePressedOpacity: null,
@@ -334,9 +335,9 @@ export const androidSkin: DialogSkin = {
     color: destructive ? destructiveText(t) : primaryText(t),
   }),
   textButtonRipple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
-  formBody: { marginTop: 20 },
-  fieldLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground, marginBottom: 6 }),
-  fieldLabelGap: { marginTop: 16 },
+  formBody: { marginTop: 14 },
+  fieldLabel: (t) => ({ fontSize: 13, lineHeight: 17, fontWeight: "500", color: t["muted-foreground"], marginBottom: 6 }),
+  fieldLabelGap: { marginTop: 14 },
   amountRow: { flexDirection: "row", alignItems: "center" },
   currency: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"], marginEnd: 8 }),
 };

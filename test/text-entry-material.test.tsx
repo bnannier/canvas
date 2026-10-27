@@ -170,7 +170,8 @@ describe("clear web text-entry material", () => {
     it(`${name} shares the clear material and returns to its solid skin`, () => {
       const result = render(mode(<View testID="field">{field}</View>));
       const painted = materials(screen.getByTestId("field"));
-      expect(painted).toHaveLength(name === "InputOTP" ? 2 : 1);
+      // InputOTP's cells are separated (the v4 hand-off), so each of its six takes a pane.
+      expect(painted).toHaveLength(name === "InputOTP" ? 6 : 1);
       for (const material of painted) {
         // A clear field frosts nothing: its under-fill (the light neutral veil), then the
         // material's rim in the hand-off's strong hairline (`--ln2`), and no backdrop filter.

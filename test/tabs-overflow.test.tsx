@@ -9,6 +9,8 @@ import { render, cleanup, screen, fireEvent } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { tabScrollTarget } from "../src/organisms/tabs/tabs.shared.tsx";
+import { iosSkin, webSkin } from "../src/organisms/tabs/tabs.styles.ts";
+import { colorsFor } from "../src/style/tokens.ts";
 
 afterEach(cleanup);
 
@@ -81,13 +83,16 @@ describe("Tabs wrap", () => {
     expect(row.style.flexWrap).toBe("wrap");
   });
 
-  it("squares the capsule track off to the corner concentric with its pills", () => {
-    // 7px above and below the 18px label line make a 32px pill; its 16px half-height
-    // plus the 3px inset is the 19px corner. On one line the capsule keeps 9999.
-    ui(<Tabs wrap tabs={MANY} testID="wrapped" />);
-    expect(rootOf("wrapped").style.borderRadius).toBe("19px");
-    ui(<Tabs tabs={MANY} testID="single" />);
-    expect(rootOf("single").style.borderRadius).toBe("9999px");
+  it("keeps the web pills track's own tile corner wrapped or not (it is no capsule)", () => {
+    // The hand-off's pills track is a 12px tile, so a wrapped one needs no concentric corner.
+    ui(<Tabs pills wrap tabs={MANY} testID="wrapped" />);
+    expect(rootOf("wrapped").style.borderRadius).toBe("12px");
+    ui(<Tabs pills tabs={MANY} testID="single" />);
+    expect(rootOf("single").style.borderRadius).toBe("12px");
+  });
+
+  it("gives iOS its own skin, the UISegmentedControl the hand-off's K.PF ios row draws", () => {
+    expect(iosSkin).not.toBe(webSkin);
   });
 
   it("lets block win: equal shares never overflow, so nothing wraps", () => {
@@ -96,7 +101,6 @@ describe("Tabs wrap", () => {
     expect(scrollerOf(row)).toBeNull();
     expect(row.style.flexWrap).not.toBe("wrap");
     expect(row.style.width).toBe("100%");
-    expect(row.style.borderRadius).toBe("9999px");
   });
 
   it("keeps selection and the single aria-selected working through a wrapped row", () => {
@@ -134,5 +138,45 @@ describe("tabScrollTarget", () => {
 
   it("returns null when the trigger is already fully visible", () => {
     expect(tabScrollTarget({ x: 330, width: 100 }, 300, 600, 300)).toBeNull();
+  });
+});
+
+// The iOS skin is the hand-off's K.PF ios row (`P.tabs.ios` in tools/v4/handoff/cv-kit-platform.js).
+describe("Tabs iOS segmented skin", () => {
+  const dark = colorsFor("violet", "dark");
+  const light = colorsFor("violet", "light");
+
+  it("draws underline and pills as the capsule segmented control", () => {
+    for (const row of [iosSkin.underlineRow(dark, false), iosSkin.pillsRow(dark, false)]) {
+      expect(row).toMatchObject({ padding: 3, borderRadius: 9999, backgroundColor: dark.secondary });
+    }
+    // Wrapped, the track's corner is concentric with its segments: 7 + 18 / 2 + 3.
+    expect(iosSkin.underlineRow(dark, true).borderRadius).toBe(19);
+    expect(iosSkin.underlineTrigger(dark, false, true)).toMatchObject({ paddingHorizontal: 14, paddingVertical: 7, gap: 6, borderRadius: 9999, backgroundColor: "transparent" });
+    expect(iosSkin.underlineLabel(dark, true)).toMatchObject({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: dark.foreground });
+    expect(iosSkin.underlineLabel(dark, false).fontWeight).toBe("500");
+    expect(iosSkin.underlineIndicator(dark, true)).toEqual({ display: "none" });
+  });
+
+  it("raises the hand-off's --seg thumb: white in light, #5a5a63 on the dark neutrals", () => {
+    expect(iosSkin.underlineTrigger(light, true, false).backgroundColor).toBe(light.card);
+    expect(iosSkin.underlineTrigger(dark, true, true).backgroundColor).toBe("rgb(90, 90, 99)");
+    expect(iosSkin.pillsFill(dark, true, true).backgroundColor).toBe("rgb(90, 90, 99)");
+  });
+
+  it("draws vertical as a 220pt grouped rail at the 10 corner", () => {
+    expect(iosSkin.railWidth).toBe(220);
+    expect(iosSkin.railGap).toBe(2);
+    expect(iosSkin.verticalTrigger(dark, true)).toMatchObject({ borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, gap: 6 });
+    expect(iosSkin.verticalFill(dark, true)).toEqual({ backgroundColor: dark.secondary });
+    expect(iosSkin.verticalLabel(dark, true)).toMatchObject({ fontSize: 15, lineHeight: 20, fontWeight: "600", color: dark.foreground });
+    expect(iosSkin.verticalLabel(dark, false).fontWeight).toBe("400");
+  });
+
+  it("sets the badge at 600 and dims a disabled tab to 0.5", () => {
+    expect(iosSkin.countBadgeLabel(dark, false)).toMatchObject({ fontSize: 12, lineHeight: 16, fontWeight: "600", color: dark["muted-foreground"] });
+    expect(iosSkin.countBadgeBox(dark)).toMatchObject({ paddingHorizontal: 7, paddingVertical: 1, backgroundColor: dark["surface-raised"] });
+    expect(iosSkin.disabledOpacity).toBe(0.5);
+    expect(iosSkin.hoverLabel).toBeNull();
   });
 });

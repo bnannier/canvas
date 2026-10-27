@@ -46,7 +46,6 @@ const BOTH: readonly Platform[] = PLATFORMS;
 const ONE_JOB: Record<string, Partial<Record<Platform, string>>> = {
   checkbox: { iOS: "iOS has no checkbox: a one-setting Checkbox renders the iOS switch (its Switch part), and a selection the edit-mode selection circle (item 5)" },
   radio: { iOS: "iOS has no radio button: a single choice is a checkmark list, the inline picker of a grouped form (item 5)" },
-  listbox: { iOS: "iOS has no listbox: a chosen row takes the iOS list's trailing checkmark, in single and multi select alike (item 5)" },
   autocomplete: { iOS: "iOS has no combo box: a text field with a menu of suggestions under it (K8c, kept)" },
   carousel: { iOS: "iOS has no carousel: paged cards with the page control's dots, as in the App Store (K8c, kept)" },
   "filter-panel": { iOS: "iOS has no filter panel: a sheet of grouped rows that mark a chosen filter with the trailing checkmark (K8c, kept)" },
@@ -75,7 +74,6 @@ const TRANSITIONAL: Record<string, { item: "K8b" | "K8c"; turn: string; on: read
   card: { item: "K8c", turn: "Card", on: ["iOS"] },
   collapsible: { item: "K8c", turn: "Collapsible", on: ["Android"] },
   "description-lists": { item: "K8c", turn: "DescriptionList", on: ["Android"] },
-  form: { item: "K8c", turn: "Form", on: ["Android"] },
   "grid-lists": { item: "K8c", turn: "GridList", on: ["Android"] },
   board: { item: "K8c", turn: "Board", on: BOTH },
   "data-table": { item: "K8c", turn: "DataTable", on: ["Android"] },
@@ -87,6 +85,7 @@ const TRANSITIONAL: Record<string, { item: "K8b" | "K8c"; turn: string; on: read
  * why no native shape is owed there. Keyed by reference row, then platform.
  */
 const NO_NATIVE_SHAPE: Record<string, Partial<Record<Platform, string>>> = {
+  form: { iOS: "SwiftUI's Form is a grouped inset list of the controls it holds; the v4 hand-off draws the form's own rhythm and actions row on every platform, and its fields and Buttons bring the iOS shapes as parts" },
   divider: {
     iOS: "SwiftUI's Divider is a single hairline rule, which the web skin draws",
     Android: "the Material 3 divider is a single hairline rule, which the web skin draws",

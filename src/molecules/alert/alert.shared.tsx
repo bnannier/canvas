@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
+import { Icon } from "../../atoms/icon/icon.js";
 import {
   View,
   Pressable,
@@ -18,6 +19,7 @@ import {
   paneStyle,
   paneRipple,
   isGlass,
+  alpha,
 } from "../../style/index.js";
 
 // Shared Alert shell. The structure (a leading icon glyph, a bold title, a
@@ -26,13 +28,14 @@ import {
 // skin (shape radius, density/spacing, type tracking, dismiss press feedback) and
 // calls createAlert.
 //
-// A banner that surfaces an inline notification. Configured by a tone axis (info /
-// success / warning / error, plus a neutral default), and an optional `icon` glyph. A
-// toned alert is Dark Factory's soft panel: the tone's wash as the fill with no visible
-// border, the title in the tone's ink, the body in the foreground, and the icon in the
-// tone's solid color, all from statusColors (src/style/status.ts), the same place Badge
-// and the other toned surfaces read theirs. The neutral default is the card with a
-// border hairline, a foreground title and a muted body.
+// A banner that surfaces an inline notification, the Canvas v4 hand-off's callout
+// (`K.def('alert')`): configured by a tone axis (info / success / warning / error, plus a
+// neutral default), it draws the tone's soft wash as the fill under a 1 px edge of the
+// tone's color at 30%, the tone's glyph in that color (an info circle, a check, an alert
+// circle, a cross; the neutral banner an info circle in the muted ink), a foreground
+// title and a muted body. The tone's colors come from statusColors
+// (src/style/status.ts), the place Badge and the other toned surfaces read theirs; the
+// neutral banner is the quiet `muted` surface.
 //
 // Neither iOS nor Material 3 ships an inline alert banner (iOS alerts are modal, see
 // alert-dialog; M3 dropped the M2 banner), so there is no native shape to match and the
@@ -44,16 +47,22 @@ export type Tone = "info" | "success" | "warning" | "error" | "neutral";
 export interface AlertSkin {
   /** Banner shape + density (border-radius, padding, gap). */
   container: ViewStyle;
-  /** Leading glyph type (size / line-height). */
+  /** The leading glyph's size (an `<Icon />` element and the default tone glyph). */
+  iconSize: number;
+  /** The leading glyph's box (its offset on the title's first line). */
+  iconSlot: ViewStyle;
+  /** A text-character glyph's type (size / line-height). */
   iconType: TextStyle;
   /** Title type (size / line-height / weight / tracking). */
   titleType: TextStyle;
   /** Description / body type (size / line-height / tracking). */
   bodyType: TextStyle;
+  /** The gap between the title, the description, the children and the actions. */
+  contentGap: number;
   /** Dismiss control shape (size, radius). */
   dismissButton: ViewStyle;
-  /** Dismiss glyph type (size / line-height). */
-  dismissType: TextStyle;
+  /** The dismiss glyph's size. */
+  dismissIconSize: number;
   /** Pressed opacity for the dismiss control (iOS/web dim; Android stays opaque under ripple). */
   dismissPressedOpacity: number;
   /**
@@ -71,8 +80,12 @@ export interface AlertProps {
   // Content.
   title?: string;
   description?: string;
-  // A leading glyph: a single Text character, or an element (e.g. an `<Icon />`,
-  // auto-tinted to the tone's icon color unless it sets its own color).
+  /**
+   * The leading glyph: an element (an `<Icon />`, tinted to the tone's color unless it
+   * sets its own, and sized to the banner's glyph) or a single text character. Omitted,
+   * the banner draws its tone's own glyph (an info circle on info and neutral, a check
+   * on success, an alert circle on warning, a cross on destructive); `null` draws none.
+   */
   icon?: ReactNode;
   // Tone (pick one; omit for the neutral default).
   info?: boolean;
@@ -119,39 +132,46 @@ export function toneOf(p: AlertProps): Tone {
   return "neutral";
 }
 
-// The colors per tone, from statusColors. A toned alert's edge is transparent (the wash is
-// the panel); the neutral card keeps its border hairline.
+// The tone's accent: the solid status color (the hand-off's `--ok`, `--warn`, `--bad`), the
+// accent's text ink on info (`--ion-tx`), the muted ink on the neutral banner (`--tx2`).
+function accentOf(tokens: ColorTokens, tone: Tone): string {
+  const c = statusColors(tokens, tone === "error" ? "error" : tone);
+  return tone === "info" ? c.ink : c.dot;
+}
+
+// The colors per tone, from statusColors: the tone's wash as the fill (the neutral banner
+// the `muted` surface) under a 1 px edge of the accent at 30%.
 function containerColor(tokens: ColorTokens, tone: Tone): ViewStyle {
-  if (tone === "neutral") return { borderColor: tokens.border, backgroundColor: tokens.card };
-  return { borderColor: "transparent", backgroundColor: statusColors(tokens, tone).wash };
+  return { borderColor: alpha(accentOf(tokens, tone), 0.3), backgroundColor: statusColors(tokens, tone).wash };
 }
 
-// The under-fill of a toned alert's glass pane: its own wash over the content material
-// (neutral takes the content layer's own tint).
-function paneTint(tokens: ColorTokens, tone: Tone): string | undefined {
-  return tone === "neutral" ? undefined : statusColors(tokens, tone).wash;
+// The under-fill of the alert's glass pane: its own wash over the content material.
+function paneTint(tokens: ColorTokens, tone: Tone): string {
+  return statusColors(tokens, tone).wash;
 }
 
-// The icon (and the dismiss glyph): the tone's solid color; muted on the neutral card.
+// The icon: the tone's accent. The dismiss glyph is the subtle ink (`--tx3`).
 function iconColor(tokens: ColorTokens, tone: Tone): TextStyle {
-  return { color: tone === "neutral" ? tokens["muted-foreground"] : statusColors(tokens, tone).dot };
+  return { color: accentOf(tokens, tone) };
 }
 
-// The title names the tone in its ink; the neutral title is the foreground.
-function titleColor(tokens: ColorTokens, tone: Tone): TextStyle {
-  return { color: tone === "neutral" ? tokens.foreground : statusColors(tokens, tone).ink };
+// The title is the foreground on every tone.
+function titleColor(tokens: ColorTokens): TextStyle {
+  return { color: tokens.foreground };
 }
 
-// The body reads in the foreground over a wash (the tone's ink stays on the title), and
-// muted on the neutral card.
-function bodyColor(tokens: ColorTokens, tone: Tone): TextStyle {
-  return { color: tone === "neutral" ? tokens["muted-foreground"] : tokens.foreground };
+// The body reads in the muted ink on every tone.
+function bodyColor(tokens: ColorTokens): TextStyle {
+  return { color: tokens["muted-foreground"] };
+}
+
+// The tone's own glyph, drawn when the caller passes no `icon`.
+function toneGlyph(tone: Tone): Record<string, true> {
+  return tone === "success" ? { circleCheck: true } : tone === "warning" ? { circleAlert: true } : tone === "error" ? { circleX: true } : { info: true };
 }
 
 export function createAlert(skin: AlertSkin) {
-  // Element icons (an `<Icon />`) sit in a View slot centered on the text glyph's
-  // line height, so both icon forms align with the title's first line.
-  const iconSlot: ViewStyle = { height: skin.iconType.lineHeight, justifyContent: "center" };
+  const content: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: skin.contentGap };
 
   return function Alert(props: AlertProps) {
     const { title, description, icon, children, actions, dismissible, onDismiss, testID, style } = props;
@@ -159,8 +179,6 @@ export function createAlert(skin: AlertSkin) {
     const { tokens } = theme;
     const glass = isGlass(theme);
     const tone = toneOf(props);
-    // Only the neutral alert draws an edge (containerColor): under glass it keeps it.
-    const edged = tone === "neutral";
     const fill = useFillStyle("Alert");
 
     // Dismissal obeys the kit's controlled + uncontrolled contract: pressing the
@@ -180,8 +198,11 @@ export function createAlert(skin: AlertSkin) {
     const tintedIcon = isValidElement(icon)
       ? cloneElement(icon as ReactElement<Record<string, unknown>>, {
           color: (icon.props as Record<string, unknown>).color ?? iconColor(tokens, tone).color,
+          size: skin.iconSize,
         })
-      : null;
+      : icon === undefined
+        ? <Icon {...toneGlyph(tone)} color={accentOf(tokens, tone)} size={skin.iconSize} decorative />
+        : null;
 
     // An Alert is an inline notification surface, so it announces itself as an
     // alert and rides a live region (assistive tech reads the message without
@@ -198,28 +219,24 @@ export function createAlert(skin: AlertSkin) {
         accessibilityRole="alert"
         accessibilityLiveRegion={live}
         aria-live={live}
-        style={[paneStyle(theme, [skin.container, containerColor(tokens, tone)], glass && edged), fill, style]}
+        style={[paneStyle(theme, [skin.container, containerColor(tokens, tone)], glass), fill, style]}
       >
-        {/* Under glass the alert is a CONTENT-layer pane (a toned alert tints it with its
-            wash) painted behind the live-region root, which keeps its semantics. The
-            neutral alert keeps its hairline edge over the pane, which sits flush inside
-            it; a toned alert's edge is transparent, so its pane covers the whole alert.
-            Renders nothing in solid mode. */}
-        <GlassPane layer="content" shape={[skin.container, containerColor(tokens, tone)]} stateBorder={edged} tint={paneTint(tokens, tone)} />
-        {icon != null ? (
-          tintedIcon != null ? (
-            <View style={iconSlot}>{tintedIcon}</View>
-          ) : (
-            <Text style={[skin.iconType, iconColor(tokens, tone)]}>{icon}</Text>
-          )
+        {/* Under glass the alert is a CONTENT-layer pane tinted with its wash, painted
+            behind the live-region root, which keeps its semantics; the toned edge stays
+            over the pane. Renders nothing in solid mode. */}
+        <GlassPane layer="content" shape={[skin.container, containerColor(tokens, tone)]} stateBorder tint={paneTint(tokens, tone)} />
+        {tintedIcon != null ? (
+          <View style={skin.iconSlot}>{tintedIcon}</View>
+        ) : icon != null ? (
+          <Text style={[skin.iconType, iconColor(tokens, tone)]}>{icon}</Text>
         ) : null}
-        <View style={CONTENT}>
+        <View style={content}>
           <MaterialBehind rendered={glass}>
           {title != null && title !== "" ? (
-            <Text style={[skin.titleType, titleColor(tokens, tone)]}>{title}</Text>
+            <Text style={[skin.titleType, titleColor(tokens)]}>{title}</Text>
           ) : null}
           {description != null && description !== "" ? (
-            <Text style={[skin.bodyType, bodyColor(tokens, tone)]}>{description}</Text>
+            <Text style={[skin.bodyType, bodyColor(tokens)]}>{description}</Text>
           ) : null}
           {children}
           {actions != null ? <View style={skin.actions}>{actions}</View> : null}
@@ -236,7 +253,7 @@ export function createAlert(skin: AlertSkin) {
             android_ripple={paneRipple(theme, controlRipple(tokens))}
             style={({ pressed }) => [skin.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
           >
-            <Text style={[skin.dismissType, iconColor(tokens, tone)]}>×</Text>
+            <Icon x color={tokens["subtle-foreground"]} size={skin.dismissIconSize} decorative />
           </Pressable>
         ) : null}
       </View>
@@ -244,5 +261,3 @@ export function createAlert(skin: AlertSkin) {
   };
 }
 
-// flex-1 gap-1 — the content column beside the icon (platform-neutral layout).
-const CONTENT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 4 };

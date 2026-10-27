@@ -88,20 +88,39 @@ describe("Slider press feedback over the glass knob", () => {
   const release = (node: HTMLElement) => fireEvent.mouseUp(node, { button: 0, buttons: 0, clientX: 1, clientY: 1 });
   const transparent = /^rgba\(0, 0, 0, 0(\.0+)?\)$/;
 
-  it("keeps the web knob's halo over the material while pressed, and clears its rim at rest", () => {
+  it("rings the web knob in the accent's soft wash while pressed, over the material, and drops the ring at rest", () => {
     const Slider = createSlider(webSkin);
     const { container } = mount(<Slider testID="slider" defaultValue={40} />, "glass");
     const root = handle(container)!;
     const knob = container.querySelector('[data-testid="slider-thumb"]') as HTMLElement;
-    expect(knob.style.borderColor).toMatch(transparent);
+    expect(knob.style.boxShadow).not.toContain("8px");
     press(root);
-    expect(knob.style.borderWidth).toBe("4px");
-    expect(knob.style.borderColor).not.toMatch(transparent);
+    expect(knob.style.boxShadow).toContain("0px 0px 0px 8px");
     release(root);
-    // At rest the 1 px border is padding (GP-1): the material covers the knob's whole footprint.
-    expect(knob.style.borderWidth).toBe("0px");
-    expect(knob.style.padding).toBe("1px");
-    expect(knob.style.borderColor).toMatch(transparent);
+    expect(knob.style.boxShadow).not.toContain("8px");
+  });
+
+  // The hand-off's slider (`K.def('slider')` in tools/v4/handoff/cv-kit-controls.js and
+  // its platform rows `K.PF.slider`).
+  it("pins the hand-off's rails, thumbs and header gaps per platform", () => {
+    expect(["small", "base", "large"].map((z) => webSkin.trackHeight(z as "base"))).toEqual([4, 6, 8]);
+    expect(["small", "base", "large"].map((z) => webSkin.thumbWidth(z as "base"))).toEqual([16, 20, 26]);
+    expect(webSkin.headerGap).toBe(12);
+    expect(webSkin.disabledOpacity).toBe(0.4);
+    expect(webSkin.track(lightColors, "base", false).backgroundColor).toBe(lightColors["surface-raised"]);
+    expect(webSkin.fill(lightColors, "base", false).boxShadow).toContain("14px");
+    expect(webSkin.thumb(lightColors, "base", false, false).backgroundColor).toBe("#ffffff");
+    expect(webSkin.label(lightColors, "base")).toMatchObject({ fontSize: 13, fontWeight: "500", color: lightColors["muted-foreground"] });
+    expect(webSkin.value(lightColors, "base")).toMatchObject({ fontSize: 13, fontWeight: "500", color: lightColors.foreground });
+    expect(iosSkin.headerGap).toBe(6);
+    expect(iosSkin.disabledOpacity).toBe(0.5);
+    expect(iosSkin.thumbWidth("base")).toBe(37);
+    expect(iosSkin.thumbHeight("base")).toBe(24);
+    expect(androidSkin.trackGap).toBe(8);
+    expect(androidSkin.headerGap).toBe(4);
+    expect(androidSkin.disabledOpacity).toBe(0.38);
+    expect(androidSkin.trackHeight("large")).toBe(24);
+    expect(androidSkin.track(lightColors, "base", false).backgroundColor).toBe(lightColors["surface-raised"]);
   });
 
   it("lets the iOS knob's resting hairline give way to the material while pressed", () => {

@@ -5,6 +5,12 @@ Cmd+K search: navigation, actions, recent items.
 The search row is a real input: typing filters the grouped rows to the matching
 labels, and a query that matches nothing shows a muted "No results" row.
 
+On every platform the palette is the v4 card: 520 wide at an 18-pixel corner, a 48-pixel
+search row with an `esc` cap over a hairline, mono eyebrows over 38-pixel rows (44 on
+iOS, 48 on Android) with quiet icons and mono shortcuts, the accent's soft wash under the
+active row, and an optional footer of mono hints. Neither iOS nor Android ships a
+command palette, so both take this look in their own face.
+
 In glass mode the triggered palette is a functional-layer glass card under the
 search bar, with its own search field; the search editor keeps focus while typing
 filters the rows. Solid mode paints the skin's own palette.

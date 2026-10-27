@@ -15,12 +15,13 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 
 afterEach(cleanup);
 
-// The inner muted blocks each composite scaffold draws: the card's avatar + four lines,
-// the list's two rows of avatar + three lines, the table's three rows of four lines.
+// The inner muted blocks each composite scaffold draws (the v4 hand-off's): the card's
+// media block + two lines, the list's four rows of avatar + two lines, the table's four
+// rows of four cells.
 const COMPOSITES = [
-  { name: "card", props: { card: true }, blocks: 5 },
-  { name: "list", props: { list: true }, blocks: 8 },
-  { name: "table", props: { table: true }, blocks: 12 },
+  { name: "card", props: { card: true }, blocks: 3 },
+  { name: "list", props: { list: true }, blocks: 12 },
+  { name: "table", props: { table: true }, blocks: 16 },
 ] as const;
 
 const SINGLES = [

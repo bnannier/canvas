@@ -2,9 +2,10 @@
 
 Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.
 
-`elevated` provides the Argus empty-state card: borderless, 44×32 inset and the
-empty-state shadow. The web title and description preserve the existing Argus
-15/19.5 and 12.5/18.75 reading metrics with six pixels between them.
+The column is padded 40 by 24 at an 18px corner with a 12px rhythm: a 52px glyph tile in
+the accent's soft wash, a 19px display-face title, a muted 14px description capped at
+320px, and a secondary action. `bordered` draws a dashed edge, `elevated` lifts it onto a
+shaded card, and `compact` tightens the padding, rhythm, tile and title for a table cell.
 
 ## Usage
 
@@ -140,7 +141,7 @@ docs-only helper standing in for your own state; in an app you would hold the fi
 
 ### activity
 
-**Do** — Keep a routinely-empty state calm: muted icon, reassuring copy, no urgency.
+**Do** — Keep a routinely-empty state calm: the quiet accent tile, reassuring copy, no urgency.
 
 ```tsx
 <EmptyState bordered icon={<Icon chartLine />} title="No activity" description="Events will appear as they happen." />

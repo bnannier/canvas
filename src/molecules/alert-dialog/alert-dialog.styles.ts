@@ -2,7 +2,9 @@ import { destructiveText } from "../../style/destructive-text.js";
 import { scrimFill } from "../../style/scrim.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/index.js";
+import { type ColorTokens, shadow, widths, shape } from "../../style/index.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located AlertDialog skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The card is OPAQUE on every
@@ -11,25 +13,20 @@ import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/inde
 // action is never see-through. The BRAND survives on every platform (the `primary`
 // confirm and the `destructive` red); only the native SHAPE, sizing, title
 // alignment, action layout, and press feedback change per OS:
-//   iOS (iOS 27 / Liquid Glass alert): a rounded card (the iOS dialog corner,
-//     `popover` fill, soft shadow, no border), a LEFT-aligned bold title and a left-aligned
-//     `muted-foreground` message; exactly two actions rendered as two CAPSULES
-//     side by side (no divider) — a gray Cancel capsule (`secondary` fill, 400
-//     label) and a Confirm capsule. The non-destructive PRIMARY confirm is a
-//     FILLED `primary` capsule with a white 600 label; the DESTRUCTIVE confirm
-//     keeps the same gray `secondary` fill and tints only its 600 LABEL red
-//     (`destructive`), it is NOT a red-filled capsule. The body confirmation
-//     field renders the iOS-styled Input (the skin owns it), a flat gray-filled
-//     borderless field with no focus ring. Press = opacity dim (~0.85).
-//   Android (Material 3 AlertDialog): an elevated surface (the Material 3 dialog
-//     corner, `popover` fill, soft shadow), a LEFT-aligned title and left-aligned body; two M3 TEXT
-//     buttons bottom-right (Cancel then Confirm/Delete), the confirm tinted with
-//     the brand `primary` and a destructive confirm in the `destructive` red.
-//     Press = android_ripple (brand state layer).
-//   Web: a bordered, dim-backed card at the dialog corner (1px `border`, `popover`
-//     fill, shadow-xl, padding 24), a left-aligned 18/500 title and 14
-//     `muted-foreground` description, with a right-aligned action row of a small
-//     `outline` Cancel Button plus a `primary`/`destructive` confirm Button.
+//   iOS (the v4 hand-off's iOS row, the UIAlertController alert): a 256pt card at the
+//     iOS alert corner in the overlay material, CENTERED text (a 17 / 600 title over a
+//     13 / 1.4 muted message) inset 18 / 16 / 14, and a 44pt two-cell action row under
+//     a hairline, the cells split by one: Cancel at 400 and the confirm at 600, both in
+//     the accent's ink, a destructive confirm in `destructive-text`. Press = opacity
+//     dim (~0.85). The body confirmation field renders the iOS-styled Input.
+//   Android (the hand-off's Android row): the web card at the Material 3 dialog corner,
+//     in Roboto.
+//   Web (the hand-off's AlertDialog renderer): the overlay material (`popover` fill,
+//     the `field-border` hairline, the lg shadow) at the dialog corner, 24 padding; a
+//     40 tone tile (a trash glyph on the destructive wash, else info on the accent's),
+//     16 above a 20px display title, its 14 / 1.5 muted description 6 under it, and
+//     16 below them two equal Buttons side by side: a secondary Cancel and a
+//     primary/destructive confirm.
 
 export type Width = "narrow" | "small" | "medium" | "large";
 
@@ -63,6 +60,14 @@ export interface AlertDialogSkin {
   title: (t: ColorTokens) => TextStyle;
   /** Description type + alignment + color. */
   description: (t: ColorTokens) => TextStyle;
+  /** The tone tile over the title (a trash glyph on the destructive wash, else info on
+   *  the accent's): its space below, or null where the platform draws none. */
+  emblem: ViewStyle | null;
+  /** The panel's width cap on this platform, over the width axis (the iOS alert's 270). */
+  panelWidth?: ViewStyle;
+  /** The text block's inset inside the card, where the card itself is unpadded so the
+   *  action row runs to its edges (the iOS alert); null where the card pads it all. */
+  content: ViewStyle | null;
   /** The confirmation-field block container ("Type DELETE to confirm" + input). */
   inputBlock: ViewStyle;
   /** The confirmation-field label. */
@@ -74,26 +79,20 @@ export interface AlertDialogSkin {
   actions: ViewStyle;
   /** The size prop passed to the shell's Cancel/Confirm Buttons. */
   buttonSmall: boolean;
-  /** The intent props for the Cancel Button (web = outline). */
-  cancelButton: { outline?: boolean; ghost?: boolean };
-  // --- Android text-button actions (buttons layout, no fill); null on iOS/web ---
-  /** An Android text-button touch target (no fill). When set, the shell renders
-   *  the Cancel/Confirm actions as flat M3 TEXT buttons instead of Button atoms,
-   *  so a destructive confirm is a red LABEL on a transparent button, never a
-   *  filled red button (mirrors the plain Dialog). */
-  textButton: ViewStyle | null;
-  /** The Android text-button label; brand `primary`, `destructive` reds an
-   *  irreversible confirm. */
-  textButtonLabel: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
-  /** The Android ripple over a text button; null on the other platforms. */
-  textButtonRipple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+  /** The intent props for the Cancel Button (web = secondary). */
+  cancelButton: { outline?: boolean; ghost?: boolean; secondary?: boolean };
+  /** The two Buttons share the row equally (each `block`), as the hand-off's grid. */
+  blockButtons?: boolean;
   // --- "capsule" layout (iOS): two side-by-side pill buttons, no divider --------
   /** The action row that holds the two equal-width capsules with a gap. */
   capsuleRow: ViewStyle | null;
-  /** A single capsule cell base (shape/sizing); fill comes from the *Fill helpers. */
+  /** A single capsule cell base (shape/sizing); fill comes from the *Fill helpers.
+   *  The iOS alert's cells are its two halves of a hairline-topped action row. */
   capsuleCell: ViewStyle | null;
   /** The Cancel (gray) capsule fill. */
   cancelFill: ((t: ColorTokens) => ViewStyle) | null;
+  /** The row's own colours (the iOS alert's hairline above the actions). */
+  capsuleRowColor?: (t: ColorTokens) => ViewStyle;
   /** The Confirm capsule fill. Non-destructive = filled `primary`; destructive
    *  keeps the gray `secondary` fill (the kit fills only the primary confirm). */
   confirmFill: ((t: ColorTokens, destructive: boolean) => ViewStyle) | null;
@@ -143,38 +142,36 @@ export const triggerGap: ViewStyle = { marginTop: 12 };
 // shape/fill/padding/shadow on top of this.
 export const cardBase: ViewStyle = { width: "100%" };
 
-// ---------- Web: the bordered card over a contained scrim ----------
-// A contained dim scrim at the dialog corner (padding 32) centering a bordered card at
-// the same corner (border, `popover` fill, padding 24, shadow-xl); a left-aligned
-// 18/500 title and a 14 muted description 8 below it; a right-aligned action row (gap
-// 8, 24 above) of a small outline Cancel Button plus a primary/destructive confirm.
+// ---------- Web: the v4 hand-off's alert ----------
+const WEB_TITLE: TextStyle = { fontFamily: DISPLAY_FONT, fontSize: 20, lineHeight: 25, fontWeight: "600", letterSpacing: -0.3 };
+const webCard = (t: ColorTokens): ViewStyle => ({
+  borderRadius: platformShape.web.alertDialog,
+  borderWidth: 1,
+  borderColor: t["field-border"],
+  backgroundColor: t.popover,
+  padding: 24,
+  ...shadow("lg", t),
+});
 export const webSkin: AlertDialogSkin = {
   backdrop: (t) => ({
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: shape.web.dialog,
+    borderRadius: platformShape.web.alertDialog,
     backgroundColor: scrimFill(t, 0.6),
     padding: 32,
   }),
-  card: (t) => ({
-    borderRadius: shape.web.dialog,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.popover,
-    padding: 24,
-    ...shadow("xl", t),
-  }),
-  title: (t) => ({ fontSize: 18, lineHeight: 28, fontWeight: "500", color: t["popover-foreground"] }),
-  description: (t) => ({ marginTop: 8, fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
+  card: webCard,
+  title: (t) => ({ ...WEB_TITLE, color: t["popover-foreground"] }),
+  description: (t) => ({ marginTop: 6, fontSize: 14, lineHeight: 21, color: t["muted-foreground"] }),
+  emblem: { marginBottom: 16 },
+  content: null,
   inputBlock: { marginTop: 16 },
-  inputLabel: (t) => ({ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
+  inputLabel: (t) => ({ marginBottom: 6, fontSize: 13, lineHeight: 17, fontWeight: "500", color: t["muted-foreground"] }),
   actionLayout: "buttons",
-  actions: { flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 },
-  buttonSmall: true,
-  cancelButton: { outline: true },
-  textButton: null,
-  textButtonLabel: null,
-  textButtonRipple: null,
+  actions: { flexDirection: "row", gap: 8, marginTop: 16 },
+  buttonSmall: false,
+  cancelButton: { secondary: true },
+  blockButtons: true,
   capsuleRow: null,
   capsuleCell: null,
   cancelFill: null,
@@ -185,17 +182,13 @@ export const webSkin: AlertDialogSkin = {
   ripple: null,
 };
 
-// ---------- iOS 27 (Liquid Glass alert): rounded card, left text, capsule actions ----------
-// iOS 26+/27 alert (per Apple's design kit): a rounded card (~28pt radius) over the
-// `popover` fill with a soft shadow and NO border; a LEFT-aligned bold title and a
-// LEFT-aligned `muted-foreground` message. The two actions are CAPSULES side by
-// side (no hairline divider): a gray Cancel capsule (`secondary` fill,
-// `secondary-foreground` text) and a primary Confirm capsule with its paired
-// foreground. A destructive confirm keeps secondary fill and destructive-text. The brand
-// survives: the iOS system blue becomes the `primary` token. Press = opacity
-// dim (~0.85).
-const IOS_RADIUS = shape.ios.dialog;
-const IOS_CAPSULE_RADIUS = shape.ios.control;
+// ---------- iOS (the UIAlertController alert, as the hand-off's iOS row draws it) ----------
+// A 256pt card at the iOS alert corner in the overlay material, unpadded so the action
+// row meets its edges; its text block inset 18 / 16 / 14 and centered: a 17 / 600 title
+// over a 13 / 1.4 muted message 4 under it. The two 44pt actions share a row under a
+// `field-border` hairline, split by another: Cancel at 400 and the confirm at 600 in the
+// accent's ink, a destructive confirm in `destructive-text`. Press = opacity dim (~0.85).
+const IOS_RADIUS = platformShape.ios.alertDialog;
 export const iosSkin: AlertDialogSkin = {
   backdrop: (t) => ({
     alignItems: "center",
@@ -204,133 +197,52 @@ export const iosSkin: AlertDialogSkin = {
     backgroundColor: scrimFill(t, 0.4),
     padding: 32,
   }),
-  // Rounded card with content padding; no border, soft shadow.
   card: (t) => ({
     borderRadius: IOS_RADIUS,
+    borderWidth: 1,
+    borderColor: t["field-border"],
     backgroundColor: t.popover,
-    padding: 24,
+    overflow: "hidden",
     ...shadow("lg", t),
   }),
-  title: (t) => ({
-    fontSize: 20,
-    lineHeight: 25,
-    fontWeight: "700",
-    color: t["popover-foreground"],
-  }),
-  description: (t) => ({
-    marginTop: 8,
-    fontSize: 16,
-    lineHeight: 21,
-    color: t["muted-foreground"],
-  }),
-  inputBlock: { marginTop: 16 },
-  inputLabel: (t) => ({ marginBottom: 6, fontSize: 14, lineHeight: 18, fontWeight: "600", color: t.foreground }),
+  title: (t) => ({ fontSize: 17, lineHeight: 21, fontWeight: "600", letterSpacing: -0.26, textAlign: "center", color: t["popover-foreground"] }),
+  description: (t) => ({ marginTop: 4, fontSize: 13, lineHeight: 18, textAlign: "center", color: t["muted-foreground"] }),
+  emblem: null,
+  // The UIAlertController's fixed width at every width axis: the width scale's xxs step
+  // (the hand-off draws 270).
+  panelWidth: { width: "100%", maxWidth: widths.xxs },
+  content: { paddingTop: 18, paddingHorizontal: 16, paddingBottom: 14 },
+  inputBlock: { marginTop: 10 },
+  inputLabel: (t) => ({ marginBottom: 6, fontSize: 13, lineHeight: 18, fontWeight: "400", textAlign: "center", color: t["muted-foreground"] }),
   actionLayout: "capsule",
   // Unused in the capsule layout, but the contract requires concrete values.
   actions: { flexDirection: "row" },
   buttonSmall: true,
   cancelButton: {},
-  textButton: null,
-  textButtonLabel: null,
-  textButtonRipple: null,
-  // Two equal-width capsules side by side, separated by a gap (no divider).
-  capsuleRow: { flexDirection: "row", gap: 12, marginTop: 24 },
-  capsuleCell: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    minHeight: 50,
-    borderRadius: IOS_CAPSULE_RADIUS,
-  },
-  cancelFill: (t) => ({ backgroundColor: t.secondary }),
-  // iOS 27 kit: ONLY the non-destructive primary confirm is a filled (brand)
-  // capsule with a white label. The destructive action keeps the NEUTRAL gray
-  // `secondary` fill (same as Cancel) and tints only its LABEL red; it is NOT a
-  // red-filled capsule (per the kit's "3 Destructive" action part / "Buttons
-  // Stacked" alert).
-  confirmFill: (t, destructive) => ({ backgroundColor: destructive ? t.secondary : t.primary }),
-  // Secondary/Cancel capsule label reads regular (400), lighter than the confirm
-  // (the kit's Default alert / "2 Secondary" part).
-  cancelLabelStyle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "400", color: t["secondary-foreground"] }),
-  // Confirm label is the heavier of the two at semibold (600), per the kit's
-  // filled "1 Primary" capsule. Destructive tints the label red over the gray
-  // fill (`destructive`), not white over a red fill.
+  capsuleRow: { flexDirection: "row", borderTopWidth: 1 },
+  capsuleRowColor: (t) => ({ borderTopColor: t["field-border"] }),
+  capsuleCell: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 44, borderRadius: 0 },
+  cancelFill: (t) => ({ borderRightWidth: 1, borderRightColor: t["field-border"] }),
+  confirmFill: () => ({ backgroundColor: "rgba(0, 0, 0, 0)" }),
+  cancelLabelStyle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "400", color: primaryText(t) }),
   confirmLabelStyle: (t, destructive) => ({
     fontSize: 17,
     lineHeight: 22,
     fontWeight: "600",
-    color: destructive ? destructiveText(t) : t["primary-foreground"],
+    color: destructive ? destructiveText(t) : primaryText(t),
   }),
   pressedOpacity: 0.85,
   ripple: null,
 };
 
-// ---------- Android (Material 3 AlertDialog): elevated surface, text buttons ----------
-// M3 basic dialog: an elevated surface (28dp radius) over `popover` with a soft
-// shadow; a LEFT-aligned 24sp/headline-small title and a left-aligned 14sp body in
-// `muted-foreground`. Two M3 TEXT buttons sit bottom-right (Cancel then Confirm/
-// Delete) — the confirm carries the brand `primary`, a destructive confirm the
-// `destructive` red. The shell renders these with its ghost (text) Buttons; press =
-// android_ripple, supplied here as the brand state layer.
+// ---------- Android: the web alert at the Material 3 dialog corner ----------
+// The hand-off's Android row draws the web alert (its tone tile, its two equal
+// Buttons) at the Material 3 dialog corner, in Roboto; a press ripples through the
+// Button's own native feedback.
 const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: AlertDialogSkin = {
-  backdrop: (t) => ({
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: ANDROID_RADIUS,
-    backgroundColor: scrimFill(t, 0.32),
-    padding: 32,
-  }),
-  card: (t) => ({
-    borderRadius: ANDROID_RADIUS,
-    backgroundColor: t.popover,
-    padding: 24,
-    ...shadow("md", t),
-  }),
-  title: (t) => ({ fontSize: 24, lineHeight: 32, fontWeight: "400", color: t["popover-foreground"] }),
-  description: (t) => ({ marginTop: 16, fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
-  inputBlock: { marginTop: 16 },
-  inputLabel: (t) => ({ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
-  actionLayout: "buttons",
-  // M3 places the action buttons bottom-right with 8dp gap and 24dp above.
-  actions: { flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 },
-  buttonSmall: true,
-  // Unused on Android (the textButton path renders the actions), but the contract
-  // requires a concrete value.
-  cancelButton: { ghost: true },
-  // M3 dialog actions are flat TEXT buttons (no fill): a Cancel then a Confirm,
-  // both in brand `primary`, with a destructive confirm tinting only its
-  // LABEL the `destructive` red — never a filled red button (mirrors the plain
-  // Dialog's Android footer). Label = M3 Label Large (14/20, weight 500).
-  textButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    // An M3 text button: the control role, a stadium.
-    borderRadius: shape.android.control,
-    // clip the Material ripple to the rounded outline (else it bleeds past the corners as a rectangle)
-    overflow: "hidden",
-    minHeight: 40,
-  },
-  textButtonLabel: (t, destructive) => ({
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "500",
-    letterSpacing: 0.1,
-    color: destructive ? destructiveText(t) : primaryText(t),
-  }),
-  textButtonRipple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
-  capsuleRow: null,
-  capsuleCell: null,
-  cancelFill: null,
-  confirmFill: null,
-  cancelLabelStyle: null,
-  confirmLabelStyle: null,
-  pressedOpacity: null,
-  // The capsule-cell ripple is iOS-layout-only; Android's text buttons use
-  // textButtonRipple instead.
-  ripple: null,
+  ...webSkin,
+  backdrop: (t) => ({ ...webSkin.backdrop(t), borderRadius: ANDROID_RADIUS, backgroundColor: scrimFill(t, 0.32) }),
+  card: (t) => ({ ...webCard(t), borderRadius: ANDROID_RADIUS }),
+  title: (t) => ({ ...WEB_TITLE, fontFamily: undefined, color: t["popover-foreground"] }),
 };

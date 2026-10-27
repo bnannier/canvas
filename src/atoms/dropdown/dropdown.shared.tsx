@@ -179,8 +179,9 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
         {...target}
         style={({ pressed }) => [
           skin.itemRow,
+          compact ? skin.reference?.row : null,
           compact && item.description ? { paddingVertical: 7 } : null,
-          hovered && skin.itemHover ? skin.itemHover(tokens) : null,
+          hovered && skin.itemHover ? withInnerFill(theme, skin.itemHover(tokens), "firm") : null,
           // iOS/web tint the row on press here; Android uses the ripple instead.
           !steadyPress && skin.itemPressed != null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
           !steadyPress && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
@@ -198,7 +199,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
         aria-disabled={item.disabled}
       >
         {item.icon ? (
-          <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} size={skin.iconSize} decorative />
+          <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} color={skin.iconColor && !item.destructive && !muted ? skin.iconColor(tokens) : undefined} size={skin.iconSize} decorative />
         ) : null}
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>

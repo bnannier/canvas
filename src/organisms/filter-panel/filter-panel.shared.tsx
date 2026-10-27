@@ -1,8 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useMemo } from "react";
 import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle } from "../../style/index.js";
-import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import { CheckboxIndicator as WebCheckbox } from "../../atoms/checkbox/indicator/index.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { Drawer as WebDrawer } from "../drawer/drawer.js";
@@ -10,30 +10,23 @@ import {
   type Density,
   type FilterPanelSkin,
   type CheckboxComponent,
-  type BadgeComponent,
   type ButtonComponent,
 } from "./filter-panel.styles.js";
 
-// Shared FilterPanel shell. The structure (the fixed-width column, the
-// header with the "Filters" title + active-count badge + Clear action, and the
-// grouped checkbox list), the public boolean-prop API (`bordered`, `compact`),
-// the density precedence, the change/clear handlers, and accessibility all live
-// here once. A platform file supplies only its skin (panel radius, padding/gap
-// density, group-heading type, and the press feedback on this component's OWN
-// option rows) and calls createFilterPanel.
+// Shared FilterPanel shell. The structure (the fixed-width column, the header with
+// the "Filters" title and the "Clear N" action, and the grouped option list), the public
+// boolean-prop API (`bordered`, `compact`), the density precedence, the change/clear
+// handlers, and accessibility all live here once. A platform file supplies only its skin
+// (filter-panel.styles.ts: the hand-off's panel, and per OS how a row marks its choice,
+// its touch height and its press feedback) and calls createFilterPanel.
 //
-// FilterPanel composes shared Checkbox visuals with Badge and Button atoms: each
-// platform wrapper passes its own Checkbox visual/Badge/Button variant into
-// createFilterPanel (the way field passes the platform Input/Button), so the rows
-// and the header Clear action read native per OS without this organism re-skinning
-// any atom. iOS marks a chosen filter with its list's trailing check instead of a
-// Checkbox (the skin's `optionMark`), so its wrapper passes no Checkbox visual. The literal `.ios`/`.android` atom imports in those wrappers are
-// required for the WEB docs 3-up, where a barrel import would resolve the web
-// atoms in every column.
-//
-// FilterPanel is a "Light" platform treatment: one structure, with per-OS touches
-// limited to panel radius, spacing density, group-heading tracking, and press
-// feedback (Android ripple on the option rows; iOS/web opacity dim).
+// FilterPanel composes the platform's Checkbox mark and Buttons: each platform wrapper
+// passes its own (the way Field passes the platform Input), so the rows and the actions
+// read native per OS without this organism re-skinning any atom. iOS marks a chosen
+// filter with its list's trailing check instead of a Checkbox (the skin's `optionMark`),
+// so its wrapper passes no Checkbox visual. The literal `.ios`/`.android` atom imports in
+// those wrappers are required for the WEB docs 3-up, where a barrel import would resolve
+// the web atoms.
 
 export interface FilterOption {
   /** Row label, shown beside the checkbox (on iOS, before the count and the trailing check). */
@@ -47,12 +40,12 @@ export interface FilterOption {
   /** Whether this option is initially checked (seeds uncontrolled state when
    *  `defaultValue` is not given). */
   checked?: boolean;
-  /** Optional trailing count, rendered as a secondary badge. */
+  /** Optional trailing count, rendered as muted mono text at the row's end. */
   count?: string;
 }
 
 export interface FilterGroup {
-  /** Group heading, rendered uppercase and muted. */
+  /** Group heading, rendered as an uppercase mono eyebrow. */
   title: string;
   /** The checkbox options under this group. */
   options: FilterOption[];
@@ -70,9 +63,9 @@ export interface FilterPanelProps {
   /** Initial selection for uncontrolled use. When omitted, the panel seeds from each
    *  option's `checked` flag. */
   defaultValue?: string[];
-  /** Active-filter count shown next to the "Filters" title. Omit to derive it from the checked options. */
+  /** Active-filter count shown in the header's "Clear N" action. Omit to derive it from the checked options. */
   activeCount?: number;
-  /** Fired when the header "Clear" action is pressed. */
+  /** Fired when the header "Clear N" action is pressed (it shows while a filter is on). */
   onClear?: () => void;
   /** Fired with the full set of checked keys whenever the selection changes (both
    *  modes) — the controlled signal a parent mirrors into `value`. */
@@ -86,7 +79,7 @@ export interface FilterPanelProps {
   compact?: boolean;
 
   // Responsive drawer axis: at and below `drawerBreakpoint` the docked panel
-  // collapses to a kit-owned "Filters (n)" outline Button that opens the panel
+  // collapses to a kit-owned "Filters" secondary Button (carrying the count) that opens the panel
   // inside a start-edge Drawer, so a phone keeps its width for the results.
   /** Opt in to the responsive panel->drawer behavior. Off by default: a bare
    *  panel is the docked column at every width, exactly as before. */
@@ -117,9 +110,9 @@ export function densityOf(p: FilterPanelProps): Density {
 /**
  * Build a FilterPanel component from a platform skin.
  *
- * The parts (`CheckboxVisual`, `Badge`, `Button`, `Drawer`) supply the
- * platform-correct option indicators (for a skin whose rows lead with the selection
- * Checkbox), the counts, the header Clear action and the narrow window's drawer. Each platform's thin
+ * The parts (`CheckboxVisual`, `Button`, `Drawer`) supply the platform-correct option
+ * indicators (for a skin whose rows lead with the selection Checkbox), the header Clear
+ * action and drawer trigger, and the narrow window's drawer. Each platform's thin
  * `.tsx`/`.ios`/`.android` file passes the variants it already resolves for that
  * platform, so the panel matches its OS. They default to the WEB atoms because a
  * bare barrel import always resolves the WEB atoms in a browser bundler, which is
@@ -128,7 +121,6 @@ export function densityOf(p: FilterPanelProps): Density {
  */
 export interface FilterPanelParts {
   CheckboxVisual?: CheckboxComponent;
-  Badge?: BadgeComponent;
   Button?: ButtonComponent;
   /** The start-edge drawer the panel becomes on narrow windows. */
   Drawer?: typeof WebDrawer;
@@ -137,11 +129,12 @@ export interface FilterPanelParts {
 // A trailing-marked row: the label takes the row so the count and the check sit at its
 // end, and the check keeps its width on an unchosen row so nothing reflows.
 const TRAILING_LABEL: TextStyle = { flexGrow: 1, flexShrink: 1 };
+// A leading-marked row: the mark and its label take the row, so the count sits at its end.
+const INDICATOR_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1 };
 const CHECK_HIDDEN: TextStyle = { opacity: 0 };
 
 export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts = {}) {
   const CheckboxVisual = parts.CheckboxVisual ?? WebCheckbox;
-  const Badge = parts.Badge ?? WebBadge;
   const Button = parts.Button ?? WebButton;
   const Drawer = parts.Drawer ?? WebDrawer;
   const { optionMark } = skin;
@@ -166,13 +159,13 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
         {optionMark.kind === "indicator" ? (
           // This row owns the only control. Shared Checkbox content preserves the
           // indicator, label typography and alignment without another tab stop.
-          <View style={{ flexShrink: 1 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
+          <View style={INDICATOR_CELL} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
             <CheckboxVisual checked={checked}>{option.label}</CheckboxVisual>
           </View>
         ) : (
           <Text style={[optionMark.label(tokens), TRAILING_LABEL]}>{option.label}</Text>
         )}
-        {option.count != null ? <Badge secondary>{option.count}</Badge> : null}
+        {option.count != null ? <Text style={skin.countText(tokens)}>{option.count}</Text> : null}
         {optionMark.kind === "trailing" ? (
           // Decorative: the row's own checked state names the choice.
           <Text aria-hidden style={[optionMark.check(tokens), checked ? null : CHECK_HIDDEN]}>✓</Text>
@@ -252,13 +245,12 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
       >
         {chrome && !asDrawer ? <GlassPane layer="content" shape={chrome} /> : null}
         <View style={skin.headerRow}>
-          <View style={skin.titleCluster}>
-            <Text style={skin.titleText(tokens)}>Filters</Text>
-            {shownCount > 0 ? <Badge secondary>{String(shownCount)}</Badge> : null}
-          </View>
-          <Button ghost small onPress={clearAll}>
-            Clear
-          </Button>
+          <Text style={skin.titleText(tokens)}>Filters</Text>
+          {shownCount > 0 ? (
+            <Button link small onPress={clearAll}>
+              {`Clear ${shownCount}`}
+            </Button>
+          ) : null}
         </View>
 
         {groups.map((group, gi) => (
@@ -271,7 +263,7 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
               shape={bordered ? cornerRadii(skin.borderedSurface(tokens)) : undefined}
               style={{ alignSelf: "stretch" }}
             >
-            <View style={[skin.groupColumn, skin.groupGap[density]]}>
+            <View style={[skin.groupColumn, skin.optionGap[density]]}>
               {group.options.map((option, oi) => (
                 <OptionRow key={keyOf(gi, oi)} option={option} checked={isChecked(gi, oi)} onToggle={() => toggle(gi, oi)} />
               ))}
@@ -283,14 +275,20 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
     );
 
     if (asDrawer) {
-      // The kit-owned trigger: an outline Button carrying the live filter count,
-      // opening the SAME panel inside a start-edge Drawer. Controlled use goes
-      // through `open`/`onOpenChange`; a bare responsive panel self-manages.
-      const filtersLabel = shownCount > 0 ? `Filters (${shownCount})` : "Filters";
+      // The kit-owned trigger: the hand-off's small secondary "Filters" Button with the
+      // filter glyph, carrying the live filter count, opening the SAME panel inside a
+      // start-edge Drawer. Controlled use goes through `open`/`onOpenChange`; a bare
+      // responsive panel self-manages.
       return (
         <View testID={testID}>
-          <Button outline small onPress={() => setPanelOpen(true)}>
-            {filtersLabel}
+          <Button
+            secondary
+            small
+            iconLeft={<Icon filter size={14} color={tokens["secondary-foreground"]} decorative />}
+            count={shownCount > 0 ? shownCount : undefined}
+            onPress={() => setPanelOpen(true)}
+          >
+            Filters
           </Button>
           <Drawer open={panelOpen} onOpenChange={setPanelOpen}>
             {panel}

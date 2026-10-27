@@ -1,83 +1,79 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { shape, type ColorTokens } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { selectedCard } from "../../style/selected-card.js";
 import { type RadioSkin, type Size } from "./radio.shared.js";
-import {
-  type CardSkin,
-  cardBase,
-  webSkin as webCardSkin,
-  iosSkin as iosCardSkin,
-  androidSkin as androidCardSkin,
-} from "../../molecules/card/card.styles.js";
 
-// Co-located Radio skins, one per platform, all driven by the brand tokens (passed
-// in from useTheme so they follow light/dark and the glass surface). The BRAND
-// survives on every platform (the selected ring + dot are always the
-// `primary`, never a platform default), and only the native SHAPE, sizing, border
-// weight, and press feedback change per OS:
+// Co-located Radio skins, one per platform, drawn in the Canvas v4 hand-off's colours
+// (`K.def('radio')` in tools/v4/handoff/cv-kit-controls.js, and the iOS and Android rows
+// `K.PF.radio` in cv-kit-platform.js). The chosen option is always the accent (`primary`),
+// never a platform default; only the native SHAPE, sizing and press feedback change per OS:
+//   Web: a 16/18/22px ring per size. At rest a 1.5px edge in the `input` boundary (solved
+//     to 3:1, where the hand-off's hairline is about 1.5:1); chosen, the edge thickens to
+//     30% of the ring in the accent around a hollow center. A hovering pointer rings an
+//     unchosen ring in the accent's soft wash (6px). The ring sits 12px from a 500 14px
+//     title over a 12px description in the subtle ink, the same at every size; options
+//     stack 12 apart. A card is a tile at the tile corner (12 by 14 inside a hairline on
+//     the raised fill), Card's selected accent edge and tint when chosen, 8 apart.
+//     Disabled at 0.4.
 //   iOS (HIG): no radio button at all, so a single choice is a CHECKMARK LIST (the
 //     inline picker in a grouped Form): the label leads, the chosen option carries a
-//     trailing brand check, and inside a RadioGroup the options are one inset-grouped
-//     section (44pt rows, 16pt insets, inset hairline separators, the continuous
-//     inset grouped list corner of the kit's iOS lists); press = the row highlight (a plain row dims ~0.8).
-//   Android (Material 3): a 20dp outer ring (2dp border), brand ring + ~10dp solid
-//     inner dot when selected; press = android_ripple over a 40dp state layer;
-//     disabled opacity 0.38.
-//   Web: a 16/20/24px ring per size with a 2px border, a brand ring and a 6/8/10px
-//     primary dot when selected.
+//     trailing accent check at the label size plus 4, and inside a RadioGroup the options
+//     are one inset-grouped section (44pt rows, 16pt insets, inset hairline separators,
+//     the inset grouped corner inside a hairline); press = the row highlight (a plain row
+//     dims ~0.8). A card is its own tile at the tile corner, 8 apart. Disabled at 0.5.
+//   Android (Material 3): an 18/20/22dp ring (2dp border) in the secondary ink, the
+//     accent ring around a 10/10/12dp accent dot when selected, 16dp from the text;
+//     press = android_ripple over a 40dp state layer; options 10 apart. A card is a
+//     tile at the tile corner padded 16 inside the field border, Card's selected accent edge and
+//     tint when chosen. Disabled at 0.38.
+// The iOS and Android title and description step with the size (12/16 over 11/15, 14/20
+// over 12/16, 16/24 over 14/20), as the hand-off's platform rows set them.
 
-// Ring diameter per size, per ring family. Default is the form control; small pairs
-// with dense rows, large with touch-first layouts.
-const WEB_RING: Record<Size, number> = { small: 16, default: 20, large: 24 };
+// Ring diameter per size, per ring family.
+const WEB_RING: Record<Size, number> = { small: 16, default: 18, large: 22 };
 const ANDROID_RING: Record<Size, number> = { small: 18, default: 20, large: 22 };
 
-// Inner dot diameter per size, per ring family. Web keeps ~half the ring; Android uses
-// the M3 ~50% dot (~10dp at the default size). EVERY dot is even because every ring
-// above is even: an odd dot cannot land on the pixel grid when centered in an even
-// ring, so it renders a half-pixel down-right with soft edges (worse the higher the
-// pixel density). Keep new dot sizes even to match.
-const WEB_DOT: Record<Size, number> = { small: 6, default: 8, large: 10 };
+// Android's inner dot. EVERY dot is even because every ring above is even: an odd dot
+// cannot land on the pixel grid when centered in an even ring, so it renders a half-pixel
+// down-right with soft edges (worse the higher the pixel density).
 const ANDROID_DOT: Record<Size, number> = { small: 10, default: 10, large: 12 };
 
-// Label type per size (shared across platforms; the label is brand type, not a
-// platform face). Matches the original Canvas label scale.
-const LABEL_TYPE: Record<Size, TextStyle> = {
-  small: { fontSize: 12, lineHeight: 16 }, // text-xs
-  default: { fontSize: 14, lineHeight: 20 }, // text-sm
-  large: { fontSize: 16, lineHeight: 24 }, // text-base
+// The web's text, the same at every size (only the ring scales): the hand-off's 500 14px
+// title at its 1.3 line and the 12px description at its 1.45 line, both rounded up to a
+// whole pixel, as Checkbox sets them.
+const WEB_LABEL: TextStyle = { fontSize: 14, lineHeight: 19 };
+const WEB_DESCRIPTION: TextStyle = { fontSize: 12, lineHeight: 18 };
+
+// The native rows' text per size.
+const NATIVE_LABEL: Record<Size, TextStyle> = {
+  small: { fontSize: 12, lineHeight: 16 },
+  default: { fontSize: 14, lineHeight: 20 },
+  large: { fontSize: 16, lineHeight: 24 },
 };
-
-// The label beside the control. Medium weight; dimmed to muted when disabled. Shared
-// across every platform. `flexShrink` lets a long label-only radio wrap within the
-// row instead of forcing it wider (matches Checkbox).
-function label(tokens: ColorTokens, size: Size, disabled: boolean): TextStyle {
-  return {
-    fontWeight: "500",
-    flexShrink: 1,
-    color: disabled ? tokens["muted-foreground"] : tokens.foreground,
-    ...LABEL_TYPE[size],
-  };
-}
-
-// Description type per size — one step below the label, matching the kit's other
-// title+description controls (Switch). Muted secondary color on every platform.
-const DESCRIPTION_TYPE: Record<Size, TextStyle> = {
+const NATIVE_DESCRIPTION: Record<Size, TextStyle> = {
   small: { fontSize: 11, lineHeight: 15 },
   default: { fontSize: 12, lineHeight: 16 },
   large: { fontSize: 14, lineHeight: 20 },
 };
 
-// The muted secondary line under the label. The whole row already dims when
-// disabled, so the description keeps the muted token in either state. Shared across
-// every platform (brand secondary type, not a platform face).
-function description(tokens: ColorTokens, size: Size, _disabled: boolean): TextStyle {
-  return { color: tokens["muted-foreground"], ...DESCRIPTION_TYPE[size] };
+// The title beside the control: medium weight in the foreground ink (the row dims as a
+// whole when disabled). `flexShrink` lets a long label-only radio wrap within the row.
+function labelOf(type: (size: Size) => TextStyle) {
+  return (tokens: ColorTokens, size: Size): TextStyle => ({ fontWeight: "500", flexShrink: 1, color: tokens.foreground, ...type(size) });
 }
+// The secondary line under the title, in the subtle ink.
+function descriptionOf(type: (size: Size) => TextStyle) {
+  return (tokens: ColorTokens, size: Size): TextStyle => ({ fontWeight: "400", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"], ...type(size) });
+}
+const webLabel = labelOf(() => WEB_LABEL);
+const webDescription = descriptionOf(() => WEB_DESCRIPTION);
+const nativeLabel = labelOf((size) => NATIVE_LABEL[size]);
+const nativeDescription = descriptionOf((size) => NATIVE_DESCRIPTION[size]);
 
-// Ring base: a perfect circle, centered, nudged down (`marginTop: 3`) to align with
-// the label's first line. Per-platform border weight is layered on by each skin.
-function ringBase(box: number, nudge: boolean): ViewStyle {
+// Ring base: a perfect circle, centered, nudged by `nudge` so it centers on the title's
+// first line. Per-platform border weight is layered on by each skin.
+function ringBase(box: number, nudge: number): ViewStyle {
   return {
     flexShrink: 0,
     alignItems: "center",
@@ -86,77 +82,77 @@ function ringBase(box: number, nudge: boolean): ViewStyle {
     width: box,
     height: box,
     backgroundColor: "transparent",
-    ...(nudge ? { marginTop: 3 } : null),
+    ...(nudge !== 0 ? { marginTop: nudge } : null),
   };
 }
 
-// Dot base: a centered circle. Color is the brand primary on every platform.
-function dotBase(box: number): ViewStyle {
-  return { borderRadius: 9999, width: box, height: box };
+// The tile a `card` radio forms: its corner, its inset, its edge and fill at rest and
+// chosen. The edge keeps its width when chosen, so selecting never shifts content.
+function cardTile(rest: (t: ColorTokens) => ViewStyle, chosen: (t: ColorTokens) => ViewStyle, box: ViewStyle) {
+  return (t: ColorTokens, checked: boolean): ViewStyle => ({ borderWidth: 1, ...box, ...(checked ? chosen(t) : rest(t)) });
 }
+// A chosen tile takes Card's own `selected` recolor (the accent edge over the accent's
+// selected tint), the one recipe both read and the glass selection wash is capped by, so a
+// card radio and a selected Card stay in lockstep in either mode.
+const chosenTile = (t: ColorTokens): ViewStyle => selectedCard(t);
 
-// ---------- `card` mode chrome (derived from the kit Card skin) ----------
-// A card-style radio wraps the WHOLE control in a selectable Card surface, so the
-// option reads as a tappable tile rather than a bare ring + label. Instead of
-// hand-rolling a border/tint (which would drift from Card), it reuses the matching
-// platform Card skin: the OUTLINED (bordered) surface plus Card's per-OS radius/curve
-// and padded inset, and — when the radio is checked — Card's OWN `selected` treatment
-// (primary border + soft primary tint, the exact same recolor `<Card selected>`
-// applies). So a card-style radio and a selected Card stay in lockstep on every OS.
-function cardChrome(card: CardSkin, tokens: ColorTokens, checked: boolean): ViewStyle {
-  return {
-    ...cardBase, // borderWidth: 1 (the shared Card hairline)
-    borderRadius: card.radius, // the platform's card corner
-    ...(card.curve ? { borderCurve: card.curve } : null), // iOS continuous corner curve
-    ...card.surface(tokens, "flat"), // the M3 OUTLINED / Light bordered surface: tokens.border on tokens.card
-    ...card.padded, // per-OS padded inset (24 web/iOS, 16 Android)
-    // Card's own `selected` recolor (primary border + soft primary tint), the one recipe
-    // both read, so selecting never shifts content and the two never drift.
-    ...(checked ? selectedCard(tokens) : null),
-  };
-}
-
-// ---------- Web: the ring and dot ----------
+// ---------- Web: the ring that thickens around a hollow center ----------
 export const webSkin: RadioSkin = {
   mark: {
     kind: "ring",
     ring: (t, size, checked, nudge) => ({
-      ...ringBase(WEB_RING[size], nudge),
-      borderWidth: 2,
+      // Center the ring on the 19px first line.
+      ...ringBase(WEB_RING[size], nudge ? Math.max(0, (WEB_LABEL.lineHeight! - WEB_RING[size]) / 2) : 0),
+      borderWidth: checked ? Math.round(WEB_RING[size] * 0.3) : 1.5,
       borderColor: checked ? t.primary : t.input,
     }),
-    dot: (t, size) => ({ ...dotBase(WEB_DOT[size]), backgroundColor: t.primary }),
+    // The chosen ring is hollow: its thick edge is the mark.
+    dot: null,
+    hover: (t) => ({ boxShadow: `0px 0px 0px 6px ${t["primary-soft"] ?? t.accent}` }),
   },
-  label,
-  description,
-  card: (t, checked) => cardChrome(webCardSkin, t, checked),
+  label: webLabel,
+  description: webDescription,
+  card: cardTile(
+    (t) => ({ borderColor: t.border, backgroundColor: t.popover }),
+    chosenTile,
+    { borderRadius: shape.web.tile, paddingVertical: 12, paddingHorizontal: 14, alignItems: "center" },
+  ),
+  rowGap: 12,
+  groupGap: { plain: 12, card: 8 },
   list: null,
-  disabledOpacity: 0.5,
+  disabledOpacity: 0.4,
   pressedOpacity: 0.9,
   ripple: null,
 };
 
 // ---------- iOS (HIG): a checkmark list, no ring ----------
-// The check is the SF body checkmark at the label's own size, semibold, in the brand
-// `primary` (iOS tints a picker's check with the app's accent). The list section is the
-// kit's iOS grouped list (see stacked-lists.styles.ts): the inset grouped list corner,
-// continuous, the `card` fill, borderless, clipped so a row's highlight cannot poke past the corners.
-// Rows are 44pt cells with 16pt insets; separators are hairlines inset to the text
-// column and run to the trailing edge, as iOS draws them.
+// The check is the kit's check glyph at the title's size plus 4, in the accent (iOS tints
+// a picker's check with the app's accent), at the end of a column the title's size plus 8
+// wide. The list section is the kit's iOS grouped list: the inset grouped corner,
+// continuous, the `card` fill inside a hairline, clipped so a row's highlight cannot poke
+// past the corners. Rows are 44pt cells with 16pt insets; separators are hairlines inset
+// to the text column and run to the trailing edge, as iOS draws them.
 const IOS_CELL_INSET = 16;
+const IOS_CELL: ViewStyle = { paddingHorizontal: IOS_CELL_INSET, paddingVertical: 11, minHeight: 44 };
 export const iosSkin: RadioSkin = {
   mark: {
     kind: "check",
-    glyph: (t, size) => ({ fontWeight: "600", color: t.primary, ...LABEL_TYPE[size] }),
+    glyph: (t, size) => ({ color: t.primary, size: NATIVE_LABEL[size].fontSize! + 4, width: NATIVE_LABEL[size].fontSize! + 8 }),
   },
-  label,
-  description,
-  card: (t, checked) => cardChrome(iosCardSkin, t, checked),
+  label: nativeLabel,
+  description: nativeDescription,
+  card: cardTile(
+    (t) => ({ borderColor: t.border, backgroundColor: t.card }),
+    chosenTile,
+    { borderRadius: shape.ios.tile, borderCurve: "continuous", ...IOS_CELL },
+  ),
+  rowGap: 12,
+  groupGap: { plain: 12, card: 8 },
   list: {
-    section: (t) => ({ borderRadius: platformShape.ios.groupedList, borderCurve: "continuous", backgroundColor: t.card, overflow: "hidden" }),
+    section: (t) => ({ borderRadius: platformShape.ios.groupedList, borderCurve: "continuous", backgroundColor: t.card, borderWidth: 1, borderColor: t.border, overflow: "hidden" }),
     separator: (t) => ({ height: StyleSheet.hairlineWidth, marginStart: IOS_CELL_INSET, backgroundColor: t.border }),
-    cell: { paddingHorizontal: IOS_CELL_INSET, paddingVertical: 11, minHeight: 44 },
-    cellPressed: (t) => ({ backgroundColor: t.accent }),
+    cell: IOS_CELL,
+    cellPressed: (t) => ({ backgroundColor: t.secondary }),
   },
   disabledOpacity: 0.5,
   pressedOpacity: 0.8,
@@ -168,15 +164,23 @@ export const androidSkin: RadioSkin = {
   mark: {
     kind: "ring",
     ring: (t, size, checked, nudge) => ({
-      ...ringBase(ANDROID_RING[size], nudge),
+      // Center the ring on the title's first line (a ring taller than the line rides up).
+      ...ringBase(ANDROID_RING[size], nudge ? (NATIVE_LABEL[size].lineHeight! - ANDROID_RING[size]) / 2 : 0),
       borderWidth: 2,
       borderColor: checked ? t.primary : t["muted-foreground"],
     }),
-    dot: (t, size) => ({ ...dotBase(ANDROID_DOT[size]), backgroundColor: t.primary }),
+    dot: (t, size) => ({ borderRadius: 9999, width: ANDROID_DOT[size], height: ANDROID_DOT[size], backgroundColor: t.primary }),
   },
-  label,
-  description,
-  card: (t, checked) => cardChrome(androidCardSkin, t, checked),
+  label: nativeLabel,
+  description: nativeDescription,
+  card: cardTile(
+    (t) => ({ borderColor: t["field-border"] ?? t.input, backgroundColor: "transparent" }),
+    chosenTile,
+    { borderRadius: shape.android.tile, padding: 16 },
+  ),
+  rowGap: 16,
+  // The hand-off's 10dp between rows, each row padded 4dp above and below.
+  groupGap: { plain: 18, card: 8 },
   list: null,
   disabledOpacity: 0.38, // M3 disabled opacity
   pressedOpacity: null, // Android uses a ripple instead

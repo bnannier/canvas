@@ -1,26 +1,26 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
+import { alpha, MONO_FONT, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
 
-// Co-located Steps skins, one per platform. Steps is a LIGHT treatment:
-// the same multi-step progress STRUCTURE on every platform (numbered/check
-// circles joined by connectors, plus the vertical and progress-bar layouts),
-// with only small native touches per OS. The BRAND survives everywhere (the
-// `primary` token and the semantic tokens, never a platform default);
-// only the indicator shape, the connector cap, the current-step emphasis, and
-// the press feedback change per OS:
-//   iOS (HIG): circular step indicators with ROUNDED connector caps; completed =
-//     filled `primary`; current = a `primary` ring on a transparent fill (a
-//     subtle inner ring via a 1.5px `ring`-token halo); press = opacity dim.
-//   Android (M3): step indicators with FLAT (square-capped) connectors; completed
-//     = filled `primary`; current = `primary` ring; press = android_ripple on
-//     interactive step circles.
-//   Web: circular step indicators with square-capped connectors and a 6px capsule
-//     progress track; completed = filled `primary`; current = a `primary` ring.
-//
-// The State axis (completed / current / upcoming) maps each colored part to a
-// token set. Layout-only fragments are shared static objects (below); anything
-// reading a color is a function of the active tokens.
+// The Steps skin, the v4 hand-off's (its `steps` renderer in tools/v4/handoff/cv-kit-inputs.js).
+// Neither iOS nor Material 3 ships a multi-step wizard indicator (PLATFORM-REFERENCES.md:
+// the HIG stepper is the +/- control, M3 dropped steppers after Material 1), so every
+// platform draws the same steps in its own face:
+//   - a 28px marker, its number 600 12px mono: a completed step is the `primary` disc
+//     around a 13px check in `primary-foreground`; the current step a 2px `primary` ring
+//     around the accent's text ink, haloed 4px in the accent's soft wash; an upcoming step
+//     a 1.5px `field-border` ring (the hand-off's ln2) around `subtle-foreground`;
+//   - horizontal: each marker with its 500 13px label 10 to its side, joined to the next
+//     by a 2px connector (at least 16 long, 6 from its neighbours) in `primary` once the
+//     step it leaves is complete, `field-border` before;
+//   - vertical: a 28px rail of markers joined by 2px connectors at least 22 tall, each
+//     label 500 14px 14 beside its marker, 4 down and 18 above the next step;
+//   - the labels read `foreground` up to the current step and `subtle-foreground` after;
+//   - progress: the caption 500 13px over a 6px `surface-raised` track whose `primary`
+//     fill carries the accent's 12px glow, the count 400 12px mono in `subtle-foreground`.
+// Only the press feedback and the touch target stay each platform's own: the web and iOS
+// dim a pressed marker, Android ripples; the HIG's 44pt and Material's 48dp targets come
+// from the skin.
 
 export type State = "completed" | "current" | "upcoming";
 
@@ -32,70 +32,75 @@ export type State = "completed" | "current" | "upcoming";
 // fill the remaining row width.
 export const flex1: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
-// h-8 w-8 shrink-0 flex-row items-center justify-center rounded-full border-2
+// The 28px marker; its ring width and fill come from the state.
 export const circleBase: ViewStyle = {
-  height: 32,
-  width: 32,
+  height: 28,
+  width: 28,
   flexShrink: 0,
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "center",
   borderRadius: 9999,
-  borderWidth: 2,
   // clip the Material ripple to the rounded outline (Android bounds the
   // android_ripple to the view rect otherwise, so it bleeds past the circle).
   overflow: "hidden",
 };
 
-// text-sm font-medium (the check / number inside the circle).
-export const glyphBase: TextStyle = { fontSize: 14, lineHeight: 20, fontWeight: "500" };
+// The number inside the marker: 600 12px mono.
+export const glyphBase: TextStyle = { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "600" };
 
-// text-sm font-medium (vertical layout label).
+/** The completed marker's check glyph size. */
+export const checkSize = 13;
+
+// The vertical layout's label: 500 14px.
 export const labelBase: TextStyle = { fontSize: 14, lineHeight: 20, fontWeight: "500" };
 
-// text-xs font-medium (horizontal layout label), colored by labelState.
-export const labelBaseXs: TextStyle = { fontSize: 12, lineHeight: 16, fontWeight: "500" };
+// The horizontal layout's label: 500 13px, one line beside its marker.
+export const labelBaseXs: TextStyle = { fontSize: 13, lineHeight: 18, fontWeight: "500" };
 
 // w-full
 export const fullWidth: ViewStyle = { width: "100%" };
 
-// mb-1.5 flex-row items-center justify-between
+// The progress layout's header: the caption and the count, 8 above the track.
 export const progressHeader: ViewStyle = {
-  marginBottom: 6,
+  marginBottom: 8,
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "space-between",
 };
 
-// flex-row gap-3 (the row pairing the rail with the content column).
-export const verticalRow: ViewStyle = { flexDirection: "row", gap: 12 };
+// The row pairing the rail with the content column, 14 apart.
+export const verticalRow: ViewStyle = { flexDirection: "row", gap: 14 };
 
-// items-center (the left rail: circle stacked over its connector).
+// The left rail: the marker stacked over its connector.
 export const verticalRail: ViewStyle = { alignItems: "center" };
 
-// my-1 w-px flex-1 (the vertical connector) — color/cap come from the skin.
+// The vertical connector: 2 wide, filling the step's height, at least 22.
 export const verticalConnector: ViewStyle = {
-  marginVertical: 4,
-  width: 1,
+  width: 2,
+  minHeight: 22,
   flexGrow: 1,
   flexShrink: 1,
   flexBasis: "0%",
 };
 
-// pb-6 (bottom inset on a content column that has a step after it).
-export const verticalContentSpacing: ViewStyle = { paddingBottom: 24 };
+// The content column beside the marker: 4 down to sit on the marker's line.
+export const verticalContent: ViewStyle = { paddingTop: 4 };
 
-// flex-row items-start (the outer row and each step item).
-export const horizontalRow: ViewStyle = { flexDirection: "row", alignItems: "flex-start" };
+// The space under a content column that has a step after it.
+export const verticalContentSpacing: ViewStyle = { paddingBottom: 18 };
 
-// items-center gap-1.5 (the circle + label column).
-export const horizontalColumn: ViewStyle = { alignItems: "center", gap: 6 };
+// The outer row and each step item: centred on the markers.
+export const horizontalRow: ViewStyle = { flexDirection: "row", alignItems: "center" };
 
-// mx-2 mt-4 h-px flex-1 (the horizontal connector) — color/cap come from the skin.
+// The marker and its label, side by side, 10 apart.
+export const horizontalColumn: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10 };
+
+// The horizontal connector: 2 tall, at least 16 long, 6 from its neighbours.
 export const horizontalConnector: ViewStyle = {
-  marginHorizontal: 8,
-  marginTop: 16,
-  height: 1,
+  marginHorizontal: 6,
+  height: 2,
+  minWidth: 16,
   flexGrow: 1,
   flexShrink: 1,
   flexBasis: "0%",
@@ -106,15 +111,15 @@ export const horizontalConnector: ViewStyle = {
 // =============================================================================
 
 export interface StepsSkin extends TouchTargetSkin {
-  /** Fill + border of the numbered/check circle for a given step state. */
+  /** Fill, ring and halo of the marker for a given step state. */
   circleState: (t: ColorTokens, state: State) => ViewStyle;
-  /** Color of the glyph (check / number) inside the circle. */
+  /** Color of the glyph (check / number) inside the marker. */
   glyphState: (t: ColorTokens, state: State) => TextStyle;
-  /** Color of the step label for a given state (shared across platforms). */
+  /** Color of the step label for a given state. */
   labelState: (t: ColorTokens, state: State) => TextStyle;
-  /** Background + line cap of a connector; `done` fills it primary. */
+  /** Background of a connector; `done` fills it primary. */
   connector: (t: ColorTokens, done: boolean) => ViewStyle;
-  /** Caption left of the percentage in the progress layout. */
+  /** Caption left of the count in the progress layout. */
   progressCaption: (t: ColorTokens) => TextStyle;
   /** The percentage label in the progress layout. */
   progressPercent: (t: ColorTokens) => TextStyle;
@@ -124,165 +129,73 @@ export interface StepsSkin extends TouchTargetSkin {
   progressFill: (t: ColorTokens) => ViewStyle;
   /** The optional description line in the vertical layout. */
   verticalDescription: (t: ColorTokens) => TextStyle;
-  /** iOS/web dim the circle on press; Android uses a ripple (null here). */
+  /** iOS/web dim the marker on press; Android uses a ripple (null here). */
   pressedOpacity: number | null;
-  /** Android ripple over a pressable circle; null on iOS/web. */
+  /** Android ripple over a pressable marker; null on iOS/web. */
   ripple: ((t: ColorTokens, state: State) => { color: string; borderless: boolean }) | null;
 }
 
-// --- shared brand mapping (label colors are identical across platforms) ------
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
+const line = (t: ColorTokens): string => t["field-border"] ?? t.border;
+const soft = (t: ColorTokens): string => t["primary-soft"] ?? alpha(t.primary, 0.16);
 
-// Upcoming steps drop to the muted foreground; completed/current stay foreground.
-function labelState(t: ColorTokens, state: State): TextStyle {
-  switch (state) {
-    case "completed": return { color: t.foreground };
-    case "current": return { color: t.foreground };
-    case "upcoming": return { color: t["muted-foreground"] };
-  }
-}
-
-// =============================================================================
-// Web: circular indicators, square-capped connectors.
-// =============================================================================
-
-export const webSkin: StepsSkin = {
-  minTarget: null,
-  // Completed fills primary; current is outlined in primary on a transparent fill;
-  // upcoming sits on the muted token behind a border-toned ring.
+/** The hand-off's steps, every color and shape, without the press feedback or touch target. */
+const look: Omit<StepsSkin, "minTarget" | "pressedOpacity" | "ripple"> = {
   circleState(t, state) {
     switch (state) {
-      case "completed": return { borderColor: t.primary, backgroundColor: t.primary };
-      case "current": return { borderColor: t.primary, backgroundColor: "transparent" };
-      case "upcoming": return { borderColor: t.border, backgroundColor: t.muted };
+      case "completed": return { borderWidth: 0, borderColor: "transparent", backgroundColor: t.primary };
+      case "current": return { borderWidth: 2, borderColor: t.primary, backgroundColor: "transparent", boxShadow: `0px 0px 0px 4px ${soft(t)}` };
+      case "upcoming": return { borderWidth: 1.5, borderColor: line(t), backgroundColor: "transparent" };
     }
   },
   glyphState(t, state) {
     switch (state) {
       case "completed": return { color: t["primary-foreground"] };
       case "current": return { color: primaryText(t) };
-      case "upcoming": return { color: t["muted-foreground"] };
+      case "upcoming": return { color: subtle(t) };
     }
   },
-  labelState,
-  // A connector fills primary once the step it leads out of is completed, else it
-  // tracks the border token. Square caps (web rules are plain rects).
+  labelState(t, state) {
+    return { color: state === "upcoming" ? subtle(t) : t.foreground };
+  },
   connector(t, done) {
-    return { backgroundColor: done ? t.primary : t.border };
+    return { backgroundColor: done ? t.primary : line(t) };
   },
   progressCaption(t) {
-    return { fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.foreground };
+    return { fontSize: 13, lineHeight: 18, fontWeight: "500", color: t.foreground };
   },
   progressPercent(t) {
-    return { fontSize: 12, lineHeight: 16, color: t["muted-foreground"] };
+    return { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400", color: subtle(t) };
   },
   progressTrack(t) {
-    return { height: 6, overflow: "hidden", borderRadius: 9999, backgroundColor: t.muted };
+    return { height: 6, borderRadius: 9999, backgroundColor: t["surface-raised"] ?? t.secondary };
   },
   progressFill(t) {
-    return { height: "100%", borderRadius: 9999, backgroundColor: t.primary };
+    return { height: "100%", borderRadius: 9999, backgroundColor: t.primary, boxShadow: `0px 0px 12px ${t.glow ?? t.ring}` };
   },
   verticalDescription(t) {
-    return { fontSize: 12, lineHeight: 16, color: t["muted-foreground"] };
+    return { fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["muted-foreground"] };
   },
+};
+
+export const webSkin: StepsSkin = {
+  ...look,
+  minTarget: null,
   pressedOpacity: 0.9,
   ripple: null,
 };
 
-// =============================================================================
-// iOS (HIG): circular indicators, rounded connector caps, primary ring current.
-// =============================================================================
-
 export const iosSkin: StepsSkin = {
+  ...look,
   minTarget: TOUCH_TARGET.ios,
-  circleState(t, state) {
-    switch (state) {
-      // Completed reads as a solid filled `primary` disc.
-      case "completed": return { borderColor: t.primary, backgroundColor: t.primary };
-      // Current = a clean `primary` ring on a transparent fill (no muted backing,
-      // so it reads as an open ring the way iOS step dots do).
-      case "current": return { borderColor: t.primary, backgroundColor: "transparent" };
-      // Upcoming = a soft muted disc behind a border-toned ring.
-      case "upcoming": return { borderColor: t.border, backgroundColor: t.muted };
-    }
-  },
-  glyphState(t, state) {
-    switch (state) {
-      case "completed": return { color: t["primary-foreground"] };
-      case "current": return { color: primaryText(t) };
-      case "upcoming": return { color: t["muted-foreground"] };
-    }
-  },
-  labelState,
-  // iOS connectors get rounded caps so the rule reads as a soft rounded line.
-  connector(t, done) {
-    return { backgroundColor: done ? t.primary : t.border, borderRadius: 9999 };
-  },
-  progressCaption(t) {
-    return { fontSize: 13, lineHeight: 18, fontWeight: "600", color: t.foreground };
-  },
-  progressPercent(t) {
-    return { fontSize: 13, lineHeight: 18, color: t["muted-foreground"] };
-  },
-  progressTrack(t) {
-    return { height: 6, overflow: "hidden", borderRadius: 9999, backgroundColor: t.muted };
-  },
-  progressFill(t) {
-    return { height: "100%", borderRadius: 9999, backgroundColor: t.primary };
-  },
-  verticalDescription(t) {
-    return { fontSize: 13, lineHeight: 18, color: t["muted-foreground"] };
-  },
   // HIG press = opacity dim.
   pressedOpacity: 0.8,
   ripple: null,
 };
 
-// =============================================================================
-// Android (M3): flat connector caps, filled-primary complete, primary ring current.
-// =============================================================================
-
 export const androidSkin: StepsSkin = {
+  ...look,
   minTarget: TOUCH_TARGET.android,
-  circleState(t, state) {
-    switch (state) {
-      // Completed = filled primary.
-      case "completed": return { borderColor: t.primary, backgroundColor: t.primary };
-      // Current = a primary ring; M3 keeps a faint tonal backing so the active
-      // indicator reads against the surface (secondaryContainer ≈ alpha(primary,.12)).
-      case "current": return { borderColor: t.primary, backgroundColor: alpha(t.primary, 0.12) };
-      // Upcoming = a muted disc behind a border-toned ring.
-      case "upcoming": return { borderColor: t.border, backgroundColor: t.muted };
-    }
-  },
-  glyphState(t, state) {
-    switch (state) {
-      case "completed": return { color: t["primary-foreground"] };
-      case "current": return { color: primaryText(t) };
-      case "upcoming": return { color: t["muted-foreground"] };
-    }
-  },
-  labelState,
-  // M3 connectors are flat (square caps) — explicit radius 0 so the rule reads
-  // as a crisp Material divider, not a rounded line.
-  connector(t, done) {
-    return { backgroundColor: done ? t.primary : t.border, borderRadius: 0 };
-  },
-  progressCaption(t) {
-    return { fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.foreground };
-  },
-  progressPercent(t) {
-    return { fontSize: 12, lineHeight: 16, color: t["muted-foreground"] };
-  },
-  progressTrack(t) {
-    return { height: 4, overflow: "hidden", borderRadius: 9999, backgroundColor: t.muted };
-  },
-  progressFill(t) {
-    return { height: "100%", borderRadius: 9999, backgroundColor: t.primary };
-  },
-  verticalDescription(t) {
-    return { fontSize: 12, lineHeight: 16, color: t["muted-foreground"] };
-  },
-  // M3 press = android_ripple over the interactive circle.
   pressedOpacity: null,
   ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
 };

@@ -6,6 +6,8 @@ import { Field } from "../src/molecules/field/field.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
+import { webSkin, iosSkin, androidSkin } from "../src/molecules/field/field.styles.ts";
+import { lightColors } from "../src/style/tokens.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -161,5 +163,41 @@ describe("Field", () => {
     );
     expect(container.querySelector('[role="alert"]')).toBeNull();
     expect(container.querySelector('[data-testid="bare"]')).toBeTruthy();
+  });
+});
+
+// The label and message follow the v4 hand-off: the web's `K.def('field')` and its `msg`
+// line, the iOS and Android field rows (`P.input`, cv-kit-platform.js `iLab`/`iMsg`/`aMsg`).
+describe("Field follows the v4 hand-off", () => {
+  const t = lightColors;
+  it("web: the 500 13px muted label, a 6px stack, the 400 12px subtle message and a 13px alert glyph on an error", () => {
+    expect(webSkin.stack).toMatchObject({ gap: 6 });
+    expect(webSkin.label(t)).toMatchObject({ fontSize: 13, fontWeight: "500", color: t["muted-foreground"] });
+    expect(webSkin.message(t, false)).toMatchObject({ fontSize: 12, lineHeight: 16.8, fontWeight: "400", color: t["subtle-foreground"] });
+    expect(webSkin.message(t, true).color).toBe(t["destructive-text"] ?? t.destructive);
+    expect(webSkin.errorGlyph).toEqual({ size: 13, gap: 6 });
+  });
+  it("iOS: the 14pt secondary title, an 8pt stack and the 13pt subtle message, no glyph", () => {
+    expect(iosSkin.stack).toMatchObject({ gap: 8 });
+    expect(iosSkin.label(t)).toMatchObject({ fontSize: 14, fontWeight: "400", letterSpacing: -0.15, color: t["muted-foreground"] });
+    expect(iosSkin.message(t, false)).toMatchObject({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["subtle-foreground"] });
+    expect(iosSkin.errorGlyph).toBeUndefined();
+  });
+  it("Android: body-small supporting text 4dp under the box, inset 16dp under a delegated field", () => {
+    expect(androidSkin.stack).toMatchObject({ gap: 4 });
+    expect(androidSkin.message(t, false)).toMatchObject({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] });
+    expect(androidSkin.label(t)).toMatchObject({ fontSize: 16, fontWeight: "500", color: t.foreground });
+    expect(androidSkin.delegatedInset).toBe(16);
+  });
+  it("leads only an error message with the alert glyph on the web", () => {
+    const glyphs = (node: ReactNode) => {
+      const { container, unmount } = ui(node);
+      const n = container.querySelectorAll('[aria-hidden="true"]').length;
+      unmount();
+      return n;
+    };
+    const helper = glyphs(<Field label="Email" helper="Release notes only"><Input /></Field>);
+    const error = glyphs(<Field label="Email" error="Enter a valid email"><Input /></Field>);
+    expect(error).toBe(helper + 1);
   });
 });

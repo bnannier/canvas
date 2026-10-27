@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Kbd } = scope;
+  const { Kbd } = scope;
   return (
-<Button outline iconRight={<Kbd keys="⌘ K" />}>Search…</Button>
+<Kbd keys="G C" sequence />
   );
 }

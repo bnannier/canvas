@@ -215,10 +215,10 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
         {children != null ? (
           // The custom-content slot, spaced from the title/description block above
           // it; when children are the panel's first content the margin is omitted.
-          <View style={title != null || description != null ? s.bodySlot : null}>{children}</View>
+          <View style={title != null || description != null ? [s.bodySlot, skin.sectionGap != null ? { marginTop: skin.sectionGap } : null] : null}>{children}</View>
         ) : null}
         {actionLabel != null ? (
-          <View style={s.actionRow}>
+          <View style={[s.actionRow, skin.sectionGap != null ? { marginTop: skin.sectionGap } : null]}>
             <Button primary small onPress={() => setOpen(false)}>
               {actionLabel}
             </Button>

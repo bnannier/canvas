@@ -58,13 +58,12 @@ describe("skin divergence, per built export", () => {
     expect(skinsOf(KIT, "video").exportDivergence.Video?.iOS).toBe(
       "builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js); passes `nativeControls: true` which the web entry does not; counted as the platform's own",
     );
-    expect(skinsOf(KIT, "listbox").exportDivergence.Listbox?.Android).toBe("injects platform parts (../checkbox/indicator/index.android.js)");
+    expect(skinsOf(KIT, "filter-panel").exportDivergence.FilterPanel?.Android).toContain("injects platform parts (../../atoms/checkbox/indicator/index.android.js)");
   });
 
   it("follows a local alias chain to the same object, and a styles re-export to its source", () => {
-    // Tabs: `iosSkin = capsuleSkin; webSkin = capsuleSkin;` is one object under two names.
-    const tabs = skinsOf(KIT, "tabs");
-    expect(tabs.exportDivergence.Tabs).toEqual({ Android: "builds from its own androidSkin" });
+    // AppFrame: `webSkin = shared; iosSkin = webSkin; androidSkin = webSkin;` is one object under three names.
+    expect(skinsOf(KIT, "app-frame").exportDivergence.AppFrame ?? {}).toEqual({});
     // Container and Grid re-export Row and Column's skins from layout.styles.
     for (const dir of ["container", "grid", "layout"]) expect(skinsOf(KIT, dir).divergent).toEqual({});
     expect(isWebSkinAlias(join(KIT, "atoms/container/container.styles.ts"), "iosSkin")).toBe(true);
@@ -408,7 +407,7 @@ describe("skin divergence, per built export", () => {
     // gap: both set the part's look, so Avatar's own skin is still the web skin.
     expect(kinds(skinsOf(KIT, "avatar"), "AvatarMenu", "iOS")).toEqual(["part-skin dropdown", "part-skin dropdown"]);
     // A part under a nested directory belongs to the component it sits in.
-    expect(kinds(skinsOf(KIT, "listbox"), "Listbox", "Android")).toEqual(["part checkbox"]);
+    expect(kinds(skinsOf(KIT, "filter-panel"), "FilterPanel", "Android")).toContain("part checkbox");
     expect(kinds(skinsOf(KIT, "video"), "Video", "Android")).toEqual(["own-skin", "part spinner", "own-data"]);
     expect(kinds(skinsOf(KIT, "feeds"), "Feed", "iOS")).toEqual(["own-skin"]);
 

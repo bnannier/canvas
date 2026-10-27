@@ -260,8 +260,9 @@ describe("the index over real runs", () => {
     expect(summary).toContain("- Of them: 2 example variant cell(s), 7 interaction-state cell(s) (1 not reached), 1 page cell(s)");
     expect(summary).toContain("| [Heatmap](heatmap/index.md) | pressed.web | Calendar | 1: desktop.blush.solid | pressing [role=\"img\"]");
     expect(summary).toContain("| press-not-cancelled | the press took effect where it should have been cancelled: a click reached the control as the button came up after moving off, the control left the page, or the row's tree, the address, or the control's look or pixels changed | 1 | [Slider](slider/index.md) 1 |");
-    // A full sweep holds 18 of Slider's state cells: its states, their rows and widths, by the six looks and surfaces.
-    expect(summary).toContain("| [Slider](slider/index.md) | 1 | 1 of 1 | 0/144 0/48 0/48 | 1/18 (0) | press-not-cancelled 1 | press-not-cancelled 1 |");
+    // A full sweep holds 24 of Slider's state cells: its four states (hover, focus, pressed,
+    // disabled), their rows and widths, by the six looks and surfaces.
+    expect(summary).toContain("| [Slider](slider/index.md) | 1 | 1 of 1 | 0/144 0/48 0/48 | 1/24 (0) | press-not-cancelled 1 | press-not-cancelled 1 |");
     expect(summary).toContain("| [template-signin](template-signin/index.md) | 1 | 1 of 1 | 1/18 0/6 0/6 | - | - | contrast-likely 1 |");
 
     const built = JSON.parse(readFileSync(join(root, ".audit", "current", "current.json"), "utf8")) as { cells: { id: string; family: string; notReached?: boolean; releaseFlags?: string[]; sections?: { key: string; file: string }[] }[] };

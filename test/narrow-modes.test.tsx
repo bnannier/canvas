@@ -231,6 +231,8 @@ describe("FilterPanel responsive drawer", () => {
         groups={[{ title: "Status", options: [{ label: "Active", checked: true }] }]}
       />,
     );
-    expect(screen.getByText("Filters (1)")).toBeTruthy();
+    // The hand-off's trigger: the small secondary "Filters" Button carrying the count.
+    expect(screen.getByText("Filters")).toBeTruthy();
+    expect(screen.getByText("1")).toBeTruthy();
   });
 });

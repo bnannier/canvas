@@ -43,6 +43,7 @@ import { toneColor } from "../src/atoms/typography/typography.styles.ts";
 import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
 import { Calendar } from "../src/organisms/calendar/calendar.tsx";
 import { Avatar } from "../src/atoms/avatar/avatar.tsx";
+import { initialsDisc } from "../src/atoms/avatar/avatar.shared.tsx";
 import { Avatar as IOSAvatar } from "../src/atoms/avatar/avatar.ios.tsx";
 import { Avatar as AndroidAvatar } from "../src/atoms/avatar/avatar.android.tsx";
 
@@ -189,7 +190,8 @@ describe("error and destructive text on authored enabled surfaces", () => {
     const platformCss = readFileSync(new URL("../styles/tokens/platforms.css", import.meta.url), "utf8");
     for (const platform of ["ios", "android"] as const) {
       const block = blockDeclarations(platformCss, `[data-platform="${platform}"]`).decls;
-      for (const key of ["p-alert-confirm-destructive-label", "p-ad-confirm-destructive-label", "p-menu-destructive"]) {
+      // The Android AlertDialog is the web alert's filled Buttons (the hand-off's Android row).
+      for (const key of ["p-alert-confirm-destructive-label", ...(platform === "ios" ? ["p-ad-confirm-destructive-label"] : []), "p-menu-destructive"]) {
         expect(block[key]).toBe("var(--destructive-text)");
       }
       expect(block["p-alert-confirm-destructive-fill"]).toBe(platform === "ios" ? "var(--secondary)" : "transparent");
@@ -227,15 +229,19 @@ describe("primary text on authored surfaces", () => {
     const ios = blockDeclarations(platformCss, '[data-platform="ios"]').decls;
     const web = blockDeclarations(platformCss, ':root,[data-platform="web"]').decls;
     for (const key of ["p-tab-label-selected", "p-tab-v-selected-label", "p-side-active-label", "p-nav-link-active-label",
-      "p-seg-selected-label", "p-alert-cancel-label", "p-alert-confirm-label", "p-ad-cancel-label", "p-ad-confirm-label"]) {
+      "p-seg-selected-label", "p-alert-cancel-label", "p-alert-confirm-label"]) {
       expect(android[key], key).toBe("var(--primary-text)");
     }
+    // The iOS alert's two action cells read in the accent's ink (the Android AlertDialog
+    // is the web alert's filled Buttons).
+    for (const key of ["p-ad-cancel-label", "p-ad-confirm-label"]) expect(ios[key], key).toBe("var(--primary-text)");
     expect(ios["p-nav-link-label"]).toBe("var(--primary-text)");
     expect(ios["p-nav-link-active-fill"]).toBe("var(--primary)");
     expect(ios["p-nav-link-active-label"]).toBe("var(--primary-foreground)");
     expect(android["p-select-check-color"]).toBe("var(--primary)");
-    expect(web["p-sheet-row-label"]).toBe("var(--popover-foreground)");
-    expect(web["p-sheet-cancel-label"]).toBe("var(--popover-foreground)");
+    // The v4 web action sheet labels its rows and Cancel in the accent's ink.
+    expect(web["p-sheet-row-label"]).toBe("var(--primary-text)");
+    expect(web["p-sheet-cancel-label"]).toBe("var(--primary-text)");
     expect(baseRule("a").color).toBe("var(--primary-text)");
   });
 
@@ -283,7 +289,7 @@ describe("primary text on authored surfaces", () => {
         ["Typography primary", toneColor(tokens, scheme === "dark", "primary")],
         ["iOS Input action", inputSkins.iosSkin.actionText(tokens)],
         ["Android Input action", inputSkins.androidSkin.actionText(tokens)],
-        ["Android AlertDialog text button", alertDialogSkins.androidSkin.textButtonLabel(tokens, false)],
+        ["iOS AlertDialog cancel", alertDialogSkins.iosSkin.cancelLabelStyle!(tokens)],
         ["Android Dialog text button", dialogSkins.androidSkin.textButtonLabel(tokens, false)],
         ["Android underline Tab", tabsSkins.androidSkin.underlineLabel(tokens, true)],
         ["Android pill Tab", tabsSkins.androidSkin.pillsLabel(tokens, true)],
@@ -311,31 +317,29 @@ describe("primary text on authored surfaces", () => {
     // palette's: it keeps the palette's accent hue (mint's action is green, not violet) and reads at 4.5:1 on the pill as the shell paints it: solid, and
     // under glass at the inverse dense tint (the web frost's alpha and the native one) over
     // the page and a card, each resting and under the pressed ripple.
-    // The web and iOS toast is Dark Factory's pill on the same inverse surface: its message,
-    // description, action and dismiss take the pill's inks and its intent glyphs the dark
-    // scheme's status inks, each read on the pill solid and under glass at the inverse
-    // dense tint over the page and a card.
-    it(`keeps every ${scheme} toast pill ink readable on the pill`, () => {
-      const skin = toastSkins.webSkin;
-      expect(toastSkins.iosSkin).toBe(skin);
-      const bar = paint(skin.container(tokens, true, false), "backgroundColor");
-      expect(bar).toBe(tokens.inverse!);
-      const beds = [rgba(bar), ...[look.webGlass, look.iosGlass, look.androidGlass].flatMap((glass) =>
-        [tokens.background, tokens.card].map((backdrop) => composite(inverseDenseTint({ tokens, glass }, bar), backdrop)))];
-      const texts: [string, string][] = [
-        ["message", paint(skin.message(tokens))],
-        ["description", paint(skin.description(tokens))],
-        ["action", paint(skin.actionLabel(tokens))],
-      ];
-      const glyphs: [string, string][] = [
-        ["dismiss", skin.dismissColor!(tokens)],
-        ...(["success", "error", "warning", "info"] as const).map((intent): [string, string] => [intent, skin.intentColor!(tokens, intent)]),
-      ];
-      for (const bed of beds) {
-        for (const [name, ink] of texts) expect(contrast(composite(ink, bed), bed), `${scheme} ${name}`).toBeGreaterThanOrEqual(4.5);
-        for (const [name, ink] of glyphs) expect(contrast(composite(ink, bed), bed), `${scheme} ${name}`).toBeGreaterThanOrEqual(3);
+    // The web and iOS toast is the v4 hand-off's card: the overlay panel (`popover`) in
+    // solid mode, the dense glass tint over the page and a card under glass. Its message,
+    // description and action read at 4.5:1 and its glyphs at 3:1 on every bed.
+    it(`keeps every ${scheme} toast card ink readable on the card`, () => {
+      for (const skin of [toastSkins.webSkin, toastSkins.iosSkin]) {
+        const bar = paint(skin.container(tokens, true, false), "backgroundColor");
+        expect(bar).toBe(tokens.popover);
+        const beds = [rgba(bar), ...[look.webGlass, look.iosGlass, look.androidGlass].flatMap((glass) =>
+          [tokens.background, tokens.card].map((backdrop) => composite(glass["glass-tint-dense"], backdrop)))];
+        const texts: [string, string][] = [
+          ["message", paint(skin.message(tokens))],
+          ["description", paint(skin.description(tokens))],
+          ["action", paint(skin.actionLabel(tokens))],
+        ];
+        const glyphs: [string, string][] = [
+          ["dismiss", skin.dismissColor!(tokens)],
+          ...(["success", "error", "warning", "info"] as const).map((intent): [string, string] => [intent, skin.intentColor!(tokens, intent)]),
+        ];
+        for (const bed of beds) {
+          for (const [name, ink] of texts) expect(contrast(composite(ink, bed), bed), `${scheme} ${name}`).toBeGreaterThanOrEqual(4.5);
+          for (const [name, ink] of glyphs) expect(contrast(composite(ink, bed), bed), `${scheme} ${name}`).toBeGreaterThanOrEqual(3);
+        }
       }
-      expect(paint(skin.actionLabel(tokens))).toBe(tokens["inverse-primary"]!);
     });
 
     it(`paints the ${scheme} Android snackbar action in the palette's inverse primary on the pill`, () => {
@@ -562,14 +566,21 @@ const avatarPlatforms = [
 ];
 
 describe("Avatar initials contrast", () => {
-  // The disc is Dark Factory's gradient (src/style/identity-hue.ts), so the initials are
-  // held to 4.5:1 against BOTH of its stops, for every identity hue; the rendered initials
-  // are that disc's ink, in every look and on every platform.
-  it("holds the initials' ink at 4.5:1 against both stops of every identity disc", () => {
+  // Argus's reference discs keep Dark Factory's gradient (src/style/identity-hue.ts), so
+  // their ink is held to 4.5:1 against BOTH of its stops, for every identity hue.
+  it("holds the reference disc's ink at 4.5:1 against both stops of every identity gradient", () => {
     for (const hue of IDENTITY_HUES) {
       const disc = identityDisc(hue);
       expect(textContrast(disc.ink, rgba(disc.from)), `hue ${hue} pale stop`).toBeGreaterThanOrEqual(4.5);
       expect(textContrast(disc.ink, rgba(disc.to)), `hue ${hue} deep stop`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+  // A stock disc is the v4 hand-off's: the hue's 22% wash over the page under its solved
+  // ink, which holds 4.5:1 on that wash for every hue, in every look.
+  it("holds the hand-off disc's ink at 4.5:1 on its wash over the page, for every hue and look", () => {
+    for (const look of LOOKS) for (let hue = 0; hue < 360; hue += 15) {
+      const disc = initialsDisc(hue, look.tokens.background, look.scheme === "dark");
+      expect(contrastRatio(disc.ink, compositeOver(disc.wash, look.tokens.background)), `${look.name} hue ${hue}`).toBeGreaterThanOrEqual(4.5);
     }
   });
   // Enough names to land on most of the ten identity hues (the hash is the component's
@@ -586,7 +597,9 @@ describe("Avatar initials contrast", () => {
         const initials = within(container).getByText(person.split(" ").map((part) => part[0]).join(""));
         const hue = identityHue(person);
         hues.add(hue);
-        expect(rgba(initials.style.color)).toEqual(rgba(identityDisc(hue).ink));
+        const disc = initialsDisc(hue, look.tokens.background, look.scheme === "dark");
+        expect(rgba(initials.style.color)).toEqual(rgba(disc.ink));
+        expect(rgba(container.style.backgroundColor)).toEqual(rgba(disc.wash));
         cleanup();
       }
       expect(hues.size).toBeGreaterThanOrEqual(8);

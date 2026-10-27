@@ -104,12 +104,12 @@ describe("floating labels use text roles without recoloring control indicators",
       expect(rgb(field.style.borderBottomColor)).toBe(rgb(t.ring));
     });
 
-    // The static above-field label never recolours on focus. Web and the Android
-    // grouped fallback title it in `foreground`; the iOS skins title it in the iOS
-    // input-field reference's secondary gray (`muted-foreground`, its Text/Label).
+    // The static above-field label never recolours on focus. The Android grouped and
+    // flush fallbacks title it in `foreground`; the web and iOS skins in the v4
+    // hand-off's secondary ink (`muted-foreground`).
     for (const [name, Component, props, role] of [
       ["Web Input", WebInput, {}, "muted-foreground"], ["iOS Input", IOSInput, {}, "muted-foreground"],
-      ["Web Textarea", WebTextarea, {}, "foreground"], ["iOS Textarea", IOSTextarea, {}, "muted-foreground"],
+      ["Web Textarea", WebTextarea, {}, "muted-foreground"], ["iOS Textarea", IOSTextarea, {}, "muted-foreground"],
       ["Android grouped Input", Input, { prefix: "$" }, "foreground"],
       ["Android flush Textarea", Textarea, { flush: true }, "foreground"],
     ] as const) {

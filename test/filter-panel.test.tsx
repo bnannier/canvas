@@ -5,6 +5,9 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { FilterPanel } from "../src/organisms/filter-panel/filter-panel.tsx";
 import { FilterPanel as FilterPanelIOS } from "../src/organisms/filter-panel/filter-panel.ios.tsx";
 import { FilterPanel as FilterPanelAndroid } from "../src/organisms/filter-panel/filter-panel.android.tsx";
+import { webSkin, iosSkin, androidSkin } from "../src/organisms/filter-panel/filter-panel.styles.ts";
+import { darkColors, lightColors } from "../src/style/tokens.ts";
+import { MONO_FONT } from "../src/style/index.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -46,10 +49,12 @@ describe("FilterPanel", () => {
     );
     expect(screen.getByLabelText("Open").getAttribute("aria-checked")).toBe("true");
     expect(screen.getByLabelText("Bug").getAttribute("aria-checked")).toBe("true");
-    fireEvent.click(screen.getByText("Clear"));
+    fireEvent.click(screen.getByText("Clear 2"));
     expect(cleared).toBe(true);
     expect(selection).toEqual([]);
     expect(screen.getByLabelText("Open").getAttribute("aria-checked")).toBe("false");
+    // The hand-off shows the Clear action only while a filter is on.
+    expect(screen.queryByText(/^Clear/)).toBeNull();
   });
 
   it("is controlled by value: the parent drives the checked rows", () => {
@@ -160,3 +165,43 @@ for (const [platform, Component] of [["web", FilterPanel], ["ios", FilterPanelIO
     });
   });
 }
+
+// The panel is the v4 hand-off's (cv-kit-inputs.js `K.def('filter-panel')`) on every
+// platform; only the option rows differ per OS.
+describe("FilterPanel follows the v4 hand-off", () => {
+  const t = lightColors;
+  it("is the 280 rail at the 14px corner, a field-border hairline over the card fill", () => {
+    for (const skin of [webSkin, iosSkin, androidSkin]) {
+      expect(skin.panelBase).toMatchObject({ width: 280 });
+      expect(skin.borderedSurface(t)).toEqual({ borderRadius: 14, borderWidth: 1, borderColor: t["field-border"], backgroundColor: t.card });
+      expect(skin.panelPad).toEqual({ compact: { padding: 12 }, base: { padding: 16 } });
+      expect(skin.panelStack).toEqual({ compact: { gap: 10 }, base: { gap: 14 } });
+      expect(skin.groupGap).toEqual({ compact: { gap: 4 }, base: { gap: 8 } });
+    }
+  });
+  it("sets the title in 600 14px, the group heading as the 500 11px mono eyebrow and the counts in 400 12px mono, both subtle", () => {
+    for (const c of [lightColors, darkColors]) {
+      expect(webSkin.titleText(c)).toMatchObject({ fontSize: 14, fontWeight: "600", color: c.foreground });
+      expect(webSkin.groupTitle(c)).toMatchObject({ fontFamily: MONO_FONT, fontSize: 11, fontWeight: "500", letterSpacing: 0.88, textTransform: "uppercase", color: c["subtle-foreground"] });
+      expect(webSkin.countText(c)).toMatchObject({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "400", color: c["subtle-foreground"] });
+    }
+  });
+  it("spaces a web row 10 from its count and its rows 8 apart (4 compact)", () => {
+    expect(webSkin.optionRow).toMatchObject({ flexDirection: "row", alignItems: "center", gap: 10 });
+    expect(webSkin.optionGap).toEqual({ compact: { gap: 4 }, base: { gap: 8 } });
+    expect(webSkin.optionRow.minHeight).toBeUndefined();
+  });
+  it("keeps the native rows at the platform touch heights, the iOS trailing check and the Android ripple", () => {
+    expect(iosSkin.optionRow.minHeight).toBe(44);
+    expect(androidSkin.optionRow.minHeight).toBe(48);
+    expect(iosSkin.optionMark.kind).toBe("trailing");
+    expect(androidSkin.optionMark.kind).toBe("indicator");
+    expect(androidSkin.rowRipple).not.toBeNull();
+    expect(webSkin.rowPressedOpacity).toBeNull();
+  });
+  it("renders the counts as text, not badges, and the header Clear as the live count", () => {
+    ui(<FilterPanel groups={[{ title: "Status", options: [{ label: "Active", count: "18", checked: true }, { label: "Invited", count: "4" }] }]} />);
+    expect(screen.getByText("18").getAttribute("style") ?? "").toContain("12px");
+    expect(screen.getByText("Clear 1")).toBeTruthy();
+  });
+});

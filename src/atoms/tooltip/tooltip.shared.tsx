@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type ViewProps, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint, AnchoredOverlay } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type ViewProps, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint, AnchoredOverlay, isGlass, useOverlayAnchor } from "../../style/index.js";
 import { useEscapeLayer } from "../../style/escape-layer.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
@@ -8,6 +8,7 @@ import {
   BUBBLE_GAP,
   HOVER_GRACE_MS,
   bubbleParts,
+  arrowStyle,
   inlineAnchor,
   iconTrigger,
   textTrigger,
@@ -117,6 +118,15 @@ export function triggerOf(p: Pick<TooltipProps, "children" | "iconTrigger" | "te
   if (p.iconTrigger) return "icon";
   if (p.textTrigger) return "text";
   return "button";
+}
+
+// The arrow aims at the side the bubble actually took (a bubble that lacks room on its
+// preferred side flips), drawn in solid mode only: under glass the bubble is a material
+// pane a flat token-filled arrow could not match, as the Popover's beak is omitted there.
+function TooltipArrow({ size, fill, placement }: { size: number; fill: string; placement: Placement }) {
+  const { side } = useOverlayAnchor();
+  const took: Placement = side === "above" ? "top" : side === "below" ? "bottom" : side === "start" ? "left" : side === "end" ? "right" : placement;
+  return <View pointerEvents="none" style={arrowStyle(size, fill, took)} />;
 }
 
 /** Build a Tooltip component from a platform skin. */
@@ -241,7 +251,12 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
         besideEnd={placement === "right"}
         opaque
         cardStyle={paneStyle(theme, surface)}
-        decoration={<GlassPane static layer="dense" shape={surface} tint={inverseDenseTint(theme)} />}
+        decoration={
+          <>
+            <GlassPane static layer="dense" shape={surface} tint={inverseDenseTint(theme)} />
+            {skin.arrow != null && !isGlass(theme) ? <TooltipArrow size={skin.arrow} fill={surface.backgroundColor as string} placement={placement} /> : null}
+          </>
+        }
         inlineStyle={inlineAnchor[placement]}
       >
         <View

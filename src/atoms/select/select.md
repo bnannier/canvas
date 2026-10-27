@@ -20,12 +20,21 @@ The label also names the option list. Use `accessibilityLabel` to provide an exp
 
 Pass `ref` to access the interactive trigger, preserving overlay measurement. Use `useRef<ComponentRef<typeof Select>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
-On web, the default trigger matches Argus’s 40-pixel field frame and 13-pixel
-value, with muted tracked uppercase labels at the kit’s 10-pixel reading floor.
+On web, the trigger is the Canvas v4 field: 40 pixels tall (32 small, 48 large)
+on the sunken fill behind the `field-border` hairline, a 400 14-pixel value (13
+small) and a 16-pixel chevron that turns over while the list is open. The pointer
+darkens the edge to the subtle ink, and keyboard focus or the open list rings it in
+the accent with a 4-pixel halo. The list is a card 6 pixels under the trigger with
+a 4-pixel inset, 34-pixel rows, the chosen row on the `muted` wash with a trailing
+check in the accent ink. iOS keeps the pop-up button (a 44-point field with the
+up-and-down chevrons) and its menu, which marks the chosen row with a leading check;
+Android keeps the Material 3 exposed dropdown, whose menu marks the chosen row with
+its state layer alone.
 
-Use `dense eyebrow soft` for the original compact application field on web.
-`plainOptions` removes the selection gutter and marks the chosen row with action
-ink; pointer hover uses the brand wash. `steadyPress` keeps the resting fill and
+Use `dense eyebrow soft` for the compact application field on web: a 32-pixel
+trigger with a 600 13-pixel value under a tracked uppercase eyebrow label at the
+kit’s 10-pixel reading floor, and 30-pixel rows. `plainOptions` removes the check
+and marks the chosen row with its wash alone; pointer hover uses the brand wash. `steadyPress` keeps the resting fill and
 opacity while pressed. `menuWidth` bounds the floating menu independently of the
 field. `combobox` exposes the selection-field role. Native skins keep their
 platform field anatomy and minimum touch targets.

@@ -3,13 +3,10 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ElementType } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
-import { primaryText } from "../src/style/primary-text.ts";
 
-// One job, different control (the design language's item 5): an iOS list marks each
-// chosen row with a trailing check, in single and multi select alike, and never fills
-// a row for being chosen; the web and Android lead the row with the mark (a ✓ gutter
-// with the chosen label in the selection violet, or the selection Checkbox). iOS menus (Select's pop-up menu) keep
-// UIMenu's leading check, so they are not covered here.
+// One job, different control (the design language's item 5): an iOS option list marks
+// each chosen row with a trailing check. iOS menus (Select's pop-up menu) keep UIMenu's
+// leading check, so they are not covered here.
 
 afterEach(cleanup);
 
@@ -29,46 +26,36 @@ const shown = (check: HTMLElement | null) => check != null && check.style.opacit
 
 const ITEMS = [{ label: "Backend" }, { label: "Frontend", detail: "Web applications" }, { label: "Design" }];
 
-describe("an iOS Listbox", () => {
-  it("marks the chosen option with a trailing check and no row fill, and the check follows a press", async () => {
-    const Listbox = await listbox("ios");
-    render(<ThemeProvider><Listbox accessibilityLabel="Team" items={ITEMS} defaultSelected={1} /></ThemeProvider>);
-    const rows = screen.getAllByRole("option");
-    expect(rows.map((row) => shown(trailingCheck(row)))).toEqual([false, true, false]);
-    // No leading gutter: the row starts with its label stack.
-    expect(rows[1].firstElementChild?.textContent).toBe("FrontendWeb applications");
-    expect(rows[1].style.backgroundColor).toBe("");
-    fireEvent.click(rows[2]);
-    expect(rows.map((row) => shown(trailingCheck(row)))).toEqual([false, false, true]);
-    expect(rows[2].getAttribute("aria-selected")).toBe("true");
-  });
+// Listbox has no platform control on iOS or Android (PLATFORM-REFERENCES.md), so every
+// platform draws the hand-off's list: a chosen row sits on the accent's soft wash with a
+// trailing check in the accent ink, in single and multi select alike.
+const checkSlot = (row: HTMLElement) => row.lastElementChild as HTMLElement;
+const checked = (row: HTMLElement) => checkSlot(row).getAttribute("aria-hidden") === "true" && checkSlot(row).childElementCount === 1;
 
-  it("marks every chosen row the same way in multi-select", async () => {
-    const Listbox = await listbox("ios");
-    render(<ThemeProvider><Listbox multi accessibilityLabel="Teams" items={ITEMS} defaultSelected={[0, 2]} /></ThemeProvider>);
-    const rows = screen.getAllByRole("checkbox");
-    expect(rows.map((row) => shown(trailingCheck(row)))).toEqual([true, false, true]);
-    fireEvent.click(rows[0]);
-    expect(rows.map((row) => shown(trailingCheck(row)))).toEqual([false, false, true]);
-    expect(rows[0].getAttribute("aria-checked")).toBe("false");
-  });
-});
-
-describe("the web and Android Listbox", () => {
-  for (const platform of ["web", "android"] as const) {
-    it(`leads the chosen row with its mark on ${platform}`, async () => {
+describe("the Listbox on every platform", () => {
+  for (const platform of ["web", "ios", "android"] as const) {
+    it(`marks the chosen option with the soft wash and a trailing check that follows a press on ${platform}`, async () => {
       const Listbox = await listbox(platform);
       render(<ThemeProvider light solid><Listbox accessibilityLabel="Team" items={ITEMS} defaultSelected={1} /></ThemeProvider>);
       const rows = screen.getAllByRole("option");
-      for (const row of rows) expect(trailingCheck(row)).toBeNull();
-      expect(rows[1].firstElementChild?.textContent).toBe("✓");
-      // Dark Factory's menu row: the chosen label reads in the selection violet, with no fill.
-      expect(rows[1].style.backgroundColor).toBe("");
-      // The innermost node carrying the label's text (its wrapper has the same text and no ink).
-      const label = (row: HTMLElement) => [...row.querySelectorAll("div")].reverse().find((node) => node.textContent === "Frontend" || node.textContent === "Backend") as HTMLElement;
-      const rgb = (hex: string) => `rgba(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(", ")}, 1.00)`;
-      expect(label(rows[1]).style.color).toBe(rgb(primaryText(lightColors)));
-      expect(label(rows[0]).style.color).toBe(rgb(lightColors.foreground));
+      expect(rows.map(checked)).toEqual([false, true, false]);
+      // No leading gutter: the row starts with its label stack.
+      expect(rows[1].firstElementChild?.textContent).toBe("FrontendWeb applications");
+      expect(rows[1].style.backgroundColor).toBe(lightColors["primary-soft"]!.replace("0.1)", "0.10)"));
+      expect(rows[0].style.backgroundColor).toBe("");
+      fireEvent.click(rows[2]);
+      expect(rows.map(checked)).toEqual([false, false, true]);
+      expect(rows[2].getAttribute("aria-selected")).toBe("true");
+    });
+
+    it(`marks every chosen row the same way in multi-select on ${platform}`, async () => {
+      const Listbox = await listbox(platform);
+      render(<ThemeProvider light solid><Listbox multi accessibilityLabel="Teams" items={ITEMS} defaultSelected={[0, 2]} /></ThemeProvider>);
+      const rows = screen.getAllByRole("checkbox");
+      expect(rows.map(checked)).toEqual([true, false, true]);
+      fireEvent.click(rows[0]);
+      expect(rows.map(checked)).toEqual([false, false, true]);
+      expect(rows[0].getAttribute("aria-checked")).toBe("false");
     });
   }
 });

@@ -4,7 +4,6 @@ import { usePinnedFocus } from "../../style/interaction-override.js";
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   Animated,
-  StyleSheet,
   type NativeSyntheticEvent,
   type TextInput as RNTextInput,
   type TextInputSelectionChangeEventData,
@@ -23,7 +22,7 @@ import {
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
-  GlassPane, paneHost, paneStyle,
+  GlassPane, paneStyle,
   isGlass,
 } from "../../style/index.js";
 
@@ -89,13 +88,10 @@ export interface InputOTPProps {
 export interface InputOTPSkin {
   /** Clear Liquid Glass text entry on the web appearance. */
   liquid?: boolean;
-  /** Gap between cells. shadcn connects cells (gap 0, shared borders); iOS/M3 separate them. */
+  /** Gap between cells, and between a cell and a `groups` dash. */
   gap: (size: Size) => number;
-  /** Whether cells share borders as one connected group (web shadcn) — rounds only the outer corners. */
-  connected: boolean;
   /** A single cell box: shape, fill, border, size. `groupStart`/`groupEnd` mark the ends of
-   *  each connected run (the whole row, or one `groups` chunk) so the web skin rounds and
-   *  closes a run's outer edges while its interior cells keep sharing borders. */
+   *  each run (the whole row, or one `groups` chunk). */
   cell: (
     t: ColorTokens,
     size: Size,
@@ -108,7 +104,7 @@ export interface InputOTPSkin {
   /** The caret bar drawn in the active empty cell. */
   caret: (t: ColorTokens, size: Size) => ViewStyle;
   /** Whether the caret blinks (~1s cycle), the native insertion-point idiom on iOS/Android.
-   *  The web skin keeps its established static bar. */
+   *  The web skin keeps a static bar. */
   caretBlink: boolean;
   /** Opacity applied to the whole control when disabled. */
   disabledOpacity: number;
@@ -127,8 +123,7 @@ const DIGITS_ONLY = /\D/g;
 // em dash, which is what reads as a pause between two halves of a code.
 const SEPARATOR = "–";
 
-// One run of cells: a row of the skin's cells (the connected web run shares its
-// borders and sets no gap; the separated skins pass the row gap in).
+// One run of cells: a row of the skin's separated cells, `gap` apart.
 const RUN: ViewStyle = { flexDirection: "row", alignItems: "center" };
 
 // Digits only unless `alphanumeric`, and never longer than the cell count.
@@ -190,11 +185,9 @@ export function createInputOTP(skin: InputOTPSkin) {
     const entryMaterial = useTextEntryMaterial(!!skin.liquid);
     const { theme } = entryMaterial;
     const { tokens } = theme;
-    // Under glass the code field uses the skin's text-entry material: each separated iOS /
-    // M3 cell takes its own GlassPane, while a connected web run (cells sharing their
-    // borders) takes ONE pane across the run, so it still reads as a single field box.
-    // A cell drops its fill and resting border under glass (the pane's material and
-    // rim carry them) and keeps only its ACTIVE border and ring as state.
+    // Under glass the code field uses the skin's text-entry material: each cell takes its
+    // own GlassPane, dropping its fill and resting border (the pane's material and rim
+    // carry them) and keeping only its ACTIVE border and halo as state.
     const glass = isGlass(theme);
     // HUG: the cell row keeps its content width inside a stretching Column.
     const hug = useHugStyle();
@@ -270,8 +263,7 @@ export function createInputOTP(skin: InputOTPSkin) {
     // last cell so a full code keeps the last cell highlighted while focused.
     const activeIndex = Math.min(value.length, length - 1);
     // The cells, grouped into runs: one unbroken run, or `groups`-sized runs with a
-    // separator between them. A run is one connected field box on the web skin and a
-    // set of separated cells on iOS/M3; either way it is the unit the glass pane spans.
+    // separator between them.
     const runs: number[][] = [];
     for (let index = 0; index < length; index++) {
       if (index === 0 || (groupSize ? index % groupSize === 0 : false)) runs.push([]);
@@ -284,33 +276,19 @@ export function createInputOTP(skin: InputOTPSkin) {
         style={[hug, disabled ? { opacity: skin.disabledOpacity } : null, style]}
       >
         {/* The visible segmented row. Relatively positioned so the real input can
-            overlay it absolutely. The connected web group shares borders (gap 0);
-            iOS/M3 separate the cells with `gap`. */}
+            overlay it absolutely. The cells sit `gap` apart. */}
         <View
           style={{
             position: "relative",
             flexDirection: "row",
             alignItems: "center",
-            ...(skin.connected ? null : { gap }),
+            gap,
           }}
         >
-          {runs.map((run, r) => {
-            // A connected run's pane takes the run's outer corners: its first cell's
-            // start radii and its last cell's end radii (the inner seams are square).
-            const first = StyleSheet.flatten(skin.cell(tokens, size, { active: false, filled: false, groupStart: true, groupEnd: run.length === 1 })) as ViewStyle;
-            const last = StyleSheet.flatten(skin.cell(tokens, size, { active: false, filled: false, groupStart: run.length === 1, groupEnd: true })) as ViewStyle;
-            const runShape: ViewStyle = {
-              borderTopStartRadius: first.borderTopStartRadius,
-              borderBottomStartRadius: first.borderBottomStartRadius,
-              borderTopEndRadius: last.borderTopEndRadius,
-              borderBottomEndRadius: last.borderBottomEndRadius,
-            };
-            return (
+          {runs.map((run, r) => (
               <Fragment key={r}>
                 {r > 0 ? (
-                  // The dash between two runs: a separator starts a NEW connected run, so
-                  // the cell after it draws its own left edge and rounds it; without that
-                  // the web skin's shared-border seam would leave the run open on its left.
+                  // The dash between two runs.
                   <Text
                     style={[skin.separator(tokens, size), { pointerEvents: "none" }]}
                     accessibilityElementsHidden
@@ -319,8 +297,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                     {SEPARATOR}
                   </Text>
                 ) : null}
-                <View style={[RUN, skin.connected ? paneHost(theme) : { gap }]}>
-                  {skin.connected ? <GlassPane {...entryMaterial.paneProps} shape={runShape} /> : null}
+                <View style={[RUN, { gap }]}>
                   {run.map((index) => {
                     const char = value[index];
                     const filled = char != null;
@@ -341,7 +318,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                         accessibilityElementsHidden
                         importantForAccessibility="no-hide-descendants"
                       >
-                        {skin.connected ? null : <GlassPane {...entryMaterial.paneProps} shape={cellShape} stateBorder={active} />}
+                        <GlassPane {...entryMaterial.paneProps} shape={cellShape} stateBorder={active} />
                         {filled ? (
                           // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
                           // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
@@ -355,8 +332,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                   })}
                 </View>
               </Fragment>
-            );
-          })}
+          ))}
 
           {/* The real input: one transparent, caret-hidden field stretched over the
               whole row. It captures typing, paste, and one-time-code autofill, then

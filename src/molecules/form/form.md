@@ -2,6 +2,8 @@
 
 Stitch your own fields inside it; Form adds the stacked or two-column rhythm, titled sections, the submit and cancel actions row, and Enter to submit.
 
+The actions row sits under a hairline rule, a ghost cancel before the primary submit; each FormSection closes with the same rule, and in the two-column flow a section takes the whole row. A `disabled` form dims as a whole and disables its actions.
+
 ## Usage
 
 On the web, Enter confirms an active Autocomplete suggestion before it can submit the form. A subsequent Enter submits after the list closes. Enter used to confirm an input-method candidate never submits, and holding Enter does not repeat submission. Multiline fields retain Enter for newlines. On native platforms, each field's `onSubmitEditing` owns the return-key action.

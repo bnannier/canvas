@@ -2,10 +2,10 @@
 
 Vertical action menu items and navigation links.
 
-On the web the ··· trigger is Dark Factory's plain icon button, a small square with a
-muted glyph that takes the hover wash, and it opens Dark Factory's menu, the same one
-Dropdown opens. iOS and Android keep their platform context menus in the theme's
-colours.
+On the web the ··· trigger is a 32px square on the field hairline, washed while its
+menu is open or under the pointer, and it opens a card menu 220 wide: rows 34 tall
+with a muted leading glyph beside the label, and a destructive row in red. iOS and
+Android keep their platform context menus in the theme's colours.
 
 In glass mode the menu is a dense-layer glass card beside its glyph; a row's
 callback fires the moment it is pressed. Solid mode paints the skin's own menu.

@@ -15,6 +15,7 @@ export function ActivityAccordionRow({ Card, item, expanded, disabled, compact, 
     <Pressable {...target} accessibilityRole={renderHeader ? "none" : "button"} accessibilityLabel={item.title} accessibilityState={{ expanded, disabled }} aria-expanded={expanded} disabled={disabled} onPress={onToggle} style={[s.header(compact), hovered ? { backgroundColor: hoverFill(tokens) } : null, disabled ? s.disabled : null]}>
       {renderHeader ? renderHeader(item, expanded, indicator) : <><Typography body bold>{item.title}</Typography>{indicator}</>}
     </Pressable>
-    {expanded ? <View style={[s.content(compact), { borderTopColor: tokens.border }]}>{item.content}</View> : null}
+    {/* A string trace is text: React Native never takes a bare string inside a View. */}
+    {expanded ? <View style={[s.content(compact), { borderTopColor: tokens.border }]}>{typeof item.content === "string" ? <Typography small muted>{item.content}</Typography> : item.content}</View> : null}
   </Card>;
 }

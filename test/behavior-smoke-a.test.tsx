@@ -24,7 +24,7 @@ const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 const channels = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(", ");
 // The success token's channels.
 // Success TEXT reads in the success-text role (solved to its floor from the success colour,
-// tools/v4/derive-inks.ts): a Stats rise and the EmptyState success glyph. A Stats decline
+// tools/v4/derive-inks.ts): a Stats rise. A Stats decline
 // reads in the error ink (the destructive-text role).
 const SUCCESS = channels(lightColors["success-text"]!);
 const GREEN = SUCCESS;
@@ -175,16 +175,18 @@ describe("EmptyState", () => {
     expect(screen.getByText("Compose")).toBeTruthy();
   });
 
-  // discTone/glyphTone: `success` washes the disc + glyph the semantic success
-  // green; the default tone stays on the muted / muted-foreground tokens. Assert
-  // the success glyph is green and the default glyph is NOT (tone axis flips).
-  it("paints the glyph green for the success tone and muted otherwise", () => {
+  // discTone/glyphTone: `success` washes the tile and draws the glyph in the success
+  // status colour (a glyph, held to the 3:1 graphics floor, not a text ink); the default
+  // tone is the accent's soft wash under the accent's ink (the hand-off's empty state).
+  it("paints the glyph in the success colour for the success tone and the accent's ink otherwise", () => {
     const good = ui(<EmptyState icon="✅" title="All clear" success />);
-    expect(good.getByText("✅").getAttribute("style")).toContain(SUCCESS);
+    expect(good.getByText("✅").getAttribute("style")).toContain(channels(lightColors.success));
     good.unmount();
 
     const plain = ui(<EmptyState icon="📦" title="Nothing yet" />);
-    expect(plain.getByText("📦").getAttribute("style")).not.toContain(SUCCESS);
+    const style = plain.getByText("📦").getAttribute("style");
+    expect(style).toContain(channels(lightColors["primary-text"]!));
+    expect(style).not.toContain(channels(lightColors.success));
   });
 
   it("fires onAction when the action button is pressed", () => {

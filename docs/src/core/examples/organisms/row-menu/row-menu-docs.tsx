@@ -17,7 +17,7 @@ export const docs: ComponentDocs = {
   dir: "row-menu",
   category: "organisms",
   overview: [
-    "On the web the ··· trigger is Dark Factory's plain icon button, a small square with a muted glyph that takes the hover wash, and it opens Dark Factory's menu, the same one Dropdown opens. iOS and Android keep their platform context menus in the theme's colours.",
+    "On the web the ··· trigger is a 32px square on the field hairline, washed while its menu is open or under the pointer, and it opens a card menu 220 wide: rows 34 tall with a muted leading glyph beside the label, and a destructive row in red. iOS and Android keep their platform context menus in the theme's colours.",
     "In glass mode the menu is a dense-layer glass card beside its glyph; a row's callback fires the moment it is pressed. Solid mode paints the skin's own menu. Board's card menus are RowMenus and behave the same.",
   ],
   examples: [
@@ -38,6 +38,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["button","link","menu","menuitem"],"states":["expanded"],"aria":["aria-disabled","aria-expanded","aria-haspopup","aria-label"],"touchTarget":["hitSlop","useSeededMinTargetSlop"]},
-  tokens: ["border","foreground","muted-foreground","popover","popover-foreground","primary","secondary"],
+  tokens: ["border","field-border","foreground","input","muted-foreground","popover","popover-foreground","primary","secondary"],
   related: ["tabs","tab-bar","navbars","sidebar","breadcrumb","pagination","steps"],
 };

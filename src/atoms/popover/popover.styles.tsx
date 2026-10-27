@@ -1,8 +1,9 @@
 import { type ReactNode } from "react";
-import { type ViewStyle, type TextStyle } from "react-native";
+import { View, type ViewStyle, type TextStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { type ColorTokens, customShadow, shadow, shape } from "../../style/index.js";
 import { menuPanel } from "../../style/menu-look.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
 import { typeScale } from "../../style/type-scale.js";
 
 // Co-located Popover skins, one per platform, all driven by the theme tokens (passed
@@ -16,10 +17,11 @@ import { typeScale } from "../../style/type-scale.js";
 //     (the iOS menu corner) over the `popover` material, no visible border, a soft lg shadow,
 //     16pt padding, and a slim tapered BEAK pointing toward the anchor (up when the
 //     card is below the trigger, down when above).
-//   Web: Dark Factory's panel (its Popover): a fixed 260px card at the menu corner
-//     with the `border` hairline, the `popover` fill, 16 padding and the popover
-//     shadow; no arrow.
-//   Android: Material 3 has no popover, so the web skin's card.
+//   Web: the v4 hand-off's panel: a 280px card at the menu corner with the
+//     `field-border` hairline, the `popover` fill, 16 padding, the lg shadow, an 8 gap
+//     between its parts, a 15px display heading and a 12px diamond beak toward the
+//     trigger (solid only; under glass the material's rim is the edge).
+//   Android: Material 3 has no popover, so the web skin's card in the platform face.
 // At the phone form factor the card is presented as a sheet (`sheet`), and every
 // platform ships a real control for that job, so each draws its own: Dark Factory's
 // sheet on the web (its sheet corner on top, its hairline), the iOS 27 sheet (its
@@ -53,6 +55,8 @@ export interface PopoverSkin {
   arrow: ((t: ColorTokens, placement: Placement, anchor?: { centerX: number; cardWidth: number }) => ReactNode) | null;
   /** Standoff reserved for the solid arrow's protrusion. */
   arrowGap?: number;
+  /** Space above the custom content and the action row (the panel's gap); 12 when omitted. */
+  sectionGap?: number;
   /** The card presented as a sheet at the phone form factor: corners, padding, fill, elevation. */
   sheet: (t: ColorTokens) => ViewStyle;
 }
@@ -97,26 +101,59 @@ export const actionRow: ViewStyle = { marginTop: 12, flexDirection: "row", justi
 const TITLE_TYPE: TextStyle = typeScale.heading;
 const DESC_TYPE: TextStyle = { marginTop: 4, ...typeScale.body };
 
-// ---------- Web: Dark Factory's panel ----------
-// A fixed 260px card, the `border` hairline, the `popover` fill (translucent under
-// glass), 16 padding, the popover shadow; no arrow.
+// ---------- Web: the v4 hand-off's panel ----------
+// The hand-off's Popover renderer: a 280px card, the panel material (the `popover` fill,
+// the 1px `field-border` hairline, the lg shadow) at the menu corner, 16 padding and an 8
+// gap; its heading is the display face at 15/600 with -0.015em tracking (its 1.25
+// line-height), its description 14/1.5 in the muted ink.
+const WEB_BEAK = 12;
+const WEB_TITLE: TextStyle = { fontFamily: DISPLAY_FONT, fontSize: 15, lineHeight: 19, fontWeight: "600", letterSpacing: -0.225 };
+const WEB_DESC: TextStyle = { marginTop: 8, fontSize: 14, lineHeight: 21, fontWeight: "400" };
+
+/** The hand-off's beak: a 12px square turned 45 degrees, half of it out past the card
+ *  edge facing the trigger, in the card's fill with the hairline on its two outer sides.
+ *  Centered on the trigger when the anchor is known, else 24 in from the start edge. */
+export function webBeakStyle(t: ColorTokens, placement: Placement, anchor?: { centerX: number; cardWidth: number }): ViewStyle {
+  const up = placement === "bottom";
+  const inset = shape.web.menu;
+  const left = anchor
+    ? Math.max(inset, Math.min(anchor.centerX - WEB_BEAK / 2, anchor.cardWidth - inset - WEB_BEAK))
+    : 24;
+  return {
+    position: "absolute",
+    left,
+    ...(up ? { top: -WEB_BEAK / 2 } : { bottom: -WEB_BEAK / 2 }),
+    width: WEB_BEAK,
+    height: WEB_BEAK,
+    backgroundColor: t.popover,
+    borderColor: t["field-border"],
+    ...(up
+      ? { borderTopWidth: 1, borderLeftWidth: 1 }
+      : { borderBottomWidth: 1, borderRightWidth: 1 }),
+    transform: [{ rotate: "45deg" }],
+  };
+}
+
 export const webSkin: PopoverSkin = {
-  cardWidth: 260,
+  cardWidth: 280,
   compactCard: (t) => menuPanel(t, true),
-  // The card at the menu corner (16).
+  // The card at the menu corner.
   card: (t) => ({
-    width: 260,
+    width: 280,
     maxWidth: "100%",
     borderRadius: shape.web.menu,
     borderWidth: 1,
-    borderColor: t.border,
+    borderColor: t["field-border"],
     backgroundColor: t.popover,
     padding: 16,
     ...shadow("lg", t),
   }),
-  title: (t) => ({ ...TITLE_TYPE, color: t["popover-foreground"] }),
-  description: (t) => ({ ...DESC_TYPE, color: t["muted-foreground"] }),
-  arrow: null,
+  title: (t) => ({ ...WEB_TITLE, color: t["popover-foreground"] }),
+  description: (t) => ({ ...WEB_DESC, color: t["muted-foreground"] }),
+  sectionGap: 8,
+  // The beak overlaps the card by half its diagonal; the card stands 10 off the trigger.
+  arrowGap: 10,
+  arrow: (t, placement, anchor) => <View style={webBeakStyle(t, placement, anchor)} />,
   // Dark Factory's sheet: the sheet corner on the top edge, the hairline on the three
   // edges the page meets, the `popover` fill and its shadow.
   sheet: (t) => ({
@@ -237,10 +274,12 @@ export const iosSkin: PopoverSkin = {
 };
 
 // ---------- Android: Material 3 has no popover, so the web skin's card ----------
+// In the platform face (Roboto): the display face is the web skins' only.
 // Its phone sheet is the Material 3 modal bottom sheet: the sheet corner on the top
 // edge, lineless and flat (its scrim sets it off the page), the `popover` fill.
 export const androidSkin: PopoverSkin = {
   ...webSkin,
+  title: (t) => ({ ...WEB_TITLE, fontFamily: undefined, color: t["popover-foreground"] }),
   sheet: (t) => ({
     borderTopLeftRadius: shape.android.sheet,
     borderTopRightRadius: shape.android.sheet,

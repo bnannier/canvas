@@ -1,3 +1,4 @@
+import { AVATAR_DIAMETER } from "../src/atoms/avatar/avatar.shared.tsx";
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import { Text } from "react-native";
@@ -198,10 +199,12 @@ describe("Skeleton", () => {
 
   it("the size prop scales the avatar footprint", () => {
     const large = ui(<Skeleton avatar large />);
-    expect((large.container.querySelector('[role="progressbar"]') as HTMLElement).style.width).toBe("48px");
+    // The placeholder is the Avatar's own large disc.
+    expect((large.container.querySelector('[role="progressbar"]') as HTMLElement).style.width).toBe(`${AVATAR_DIAMETER.large}px`);
     cleanup();
+    // The hand-off draws no smaller placeholder: `small` keeps the Avatar's default disc.
     const small = ui(<Skeleton avatar small />);
-    expect((small.container.querySelector('[role="progressbar"]') as HTMLElement).style.width).toBe("32px");
+    expect((small.container.querySelector('[role="progressbar"]') as HTMLElement).style.width).toBe(`${AVATAR_DIAMETER.default}px`);
   });
 
   it("a composite shape scaffold nests blocks the single-line default does not", () => {

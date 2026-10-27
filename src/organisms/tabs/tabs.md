@@ -2,10 +2,15 @@
 
 Underline, pill, vertical, with badges.
 
-In glass mode a filled selection is a control-layer pane behind the selected
-label, in the platform skin's selected tint with readable foreground ink. iOS
-and web share the capsule segmented control; Android underline tabs keep their
-ink indicator. Solid mode keeps the complete platform treatment.
+On the web the underline look marks the active tab with a glowing accent bar on
+the row's hairline, pills sit on a rounded track with a raised thumb, and the
+vertical rail washes its active row in the accent. iOS draws its segmented
+control (UISegmentedControl): underline and pills are a capsule track with a
+raised thumb, and vertical is a grouped rail. Android draws Material 3's tabs.
+In glass mode a filled selection is a
+control-layer pane behind the selected label, in the platform skin's selected
+tint with readable foreground ink. Solid mode keeps the complete platform
+treatment.
 
 ## Usage
 
@@ -140,7 +145,7 @@ vertical rail honors `wrap` once it flattens.
 
 ### Vertical
 
-**Do** — Fill the active rail item with the accent background so the selected pane is unmistakable.
+**Do** — Wash the active rail item in the accent so the selected pane is unmistakable.
 
 ```tsx
 <Tabs tabs={["General", "Security", "Notifications"]} defaultActive={0} vertical />

@@ -15,12 +15,12 @@ export const docs: ComponentDocs = {
   dir: "toast",
   category: "organisms",
   overview: [
-    "On the web and iOS the toast is Dark Factory's pill: the same deep fill in every palette and scheme, a bold white message, a pill with no description (a long message wraps inside the capsule) and a rounder card once a description sits under the message, with the intent glyph, the action and the dismiss in inks that read on the dark fill. Android keeps the Material 3 snackbar on the same fill.",
-    "For a single brief notification, use `<ToastProvider single brief safeArea duration={2800} bottomInset={28} horizontalInset={20}>`. New messages replace the current pill and restart its lifetime. `safeArea` includes the device safe area. `brief` retains a single line without the dismiss control; Android retains its snackbar skin.",
+    "On the web and iOS the toast is a floating card: the overlay panel at the card corner, up to 380px wide, with the intent glyph in its status color (the accent's sparkle on a neutral toast), a medium message over a muted description, and the action in the accent. A `brief` toast hugs its one line. Android keeps the Material 3 snackbar on the inverse fill.",
+    "For a single brief notification, use `<ToastProvider single brief safeArea duration={2800} bottomInset={28} horizontalInset={20}>`. New messages replace the current toast and restart its lifetime. `safeArea` includes the device safe area. `brief` retains a single line without the dismiss control; Android retains its snackbar skin.",
     "Tab reaches a toast's action and its dismiss, and Escape dismisses the toast that holds focus, then returns focus to where it came from. A toast the user is not in never takes Escape, so the key still reaches the page or the Dialog under it. A provider toast always answers it (a `brief` one too), a directly rendered `<Toast>` when it has `onDismiss`. On iOS the same dismiss answers the accessibility escape (the VoiceOver two-finger scrub, and Escape under Full Keyboard Access). Android delivers no Escape key to a view, and its back gesture is never taken for a toast.",
   ],
   examples: [
-    { label: "Default", code: "<AppScreen>\n  <ToastProvider>\n    <WithToast hook={useToast}>\n      {({ toast }) => <Button onPress={() => toast({ message: \"Profile updated\" })}>Show toast</Button>}\n    </WithToast>\n  </ToastProvider>\n</AppScreen>", render: e_organisms_toast_example_0, note: ["Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)"] },
+    { label: "Default", code: "<AppScreen>\n  <ToastProvider>\n    <WithToast hook={useToast}>\n      {({ toast }) => <Button onPress={() => toast({ message: \"Profile updated\" })}>Show toast</Button>}\n    </WithToast>\n  </ToastProvider>\n</AppScreen>", render: e_organisms_toast_example_0, note: ["Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing card that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)"] },
     { label: "Rendered directly", code: "<Toast message=\"Your changes were saved\" description=\"They are live for everyone.\" />", render: e_organisms_toast_example_1 },
     { label: "Success", code: "<Toast success message=\"Profile updated\" />", render: e_organisms_toast_example_2 },
     { label: "Destructive", code: "<Toast destructive message=\"Upload failed\" />", render: e_organisms_toast_example_3 },
@@ -37,6 +37,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["button","status"],"states":[],"aria":["aria-live"],"touchTarget":["hitSlop"]},
-  tokens: ["popover"],
+  tokens: ["destructive","field-border","foreground","muted-foreground","popover","subtle-foreground","success","warning"],
   related: ["button","dialog","alert-dialog","drawer","action-sheet","popover","tooltip","dropdown"],
 };

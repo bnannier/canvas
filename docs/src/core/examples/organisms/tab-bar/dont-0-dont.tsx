@@ -7,15 +7,15 @@ export default function Example(scope: ExampleScope) {
   return (
 <View style={{ flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingTop: 6 }}>
   <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 4 }}>
-    <Icon home size={22} primary />
+    <Icon home size={19} primary />
     <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "600", color: tokens.primary }}>Home</Text>
   </View>
   <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 4 }}>
-    <Icon search size={22} primary />
+    <Icon search size={19} primary />
     <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "600", color: tokens.primary }}>Search</Text>
   </View>
   <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 4 }}>
-    <Icon user size={22} primary />
+    <Icon user size={19} primary />
     <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "600", color: tokens.primary }}>Profile</Text>
   </View>
 </View>

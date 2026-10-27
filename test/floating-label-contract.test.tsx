@@ -90,7 +90,7 @@ const FILLED: Case[] = [
     ui: <Autocomplete label={`Autocomplete ${size}`} options={["Ada", "Grace"]} defaultValue="Ada" {...sizeProps(size)} />,
     expected: expectedFloat(autocompleteSkin, size, heightOf(autocompleteSkin.field(t, size, false))),
   })),
-  ...(["small", "default", "large"] as const).map((size) => ({
+  ...(["small", "base", "large"] as const).map((size) => ({
     name: `Textarea ${size}`, label: `Textarea ${size}`, size,
     ui: <Textarea label={`Textarea ${size}`} defaultValue="Notes" rows={3} {...sizeProps(size)} />,
     expected: expectedFloat(textareaSkin, size, 0, true),
@@ -404,21 +404,16 @@ describe("a long label stays inside its field", () => {
     </ThemeProvider>);
     const sides = (label: string) => ({ left: boundsOf(label).style.left, right: boundsOf(label).style.right });
     expect(sides("Input")).toEqual({ left: "16px", right: "16px" });
-    expect(sides("Textarea")).toEqual({ left: "12px", right: "12px" });
+    expect(sides("Textarea")).toEqual({ left: "16px", right: "16px" });
     // Autocomplete's toggle runs to the field's end edge: its 48 dp target.
     const target = autocompleteSkin.chevronTarget("default");
     const field = autocompleteSkin.field(t, "default", false);
     expect(sides("Autocomplete")).toEqual({ left: "16px", right: `${num(target.width, 0) + num(target.marginEnd, 0) + num(field.paddingHorizontal, 0)}px` });
-    // Select's chevron is a glyph: its font size seeds the room it takes until its width is measured.
+    // Select's disclosure is the Material drop-down triangle in its fixed 24dp box, after the
+    // row's 12dp gap and the trigger's 12dp end padding.
     const trigger = selectSkin.trigger(t, "default", false);
-    const chevron = selectSkin.chevron(t, "default", false);
-    const select = (glyph: number) => `${num(trigger.paddingHorizontal, 0) + glyph + num(trigger.gap, 0)}px`;
-    expect(sides("Select")).toEqual({ left: "16px", right: select(num(chevron.fontSize, 0)) });
-    layout(screen.getByText(selectSkin.chevronGlyph), { width: 9.5, height: 24 });
-    expect(sides("Select").right).toBe(select(9.5));
-    // At twice the text size the glyph is wider, and the label gives it the room.
-    layout(screen.getByText(selectSkin.chevronGlyph), { width: 19, height: 48 });
-    expect(sides("Select").right).toBe(select(19));
+    expect(sides("Select")).toEqual({ left: "16px", right: `${num(trigger.paddingEnd, 0) + selectSkin.disclosure.size("default") + num(trigger.gap, 0)}px` });
+    expect(sides("Select").right).toBe("48px");
   });
 
   it("truncates on one line, the floating view hugging the text at the start edge, while the field's name is the whole label", () => {
@@ -514,7 +509,7 @@ describe("the float follows the user's text size", () => {
 
   it("Textarea: the multiline label rests on the grown first line and floats onto the new reserve", () => {
     render(<ThemeProvider light><Textarea label="Notes" defaultValue="Seeded" rows={3} /></ThemeProvider>);
-    const seeds = seedsOf(textareaSkin, "default");
+    const seeds = seedsOf(textareaSkin, "base");
     const line = seeds.line * 2;
     layout(screen.getByText("Notes"), { height: line });
     const { reserve, floatedCenter } = grown(seeds, line);

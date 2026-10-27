@@ -1,6 +1,7 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens } from "../../style/index.js";
+import { MONO_FONT, type ColorTokens } from "../../style/index.js";
 import { fieldBorder } from "../../style/field-colors.js";
+import { platformShape } from "../../style/platform-shape.js";
 import {
   webSkin as inputWeb,
   iosSkin as inputIos,
@@ -29,8 +30,12 @@ import {
 //     divider on the field side that takes the field's state colour (rest hairline,
 //     ring on focus, destructive on error); the dial code sits inline in the
 //     placeholder gray, 12pt from the divider, 12pt before the number.
-//   Web: an addon box (a `muted` cluster with a `border` divider), the
-//     ▾ caret in `muted-foreground`, the dial code inline.
+//   Web: the v4 hand-off (cv-kit-inputs.js `K.def('phone-input')`): the country is a
+//     chip inside the Input's sunken well, 8 from its edge, 70% of the box tall, 8 inset,
+//     at the key corner on the `muted` fill, naming the country by its ISO code in the
+//     500 12px mono face beside a 12px chevron in the subtle ink; then, 8 apart, the dial
+//     code in the subtle ink and the number, both in the 400 14px mono face. The focused
+//     box wears the Input's accent halo.
 //   Android (Material 3): an inline leading cluster with no fill and no divider
 //     (M3 draws prefixes inline), a `muted-foreground` caret that turns `primary`
 //     while the list is open, the dial code inline.
@@ -42,8 +47,17 @@ export interface PhoneInputSkin {
   field: InputSkin;
   /** The platform's Select skin: the country list's panel, rows, and selection mark. */
   menu: SelectSkin;
-  /** The country segment: the pressable flag + caret cluster at the start of the box. */
-  country: (t: ColorTokens, state: FieldState) => ViewStyle;
+  /** The country segment: the pressable flag (or code) + caret cluster at the start of the box. */
+  country: (t: ColorTokens, state: FieldState, size: Size) => ViewStyle;
+  /**
+   * When set, the segment names the country by its ISO code in this type instead of its
+   * flag (the web hand-off's chip).
+   */
+  code?: (t: ColorTokens) => TextStyle;
+  /** When set, the caret is the Icon chevron at this size, in the caret's ink, instead of `caretGlyph`. */
+  caretIcon?: number;
+  /** The face of the dial code and the number, when it is not the field's own (the web's mono). */
+  numberFace?: TextStyle;
   /** The flag glyph's type per size. */
   flag: (size: Size) => TextStyle;
   /** The caret next to the flag; `open` lets a skin tint it while the list shows. */
@@ -64,23 +78,29 @@ const FLAG_SIZE: Record<Size, TextStyle> = {
   large: { fontSize: 22, lineHeight: 28 },
 };
 
-// ---------- Web: a `muted` addon cluster ----------
+// ---------- Web: the hand-off's country chip inside the sunken well ----------
 export const webSkin: PhoneInputSkin = {
   field: inputWeb,
   menu: selectWeb,
-  country: (t) => ({
+  country: (t, _state, size) => ({
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 12,
+    alignSelf: "center",
+    gap: 6,
+    // 70% of the box: 28 in the 40 field (22 small, 34 large).
+    height: Math.round(inputWeb.groupedHeight(size) * 0.7),
+    marginStart: 8,
+    paddingHorizontal: 8,
+    borderRadius: platformShape.web.key,
     backgroundColor: t.muted,
-    borderColor: t.border,
-    borderEndWidth: 1,
   }),
+  code: (t) => ({ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.foreground }),
   flag: (size) => FLAG_SIZE[size],
-  caret: (t) => ({ color: t["muted-foreground"], fontSize: 12, lineHeight: 16 }),
+  caret: (t) => ({ color: t["subtle-foreground"] ?? t["muted-foreground"] }),
   caretGlyph: "▾",
-  dial: (t) => ({ color: t["muted-foreground"], paddingStart: 16 }),
+  caretIcon: 12,
+  dial: (t) => ({ color: t["subtle-foreground"] ?? t["muted-foreground"], paddingStart: 8 }),
+  numberFace: { fontFamily: MONO_FONT },
   numberGap: 8,
   rowDial: (t) => ({ color: t["muted-foreground"], marginStart: "auto" }),
 };

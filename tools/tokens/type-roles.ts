@@ -32,7 +32,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/organisms/board/board.styles.ts": { plainLabel: "caption", plainEmptyLabel: "small" },
   "src/molecules/feeds/feeds.styles.ts": { activityTime: "tiny", traceTime: "small", traceKind: "caption" },
   "src/style/field-label.ts": { fieldEyebrow: "caption" },
-  "src/atoms/select/select.styles.ts": { "webSkin.label": "caption" },
+  "src/atoms/select/select.styles.ts": { "webSkin.reference.label": "caption" },
   // Dark Factory's sub-12 styles, by the Typography role each one serves.
   "src/style/type-scale.ts": {
     "typeScale.small": "small",
@@ -57,12 +57,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
 
   // Control labels at the small size, and the description lines under them.
   "src/atoms/button-group/button-group.styles.ts": { WEB_CELL_TYPE: "small" },
-  "src/atoms/listbox/listbox.styles.ts": { LABEL_TYPE: "small", detail: "tiny" },
-  "src/atoms/radio/radio.styles.ts": { DESCRIPTION_TYPE: "small" },
-  "src/atoms/slider/slider.styles.ts": { DESCRIPTION_TYPE: "small" },
-  "src/atoms/progress/progress.styles.ts": { dfDescription: "small" },
-  "src/atoms/dropdown/dropdown.styles.ts": { "webSkin.reference.description": "tiny", "webSkin.reference.detail": "small", "webSkin.reference.noteText": "small", "webSkin.menuHeaderDescription": "small" },
-  "src/organisms/toast/toast.styles.ts": { "webSkin.description": "small" },
+  "src/atoms/radio/radio.styles.ts": { "NATIVE_DESCRIPTION.small": "small" },
+  "src/organisms/command/command.styles.ts": { groupHeading: "caption", footerText: "tiny", "webSkin.shortcut": "tiny" },
   "src/molecules/media-objects/media-objects.styles.ts": {
     "webSkin.compact.description": "small",
     "iosSkin.compact.description": "small",
@@ -77,8 +73,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/organisms/sidebar/sidebar.styles.ts": { webEyebrow: "caption" },
   "src/atoms/badge/badge.styles.ts": { "webSkin.sizes": "tiny" },
   "src/molecules/card/card.styles.ts": { eyebrow: "caption" },
-  "src/atoms/chip/chip.shared.tsx": { COUNT_TYPE: "tiny" },
-  "src/atoms/chip/chip.styles.ts": { "webSkin.labelType": "tiny" },
+  "src/atoms/chip/chip.styles.ts": { "webSkin.countType": "tiny" },
   "src/molecules/stats/stats.styles.ts": { "DENSE.denseLabel": "caption", "DENSE.denseDescription": "tiny" },
   "src/atoms/avatar/avatar.reference.tsx": { "REFERENCE_TYPE.annotation": "annotation" },
   "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", "webMenuSkin.menuPillSecondary": "tiny" },
@@ -91,7 +86,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
 
   // Eyebrows, axis and hour labels, tab-bar labels, keycaps.
   "src/atoms/divider/divider.styles.ts": { "webSkin.labelType": "caption" },
-  "src/atoms/kbd/kbd.styles.ts": { LABEL_TYPE: "caption" },
+  "src/atoms/kbd/kbd.styles.ts": { SEPARATOR_TYPE: "small" },
   "src/charts/heatmap/heatmap.shared.tsx": { CAL_MONTH_TYPE: "caption", CAL_WEEKDAY_TYPE: "caption", FLAG_DETAIL_TYPE: "tiny" },
   "src/charts/radar-chart/radar-chart.shared.tsx": { AXIS_LABEL_TYPE: "caption" },
   "src/charts/uptime-bar/uptime-bar.shared.tsx": { EDGE_CAPTION_TYPE: "caption" },
@@ -104,4 +99,10 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     "androidSkin.eventTime": "caption",
   },
   "src/organisms/tab-bar/tab-bar.styles.ts": { "iosSkin.label": "caption", "webSkin.label": "caption" },
+  // A tab's count badge (the hand-off's 11px mono numerals).
+  "src/organisms/tabs/tabs.styles.ts": { webBadgeLabel: "tiny" },
+  // A multiline field's character count (the hand-off's 11px mono meta line).
+  "src/atoms/textarea/textarea.styles.ts": { "webSkin.count": "tiny" },
+  // A filter group's mono eyebrow (the hand-off's 11px uppercase section header).
+  "src/organisms/filter-panel/filter-panel.styles.ts": { groupTitle: "caption" },
 };

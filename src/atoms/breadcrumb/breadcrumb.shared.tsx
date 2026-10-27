@@ -26,17 +26,15 @@ import { Icon } from "../icon/icon.js";
 // createBreadcrumb.
 //
 // Breadcrumb is a "Light" platform treatment: ONE structure on every platform,
-// with per-OS touches limited to the label type (SF tracking on iOS, Material 3
-// label tracking on Android) and the link press feedback (an opacity dim on
+// with per-OS touches limited to the link press feedback (an opacity dim on
 // iOS/web, an android_ripple on Android). Neither iOS nor Android ships a native
-// breadcrumb control, so this matches Web's Catalyst/shadcn trail and applies the
-// platform reading conventions on top — it does not invent a native widget.
+// breadcrumb control, so every platform draws the v4 hand-off's trail in its own face;
+// it does not invent a native widget.
 //
 // Boolean-prop API, one axis: the separator style. Pick one of `chevron`
 // (default), `slash`, or `dot`; first match wins (mirrors Button's intentOf). The
-// foundation has no SVG utility here, so the chevron is a reading-direction glyph
-// (the single-guillemet "›" in LTR, "‹" under RTL) rather than an icon, keeping
-// every separator a Text glyph pointing in the reading direction.
+// chevron is the kit's chevron glyph pointing in the reading direction (mirrored under
+// RTL); the slash and dot are text in the separator's type.
 
 // The press feedback an Android ripple wants: the ink color + borderless flag for
 // the Pressable's android_ripple prop. The link/home crumbs are text-sized targets,
@@ -70,6 +68,10 @@ export interface BreadcrumbSkin {
   pressedOpacity: number | null;
   /** The home-icon glyph size (kept small to sit on the text baseline). */
   homeIconSize: number;
+  /** The chevron separator's glyph size (the slash and dot are text in the separator's type). */
+  separatorIconSize: number;
+  /** The space between a crumb and the separators beside it. */
+  gap: number;
   /**
    * Minimum effective touch target for the link/home crumbs (HIG 44pt on iOS,
    * Material 48dp on Android). The shell pads the text-sized Pressables out to
@@ -124,8 +126,8 @@ export function separatorOf(p: BreadcrumbProps): Separator {
 // the SVG chevron not rendered here). Guillemets are quotation marks, EXCLUDED
 // from Unicode bidi mirroring, so RTL needs the mirrored U+2039 picked explicitly
 // or the divider would keep pointing against the reading direction.
-const SEPARATOR_GLYPH: Record<Separator, string> = {
-  chevron: isRTL() ? "‹" : "›",
+// The text separators; the chevron is a glyph (separatorMark in the shell).
+const SEPARATOR_GLYPH: Record<Exclude<Separator, "chevron">, string> = {
   slash: "/",
   dot: "·",
 };
@@ -139,25 +141,23 @@ export interface BreadcrumbItemProps {
   style?: StyleProp<TextStyle>;
 }
 
-// The nav row: wrapping horizontal trail, centered, with a tight gap (gap-1.5).
+// The nav row: wrapping horizontal trail, centered; the skin's gap is laid on at render.
 const NAV: ViewStyle = {
   flexDirection: "row",
   flexWrap: "wrap",
   alignItems: "center",
-  gap: 6,
 };
 
 // A crumb cell (and the homeIcon cell): the icon/label sits next to its divider.
 const CRUMB: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
-  gap: 6,
 };
 
-// The label line-height every skin renders (text-sm, 14/20); the vertical hitSlop
-// pads this out to the skin's minimum touch target.
+// The fallback label line-height when a skin's link type sets none; the vertical hitSlop
+// pads the line out to the skin's minimum touch target.
 const LABEL_LINE_HEIGHT = 20;
-// Horizontal hitSlop for the text links: modest, so adjacent crumbs (6px gap)
+// Horizontal hitSlop for the text links: modest, so adjacent crumbs (8px gap)
 // keep distinct targets while the tap area still extends past the label edges.
 const LINK_HORIZONTAL_SLOP = 8;
 
@@ -219,7 +219,23 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
     const { tokens } = useTheme();
     const trail = items ?? [];
     const separator = separatorOf(props);
-    const glyph = SEPARATOR_GLYPH[separator];
+    const nav: ViewStyle = { ...NAV, gap: skin.gap };
+    const crumb: ViewStyle = { ...CRUMB, gap: skin.gap };
+    // The divider between crumbs, hidden from assistive tech: the chevron glyph (mirrored
+    // under RTL), or the slash or dot in the separator's type.
+    const separatorInk = skin.separator(tokens).color as string;
+    const separatorMark = () =>
+      separator === "chevron" ? (
+        isRTL() ? (
+          <Icon chevronLeft decorative size={skin.separatorIconSize} color={separatorInk} />
+        ) : (
+          <Icon chevronRight decorative size={skin.separatorIconSize} color={separatorInk} />
+        )
+      ) : (
+        <Text style={skin.separator(tokens)} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
+          {SEPARATOR_GLYPH[separator]}
+        </Text>
+      );
 
     // Collapse a long trail: keep the first crumb + an ellipsis + the last
     // `maxItems - 1` crumbs. `origIndex` preserves each visible crumb's index in
@@ -241,14 +257,14 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
 
     return (
       <View
-        style={[NAV, style]}
+        style={[nav, style]}
         testID={testID}
         role="navigation"
         aria-label="Breadcrumb"
         accessibilityLabel="Breadcrumb"
       >
         {homeIcon ? (
-          <View style={CRUMB}>
+          <View style={crumb}>
             <Pressable
               onPress={() => onItemPress?.("Home", 0)}
               accessibilityRole="link"
@@ -263,22 +279,13 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
             >
               <Icon home muted size={skin.homeIconSize} />
             </Pressable>
-            {trail.length === 0 ? null : (
-              <Text
-                style={skin.separator(tokens)}
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-                aria-hidden
-              >
-                {glyph}
-              </Text>
-            )}
+            {trail.length === 0 ? null : separatorMark()}
           </View>
         ) : null}
         {display.map((entry, index) => {
           const last = index === display.length - 1;
           return (
-            <View key={`${index}-${entry.label}`} style={CRUMB}>
+            <View key={`${index}-${entry.label}`} style={crumb}>
               {entry.ellipsis ? (
                 <Text style={skin.link(tokens)} accessibilityLabel="More levels" aria-label="More levels">
                   {entry.label}
@@ -291,16 +298,7 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
                   {entry.label}
                 </BreadcrumbItem>
               )}
-              {last ? null : (
-                <Text
-                  style={skin.separator(tokens)}
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
-                  aria-hidden
-                >
-                  {glyph}
-                </Text>
-              )}
+              {last ? null : separatorMark()}
             </View>
           );
         })}

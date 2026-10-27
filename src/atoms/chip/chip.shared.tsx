@@ -1,5 +1,8 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, alpha } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, alpha, isGlass } from "../../style/index.js";
+import { composite, contrastRatio, oklchHex, oklchOf } from "../../style/color.js";
+import { useSpaceActivation } from "../../style/use-space-activation.js";
+import { useChipGroup } from "./chip-context.js";
 import { reachSlop, useClipSlop } from "../../style/clip-slop.js";
 import { inlineSide, rowSeam, slopSides } from "../../style/touch-seam.js";
 import { leastLine, styleBox, styleInsets, useSeededMinTargetSlop } from "../../style/touch-target-seed.js";
@@ -14,17 +17,16 @@ import { Icon } from "../icon/icon.js";
 // tappable with `onPress` (a filter toggle), and grows a trailing "×" remove
 // button with `onRemove`.
 //
-// A chip is a LOW-emphasis tag, not a call to action: the neutral chip is Dark
-// Factory's quiet card2 pill, and a coloured chip is its SOFT pill (the color's wash
-// under the color's ink, the recipe Alert and every toned surface share). Two
-// orthogonal axes drive the look:
+// The look is the Canvas v4 hand-off's chip (`K.def('chip')`): the neutral chip is the
+// raised neutral pill inside its hairline, and a coloured chip is its SOFT pill (the
+// color's wash under the color's ink, the recipe Alert and every toned surface share).
+// Two orthogonal axes drive the look:
 //   - Color: a semantic status (success / warning / error / info, from statusColors,
 //     so a success chip and a success badge are one state; neutral is the muted tag)
 //     OR a free-form palette hue (red … rose, gray). Omit for the neutral tag.
-//   - Emphasis: `outline` drops the fill for a border-only chip; `primary` is the
-//     primary color's soft pill. A selected filter chip is Dark Factory's selected chip,
-//     the solid primary with its foreground ink (or its color's soft pill, for a
-//     coloured chip).
+//   - Emphasis: `outline` drops the fill for the field-border edge around the color's
+//     ink; `primary` is the solid accent. A selected filter chip is the accent's soft
+//     wash in the accent ink, whatever its color.
 //
 // Chip is a "Light" platform treatment: one structure and semantic colors (here),
 // with the per-OS look in the skin: label type, shape, and the Android M3 anatomy
@@ -37,21 +39,28 @@ import { Icon } from "../icon/icon.js";
 export type { Hue };
 
 // Literal-hue props, scanned in this order (first match wins) after the status names.
-const COUNT_TYPE: TextStyle = { fontSize: 10, lineHeight: 13, fontWeight: "800", opacity: 0.7 };
-
 const HUES: Hue[] = [
   "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan",
   "sky", "blue", "indigo", "violet", "fuchsia", "purple", "pink", "rose",
 ];
 
 export interface ChipSkin {
-  /** Container shape + padding + gap (the one, compact size). */
+  /** Container shape, height and gap (the one, compact size). */
   base: ViewStyle;
-  hoverFill?: boolean;
+  /** Per-side horizontal insets: beside text, beside an icon (a leading icon, the selected
+   *  check, a trailing element), and beside the remove control. The shell resolves
+   *  paddingStart/End from it. */
+  sidePadding: { text: number; icon: number; remove: number };
   /** Label type. */
   labelType: TextStyle;
-  /** Remove "×" glyph size. */
+  /** The trailing count's type. */
+  countType: TextStyle;
+  /** The remove control's box (its disc, or the bare glyph). */
   removeSize: number;
+  /** The remove "x" glyph inside that box. */
+  removeGlyph: number;
+  /** The remove disc's fill; omit for a bare glyph. */
+  removeDisc?: string;
   /** Remove-button hitSlop, sized so glyph + slop reaches the platform's minimum
    *  touch target (44pt iOS / 48dp Android), biased away from the label: `left` is the
    *  side toward the label (the start; the shell mirrors it in a right-to-left layout). */
@@ -64,24 +73,26 @@ export interface ChipSkin {
    *  `bodyMinTarget` (web and iOS: 11, which clears 44pt around the 25pt pill; the web
    *  drops hitSlop). */
   bodyHitSlop?: number;
-  /** Per-side horizontal insets, for a platform that pads an icon-bearing side
-   *  tighter than a text side (M3: 16dp beside text, 8dp beside an icon). The
-   *  shell resolves paddingStart/End from it; omit to keep `base`'s padding. */
-  sidePadding?: { text: number; icon: number };
-  /** M3 selected filter-chip anatomy: while selected, the chip leads with a
-   *  checkmark at this size and drops its outline (skin-threaded, like the
-   *  Accordion chevron). Omit on iOS/web: their selected look is the fill alone. */
-  selectedCheckSize?: number;
-  /** M3: an idle neutral chip draws its 1dp outline. Omit where the chip is borderless. */
+  /** The selected filter chip's leading check: its size, and whether it replaces a
+   *  leading icon (M3) or leads only a chip that has none (the hand-off's web chip). */
+  selectedCheck: { size: number; replacesIcon: boolean };
+  /** A selected chip keeps an accent edge (the web); M3 drops the outline. */
+  selectedEdge?: boolean;
+  /** M3: an idle neutral chip is the bare container inside its field-border outline. Omit
+   *  for the raised neutral fill inside the hairline. */
   outlined?: boolean;
-  /** M3: a selected chip takes the tonal fill (the primary's soft pill) instead of the solid primary. */
-  tonalSelected?: boolean;
+  /** M3: a neutral chip's leading icon takes the accent ink. */
+  accentIcon?: boolean;
+  /** A hovering pointer brightens the chip by this factor (the web). */
+  hoverBrightness?: number;
+  /** The disabled chip's opacity. */
+  disabledOpacity: number;
 }
 
 export interface ChipProps {
   /** The chip label. */
   children?: ReactNode;
-  /** A dimmed trailing count; enlarges the inset by one pixel. */
+  /** A dimmed trailing count, set in the mono face. */
   count?: number | string;
   /** Pin a chip within an app-owned host layout. */
   start?: boolean;
@@ -96,9 +107,8 @@ export interface ChipProps {
   onRemove?: () => void;
   /**
    * Turns the chip into a filter toggle that owns its own selected state: pressing
-   * it lights up (to the solid `primary`, the tonal primary on Android, or its
-   * color's soft pill when it has a color) and back. Selection is controlled via
-   * `selected`, uncontrolled via `defaultSelected`.
+   * it lights up (to the accent's soft wash, inside an accent edge on the web and iOS)
+   * and back. Selection is controlled via `selected`, uncontrolled via `defaultSelected`.
    */
   selectable?: boolean;
   /** Selected state for a selectable chip (CONTROLLED). Omit for uncontrolled use. */
@@ -107,6 +117,12 @@ export interface ChipProps {
   defaultSelected?: boolean;
   /** Fired with the next selected state when a selectable chip is pressed. */
   onSelectedChange?: (selected: boolean) => void;
+  /**
+   * The chip's option value inside a ChipGroup: the chip is one option of the pick-one
+   * set, selected when the group's value is this one, and reads as a radio. Ignored
+   * outside a group.
+   */
+  value?: string | number;
   // Color axis (pick one; default the neutral tag). Two families, both a soft tint:
   //  - Semantic status (matches Badge): success / warning / error / info / neutral.
   success?: boolean;
@@ -135,9 +151,9 @@ export interface ChipProps {
   pink?: boolean;
   rose?: boolean;
   gray?: boolean;
-  // Emphasis (orthogonal to color). `outline` is border-only; `primary` is the
-  // primary color's soft pill. `secondary` is the default neutral tag (kept for
-  // back-compat; same as passing no color).
+  // Emphasis (orthogonal to color). `outline` is border-only; `primary` is the solid
+  // accent. `secondary` is the raised neutral fill (the default on the web and iOS; on
+  // Android it fills the otherwise bare outlined chip).
   secondary?: boolean;
   primary?: boolean;
   outline?: boolean;
@@ -177,48 +193,100 @@ export function colorOf(p: ChipProps): { tone: StatusColorTone | null; hue: Hue 
   return { tone: null, hue: null, mutedGray: false };
 }
 
-// A status tone's soft pill (statusColors): the wash under the ink, or for `outline` a
-// border in the tone's solid color around the ink.
+// The hand-off's outline edge, the field border, around whatever ink the chip carries.
+function outlineOf(tokens: ColorTokens, text: string): Appearance {
+  return { bg: "transparent", border: tokens["field-border"] ?? tokens.input, text };
+}
+
+// A status tone's soft pill (statusColors): the wash under the ink, or for `outline` the
+// field-border edge around the ink.
 function toneTint(tokens: ColorTokens, tone: StatusColorTone, outline: boolean): Appearance {
-  const { ink, wash, dot } = statusColors(tokens, tone);
-  return outline ? { bg: "transparent", border: dot, text: ink } : { bg: wash, border: "transparent", text: ink, glassTint: wash };
+  const { ink, wash } = statusColors(tokens, tone);
+  return outline ? outlineOf(tokens, ink) : { bg: wash, border: "transparent", text: ink, glassTint: wash };
 }
 
-// Dark Factory's soft alpha (its accent2Soft): a free palette hue washes at this over
-// the surface, in both modes, under the hue's deep ink (800 light, 300 dark), which holds
-// 4.5:1 on every hue over the page, a content pane and a control puck
-// (test/glass-controls.test.tsx pins the floor).
-export const HUE_SOFT = { light: 0.14, dark: 0.16 } as const;
-
-function hueTint(hue: Hue, dark: boolean, outline: boolean): Appearance {
-  const text = palette[`${hue}-${dark ? 300 : 800}`];
-  if (outline) return { bg: "transparent", border: palette[`${hue}-${dark ? 700 : 300}`], text };
-  const wash = alpha(palette[`${hue}-500`], dark ? HUE_SOFT.dark : HUE_SOFT.light);
-  return { bg: wash, border: "transparent", text, glassTint: wash };
+// The hand-off's free-hue chip (cv-kit-code.js, the `CH` colour flags): each hue is an
+// oklch angle, its pill oklch(0.70 0.15 h) at 16% inside the same colour at 30%, under an
+// ink that is oklch(0.64 0.17 h) mixed 72% with the foreground. Where that ink falls under
+// 4.5:1 on the wash over the page (the light page's greens and blues, by a few tenths) it
+// is walked in oklch lightness at its own hue until it clears, the rule the solved inks
+// follow (CLAUDE.md design language item 1); it then clears a content pane and a control
+// puck too (test/glass-controls.test.tsx). The three Canvas hues the hand-off does not
+// name take Tailwind's own angles (emerald 163, sky 237, fuchsia 322).
+export const HUE_ANGLE: Record<Hue, number> = {
+  "red": 25, "orange": 50, "amber": 80, "yellow": 95, "lime": 125, "green": 150, "emerald": 163, "teal": 185, "cyan": 205,
+  "sky": 237, "blue": 245, "indigo": 270, "violet": 290, "fuchsia": 322, "purple": 305, "pink": 350, "rose": 10,
+};
+export const HUE_CHIP = { l: 0.7, c: 0.15, wash: 0.16, edge: 0.3, ink: { l: 0.64, c: 0.17, mix: 0.72 } } as const;
+const HUE_INKS = new Map<string, { wash: string; edge: string; ink: string }>();
+export function hueChip(hue: Hue, tokens: ColorTokens, dark: boolean): { wash: string; edge: string; ink: string } {
+  const key = `${hue}:${tokens.background}:${tokens.foreground}:${dark ? 1 : 0}`;
+  const hit = HUE_INKS.get(key);
+  if (hit) return hit;
+  const h = HUE_ANGLE[hue];
+  const base = oklchHex(HUE_CHIP.l, HUE_CHIP.c, h);
+  const wash = alpha(base, HUE_CHIP.wash);
+  const [lt, ct] = oklchOf(tokens.foreground) ?? [dark ? 1 : 0, 0, 0];
+  const m = HUE_CHIP.ink.mix;
+  const c = HUE_CHIP.ink.c * m + ct * (1 - m);
+  let l = HUE_CHIP.ink.l * m + lt * (1 - m);
+  let ink = oklchHex(l, c, h);
+  const bed = composite(wash, tokens.background);
+  while (contrastRatio(ink, bed) < 4.5 && l > 0 && l < 1) {
+    l = Math.round((l + (dark ? 0.01 : -0.01)) * 1000) / 1000;
+    ink = oklchHex(l, c, h);
+  }
+  const chip = { wash, edge: alpha(base, HUE_CHIP.edge), ink };
+  HUE_INKS.set(key, chip);
+  return chip;
 }
 
-// The neutral (uncolored) chip: Dark Factory's card2 pill in the foreground, the
-// muted-gray tag (`gray`/`neutral`), or a border-only outline; on a skin that outlines
-// its idle chips (M3), the fill carries the `border` hairline too.
-function neutralTint(tokens: ColorTokens, outline: boolean, mutedGray: boolean, outlined: boolean): Appearance {
-  if (outline) return { bg: "transparent", border: tokens.border, text: tokens.foreground };
-  const border = outlined ? tokens.border : "transparent";
-  if (mutedGray) return { bg: tokens.muted, border, text: tokens["muted-foreground"] };
-  return { bg: tokens.secondary, border, text: tokens.foreground };
+function hueTint(tokens: ColorTokens, hue: Hue, dark: boolean, outline: boolean): Appearance {
+  const { wash, edge, ink } = hueChip(hue, tokens, dark);
+  if (outline) return outlineOf(tokens, ink);
+  return { bg: wash, border: edge, text: ink, glassTint: wash };
 }
 
-// A selected filter chip with no color: Dark Factory's selected chip (the solid primary
-// under its foreground ink, brand-tinted glass under glass), or on M3 the tonal fill.
-function selectedTint(tokens: ColorTokens, tonal: boolean): Appearance {
-  if (tonal) return toneTint(tokens, "info", false);
+// The neutral (uncolored) chip, as the hand-off's renderer and its colour-flag override
+// draw it: the raised neutral fill inside the hairline in the foreground ink; `neutral`
+// (the `mute` tone) that fill with no edge in the muted ink, and `gray` the same inside the
+// hairline the chip already had; `secondary` the higher raised fill with no edge; a
+// selectable chip at rest the bare container inside the field border; `outline` that
+// border-only look. On a skin whose idle chip is the bare container (M3) the neutral chip
+// is that container inside the field-border outline, and `secondary` fills it with no edge.
+function neutralTint(tokens: ColorTokens, outline: boolean, muted: "neutral" | "gray" | null, outlined: boolean, secondary: boolean, selectable: boolean): Appearance {
+  if (outline) return outlineOf(tokens, tokens.foreground);
+  if (muted) return { bg: tokens.secondary, border: muted === "gray" ? (outlined ? tokens["field-border"] ?? tokens.input : tokens.border) : "transparent", text: tokens["muted-foreground"] };
+  if (outlined) return secondary ? { bg: tokens.secondary, border: "transparent", text: tokens.foreground } : outlineOf(tokens, tokens.foreground);
+  if (secondary) return { bg: tokens["surface-raised"] ?? tokens.secondary, border: "transparent", text: tokens.foreground };
+  if (selectable) return outlineOf(tokens, tokens.foreground);
+  return { bg: tokens.secondary, border: tokens.border, text: tokens.foreground };
+}
+
+// The solid accent (`primary`): the accent under its foreground ink, brand-tinted glass
+// under glass.
+function solidTint(tokens: ColorTokens): Appearance {
   return { bg: tokens.primary, border: "transparent", text: tokens["primary-foreground"], brand: tokens.primary };
+}
+
+// A selected filter chip, whatever its color: the accent's soft wash in the accent ink,
+// inside an accent edge where the skin keeps one (a state edge, so it stays over a pane).
+function selectedTint(tokens: ColorTokens, edge: boolean): Appearance {
+  const wash = tokens["primary-soft"] ?? tokens["info-soft"] ?? tokens.accent;
+  return { bg: wash, border: edge ? tokens.primary : "transparent", text: primaryText(tokens), glassTint: wash };
 }
 
 /** Build a Chip from a platform skin. */
 export function createChip(skin: ChipSkin) {
   return function Chip(props: ChipProps) {
-    const { children, icon, trailing, onPress, onRemove, disabled, accessibilityLabel, testID, style } = props;
+    const { children, icon, trailing, onPress, onRemove, accessibilityLabel, testID, style } = props;
+    // An option of a ChipGroup: the group owns its selection, its disabled flag and its
+    // roving tab stop.
+    const group = useChipGroup();
+    const option = group != null && props.value !== undefined ? group : null;
+    const disabled = props.disabled === true || option?.disabled === true;
     const selectable =
+      option != null ||
       props.selectable === true ||
       props.selected !== undefined ||
       props.defaultSelected !== undefined ||
@@ -234,7 +302,7 @@ export function createChip(skin: ChipSkin) {
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const naturalHug = useHugStyle();
     const hug = [naturalHug, props.start ? { alignSelf: "flex-start" as const } : null];
-    const { hovered, target: hoverTarget } = useHover(!!skin.hoverFill);
+    const { hovered, target: hoverTarget } = useHover(skin.hoverBrightness != null);
     // A tappable chip's touch area grows to the skin's minimum where it sets one (Android):
     // the pill's own shortfall, measured, and seeded from its padding and border around one
     // label line so it is in place before the first layout (src/style/touch-target-seed.ts).
@@ -259,70 +327,90 @@ export function createChip(skin: ChipSkin) {
     );
 
     const { tone, hue, mutedGray } = colorOf(props);
-    const accent = props.primary === true; // the primary color's soft pill
+    const accent = props.primary === true; // the solid accent
     const outline = props.outline === true;
-    const selectedActive = selectable && selectedState;
+    const selectedActive = option ? option.value === props.value : selectable && selectedState;
     const surfaced = !outline || selectedActive;
-    // M3 selected filter-chip anatomy, threaded through the skin (the Android skin
-    // sets `selectedCheckSize`): while selected, the chip leads with a checkmark
-    // (replacing any custom leading icon) and sheds its outline. iOS/web omit the
-    // size, so their selected look stays the tint swap alone.
-    const selectedCheck = selectedActive ? skin.selectedCheckSize : undefined;
+    // The selected filter chip leads with a checkmark: on M3 it replaces any leading icon,
+    // on the web and iOS it leads only a chip with no icon of its own.
+    const selectedCheck = selectedActive && (skin.selectedCheck.replacesIcon || icon == null) ? skin.selectedCheck.size : undefined;
     // A tappable chip reports its toggle/active state to AT (see the Pressable below).
     const isSelected = selectable ? selectedState : accent;
 
-    // Resolve the paint. A selected filter chip lights up to its color's soft pill, or
-    // with no color to the selected chip (solid primary; tonal on M3); otherwise the color
-    // axis + `outline` pick the tint, and `primary` is the primary color's soft pill.
+    // Resolve the paint. A selected filter chip lights up to the accent's soft wash;
+    // otherwise the color axis + `outline` pick the tint, and `primary` is the solid
+    // accent (an outlined `primary` keeps the accent ink inside the outline edge).
     let appearance: Appearance;
     if (selectedActive) {
-      appearance = tone ? toneTint(tokens, tone, false) : hue ? hueTint(hue, dark, false) : selectedTint(tokens, !!skin.tonalSelected);
+      appearance = selectedTint(tokens, !!skin.selectedEdge);
     } else if (tone) {
       appearance = toneTint(tokens, tone, outline);
     } else if (hue) {
-      appearance = hueTint(hue, dark, outline);
+      appearance = hueTint(tokens, hue, dark, outline);
     } else if (accent) {
-      appearance = outline ? { bg: "transparent", border: tokens.primary, text: primaryText(tokens) } : toneTint(tokens, "info", false);
+      appearance = outline ? outlineOf(tokens, primaryText(tokens)) : solidTint(tokens);
     } else {
-      appearance = neutralTint(tokens, outline, mutedGray, !!skin.outlined);
+      appearance = neutralTint(tokens, outline, mutedGray ? (props.neutral ? "neutral" : "gray") : null, !!skin.outlined, props.secondary === true, selectable);
     }
 
     const handlePress = () => {
-      if (selectable) setSelected(!selectedState);
+      if (option) option.select(props.value as string | number);
+      else if (selectable) setSelected(!selectedState);
       onPress?.();
     };
 
-    // M3 pads an icon-bearing side tighter than a text side; the Android skin opts
-    // in via `sidePadding` and the shell resolves the per-side insets here. The
-    // selected checkmark and the remove button count as icons on their sides.
+    // A group option is a radio: checked when chosen, the group's one tab stop when it is
+    // the chosen (or first enabled) chip, its arrow keys the group's, and Space activates
+    // it on release (RNW's responder handles Space for button roles only). A chip on its
+    // own stays a toggle button (aria-pressed).
+    const roving = option?.itemProps?.(props.value as string | number);
+    const keyboard = useSpaceActivation(disabled || option == null, () => handlePress());
+    const semantics = option
+      ? {
+          ...(roving ? { ref: roving.ref, focusable: roving.focusable, tabIndex: roving.tabIndex } : null),
+          accessibilityRole: "radio" as const,
+          accessibilityState: { checked: selectedActive, disabled },
+          "aria-checked": selectedActive,
+          onKeyDown: (event: Parameters<typeof keyboard.onKeyDown>[0]) => {
+            keyboard.onKeyDown(event);
+            if (!event.defaultPrevented) roving?.onKeyDown(event);
+          },
+          onKeyUp: keyboard.onKeyUp,
+          onBlur: keyboard.onBlur,
+        }
+      : {
+          accessibilityRole: "button" as const,
+          accessibilityState: { selected: isSelected, disabled },
+          "aria-pressed": isSelected,
+        };
+
+    // An icon-bearing side pads tighter than a text side, and the remove control's side
+    // tighter still on the web; the shell resolves the per-side insets here. The selected
+    // checkmark and a trailing element count as icons on their sides.
     const hasLeading = icon != null || selectedCheck != null;
-    const hasTrailing = trailing != null || onRemove != null;
+    const trailingInset = onRemove != null ? skin.sidePadding.remove : trailing != null ? skin.sidePadding.icon : skin.sidePadding.text;
 
     const chrome: StyleProp<ViewStyle> = [
       skin.base,
-      props.count == null ? null : { paddingVertical: 5, paddingHorizontal: 11 },
-      {
-        backgroundColor: hovered && !isSelected && !tone && !hue && !outline ? tokens.hover ?? tokens.accent : appearance.bg,
-        // A selected M3 filter chip drops its outline (the fill carries the
-        // state); the borderWidth stays so the box doesn't shift between states.
-        borderColor: selectedCheck != null ? "transparent" : appearance.border,
-      },
+      // The borderWidth stays when an edge is transparent, so the box never shifts between states.
+      { backgroundColor: appearance.bg, borderColor: appearance.border },
     ];
     const liquid = surfaced && !staticMaterial;
+    const puck = liquid && isGlass(theme);
+    // A selected chip's accent edge is a state edge: it stays a border over the pane.
+    const stateEdge = selectedActive && !!skin.selectedEdge;
     // The pill's whole box, its per-side insets included, so that under glass paneStyle
     // turns the resting border into padding on top of them.
     const box: StyleProp<ViewStyle> = [
       chrome,
-      skin.sidePadding
-        ? {
-            paddingStart: hasLeading ? skin.sidePadding.icon : skin.sidePadding.text,
-            paddingEnd: hasTrailing ? skin.sidePadding.icon : skin.sidePadding.text,
-          }
-        : null,
+      { paddingStart: hasLeading ? skin.sidePadding.icon : skin.sidePadding.text, paddingEnd: trailingInset },
     ];
     const container: StyleProp<ViewStyle> = [
-      surfaced || theme.increasedContrast ? paneStyle(theme, box) : box,
-      disabled && !liquid ? { opacity: 0.5 } : null,
+      surfaced || theme.increasedContrast ? paneStyle(theme, box, stateEdge) : box,
+      disabled && !liquid ? { opacity: skin.disabledOpacity } : null,
+      // The hover brightens the chip; a filter would cut a glass pane off from the backdrop
+      // it samples, so a puck brightens nothing.
+      hovered && !disabled && !puck && skin.hoverBrightness != null ? { filter: `brightness(${skin.hoverBrightness})` } : null,
       hug,
       style,
     ];
@@ -333,7 +421,7 @@ export function createChip(skin: ChipSkin) {
     const frameBox = styleBox(pill);
     const leastPill = {
       width: (frameBox.width ?? 0) + (onRemove ? skin.removeSize + pillGap : 0),
-      height: (frameBox.height ?? 0) + Math.max(children != null ? leastLine(skin.labelType.lineHeight ?? 0) : 0, onRemove ? skin.removeSize : 0),
+      height: frameBox.height != null && pill.height != null ? frameBox.height : (frameBox.height ?? 0) + Math.max(children != null ? leastLine(skin.labelType.lineHeight ?? 0) : 0, onRemove ? skin.removeSize : 0),
     };
     const pillTarget = useSeededMinTargetSlop(bodyMin, bodyMin == null ? undefined : leastPill);
 
@@ -341,12 +429,14 @@ export function createChip(skin: ChipSkin) {
     // `<Icon check />` matches its chip's hue without the caller threading the color.
     // An Icon that sets its own `color` (or a semantic color boolean, which wins
     // inside Icon) keeps it; a non-Icon node (an Avatar) ignores the injected color.
-    const tint = (node: ReactNode): ReactNode =>
+    const tint = (node: ReactNode, ink = appearance.text): ReactNode =>
       isValidElement(node)
         ? cloneElement(node as ReactElement<Record<string, unknown>>, {
-            color: (node.props as Record<string, unknown>).color ?? appearance.text,
+            color: (node.props as Record<string, unknown>).color ?? ink,
           })
         : node;
+    // M3 draws a neutral chip's leading icon in the accent ink.
+    const leadInk = skin.accentIcon && !tone && !hue && !accent && !selectedActive ? primaryText(tokens) : appearance.text;
 
     // The chip's content minus the remove control: the leading check/icon, the
     // label, and any trailing element.
@@ -354,19 +444,19 @@ export function createChip(skin: ChipSkin) {
     const bodyContent = (
       <>
         {selectedCheck != null ? (
-          // The M3 selected filter chip's leading checkmark, riding the label
-          // color. Decorative: the Pressable already reports the selected state
+          // The selected filter chip's leading checkmark, riding the label color.
+          // Decorative: the Pressable already reports the selected state
           // (accessibilityState.selected / aria-pressed).
           <Icon check decorative size={selectedCheck} color={appearance.text} />
         ) : (
-          tint(icon)
+          tint(icon, leadInk)
         )}
         {children != null ? (
           <Text style={[skin.labelType, { color: appearance.text }]}>
             {children}
           </Text>
         ) : null}
-        {props.count == null ? null : <Text style={[COUNT_TYPE, { color: appearance.text }]}>{String(props.count)}</Text>}
+        {props.count == null ? null : <Text style={[skin.countType, { color: appearance.text }]}>{String(props.count)}</Text>}
         {tint(trailing)}
       </>
     );
@@ -384,6 +474,8 @@ export function createChip(skin: ChipSkin) {
     const pillFrame = pillClip.frame();
     const shortfall = slopSides(pillTarget.hitSlop);
     const insets = styleInsets(pill);
+    // A fixed-height pill centers its body: the body sits half the pill's spare height in.
+    const centered = typeof pill.height === "number" ? (pill.height - leastLine(skin.labelType.lineHeight ?? 0)) / 2 : null;
     const bodyReach = bodyMin == null
       ? skin.bodyHitSlop
       : onRemove == null
@@ -391,8 +483,8 @@ export function createChip(skin: ChipSkin) {
         : bodyFrame != null && pillFrame != null
           ? reachSlop(pillFrame, bodyFrame, pillTarget.hitSlop)
           : {
-              top: insets.top + shortfall.top,
-              bottom: insets.bottom + shortfall.bottom,
+              top: (centered ?? insets.top) + shortfall.top,
+              bottom: (centered ?? insets.bottom) + shortfall.bottom,
               [inlineSide("start")]: insets.start + shortfall[inlineSide("start")],
               [inlineSide("end")]: insets.end + shortfall[inlineSide("end")],
             };
@@ -408,7 +500,11 @@ export function createChip(skin: ChipSkin) {
       <Pressable
         onPress={onRemove}
         disabled={disabled}
-        style={liquid && disabled ? { opacity: 0.5 } : null}
+        style={[
+          { width: skin.removeSize, height: skin.removeSize, alignItems: "center", justifyContent: "center", borderRadius: 9999 },
+          skin.removeDisc ? { backgroundColor: skin.removeDisc } : null,
+          liquid && disabled ? { opacity: skin.disabledOpacity } : null,
+        ]}
         accessibilityRole="button"
         // Name the specific chip, not a bare "Remove", when the label is a string.
         accessibilityLabel={typeof children === "string" ? `Remove ${children}` : "Remove"}
@@ -419,7 +515,7 @@ export function createChip(skin: ChipSkin) {
         {...pillClip.measure("remove")}
       >
         {/* The "×" rides the chip's label color so it matches every hue. */}
-        <Icon x size={skin.removeSize} color={appearance.text} />
+        <Icon x size={skin.removeGlyph} color={appearance.text} />
       </Pressable>
     ) : null;
 
@@ -448,13 +544,11 @@ export function createChip(skin: ChipSkin) {
             {...hoverTarget}
             onPress={handlePress}
             disabled={disabled}
-            accessibilityRole="button"
+            {...(semantics as object)}
             accessibilityLabel={accessibilityLabel}
-            accessibilityState={{ selected: isSelected, disabled: !!disabled }}
-            aria-pressed={isSelected}
             hitSlop={bodySlop}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: 0.5 } : null, props.steadyPress ? null : pressDim(pressed, 0.85)]}
+            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: skin.disabledOpacity } : null, props.steadyPress ? null : pressDim(pressed, 0.85)]}
           >
             {bodyContent}
           </Pressable>
@@ -477,14 +571,12 @@ export function createChip(skin: ChipSkin) {
             onPress={handlePress}
             disabled={disabled}
             testID={testID}
-            accessibilityRole="button"
-            accessibilityLabel={accessibilityLabel}
             // Toggle state to AT: the active/selected chip reads as pressed. Announce
             // it natively via accessibilityState.selected and on the web via
             // aria-pressed (RNW drops accessibilityState at the DOM), the dual alias
-            // the Switch uses.
-            accessibilityState={{ selected: isSelected, disabled: !!disabled }}
-            aria-pressed={isSelected}
+            // the Switch uses; a ChipGroup option reads as a checked radio instead.
+            {...(semantics as object)}
+            accessibilityLabel={accessibilityLabel}
             // The compact chip is short: its touch area grows to the minimum (Android) or by
             // the skin's fixed slop (iOS), the same area its RippleClip admits.
             hitSlop={bodySlop}
@@ -499,7 +591,7 @@ export function createChip(skin: ChipSkin) {
               {pane}
               <View style={[
                 { flexDirection: "row", alignItems: "center", gap: skin.base.gap, flexShrink: 1 },
-                liquid && disabled ? { opacity: 0.5 } : null,
+                liquid && disabled ? { opacity: skin.disabledOpacity } : null,
                 liquid ? props.steadyPress ? null : pressDim(pressed, 0.85) : null,
               ]}>{bodyContent}</View>
             </>}

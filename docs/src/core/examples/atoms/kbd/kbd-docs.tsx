@@ -6,6 +6,7 @@ import e_atoms_kbd_example_1 from "./example-1";
 import e_atoms_kbd_example_2 from "./example-2";
 import e_atoms_kbd_example_3 from "./example-3";
 import e_atoms_kbd_example_4 from "./example-4";
+import e_atoms_kbd_example_5 from "./example-5";
 import e_atoms_kbd_dont_0_do from "./dont-0-do";
 import e_atoms_kbd_dont_0_dont from "./dont-0-dont";
 import e_atoms_kbd_dont_1_do from "./dont-1-do";
@@ -19,21 +20,22 @@ export const docs: ComponentDocs = {
   examples: [
     { label: "Default", code: "<Kbd keys=\"⌘ K\" />", render: e_atoms_kbd_example_0 },
     { label: "Single", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_example_1 },
-    { label: "Sequence", code: "<Kbd keys=\"⌘K ⌘S\" sequence />", render: e_atoms_kbd_example_2 },
-    { label: "In a button", code: "<Button outline iconRight={<Kbd keys=\"⌘ K\" />}>Search…</Button>", render: e_atoms_kbd_example_3 },
-    { label: "In a sentence", code: "<Row alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_4 },
+    { label: "Combo", code: "<Kbd keys=\"⌘ ⇧ P\" />", render: e_atoms_kbd_example_2 },
+    { label: "Sequence", code: "<Kbd keys=\"G C\" sequence />", render: e_atoms_kbd_example_3 },
+    { label: "In a button", code: "<Button outline iconRight={<Kbd keys=\"⌘ K\" />}>Search…</Button>", render: e_atoms_kbd_example_4 },
+    { label: "In a sentence", code: "<Row alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_5 },
   ],
   donts: [
     { title: "Single", do: { caption: "Use `children` for one real key; give each cap exactly one key.", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_dont_0_do }, dont: { caption: "Packing a whole shortcut into one key cap reads as a single keystroke that does not exist.", code: "<Kbd>⌘K</Kbd>", render: e_atoms_kbd_dont_0_dont } },
-    { title: "Combo", do: { caption: "Pass every key to `keys`; Kbd lays out the caps with `+` separators and reads as one shortcut to a screen reader.", code: "<Kbd keys=\"⌘ ⇧ P\" />", render: e_atoms_kbd_dont_1_do }, dont: { caption: "Hand-assembling caps and separators is verbose and drops the combined accessible name; let `keys` compose the chord.", code: "<Row alignCenter tight>\n  <Kbd>⌘</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>⇧</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>P</Kbd>\n</Row>", render: e_atoms_kbd_dont_1_dont } },
+    { title: "Combo", do: { caption: "Pass every key to `keys`; Kbd lays out the caps and reads as one shortcut to a screen reader.", code: "<Kbd keys=\"⌘ ⇧ P\" />", render: e_atoms_kbd_dont_1_do }, dont: { caption: "Hand-assembling caps and separators is verbose and drops the combined accessible name; let `keys` compose the chord.", code: "<Row alignCenter tight>\n  <Kbd>⌘</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>⇧</Kbd>\n  <Typography tiny muted>+</Typography>\n  <Kbd>P</Kbd>\n</Row>", render: e_atoms_kbd_dont_1_dont } },
     { title: "In a sentence", do: { caption: "Drop a `keys` Kbd inline so the shortcut reads as physical keys.", code: "<Row wrap alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"Ctrl K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_dont_2_do }, dont: { caption: "Plain-text shortcuts blend into the prose and are easy to miss.", code: "<Typography small>Press Ctrl+K to search.</Typography>", render: e_atoms_kbd_dont_2_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
-  props: [{"name":"KbdProps","props":[{"name":"children","type":"ReactNode","required":false,"description":"A single key label, rendered as one cap. Ignored when `keys` is set."},{"name":"keys","type":"string | string[]","required":false,"description":"A multi-key shortcut, rendered as one cap per key with a separator between them. Pass a whitespace-separated string (`\"⌘ K\"`) or an array (`[\"⌘\", \"K\"]`). A single entry renders one cap, identical to passing that key as `children`. When set, `keys` takes precedence over `children`."},{"name":"sequence","type":"boolean","required":false,"description":"Render a key SEQUENCE (press one, then the next), separating caps with a gap instead of the default `+` combo joiner. Only affects the `keys` form.","default":"false"},{"name":"testID","type":"string","required":false,"description":"E2E hook forwarded to the root element."},{"name":"style","type":"LayoutStyle","required":false,"description":"Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds."}],"groups":[],"inherits":[]}],
+  props: [{"name":"KbdProps","props":[{"name":"children","type":"ReactNode","required":false,"description":"A single key label, rendered as one cap. Ignored when `keys` is set."},{"name":"keys","type":"string | string[]","required":false,"description":"A multi-key shortcut (a combo, pressed together), rendered as one cap per key. Pass a whitespace-separated string (`\"⌘ K\"`) or an array (`[\"⌘\", \"K\"]`). A single entry renders one cap, identical to passing that key as `children`. When set, `keys` takes precedence over `children`."},{"name":"sequence","type":"boolean","required":false,"description":"Render a key SEQUENCE (press one, then the next): the caps are separated by \"then\". Only affects the `keys` form.","default":"false"},{"name":"testID","type":"string","required":false,"description":"E2E hook forwarded to the root element."},{"name":"style","type":"LayoutStyle","required":false,"description":"Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds."}],"groups":[],"inherits":[]}],
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["image","img"],"states":[],"aria":["aria-hidden","aria-label"],"touchTarget":[]},
-  tokens: ["border","muted","muted-foreground"],
+  tokens: ["field-border","foreground","input","muted-foreground","secondary","subtle-foreground"],
   related: ["button","row-column","typography","button-group","switch","checkbox","radio","slider"],
 };

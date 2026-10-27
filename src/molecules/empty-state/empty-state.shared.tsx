@@ -1,10 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { cloneElement, isValidElement, type ComponentType, type ReactElement } from "react";
-import { View, Text, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, withInnerFill } from "../../style/index.js";
+import { View, Text, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./empty-state.styles.js";
-import { type Tone, type EmptyStateSkin } from "./empty-state.styles.js";
+import { type Tone, type Density, type EmptyStateSkin } from "./empty-state.styles.js";
 
 // Shared EmptyState shell. The structure (a centered, calm column: a round icon
 // disc, a semibold title, a muted description, and an optional primary action),
@@ -14,8 +14,8 @@ import { type Tone, type EmptyStateSkin } from "./empty-state.styles.js";
 //
 // Empty state: a centered, calm column that explains why a region is empty and,
 // when the user can act, offers the one action that fills it. Anatomy mirrors the
-// docs entry: a round 48x48 icon disc, a gap, a semibold title, a muted
-// description, and an optional primary action button.
+// Canvas v4 hand-off: a 52 px glyph tile in the accent's soft wash, a display-face
+// title, a muted description, and an optional secondary action button.
 //
 // EmptyState is a "Light" platform treatment: one structure and one set of
 // (semantic) colors, with per-OS touches limited to the bordered card's radius,
@@ -27,12 +27,14 @@ import { type Tone, type EmptyStateSkin } from "./empty-state.styles.js";
 // Boolean-prop API: flat booleans grouped into axes, first-match precedence within
 // an axis (mirrors Button's intentOf).
 //
-// - Tone axis: `success` paints the disc and glyph green for states where
-//   emptiness is good news (no errors, all caught up). The default tone keeps the
-//   disc muted and the glyph muted-foreground for routinely-empty states.
-// - Container axis: `bordered` wraps the column in a rounded, bordered card (used
-//   inside a SectionCard or a table cell). Omit for a bare column.
-// - Density axis: `compact` tightens the card padding for dense table cells.
+// - Tone axis: `success` paints the tile and glyph green for states where
+//   emptiness is good news (no errors, all caught up). The default tone paints them
+//   in the accent's soft wash and ink.
+// - Container axis: `bordered` draws a dashed edge around the column (used inside a
+//   SectionCard or a table cell); `elevated` lifts it onto a shaded card. Omit both
+//   for the bare padded column.
+// - Density axis: `compact` tightens the padding, rhythm, tile and title for dense
+//   table cells.
 
 export interface EmptyStateProps {
   /**
@@ -46,7 +48,7 @@ export interface EmptyStateProps {
   title?: string;
   /** One reassuring line, ideally pointing at the next step. */
   description?: string;
-  /** When set, renders a primary action button below the description. */
+  /** When set, renders a secondary action button below the description (small when `compact`). */
   actionLabel?: string;
   /** Called when the action button is pressed. */
   onAction?: () => void;
@@ -54,9 +56,9 @@ export interface EmptyStateProps {
   success?: boolean;
   // Container axis: wrap the column in a bordered card.
   bordered?: boolean;
-  /** Borderless card with the application empty-state elevation and inset. */
+  /** A shaded card: the `card` fill under the medium shade. */
   elevated?: boolean;
-  // Density axis (only affects the bordered card's padding).
+  // Density axis: tightens the padding, rhythm, tile and title.
   compact?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -93,15 +95,15 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
     const fill = useFillStyle("EmptyState");
     const tone: Tone = toneOf(props);
 
-    // A bordered state is a CONTENT-layer pane under glass (GlassSurface is the plain
-    // View in solid mode); a bare state paints no surface of its own.
+    const density: Density = compact ? "compact" : "default";
+    // A bordered or elevated state is a CONTENT-layer pane under glass (GlassSurface is
+    // the plain View in solid mode); a bare state paints no surface of its own.
     const surfaced = bordered || props.elevated;
     const Root = surfaced ? GlassSurface : View;
     const container: StyleProp<ViewStyle> = [
-      skin.container,
+      skin.container[density],
       bordered ? skin.borderedBase : null,
       bordered ? s.borderedSurface(tokens) : null,
-      bordered ? skin.borderedPad[compact ? "compact" : "default"] : null,
       props.elevated ? skin.elevated(tokens) : null,
       fill,
       style,
@@ -115,9 +117,8 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
           // assistive tech. react-native-web does not forward
           // accessibilityElementsHidden to the DOM, so add the aria-hidden alias.
           <View
-            // The muted disc becomes an ink tint under glass (a wash over the pane); the
-            // success wash is translucent already and stays.
-            style={[skin.discBase, tone === "success" ? s.discTone(tokens, tone) : withInnerFill(theme, s.discTone(tokens, tone), "soft")]}
+            // Both tile washes are translucent already, so they sit on a glass pane as they are.
+            style={[skin.discBase[density], s.discTone(tokens, tone)]}
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
             aria-hidden
@@ -129,18 +130,18 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
               // precedence inside Icon, so a deliberate override still reads.
               cloneElement(icon as ReactElement<Record<string, unknown>>, {
                 color: s.glyphTone(tokens, tone).color,
-                size: skin.glyph.fontSize ?? 20,
+                size: skin.glyphSize[density],
               })
             ) : (
               <Text style={[skin.glyph, s.glyphTone(tokens, tone)]}>{icon}</Text>
             )}
           </View>
         ) : null}
-        {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
+        {title != null ? <Text style={skin.title(tokens, density)}>{title}</Text> : null}
         {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
         {actionLabel != null ? (
           <View style={skin.actionSpacing}>
-            <Button primary small onPress={onAction}>
+            <Button secondary small={compact} onPress={onAction}>
               {actionLabel}
             </Button>
           </View>

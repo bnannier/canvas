@@ -2433,14 +2433,14 @@
       "small"
     ],
     "none": {
-      "height": 14
+      "height": 10
     },
     "single": {
       "large": {
-        "height": 16
+        "height": 14
       },
       "small": {
-        "height": 12
+        "height": 8
       }
     },
     "pairs": {
@@ -2462,8 +2462,8 @@
     ],
     "none": 40,
     "single": {
-      "large": 48,
-      "small": 32
+      "large": 56,
+      "small": 40
     },
     "pairs": {
       "large + small": "large"
@@ -2483,17 +2483,17 @@
       "small"
     ],
     "none": {
-      "height": 36,
-      "width": 112
+      "height": 40,
+      "width": 120
     },
     "single": {
       "large": {
         "height": 48,
-        "width": 128
+        "width": 120
       },
       "small": {
         "height": 32,
-        "width": 80
+        "width": 120
       }
     },
     "pairs": {
@@ -2558,7 +2558,7 @@
       "muted",
       "foreground"
     ],
-    "none": "foreground",
+    "none": "primary",
     "single": {
       "primary": "primary",
       "muted": "muted",
@@ -2578,15 +2578,15 @@
     "pages": [
       "spinner"
     ],
-    "resolver": "src/atoms/spinner/spinner.shared.tsx#sizeOf",
+    "resolver": "src/atoms/spinner/spinner.shared.tsx#sizeKeyOf",
     "order": [
       "large",
       "small"
     ],
-    "none": 20,
+    "none": "base",
     "single": {
-      "large": 32,
-      "small": 16
+      "large": "large",
+      "small": "small"
     },
     "pairs": {
       "large + small": "large"

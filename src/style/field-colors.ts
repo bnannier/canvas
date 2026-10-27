@@ -1,11 +1,12 @@
 import type { ColorTokens } from "./tokens.js";
-import { mixOklab } from "./color.js";
+import { alpha, channelsOf, mixOklab } from "./color.js";
 
-// The colours the field skins share for the two states the semantic set has no
-// single token for: the RESTING border (web and iOS: Input, Textarea, Select,
-// Autocomplete, InputOTP, Stepper, PhoneInput, the Command trigger) and the ERROR
-// fill (iOS). Both come from the "iOS Mobile Input Fields" Figma kit
-// (N8TScrzAPwpmwxFS1032my), the iOS reference the fields are drawn to.
+// The colours the field skins share for the states the semantic set has no single
+// token for: the RESTING border (web and iOS: Input, Textarea, Select, Autocomplete,
+// InputOTP, Stepper, PhoneInput, the Command trigger) and the ERROR fill (iOS), both
+// from the "iOS Mobile Input Fields" Figma kit (N8TScrzAPwpmwxFS1032my), the iOS
+// reference the fields are drawn to; and the web FOCUS HALO (Input, Select,
+// Autocomplete), the v4 hand-off's `--ion-ring`.
 
 /**
  * The resting border of a field: the `field-border` token (gray-300 light,
@@ -22,6 +23,19 @@ import { mixOklab } from "./color.js";
  */
 export function fieldBorder(tokens: ColorTokens): string {
   return tokens["field-border"] ?? tokens.input;
+}
+
+/**
+ * The accent halo around a keyboard-focused web field: the hand-off's `--ion-ring`, the
+ * accent at 35% (28% light). Canvas's `ring` is the solid accent, so the halo is derived
+ * from the `glow` token (the accent at 50%, 40% light) at 0.7 of its alpha, which lands on
+ * both schemes' values without a scheme flag; a token map without `glow` takes the ring at
+ * 35%.
+ */
+export function focusHaloColor(tokens: ColorTokens): string {
+  const g = tokens.glow ? channelsOf(tokens.glow) : null;
+  if (!g) return alpha(tokens.ring, 0.35);
+  return `rgba(${g[0]}, ${g[1]}, ${g[2]}, ${Math.round(g[3] * 0.7 * 1000) / 1000})`;
 }
 
 /**

@@ -1,19 +1,22 @@
-import { ActivityIndicator, Animated, type TextStyle } from "react-native";
-import Svg, { Circle, Line } from "react-native-svg";
-import { type ColorTokens } from "../../style/index.js";
+import { useEffect } from "react";
+import { Animated, type TextStyle } from "react-native";
+import Svg, { Circle, Rect } from "react-native-svg";
+import { LoopView, createLoopChannel, alpha, type ColorTokens } from "../../style/index.js";
 import { type SpinnerSkin } from "./spinner.shared.js";
 
-// Co-located Spinner skins, one per platform. The BRAND survives on every
-// platform (the arc/spoke color is a semantic token, never a platform default),
-// and only the native SHAPE of the loader changes per OS:
-//   iOS (UIActivityIndicatorView): a ring of 12 short rounded SPOKES arranged
-//     radially around the center, each with a graduated opacity (a fading
-//     "clock" of lines), the whole ring rotating continuously. Color = the tone
-//     token (default the muted/foreground arc color).
-//   Android (M3 CircularProgressIndicator, indeterminate): a SINGLE ARC, a ~270deg
-//     stroke of a ring with a rounded cap, in the brand color, sweeping
-//     continuously around the circle.
-//   Web: a React Native ActivityIndicator driven by the same tone/size props.
+// Co-located Spinner skins, one per platform, as the Canvas v4 hand-off draws them
+// (`K.def('spinner')` in tools/v4/handoff/cv-kit-overlays.js and its `K.PF` rows in
+// cv-kit-platform.js). The color is a semantic token on every platform (the accent by
+// default), and only the native SHAPE of the loader changes per OS:
+//   iOS (UIActivityIndicatorView): 8 short rounded SPOKES around the center, each fading
+//     11% further than the one before, the whole ring rotating. 14 / 20 / 32 pt.
+//   Android (M3 CircularProgressIndicator, indeterminate): a SINGLE ARC, 30% of a ring
+//     with a rounded cap at a stroke of an eighth of the diameter (2.5dp at least),
+//     rotating. 16 / 24 / 40 dp.
+//   Web: a ring whose rest is the color at 22% and whose top quarter is the solid color,
+//     an eighth of the diameter thick (2px at least), rotating. 14 / 20 / 32 px.
+// The label beside (or under) the indicator is 500 14 in the foreground, the description
+// 400 12 in the subtle ink, 10px from the indicator.
 
 export type Tone = "primary" | "muted" | "foreground";
 
@@ -21,76 +24,51 @@ export type Tone = "primary" | "muted" | "foreground";
 // useTheme) so it follows light/dark and the glass surface.
 export const TONE_TOKEN = {
   primary: "primary",
-  muted: "muted-foreground",
+  muted: "subtle-foreground",
   foreground: "foreground",
 } satisfies Record<Tone, keyof ColorTokens>;
 
-// The component-owned label + description type. The label is the kit's canonical
-// small (14) muted type; the description sits one step below (12), also muted.
-// Shared across platforms (brand type, not a platform face) so the pairing reads
-// identically on iOS, Android, and web; every skin points at these functions.
-const LABEL_TYPE: TextStyle = { fontSize: 14, lineHeight: 20 }; // text-sm
-const DESCRIPTION_TYPE: TextStyle = { fontSize: 12, lineHeight: 16 }; // text-xs
-
+// The component-owned label + description type, shared across platforms (brand type,
+// not a platform face) so the pairing reads identically on iOS, Android, and web.
 function label(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"], ...LABEL_TYPE };
+  return { color: tokens.foreground, fontSize: 14, lineHeight: 18, fontWeight: "500" };
 }
 function description(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"], ...DESCRIPTION_TYPE };
+  return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"], fontSize: 12, lineHeight: 18, fontWeight: "400" };
 }
 
-// react-native-svg's Circle/Line aren't Animated components. Each spinning skin
-// wraps a static Svg in an Animated.View whose transform interpolates the shared
-// 0..1 value to 0..360deg; the View is centered over the Svg, so rotating it spins
-// the shape (identical to rotating the bounding box, since it is a centered square).
-// We deliberately wrap in Animated.View instead of animating the Svg itself
-// (Animated.createAnimatedComponent(Svg)): react-native's Animated forces
-// `collapsable={false}` (a native-only View prop, meant to keep the view un-flattened
-// for the native driver) onto whatever it wraps, and react-native-svg forwards unknown
-// props to the underlying host node, so on react-native-web that `false` reaches the
-// `<svg>` DOM element and React errors with "Received `false` for a non-boolean
-// attribute `collapsable`". react-native-web's View drops `collapsable`, so parking the
-// animation on the Animated.View keeps it off the DOM.
+// react-native-svg's shapes aren't Animated components. Each natively spinning skin wraps
+// a static Svg in an Animated.View whose transform interpolates the shared 0..1 value to
+// 0..360deg; rotating that centered square spins the shape. (Animating the Svg itself
+// would put Animated's `collapsable={false}` on the web `<svg>`, which React rejects.)
 
-// iOS: 12 spokes laid out every 30deg around the center, each a short rounded
-// line from an inner radius to the rim. Opacity steps down around the ring so the
-// leading spoke is solid and the trailing ones fade, the classic iOS look. The
-// whole SVG rotates via the shared spin value.
-const SPOKE_COUNT = 12;
+// iOS: 8 spokes every 45deg, each a rounded bar from the rim inward, the leading spoke
+// solid and each one behind it 11% fainter. The whole SVG rotates via the shared value.
+const SPOKES = 8;
 
 export const iosSkin: SpinnerSkin = {
+  sizes: { small: 14, base: 20, large: 32 },
   render: ({ size, color, rotate }) => {
+    const w = Math.max(2, Math.round(size * 0.11));
+    const l = Math.round(size * 0.28);
     const c = size / 2;
-    const outer = size / 2;
-    const inner = size * 0.28;
-    const strokeWidth = Math.max(1, size * 0.08);
     const spin = rotate.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
-    const spokes = Array.from({ length: SPOKE_COUNT }, (_, i) => {
-      const angle = (i / SPOKE_COUNT) * 2 * Math.PI - Math.PI / 2;
-      const x1 = c + inner * Math.cos(angle);
-      const y1 = c + inner * Math.sin(angle);
-      const x2 = c + outer * Math.cos(angle);
-      const y2 = c + outer * Math.sin(angle);
-      // Leading spoke solid, fading around the ring (min ~0.2).
-      const opacity = 0.2 + (0.8 * i) / (SPOKE_COUNT - 1);
-      return (
-        <Line
-          key={i}
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          opacity={opacity}
-        />
-      );
-    });
     return (
       <Animated.View style={{ transform: [{ rotate: spin }] }}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          {spokes}
+          {Array.from({ length: SPOKES }, (_, i) => (
+            <Rect
+              key={i}
+              x={c - w / 2}
+              y={0}
+              width={w}
+              height={l}
+              rx={9999}
+              fill={color}
+              opacity={1 - i * 0.11}
+              transform={`rotate(${-i * 45} ${c} ${c})`}
+            />
+          ))}
         </Svg>
       </Animated.View>
     );
@@ -99,16 +77,15 @@ export const iosSkin: SpinnerSkin = {
   description,
 };
 
-// Android (M3): one ~270deg arc of a ring, rounded cap, brand color, sweeping
-// continuously. Drawn as a stroked circle whose dash covers 3/4 of the
-// circumference; the whole SVG rotates via the shared spin value.
+// Android (M3): 30% of a ring, rounded cap, sweeping. Drawn as a stroked circle whose dash
+// covers 0.3 of the circumference; the whole SVG rotates via the shared value.
 export const androidSkin: SpinnerSkin = {
+  sizes: { small: 16, base: 24, large: 40 },
   render: ({ size, color, rotate }) => {
-    const strokeWidth = Math.max(2, size * 0.1);
+    const strokeWidth = Math.max(2.5, size / 8);
     const r = (size - strokeWidth) / 2;
     const c = size / 2;
     const circumference = 2 * Math.PI * r;
-    const arc = circumference * 0.75; // 270deg sweep
     const spin = rotate.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
     return (
       <Animated.View style={{ transform: [{ rotate: spin }] }}>
@@ -121,7 +98,7 @@ export const androidSkin: SpinnerSkin = {
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             fill="none"
-            strokeDasharray={`${arc} ${circumference}`}
+            strokeDasharray={`${circumference * 0.3} ${circumference * 0.7}`}
           />
         </Svg>
       </Animated.View>
@@ -131,13 +108,42 @@ export const androidSkin: SpinnerSkin = {
   description,
 };
 
-// Web: a React Native ActivityIndicator driven by the same tone/size props (numeric
-// size + token color). It animates itself, so it ignores the shared rotate value.
+// Web: the ring rotates on the loop primitive (src/style/loop.tsx), a compositor CSS
+// animation, so nothing commits through React per frame. One channel turns every web
+// spinner on the page, once per 900 ms (the shell's period), and runs only while one is
+// mounted.
+const ring = createLoopChannel({ period: 900 });
+const TURN = { channel: ring, inputRange: [0, 1], outputRange: [0, 360] };
+let turning = 0;
+
+function WebRing({ size, color }: { size: number; color: string }) {
+  useEffect(() => {
+    if (turning++ === 0) ring.play();
+    return () => {
+      if (--turning === 0) ring.stop();
+    };
+  }, []);
+  const width = Math.max(2, size / 8);
+  return (
+    <LoopView
+      rotate={TURN}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 9999,
+        borderWidth: width,
+        borderColor: alpha(color, 0.22),
+        borderTopColor: color,
+      }}
+    />
+  );
+}
+
 export const webSkin: SpinnerSkin = {
-  // The ActivityIndicator animates itself and never reads the shared `rotate`
-  // value, so the shell must NOT drive a perpetual Animated loop for it.
+  // The ring turns on its own loop channel, so the shell drives no Animated loop for it.
   spins: false,
-  render: ({ size, color }) => <ActivityIndicator size={size} color={color} />,
+  sizes: { small: 14, base: 20, large: 32 },
+  render: ({ size, color }) => <WebRing size={size} color={color} />,
   label,
   description,
 };

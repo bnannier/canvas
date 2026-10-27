@@ -10,6 +10,9 @@ import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
 import { LISTBOX } from "../../style/listbox-role.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
+import { useHover } from "../../style/hover.js";
+import { Icon } from "../icon/icon.js";
+import { Disclosure } from "../select/select.shared.js";
 import { wrapper, wrapperLifted } from "./autocomplete.styles.js";
 import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
 
@@ -105,6 +108,19 @@ export function sizeOf(p: AutocompleteProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";
+}
+
+/** An option's label with the letters that match the query set apart. */
+function Highlighted({ text, query, style, mark }: { text: string; query: string; style: TextStyle; mark: TextStyle }) {
+  const at = query === "" ? -1 : text.toLowerCase().indexOf(query.toLowerCase());
+  if (at < 0) return <Text style={style}>{text}</Text>;
+  return (
+    <Text style={style}>
+      {text.slice(0, at)}
+      <Text style={mark}>{text.slice(at, at + query.length)}</Text>
+      {text.slice(at + query.length)}
+    </Text>
+  );
 }
 
 // The editable slice of the field row: fill the space before the chevron and
@@ -255,7 +271,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const floating = hasLabel && skin.floatingLabel;
     const above = hasLabel && !floating;
     const populated = fieldValue !== "";
-    const fieldShape = skin.field(tokens, size, active);
+    const hover = useHover(!!skin.hover && !disabled);
+    const fieldShape = skin.field(tokens, size, active, hover.hovered);
+    // A focused field wears the skin's halo around its edge (the web's accent ring).
+    const halo = focused && !disabled && skin.focusHalo ? skin.focusHalo(tokens) : null;
     // The field's height: its floor where it grows with the text size (Android), else its height.
     const fieldHeight = asNum(fieldShape.minHeight ?? fieldShape.height, 56);
     // The room the Android floating label takes, which follows the user's text size.
@@ -282,12 +301,15 @@ export function createAutocomplete(skin: AutocompleteSkin) {
         <View
           ref={fieldRef}
           onLayout={onTriggerLayout}
+          {...hover.target}
           style={[
             fieldSurface.style,
+            halo,
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
           <GlassPane {...entryMaterial.paneProps} stateBorder={fieldSurface.keepsBorder} shape={fieldShape} />
+          {skin.searchIcon ? <Icon search color={skin.searchIcon.color(tokens)} size={skin.searchIcon.size} decorative /> : null}
           <TextInput
             ref={accessibilityReturn.inputRef}
             // The field paints its own focus state (the skin's active border), so
@@ -418,7 +440,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             aria-expanded={open}
             aria-disabled={!!disabled}
           >
-            <Text style={skin.chevron(tokens, size)}>▾</Text>
+            <Disclosure spec={skin.disclosure} size={skin.disclosure.size(size)} color={skin.disclosure.color(tokens, open)} open={open} />
           </Pressable>
           {floating ? (
             <FloatingLabel
@@ -449,7 +471,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             setOpen(false);
           }}
           triggerRef={fieldRef}
-          gap={4}
+          gap={skin.popoverGap}
           cardStyle={[skin.popover(tokens), { minWidth: triggerWidth }]}
           inlineStyle={POPOVER_ANCHOR}
           // The filtered option list is a card of rows, so under glass it takes
@@ -489,7 +511,6 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                       </View>
                     ) : matches.map(({ option, key, id }, index) => {
                       const selected = option === value;
-                      const separator = index > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null;
                       return (
                         <Pressable
                           key={key}
@@ -501,7 +522,6 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                           onLayout={() => onRowLayout(id)}
                           style={({ pressed }) => [
                             skin.row,
-                            separator,
                             selected ? withInnerFill(menuTheme, skin.rowSelected(tokens) ?? {}, "firm") : null,
                             pressed || index === activeIndex ? withInnerFill(menuTheme, skin.rowPressed(tokens) ?? {}, "firm") : null,
                           ]}
@@ -519,8 +539,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                           accessibilityState={{ selected }}
                           aria-selected={selected}
                         >
-                          <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
-                          <Text style={skin.optionText(tokens, size)}>{option}</Text>
+                          <Highlighted text={option} query={query} style={skin.optionText(tokens, size)} mark={skin.highlight(tokens)} />
                         </Pressable>
                       );
                     })}

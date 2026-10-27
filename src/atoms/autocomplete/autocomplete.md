@@ -13,6 +13,17 @@ Android. The field fills the parent it is given; a
 step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a
 Container step sets its measure.
 
+On web the field is the Canvas v4 search field: 40px tall (32 small, 48 large) on
+the sunken fill behind the `field-border` hairline, a leading 16px search glyph, a
+400 14px value (13 small) and a chevron that turns over while the list is open. The
+pointer darkens the edge to the subtle ink, and focus rings it in the accent with a
+4px halo. The suggestions are a card 6px under the field with a 4px inset and 34px
+rows; the typed letters are marked in each suggestion on the accent's soft wash, and
+the chosen suggestion sits on the `muted` wash. iOS ships no combo box, so it draws
+the same field and card at the iOS corners. Android keeps the Material 3 exposed
+dropdown: the filled field with its active indicator and drop-down triangle, and the
+Material menu whose active and chosen rows take the state layer.
+
 In glass mode the suggestion list is a dense-layer glass card under the field (or
 above it when it fits there); the field, its caret and its toggle stay in place,
 and picking a suggestion commits the value at once. Solid mode paints the skin's

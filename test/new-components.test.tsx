@@ -198,7 +198,7 @@ describe("Chip", () => {
     expect(container.querySelector('[aria-label="Remove"]')).toBeNull();
   });
 
-  it("a hue tints the chip, distinct hues differ, and none is the saturated primary button fill", () => {
+  it("a hue tints the chip, distinct hues differ, and `primary` is the hand-off's solid accent", () => {
     const { container } = ui(
       <>
         <Chip testID="neutral">A</Chip>
@@ -211,12 +211,11 @@ describe("Chip", () => {
     // A color changes the fill, and different colors read apart.
     expect(bg("blue")).not.toBe(bg("neutral"));
     expect(bg("blue")).not.toBe(bg("green"));
-    // The whole point: `primary` is now a SOFT accent tint, not the saturated
-    // `primary` fill, and it is not the neutral gray either.
-    const solid = lightColors.primary;
-    const channels = [1, 3, 5].map((i) => parseInt(solid.slice(i, i + 2), 16)).join(", ");
-    expect([solid, `rgb(${channels})`, `rgba(${channels}, 1.00)`]).not.toContain(bg("primary"));
+    // The hand-off's `primary` chip is the solid accent (`K.def('chip')`), apart from the
+    // neutral fill and from every hue wash.
+    expect(channelsOf(bg("primary"))?.slice(0, 3)).toEqual(channelsOf(lightColors.primary)!.slice(0, 3));
     expect(bg("primary")).not.toBe(bg("neutral"));
+    expect(bg("primary")).not.toBe(bg("blue"));
   });
 
   // A status name reads the theme's status colors (statusColors), the same as Badge and
@@ -244,9 +243,9 @@ describe("Chip", () => {
   });
 });
 
-// The M3 selected filter-chip anatomy is threaded through the skin (like the
-// Accordion chevron), so it is exercised on createChip(androidSkin) directly;
-// the iOS/web skins omit the flag and keep the tint swap alone.
+// The selected filter-chip anatomy is threaded through the skin (like the Accordion
+// chevron), so it is exercised on createChip(skin) directly: M3's check replaces the icon
+// and drops the outline, the web and iOS chip keeps an accent edge.
 describe("Chip (Android M3 selected filter anatomy)", () => {
   const AndroidChip = createChip(chipAndroidSkin);
   const IOSChip = createChip(chipIosSkin);
@@ -287,14 +286,15 @@ describe("Chip (Android M3 selected filter anatomy)", () => {
     expect(pad("removable")).toEqual({ start: "16px", end: "8px" });
   });
 
-  // iOS ships no chip control, so its chip is Dark Factory's: selecting fills it with the
-  // solid primary, with no Material checkmark.
-  it("the iOS skin selects to Dark Factory's solid primary (no checkmark)", () => {
+  // iOS ships no chip control, so its chip is the hand-off's web chip: selecting washes it
+  // in the accent's soft fill inside an accent edge, leading with a check.
+  it("the iOS skin selects to the hand-off's accent wash and edge, with a leading check", () => {
     const { container } = ui(<IOSChip testID="ic" selectable>Engineering</IOSChip>);
     const restingIcons = icons(container);
     fireEvent.click(container.querySelector('[role="button"]') as Element);
-    expect(icons(container)).toBe(restingIcons);
-    expect(channelsOf(at(container, "ic").style.backgroundColor)?.slice(0, 3)).toEqual(channelsOf(lightColors.primary)!.slice(0, 3));
+    expect(icons(container)).toBe(restingIcons + 1);
+    expect(channelsOf(at(container, "ic").style.backgroundColor)).toEqual(channelsOf(lightColors["primary-soft"]!));
+    expect(channelsOf(at(container, "ic").style.borderColor)?.slice(0, 3)).toEqual(channelsOf(lightColors.primary)!.slice(0, 3));
   });
 });
 

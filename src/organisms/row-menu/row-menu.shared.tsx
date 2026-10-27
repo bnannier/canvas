@@ -108,7 +108,7 @@ export function createRowMenu(skin: RowMenuSkin) {
         aria-disabled={item.disabled || undefined}
       >
         {item.icon ? (
-          <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} size={skin.iconSize} decorative />
+          <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} color={!item.destructive && !muted && skin.iconColor ? skin.iconColor(tokens) : undefined} size={skin.iconSize} decorative />
         ) : null}
         <Text style={[skin.rowTextSize, muted ? { color: tokens["muted-foreground"] } : skin.rowTextColor(item, links, tokens, dark)]}>{item.label}</Text>
       </Pressable>
@@ -179,6 +179,8 @@ export function createRowMenu(skin: RowMenuSkin) {
           hitSlop={hitSlop}
           style={({ pressed }) => [
             skin.trigger,
+            skin.triggerEdge ? skin.triggerEdge(tokens) : null,
+            open && skin.triggerOpen ? skin.triggerOpen(tokens) : null,
             triggerHovered && skin.triggerHover ? skin.triggerHover(tokens) : null,
             // Android ripples; iOS dims via opacity; web tints the fill.
             skin.triggerPressedOpacity != null && pressed ? { opacity: skin.triggerPressedOpacity } : null,

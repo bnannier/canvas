@@ -136,15 +136,17 @@ describe("organism material roles", () => {
     expect(screen.getByRole("button", { name: "10, selected", exact: true })).toBe(selected);
   });
 
-  it("uses stable step frost without painting an unfilled current ring", () => {
+  it("uses stable step frost on the completed disc without painting the open rings", () => {
     browser(true);
     render(mode(<Steps current={1} steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]} />, true));
     const current = screen.getByText("2").parentElement!;
     expect(materials(current)).toHaveLength(0);
     expect(current.style.borderColor).not.toContain("0.00");
     const upcoming = screen.getByText("3").parentElement!;
-    expect(materials(upcoming)).toHaveLength(1);
-    expect(frostOf(materials(upcoming)[0])?.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
+    expect(materials(upcoming)).toHaveLength(0);
+    const completed = [...document.querySelectorAll<HTMLElement>("div")].find((n) => n.style.height === "28px" && materials(n).length > 0)!;
+    expect(materials(completed)).toHaveLength(1);
+    expect(frostOf(materials(completed)[0])?.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
   });
 
   it("keeps unfilled underline tabs unpainted and their ink indicator intact", () => {
@@ -162,9 +164,9 @@ describe("organism material roles", () => {
     expect(screen.getByRole("tab", { name: "Account" })).toBe(selected);
   });
 
-  it("paints the web capsule tabs' selection as glass while keeping the same host", () => {
+  it("paints the web pills' selection as glass while keeping the same host", () => {
     browser(true);
-    const children = <Tabs tabs={["Account", "Profile"]} />;
+    const children = <Tabs pills tabs={["Account", "Profile"]} />;
     const result = render(mode(children, false));
     const selected = screen.getByRole("tab", { name: "Account" });
     expect(materials(selected)).toHaveLength(0);

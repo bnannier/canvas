@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { type ReactElement } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { lightColors } from "../src/style/tokens.ts";
 import { InteractionOverride } from "../src/style/interaction-override.tsx";
 import { PINNED_FOCUS_RING, FOCUS_RING_WIDTH } from "../src/style/pressable.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
@@ -194,9 +195,16 @@ describe("pinned focus on a control's own focused look", () => {
     expect(document.querySelector("textarea")!.style.getPropertyValue("outline-width")).toBe("");
   });
 
-  it("rings a Select trigger, whose focus is the kit Pressable's", () => {
+  it("gives a Select trigger the field's focused look: the ring edge and its halo, no outline", () => {
     render(light(<InteractionOverride focused><Select testID="s" label="Size" options={["Small"]} /></InteractionOverride>));
-    expect(screen.getByTestId("s").style.getPropertyValue("outline-width")).toBe(`${FOCUS_RING_WIDTH}px`);
+    const pinned = screen.getByTestId("s").style;
+    expect(pinned.getPropertyValue("outline-width")).toBe("0px");
+    const ring = lightColors.ring;
+    expect(pinned.getPropertyValue("border-color")).toBe(`rgba(${[1, 3, 5].map((i) => parseInt(ring.slice(i, i + 2), 16)).join(", ")}, 1.00)`);
+    expect(pinned.getPropertyValue("box-shadow")).toMatch(/^0 0 0 4px rgba\(/);
+    cleanup();
+    render(light(<Select testID="s" label="Size" options={["Small"]} />));
+    expect(screen.getByTestId("s").style.getPropertyValue("box-shadow")).toBe("");
   });
 
   it("rings the Slider thumb and a drag grip", () => {

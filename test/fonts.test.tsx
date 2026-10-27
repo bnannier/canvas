@@ -119,9 +119,10 @@ describe("the themed primitives", () => {
   });
 
   it("paint a field's own value in the registered face: Stepper's number on every skin", () => {
-    for (const [skin, Component] of [["web", Stepper], ["ios", IosStepper], ["android", AndroidStepper]] as const) {
+    // The web's number is the hand-off's mono numeral; the native values are the interface face.
+    for (const [skin, Component, face] of [["web", Stepper, "JetBrainsMono_400Regular"], ["ios", IosStepper, "InstrumentSans_400Regular"], ["android", AndroidStepper, "InstrumentSans_400Regular"]] as const) {
       render(<ThemeProvider fonts={FACES}><Component label={`${skin} quantity`} defaultValue={30} /></ThemeProvider>);
-      expect(getComputedStyle(screen.getByDisplayValue("30")).fontFamily, skin).toBe("InstrumentSans_400Regular");
+      expect(getComputedStyle(screen.getByDisplayValue("30")).fontFamily, skin).toBe(face);
       cleanup();
     }
   });

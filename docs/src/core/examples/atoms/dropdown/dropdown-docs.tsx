@@ -28,9 +28,9 @@ export const docs: ComponentDocs = {
   dir: "dropdown",
   category: "atoms",
   overview: [
-    "On the web the menu is Dark Factory's: a card of bold rows that take the hover wash at once, an uppercase eyebrow over a section, muted shortcuts in their own column, and a disabled row in the muted ink rather than faded. iOS and Android keep their platform menus (the iOS pull-down menu, the Material 3 menu) in the theme's colours.",
+    "On the web the menu is the v4 panel: a card with a hairline and a soft shadow, 36-pixel rows with quiet icons that take a raised wash under the pointer at once, a mono uppercase eyebrow over a section, mono shortcuts in their own column, destructive rows in the destructive ink, and a disabled row in the muted ink rather than faded. iOS and Android keep their platform menus (the iOS pull-down menu, the Material 3 menu) in the theme's colours.",
     "In glass mode the menu is a dense-layer glass card under its trigger (or above it when it fits there); the trigger keeps its place, its press and its accessible name and state, and a selection commits and closes the menu the moment a row is pressed. AvatarMenu and the collapsed Navbar menu are built on Dropdown. Solid mode paints the skin's own menu.",
-    "`compact steadyPress` preserves the original Argus web menu: an outside hairline, 12.5-pixel bold labels, selected action ink, muted counts, and descriptions. Items can carry a stored `value`, `detail`, `description`, `selected` state, and a `sectionBefore` heading. `keepOpen` leaves refresh-style commands open. A `note` adds a muted footer. `menuWidth` and `maxHeight` bound the scrolling menu. Pass `anchorRef` to use an existing trigger without adding another control or layout wrapper; `accessibilityLabel` names the menu independently of its heading. Checked choices use browser menu-radio semantics and the native radio trait.",
+    "`compact` tightens the web rows to 30 pixels and lets the menu scroll inside `maxHeight`; with `steadyPress` a press does not tint the row. Selected rows take the action ink. Items can carry a stored `value`, `detail`, `description`, `selected` state, and a `sectionBefore` heading. `keepOpen` leaves refresh-style commands open. A `note` adds a muted footer. `menuWidth` and `maxHeight` bound the scrolling menu. Pass `anchorRef` to use an existing trigger without adding another control or layout wrapper; `accessibilityLabel` names the menu independently of its heading. Checked choices use browser menu-radio semantics and the native radio trait.",
   ],
   examples: [
     { label: "Default", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_0 },
@@ -58,6 +58,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["button","group","menu","menuitem","radio"],"states":["checked","disabled","expanded"],"aria":["aria-checked","aria-disabled","aria-expanded","aria-haspopup","aria-label"],"touchTarget":[]},
-  tokens: ["action","border","muted-foreground","popover","popover-foreground","primary","secondary"],
+  tokens: ["action","border","foreground","muted-foreground","popover","popover-foreground","primary","secondary"],
   related: ["avatar","dialog","alert-dialog","drawer","action-sheet","popover","tooltip","command"],
 };

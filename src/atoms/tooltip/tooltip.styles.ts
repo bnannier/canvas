@@ -1,6 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, shape } from "../../style/index.js";
-import { typeScale } from "../../style/type-scale.js";
 import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located Tooltip skins, one per platform, all driven by the theme tokens (passed
@@ -9,10 +8,11 @@ import { platformShape } from "../../style/platform-shape.js";
 // INVERSE label (a dark bubble in a light theme, painted on the `foreground` token with
 // `background` text) so the tip reads against the page in either scheme. Dark Factory
 // has no tooltip; its only dark bubble, the toast pill, keeps one colour in every theme,
-// which would all but vanish on the dark page, so the bubble keeps the per-scheme inverse
-// and takes Dark Factory's type and corners:
-//   Web: a bubble at the tooltip corner (Dark Factory's chip step), 6 x 10 padding, a soft
-//     `md` lift, the label in Dark Factory's 12px label weight (600) at its 1.3 line height.
+// which would all but vanish on the dark page, so the bubble keeps the per-scheme inverse,
+// as the Canvas v4 hand-off draws it (`K.def('tooltip')` in tools/v4/handoff/cv-kit-overlays.js):
+//   Web: a bubble at the tooltip corner, 6 x 10 padding, the medium shade, the label at
+//     500 12, and an 8px arrow (a square turned 45 degrees in the bubble's fill) centred on
+//     the edge that faces the trigger, drawn in solid mode.
 //   iOS: no system tooltip, so the web skin.
 //   Android (Material 3 plain tooltip): a small rounded rect (its extra-small corner), the
 //     inverse fill, body-small 12sp, padding 8 x 4, flat (no elevation per M3 plain), a 24dp
@@ -29,6 +29,9 @@ export interface TooltipSkin {
   bubble: (t: ColorTokens) => ViewStyle;
   /** The tip label: size/weight, painted in the inverse text token. */
   label: (t: ColorTokens) => TextStyle;
+  /** The arrow's side length (a square turned 45 degrees, half of it past the bubble's
+   *  edge); omitted, the bubble draws no arrow (the Material 3 plain tooltip). */
+  arrow?: number;
 }
 
 // --- shared layout fragments (identical across platforms) -------------------
@@ -118,8 +121,23 @@ export const webSkin: TooltipSkin = {
     paddingVertical: 6,
     ...shadow("md", t),
   }),
-  label: (t) => ({ ...typeScale.label, lineHeight: 16, color: t.background }),
+  label: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.background }),
+  arrow: 8,
 };
+
+/**
+ * The arrow on the edge of the bubble that faces the trigger: a square of side `size`
+ * turned 45 degrees in the bubble's fill, half of it past the edge, centred on the edge
+ * (the bubble is centred on its trigger on every side).
+ */
+export function arrowStyle(size: number, fill: string, placement: Placement): ViewStyle {
+  const half = size / 2;
+  const base: ViewStyle = { position: "absolute", width: size, height: size, backgroundColor: fill, transform: [{ rotate: "45deg" }] };
+  if (placement === "top") return { ...base, bottom: -half, left: "50%", marginLeft: -half };
+  if (placement === "bottom") return { ...base, top: -half, left: "50%", marginLeft: -half };
+  if (placement === "left") return { ...base, end: -half, top: "50%", marginTop: -half };
+  return { ...base, start: -half, top: "50%", marginTop: -half };
+}
 
 // ---------- iOS: no system tooltip, so the web skin ----------
 export const iosSkin: TooltipSkin = webSkin;

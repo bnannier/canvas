@@ -10,16 +10,13 @@ import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneHost, paneStyle, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
-import { type TextareaSkin, type Size, sizeText, minHeight, denseField, denseText, denseMinHeight } from "./textarea.styles.js";
+import { useHover } from "../../style/hover.js";
+import { type TextareaSkin, type Size, denseField, denseText, denseMinHeight } from "./textarea.styles.js";
 
-// A style bump keeping the above-field label spaced from its field (the 6px the
-// Field/Form control stacks use), mirroring the single-line Input.
-const LABEL_GAP: ViewStyle = { gap: 6 };
-
-// The character-count line's own layout: end-aligned under the field, with a
-// 4px gap from the control. The count line is part of the component's own
-// anatomy (the component owns its layout + type), never a call-site shim.
-const COUNT_ROW: ViewStyle = { flexDirection: "row", justifyContent: "flex-end", marginTop: 4 };
+// The character-count line's own layout: end-aligned under the field, at the skin's
+// gap and side inset. The count line is part of the component's own anatomy (the
+// component owns its layout + type), never a call-site shim.
+const COUNT_ROW: ViewStyle = { flexDirection: "row", justifyContent: "flex-end" };
 
 const FLUSH_SHAPE: TextStyle = {
   borderWidth: 0,
@@ -41,9 +38,9 @@ const FLUSH_SHAPE: TextStyle = {
 // Read a numeric style value (the resolved min height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
 
-// The Android floating label aligns with the field's leading text edge (the M3
-// multiline field's 12dp horizontal content padding).
-const ANDROID_TEXTAREA_INSET = 12;
+// The Android floating label aligns with the field's leading text edge (the skin's
+// `labelInset`, the M3 multiline field's 16dp side inset).
+const ANDROID_TEXTAREA_INSET = 16;
 
 // react-native-web paints the browser's blue focus outline on a focused multiline
 // <textarea>; iOS and Android draw no focus outline on their own. The shared FOCUS_RESET
@@ -87,8 +84,9 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
    */
   required?: boolean;
   /**
-   * Visible rows the field sizes to. Sets the min height (rows * ~22px + 16px
-   * padding); the field still grows with content past this floor.
+   * Visible rows the field sizes to (4 when omitted). Sets the min height (rows times
+   * the skin's line plus the field's padding); the field still grows with content past
+   * this floor.
    */
   rows?: number;
   /**
@@ -157,6 +155,8 @@ export function createTextarea(skin: TextareaSkin) {
     // FILL: the field takes the bounds its parent provides; a flush textarea sits
     // inside a framed container (a toolbar Card) whose frame IS the field edge.
     const widthCap = useFillStyle("Textarea", props);
+    // A pointer over the field steps its resting edge (web only, where the skin declares it).
+    const hover = useHover(!!skin.hover && !disabled && !props.readOnly);
     // One collision-free id linking the field to its label (aria-labelledby).
     const labelId = useId();
 
@@ -222,7 +222,7 @@ export function createTextarea(skin: TextareaSkin) {
       systemFocus: props.systemFocus,
       numberOfLines: props.dense ? Math.max(1, Math.floor(rows ?? 2)) : undefined,
       onChangeText: handleChangeText,
-      placeholderTextColor: tokens["muted-foreground"],
+      placeholderTextColor: skin.placeholder(tokens),
       selectionColor: tokens.primary, // brand cursor / selection on every platform
       // Disabled reaches the browser as disabled (out of the tab order) and VoiceOver and
       // TalkBack as dimmed (src/style/text-entry-state.ts).
@@ -263,10 +263,11 @@ export function createTextarea(skin: TextareaSkin) {
     // to the wrapper in the labeled paths so the label dims with the field). Typed
     // as an array (not StyleProp) so the floating path can spread it with the reserve.
     const fieldShape = {
-      ...skin.field(tokens, { error: isError, focused }),
+      ...skin.field(tokens, { error: isError, focused, hovered: hover.hovered }),
       ...(props.dense ? denseField(tokens) : null),
-      // Flush material shares the editor's square, borderless shape.
-      ...(flush ? FLUSH_SHAPE : null),
+      // Flush material shares the editor's square, borderless shape, on no fill of its
+      // own (its parent is the surface), at the skin's flush inset.
+      ...(flush ? { ...FLUSH_SHAPE, backgroundColor: "transparent", ...skin.flushInset } : null),
       ...(embedded ? { backgroundColor: "transparent" } : null),
     };
     const fieldPane = embedded ? null : <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? legibleWash(theme, "error", entryMaterial.paneProps) : undefined} />;
@@ -275,8 +276,10 @@ export function createTextarea(skin: TextareaSkin) {
     const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [
       embedded ? [fieldShape, reserve] : paneStyle(theme, [fieldShape, reserve], focused || isError),
       glass && !embedded ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
-      props.dense ? denseText : skin.text ? skin.text(size) : sizeText(size),
-      props.dense ? denseMinHeight(rows) : minHeight(rows),
+      props.dense ? denseText : skin.text(size),
+      props.dense ? denseMinHeight(rows) : skin.minHeight(rows, size),
+      // A focused framed field wears the skin's halo (web), errored or not.
+      focused && !flush && !embedded && skin.focusHalo ? skin.focusHalo(tokens) : null,
       // A framed field paints its own focus state (its border turns `ring`), so the
       // browser ring is suppressed; a flush field has no frame to paint, so it keeps the
       // kit's themed ring, drawn inside it where the toolbar card's clip cannot cut it.
@@ -286,19 +289,22 @@ export function createTextarea(skin: TextareaSkin) {
       isError && !flush && !disabled ? errorFrame.ring() : null,
     ];
     const fieldStyle = fieldStyleWith(null);
-    const disabledDim = disabled ? { opacity: 0.5 } : null;
+    const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
+    const labelGap: ViewStyle = { gap: skin.labelGap };
 
     // The live count line, owned by the component. End-aligned, muted, turning
     // destructive once the count passes the soft cap; "N / max" when a maxLength
     // gives a cap, a bare "N" otherwise. aria-live announces edits to a screen
     // reader as the value changes.
-    const countNode = showCount ? (
-      <View style={COUNT_ROW}>
-        <Text style={skin.count(tokens, over)} accessibilityLiveRegion="polite" aria-live="polite">
-          {softLimit != null ? `${count} / ${softLimit}` : `${count}`}
-        </Text>
-      </View>
-    ) : null;
+    // `stacked` is the count inside the labelled stack, whose own gap already spaces it.
+    const countNode = (stacked: boolean) =>
+      showCount ? (
+        <View style={[COUNT_ROW, { marginTop: stacked ? Math.max(0, skin.countRow.gap - skin.labelGap) : skin.countRow.gap, paddingHorizontal: skin.countRow.inset }]}>
+          <Text style={skin.count(tokens, over)} accessibilityLiveRegion="polite" aria-live="polite">
+            {softLimit != null ? `${count}${skin.countJoin}${softLimit}` : `${count}`}
+          </Text>
+        </View>
+      ) : null;
 
     // Android M3 floating label: the field reserves top space for the floated
     // label, the animated label overlays the top text line, and the placeholder is
@@ -326,12 +332,12 @@ export function createTextarea(skin: TextareaSkin) {
             focused={focused}
             populated={populated}
             isError={isError}
-            height={asNum(minHeight(rows).minHeight, 80)}
-            inset={ANDROID_TEXTAREA_INSET}
+            height={asNum(skin.minHeight(rows, size).minHeight, 80)}
+            inset={skin.labelInset ?? ANDROID_TEXTAREA_INSET}
             multiline
             onLine={room.onLine}
           />
-          {countNode}
+          {countNode(false)}
         </View>
       );
     }
@@ -343,15 +349,15 @@ export function createTextarea(skin: TextareaSkin) {
     if (above) {
       const aboveLabelStyle: TextStyle = props.eyebrow && skin.referenceLabel ? fieldEyebrow(tokens) : skin.labelAbove(tokens, size);
       return (
-        <View style={[LABEL_GAP, disabledDim, widthCap, style]}>
+        <View style={[labelGap, disabledDim, widthCap, style]}>
           <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, props.accessibilityLabel == null)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
-          <View style={paneHost(theme)}>
+          <View style={paneHost(theme)} {...hover.target}>
             {fieldPane}
             <TextInput ref={hostRef} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
           </View>
-          {countNode}
+          {countNode(true)}
         </View>
       );
     }
@@ -360,11 +366,11 @@ export function createTextarea(skin: TextareaSkin) {
     // selection, focus and uncontrolled text. The count remains outside its pane.
     return (
       <View style={[disabledDim, widthCap, style]}>
-        <View style={paneHost(theme)}>
+        <View style={paneHost(theme)} {...hover.target}>
           {fieldPane}
           <TextInput ref={hostRef} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
         </View>
-        {countNode}
+        {countNode(false)}
       </View>
     );
   });

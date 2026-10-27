@@ -1,7 +1,8 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { destructiveText } from "../../style/destructive-text.js";
 import { shadow, alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin, shape } from "../../style/index.js";
-import { MENU_ICON, MENU_OFFSET, MENU_ROW_GAP, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
+import { MENU_ICON, MENU_ROW_GAP, menuIconColor, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type IconName } from "../../atoms/icon/icon.js";
 
 // Co-located RowMenu skins, one per platform, all driven by the theme tokens (passed
@@ -9,7 +10,7 @@ import { type IconName } from "../../atoms/icon/icon.js";
 // asks AnchoredOverlay for the DENSE layer, so the menu reads as the densest material
 // over the row it acts on; in solid mode each skin paints its own card. Menus exist on
 // both platforms, so iOS and Android keep their own shapes in the theme's colours, and
-// the web takes Dark Factory's menu:
+// the web takes the v4 hand-off's (its `row-menu` renderer in cv-kit-inputs.js):
 //   iOS (HIG context menu): a deeply rounded card (the iOS menu corner, 26) over
 //     `popover` with a soft shadow and no border; rows about 44pt tall with a leading
 //     icon, groups split by hairline separators, destructive rows in
@@ -19,9 +20,14 @@ import { type IconName } from "../../atoms/icon/icon.js";
 //     `popover`, soft shadow) with no border; rows about 48dp tall with a leading icon and an
 //     alpha(primary, 0.12) ripple; an item that sets `separatorBefore` gets the 1dp M3
 //     divider. The ⋯ trigger shares the ripple; a disabled row dims to 0.38.
-//   Web: Dark Factory's menu (src/style/menu-look.ts), the same one the web Dropdown
-//     takes, opened from Dark Factory's plain icon button: a 28px square at the control
-//     corner with the ⋯ glyph in the muted ink and the instant `hover` wash.
+//   Web: a 32px square trigger at the menu-row corner on the 1px `field-border` edge
+//     (the hand-off's ln2), its 16px ⋯ glyph in `foreground`, washed `secondary` while the
+//     menu is open and under the pointer; the menu a `card` panel at the menu corner on
+//     the `border` hairline with the md shadow, inset 4, 8 below the trigger, at least 220
+//     wide; rows 34 tall at the menu-row corner, inset 10, a 15px leading glyph in
+//     `subtle-foreground` 8 from a 400 14px label, destructive rows in `destructive-text`;
+//     the panel, rows, eyebrow, rule and washes are the web menu recipe it shares with
+//     Dropdown (src/style/menu-look.ts).
 
 export interface RowMenuItem {
   label: string;
@@ -59,6 +65,12 @@ export interface RowMenuSkin extends TouchTargetSkin {
   triggerHover: ((t: ColorTokens) => ViewStyle) | null;
   /** The fill applied to the trigger on press (web/iOS tint via this; Android ripples). */
   triggerPressed: (t: ColorTokens) => ViewStyle;
+  /** The trigger's resting edge colour, for a trigger with a border; none when left out. */
+  triggerEdge?: (t: ColorTokens) => ViewStyle;
+  /** The trigger's look while its menu is open; null where it keeps its resting look. */
+  triggerOpen?: ((t: ColorTokens) => ViewStyle) | null;
+  /** A resting row's leading glyph ink; the row's own ink (foreground) when left out. */
+  iconColor?: (t: ColorTokens) => string;
   /** The floating menu card surface (shape, fill, border, shadow, radius). The
    *  shell adds the measured minWidth and positions the card via AnchoredOverlay. */
   menuCard: (t: ColorTokens) => ViewStyle;
@@ -101,28 +113,31 @@ export interface RowMenuSkin extends TouchTargetSkin {
 // painted after it. Shared across platforms (the anchor shape is identical).
 export const anchorLifted: ViewStyle = { zIndex: 50 };
 
-// ---------- Web: Dark Factory's menu (src/style/menu-look.ts) ----------
+// ---------- Web: the v4 hand-off's row menu ----------
 export const webSkin: RowMenuSkin = {
   minTarget: null,
   anchor: { position: "relative", alignItems: "flex-start" },
-  // Dark Factory's plain icon button: a 28px square at the control corner, the glyph
-  // in the muted ink, the hover wash.
+  // A 32px square at the hand-off's 8 corner (the web menu row's) on the field hairline.
   trigger: {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: shape.web.control,
+    borderRadius: platformShape.web.menuRow,
+    borderWidth: 1,
   },
-  triggerIconSize: 15,
-  triggerIconColor: (t) => t["muted-foreground"],
-  triggerHover: menuRowHover,
+  triggerIconSize: 16,
+  triggerIconColor: (t) => t.foreground,
+  triggerHover: (t) => ({ backgroundColor: t.secondary }),
   triggerPressed: menuRowPressed,
-  menuCard: menuPanel,
-  menuMinWidth: 200,
-  menuGap: MENU_OFFSET,
+  triggerEdge: (t) => ({ borderColor: t["field-border"] ?? t.input }),
+  triggerOpen: (t) => ({ backgroundColor: t.secondary }),
+  menuCard: (t) => menuPanel(t),
+  menuMinWidth: 220,
+  menuGap: 8,
   menuLabel: menuSection,
-  itemRow: menuRow,
+  // The recipe's row, 34 tall with an 8 glyph gap (the hand-off's `menu` helper).
+  itemRow: { ...menuRow, gap: 8, minHeight: 34, paddingVertical: 8 },
   itemPressed: menuRowPressed,
   itemHover: menuRowHover,
   rowGap: MENU_ROW_GAP,
@@ -130,6 +145,7 @@ export const webSkin: RowMenuSkin = {
   separator: menuSeparator,
   rowTextSize: menuRowLabel,
   iconSize: MENU_ICON,
+  iconColor: menuIconColor,
   rowTextColor: (item, links, t) => {
     if (item.destructive) return { color: destructiveText(t) };
     return { color: links ? t.foreground : t["popover-foreground"] };

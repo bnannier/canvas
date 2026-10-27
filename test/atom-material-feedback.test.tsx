@@ -23,12 +23,12 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 afterEach(cleanup);
 
 // `buttonDisabled` is the Button's own dim: the hand-off's 0.4 on the web and iOS, M3's 0.38
-// on Android. `pressed` is the Button's label dim on a glass puck: none on the web, whose
+// on Android, and the Chip's the same. `pressed` is the Button's label dim on a glass puck: none on the web, whose
 // press scales the control instead (test/button-look.test.tsx), nor on Android, which ripples.
 const platforms = [
-  { name: "web", Button, Select, Chip, AvatarMenu, disabled: 0.5, buttonDisabled: 0.4, selectDisabled: 0.5, pressed: null, selectPressed: 0.9 },
-  { name: "iOS", Button: IOSButton, Select: IOSSelect, Chip: IOSChip, AvatarMenu: IOSAvatarMenu, disabled: 0.4, buttonDisabled: 0.4, selectDisabled: 0.4, pressed: 0.8, selectPressed: 0.8 },
-  { name: "Android", Button: AndroidButton, Select: AndroidSelect, Chip: AndroidChip, AvatarMenu: AndroidAvatarMenu, disabled: 0.38, buttonDisabled: 0.38, selectDisabled: 0.38, pressed: null, selectPressed: null },
+  { name: "web", Button, Select, Chip, AvatarMenu, disabled: 0.5, buttonDisabled: 0.4, chipDisabled: 0.4, selectDisabled: 0.45, pressed: null, selectPressed: 0.9 },
+  { name: "iOS", Button: IOSButton, Select: IOSSelect, Chip: IOSChip, AvatarMenu: IOSAvatarMenu, disabled: 0.4, buttonDisabled: 0.4, chipDisabled: 0.4, selectDisabled: 0.5, pressed: 0.8, selectPressed: 0.8 },
+  { name: "Android", Button: AndroidButton, Select: AndroidSelect, Chip: AndroidChip, AvatarMenu: AndroidAvatarMenu, disabled: 0.38, buttonDisabled: 0.38, chipDisabled: 0.38, selectDisabled: 0.38, pressed: null, selectPressed: null },
 ] as const;
 
 function expectMaterialAncestorsOpaque(root: HTMLElement) {
@@ -58,8 +58,8 @@ describe("liquid control foreground feedback", () => {
       expectMaterialAncestorsOpaque(container);
       expect(Number(screen.getByText("Save").parentElement!.style.opacity)).toBe(p.buttonDisabled);
       expect(Number(screen.getByText("North").parentElement!.style.opacity)).toBe(p.selectDisabled);
-      expect(Number(screen.getByText("Filter").parentElement!.style.opacity)).toBe(0.5);
-      expect(Number(screen.getByText("Removable").parentElement!.style.opacity)).toBe(0.5);
+      expect(Number(screen.getByText("Filter").parentElement!.style.opacity)).toBe(p.chipDisabled);
+      expect(Number(screen.getByText("Removable").parentElement!.style.opacity)).toBe(p.chipDisabled);
       // The identity pill is one skin on every platform, evaluated here in the web
       // bundle; each native bundle resolves its own dim (platformDisabledDim).
       expect(Number(screen.getByText("Rachel Chen").parentElement!.style.opacity)).toBe(platformDisabledDim("web"));
@@ -100,8 +100,9 @@ describe("liquid control foreground feedback", () => {
   it("keeps disabled detached Stepper materials outside label and value dimming", () => {
     const { container } = render(<ThemeProvider glass><AndroidStepper disabled label="Quantity" description="Items" defaultValue={4} /></ThemeProvider>);
     expectMaterialAncestorsOpaque(container);
-    expect(screen.getByText("Quantity").style.opacity).toBe("0.5");
-    expect(screen.getByDisplayValue("4").style.opacity).toBe("0.5");
+    // M3's 0.38 disabled dim, on the label and the value, never on a material ancestor.
+    expect(screen.getByText("Quantity").style.opacity).toBe("0.38");
+    expect(screen.getByDisplayValue("4").style.opacity).toBe("0.38");
     expect(screen.getByRole("button", { name: "Increase" }).getAttribute("aria-disabled")).toBe("true");
   });
 

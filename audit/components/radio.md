@@ -20,7 +20,7 @@ Audit checklist for `/components/radio`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: radio-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
+| Interaction states | recipes: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
 | MeasureProps | not adopted |
 | Touch target | `radio.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop around the ring when there is no label to press |
 | Tests importing it | 18: `test/atom-material-roles.test.tsx`, `test/behavior.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-skins.test.ts`, `test/focus-runtime.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/keyboard-nav.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/radio-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/web-frost-paint-order.test.tsx` |

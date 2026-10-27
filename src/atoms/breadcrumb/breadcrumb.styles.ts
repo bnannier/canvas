@@ -1,57 +1,52 @@
-import { type ColorTokens, alpha, controlRipple } from "../../style/index.js";
+import { type ColorTokens, controlRipple } from "../../style/index.js";
 import { type BreadcrumbSkin } from "./breadcrumb.shared.js";
 
-// Per-OS Breadcrumb skins. Breadcrumb is a "Light" treatment: identical structure
-// and semantic colors (the layout fragments and roles live in breadcrumb.shared.tsx);
-// only the label type (tracking/weight) and the link press feedback shift per OS.
-//
-// Neither iOS nor Android ships a native breadcrumb control (iOS uses the nav-bar
-// back button, Android the top app bar's up navigation), so all three platforms
-// match Web's Catalyst/shadcn trail (text-sm, muted-foreground links, a font-medium
-// foreground current page, a 60%-muted divider) and layer only the platform reading
-// conventions on top:
-//   - Web draws the trail with a 0.7 opacity dim on a pressed link.
-//   - iOS applies SF Pro Text tracking at 14pt (-0.15) and the same 0.7 opacity dim.
-//   - Android applies Material 3 body/label tracking (+0.1 / +0.5) and a borderless
-//     android_ripple on press (no opacity dim, so the ripple is the only signal).
-// The brand survives on every platform: links/current stay on the same semantic
-// tokens, never a platform default link color. Each skin also carries its platform
-// minimum touch target (HIG 44pt / M3 48dp) so the shell can pad the text-sized
-// link/home Pressables with hitSlop.
+// The Breadcrumb skin, the v4 hand-off's trail (its `breadcrumb` renderer in
+// tools/v4/handoff/cv-kit-inputs.js). Neither iOS nor Android ships a breadcrumb control
+// (PLATFORM-REFERENCES.md: iOS uses the navigation bar's back button, Android the top app
+// bar's up navigation), so every platform draws the same trail, in its own face:
+//   - the crumbs are 400 13px, the ancestors in `muted-foreground`, the current page in
+//     `foreground` at 500;
+//   - the separator is a 13px chevron, a "/" or a "·" in `subtle-foreground` (the hand-off's
+//     tx3), 8 from the crumbs on either side;
+//   - the home affordance is a 14px house glyph in the ancestors' ink.
+// Only the press feedback and the touch target stay each platform's own: the web and iOS dim
+// a pressed link to 0.7, Android ripples instead; the minimum target is the HIG's 44pt or
+// Material's 48dp, which the shell reaches with hitSlop around the text-sized links.
 
-const SIZE = { fontSize: 14, lineHeight: 20 } as const;
+const TYPE = { fontSize: 13, lineHeight: 18, fontWeight: "400" } as const;
 const HOME_ICON_SIZE = 14;
+const SEPARATOR_ICON_SIZE = 13;
+
+const trail = {
+  link: (tokens: ColorTokens) => ({ ...TYPE, color: tokens["muted-foreground"] }),
+  current: (tokens: ColorTokens) => ({ ...TYPE, fontWeight: "500" as const, color: tokens.foreground }),
+  separator: (tokens: ColorTokens) => ({ ...TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }),
+  homeIconSize: HOME_ICON_SIZE,
+  separatorIconSize: SEPARATOR_ICON_SIZE,
+  gap: 8,
+};
 
 export const webSkin: BreadcrumbSkin = {
-  link: (tokens: ColorTokens) => ({ ...SIZE, color: tokens["muted-foreground"] }),
-  current: (tokens: ColorTokens) => ({ ...SIZE, fontWeight: "500", color: tokens.foreground }),
-  separator: (tokens: ColorTokens) => ({ ...SIZE, color: alpha(tokens["muted-foreground"], 0.6) }),
+  ...trail,
   ripple: null,
   pressedOpacity: 0.7,
-  homeIconSize: HOME_ICON_SIZE,
   // Inert for pointer input; keeps a touch-driven web tap area at the 44px floor.
   minTarget: 44,
 };
 
-// SF Pro Text tracking at 14pt is -0.15 (13pt would be -0.08).
 export const iosSkin: BreadcrumbSkin = {
-  link: (tokens: ColorTokens) => ({ ...SIZE, letterSpacing: -0.15, color: tokens["muted-foreground"] }),
-  current: (tokens: ColorTokens) => ({ ...SIZE, fontWeight: "600", letterSpacing: -0.15, color: tokens.foreground }),
-  separator: (tokens: ColorTokens) => ({ ...SIZE, letterSpacing: -0.15, color: alpha(tokens["muted-foreground"], 0.6) }),
+  ...trail,
   ripple: null,
   pressedOpacity: 0.7,
-  homeIconSize: HOME_ICON_SIZE,
   // HIG minimum tappable area: 44x44pt.
   minTarget: 44,
 };
 
 export const androidSkin: BreadcrumbSkin = {
-  link: (tokens: ColorTokens) => ({ ...SIZE, letterSpacing: 0.1, color: tokens["muted-foreground"] }),
-  current: (tokens: ColorTokens) => ({ ...SIZE, fontWeight: "500", letterSpacing: 0.1, color: tokens.foreground }),
-  separator: (tokens: ColorTokens) => ({ ...SIZE, letterSpacing: 0.5, color: alpha(tokens["muted-foreground"], 0.6) }),
+  ...trail,
   ripple: (tokens: ColorTokens) => controlRipple(tokens),
   pressedOpacity: null,
-  homeIconSize: HOME_ICON_SIZE,
   // Material 3 accessibility minimum touch target: 48x48dp.
   minTarget: 48,
 };

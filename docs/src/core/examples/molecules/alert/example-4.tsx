@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Alert, Icon } = scope;
   return (
 <Alert
-  icon={<Icon bell size={16} />}
+  icon={<Icon bell />}
   title="Scheduled maintenance"
   description="The dashboard may be briefly unavailable on Sunday between 2:00 and 3:00 UTC."
 />

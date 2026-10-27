@@ -13,10 +13,10 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | Documented on | `theming`: colorsFor, paletteHue, PALETTES ("Palettes"); `tokens/colors`: darkColors, glassByScheme, lightColors, statusHues ("Glass", "Status surfaces"); `tokens/layout`: BreakpointOverride, formFactor, FormFactor, responsive, Responsive |
 | Docs planned | `theming`: Palette; `tokens/colors`: alpha, baseColors, channelsOf, colorsByScheme, ColorScheme, ColorTokens, composite, contrastRatio, darkGlass, GlassTokens, Hue, inkOn, lightGlass, mixOklab, palette, relativeLuminance, statusColors, StatusColors, StatusColorTone, StatusTone; `tokens/layout`: BreakpointKey, breakpoints, ContainerBreakpoint, ContainerBreakpointOptions, LayoutStyle, MeasuredWidth, MeasureProps, SizingKey, useContainerBreakpoint, useContainerWidth, useMeasuredWidth, WidthKey, widths; `tokens/spacing`: PlatformKey, radius, shape, ShapeTokens, spacing; `tokens/typography`: FontFaces, FontWeightKey, ThemeFonts, typeface |
 | Materials manifest | none: the design tokens are not a renderable, so the material inventory has no entry for them |
-| Tests of it | 89 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/tokens[-<what>].test.tsx`): `test/action-role.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/anchored-overlay-sheet.test.tsx`, `test/app-frame.test.tsx`, `test/atom-material-roles.test.tsx`, `test/audit-protocol-palette.test.ts`, `test/avatar-menu.test.tsx`, `test/axes.test.ts`, `test/behavior-smoke-a.test.tsx`, `test/brand-ink.test.ts`, `test/button-group-look.test.tsx`, `test/button-look.test.tsx`, `test/card.test.tsx`, `test/carousel-arrows.test.tsx`, `test/charts-buildout.test.tsx`, `test/charts-cartesian.test.tsx`, `test/color.test.ts`, `test/container.test.tsx`, `test/data-table-groups.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-css.test.ts`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/design-rules-tokens.test.ts`, `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/disclosure.test.tsx`, `test/divider.test.tsx`, `test/docs-page-look.test.ts`, `test/field-colors.test.ts`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-contract.test.tsx`, `test/focus-ring.test.tsx`, `test/fonts.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-ios.test.tsx`, `test/glass-surface-ladder.test.tsx`, `test/glass-surface.test.ts`, `test/glass-tint.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/hover-lift.test.tsx`, `test/image.test.tsx`, `test/input-actions.test.tsx`, `test/input-android-content-box.test.ts`, `test/ios-tints.test.ts`, `test/layout-spans.test.tsx`, `test/material-resolution.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/menu-look.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/native-frost-paint-order.test.tsx`, `test/navbar-v4.test.tsx`, `test/new-components.test.tsx`, `test/option-list-idiom.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlays.test.tsx`, `test/pagination-look.test.tsx`, `test/phone-input.test.tsx`, `test/primary-text.test.tsx`, `test/progress.test.tsx`, `test/qrcode.test.tsx`, `test/responsive.test.tsx`, `test/ripple-clip.test.ts`, `test/ripple.test.ts`, `test/scrim-frost.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/shadow.test.ts`, `test/sidebar.test.tsx`, `test/sizing.test.tsx`, `test/slider-glass.test.tsx`, `test/status-colors.test.ts`, `test/status-text-roles.test.tsx`, `test/swatch.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx`, `test/theme-palette-axis.test.tsx`, `test/toast-look.test.tsx`, `test/tokens.test.ts`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx`, `test/v4-accent.test.ts`, `test/v4-detail-capabilities.test.tsx`, `test/video.test.tsx`, `test/web-frost-paint-order.test.tsx` |
-| Consumers | 105 components: 82 directly, 23 through shared modules (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Tests of it | 110 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/tokens[-<what>].test.tsx`): `test/action-role.test.tsx`, `test/action-sheet-look.test.ts`, `test/alert-dialog-look.test.ts`, `test/anchored-overlay-dismissal.test.tsx`, `test/anchored-overlay-sheet.test.tsx`, `test/app-frame.test.tsx`, `test/atom-material-roles.test.tsx`, `test/audit-protocol-palette.test.ts`, `test/autocomplete-look.test.tsx`, `test/avatar-look.test.tsx`, `test/avatar-menu.test.tsx`, `test/axes.test.ts`, `test/behavior-smoke-a.test.tsx`, `test/brand-ink.test.ts`, `test/button-group-look.test.tsx`, `test/button-look.test.tsx`, `test/card.test.tsx`, `test/carousel-arrows.test.tsx`, `test/charts-buildout.test.tsx`, `test/charts-cartesian.test.tsx`, `test/chip.test.tsx`, `test/color.test.ts`, `test/command-look.test.ts`, `test/container.test.tsx`, `test/data-table-groups.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-css.test.ts`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/design-rules-tokens.test.ts`, `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/dialog-look.test.ts`, `test/disclosure.test.tsx`, `test/divider.test.tsx`, `test/docs-page-look.test.ts`, `test/field-colors.test.ts`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/filter-panel.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-contract.test.tsx`, `test/focus-ring.test.tsx`, `test/fonts.test.tsx`, `test/forms.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-ios.test.tsx`, `test/glass-surface-ladder.test.tsx`, `test/glass-surface.test.ts`, `test/glass-tint.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/hover-lift.test.tsx`, `test/image.test.tsx`, `test/input-actions.test.tsx`, `test/input-android-content-box.test.ts`, `test/input-otp-look.test.tsx`, `test/interaction-override.test.tsx`, `test/ios-tints.test.ts`, `test/kbd.test.tsx`, `test/layout-spans.test.tsx`, `test/listbox-look.test.tsx`, `test/material-resolution.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/menu-look.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/native-frost-paint-order.test.tsx`, `test/navbar-v4.test.tsx`, `test/new-components.test.tsx`, `test/option-list-idiom.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlays.test.tsx`, `test/pagination-look.test.tsx`, `test/phone-input.test.tsx`, `test/popover-look.test.ts`, `test/primary-text.test.tsx`, `test/progress.test.tsx`, `test/qrcode.test.tsx`, `test/radio-idiom.test.tsx`, `test/responsive.test.tsx`, `test/ripple-clip.test.ts`, `test/ripple.test.ts`, `test/scrim-frost.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/select-look.test.tsx`, `test/shadow.test.ts`, `test/sidebar.test.tsx`, `test/sizing.test.tsx`, `test/slider-glass.test.tsx`, `test/status-colors.test.ts`, `test/status-text-roles.test.tsx`, `test/stepper-look.test.tsx`, `test/swatch.test.tsx`, `test/tabs-overflow.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx`, `test/textarea-look.test.tsx`, `test/theme-palette-axis.test.tsx`, `test/toast-look.test.tsx`, `test/tokens.test.ts`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx`, `test/v4-accent.test.ts`, `test/v4-detail-capabilities.test.tsx`, `test/v4-overlay-corners.test.ts`, `test/video.test.tsx`, `test/web-frost-paint-order.test.tsx` |
+| Consumers | 105 components: 83 directly, 22 through shared modules (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | `pattern-accessibility` (contrastRatio) |
-| Capture through | 106, in this order: components `image`, `row-column`, `grid`, `container`, `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `breadcrumb`, `button-group`, `button`, `checkbox`, `divider`, `dropdown`, `input`, `input-otp`, `listbox`, `stepper`, `pagination`, `popover`, `progress`, `qrcode`, `select`, `skeleton`, `slider`, `textarea`, `swatch`, `tooltip`, `typography`, `video`, `accordion`, `action-panels`, `alert`, `alert-dialog`, `card`, `code-block`, `collapsible`, `description-lists`, `empty-state`, `feeds`, `form`, `grid-lists`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `app-frame`, `board`, `calendar`, `carousel`, `command`, `dashboard-grid`, `data-table`, `dialog`, `drag-drop`, `drawer`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `wizard`, `tab-bar`, `tabs`, `toast`, `area-chart`, `candlestick-chart`, `depth-chart`, `sparkline`, `stacked-bar`, `gauge`, `heatmap`, `metric-breakdown`, `bullet-chart`, `progress-ring`, `range-area-chart`, `box-plot`, `waterfall-chart`, `radar-chart`, `geo-map`, `text`, `pressable`, `text-input`, `scroll-view`, `icon`, `kbd`, `radio`, `spinner`, `switch`, `field`, `chat`, `chart`, `line-chart`, `pie-chart`, `scatter-plot`, `bar-list`, `uptime-bar`, `service-health-list`, `composed-chart`, `histogram`, `radial-bar-chart`, `funnel-chart`, `treemap`; pages `pattern-accessibility` |
+| Capture through | 106, in this order: components `image`, `row-column`, `grid`, `container`, `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `button-group`, `button`, `checkbox`, `divider`, `dropdown`, `input`, `input-otp`, `listbox`, `stepper`, `pagination`, `popover`, `progress`, `qrcode`, `radio`, `select`, `skeleton`, `slider`, `spinner`, `textarea`, `swatch`, `tooltip`, `typography`, `video`, `accordion`, `action-panels`, `alert`, `alert-dialog`, `card`, `code-block`, `collapsible`, `description-lists`, `empty-state`, `feeds`, `form`, `grid-lists`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `app-frame`, `board`, `calendar`, `carousel`, `command`, `dashboard-grid`, `data-table`, `dialog`, `drag-drop`, `drawer`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `wizard`, `tab-bar`, `tabs`, `toast`, `area-chart`, `candlestick-chart`, `depth-chart`, `sparkline`, `stacked-bar`, `gauge`, `heatmap`, `metric-breakdown`, `bullet-chart`, `progress-ring`, `range-area-chart`, `box-plot`, `waterfall-chart`, `radar-chart`, `geo-map`, `text`, `pressable`, `text-input`, `scroll-view`, `breadcrumb`, `icon`, `kbd`, `switch`, `field`, `chat`, `chart`, `line-chart`, `pie-chart`, `scatter-plot`, `bar-list`, `uptime-bar`, `service-health-list`, `composed-chart`, `histogram`, `radial-bar-chart`, `funnel-chart`, `treemap`; pages `pattern-accessibility` |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/theming` (documents colorsFor, paletteHue, PALETTES; planned for Palette), `/tokens/colors` (documents darkColors, glassByScheme, lightColors, statusHues; planned for alpha, baseColors, channelsOf, colorsByScheme, ColorScheme, ColorTokens, composite, contrastRatio, darkGlass, GlassTokens, Hue, inkOn, lightGlass, mixOklab, palette, relativeLuminance, statusColors, StatusColors, StatusColorTone, StatusTone), `/tokens/layout` (documents BreakpointOverride, formFactor, FormFactor, responsive, Responsive; planned for BreakpointKey, breakpoints, ContainerBreakpoint, ContainerBreakpointOptions, LayoutStyle, MeasuredWidth, MeasureProps, SizingKey, useContainerBreakpoint, useContainerWidth, useMeasuredWidth, WidthKey, widths), `/tokens/spacing` (planned for PlatformKey, radius, shape, ShapeTokens, spacing), `/tokens/typography` (planned for FontFaces, FontWeightKey, ThemeFonts, typeface) |
 | Turn record | `audit/turns/tokens.md`, written by `bun run audit:turn -- --slug=tokens --phase=before\|after` (the before and after capture runs) |
 
@@ -26,28 +26,29 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `row-column` | directly | `breakpoints`, `spacing`, `useContainerWidth` |
 | `grid` | directly | `useContainerWidth` |
 | `container` | directly | `widths` |
-| `chip` | directly | `alpha`, `palette`, `shape`, `statusColors` |
+| `chip` | directly | `alpha`, `composite`, `contrastRatio`, `shape`, `statusColors` |
 | `emblem` | directly | `shape`, `statusColors` |
-| `autocomplete` | directly | `shape`, `useMeasuredWidth` |
-| `avatar` | directly | `shape` |
+| `autocomplete` | directly | `alpha`, `shape`, `useMeasuredWidth` |
+| `avatar` | directly | `alpha`, `composite`, `contrastRatio` |
 | `badge` | directly | `alpha`, `shape`, `statusColors` |
-| `breadcrumb` | directly | `alpha` |
 | `button-group` | directly | `alpha`, `shape`, `useMeasuredWidth` |
 | `button` | directly | `alpha`, `shape` |
 | `checkbox` | directly | `shape` |
 | `divider` | directly | `channelsOf` |
 | `dropdown` | directly | `alpha`, `shape`, `useMeasuredWidth` |
-| `input` | directly | `alpha`, `channelsOf`, `shape` |
-| `input-otp` | directly | `alpha`, `shape` |
-| `listbox` | directly | `shape` |
+| `input` | directly | `alpha`, `shape` |
+| `input-otp` | directly | `shape` |
+| `listbox` | directly | `alpha`, `shape` |
 | `stepper` | directly | `alpha`, `shape` |
 | `pagination` | directly | `alpha`, `useMeasuredWidth` |
 | `popover` | directly | `shape`, `useMeasuredWidth` |
 | `progress` | directly | `alpha`, `statusColors` |
 | `qrcode` | directly | `shape` |
+| `radio` | directly | `shape` |
 | `select` | directly | `alpha`, `shape`, `useMeasuredWidth` |
 | `skeleton` | directly | `shape` |
 | `slider` | directly | `alpha` |
+| `spinner` | directly | `alpha` |
 | `textarea` | directly | `shape` |
 | `swatch` | directly | `paletteHue`, `shape` |
 | `tooltip` | directly | `shape` |
@@ -55,13 +56,13 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `video` | directly | `radius` |
 | `accordion` | directly | `shape` |
 | `action-panels` | directly | `statusColors` |
-| `alert` | directly | `shape`, `statusColors` |
-| `alert-dialog` | directly | `alpha`, `shape`, `widths` |
+| `alert` | directly | `alpha`, `shape`, `statusColors` |
+| `alert-dialog` | directly | `shape`, `widths` |
 | `card` | directly | `alpha`, `colorsFor`, `mixOklab`, `shape` |
 | `code-block` | directly | `alpha`, `palette`, `shape` |
 | `collapsible` | directly | `shape` |
 | `description-lists` | directly | `shape`, `useContainerBreakpoint` |
-| `empty-state` | directly | `alpha`, `shape` |
+| `empty-state` | directly | `shape`, `widths` |
 | `feeds` | directly | `shape` |
 | `form` | directly | `useContainerWidth`, `widths` |
 | `grid-lists` | directly | `alpha`, `palette`, `shape`, `useContainerBreakpoint` |
@@ -80,14 +81,14 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `dialog` | directly | `alpha`, `shape`, `widths` |
 | `drag-drop` | directly | `alpha`, `shape` |
 | `drawer` | directly | `alpha`, `shape` |
-| `filter-panel` | directly | `breakpoints`, `shape` |
+| `filter-panel` | directly | `breakpoints` |
 | `navbars` | directly | `alpha`, `shape`, `useContainerBreakpoint` |
 | `sidebar` | directly | `alpha`, `breakpoints`, `shape` |
 | `row-menu` | directly | `alpha`, `shape`, `useMeasuredWidth` |
 | `steps` | directly | `alpha`, `useContainerBreakpoint` |
 | `wizard` | directly | `breakpoints`, `useContainerWidth` |
 | `tab-bar` | directly | `alpha` |
-| `tabs` | directly | `alpha`, `shape`, `useContainerBreakpoint` |
+| `tabs` | directly | `alpha`, `composite`, `shape`, `useContainerBreakpoint` |
 | `toast` | directly | `alpha`, `shape` |
 | `area-chart` | directly | `alpha` |
 | `candlestick-chart` | directly | `alpha` |
@@ -108,10 +109,9 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `pressable` | through shared modules | `useTheme` (src/style/theme.tsx) |
 | `text-input` | through shared modules | `useFocusRingStyle` (src/style/pressable.tsx), `useTheme` (src/style/theme.tsx) |
 | `scroll-view` | through shared modules | `useFocusRingStyle` (src/style/pressable.tsx) |
+| `breadcrumb` | through shared modules | `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx), `controlRipple` (src/style/ripple.ts) and 1 more |
 | `icon` | through shared modules | `useTheme` (src/style/theme.tsx) |
 | `kbd` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
-| `radio` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 10 more |
-| `spinner` | through shared modules | `Text` (src/style/text.tsx), `useTheme` (src/style/theme.tsx) |
 | `switch` | through shared modules | `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx), `useTheme` (src/style/theme.tsx) |
 | `field` | through shared modules | `LabelContent` (src/style/floating-label.tsx), `Text` (src/style/text.tsx), `useFillStyle` (src/style/sizing.ts) and 1 more |
 | `chat` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 5 more |

@@ -7,7 +7,6 @@ export default function Example(scope: ExampleScope) {
   return (
 <Alert
   success
-  icon="✓"
   title="All set"
   description="Your changes have been saved successfully."
 />

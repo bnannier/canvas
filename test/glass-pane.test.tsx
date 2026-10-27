@@ -182,6 +182,13 @@ describe("every pane host keeps its solid layout under glass", () => {
     return a ?? (b == null ? null : -b);
   }
 
+  // A bubble whose beak is a flat token fill drawn in solid mode only (the Tooltip's, on the
+  // web and iOS skins; Android's M3 plain tooltip has none) loses that one placed child under
+  // glass, where the pane is its whole surface: solid's beak, the square turned 45 degrees,
+  // is left out of the comparison for those hosts.
+  const SOLID_ONLY_BEAK = new Set(["Tooltip"]);
+  const isBeak = (node: Element) => /rotate\(45deg\)/.test((node as HTMLElement).style.transform);
+
   async function holdsSolidLayout(name: string, node: ReactNode, act: PaneHost["act"], indicatorReplaced: boolean, optional = false) {
     const solid = render(<ThemeProvider light solid>{node}</ThemeProvider>);
     act?.(solid);
@@ -201,7 +208,7 @@ describe("every pane host keeps its solid layout under glass", () => {
       // offset from the host's outer edge is solid's, and a layer pinned to both sides of an
       // axis (a centred glyph layer) keeps its centre.
       const placed = Array.from(host.children).filter((child) => !glassOnly(child) && getComputedStyle(child).position === "absolute");
-      const solidPlaced = Array.from(twin!.children).filter((child) => getComputedStyle(child).position === "absolute");
+      const solidPlaced = Array.from(twin!.children).filter((child) => getComputedStyle(child).position === "absolute" && !(SOLID_ONLY_BEAK.has(name.split(" (")[0]!) && isBeak(child)));
       if (indicatorReplaced) expect(placed.length, `${name}: the pane replaces solid's indicator view`).toBe(solidPlaced.length - 1);
       else expect(placed.length, `${name}: absolutely placed children`).toBe(solidPlaced.length);
       if (placed.length === solidPlaced.length) {
@@ -304,12 +311,14 @@ describe("Increase Contrast only ever adds weight", () => {
   };
   const ring = (node: Element) => ({ width: borderOf(node, "top"), color: channels(getComputedStyle(node).getPropertyValue("border-top-color") || (node as HTMLElement).style.borderColor) });
 
-  it("a 2 px radio ring stays 2 px, in foreground, checked or not", async () => {
+  it("a radio ring keeps its own width (1.5 px at rest, 5 px chosen), in foreground, checked or not", async () => {
     const spy = contrastMore();
     try {
       render(<ThemeProvider light solid><RadioGroup defaultValue="pro" label="Plan"><Radio value="hobby">Hobby</Radio><Radio value="pro">Pro</Radio></RadioGroup></ThemeProvider>);
       await waitFor(() => expect(ring(screen.getAllByRole("radio")[0]!.firstElementChild!).color).toBe(hex(fg)));
-      for (const radio of screen.getAllByRole("radio")) expect(ring(radio.firstElementChild!)).toEqual({ width: 2, color: hex(fg) });
+      const [hobby, pro] = screen.getAllByRole("radio");
+      expect(ring(hobby!.firstElementChild!)).toEqual({ width: 1.5, color: hex(fg) });
+      expect(ring(pro!.firstElementChild!)).toEqual({ width: 5, color: hex(fg) });
     } finally { spy.mockRestore(); }
   });
 
@@ -361,20 +370,23 @@ describe("Increase Contrast only ever adds weight", () => {
     } finally { spy.mockRestore(); }
   });
 
-  it("Steps: the completed and upcoming discs keep 2 px in foreground, and Android's current ring keeps its 2 dp primary", async () => {
+  it("Steps: the completed disc and the upcoming ring take the foreground edge, and the current ring keeps its 2 px primary", async () => {
     const spy = contrastMore();
     try {
       const steps = [{ label: "Account" }, { label: "Profile" }, { label: "Review" }];
       render(<ThemeProvider light solid><Steps steps={steps} defaultCurrent={1} /><AndroidSteps steps={steps} defaultCurrent={1} /></ThemeProvider>);
       await waitFor(() => expect(ring(screen.getAllByText("3")[0]!.parentElement!).color).toBe(hex(fg)));
-      const [web, android] = [0, 1].map((i) => ({ done: screen.getAllByText("✓")[i]!.parentElement!, current: screen.getAllByText("2")[i]!.parentElement!, next: screen.getAllByText("3")[i]!.parentElement! }));
+      // A completed marker draws the decorative check glyph in place of its number.
+      const done = [...document.querySelectorAll<HTMLElement>("div")].filter((n) => n.style.height === "28px" && n.querySelector('[aria-hidden="true"]'));
+      const [web, android] = [0, 1].map((i) => ({ done: done[i]!, current: screen.getAllByText("2")[i]!.parentElement!, next: screen.getAllByText("3")[i]!.parentElement! }));
       for (const platform of [web, android]) {
-        expect(ring(platform.done).width).toBe(2);
-        expect(ring(platform.next)).toEqual({ width: 2, color: hex(fg) });
+        // The hand-off's completed disc has no ring: Increase Contrast adds the 1 px edge.
+        expect(ring(platform.done)).toEqual({ width: 1, color: hex(fg) });
+        // The upcoming ring keeps its 1.5 px, in foreground.
+        expect(ring(platform.next)).toEqual({ width: 1.5, color: hex(fg) });
+        // The current step's ring is its state: it keeps its colour.
+        expect(ring(platform.current)).toEqual({ width: 2, color: hex(lightColors.primary) });
       }
-      // The current step's ring is its state: it keeps its colour (the web ring paints no surface and never changed).
-      expect(ring(android.current)).toEqual({ width: 2, color: hex(lightColors.primary) });
-      expect(ring(web.current)).toEqual({ width: 2, color: hex(lightColors.primary) });
     } finally { spy.mockRestore(); }
   });
 });

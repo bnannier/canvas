@@ -1,11 +1,11 @@
 # Toast
 
-A transient notification capsule. Render a `<Toast>` directly, or drive them imperatively: mount a `<ToastProvider>` near your app root and call `toast(...)` from the `useToast()` hook to enqueue auto-dismissing toasts that stack over the app.
+A transient notification card. Render a `<Toast>` directly, or drive them imperatively: mount a `<ToastProvider>` near your app root and call `toast(...)` from the `useToast()` hook to enqueue auto-dismissing toasts that stack over the app.
 
-On the web and iOS the toast is Dark Factory's pill: the same deep fill in every palette and scheme, a bold white message, a pill with no description (a long message wraps inside the capsule) and a rounder card once a description sits under the message, with the intent glyph, the action and the dismiss in inks that read on the dark fill. Android keeps the Material 3 snackbar on the same fill.
+On the web and iOS the toast is a floating card: the overlay panel at the card corner, up to 380px wide, with the intent glyph in its status color (the accent's sparkle on a neutral toast), a medium message over a muted description, and the action in the accent. A `brief` toast hugs its one line. Android keeps the Material 3 snackbar on the inverse fill.
 
 For a single brief notification, use `<ToastProvider single brief safeArea duration={2800}
-bottomInset={28} horizontalInset={20}>`. New messages replace the current pill and
+bottomInset={28} horizontalInset={20}>`. New messages replace the current toast and
 restart its lifetime. `safeArea` includes the device safe area. `brief` retains a
 single line without the dismiss control; Android retains its snackbar skin.
 
@@ -19,7 +19,7 @@ its back gesture is never taken for a toast.
 
 ## Usage
 
-Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)
+Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing card that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)
 
 ```tsx
 <AppScreen>

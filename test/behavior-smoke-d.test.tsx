@@ -112,14 +112,17 @@ describe("Navbar: brand element and trailing actions slots", () => {
   });
 });
 
+// A completed step's marker draws the decorative check glyph in place of its number.
+const checks = () => [...document.querySelectorAll<HTMLElement>("div, button")].filter((n) => n.style.height === "28px" && n.querySelector('[aria-hidden="true"]')).length;
+
 describe("Steps — per-step state (horizontal default)", () => {
   const steps = [{ label: "A" }, { label: "B" }, { label: "C" }, { label: "D" }];
 
   it("shows a check for completed steps and the number for current/upcoming", () => {
     ui(<Steps current={2} steps={steps} />);
     for (const s of steps) expect(screen.getByText(s.label)).toBeDefined();
-    // Steps 0,1 are completed -> two "✓" glyphs (their numbers are replaced).
-    expect(screen.getAllByText("✓").length).toBe(2);
+    // Steps 0,1 are completed -> two check glyphs (their numbers are replaced).
+    expect(checks()).toBe(2);
     expect(screen.queryByText("1")).toBeNull();
     expect(screen.queryByText("2")).toBeNull();
     // Step 2 is current -> "3"; step 3 is upcoming -> "4".
@@ -133,23 +136,23 @@ describe("Steps — pressable step contract", () => {
     let pressed = -1;
     ui(<Steps defaultCurrent={0} onStepPress={(i) => { pressed = i; }} steps={[{ label: "A" }, { label: "B" }, { label: "C" }]} />);
     // Default current is 0 -> step 0 shows "1"; no completed checks yet.
-    expect(screen.queryByText("✓")).toBeNull();
+    expect(checks()).toBe(0);
     // Press step 2 (glyph "3").
     fireEvent.click(screen.getByText("3"));
     expect(pressed).toBe(2);
     // Horizontal steps do not self-advance: still no completed checks.
-    expect(screen.queryByText("✓")).toBeNull();
+    expect(checks()).toBe(0);
   });
 
   it("vertical: a step press reports its index AND advances the active step", () => {
     let pressed = -1;
     ui(<Steps vertical defaultCurrent={0} onStepPress={(i) => { pressed = i; }} steps={[{ label: "One" }, { label: "Two" }, { label: "Three" }]} />);
-    expect(screen.queryByText("✓")).toBeNull();
+    expect(checks()).toBe(0);
     // Press step 2 (its circle glyph is "3").
     fireEvent.click(screen.getByText("3"));
     expect(pressed).toBe(2);
     // Vertical steps advance: steps 0 and 1 are now completed -> two checks.
-    expect(screen.getAllByText("✓").length).toBe(2);
+    expect(checks()).toBe(2);
   });
 });
 

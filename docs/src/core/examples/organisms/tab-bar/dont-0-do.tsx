@@ -9,9 +9,9 @@ export default function Example(scope: ExampleScope) {
   active="home"
   onSelect={() => {}}
   items={[
-    { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }
+    { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
+    { key: "search", label: "Search", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },
+    { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
   ]}
 />
   );

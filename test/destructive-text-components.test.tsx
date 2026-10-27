@@ -62,13 +62,17 @@ describe("real destructive text consumers", () => {
       const field = screen.getByLabelText("Description");
       expect(rgb(screen.getByText("Describe the change.").style.color)).toBe(rgb(destructiveText(t)));
       expect(screen.getByRole("alert").textContent).toBe("Describe the change.");
-      expect(rgb(screen.getByText("4 / 3").style.color)).toBe(rgb(destructiveText(t)));
+      // The count joins N and max as each platform's hand-off row does (iOS's "N/max").
+      const count = (n: number) => (p.name === "ios" ? `${n}/3` : `${n} / 3`);
+      expect(rgb(screen.getByText(count(4)).style.color)).toBe(rgb(destructiveText(t)));
       fireEvent.change(field, { target: { value: "OK" } });
-      expect(rgb(screen.getByText("2 / 3").style.color)).toBe(rgb(t["muted-foreground"]));
+      // At rest the count is the helper's ink: the subtle ink, Android's on muted-foreground.
+      expect(rgb(screen.getByText(count(2)).style.color)).toBe(rgb(p.name === "android" ? t["muted-foreground"] : t["subtle-foreground"]!));
       rerender(ui());
       expect(screen.getByLabelText("Description")).toBe(field);
       expect(screen.queryByRole("alert")).toBeNull();
-      expect(rgb(screen.getByText("Keep it concise.").style.color)).toBe(rgb(t["muted-foreground"]));
+      // The helper rests on the hand-off's subtle ink (Android's supporting text on muted-foreground).
+      expect(rgb(screen.getByText("Keep it concise.").style.color)).toBe(rgb(p.name === "android" ? t["muted-foreground"] : t["subtle-foreground"]!));
     });
 
     for (const [name, Component] of [["Dialog", p.Dialog], ["AlertDialog", p.AlertDialog]] as const) {
@@ -77,9 +81,12 @@ describe("real destructive text consumers", () => {
         render(<ThemeProvider scheme={scheme}><Component open destructive title="Delete record" confirmLabel="Delete" onConfirm={() => confirms++} /></ThemeProvider>);
         const label = screen.getByText("Delete");
         const action = screen.getByRole("button", { name: "Delete" });
-        expect(rgb(label.style.color)).toBe(rgb(p.name === "web" ? t["destructive-foreground"] : destructiveText(t)));
-        if (p.name === "ios") expect(rgb(action.style.backgroundColor)).toBe(rgb(t.secondary));
-        if (p.name === "web") expect(rgb(action.style.backgroundColor)).toBe(rgb(t.destructive));
+        // The web alert's filled destructive Button (the Android AlertDialog too, the hand-off's
+        // Android row); the error ink on the iOS Dialog's gray capsule and the iOS alert's clear cell.
+        const filled = p.name === "web" || (p.name === "android" && name === "AlertDialog");
+        expect(rgb(label.style.color)).toBe(rgb(filled ? t["destructive-foreground"] : destructiveText(t)));
+        if (p.name === "ios") expect(rgb(action.style.backgroundColor)).toBe(rgb(name === "Dialog" ? t.secondary : "rgba(0, 0, 0, 0)"));
+        if (filled) expect(rgb(action.style.backgroundColor)).toBe(rgb(t.destructive));
         fireEvent.click(action);
         expect(confirms).toBe(1);
       });

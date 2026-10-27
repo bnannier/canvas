@@ -20,7 +20,7 @@ lag behind the rail). Tapping the track puts the handle on the tapped value at
 once. The rail, the filled range, the value label and the hit target stay
 fixed. A disabled slider is inert; solid mode keeps the skin's own handle.
 
-On iOS 26 the handle is a real Apple Liquid Glass control, with the material's edge-lensing and specular showing on a physical device. This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own native look.
+On iOS 26 the handle is a real Apple Liquid Glass control, with the material's edge-lensing and specular showing on a physical device. This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own look: on the web a 20 px white thumb (16 `small`, 26 `large`) on a 6 px rail (4, 8) whose accent range glows, ringed in the accent's soft wash while a pointer hovers or presses it, under a 13 px title with the value in the mono face; on Android Material 3 Expressive's split 16dp track (24dp `large`) and 4dp bar handle.
 
 ## Variants
 
@@ -74,13 +74,13 @@ On iOS 26 the handle is a real Apple Liquid Glass control, with the material's e
 
 ### Range
 
-**Do** — Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.
+**Do**: Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.
 
 ```tsx
 <Slider defaultValue={65} min={0} max={100}>Volume</Slider>
 ```
 
-**Don't** — Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.
+**Don't**: Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.
 
 ```tsx
 <View style={{ width: 64 }}>
@@ -90,13 +90,13 @@ On iOS 26 the handle is a real Apple Liquid Glass control, with the material's e
 
 ### Bounds
 
-**Do** — Pair the slider with its current value so the number is explicit, not just inferred from the thumb position. `showValue` renders the live readout above the track.
+**Do**: Pair the slider with its current value so the number is explicit, not just inferred from the thumb position. `showValue` renders the live readout above the track.
 
 ```tsx
 <Slider showValue defaultValue={48} min={0} max={100}>Volume</Slider>
 ```
 
-**Don't** — A slider with no readout and no visible label leaves users guessing what the value is and what it controls.
+**Don't**: A slider with no readout and no visible label leaves users guessing what the value is and what it controls.
 
 ```tsx
 <Slider accessibilityLabel="Volume" defaultValue={48} min={0} max={100} />
@@ -104,13 +104,13 @@ On iOS 26 the handle is a real Apple Liquid Glass control, with the material's e
 
 ### State
 
-**Do** — Use the disabled state for values the user cannot change yet; it dims clearly so it does not look interactive.
+**Do**: Use the disabled state for values the user cannot change yet; it dims clearly so it does not look interactive.
 
 ```tsx
 <Slider disabled accessibilityLabel="Volume" defaultValue={20} min={0} max={100} />
 ```
 
-**Don't** — Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.
+**Don't**: Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.
 
 ```tsx
 <View style={{ width: 320, maxWidth: "100%", height: 20, justifyContent: "center" }}>

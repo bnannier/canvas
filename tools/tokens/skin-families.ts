@@ -157,7 +157,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     name: "Avatar",
     module: "atoms/avatar/avatar",
     checks: [
-      { token: "p-avatar-square-radius", read: (s) => num(at(s, "roundedRadius")) },
+      { token: "p-avatar-square-radius", read: (s) => num(at(s, "roundedRadius", "default")) },
     ],
   },
   {

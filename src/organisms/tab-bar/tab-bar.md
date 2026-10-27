@@ -2,22 +2,23 @@
 
 Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (the iOS 26 floating tab bar / Material 3 navigation bar), rendered through the glass functional layer.
 
-iOS and web share the iOS 26 anatomy: a capsule that floats above the content
-(which scrolls beneath it), inset from the sides, with the safe-area inset kept
-under the capsule, and the selected destination raised as a capsule covering its
-whole cell. Android docks the Material 3 bar full-bleed with its 56 by 32 icon
-pill. In glass mode the selection is a control-layer pane on the active
-destination: the cell capsule on iOS and web, the icon pill on Android. Solid
-mode retains the ordinary platform surface.
+iOS and web share the iOS 26 anatomy: a 62 px capsule that floats above the
+content (which scrolls beneath it), inset from the sides, with the safe-area
+inset kept under the capsule, and the selected destination washed in the accent
+as a capsule covering its whole cell. Android docks the Material 3 bar
+full-bleed, 80 tall under a hairline, with its 64 by 32 icon pill. In glass mode
+the selection is a control-layer pane on the active destination: the cell
+capsule on iOS and web, the icon pill on Android. Solid mode retains the
+ordinary platform surface.
 
 ## Usage
 
 ```tsx
 <TabBar
   items={[
-    { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }
+    { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
+    { key: "search", label: "Search", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },
+    { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
   ]}
 />
 ```
@@ -33,9 +34,9 @@ mode retains the ordinary platform surface.
       active={active}
       onSelect={setActive}
       items={[
-        { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
-        { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
-        { key: "profile", label: "Profile", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }
+        { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
+        { key: "search", label: "Search", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },
+        { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
       ]}
     />
   )}
@@ -53,9 +54,9 @@ mode retains the ordinary platform surface.
   active="home"
   onSelect={() => {}}
   items={[
-    { key: "home", label: "Home", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }
+    { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
+    { key: "search", label: "Search", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },
+    { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
   ]}
 />
 ```
@@ -65,15 +66,15 @@ mode retains the ordinary platform surface.
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, paddingTop: 6 }}>
   <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 4 }}>
-    <Icon home size={22} primary />
+    <Icon home size={19} primary />
     <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "600", color: tokens.primary }}>Home</Text>
   </View>
   <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 4 }}>
-    <Icon search size={22} primary />
+    <Icon search size={19} primary />
     <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "600", color: tokens.primary }}>Search</Text>
   </View>
   <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 3, paddingVertical: 4 }}>
-    <Icon user size={22} primary />
+    <Icon user size={19} primary />
     <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "600", color: tokens.primary }}>Profile</Text>
   </View>
 </View>

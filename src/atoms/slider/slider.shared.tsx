@@ -11,6 +11,7 @@ import { View, Text, GlassSurface, useControllableState, useFillStyle, isRTL, FO
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { useInteractionOverride } from "../../style/interaction-override.js";
+import { useHover } from "../../style/hover.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -102,6 +103,14 @@ export interface SliderSkin {
   trackGap?: number;
   /** Floor for the interactive row height (iOS HIG 44pt / Android M3 48dp minimum touch target). */
   minRowHeight?: number;
+  /** Touch padding around the taller of the thumb and track in the interactive row (default 16). */
+  rowPadding?: number;
+  /** The space between the header and the rail. */
+  headerGap: number;
+  /** The space between the title row and the description under it. */
+  descriptionGap: number;
+  /** The whole control's opacity when disabled (solid mode). */
+  disabledOpacity: number;
   /** Render the M3 stop indicator dot in the inactive track end (requires `tick`). */
   endStop?: boolean;
   /** Stop/tick indicator dot diameter (default 4). */
@@ -110,8 +119,8 @@ export interface SliderSkin {
   track: (tokens: ColorTokens, size: Size, disabled: boolean) => ViewStyle;
   /** The active range: the filled overlay from min to the value (continuous) or the active segment (gap anatomy). */
   fill: (tokens: ColorTokens, size: Size, disabled: boolean) => ViewStyle;
-  /** The draggable thumb (its left/top offset is set by the shell). */
-  thumb: (tokens: ColorTokens, size: Size, disabled: boolean, pressed: boolean) => ViewStyle;
+  /** The draggable thumb (its left/top offset is set by the shell). `active` while a pointer hovers the control or a press holds it. */
+  thumb: (tokens: ColorTokens, size: Size, disabled: boolean, active: boolean) => ViewStyle;
   /**
    * The bright translucent under-fill for the glass knob (passed to `GlassSurface`'s
    * `tint`), so the handle reads as a light glass puck on both schemes instead of a
@@ -151,17 +160,16 @@ function snap(raw: number, min: number, max: number, step: number): number {
 const MAX_TICK_INTERVALS = 20;
 
 // The stacked header the Slider owns above its track: a title row (the label with an
-// optional trailing live-value readout) over a muted description line. `OUTER` is the
-// column that wraps the header and the interactive rail; its snug 8px gap reproduces
-// the `<Column snug>` a caller used to hand-compose above a bare slider, and it now
-// carries the FILL nature so the label aligns to the track's width. `HEADER`
-// tightly pairs the description under its title (4px). `TITLE_ROW` lays the title and
-// readout on one line; the shell picks the justification (label + readout split ends,
-// a lone readout trails to the end). The component owns this column, its gaps, and the
-// type (from the skin), so the caller never rebuilds the anatomy around the control.
-const OUTER: ViewStyle = { width: "100%", gap: 8 };
-const HEADER: ViewStyle = { gap: 4 };
-const TITLE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
+// optional trailing live-value readout) over a description line. `OUTER` is the column
+// that wraps the header and the interactive rail, the skin's `headerGap` apart; it
+// carries the FILL nature so the label aligns to the track's width. The header pairs
+// the description under its title, the skin's `descriptionGap` apart. `TITLE_ROW` lays
+// the title and readout on one line; the shell picks the justification (label + readout
+// split ends, a lone readout trails to the end). The component owns this column, its
+// gaps, and the type (from the skin), so the caller never rebuilds the anatomy around
+// the control.
+const OUTER: ViewStyle = { width: "100%" };
+const TITLE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 12 };
 
 // Format the readout to at most the step's decimal places (mirroring `snap`'s
 // decimal handling), so an integer-step slider shows "48" and a 0.5-step slider
@@ -234,6 +242,9 @@ export function createSlider(skin: SliderSkin) {
     // An InteractionOverride's pinned press shows the held thumb (src/style/interaction-override.tsx).
     const pinnedPress = useInteractionOverride()?.pressed ?? false;
     const pressed = (pinnedPress && !disabled) || dragging;
+    // A hovering pointer rings the web thumb as a press does; the row never moves, so it
+    // is its own hover target (src/style/hover.tsx).
+    const { hovered, target: hoverTarget } = useHover(!disabled);
 
     // Losing interactivity cancels the engaged decoration without changing the
     // value.
@@ -341,7 +352,7 @@ export function createSlider(skin: SliderSkin) {
     // `thumbH`) must have its center there too. The row is the thumb/track height
     // plus comfortable touch padding, floored at the skin's minimum touch target
     // (iOS HIG 44pt, Android M3 48dp; the web has no such floor).
-    const rowHeight = Math.max(skin.minRowHeight ?? 0, Math.max(thumbH, trackHeight) + 16);
+    const rowHeight = Math.max(skin.minRowHeight ?? 0, Math.max(thumbH, trackHeight) + (skin.rowPadding ?? 16));
     const thumbTop = rowHeight / 2 - thumbH / 2;
     const trackTop = rowHeight / 2 - trackHeight / 2;
     const railShape = skin.track(tokens, size, !!disabled);
@@ -349,7 +360,7 @@ export function createSlider(skin: SliderSkin) {
     // press state: it stays over the glass knob and keeps its colour under Increase
     // Contrast instead of taking the contrasting hairline. A skin whose press leaves the
     // border alone (iOS's resting hairline, Android's borderless handle) shows no state there.
-    const thumbShape = skin.thumb(tokens, size, !!disabled, pressed);
+    const thumbShape = skin.thumb(tokens, size, !!disabled, pressed || hovered);
     const restingThumb = skin.thumb(tokens, size, !!disabled, false);
     const pressBorder = pressed && (thumbShape.borderColor !== restingThumb.borderColor || thumbShape.borderWidth !== restingThumb.borderWidth);
 
@@ -399,6 +410,7 @@ export function createSlider(skin: SliderSkin) {
     const interactive = (
       <View
         {...frame.target}
+        {...hoverTarget}
         ref={hostRef}
         {...pan.panHandlers}
         {...webKeyboardProps}
@@ -430,7 +442,7 @@ export function createSlider(skin: SliderSkin) {
             justifyContent: "center",
             // Give the touch area a comfortable height around the rail.
             height: rowHeight,
-            opacity: disabled && surface !== "glass" ? 0.5 : 1,
+            opacity: disabled && surface !== "glass" ? skin.disabledOpacity : 1,
           },
           // The thumb draws the focus ring (the frame's), so the focused container drops
           // the browser's own outline (no-op on native).
@@ -528,8 +540,8 @@ export function createSlider(skin: SliderSkin) {
       children != null && showValue ? "space-between" : showValue ? "flex-end" : "flex-start";
 
     return (
-      <View style={[OUTER, widthCap, style]}>
-        <View style={HEADER}>
+      <View style={[OUTER, { gap: skin.headerGap }, widthCap, style]}>
+        <View style={{ gap: skin.descriptionGap }}>
           {children != null || showValue ? (
             <View style={[TITLE_ROW, { justifyContent: titleJustify }]}>
               {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
