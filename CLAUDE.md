@@ -24,7 +24,7 @@ work now:
    text: an ink the hand-off picks below 4.5:1 on a bed it is drawn on (`primary-text`
    and `info` per palette, `inverse-primary`, and the `destructive-text`,
    `success-text` and `warning-text` inks) is walked in oklch lightness at its own hue
-   until every bed clears (`src/style/ink-floor.ts`), and a passing hand-off value is
+   until every bed clears (`tools/v4/derive-inks.ts`, written into `src/style/solved-inks.ts`), and a passing hand-off value is
    never moved; fills and washes keep the hand-off's values. The focus ring keeps the
    hand-off's geometry (a 2 px gap, then a 2 px band) with `ring` the solid accent, so
    the band clears 3:1. The CSS hand-off (`styles/tokens/colors.css`) is GENERATED from

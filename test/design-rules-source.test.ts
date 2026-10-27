@@ -598,9 +598,9 @@ describe("axis tables load without React Native", () => {
   // and the pure colour math the tokens compute the accent with (src/style/color.ts,
   // which imports nothing); a component's props type comes in with `import type`, which
   // the transpiler erases.
-  // The token table and the pure colour modules it is computed with (ink-floor.ts solves its
-  // text inks from color.ts alone), none of which loads React Native.
-  const LOADABLE = new Set(["src/style/axis.ts", "src/style/tokens.ts", "src/style/color.ts", "src/style/ink-floor.ts"]);
+  // The token table, the pure colour module it is computed with and the generated text inks
+  // it reads (solved-inks.ts), none of which loads React Native.
+  const LOADABLE = new Set(["src/style/axis.ts", "src/style/tokens.ts", "src/style/color.ts", "src/style/solved-inks.ts"]);
   const tables = sources.filter(({ file }) => file.endsWith(".axes.ts")).map(({ file }) => file);
 
   // The modules a file loads at runtime: every import or re-export that is not type-only.

@@ -1,5 +1,5 @@
 import { alpha, oklchHex } from "./color.js";
-import { solveHexInk, solveInk, type InkBed, type InkFloor } from "./ink-floor.js";
+import { SOLVED_INKS } from "./solved-inks.js";
 
 // Canvas design tokens, as plain JS values. RN-usable: no CSS variables, no
 // document access. Light and dark color sets plus numeric scales for spacing,
@@ -169,7 +169,8 @@ export interface ColorTokens {
 //   3:1 on every surface it sits on; the prototype draws those with its 16% hairline, which
 //   is about 1.5:1. Fields keep the hairline as `field-border` under the existing field
 //   exception (src/style/field-colors.ts).
-// - the text inks are solved (src/style/ink-floor.ts): `destructive-text`, `success-text`
+// - the text inks are solved (tools/v4/derive-inks.ts writes them into ./solved-inks.ts,
+//   so no bundle carries the solver): `destructive-text`, `success-text`
 //   and `warning-text` from the hand-off's status colours, `primary-text` (and `info`) from
 //   its accent text, and `inverse-primary` from the other scheme's accent text, each walked
 //   in oklch lightness at its own hue and chroma until it reads at 4.5:1 (primary text
@@ -314,8 +315,11 @@ export const SERIES: Record<ColorScheme, readonly (readonly [number, number, num
   ],
 };
 
-/** The scheme's neutrals, status colours, glass and shades: everything the hue does not move. */
-const NEUTRALS: Record<ColorScheme, Omit<ColorTokens, AccentRole | ChartRole | InkRole>> = {
+/**
+ * The scheme's neutrals, status colours, glass and shades: everything the hue does not move.
+ * Internal, read by tools/v4/derive-inks.ts, which solves the text inks over these surfaces.
+ */
+export const NEUTRALS: Record<ColorScheme, Omit<ColorTokens, AccentRole | ChartRole | InkRole>> = {
   dark: {
     background: "#0a0a0f",
     "surface-sunken": "#0e0e15",
@@ -420,102 +424,7 @@ type AccentRole =
   | "promo-end";
 type ChartRole = "chart-1" | "chart-2" | "chart-3" | "chart-4" | "chart-5" | "chart-6" | "chart-7" | "chart-8";
 
-type InkRole = "destructive-text" | "success-text" | "warning-text";
-
-/** The way a scheme's inks walk to clear a floor: away from its light page, or from its dark one. */
-const TOWARD: Record<ColorScheme, "dark" | "light"> = { light: "dark", dark: "light" };
-
-/**
- * The group opacity of iOS's pressed capsules and rows (the Dialog and AlertDialog capsules,
- * the Dropdown and ActionSheet rows): a red label on its gray capsule is read dimmed with it.
- * test/text-contrast.test.tsx renders the skins' actual pressed states against the solved ink.
- */
-const IOS_PRESSED_DIM = 0.8;
-/** iOS's translucent system fill under an ActionSheet row (the foreground at 10%), read dimmed when pressed. */
-const IOS_SYSTEM_FILL = 0.1;
-
-/** The opaque neutral surfaces a scheme draws text on. */
-function surfacesOf(n: (typeof NEUTRALS)[ColorScheme]): string[] {
-  return [n.background, n["surface-sunken"]!, n.card, n.popover, n.muted, n.secondary, n["field-fill"]!];
-}
-
-/**
- * The status inks a scheme reads on its surfaces and its tone's own wash, solved from the
- * hand-off's status colours (the ink-floor note above): the error ink also on iOS's pressed
- * gray capsule.
- */
-function solveStatusInks(scheme: ColorScheme): Record<InkRole, string> {
-  const n = NEUTRALS[scheme];
-  const surfaces = surfacesOf(n);
-  const beds = (wash: string): InkBed[] => [
-    ...surfaces.map((under) => ({ under })),
-    ...surfaces.map((under) => ({ under, layers: [wash] })),
-  ];
-  return {
-    "destructive-text": solveHexInk(n.destructive, [
-      ...beds(n["destructive-soft"]!),
-      { under: n.popover, layers: [n.secondary], dim: IOS_PRESSED_DIM },
-      { under: n.popover, layers: [alpha(n.foreground, IOS_SYSTEM_FILL)], dim: IOS_PRESSED_DIM },
-    ], TOWARD[scheme]),
-    "success-text": solveHexInk(n.success, beds(n["success-soft"]!), TOWARD[scheme]),
-    "warning-text": solveHexInk(n.warning, beds(n["warning-soft"]!), TOWARD[scheme]),
-  };
-}
-
-const STATUS_INKS: Record<ColorScheme, Record<InkRole, string>> = { light: solveStatusInks("light"), dark: solveStatusInks("dark") };
-
-/** Brand text's floor: 4.65:1 exact, so the anchor's 0.9 hover and channel rounding still clear 4.5. */
-const PRIMARY_TEXT_FLOOR: InkFloor = { exact: 4.65, rounded: 4.5 };
-
-/** The tonal selected fill's alpha (Material 3's secondary container over a track, the Android pill tab). */
-const TONAL_SELECTED = 0.12;
-/** The calendar's range band alpha, and today's own tint on top of it. */
-const RANGE_BAND = 0.15;
-const TODAY_TINT = 0.12;
-/** The anchor's hover opacity (styles/tokens/base.css `a:hover`). */
-const LINK_HOVER = 0.9;
-
-/**
- * Every bed brand text is read on in a scheme: the neutral surfaces resting and under the
- * anchor's hover, the tonal selection and the accent's soft wash over each, and today's
- * label inside a calendar range on a card.
- */
-function primaryTextBeds(n: (typeof NEUTRALS)[ColorScheme], ion: string, soft: string): InkBed[] {
-  const surfaces = surfacesOf(n);
-  return [
-    ...surfaces.map((under) => ({ under })),
-    ...surfaces.map((under) => ({ under, textOpacity: LINK_HOVER })),
-    ...surfaces.map((under) => ({ under, layers: [alpha(ion, TONAL_SELECTED)] })),
-    ...surfaces.map((under) => ({ under, layers: [soft] })),
-    { under: n.card, layers: [alpha(ion, RANGE_BAND), alpha(ion, TODAY_TINT)] },
-  ];
-}
-
-/**
- * The dense glass alpha a scheme paints the inverse pill at. The web frost's dense tint
- * (glass-surface/web-frost.ts) is the native one's density; test/text-contrast.test.tsx reads
- * the pill under every platform's own tint, so a web density that drifts from it fails there.
- */
-function denseAlpha(scheme: ColorScheme): number {
-  return Number(/,\s*([\d.]+)\s*\)$/.exec(glassByScheme[scheme]["glass-tint-dense"])?.[1] ?? 1);
-}
-
-/** The inverse pill's action ripple alpha (the Android snackbar's pressed state layer). */
-const INVERSE_RIPPLE = 0.12;
-
-/**
- * Every bed the inverse pill's action is read on: the pill solid, and under glass at each
- * dense alpha over the page and a card, each resting and under its pressed ripple.
- */
-function inversePrimaryBeds(scheme: ColorScheme): InkBed[] {
-  const n = NEUTRALS[scheme];
-  const ripple = alpha(n["inverse-foreground"]!, INVERSE_RIPPLE);
-  const pills: InkBed[] = [
-    { under: n.inverse! },
-    ...[n.background, n.card].map((under) => ({ under, layers: [alpha(n.inverse!, denseAlpha(scheme))] })),
-  ];
-  return pills.flatMap((pill) => [pill, { ...pill, layers: [...(pill.layers ?? []), ripple] }]);
-}
+export type InkRole = "destructive-text" | "success-text" | "warning-text";
 
 const CACHE = new Map<string, ColorTokens>();
 
@@ -529,14 +438,14 @@ export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
   if (hit) return hit;
   const hue = paletteHue[palette] ?? paletteHue.violet;
   const a = ACCENT[scheme];
-  const other = ACCENT[scheme === "dark" ? "light" : "dark"];
   const ion = oklchHex(a.fill[0], a.fill[1], hue);
   const soft = alpha(ion, a.soft);
-  const ionText = solveInk([a.text[0], a.text[1], hue], primaryTextBeds(NEUTRALS[scheme], ion, soft), TOWARD[scheme], PRIMARY_TEXT_FLOOR);
+  const solved = SOLVED_INKS[scheme];
+  const ionText = solved["primary-text"][palette] ?? solved["primary-text"].violet;
   const series = SERIES[scheme].map(([l, c, h]) => oklchHex(l, c, h));
   const tokens: ColorTokens = Object.freeze({
     ...NEUTRALS[scheme],
-    ...STATUS_INKS[scheme],
+    ...solved.status,
     primary: ion,
     "primary-text": ionText,
     "primary-foreground": a.ink,
@@ -554,7 +463,7 @@ export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
     // The inverse pill is the other scheme's page, so its brand is the other scheme's
     // accent text (the hand-off's snackbar action, oklch(.8 .14 hue) on a dark pill),
     // solved on the pill as every platform paints it.
-    "inverse-primary": solveInk([other.text[0], other.text[1], hue], inversePrimaryBeds(scheme), TOWARD[scheme === "dark" ? "light" : "dark"]),
+    "inverse-primary": solved["inverse-primary"][palette] ?? solved["inverse-primary"].violet,
     // The brand artwork: the hero's accent-to-cyan-to-mint sweep.
     "featured-start": ion,
     "featured-middle": series[0],

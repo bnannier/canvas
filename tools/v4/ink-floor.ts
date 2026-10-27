@@ -1,4 +1,4 @@
-import { channelsOf, oklchHex, oklchOf } from "./color.js";
+import { channelsOf, oklchHex, oklchOf } from "../../src/style/color.ts";
 
 // The legibility floor for a text ink the hand-off authors below it. The v4 hand-off picks
 // its accent text, status inks and inverse action by eye; on some hues and washes they

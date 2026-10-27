@@ -5,7 +5,7 @@ import { colorsByScheme } from "../src/style/tokens.ts";
 import { statusColors } from "../src/style/status.ts";
 
 // The success and warning text roles are solved from the hand-off's status colours
-// (src/style/ink-floor.ts), so a brand that overrides a status colour must repaint its text
+// (tools/v4/derive-inks.ts), so a brand that overrides a status colour must repaint its text
 // too, the way an overriding `destructive` repaints `destructive-text`; an explicit text
 // role wins, and an undefined one is an omission.
 

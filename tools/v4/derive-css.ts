@@ -48,7 +48,7 @@ function accentDeclarations(scheme: ColorScheme): [string, string][] {
 const ACCENT_ROLES = new Set(accentDeclarations("light").map(([name]) => name));
 
 /**
- * The text inks solved per palette (src/style/ink-floor.ts): the hand-off's formula at a
+ * The text inks solved per palette (tools/v4/derive-inks.ts): the hand-off's formula at a
  * lightness the palette's hue needs to clear its floor, so each palette declares its own
  * value. The default palette's sit in the scheme's literal block too.
  */
@@ -114,7 +114,7 @@ export function render(): string {
    translucent by contract. */\n`);
   out.push(block(":root", [["hue", String(paletteHue.violet)], ...literalDeclarations("light"), ...ALIASES, ...glassDeclarations("light", true)]));
   out.push(block(".dark", [...literalDeclarations("dark"), ...ALIASES, ...glassDeclarations("dark", false)]));
-  out.push(`/* The palettes: one hue each, with the text inks solved for it (tokens.ts, ink-floor.ts),
+  out.push(`/* The palettes: one hue each, with the text inks solved for it (tokens.ts, tools/v4/derive-inks.ts),
    light on the palette element and dark inside a .dark context. */\n`);
   for (const p of PALETTES) out.push(block(paletteSelector(p), [["hue", String(paletteHue[p])], ...solvedDeclarations(p, "light")]));
   for (const p of PALETTES) out.push(block(darkPaletteSelector(p), solvedDeclarations(p, "dark")));
