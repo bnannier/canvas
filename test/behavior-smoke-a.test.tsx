@@ -24,7 +24,7 @@ const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 const channels = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(", ");
 // The success token's channels.
 // Success TEXT reads in the success-text role (solved to its floor from the success colour,
-// src/style/ink-floor.ts): a Stats rise and the EmptyState success glyph. A Stats decline
+// tools/v4/derive-inks.ts): a Stats rise and the EmptyState success glyph. A Stats decline
 // reads in the error ink (the destructive-text role).
 const SUCCESS = channels(lightColors["success-text"]!);
 const GREEN = SUCCESS;

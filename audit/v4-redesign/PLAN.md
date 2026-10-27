@@ -50,7 +50,7 @@ prototype's machinery (`support.js`, `cv-jsx.js`).
   contrast floors (review R1).
   - *As landed in Phase 1.* The same function rule covers text inks: `primary-text` and
     `info` (per palette), `inverse-primary`, and `destructive-text`, `success-text`,
-    `warning-text` (per scheme) are solved by `src/style/ink-floor.ts`, which walks the
+    `warning-text` (per scheme) are solved by `tools/v4/derive-inks.ts` (through `tools/v4/ink-floor.ts`) into the generated `src/style/solved-inks.ts`, which walks the
     hand-off's oklch lightness at its own hue (in-gamut chroma, so the hue holds) until
     every bed the ink is drawn on clears 4.5:1 exactly and through one-channel rounding;
     an ink that already passes keeps the hand-off's value. Fills and washes are not moved.

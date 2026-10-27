@@ -35,7 +35,7 @@ describe("v4 accent", () => {
         const t = colorsFor(palette, scheme);
         near(t.primary, want.ion);
         // The accent text keeps the hand-off's value unless it misses its legibility floor,
-        // when the token table solves it (src/style/ink-floor.ts); the solved looks are listed
+        // when the token table solves it (tools/v4/derive-inks.ts); the solved looks are listed
         // so a change to which ones move is a visible decision.
         if (SOLVED_TEXT[scheme].includes(palette)) expect(t["primary-text"]).not.toBe(want.ionText);
         else near(t["primary-text"]!, want.ionText);
