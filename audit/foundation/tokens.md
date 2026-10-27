@@ -40,7 +40,7 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `input-otp` | directly | `alpha`, `shape` |
 | `listbox` | directly | `shape` |
 | `stepper` | directly | `alpha`, `shape` |
-| `pagination` | directly | `alpha` |
+| `pagination` | directly | `alpha`, `useMeasuredWidth` |
 | `popover` | directly | `shape`, `useMeasuredWidth` |
 | `progress` | directly | `alpha`, `statusColors` |
 | `qrcode` | directly | `shape` |
