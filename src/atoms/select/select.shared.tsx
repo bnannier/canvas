@@ -140,6 +140,20 @@ export function sizeOf(p: SelectProps): Size {
 export function fieldOf(p: SelectProps): "dense" | "standard" {
   return p.dense ? "dense" : "standard";
 }
+// The selection mark is decorative: the row's selected state carries the meaning, so
+// the glyph is hidden from every platform's accessibility tree (aria-hidden on the web,
+// the element hiding props natively) and stays out of the option's name.
+const DECORATIVE_MARK = {
+  "aria-hidden": true,
+  accessibilityElementsHidden: true,
+  importantForAccessibility: "no-hide-descendants",
+} as const;
+
+/** An option row's accessible name: its visible text (the leading glyph and the label), never the mark. */
+function optionName(option: SelectOption): string {
+  return option.leading ? `${option.leading} ${option.label}` : option.label;
+}
+
 /** A plain option list has selected ink rather than the platform check gutter. */
 export function optionsOf(p: SelectProps): "plain" | "standard" {
   return p.plainOptions ? "plain" : "standard";
@@ -430,12 +444,17 @@ export function createSelect(skin: SelectSkin) {
                   disabled={disabled}
                   android_ripple={ripple}
                   role="option"
+                  // The row's name is its visible text alone: the selection mark is
+                  // decorative (the selected state already announces it), so it never
+                  // joins the name a platform would otherwise merge from the children.
+                  accessibilityLabel={optionName(option)}
+                  aria-label={optionName(option)}
                   accessibilityState={{ selected, disabled: !!disabled }}
                   aria-selected={selected}
                   aria-disabled={!!disabled}
                 >
                   {!plain && skin.selectedSide === "leading" ? (
-                    <Text style={[skin.indicator(tokens, size), { width: 14 }]}>
+                    <Text {...DECORATIVE_MARK} style={[skin.indicator(tokens, size), { width: 14 }]}>
                       {selected ? "✓" : " "}
                     </Text>
                   ) : null}
@@ -446,7 +465,7 @@ export function createSelect(skin: SelectSkin) {
                     {option.label}
                   </Text>
                   {!plain && skin.selectedSide === "trailing" ? (
-                    <Text style={skin.indicator(tokens, size)}>
+                    <Text {...DECORATIVE_MARK} style={skin.indicator(tokens, size)}>
                       {selected ? "✓" : ""}
                     </Text>
                   ) : null}

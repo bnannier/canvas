@@ -26,7 +26,7 @@
 // did before the ScrollView primitive carried it. A link's ring shows on keyboard focus
 // only, as a control's does.
 
-import { forwardRef, useMemo } from "react";
+import { createContext, forwardRef, useContext, useMemo } from "react";
 import {
   Text as RNText,
   TextInput as RNTextInput,
@@ -42,15 +42,40 @@ import { useFocusRingStyle } from "./pressable.js";
 import { useTheme } from "./theme.js";
 
 /**
+ * The face role a run of text takes: one of the theme's registered roles, or `own` for
+ * a family the caller named, which the kit never replaces.
+ */
+type FaceRole = "sans" | "mono" | "display" | "own";
+
+/** A style's face role, from the family it names; a style that names none takes `inherited`. */
+function roleOf(family: TextStyle["fontFamily"], inherited: FaceRole): FaceRole {
+  if (family == null) return inherited;
+  if (family === MONO_FONT) return "mono";
+  if (family === DISPLAY_FONT) return "display";
+  return "own";
+}
+
+// The face role of the Text a nested Text sits in. A nested Text is a span of its
+// parent's run (a syntax token in a code line, a bold word in a heading): a span that
+// names no family keeps its parent's face, as text inheritance does on every platform,
+// instead of taking the theme's `sans` face. Without it a highlighted token inside a
+// CodeBlock's mono line painted in the interface face once the app registered fonts,
+// because the span's own style names no family. Outside any Text the role is `sans`.
+const FaceRoleContext = createContext<FaceRole>("sans");
+
+/**
  * Apply the theme's faces to a text style. Exported for the few components that
  * paint text through something other than Text (an SVG label, a native module).
+ * `inherited` is the face role of the enclosing run, which a style naming no family
+ * takes (the theme's `sans` face by default).
  */
-export function fontStyle(style: StyleProp<TextStyle>, fonts: ThemeFonts): StyleProp<TextStyle> {
+export function fontStyle(style: StyleProp<TextStyle>, fonts: ThemeFonts, inherited: FaceRole = "sans"): StyleProp<TextStyle> {
   if (!fonts.sans && !fonts.mono && !fonts.display) return style;
   const flat = StyleSheet.flatten(style) as TextStyle | undefined;
-  const family = flat?.fontFamily;
-  const faces =
-    family == null ? fonts.sans : family === MONO_FONT ? fonts.mono : family === DISPLAY_FONT ? (fonts.display ?? fonts.sans) : undefined;
+  const role = roleOf(flat?.fontFamily, inherited);
+  // A span inside a run of the caller's own family inherits that family untouched.
+  if (role === "own") return style;
+  const faces = role === "sans" ? fonts.sans : role === "mono" ? fonts.mono : (fonts.display ?? fonts.sans);
   const face = resolveFontFace(faces, flat?.fontWeight);
   if (!face) return style;
   if (!face.dropWeight) return [style, { fontFamily: face.fontFamily }];
@@ -60,9 +85,9 @@ export function fontStyle(style: StyleProp<TextStyle>, fonts: ThemeFonts): Style
   return { ...rest, fontFamily: face.fontFamily };
 }
 
-function useFontStyle(style: StyleProp<TextStyle>): StyleProp<TextStyle> {
+function useFontStyle(style: StyleProp<TextStyle>, inherited: FaceRole = "sans"): StyleProp<TextStyle> {
   const { fonts } = useTheme();
-  return useMemo(() => fontStyle(style, fonts), [style, fonts]);
+  return useMemo(() => fontStyle(style, fonts, inherited), [style, fonts, inherited]);
 }
 
 // The props a link Text carries beside React Native's own: react-native-web renders a
@@ -79,14 +104,22 @@ function isLink(props: LinkTextProps): boolean {
  * in the brand face without a `fontFamily` at the call site. A link Text (an `href`, or
  * the `link` role) also carries the kit's themed focus ring, as Pressable does.
  */
-export const Text = forwardRef<RNText, TextProps>(function Text({ style, ...rest }, ref) {
+export const Text = forwardRef<RNText, TextProps>(function Text({ style, children, ...rest }, ref) {
   const ring = useFocusRingStyle();
-  const font = useFontStyle(style);
+  const inherited = useContext(FaceRoleContext);
+  const font = useFontStyle(style, inherited);
   const link = isLink(rest as LinkTextProps);
   // The ring goes first in the list so a link's own outline style wins. Plain text keeps
   // its style as it came, with nothing allocated.
   const themed = useMemo(() => (link ? [ring, font] : font), [link, ring, font]);
-  return <RNText ref={ref} {...rest} style={themed} />;
+  // Only a run whose role differs from the one it sits in publishes it, so the common
+  // sans label adds no provider.
+  const role = useMemo(() => roleOf((StyleSheet.flatten(style) as TextStyle | undefined)?.fontFamily, inherited), [style, inherited]);
+  return (
+    <RNText ref={ref} {...rest} style={themed}>
+      {role === inherited ? children : <FaceRoleContext.Provider value={role}>{children}</FaceRoleContext.Provider>}
+    </RNText>
+  );
 });
 
 /** TextInput's props: React Native's, plus the focus appearance it keeps. */

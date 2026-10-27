@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Select } from "../src/atoms/select/select.tsx";
+import { Select as IosSelect } from "../src/atoms/select/select.ios.tsx";
+import { Select as AndroidSelect } from "../src/atoms/select/select.android.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { layoutEntrance, layoutEntrances } from "./entrance-layout.ts";
 
@@ -105,4 +107,28 @@ describe("Select with value/label options", () => {
 		const { getByText } = ui(<Select options={PROJECTS} value="gone" />);
 		expect(getByText("gone")).toBeTruthy();
 	});
+});
+
+// The selection mark is decorative: the row's selected state says it is chosen, so the
+// "✓" never joins the option's accessible name and is hidden from every platform's tree.
+describe("Select selection mark", () => {
+	const skins = [
+		["web (leading gutter)", Select],
+		["iOS (trailing check)", IosSelect],
+		["Android", AndroidSelect],
+	] as const;
+	for (const [name, Component] of skins) {
+		it(`keeps the checkmark out of the selected option's name on ${name}`, () => {
+			const { getByRole, getAllByText } = ui(
+				<Component open options={[{ value: "a", label: "Default" }, { value: "b", label: "Flag", leading: "🏁" }]} value="a" />,
+			);
+			const option = getByRole("option", { name: "Default", hidden: true });
+			expect(option.getAttribute("aria-selected")).toBe("true");
+			expect(getByRole("option", { name: "🏁 Flag", hidden: true })).toBeDefined();
+			expect(getAllByText("✓").length).toBe(1);
+			for (const mark of getAllByText("✓")) {
+				expect(mark.closest('[aria-hidden="true"]')).not.toBeNull();
+			}
+		});
+	}
 });

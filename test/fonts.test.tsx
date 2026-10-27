@@ -126,6 +126,33 @@ describe("the themed primitives", () => {
     }
   });
 
+  it("keep a nested span in its parent run's face when the span names no family", () => {
+    render(
+      <ThemeProvider fonts={FACES}>
+        <Text style={{ fontFamily: MONO_FONT }}>
+          const <Text style={{ color: "#c0ffee" }}>token</Text>
+        </Text>
+        <Text style={{ fontFamily: "BrandSerif" }}>
+          Own <Text style={{ color: "#c0ffee" }}>inherited</Text>
+        </Text>
+        <Text style={{ fontFamily: MONO_FONT }}>
+          mono <Text style={{ fontFamily: "BrandSerif" }}>named</Text>
+        </Text>
+        <Text>
+          Plain <Text style={{ fontWeight: "700" }}>bold</Text>
+        </Text>
+      </ThemeProvider>,
+    );
+    // A syntax token inside a mono run is mono (it painted in the sans face before).
+    expect(family("token")).toBe("JetBrainsMono_400Regular");
+    // Inside the caller's own family the span is left to inherit it.
+    expect(family("inherited")).toBe("inherit");
+    // A span that names its own family keeps it.
+    expect(family("named")).toBe("BrandSerif");
+    // Inside a sans run a span still resolves the sans face for its own weight.
+    expect(family("bold")).toBe("InstrumentSans_700Bold");
+  });
+
   it("render in the system face when no fonts are passed, as before", () => {
     render(<ThemeProvider><Text>Plain</Text></ThemeProvider>);
     expect(getComputedStyle(screen.getByText("Plain")).fontFamily).not.toContain("InstrumentSans");

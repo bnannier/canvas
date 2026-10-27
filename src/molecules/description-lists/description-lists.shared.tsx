@@ -255,7 +255,7 @@ export function createDescriptionList(
               {value === "" || value == null ? copyValue : value}
             </Text>
           ) : (
-            value
+            <View style={s.nodeValue}>{value}</View>
           )}
           <Button ghost small accessibilityLabel={`Copy ${name}`} onPress={() => onCopy?.(copyValue)}>
             Copy
@@ -263,8 +263,9 @@ export function createDescriptionList(
         </View>
       );
     }
-    // A node value is the caller's own rendering: it fills the cell as given.
-    if (!isText(value)) return <>{value}</>;
+    // A node value is the caller's own rendering, as given, in a box that lets it
+    // yield to the cell (a wrapping Row wraps at the cell's width, see s.nodeValue).
+    if (!isText(value)) return <View style={s.nodeValue}>{value}</View>;
     const form = valueFormOf(item);
     if (form === "status") return <Badge status success>{value}</Badge>;
     if (form === "badge") return <Badge secondary>{value}</Badge>;

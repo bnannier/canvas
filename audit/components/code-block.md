@@ -51,6 +51,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `diff` | Diff | [ ] | [ ] | [ ] |  |
 | `collapsible` | Collapsible | [ ] | [ ] | [ ] |  |
 | `tabs` | Tabs | [ ] | [ ] | [ ] |  |
+| `headerless` | Headerless | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

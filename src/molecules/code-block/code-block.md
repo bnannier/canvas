@@ -5,9 +5,13 @@ emphasis, diff rendering, collapsible folding, and tabbed alternatives.
 
 The variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
 first match wins); `compact` tightens the density; `copy`, `wrap`, `diff`,
-`collapsible`, and `attached` stack orthogonally. `language` drives the in-kit
-highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything else renders
-monochrome), and long lines scroll horizontally instead of truncating.
+`collapsible`, `attached`, and `headerless` stack orthogonally. `language` drives the
+in-kit highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything else
+renders monochrome) and, with no `filename`, labels a header bar above the code;
+`headerless` keeps the highlighting and drops that bar (a `tabs` strip and the
+terminal chrome stay), so `copy` floats over the code's corner. Long lines scroll
+horizontally instead of truncating, and every run of code, highlighted tokens
+included, is set in the theme's mono face.
 
 `inline` honours `copy` alone of the orthogonal booleans: `<CodeBlock inline copy>`
 is the import chip, a raised monospace pill (34 tall, the control corner, the
@@ -190,6 +194,17 @@ Build complete in 12s`}
     { label: "yarn", code: "yarn add @nannier/canvas" },
     { label: "bun", code: "bun add @nannier/canvas" },
   ]}
+/>
+```
+
+### Headerless
+
+```tsx
+<CodeBlock
+  headerless
+  copy
+  language="tsx"
+  code={`<Button primary>Save changes</Button>`}
 />
 ```
 

@@ -196,3 +196,54 @@ describe("CodeBlock terminal + numbered", () => {
     expect(screen.queryByText("1")).toBeNull();
   });
 });
+
+// The hand-off highlights a docs snippet with no header bar; `headerless` keeps the
+// highlighting `language` drives while drawing neither the language nor a filename.
+describe("CodeBlock headerless", () => {
+  it("highlights by language without the language header", () => {
+    ui(<CodeBlock language="tsx" code="<Button primary>Save</Button>" />);
+    expect(screen.getByText("tsx")).toBeDefined();
+    cleanup();
+    const bare = ui(<CodeBlock headerless language="tsx" filename="Button.tsx" code="<Button primary>Save</Button>" />);
+    expect(bare.queryByText("tsx")).toBeNull();
+    expect(bare.queryByText("Button.tsx")).toBeNull();
+    // Still tokenized: the tag name is its own coloured span.
+    const tag = bare.getByText("primary", { exact: true });
+    expect(tag.parentElement!.textContent).toBe("<Button primary>Save</Button>");
+    expect(getComputedStyle(tag).color).not.toBe(getComputedStyle(tag.parentElement!).color);
+  });
+
+  it("floats the copy chip over the code when there is no header to host it", () => {
+    ui(<CodeBlock headerless copy language="tsx" code="<Button />" />);
+    expect(screen.getByRole("button", { name: "Copy code" })).toBeDefined();
+    expect(screen.queryByText("tsx")).toBeNull();
+  });
+
+  it("keeps a tabs strip, which has no other home", () => {
+    ui(<CodeBlock headerless tabs={[{ label: "npm", code: "npm i" }, { label: "bun", code: "bun add" }]} />);
+    expect(screen.getAllByRole("tab").length).toBe(2);
+  });
+});
+
+// Every run of code paints in the mono face: a highlighted token is a nested span of its
+// line, and it keeps the line's registered mono face instead of the interface face.
+describe("CodeBlock type face", () => {
+  const FACES = { sans: "InstrumentSans_400Regular", mono: "JetBrainsMono_400Regular" };
+  for (const [name, props] of [
+    ["plain", {}],
+    ["numbered", { numbered: true }],
+    ["terminal", { terminal: true }],
+    ["inline", { inline: true }],
+  ] as const) {
+    it(`paints highlighted tokens in the mono face (${name})`, () => {
+      render(
+        <ThemeProvider fonts={FACES}>
+          <CodeBlock {...props} language="tsx" code="const theme = 42;" />
+        </ThemeProvider>,
+      );
+      for (const text of ["const", "42"]) {
+        expect(getComputedStyle(screen.getByText(text, { exact: true })).fontFamily, `${name} ${text}`).toBe("JetBrainsMono_400Regular");
+      }
+    });
+  }
+});

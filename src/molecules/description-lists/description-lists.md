@@ -64,7 +64,7 @@ A row's value can compose real atoms: `status`/`badge` render Badges, `avatars` 
 
 ### Node values
 
-A `term` or `value` may be any node, as a DataTable cell may: a string or number takes the list's own type and the per-item forms (`badge`, `status`, `mono`, `copyValue`, `update`), and any other node renders as given in its place, here a row of Badges. An `update` row needs a text value to edit.
+A `term` or `value` may be any node, as a DataTable cell may: a string or number takes the list's own type and the per-item forms (`badge`, `status`, `mono`, `copyValue`, `update`), and any other node renders as given in its place, here a row of Badges. A node value yields to its cell, so a wrapping Row wraps at the cell's width instead of running past the list. An `update` row needs a text value to edit.
 
 ```tsx
 <DescriptionList
@@ -72,7 +72,7 @@ A `term` or `value` may be any node, as a DataTable cell may: a string or number
   divided
   items={[
     { term: "Role", value: <Row snug wrap><Badge soft>button</Badge></Row> },
-    { term: "States", value: <Row snug wrap><Badge soft>disabled</Badge><Badge soft>busy</Badge></Row> },
+    { term: "States", value: <Row snug wrap><Badge soft>disabled</Badge><Badge soft>busy</Badge><Badge soft>loading</Badge><Badge soft>pressed</Badge><Badge soft>focused</Badge><Badge soft>hovered</Badge></Row> },
     { term: "Keyboard", value: "Enter and Space activate it" }
   ]}
 />

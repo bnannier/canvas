@@ -44,7 +44,8 @@ import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 // - Orthogonal booleans that stack: `copy` (clipboard chip), `wrap` (soft-wrap
 //   long lines instead of scrolling), `diff` (+/- line tinting), `collapsible`
 //   (fold long blocks behind an expander), `attached` (square the top edge to
-//   sit flush under an adjoining bar). The inline variant honours `copy` alone.
+//   sit flush under an adjoining bar), `headerless` (highlight by `language`
+//   with no header bar). The inline variant honours `copy` alone.
 //
 // Long lines scroll horizontally by default (never truncate); `wrap` trades the
 // scroller for soft-wrapping. Syntax highlighting is driven by `language` via the
@@ -198,6 +199,14 @@ export interface CodeBlockProps {
   diff?: boolean;
   /** Square the top edge (no top radius/border) to sit flush under an adjoining bar. */
   attached?: boolean;
+  /**
+   * Draw no header bar: `language` still drives the highlighting, but neither it nor a
+   * `filename` labels the block, and `copy` floats over the code's top-right corner. For
+   * a snippet whose context already names it (a docs page's usage block). Plain and
+   * numbered variants; a `tabs` strip still needs its header, and the terminal keeps its
+   * chrome.
+   */
+  headerless?: boolean;
 
   /**
    * Emphasize lines: entries are 1-based line numbers or "start-end" ranges
@@ -743,8 +752,9 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     const folds = !!collapsible && total > collapsedLines;
     const visibleCount = folds && !expanded ? collapsedLines : total;
 
-    // The header exists when there is a tab strip or a filename/language label.
-    const headerLeft = filename ?? language;
+    // The header exists when there is a tab strip or a filename/language label;
+    // `headerless` drops the label, so only a tab strip still draws it.
+    const headerLeft = props.headerless ? undefined : (filename ?? language);
     const hasHeader = !!(tabList || headerLeft);
     // The chip floats over the code only when no header can host it.
     const floatingCopy = !!copy && !hasHeader;
