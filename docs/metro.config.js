@@ -9,6 +9,7 @@
 //   - the resolver maps the library's NodeNext ".js" specifiers to their .ts/.tsx
 //     source (which also restores per-OS .ios/.android skin resolution on native).
 const { getDefaultConfig } = require("expo/metro-config");
+const fs = require("fs");
 const path = require("path");
 const { createHash } = require("node:crypto");
 const { readBuildInfo } = require("./scripts/build-info.cjs");
@@ -32,6 +33,16 @@ const config = getDefaultConfig(projectRoot);
 const auditBuild = process.env.EXPO_PUBLIC_CANVAS_AUDIT === "1" ? ":canvas-audit" : "";
 config.cacheVersion = `${config.cacheVersion ?? ""}:canvas-${createHash("sha256")
   .update(JSON.stringify(readBuildInfo(repoRoot))).digest("hex")}${auditBuild}`;
+
+// Web images keep their density variants (grain@2x.png on a 2x screen): Expo's web asset
+// transform names the 1x file only, so the worker in ./scripts/web-asset-scales.cjs
+// registers an image that has variants the way iOS and Android do, and react-native-web's
+// Image picks the scale matching the screen. Expo's cache key does not track a custom
+// worker's source, so its hash joins the cache version.
+const webAssetScales = path.join(projectRoot, "scripts", "web-asset-scales.cjs");
+config.transformerPath = webAssetScales;
+config.cacheVersion += `:web-asset-scales-${createHash("sha256")
+  .update(fs.readFileSync(webAssetScales)).digest("hex").slice(0, 16)}`;
 
 config.watchFolders = [repoRoot];
 // The whole repo is watched so the kit source is live, and that root also holds

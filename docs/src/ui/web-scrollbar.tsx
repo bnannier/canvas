@@ -1,33 +1,36 @@
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import { useTheme } from "@nannier/canvas";
+import { SCROLLBAR } from "../shell/page-look";
 
-// The classic (space-reserving) scrollbar width forced on web. The topbar is inset by
-// this on the right so the scrollbar sits in a gutter BESIDE the bar (fully visible
-// from the top), matching the previous web docs, instead of running underneath it.
-export const SCROLLBAR_W = 10;
+// The WebKit scrollbar's width on the web, the hand-off's 10 px (SCROLLBAR in
+// ../shell/page-look.ts). The topbar is inset by this on the right so the bar sits in a
+// gutter beside it instead of running underneath.
+export const SCROLLBAR_W = SCROLLBAR.size;
 
 // Web-only. Native platforms have no persistent scrollbar to style, so there is no
 // cross-platform primitive for this; the browser scrollbar is the one place the docs
 // must reach the DOM. This writes a single <style> tag and rewrites it when the scheme
-// changes, mirroring the previous web docs scrollbar exactly: a thin, rounded thumb tinted with
-// the `border` token, brightening to `muted-foreground` on hover, over a transparent
-// track. Renders nothing and is a no-op off the web.
+// changes, with the hand-off's own rules and values (the `v4-page` card): `scrollbar-width:
+// thin` in the thumb's wash over a transparent track, and for WebKit a 10 px bar whose
+// thumb is a 10 px-radius pill inset by a 2 px transparent border, strengthening on hover.
+// A scroller that hides its bar (a ScrollView with its indicator off, which is how
+// react-native-web writes `scrollbar-width: none` as a class) keeps it hidden: the class
+// outranks the `*` rule. Renders nothing and is a no-op off the web.
 export function WebScrollbarTheme() {
-  const { tokens } = useTheme();
+  const { scheme } = useTheme();
   useEffect(() => {
     if (Platform.OS !== "web" || typeof document === "undefined") return;
-    const thumb = tokens.border;
-    const thumbHover = tokens["muted-foreground"];
+    const thumb = SCROLLBAR.thumb[scheme];
+    const thumbHover = SCROLLBAR.thumbHover[scheme];
     const css = `
 *{ scrollbar-width: thin; scrollbar-color: ${thumb} transparent; }
-::-webkit-scrollbar { width: ${SCROLLBAR_W}px; height: ${SCROLLBAR_W}px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-corner { background: transparent; }
-::-webkit-scrollbar-thumb { background-color: ${thumb}; border-radius: 9999px; border: 2px solid transparent; background-clip: padding-box; }
-::-webkit-scrollbar-thumb:hover { background-color: ${thumbHover}; background-clip: padding-box; }
+::-webkit-scrollbar { width: ${SCROLLBAR.size}px; height: ${SCROLLBAR.size}px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: ${thumb}; border-radius: ${SCROLLBAR.radius}px; border: ${SCROLLBAR.inset}px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: ${thumbHover}; }
 /* Inside a component preview stage, hide the persistent browser scrollbar a scrollable
-   demo would otherwise show — iOS/Android use a transient indicator, not a fixed bar, so a
+   demo would otherwise show: iOS/Android use a transient indicator, not a fixed bar, so a
    visible bar reads as wrong in the iOS/Android preview columns. The demo still scrolls. */
 [data-preview-stage] ::-webkit-scrollbar { display: none; }
 [data-preview-stage], [data-preview-stage] * { scrollbar-width: none; }
@@ -39,7 +42,7 @@ export function WebScrollbarTheme() {
       document.head.appendChild(el);
     }
     el.textContent = css;
-  }, [tokens]);
+  }, [scheme]);
   return null;
 }
 

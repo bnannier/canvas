@@ -1,0 +1,43 @@
+{
+  "svg": "<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>",
+  "grain": {
+    "tile": 180,
+    "opacity": {
+      "dark": 0.07,
+      "light": 0.05
+    },
+    "zIndex": 100,
+    "noise": {
+      "type": "fractalNoise",
+      "baseFrequency": 0.85,
+      "numOctaves": 2,
+      "stitchTiles": "stitch"
+    },
+    "saturate": 0,
+    "scales": [
+      1,
+      2,
+      3
+    ]
+  },
+  "files": {
+    "grain.png": {
+      "scale": 1,
+      "width": 180,
+      "height": 180,
+      "sha256": "b0ab96eca32c3ebcc1c49e4ef8560f583c7b75501e4b0ab0b9c32e9272719799"
+    },
+    "grain@2x.png": {
+      "scale": 2,
+      "width": 360,
+      "height": 360,
+      "sha256": "50b643e6f4afde04349ddaee7edc3d5de5f4f76789a05f68da55f62607f04da7"
+    },
+    "grain@3x.png": {
+      "scale": 3,
+      "width": 540,
+      "height": 540,
+      "sha256": "4d377ed0a3c4830bab7096594f994bd3ee8e5b176f89118f0ca15a00be6008fd"
+    }
+  }
+}

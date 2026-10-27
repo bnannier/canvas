@@ -121,4 +121,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     file: "docs/src/shell/page-backdrop.tsx", owner: "PageBackdrop", tag: "View", attribute: "style", keys: ["backgroundColor", "bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
     reason: "The v4 hand-off's flat page, docs-only scaffolding under design-language item 8: an untouchable layer fixed to the window behind the shell, painted the scheme's background.",
   },
+  {
+    file: "docs/src/shell/page-backdrop.tsx", owner: "PageGrain", tag: "View", attribute: "style", keys: ["bottom", "left", "opacity", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 1,
+    reason: "The v4 hand-off's grain, docs-only scaffolding under design-language item 8 and decision S6: an untouchable layer over the whole window at the scheme's grain opacity, holding the kit Image that tiles the baked noise.",
+  },
 ];
