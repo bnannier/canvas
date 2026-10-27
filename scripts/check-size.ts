@@ -328,10 +328,15 @@ export interface JavaScriptBudget {
 // hover and focus primitives Input runs on) take iOS from 42,824 to 43,019B, 11B over
 // 43,008. Measured on bun 1.4.0 at 42,422 / 43,019 / 42,804B; the ceiling moves to 45,056B
 // (4.7% headroom over the iOS figure).
+// DataTable + ThemeProvider: the v4 Phase 4 skins (2026-10-27) grew the shared shape table every
+// bundle carries (`src/style/platform-shape.ts`: the chart, table, list, tile, disclosure,
+// code, media and lane corner roles the hand-off draws) while DataTable's own skin shrank by
+// 12B; measured on bun 1.4.0 at 51,766 / 52,860 / 53,266B, 18B over 53,248 on Android, from
+// 53,213B before. The ceiling moves to 55,296B (3.8% headroom over the Android figure).
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 17_408, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 45_056, requiredExports: ["Input", "ThemeProvider"] },
-  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 53_248, requiredExports: ["DataTable", "ThemeProvider"] },
+  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 55_296, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 70_656, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 

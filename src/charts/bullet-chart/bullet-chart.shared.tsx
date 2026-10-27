@@ -1,5 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { View, Text, alpha, devWarn, tabularNums, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Text, devWarn, tabularNums, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
@@ -65,8 +65,19 @@ export function toneOf(p: BulletChartProps): Tone {
   return "primary";
 }
 
-// Band washes, outermost (best) to innermost: fading muted alphas.
-const BAND_ALPHAS = [0.35, 0.22, 0.12, 0.07];
+// The v4 hand-off's bullet (`K.def('bullet-chart')`): a 96 px label in the muted ink, a
+// 14 px track (10 compact) at the mark corner whose qualitative bands step from the
+// raised surface through the muted fill to the popover fill, the measure the middle 40%
+// of the track at the bar corner, the target a 2 px tick in the foreground standing 3 px
+// past the track, and a 40 px mono value; rows 14 px apart (8 compact).
+const BAND_FILLS = ["surface-raised", "muted", "popover"] as const;
+const LABEL_WIDTH = 96;
+const VALUE_WIDTH = 40;
+const TARGET_OVERHANG = 3;
+const bandFill = (tokens: ColorTokens, i: number): string => {
+  const role = BAND_FILLS[Math.min(i, BAND_FILLS.length - 1)];
+  return tokens[role] ?? tokens.muted;
+};
 
 export function createBulletChart(skin: ChartSkin) {
   return function BulletChart(props: BulletChartProps) {
@@ -101,8 +112,8 @@ export function createBulletChart(skin: ChartSkin) {
     );
     const pctOf = (v: number, max: number): number => Math.max(0, Math.min(100, ((Number.isFinite(v) ? v : 0) / max) * 100));
 
-    const barH = compact ? 8 : 12;
-    const trackH = compact ? 16 : 22;
+    const trackH = compact ? 10 : 14;
+    const barH = trackH * 0.4;
 
     return (
       <View
@@ -119,7 +130,7 @@ export function createBulletChart(skin: ChartSkin) {
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}
-        <View style={{ gap: compact ? 8 : 12 }}>
+        <View style={{ gap: compact ? 8 : 14 }}>
           {data.map((d, i) => {
             const max = rowMax(d);
             const name = `${d.label}: ${formatValue(Number.isFinite(d.value) ? d.value : 0)}${
@@ -133,15 +144,22 @@ export function createBulletChart(skin: ChartSkin) {
                 role="img"
                 accessibilityLabel={name}
                 aria-label={name}
-                style={s.horizontalRow}
+                style={[s.horizontalRow, { gap: 10 }]}
               >
-                <Text numberOfLines={1} style={s.horizontalLabel(tokens)}>{d.label}</Text>
+                <Text numberOfLines={1} style={{ width: LABEL_WIDTH, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>
+                  {d.label}
+                </Text>
                 {/* The track: bands under the measure bar under the target
                     tick. Bands paint widest (lightest) first so the narrower,
                     denser washes sit on top of them. */}
-                <View style={[s.horizontalTrack, { height: trackH, alignItems: "center" }]}>
+                <View
+                  style={[
+                    s.horizontalTrack,
+                    { height: trackH, alignItems: "center", borderRadius: platformShape.web.mark, backgroundColor: d.ranges && d.ranges.length > 0 ? bandFill(tokens, d.ranges.length) : tokens.muted },
+                  ]}
+                >
                   {(d.ranges ?? [])
-                    .map((bound, bi) => ({ bound, wash: BAND_ALPHAS[Math.min(bi, BAND_ALPHAS.length - 1)] }))
+                    .map((bound, bi) => ({ bound, fill: bandFill(tokens, bi), first: bi === 0 }))
                     .reverse()
                     .map((band, ri) => (
                       <View
@@ -152,17 +170,18 @@ export function createBulletChart(skin: ChartSkin) {
                           top: 0,
                           bottom: 0,
                           width: `${pctOf(band.bound, max)}%`,
-                          backgroundColor: alpha(tokens["muted-foreground"], band.wash),
-                          borderRadius: platformShape.web.cell,
+                          backgroundColor: band.fill,
+                          borderTopStartRadius: platformShape.web.mark,
+                          borderBottomStartRadius: platformShape.web.mark,
                         }}
                       />
                     ))}
-                  <View style={{ position: "absolute", left: 0, top: (trackH - barH) / 2, height: barH, width: `${pctOf(d.value, max)}%`, backgroundColor: fill, borderTopEndRadius: skin.barRadius, borderBottomEndRadius: skin.barRadius }} />
+                  <View style={{ position: "absolute", left: 0, top: (trackH - barH) / 2, height: barH, width: `${pctOf(d.value, max)}%`, backgroundColor: fill, borderRadius: skin.barRadius }} />
                   {d.target != null && Number.isFinite(d.target) ? (
-                    <View style={{ position: "absolute", left: `${pctOf(d.target, max)}%`, top: 0, bottom: 0, width: 2, marginLeft: -1, backgroundColor: tokens["card-foreground"] }} />
+                    <View style={{ position: "absolute", left: `${pctOf(d.target, max)}%`, top: -TARGET_OVERHANG, bottom: -TARGET_OVERHANG, width: 2, marginLeft: -1, backgroundColor: tokens["card-foreground"] }} />
                   ) : null}
                 </View>
-                <Text style={[s.horizontalValue(tokens), { ...tabularNums() }]}>{formatValue(Number.isFinite(d.value) ? d.value : 0)}</Text>
+                <Text style={[s.horizontalValue(tokens), { minWidth: VALUE_WIDTH, textAlign: "right", ...tabularNums() }]}>{formatValue(Number.isFinite(d.value) ? d.value : 0)}</Text>
               </View>
             );
           })}

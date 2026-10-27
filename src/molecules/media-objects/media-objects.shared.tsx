@@ -1,10 +1,11 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { type ComponentType, type ReactNode } from "react";
-import { View, Pressable, Text, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
+import { primaryText } from "../../style/primary-text.js";
 
 // The composed Avatar type, so each platform can pass its own resolved atom (web
 // base by default) for the leading initials avatar without widening to `any`.
@@ -53,6 +54,8 @@ export interface MediaObjectDensity {
   containerBase: ViewStyle;
   /** Smaller leading icon box: size + corner radius (the tinted fill comes from shared). */
   iconBox: ViewStyle;
+  /** The glyph inside the smaller icon box (optional; the base glyph otherwise). */
+  iconGlyph?: TextStyle;
   /** Compact title type: size / line-height / weight / tracking (the color comes from shared). */
   title: TextStyle;
   /** Compact description type: size / line-height / tracking (the color comes from shared). */
@@ -210,6 +213,8 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
     // falls back to initials (from `avatar`, else the title) exactly like an initials
     // row; the Avatar owns the 40px circle (28px `small` under compact). The icon tint
     // reads the tokens; the box shape comes from the skin.
+    // The description and meta take the subtle ink (the hand-off's tx3).
+    const subtle = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
     let media: ReactNode = null;
     if (src) {
       media = <Avatar small={isCompact} src={src} name={avatar ?? title} accessibilityLabel={title} />;
@@ -217,8 +222,8 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       media = <Avatar small={isCompact} name={avatar}>{avatar}</Avatar>;
     } else if (icon != null) {
       media = (
-        <View style={[skin.iconBox, density?.iconBox, { backgroundColor: alpha(tokens.primary, 0.15) }]}>
-          {typeof icon === "string" ? <Text style={[skin.iconGlyph, { color: tokens.primary }]}>{icon}</Text> : icon}
+        <View style={[skin.iconBox, density?.iconBox, { backgroundColor: tokens["primary-soft"] }]}>
+          {typeof icon === "string" ? <Text style={[skin.iconGlyph, density?.iconGlyph, { color: primaryText(tokens) }]}>{icon}</Text> : icon}
         </View>
       );
     }
@@ -235,13 +240,13 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
             </Text>
           ) : null}
           {description != null ? (
-            <Text style={[skin.description, density?.description, { color: tokens["muted-foreground"] }]} numberOfLines={truncate ? 1 : undefined}>
+            <Text style={[skin.description, density?.description, { color: subtle }]} numberOfLines={truncate ? 1 : undefined}>
               {description}
             </Text>
           ) : null}
           {body != null ? <Text style={[skin.body, { color: tokens.foreground }]}>{body}</Text> : null}
         </View>
-        {meta != null ? <Text style={[skin.meta, { color: tokens["muted-foreground"] }]}>{meta}</Text> : null}
+        {meta != null ? <Text style={[skin.meta, { color: subtle }]}>{meta}</Text> : null}
         {action != null ? <View style={skin.actionBox}>{action}</View> : null}
       </>
     );

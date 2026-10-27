@@ -1,33 +1,29 @@
 import { type ViewStyle, type TextStyle, type DimensionValue } from "react-native";
 import { type ColorTokens, palette, alpha, surfaceRipple, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { type GridListSkin } from "./grid-lists.shared.js";
 import { primaryText } from "../../style/primary-text.js";
 import { destructiveText } from "../../style/destructive-text.js";
 
-// Co-located GridList skins, one per platform. GridList is a "Light" treatment:
-// ONE structure and ONE set of (semantic) colors live in grid-lists.shared.tsx;
-// only the per-OS touches travel through the skin — the gallery thumbnail's
-// corner radius, the inter-tile gap / per-tile padding density, the title/subtitle
-// type tracking, and the press feedback (Android ripple vs iOS/web opacity dim) on
-// THIS molecule's own pressable (the gallery tile). The bordered people tile
-// delegates its surface and press feedback to the already-skinned-per-build Card
-// atom, so the GridList skin never restyles it.
+// Co-located GridList skins, one per platform. GridList takes the Canvas v4 hand-off's
+// grid list (`K.def('grid-lists')` in tools/v4/handoff/cv-kit-data.js, with its
+// code-driven form in cv-kit-code3.js `O('grid-lists')`). ONE structure and ONE set of
+// (semantic) colors live in grid-lists.shared.tsx; the skin carries the gallery tile's
+// frame, the grid density, the caption type and the press feedback on THIS molecule's
+// own pressable (the gallery tile). The people tile composes the already-skinned Card,
+// so the skin sets only its inset and type.
 //
-// The BRAND survives on every platform: tile tints come from the same item color
-// resolved against the brand tokens, and the type colors are the same semantic
-// tokens. Only the native SHAPE/density/tracking/feedback shift:
-//   Web: a gallery block at the control corner, gap 14 (compact 8), tile padding 20
-//     (compact 16), title 14/600, subtitle 12, press = opacity dim (~0.9), no
-//     tracking adjustment.
-//   iOS (HIG Collections): SF conventions, the iOS tile corner on the thumbnail
-//     with Apple's continuous (superellipse) corner curve, the same
-//     comfortable spacing, and SF Pro Text tracking (galleryTitle 12pt = 0,
-//     cardTitle 14pt = -0.15, subtitles 12pt = 0); press = opacity dim (~0.9).
-//   Android (Material 3): M3 corner + type conventions: a more-rounded thumbnail at
-//     the tile corner (M3 medium shape), a touch more breathing room in the grid gap,
-//     and M3 type roles: galleryTitle = label-medium (12/16/500/+0.5), cardTitle =
-//     title-small (14/20/500/+0.1), subtitles = body-small (12/16/400/+0.4); press
-//     = surfaceRipple (a neutral surface state layer), no opacity dim.
+//   Web: a gallery tile is framed at the grid-tile corner on a 1px `border` hairline
+//     over the `card` fill, its 110px thumbnail square at the top (clipped by the frame)
+//     over a 10/12 caption: a 500 13 title over a 400 12 mono subtitle in the subtle
+//     ink. Tiles sit 12 apart (8 compact); a people tile is inset 16 (12 compact) with a
+//     500 14 title and a 400 12 subtitle in the subtle ink. Press = opacity dim (0.9).
+//   iOS (HIG Collections, the platform's own collection idiom): the thumbnail stands on
+//     its own at the iOS tile corner with the continuous curve, the caption under it, in
+//     the hand-off's type and SF Pro; press = opacity dim (0.9).
+//   Android: Material 3 has no grid list (PLATFORM-REFERENCES.md), so it draws the web
+//     tile in Roboto; press = surfaceRipple, no opacity dim.
 
 export type Columns = "cols2" | "cols3";
 
@@ -62,14 +58,15 @@ export function galleryBlockFill(tokens: ColorTokens, color?: string): ViewStyle
 
 export const galleryMeta: ViewStyle = { marginTop: 8 };
 
+// The framed tile's thumbnail: full width, 110 tall, square (the frame clips its top corners).
+export const galleryThumb: ViewStyle = { width: "100%", height: 110 };
+
 // People card tile inner column (the avatar/title/subtitle stack inside Card).
 export const cardInner: ViewStyle = { alignItems: "center", gap: 8 };
 
-// Shared subtitle base (size/line-height/color are identical on every platform);
-// the per-OS tracking is layered on in each skin's gallerySubtitle/cardSubtitle
-// (iOS SF 12pt = 0, Android M3 body-small +0.4, web none).
+// Shared subtitle base: 400 12 in the subtle ink, identical on every platform.
 function subtitleBase(tokens: ColorTokens): TextStyle {
-  return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
+  return { fontSize: 12, lineHeight: 16, fontWeight: "400", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }
 
 export const badgeSpacing: ViewStyle = { marginTop: 4 };
@@ -87,55 +84,58 @@ export function resolveColor(tokens: ColorTokens, color: string): string {
   return tokens["muted-foreground"];
 }
 
-// ---------- Web: the gallery grid ----------
-// gallery block at the control corner; gap 14 (compact 8); tile padding 20 (compact
-// 16); title 14/600 card-foreground, subtitle 12 muted; press = opacity dim (0.9).
+// ---------- Web: the hand-off's framed tiles ----------
+const galleryTile = (t: ColorTokens): ViewStyle => ({
+  borderRadius: platformShape.web.gridTile,
+  borderWidth: 1,
+  borderColor: t.border,
+  backgroundColor: t.card,
+  overflow: "hidden",
+});
+const galleryTitle = (t: ColorTokens): TextStyle => ({ fontSize: 13, lineHeight: 18, fontWeight: "500", color: t["card-foreground"] });
+const cardTitle = (t: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["card-foreground"] });
+// The gallery subtitle is the hand-off's 400 12 mono meta line.
+const gallerySubtitle = (t: ColorTokens): TextStyle => ({ ...subtitleBase(t), fontFamily: MONO_FONT });
+
 export const webSkin: GridListSkin = {
-  galleryRadius: shape.web.control,
-  gap: { default: 14, compact: 8 },
-  tilePad: { default: 20, compact: 16 },
-  galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["card-foreground"] }),
-  cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "600", color: t["card-foreground"] }),
-  gallerySubtitle: (t) => subtitleBase(t),
+  // The framed tile's corner (the thumbnail itself is square inside it).
+  galleryRadius: platformShape.web.gridTile,
+  galleryTile,
+  galleryCaption: { paddingVertical: 10, paddingHorizontal: 12, gap: 2 },
+  gap: { default: 12, compact: 8 },
+  tilePad: { default: 16, compact: 12 },
+  galleryTitle,
+  cardTitle,
+  gallerySubtitle,
   cardSubtitle: (t) => subtitleBase(t),
   pressedOpacity: 0.9,
   ripple: null,
 };
 
-// ---------- iOS (HIG Collections): SF type tightening, softer thumbnail ----------
-// HIG Collections describe a flexible grid of content tiles; iOS keeps the same
-// comfortable spacing as web, rounds the thumbnail at the iOS tile corner with Apple's
-// continuous (superellipse) curve, and applies SF Pro Text tracking: 12pt = 0
-// (galleryTitle / subtitles carry no adjustment) and 14pt = -0.15 (cardTitle).
-// Press = opacity dim (~0.9), the iOS norm.
+// ---------- iOS (HIG Collections): the thumbnail on its own ----------
+// HIG Collections describe a flexible grid of content tiles; iOS keeps the thumbnail
+// standing on its own at the iOS tile corner with Apple's continuous (superellipse)
+// curve, the caption under it, in the hand-off's type and spacing. Press = opacity dim.
 export const iosSkin: GridListSkin = {
   galleryRadius: shape.ios.tile,
   galleryCurve: "continuous",
-  gap: { default: 14, compact: 8 },
-  tilePad: { default: 20, compact: 16 },
-  galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["card-foreground"] }),
-  cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15, color: t["card-foreground"] }),
-  gallerySubtitle: (t) => subtitleBase(t),
+  galleryTile: null,
+  galleryCaption: webSkin.galleryCaption,
+  gap: webSkin.gap,
+  tilePad: webSkin.tilePad,
+  galleryTitle,
+  cardTitle,
+  gallerySubtitle,
   cardSubtitle: (t) => subtitleBase(t),
   pressedOpacity: 0.9,
   ripple: null,
 };
 
-// ---------- Android (Material 3): more rounding, M3 type roles, ripple ----------
-// M3 has no grid list, so this applies M3 CONVENTIONS to the shared structure:
-// the thumbnail takes the M3 medium-shape 12dp corner, the grid breathes a touch
-// more (gap 16, compact 8), and the labels map to real M3 type-scale roles:
-// galleryTitle = label-medium (12/16/500/+0.5), cardTitle = title-small
-// (14/20/500/+0.1), subtitles = body-small (12/16/400/+0.4). Press = the shared
-// surfaceRipple state layer (src/style/ripple.ts), no opacity dim.
+// ---------- Android: the web tile in Roboto, the ripple ----------
+// Material 3 has no grid list, so the hand-off's framed tile is drawn here too; press =
+// the shared surfaceRipple state layer (src/style/ripple.ts), no opacity dim.
 export const androidSkin: GridListSkin = {
-  galleryRadius: shape.android.tile,
-  gap: { default: 16, compact: 8 },
-  tilePad: { default: 20, compact: 16 },
-  galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5, color: t["card-foreground"] }),
-  cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t["card-foreground"] }),
-  gallerySubtitle: (t) => ({ ...subtitleBase(t), letterSpacing: 0.4 }),
-  cardSubtitle: (t) => ({ ...subtitleBase(t), letterSpacing: 0.4 }),
+  ...webSkin,
   pressedOpacity: null,
   ripple: surfaceRipple,
 };

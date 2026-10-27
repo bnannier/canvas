@@ -5,34 +5,29 @@ import { type AccordionSkin } from "./accordion.shared.js";
 
 // Co-located Accordion skins, one per platform. The shell resolves the open state
 // (single vs multiple), the controlled/uncontrolled value, the accessibility, the
-// chevron rotation, and the panel reveal; the skin supplies only the native SHAPE,
-// sizing, divider, title type, chevron tint/size, content insets, and press
-// feedback. The BRAND survives on every platform (the semantic tokens, never a
-// platform default), so each follows light/dark and the glass surface. Filled
-// variants use static content frost with this skin as their complete opaque
+// chevron rotation, and the panel reveal; the skin supplies only the SHAPE, sizing,
+// divider, title type, chevron size, content insets, and press feedback. Every colour is
+// the hand-off's semantic token, so each follows light/dark and the glass surface.
+// Filled variants use static content frost with this skin as their complete opaque
 // fallback. Unfilled variants inherit their host surface.
 //
-//   Web (the Radix / shadcn accordion): no outer
-//     container; each item is separated by a `border-b` hairline; the header is a
-//     full-width row (`py-4`, text-sm / 14px, font-medium) with a trailing
-//     ChevronDown (16px, muted) that rotates 0->180deg to point up on open (the
-//     shadcn `[data-state=open]>svg]:rotate-180` idiom); the content panel pads
-//     `pb-4` and reads in 14px muted text. Press dims the header.
-//   iOS (HIG inset-grouped disclosure / SwiftUI DisclosureGroup): a rounded (12px,
-//     continuous-curve) inset-grouped card with a hairline `border`, hairline row
-//     separators inset to the 16pt text leading edge (the iOS grouped-list
-//     separator), ~17pt SF title (with SF tracking), a 15px tertiary-gray chevron
-//     rotating 0->90deg, and a roomier (16px) content inset. Native iOS grouped
-//     surfaces are flat (no shadow). Press = opacity dim (~0.8).
-//   Android (Material 3 expandable list rows): M3 has no accordion component, so
-//     the rows follow M3 list-item conventions: no outer container, a hairline
-//     `border` divider between rows, a 16sp title-medium title (+0.15 tracking), a
-//     24px muted M3 expansion chevron (down at rest, rotating 0->180deg to point up
-//     on open), M3 one-line list density (56dp row, 16dp insets), and a header
-//     `android_ripple` state layer instead of an opacity dim.
+//   Web (the Canvas v4 hand-off, `K.def('accordion')` in tools/v4/handoff/cv-kit-data.js
+//     with its code-driven rows, cv-kit-code3.js `O('accordion')`): no outer container
+//     unless `card`, which draws the card corner on a `border` hairline over the `card`
+//     fill and insets the rows 18. Rows are parted by a `border` hairline; the header
+//     is a 14 px row (500 14 title, 12 apart from a 16 px chevron in the subtle ink,
+//     rotating 0 to 180 deg on open) whose title takes the accent's text ink under the
+//     pointer; a description sits 2 under it in 400 12 subtle; the panel pads 14 at the
+//     bottom and reads 400 14 / 1.55 in the muted ink. A disabled row dims to 0.4.
+//   iOS (HIG disclosure / SwiftUI DisclosureGroup, the platform's own control): a
+//     continuous-curve inset-grouped card at the iOS card corner on a hairline,
+//     separators inset to the 16 pt leading edge, a 17 pt SF title, a 15 pt subtle
+//     chevron rotating 0 to 90 deg, and a 16 pt content inset, in the hand-off's colours. Press = opacity dim (~0.8).
+//   Android: Material 3 ships no accordion (PLATFORM-REFERENCES.md), so Android draws
+//     the web skin's parts in Roboto, with the platform's ripple for press feedback.
 
 // =============================================================================
-// Web: the Radix / shadcn accordion.
+// Web: the v4 hand-off's accordion.
 // =============================================================================
 
 export const webSkin: AccordionSkin = {
@@ -43,57 +38,55 @@ export const webSkin: AccordionSkin = {
   // the card's clip cannot cut it. No-op natively.
   focusRing: INSET_FOCUS_RING,
 
-  // Chevron: a 16px muted glyph (shadcn ChevronDown, h-4 w-4, text-muted-foreground).
+  // Chevron: a 16px glyph in the subtle ink, ChevronDown at rest rotating 0->180deg.
   chevronSize: 16,
-  // shadcn accordion chevron: ChevronDown at rest (points down), rotating 0->180deg
-  // to point up on open (`[&[data-state=open]>svg]:rotate-180`).
   chevronGlyph: "chevronDown",
   chevronSpinTo: 180,
 
-  // No outer container on web: the items stack flush, separated by a bottom rule.
+  // No outer container: the items stack flush, parted by a hairline.
   container() {
     return {};
   },
-  // The `card` variant: an outlined card surface (the web Card's corner and
-  // hairline border on the `card` fill) wrapping the whole group; overflow hidden
-  // clips the header ink and the full-bleed dividers to the rounded corner.
+  // The `card` variant: the card corner on a `border` hairline over the `card` fill;
+  // overflow hidden clips the header ink and the full-bleed dividers to the corner.
   cardContainer(t) {
     return { borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
   },
-  // Card mode insets the flush web headers/content to the card's edge (the web
-  // Card section inset, 20px).
-  cardHeaderInset: { paddingHorizontal: 20 },
-  cardContentInset: { paddingHorizontal: 20 },
-  // A full-bleed 1px hairline between rows (shadcn `border-b`); dropped after the
-  // last row (the shell renders it only when `!last`).
+  // Card mode insets the rows 18 from the card's edge.
+  cardHeaderInset: { paddingHorizontal: 18 },
+  cardContentInset: { paddingHorizontal: 18 },
+  // A full-bleed 1px hairline between rows; dropped after the last row.
   separator(t) {
     return { height: 1, backgroundColor: t.border };
   },
-  // The header trigger row: full width, space-between, `py-4` (16px) vertical inset.
+  // The header trigger row: full width, space-between, a 14px vertical inset, 12 apart.
   header() {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      gap: 16,
-      paddingVertical: 16,
+      gap: 12,
+      paddingVertical: 14,
     };
   },
-  // shadcn AccordionTrigger: text-sm (14px) / font-medium / foreground.
+  // 500 14 in the foreground.
   title(t) {
     return { flexShrink: 1, fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground };
   },
-  // The muted secondary line, one step below the 14px title (the kit's
-  // title+description ramp, matching Checkbox/Radio at the base size).
-  description(t) {
-    return { fontSize: 12, lineHeight: 16, color: t["muted-foreground"] };
+  // The hovered header's title: the accent's text ink.
+  titleHover(t) {
+    return { color: t["primary-text"] };
   },
-  // The content panel: pads the bottom (`pb-4`), text-sm / muted-foreground.
+  // 400 12 in the subtle ink, 2 under the title (the shell's label column gap).
+  description(t) {
+    return { fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["subtle-foreground"] };
+  },
+  // The content panel pads 14 at the bottom and reads 400 14 / 1.55 in the muted ink.
   content() {
-    return { paddingBottom: 16 };
+    return { paddingBottom: 14 };
   },
   contentText(t) {
-    return { fontSize: 14, lineHeight: 22, color: t["muted-foreground"] };
+    return { fontSize: 14, lineHeight: 21.7, fontWeight: "400", color: t["muted-foreground"] };
   },
 };
 
@@ -121,7 +114,7 @@ export const iosSkin: AccordionSkin = {
   ripple: null,
   focusRing: INSET_FOCUS_RING,
 
-  // SF chevron: ~15pt, tertiary-gray tint.
+  // SF chevron: ~15pt, in the subtle ink.
   chevronSize: 15,
   // HIG tree-disclosure caret: right at rest, rotates 0->90deg (points down) on open.
   chevronGlyph: "chevronRight",
@@ -171,71 +164,14 @@ export const iosSkin: AccordionSkin = {
 };
 
 // =============================================================================
-// Android (Material 3 expandable list rows).
+// Android: Material 3 ships no accordion, so the web skin's parts in Roboto, with the
+// platform's ripple in place of the pressed dim.
 // =============================================================================
 
 export const androidSkin: AccordionSkin = {
+  ...webSkin,
   pressedOpacity: null, // Android uses a ripple instead
   // M3 state-layer ripple, routed through the shared surfaceRipple helper (neutral
   // foreground ink at 10% alpha); the unrounded row needs no clip.
   ripple: (t) => surfaceRipple(t),
-  focusRing: INSET_FOCUS_RING,
-
-  // M3 list trailing icon: 24px, on-surface-variant (muted).
-  chevronSize: 24,
-  // M3 in-place expansion: a down chevron (expand_more) at rest that rotates
-  // 0->180deg to point up (expand_less) on open, NOT the iOS drill-in caret.
-  chevronGlyph: "chevronDown",
-  chevronSpinTo: 180,
-
-  // No outer container: M3 expandable list rows stack flush on the surface,
-  // separated by a full-bleed divider.
-  container() {
-    return {};
-  },
-  // The `card` variant: the M3 OUTLINED card equivalent (medium shape 12dp,
-  // 1dp outline on the `card` fill, elevation 0); overflow hidden clips the
-  // header ripples and full-bleed dividers to the rounded corner.
-  cardContainer(t) {
-    return { borderRadius: shape.android.card, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
-  },
-  // M3 card content inset is 16dp, which the headers/content below already carry;
-  // the card-mode insets are idempotent per-key overrides, kept explicit so the
-  // contract reads the same on every skin.
-  cardHeaderInset: { paddingHorizontal: 16 },
-  cardContentInset: { paddingHorizontal: 16 },
-  // M3 full-bleed divider between rows (1dp); the shell renders it only when
-  // `!last`.
-  separator(t) {
-    return { height: 1, backgroundColor: t.border };
-  },
-  // M3 one-line list item: 16dp horizontal inset; paddingVertical 16 + the 24sp
-  // title line gives a true 56dp M3 list-item container height.
-  header() {
-    return {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: 16,
-      paddingVertical: 16,
-      paddingHorizontal: 16,
-    };
-  },
-  // M3 title-medium: 16sp / 24 line / 500 weight / +0.15 tracking, on-surface.
-  title(t) {
-    return { flexShrink: 1, fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t.foreground };
-  },
-  // M3 two-line list item supporting text: body-medium (14sp / 20 / +0.25) in
-  // on-surface-variant (muted).
-  description(t) {
-    return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: t["muted-foreground"] };
-  },
-  // M3 supporting-text content inset, aligned to the title.
-  content() {
-    return { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 0 };
-  },
-  // M3 body-medium: 14sp / 20 line / +0.25 tracking.
-  contentText(t) {
-    return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: t["muted-foreground"] };
-  },
 };

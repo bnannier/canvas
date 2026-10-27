@@ -1,5 +1,6 @@
 import Svg, { Path } from "react-native-svg";
 import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
 
 // Gauge is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -36,16 +37,25 @@ export function gaugeFill(tokens: ColorTokens, p: GaugeProps): string {
   return tokens.primary;
 }
 
-// The graphic is a fixed 120 wide for now (per-instance sizing is a separate,
-// deferred capability). The hand-off's semicircle metrics: a 10-wide stroke
-// inset 10 from each side, so the arc's radius is half the width minus the
-// inset, and the svg extends 12 below the arc baseline to fit the rounded caps.
-const SIZE = 120;
-const STROKE = 10;
-const INSET = 10;
-const RADIUS = SIZE / 2 - INSET;
+// The v4 hand-off's dial (`K.def('gauge')`): a 200 x 116 viewBox drawn 240 wide, the arc
+// a radius-80 top semicircle from (20, 104) to (180, 104) in a 14-wide round-capped
+// stroke on the raised surface, the value in the display face at 36 (500) with its
+// baseline at 96, and a 0 / label / 100 scale row under it. The geometry below is in
+// the viewBox's units; the Svg scales it to the 240 px width.
+const VIEW_W = 200;
+const VIEW_H = 116;
+const SIZE = 240;
+const SCALE = SIZE / VIEW_W;
+const STROKE = 14;
+const INSET = 20;
+const BASE = 104;
+const RADIUS = VIEW_W / 2 - INSET;
 const SEMICIRCUMFERENCE = Math.PI * RADIUS;
-const GRAPHIC_HEIGHT = SIZE / 2 + 12;
+const GRAPHIC_HEIGHT = VIEW_H * SCALE;
+const VALUE_SIZE = 36 * SCALE;
+const VALUE_LINE = Math.round(VALUE_SIZE * 1.1);
+// The value's line box, placed so its baseline lands on the viewBox's y 96.
+const VALUE_TOP = 96 * SCALE - VALUE_SIZE * 0.92;
 
 // Pure semicircle geometry, exported for tests (not re-exported from the
 // barrel), following the gaugeFill precedent. The track and value arcs share
@@ -54,7 +64,7 @@ const GRAPHIC_HEIGHT = SIZE / 2 + 12;
 // pattern.
 export function gaugeArc(v: number): { d: string; dasharray: string } {
   return {
-    d: `M ${INSET} ${SIZE / 2} A ${RADIUS} ${RADIUS} 0 0 1 ${SIZE - INSET} ${SIZE / 2}`,
+    d: `M ${INSET} ${BASE} A ${RADIUS} ${RADIUS} 0 0 1 ${VIEW_W - INSET} ${BASE}`,
     dasharray: `${SEMICIRCUMFERENCE * (v / 100)} ${SEMICIRCUMFERENCE}`,
   };
 }
@@ -80,13 +90,13 @@ export function Gauge(props: GaugeProps) {
   return (
     <View
       testID={testID}
-      style={[{ width: SIZE, alignItems: "center", gap: 4 }, style]}
+      style={[{ width: SIZE }, style]}
       accessibilityRole="image"
       accessibilityLabel={`${label ?? "Gauge"}: ${pct}%`}
       aria-label={`${label ?? "Gauge"}: ${pct}%`}
     >
-      <Svg width={SIZE} height={GRAPHIC_HEIGHT} viewBox={`0 0 ${SIZE} ${GRAPHIC_HEIGHT}`}>
-        <Path d={arc.d} fill="none" stroke={tokens.muted} strokeWidth={STROKE} strokeLinecap="round" />
+      <Svg width={SIZE} height={GRAPHIC_HEIGHT} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
+        <Path d={arc.d} fill="none" stroke={tokens["surface-raised"] ?? tokens.muted} strokeWidth={STROKE} strokeLinecap="round" />
         <Path
           d={arc.d}
           fill="none"
@@ -96,11 +106,35 @@ export function Gauge(props: GaugeProps) {
           strokeDasharray={arc.dasharray}
         />
       </Svg>
-      {/* The negative margin pulls the readout up into the open center of the
-          semicircle; it is the component's own anatomy (per the hand-off), not
-          a call-site shim. */}
-      <Text style={{ fontSize: 24, lineHeight: 28, fontWeight: "600", letterSpacing: -0.4, color: tokens.foreground, marginTop: -20 }}>{pct}%</Text>
-      {label ? <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{label}</Text> : null}
+      {/* The readout sits in the open center of the semicircle, its baseline on the
+          hand-off's y 96: the component's own anatomy, not a call-site shim. */}
+      <Text
+        style={{
+          position: "absolute",
+          top: VALUE_TOP,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          fontFamily: DISPLAY_FONT,
+          fontSize: VALUE_SIZE,
+          lineHeight: VALUE_LINE,
+          fontWeight: "500",
+          color: tokens.foreground,
+        }}
+      >
+        {pct}%
+      </Text>
+      {/* The scale row: the dial's ends with the caption between them. */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <Text style={scaleText(tokens)}>0</Text>
+        {label ? <Text style={scaleText(tokens)}>{label}</Text> : null}
+        <Text style={scaleText(tokens)}>100</Text>
+      </View>
     </View>
   );
+}
+
+// The scale row's type: the hand-off's 12 px caption in the subtle ink.
+function scaleText(tokens: ColorTokens) {
+  return { fontSize: 12, lineHeight: 16, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }

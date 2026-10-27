@@ -3,36 +3,29 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, applyDrop, Card, Draggable, DragDropProvider, DragHandle, DropZone, Typography, Row, Column, Grid } = scope;
+  const { Card, Draggable, DragDropProvider, DragHandle, DropZone, Typography, Row, Column } = scope;
   return (
-<Stateful initial={[
-  { id: "t1", zone: "todo", title: "Rotate secrets" },
-  { id: "t2", zone: "todo", title: "Draft the review" },
-  { id: "t3", zone: "doing", title: "SSO rollout" },
-  { id: "t4", zone: "doing", title: "Audit log export" },
-]}>
-  {(cards, setCards) => (
-    <DragDropProvider>
-      <Grid columns={2} relaxed>
-        {["todo", "doing"].map((zone) => (
-          <DropZone key={zone} id={zone} label={zone === "todo" ? "To do" : "Doing"} onDrop={(e) => setCards(applyDrop(cards, e))}>
-            <Column snug>
-              {cards.filter((c) => c.zone === zone).map((c) => (
-                <Draggable key={c.id} id={c.id} data={c} label={c.title}>
-                  <Card>
-                    <Row between alignCenter>
-                      <Typography>{c.title}</Typography>
-                      <DragHandle label={`Reorder ${c.title}`} />
-                    </Row>
-                  </Card>
-                </Draggable>
-              ))}
-            </Column>
-          </DropZone>
-        ))}
-      </Grid>
-    </DragDropProvider>
-  )}
-</Stateful>
+<DragDropProvider>
+  <DropZone bordered id="list" label="Tasks">
+    <Column snug>
+      <Draggable id="a" data={{ id: "a", zone: "list" }} label="Design review">
+        <Card>
+          <Row between alignCenter>
+            <Typography>Design review</Typography>
+            <DragHandle label="Reorder Design review" />
+          </Row>
+        </Card>
+      </Draggable>
+      <Draggable id="b" data={{ id: "b", zone: "list" }} disabled label="Locked task">
+        <Card>
+          <Row between alignCenter>
+            <Typography>Locked task</Typography>
+            <DragHandle label="Locked task" />
+          </Row>
+        </Card>
+      </Draggable>
+    </Column>
+  </DropZone>
+</DragDropProvider>
   );
 }

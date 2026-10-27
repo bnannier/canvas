@@ -126,7 +126,7 @@ describe("the state recipe table", () => {
     // recipe or an opening a resting pointer makes, and no hover recipe goes without one.
     expect([...new Set([...withHover, ...byOpening])].sort()).toEqual(resting);
     // Every reader of the hover primitive is among them.
-    expect(hoverDeclarers()).toEqual(["accordion", "autocomplete", "avatar", "badge", "button", "card", "checkbox", "chip", "code-block", "dropdown", "input", "listbox", "navbars", "pagination", "radio", "row-menu", "select", "sidebar", "slider", "stepper", "swatch", "switch", "tabs", "textarea"]);
+    expect(hoverDeclarers()).toEqual(["accordion", "autocomplete", "avatar", "badge", "button", "card", "checkbox", "chip", "code-block", "collapsible", "dropdown", "input", "listbox", "navbars", "pagination", "radio", "row-menu", "select", "sidebar", "slider", "stepper", "swatch", "switch", "tabs", "textarea"]);
     for (const slug of hoverDeclarers()) expect(withHover).toContain(slug);
     // Spread handlers count: the Calendar's blocks take `{...hoverProps}` and Tooltip's
     // triggers `{...disclosure}`; Tooltip's hover is its open recipe's (a resting pointer opens it).
@@ -371,13 +371,13 @@ describe("the states each component's source gives it", () => {
     const update = on("description-lists", "focus", "button");
     expect(check("description-lists", { focus: update, pressed: { ...update, state: "pressed" } })).toEqual([
       "description-lists: its focus recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
-      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:363), where no focus recipe acts on a control of its own, with no exemption",
+      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:378), where no focus recipe acts on a control of its own, with no exemption",
       "description-lists: its pressed recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
     ]);
     // GeoMap's focus on its Zoom in, a kit Button it disables at the end of the zoom: the map itself is the tab stop.
     expect(check("geo-map", { ...table["geo-map"], focus: on("geo-map", "focus", "button") })).toEqual([
       "geo-map: its focus recipe on the zoomable example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders an img in GeoMap, a <Pressable> with no role in GeoMap); a control another kit component renders is that component's",
-      "geo-map: its source gives it a focus state on its own surface (focusable on <View> at src/charts/geo-map/geo-map.shared.tsx:525), where no focus recipe acts on a control of its own, with no exemption",
+      "geo-map: its source gives it a focus state on its own surface (focusable on <View> at src/charts/geo-map/geo-map.shared.tsx:529), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // A recipe that names no control is refused, and one whose own control takes no such state.
     const { control: _control, ...unnamed } = recipeFor("button", "focus");
@@ -418,8 +418,9 @@ describe("the states each component's source gives it", () => {
     const grid = component("grid-lists");
     const entry = STATE_RECIPES["grid-lists"]!;
     const own = signalsOf("grid-lists").filter((s) => s.state === "pressed");
-    // A gallery tile is a button only with both `gallery` and `onPressItem`: the Gallery example passes one, the Tappable example the other.
-    expect(own.map((s) => [...s.gates].sort().join("&"))).toEqual(["gallery&onPressItem", "gallery&onPressItem"]);
+    // A gallery tile is a button only with both `gallery` and `onPressItem` (the iOS bare tile and the framed web and
+    // Android tile each press): the Gallery example passes one, the Tappable example the other.
+    expect(own.map((s) => [...s.gates].sort().join("&"))).toEqual(["gallery&onPressItem", "gallery&onPressItem", "gallery&onPressItem", "gallery&onPressItem"]);
     expect(exemptionFailure("pressed", entry.exempt!.pressed!, own, railExamples(grid), entry)).toBeNull();
     const both = [...railExamples(grid), { label: "Tappable gallery", code: "<GridList gallery onPressItem={() => {}} items={[]} />" }];
     expect(exemptionFailure("pressed", entry.exempt!.pressed!, own, both, entry)).toBe("the Tappable gallery example passes onPressItem");
@@ -616,15 +617,11 @@ describe("the states each component's source gives it", () => {
       "pressed look: a function taking `pressed` [onStepPress] via Circle",
       "pressed press: onPress on <Pressable> [onStepPress] via Circle",
     ]);
-    // The rows' lead is a kind picked from the props (`lead === "avatar"`, `if (p.avatar) return "avatar"`), so the avatar row's are gated by `avatar` too.
+    // The connector and avatar leads share one row (the v4 hand-off's feed), so their states are gated by the press and the window alone.
     expect(states("feeds")).toEqual([
-      "focus tab-stop: a tab stop: <Pressable> [avatar&onItemPress]",
       "focus tab-stop: a tab stop: <Pressable> [onItemPress]",
-      "focus tab-stop: focusable on <FlatList> [avatar&virtualized]",
       "focus tab-stop: focusable on <FlatList> [virtualized]",
-      "pressed look: a function taking `pressed` [avatar&onItemPress]",
       "pressed look: a function taking `pressed` [onItemPress]",
-      "pressed press: onPress on <Pressable> [avatar&onItemPress]",
       "pressed press: onPress on <Pressable> [onItemPress]",
     ]);
     // A link role and href reached only with href; a press only with onPress (a Text with
@@ -1182,7 +1179,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     expect(builds("data-table", "focus").filter((line) => !line.endsWith("every build"))).toEqual([
       "data-table.shared.tsx:508 TextInput: ios and android",
       "data-table.shared.tsx:512 TextInput: web",
-      "data-table.shared.tsx:939 ScrollView: web and android",
+      "data-table.shared.tsx:940 ScrollView: web and android",
     ]);
     // The rows each page shows, and the build each renders: Toast's iOS row is the web build,
     // the docs registry injecting no iOS Toast; Sidebar's page shows one preview, the web build.

@@ -18,6 +18,7 @@ import { Card as WebCard, type CardProps } from "../../molecules/card/card.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useChatTailFollow } from "./chat-scroll.js";
 import { createMarkdown, type MarkdownParts } from "./markdown.shared.js";
+import { webSkin as markdownSkin } from "./markdown.styles.js";
 import * as s from "./chat.styles.js";
 
 /** Application-owned file metadata. Picking, uploading, and opening files belong to the app. */
@@ -161,7 +162,7 @@ interface ChatParts extends MarkdownParts {
 }
 
 export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch, Card = WebCard, DataTable, Divider }: Partial<ChatParts> = {}) {
-  const Markdown = createMarkdown({ body: skin.body, heading: () => s.heading }, { Checkbox, DataTable, Divider }, false);
+  const Markdown = createMarkdown(markdownSkin, { Checkbox, DataTable, Divider }, false);
 
   function Thinking({ label, icon }: { label: string; icon?: ReactNode }) {
     const { tokens } = useTheme();
@@ -176,10 +177,10 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     }, [pulse, reduced]);
     return <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityState={{ busy: true }} aria-busy style={s.thinking}>
       {icon ? <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{icon}</View> : null}
-      <Text style={s.thinkingLabel(tokens)}>{label}</Text>
       <View style={s.dots} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {[0, 1, 2].map((index) => <LoopView key={index} style={s.dot(tokens)} opacity={{ channel: pulse, inputRange: [0, 0.25, 0.5, 1], outputRange: [0.35, 1, 0.35, 0.35], offset: index / 6 }} />)}
       </View>
+      <Text style={s.thinkingLabel(tokens)}>{label}</Text>
     </View>;
   }
 
@@ -351,16 +352,16 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const user = message.role === "user";
     const author = message.author ?? (user ? "You" : message.role === "system" ? "System" : "Assistant");
     const body = skin.body(tokens);
-    const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : <Markdown>{message.content}</Markdown>;
+    const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : <Markdown compact>{message.content}</Markdown>;
     return (
       <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, user ? s.userRow : s.assistantRow]}>
-        <View style={[s.messageContent, message.questions?.length ? s.questionContent : null]}>
+        <View style={[s.messageContent, user ? s.userContent : null, message.questions?.length ? s.questionContent : null]}>
           <View style={s.identity}>
             {message.providerIcon}
             <Text style={skin.label(tokens)}>{author}</Text>
             {message.provider ? <Text style={skin.muted(tokens)}>{message.provider}</Text> : null}
           </View>
-          {message.content ? user ? <GlassSurface layer="content" style={skin.message(tokens, true)}>{content}</GlassSurface> : content : null}
+          {message.content ? user ? <GlassSurface layer="content" tint={tokens["primary-soft"]} style={skin.message(tokens, true)}>{content}</GlassSurface> : content : null}
           {message.role === "assistant" && message.questions?.length ? <Questions key={message.id} message={message} {...questionProps} /> : null}
           {message.actions?.length ? <View style={s.questionButtons}>
             {message.actions.map((action) => <Button key={action.id} small primary={action.primary} outline={!action.primary} disabled={actionsDisabled} onPress={() => {
@@ -376,7 +377,14 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     );
   }
 
-  function ChatThread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style, disabled, onAction, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange }: ChatThreadProps) {
+  // A standalone thread or composer is framed like the conversation; inside Chat the frame is
+  // the conversation's own.
+  function ChatThread(props: ChatThreadProps) {
+    return <Thread {...props} framed />;
+  }
+
+  function Thread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style, disabled, onAction, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange, framed }: ChatThreadProps & { framed: boolean }) {
+    const { tokens } = useTheme();
     const fill = useFillStyle("ChatThread");
     const scroll = useRef<RNScrollView>(null);
     const tail = useChatTailFollow(scroll);
@@ -386,8 +394,9 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const frame = useFocusFrame();
     const { ref: frameRef, ...frameTarget } = frame.target;
     const streaming = messages.some((message) => message.streaming);
+    const Frame = framed ? GlassSurface : View;
     return (
-      <View style={[fill, s.thread, style]} testID={testID}>
+      <Frame layer="content" style={[fill, s.thread, framed ? s.frame(tokens) : null, style]} testID={testID}>
         <ScrollView
           {...frameTarget}
           ref={(node) => { scroll.current = node; frameRef(node); }}
@@ -418,11 +427,15 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           {pending && !streaming ? <View style={s.pending}><Thinking label={pendingLabel} icon={pendingIcon} /></View> : null}
         </ScrollView>
         {frame.innerRing()}
-      </View>
+      </Frame>
     );
   }
 
-  function ChatComposer({ value, onChangeText, onSend, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, sendDisabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID }: ChatComposerProps) {
+  function ChatComposer(props: ChatComposerProps) {
+    return <Composer {...props} framed />;
+  }
+
+  function Composer({ value, onChangeText, onSend, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, sendDisabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID, framed }: ChatComposerProps & { framed: boolean }) {
     const { tokens } = useTheme();
     const [focusedState, setFocused] = useState(false);
     // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
@@ -430,28 +443,31 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const fill = useFillStyle("ChatComposer");
     const filesPending = attaching || attachments?.some((attachment) => attachment.uploading || attachment.error);
     const canSend = !disabled && !sendDisabled && !pending && !filesPending && (value.trim().length > 0 || !!attachments?.length);
-    return (
-      <View style={[fill, s.composer]} testID={testID}>
+    const body = (
+      <View style={[framed ? null : fill, s.composer(tokens)]} testID={framed ? undefined : testID}>
         <GlassSurface static layer="control" stateBorder={focused} style={s.composerSurface(tokens, focused)}>
           {attachments?.length ? <View style={s.composerAttachments}><Attachments attachments={attachments} onRemove={onRemoveAttachment} disabled={disabled || pending} /></View> : null}
-          <Textarea value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={2} dense embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
           <View style={s.composerRow}>
-            {onAttach ? <Button ghost icon disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon paperclip color={tokens["muted-foreground"]} size={18} />} onPress={onAttach} /> : null}
-            <View style={s.actionSpace} />
-            <Button primary icon disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["muted-foreground"]} size={18} />} onPress={() => { if (canSend) onSend(value.trim()); }} />
+            {onAttach ? <Button ghost mediumIcon circle disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon paperclip color={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} size={16} />} onPress={onAttach} /> : null}
+            <View style={s.editor}>
+              <Textarea value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={1} dense embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+            </View>
+            <Button primary mediumIcon circle disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["muted-foreground"]} size={15} />} onPress={() => { if (canSend) onSend(value.trim()); }} />
           </View>
         </GlassSurface>
         {footer ? <View style={s.footer}>{footer}</View> : null}
       </View>
     );
+    return framed ? <GlassSurface layer="content" style={[fill, s.frame(tokens)]} testID={testID}>{body}</GlassSurface> : body;
   }
 
   function Chat(props: ChatProps) {
+    const { tokens } = useTheme();
     const fill = useFillStyle("Chat");
-    return <View style={[fill, s.root, props.style]} testID={props.testID}>
-      <ChatThread {...props} style={undefined} testID={props.testID ? `${props.testID}-thread` : undefined} />
-      <ChatComposer {...props} testID={props.testID ? `${props.testID}-composer` : undefined} />
-    </View>;
+    return <GlassSurface layer="content" style={[fill, s.root, s.frame(tokens), props.style]} testID={props.testID}>
+      <Thread {...props} framed={false} style={undefined} testID={props.testID ? `${props.testID}-thread` : undefined} />
+      <Composer {...props} framed={false} testID={props.testID ? `${props.testID}-composer` : undefined} />
+    </GlassSurface>;
   }
   return { Chat, ChatThread, ChatMessage, ChatComposer };
 }

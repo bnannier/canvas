@@ -238,9 +238,27 @@ describe("ServiceHealthList", () => {
     expect(imgLabels(container)).toContain("Webhooks, 2 periods: 1 operational, 1 down");
   });
 
-  it("compact hides the embedded strips", () => {
+  it("compact keeps the strips and tightens the rows (the hand-off's 7 px insets)", () => {
     const { container } = ui(<ServiceHealthList compact items={items} />);
-    expect(imgLabels(container)).not.toContain("Webhooks, 2 periods: 1 operational, 1 down");
+    expect(imgLabels(container)).toContain("Webhooks, 2 periods: 1 operational, 1 down");
+    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
+    expect(styles.some((st) => st.includes("padding-top: 7px"))).toBe(true);
+  });
+
+  it("the strip shows the latest 14 periods as 4 x 16 bars, the tally names them all", () => {
+    const periods = Array.from({ length: 30 }, (_, i) => (i === 29 ? { down: true } : {}));
+    const { container } = ui(<ServiceHealthList items={[{ label: "API", periods }]} />);
+    expect(imgLabels(container)).toContain("API, 30 periods: 29 operational, 1 down");
+    const bars = Array.from(container.querySelectorAll("div"))
+      .map((el) => el.getAttribute("style") ?? "")
+      .filter((st) => st.includes("width: 4px") && st.includes("height: 16px"));
+    expect(bars.length).toBe(14);
+  });
+
+  it("a pressable row's name carries its strip's tally", () => {
+    const { container } = ui(<ServiceHealthList items={items} onPressItem={() => {}} />);
+    const buttons = [...container.querySelectorAll('[role="button"]')];
+    expect(buttons[2].getAttribute("aria-label")).toBe("Webhooks: down; Webhooks, 2 periods: 1 operational, 1 down");
   });
 
   it("onPressItem turns rows into buttons reporting their index", () => {
@@ -295,16 +313,17 @@ describe("ProgressRing", () => {
   });
 
   it("ringDash starts the reveal at 12 o'clock and scales with the value", () => {
-    const arc = ringDash(50, 120);
+    const arc = ringDash(50, 120, 10);
     // The path starts at the top center of the 120 box (x=60, y=inset 10).
     expect(arc.d.startsWith("M 60 10 ")).toBe(true);
     // Half the value reveals half the circumference of the r=50 ring.
     const [revealed, circumference] = arc.dasharray.split(" ").map(Number);
     expect(circumference).toBeCloseTo(2 * Math.PI * 50, 5);
     expect(revealed).toBeCloseTo(Math.PI * 50, 5);
-    // Zero and full values reveal nothing and everything.
+    // The hand-off's default ring: radius 70 in a 14 stroke (a 168 square).
     expect(Number(ringDash(0).dasharray.split(" ")[0])).toBe(0);
-    expect(Number(ringDash(100).dasharray.split(" ")[0])).toBeCloseTo(2 * Math.PI * 50, 5);
+    expect(Number(ringDash(100).dasharray.split(" ")[0])).toBeCloseTo(2 * Math.PI * 70, 5);
+    expect(ringDash(100).d.startsWith("M 84 14 ")).toBe(true);
   });
 
   it("ringFill resolves success > warning > destructive > primary, matching Gauge", () => {
@@ -334,9 +353,9 @@ describe("RadialBarChart", () => {
     expect(imgLabels(without.container)).toContain("B: iOS 64%, Web 82%");
   });
 
-  it("the legend carries formatted values as details", () => {
+  it("the legend carries each ring's formatted value inline", () => {
     const { getByText } = ui(<RadialBarChart data={[{ label: "Hot", value: 4200 }]} />);
-    expect(getByText("4.2k")).toBeTruthy();
+    expect(getByText("Hot 4.2k")).toBeTruthy();
   });
 });
 

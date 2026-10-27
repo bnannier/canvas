@@ -2304,6 +2304,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("copybutton", byRole("button", "Copy code")),
   },
   collapsible: {
+    // The v4 disclosure card's trigger takes its hover wash under a resting pointer.
+    hover: hover("default", byRole("button", "Shipping details")),
     focus: focus("default", byRole("button", "Shipping details")),
     pressed: pressed("default", byRole("button", "Shipping details")),
     disabled: disabled("disabled", byRole("button", /^Advanced settings/)),
@@ -2411,7 +2413,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     // 320). The composer's field and Send, the message choices and the question controls are
     // kit Textarea, Buttons, Radios, Checkboxes and Switches, whose own recipes capture them,
     // and the composer's focused border follows the Textarea's focus.
-    focus: focus("longconversation", byLabel("Conversation", { in: "ChatThread" }), { how: "Tab onto the Long conversation example's thread, a keyboard stop where its messages overflow its height" }),
+    focus: focus("longconversation", byLabel("Conversation", { in: "Thread" }), { how: "Tab onto the Long conversation example's thread, a keyboard stop where its messages overflow its height" }),
   },
   command: {
     // Its rows take the active highlight under a resting pointer (onHoverIn); the first is active

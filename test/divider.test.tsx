@@ -132,4 +132,19 @@ describe("Divider rule (the hand-off renderer)", () => {
     expect(screen.getByTestId("h").style.width).toBe("100%");
     expect(screen.getByTestId("h").style.height).toBe("1px");
   });
+  it("sets a text label in the hand-off's mono caption, in the subtle ink, on every skin", () => {
+    for (const [, D] of SKINS) {
+      cleanup();
+      for (const [dark, t] of [[true, darkColors], [false, lightColors]] as const) {
+        render(<ThemeProvider scheme={dark ? "dark" : "light"}><D>or</D></ThemeProvider>);
+        const s = screen.getByText("or").style;
+        expect([s.fontSize, s.lineHeight, s.fontWeight, s.letterSpacing, s.textTransform]).toEqual(["11px", "15px", "500", "0.88px", "uppercase"]);
+        expect(s.fontFamily).toContain("monospace");
+        const hex = t["subtle-foreground"]!;
+        const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+        expect(flat(s.color)).toBe(`rgba(${r},${g},${b},1.00)`);
+        cleanup();
+      }
+    }
+  });
 });

@@ -39,6 +39,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":[],"states":[],"aria":[],"touchTarget":[]},
-  tokens: ["border","muted"],
+  tokens: ["primary"],
   related: ["chart","bar-list","card","typography","row-column","container","grid","divider"],
 };

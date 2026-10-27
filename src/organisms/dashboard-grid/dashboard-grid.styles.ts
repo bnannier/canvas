@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { type ColorTokens, spacing, shape } from "../../style/index.js";
+import { alpha, type ColorTokens, spacing, shape } from "../../style/index.js";
 
 // Co-located DashboardGrid skins, one per platform. DashboardGrid is a "Shared" treatment:
 // the whole component is LAYOUT (a wrapping 12-column row of measured cells) plus one edit-
@@ -22,7 +22,7 @@ export interface DashboardGridSkin {
   /** Space between cells on both axes, in px; the density axis tightens it. */
   gap: (compact: boolean) => number;
   /** The customize-mode cell affordance: a dashed ring around the widget's own surface. */
-  editCell: (t: ColorTokens) => ViewStyle;
+  editCell: (t: ColorTokens, dark: boolean) => ViewStyle;
   /** The grip row above the widget content while unlocked. */
   gripRow: ViewStyle;
 }
@@ -33,15 +33,20 @@ export interface DashboardGridSkin {
 // the extra row.
 const GRIP_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "flex-end" };
 
+// The v4 hand-off's board (`K.def('dashboard-grid')` in tools/v4/handoff/cv-kit-controls.js):
+// cells 12 px apart (8 compact), and an unlocked widget edged in a dashed 1px accent ring
+// (`--ion-ring`, the accent at 35% in dark and 28% in light) over its own surface, with no
+// fill of the ring's own.
+const ACCENT_RING = { dark: 0.35, light: 0.28 } as const;
+
 // Web base skin: the shared layout scale (identical on every platform).
 export const webSkin: DashboardGridSkin = {
-  gap: (compact) => (compact ? spacing["2"] : spacing["4"]),
-  editCell: (t) => ({
+  gap: (compact) => (compact ? spacing["2"] : spacing["3"]),
+  editCell: (t, dark) => ({
     borderWidth: 1,
     borderStyle: "dashed",
-    borderColor: t.border,
+    borderColor: alpha(t.primary, dark ? ACCENT_RING.dark : ACCENT_RING.light),
     borderRadius: shape.web.tile,
-    backgroundColor: t.muted,
     padding: spacing["1.5"],
     gap: spacing["1"],
   }),

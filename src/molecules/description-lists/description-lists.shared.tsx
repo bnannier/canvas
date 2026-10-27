@@ -170,6 +170,17 @@ export interface DescriptionListSkin {
   stackedValueType: (t: ColorTokens) => TextStyle;
   /** Card header title type (size / line-height / weight / color / tracking). */
   headerTitleType: (t: ColorTokens) => TextStyle;
+  /**
+   * The v4 hand-off's inset card (the web and Android skins): the card pads its whole
+   * content, header included (`cardPadding` across, `cardPadY` down), the header's rule
+   * runs inside that inset, and every row carries `rowPadY` above and below its text.
+   * Omitted, the header band runs edge to edge with its own inset (the iOS grouped list).
+   */
+  inset?: { cardPadY: number; rowPadY: number; headerPadBottom: number };
+  /** Header subtitle type; omitted, the shared 12/16 muted line. */
+  headerSubtitleType?: (t: ColorTokens) => TextStyle;
+  /** Stacked-layout term type; omitted, the shared 12/16 uppercase muted label with `stackedTermTracking`. */
+  stackedTermType?: (t: ColorTokens) => TextStyle;
 }
 
 // Layout precedence when more than one is passed: first match wins.
@@ -305,10 +316,13 @@ export function createDescriptionList(
       "[canvas] <DescriptionList>: `update` needs a text value; a node value shows no Update link.",
     );
 
+    const inset = skin.inset;
     const container: StyleProp<ViewStyle> = [
       card ? s.cardSurface(tokens, skin) : null,
-      // No global padding when a header band supplies its own px-6 per section.
-      card && !hasHeader ? { padding: skin.cardPadding } : null,
+      // The inset card pads everything, header included; otherwise no global padding
+      // when a header band supplies its own px-6 per section.
+      card && inset ? { paddingHorizontal: skin.cardPadding, paddingVertical: inset.cardPadY } : null,
+      card && !inset && !hasHeader ? { padding: skin.cardPadding } : null,
       !hasHeader ? { gap: skin.rowGap } : null,
       fill,
       style,
@@ -328,6 +342,7 @@ export function createDescriptionList(
       // the row vertically so the rule sits clear of the text.
       const row: StyleProp<ViewStyle> = [
         s.rowLayout(layout, skin),
+        inset ? { paddingVertical: inset.rowPadY } : null,
         divided ? s.rowDividedPad(skin) : null,
         divided && !last ? s.rowDivider(tokens) : null,
       ];
@@ -348,7 +363,7 @@ export function createDescriptionList(
       return (
         <View key={isText(item.term) ? `${item.term}-${index}` : index} style={row}>
           {isText(item.term) ? (
-            <Text style={[stacked ? [s.termStacked(tokens), skin.stackedTermTracking] : skin.termType(tokens), termColumn]}>{item.term}</Text>
+            <Text style={[stacked ? (skin.stackedTermType ? skin.stackedTermType(tokens) : [s.termStacked(tokens), skin.stackedTermTracking]) : skin.termType(tokens), termColumn]}>{item.term}</Text>
           ) : (
             // A node term holds the term's place: the two-column label column keeps its
             // width so the values still line up.
@@ -411,12 +426,12 @@ export function createDescriptionList(
       <Root testID={testID} style={container} {...(card ? { layer: "content" as const } : null)}>
         {layout === "twoColumn" ? <View style={containerProbe} onLayout={measureList} /> : null}
         {hasHeader ? (
-          <View style={s.headerBand(tokens, skin)}>
+          <View style={inset ? s.insetHeaderBand(tokens, inset.headerPadBottom) : s.headerBand(tokens, skin)}>
             <Text style={skin.headerTitleType(tokens)}>{title}</Text>
-            {subtitle ? <Text style={s.headerSubtitle(tokens)}>{subtitle}</Text> : null}
+            {subtitle ? <Text style={skin.headerSubtitleType ? skin.headerSubtitleType(tokens) : s.headerSubtitle(tokens)}>{subtitle}</Text> : null}
           </View>
         ) : null}
-        {hasHeader ? <View style={s.rowsWrap(skin)}>{rows}</View> : rows}
+        {hasHeader ? <View style={inset ? { gap: skin.rowGap } : s.rowsWrap(skin)}>{rows}</View> : rows}
       </Root>
     );
   };

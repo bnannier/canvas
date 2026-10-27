@@ -7,6 +7,7 @@ import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControll
 import { ButtonGroup as WebButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
+import { Icon } from "../../atoms/icon/icon.js";
 
 // Shared Calendar shell. The structure (header with prev/next chevrons + view
 // label, the month grid, and the week/day timelines), the density and view
@@ -363,35 +364,39 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
     const chevronUnit = view === "month" ? "month" : view;
     const monthName = month.split(" ")[0];
 
+    // The label at the start and the two chevrons together at the end: the iOS inline date
+    // picker's, the Material 3 date picker's and the hand-off's header alike.
     const header = (label: string) => (
       <View style={skin.header}>
-        <Pressable
-          style={({ pressed }) => [
-            skin.chevron,
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-          ]}
-          android_ripple={ripple ? { ...ripple, borderless: true } : undefined}
-          onPress={page(-1, onPrev)}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={`Previous ${chevronUnit}`}
-        >
-          <Text style={skin.chevronText(tokens)}>{"‹"}</Text>
-        </Pressable>
         <Text style={skin.monthLabel(tokens)}>{label}</Text>
-        <Pressable
-          style={({ pressed }) => [
-            skin.chevron,
-            skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-          ]}
-          android_ripple={ripple ? { ...ripple, borderless: true } : undefined}
-          onPress={page(1, onNext)}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={`Next ${chevronUnit}`}
-        >
-          <Text style={skin.chevronText(tokens)}>{"›"}</Text>
-        </Pressable>
+        <View style={skin.chevrons}>
+          <Pressable
+            style={({ pressed }) => [
+              skin.chevron,
+              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            ]}
+            android_ripple={ripple ? { ...ripple, borderless: true } : undefined}
+            onPress={page(-1, onPrev)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`Previous ${chevronUnit}`}
+          >
+            <Icon chevronLeft size={skin.chevronIcon} color={skin.chevronText(tokens).color as string} decorative />
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              skin.chevron,
+              skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            ]}
+            android_ripple={ripple ? { ...ripple, borderless: true } : undefined}
+            onPress={page(1, onNext)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`Next ${chevronUnit}`}
+          >
+            <Icon chevronRight size={skin.chevronIcon} color={skin.chevronText(tokens).color as string} decorative />
+          </Pressable>
+        </View>
       </View>
     );
 

@@ -23,7 +23,7 @@ Audit checklist for `/components/accordion`. The facts block and the variants ta
 | Interaction states | recipes: hover on Activity disclosure (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled row (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: triggers are 44/56 tall by skin |
-| Tests importing it | 6: `test/accordion-activity.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/disclosure.test.tsx`, `test/focus-ring.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 7: `test/accordion-activity.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/disclosure-look.test.ts`, `test/disclosure.test.tsx`, `test/focus-ring.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/accordion.md`, written by `bun run audit:turn -- --slug=accordion --phase=before\|after` (the before and after capture runs) |

@@ -3,10 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Swatch } = scope;
+  const { tokens, Swatch, Row } = scope;
   return (
-<Swatch color={tokens.primary} value="--primary" detail="oklch(0.511 0.262 276.966)">
-  primary
-</Swatch>
+<Row relaxed>
+  <Swatch selected color={tokens.primary} value="--primary">primary</Swatch>
+  <Swatch color={tokens.success} value="--success">success</Swatch>
+</Row>
   );
 }

@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach, beforeEach, spyOn } from "bun:test";
 import { act, render, renderHook, cleanup, fireEvent, screen } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
-import { shape } from "../src/style/tokens.ts";
+import { platformShape } from "../src/style/platform-shape.ts";
 import { FOCUS_RING_OFFSET, FOCUS_RING_WIDTH } from "../src/style/pressable.tsx";
 import { useFocusFrame } from "../src/style/focus-frame.tsx";
 import { CodeBlock } from "../src/molecules/code-block/code-block.tsx";
@@ -553,7 +553,7 @@ describe("a windowed GridList", () => {
     // FlatList cannot change its column count live, so the grid remounts its scroller.
     const narrow = screen.getByTestId("subject");
     expect(narrow).not.toBe(wide);
-    const tile = screen.getByText("IMG_1000.jpg").parentElement!.parentElement as HTMLElement;
+    const tile = screen.getByText("IMG_1000.jpg").closest('[role="listitem"]') as HTMLElement;
     expect(tile.style.width).toBe("100%");
     // The new scroller's own measurements decide the stop: rows that fit take it away,
     // rows that overflow give it back.
@@ -663,7 +663,7 @@ describe("frame ring follows keyboard focus only", () => {
     expect(frame.style.borderTopLeftRadius).toBe("");
     fireEvent.keyUp(scroller, { key: "Tab" });
     for (const corner of ["TopLeft", "TopRight", "BottomLeft", "BottomRight"] as const) {
-      expect(frame.style.getPropertyValue(`border-${corner.replace(/([A-Z])/g, "-$1").toLowerCase().slice(1)}-radius`)).toBe(`${shape.web.control}px`);
+      expect(frame.style.getPropertyValue(`border-${corner.replace(/([A-Z])/g, "-$1").toLowerCase().slice(1)}-radius`)).toBe(`${platformShape.web.codeCard}px`);
     }
     fireEvent.blur(scroller);
     expect(frame.style.borderTopLeftRadius).toBe("");
@@ -674,7 +674,7 @@ describe("frame ring follows keyboard focus only", () => {
     const { scroller, frame } = codeBlock("", null).stop();
     fireEvent.keyUp(scroller, { key: "Tab" });
     expect(frame.style.getPropertyValue("border-top-left-radius")).toBe("0px");
-    expect(frame.style.getPropertyValue("border-bottom-left-radius")).toBe(`${shape.web.control}px`);
+    expect(frame.style.getPropertyValue("border-bottom-left-radius")).toBe(`${platformShape.web.codeCard}px`);
   });
 
   it("rings the root under glass, which already carries the card's corners", () => {

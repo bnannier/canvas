@@ -42,7 +42,7 @@ export interface DividerProps {
   /**
    * Optional middle content. With children, a horizontal divider renders a
    * flanking-line + centered-label row (the "with label" / "with action"
-   * patterns). A string renders as muted label text; arbitrary nodes (e.g. a
+   * patterns). A string renders as the uppercase mono caption label; arbitrary nodes (e.g. a
    * button) render as-is for the action pattern. Ignored when `vertical`.
    */
   children?: ReactNode;
@@ -96,9 +96,10 @@ function ruleFill(tokens: ColorTokens, emphasis: Emphasis): ViewStyle {
   return { backgroundColor: ruleColor(tokens, emphasis) };
 }
 
-// The centered label text color: muted foreground.
+// The centered label text color: the subtle ink (the hand-off's tertiary `--tx3`), falling
+// back to the muted foreground on a theme that omits it.
 function labelColor(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"] };
+  return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }
 
 export function createDivider(skin: DividerSkin) {

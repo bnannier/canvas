@@ -11,11 +11,11 @@ describe("hex alpha theme overrides", () => {
     const { rerender } = render(
       <ThemeProvider light tokens={{ primary: "#0f08" }}><Emblem primary testID="tint" /></ThemeProvider>,
     );
-    // The primary tile washes with the primary's soft role, which a rebrand derives at the
-    // hand-off's alpha for the scheme (0.1 light, 0.16 dark).
-    expect(screen.getByTestId("tint").style.backgroundColor).toBe("rgba(0, 255, 0, 0.10)");
+    // The primary tile washes with the primary at the hand-off's Emblem alpha (18%, both
+    // schemes), read from the colour channels whatever the override's own alpha spelling.
+    expect(screen.getByTestId("tint").style.backgroundColor).toBe("rgba(0, 255, 0, 0.18)");
     rerender(<ThemeProvider dark tokens={{ dark: { primary: "#00ff0088" } }}><Emblem primary testID="tint" /></ThemeProvider>);
-    expect(screen.getByTestId("tint").style.backgroundColor).toBe("rgba(0, 255, 0, 0.16)");
+    expect(screen.getByTestId("tint").style.backgroundColor).toBe("rgba(0, 255, 0, 0.18)");
   });
 
   it("preserves existing functional color overrides", () => {

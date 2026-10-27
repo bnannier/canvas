@@ -11,7 +11,7 @@ import {
   type RefObject,
 } from "react";
 import { Animated, PanResponder, StyleSheet, AccessibilityInfo, type GestureResponderEvent } from "react-native";
-import { View, useTheme, isRTL, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
+import { View, Text, useTheme, isRTL, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
 import { PINNED_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
 import { useInteractionOverride } from "../../style/interaction-override.js";
 import { useSeamLimit } from "../../style/touch-seam.js";
@@ -88,6 +88,11 @@ export interface DropZoneProps {
   horizontal?: boolean;
   /** Refuse drops: the zone is skipped by hit-testing and the keyboard cursor, and never highlights. */
   disabled?: boolean;
+  /**
+   * Draw the zone as a visible drop well: a dashed sunken surface with its `label` as an
+   * eyebrow over the items. Without it the zone is only a drop target around its children.
+   */
+  bordered?: boolean;
   children?: ReactNode;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
@@ -206,7 +211,6 @@ const DraggableContext = createContext<{
 // Layout constants (px). The insertion line sits inset from the zone edges and a small gap off
 // the nearest card; the source card dims to a hole while its ghost floats.
 const INDICATOR_INSET = 4;
-const INDICATOR_THICKNESS = 2;
 const INDICATOR_GAP = 4;
 const SOURCE_OPACITY = 0.4;
 
@@ -573,7 +577,7 @@ export function createDragDrop(skin: DragDropSkin) {
   }
 
   // ---- DropZone -----------------------------------------------------------
-  function DropZone({ id, label, onDrop, horizontal = false, disabled = false, children, style, testID }: DropZoneProps) {
+  function DropZone({ id, label, onDrop, horizontal = false, disabled = false, bordered = false, children, style, testID }: DropZoneProps) {
     const api = useContext(DragDropContext);
     const { tokens } = useTheme();
     const ref = useRef<View>(null);
@@ -602,19 +606,26 @@ export function createDragDrop(skin: DragDropSkin) {
     // that resolves to the right edge in a right-to-left locale on every platform, with no
     // branch (in LTR the two are the same property, so nothing about this changes). The vertical
     // line uses `top`, which never mirrors.
+    const thickness = skin.indicatorThickness;
     const indicatorStyle: ViewStyle = horizontal
-      ? { top: INDICATOR_INSET, bottom: INDICATOR_INSET, insetInlineStart: s.insertionOffset - INDICATOR_THICKNESS / 2, width: INDICATOR_THICKNESS }
-      : { left: INDICATOR_INSET, right: INDICATOR_INSET, top: s.insertionOffset - INDICATOR_THICKNESS / 2, height: INDICATOR_THICKNESS };
+      ? { top: INDICATOR_INSET, bottom: INDICATOR_INSET, insetInlineStart: s.insertionOffset - thickness / 2, width: thickness }
+      : { left: INDICATOR_INSET, right: INDICATOR_INSET, top: s.insertionOffset - thickness / 2, height: thickness };
     // Stable context value so subscribed Draggables don't re-render on every provider render.
     const zoneCtx = useMemo(() => ({ zoneId: id, horizontal }), [id, horizontal]);
 
     return (
       <DropZoneContext.Provider value={zoneCtx}>
-        <View ref={ref} testID={testID} collapsable={false} style={style}>
+        <View
+          ref={ref}
+          testID={testID}
+          collapsable={false}
+          style={[bordered ? skin.zoneWell(tokens) : null, bordered && isOver ? skin.zoneWellActive(tokens) : null, style]}
+        >
+          {bordered ? <Text style={skin.zoneLabel(tokens)}>{label}</Text> : null}
           {children}
           {isOver ? (
             <>
-              <View style={[S.overlay, skin.zoneActive(tokens)]} />
+              {bordered ? null : <View style={[S.overlay, skin.zoneActive(tokens)]} />}
               <View style={[S.passthrough, { position: "absolute" }, skin.indicator(tokens), indicatorStyle]} />
             </>
           ) : null}
@@ -810,7 +821,7 @@ export function createDragDrop(skin: DragDropSkin) {
           style,
         ]}
       >
-        <Icon gripVertical size={skin.handleIconSize} decorative />
+        <Icon gripVertical size={skin.handleIconSize} color={skin.handleIconColor(tokens)} decorative />
       </View>
     );
   }

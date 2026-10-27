@@ -15,8 +15,10 @@ import {
   type LayoutStyle,
   useFillStyle,
   GlassSurface,
+  withInnerFill,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { useHover } from "../../style/hover.js";
 
 // Shared Collapsible shell. A Collapsible is a SINGLE disclosure: one header
 // carrying a label (the `title`, or a custom `trigger` node) and a rotating
@@ -39,10 +41,9 @@ import { Icon } from "../../atoms/icon/icon.js";
 //     state, seeded once from `defaultOpen` (default false).
 //   - Controlled: pass `open` plus `onOpenChange`; the parent owns the state.
 //
-// The chevron glyph and its open-rotation come from the skin: iOS/web use the
-// HIG/Radix right caret (chevronRight, 0 -> 90deg, points down when open); Android
-// uses the M3 in-place-expansion chevron (chevronDown, 0 -> 180deg, points up when
-// open). The panel reveal uses LayoutAnimation natively (a smooth height ease) and
+// The chevron glyph and its open-rotation come from the skin: iOS uses the HIG right
+// caret (chevronRight, 0 -> 90deg, points down when open); the web and Android use the
+// hand-off's down chevron (chevronDown, 0 -> 180deg, points up when open). The panel reveal uses LayoutAnimation natively (a smooth height ease) and
 // a plain show/hide on web, which is robust everywhere.
 
 // The platform-varying surface. Everything shape/color/feedback-bearing the
@@ -51,8 +52,7 @@ import { Icon } from "../../atoms/icon/icon.js";
 export interface CollapsibleSkin {
   /** iOS/web dim the header on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
-  /** Disabled-header dim opacity: 0.5 on web/iOS (shadcn / HIG), 0.38 on Android
-   *  (M3 disabled content = 38% on-surface). */
+  /** Disabled-header dim opacity: 0.45 on the web and Android (the hand-off's), 0.5 on iOS. */
   disabledOpacity: number;
   /** Android header ripple; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
@@ -66,9 +66,8 @@ export interface CollapsibleSkin {
    */
   focusRing?: ViewStyle;
 
-  /** Chevron glyph size, in px. The glyph paints in the `muted-foreground` token
-   *  (the HIG tertiary-gray / M3 on-surface-variant disclosure tint) on every
-   *  platform, via the kit Icon's `muted` color prop. */
+  /** Chevron glyph size, in px. The glyph paints in the `subtle-foreground` token
+   *  (the hand-off's tertiary ink) on every platform. */
   chevronSize: number;
   /** The disclosure chevron glyph at rest: `chevronRight` on iOS/web (the HIG/Radix
    *  tree-disclosure caret, points right and rotates to point down), or `chevronDown`
@@ -93,6 +92,9 @@ export interface CollapsibleSkin {
   cardContentInset: ViewStyle;
   /** The header trigger row layout/insets. */
   header: (t: ColorTokens) => ViewStyle;
+  /** The header's wash while a pointer rests on it (web); omit for none. Its fill is an
+   *  inner fill, so under glass it tints the material instead of covering it. */
+  headerHover?: (t: ColorTokens) => ViewStyle;
   /** The header title type (used for the default `title` text). */
   title: (t: ColorTokens) => TextStyle;
   /** The muted secondary description line under the title (the skin's type ramp,
@@ -148,7 +150,9 @@ enableAndroidLayoutAnimations();
 export function createCollapsible(skin: CollapsibleSkin) {
   return function Collapsible(props: CollapsibleProps) {
     const { title, description, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, card, testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
+    const { hovered, target } = useHover(!disabled && skin.headerHover != null);
     // FILL: the disclosure spans the parent it is given.
     const fill = useFillStyle("Collapsible");
     const reduced = useReducedMotion();
@@ -194,6 +198,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
       // Inside a surfaced container the ring moves inside the header, which the
       // container's clip would otherwise cut; a bare header keeps it around itself.
       surfaced ? skin.focusRing : null,
+      hovered && skin.headerHover ? withInnerFill(theme, skin.headerHover(tokens)) : null,
       disabled ? { opacity: skin.disabledOpacity } : null,
     ];
 
@@ -202,6 +207,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
     return (
       <Root testID={testID} style={[skin.container(tokens), card ? skin.cardContainer(tokens) : null, fill, style]} {...(surfaced ? { layer: "content" as const } : null)}>
         <Pressable
+          {...target}
           onPress={disabled ? undefined : toggle}
           disabled={disabled}
           android_ripple={skin.ripple && !disabled ? skin.ripple(tokens) : undefined}
@@ -236,8 +242,8 @@ export function createCollapsible(skin: CollapsibleSkin) {
             </Text>
           )}
           <Animated.View style={{ transform: [{ rotate }] }}>
-            {/* Skin picks the disclosure glyph: chevronRight (iOS/web) or chevronDown (M3). */}
-            <Icon {...{ [skin.chevronGlyph]: true }} muted size={skin.chevronSize} />
+            {/* Skin picks the disclosure glyph: chevronRight (iOS) or chevronDown (web, Android). */}
+            <Icon {...{ [skin.chevronGlyph]: true }} color={tokens["subtle-foreground"]} size={skin.chevronSize} />
           </Animated.View>
         </Pressable>
         {open ? (

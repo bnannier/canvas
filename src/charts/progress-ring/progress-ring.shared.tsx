@@ -1,5 +1,6 @@
 import Svg, { Path } from "react-native-svg";
 import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
 
 // ProgressRing is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -21,7 +22,7 @@ export interface ProgressRingProps {
   success?: boolean;
   warning?: boolean;
   destructive?: boolean;
-  // Density (omit for the default 120 diameter; compact is 96).
+  // Density (omit for the default 168 ring; compact is 106).
   compact?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -40,12 +41,13 @@ export function ringFill(tokens: ColorTokens, p: ProgressRingProps): string {
   return tokens.primary;
 }
 
-// The ring metrics per density: the graphic is a fixed square (per-instance
-// sizing is a separate, deferred capability, as on Gauge), a 10-wide stroke
-// inset so the rounded caps stay inside the viewBox.
-const SIZE = { default: 120, compact: 96 } as const;
-const STROKE = 10;
-const INSET = 10;
+// The v4 hand-off's ring (`ring` in cv-kit-charts.js): r 70 in a 14-wide stroke
+// (a 168 square), compact r 44 in a 9-wide stroke (106), on the raised surface,
+// the value in the display face (600, 28 / 18) and the label 14 px beside the ring.
+const SIZE = { default: 168, compact: 106 } as const;
+const STROKE = { default: 14, compact: 9 } as const;
+const VALUE = { default: 28, compact: 18 } as const;
+const LABEL_GAP = 14;
 
 // Pure ring geometry, exported for tests (not re-exported from the barrel),
 // following the gaugeArc precedent. An SVG circle's dash origin sits at 3
@@ -53,7 +55,8 @@ const INSET = 10;
 // 12 o'clock and sweeping clockwise, making the dash reveal start at the top.
 // The track and value arcs share the path; the value arc reveals its share of
 // the circumference through the dash pattern.
-export function ringDash(v: number, size: number = SIZE.default): { d: string; dasharray: string } {
+export function ringDash(v: number, size: number = SIZE.default, stroke: number = STROKE.default): { d: string; dasharray: string } {
+  const INSET = stroke;
   const r = size / 2 - INSET;
   const cx = size / 2;
   const circumference = 2 * Math.PI * r;
@@ -68,7 +71,9 @@ export function ringDash(v: number, size: number = SIZE.default): { d: string; d
 export function ProgressRing(props: ProgressRingProps) {
   const { value, label, testID, style } = props;
   const { tokens } = useTheme();
-  const size = props.compact ? SIZE.compact : SIZE.default;
+  const density = props.compact ? "compact" : "default";
+  const size = SIZE[density];
+  const stroke = STROKE[density];
   // A 0-100 dial; an out-of-range value is clamped, but warn so the developer
   // notices the input was outside the supported range.
   devWarn(
@@ -81,27 +86,27 @@ export function ProgressRing(props: ProgressRingProps) {
   // the same number the eye sees. Identical to the Gauge split.
   const pct = Math.round(v);
   const fill = ringFill(tokens, props);
-  const arc = ringDash(v, size);
+  const arc = ringDash(v, size, stroke);
 
   return (
     <View
       testID={testID}
-      style={[{ width: size, alignItems: "center", gap: 4 }, style]}
+      style={[{ flexDirection: "row", alignItems: "center", gap: LABEL_GAP }, style]}
       accessibilityRole="image"
       accessibilityLabel={`${label ?? "Progress"}: ${pct}%`}
       aria-label={`${label ?? "Progress"}: ${pct}%`}
     >
       <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: "absolute", top: 0, left: 0 }}>
-          <Path d={arc.d} fill="none" stroke={tokens.muted} strokeWidth={STROKE} strokeLinecap="round" />
-          <Path d={arc.d} fill="none" stroke={fill} strokeWidth={STROKE} strokeLinecap="round" strokeDasharray={arc.dasharray} />
+          <Path d={arc.d} fill="none" stroke={tokens["surface-raised"] ?? tokens.muted} strokeWidth={stroke} strokeLinecap="round" />
+          <Path d={arc.d} fill="none" stroke={fill} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={arc.dasharray} />
         </Svg>
         {/* The readout sits in the ring's open center. */}
-        <Text style={{ fontSize: props.compact ? 20 : 24, lineHeight: props.compact ? 24 : 28, fontWeight: "600", letterSpacing: -0.4, color: tokens.foreground }}>
+        <Text style={{ fontFamily: DISPLAY_FONT, fontSize: VALUE[density], lineHeight: Math.round(VALUE[density] * 1.2), fontWeight: "600", color: tokens.foreground }}>
           {pct}%
         </Text>
       </View>
-      {label ? <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{label}</Text> : null}
+      {label ? <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>{label}</Text> : null}
     </View>
   );
 }

@@ -37,10 +37,9 @@ import { deltaTone, headerRow, headerTrailing, item as itemLayout, row, shareStr
 // usually still decomposes, and drawing the decomposition fills the card with
 // something true instead of padding it.
 //
-// Stats is a "Light" platform treatment: one structure and one set of (semantic)
-// colors, with per-OS touches limited to corner radius, density, type tracking,
-// shadow-vs-outline, and press feedback — so the skin carries only those, not the
-// colors or the layout contract.
+// Stats draws the hand-off's tile on every platform: one structure and one set of
+// (semantic) colors, with per-OS touches limited to the face and the press feedback, so
+// the skin carries only those, not the colors or the layout contract.
 
 export interface StatItem {
   /** Small caption above the value (e.g. "Total users"). */
@@ -102,9 +101,9 @@ export interface StatsProps {
   // Surface (pick one; default is bordered cards).
   /** Borderless metric stacks on a shared surface, for nesting inside a card. */
   plain?: boolean;
-  /** Dense value-first tile for a navigation rail. */
+  /** Dense value-first tile for a navigation rail: a 12px inset and a 20px headline. */
   compact?: boolean;
-  /** Value-first dashboard tile with a 24px headline. */
+  /** Value-first dashboard tile with a 36px headline. */
   large?: boolean;
   /** Optional heading shown above the metrics (mainly for the plain surface). */
   title?: string;
@@ -139,6 +138,8 @@ export interface StatsSkin {
   denseDescription: (tokens: ColorTokens) => TextStyle;
   /** The parent surface the plain variant nests on. */
   plainContainer: (tokens: ColorTokens) => ViewStyle;
+  /** A plain metric's own inset and rhythm, and the rule before every metric but the first. */
+  plainItem: (tokens: ColorTokens, first: boolean) => ViewStyle;
   /** Row gap by surface (cards pack tighter, plain stacks sit roomier). */
   rowGap: Record<Surface, ViewStyle>;
   /** Title type + spacing, by surface. */
@@ -185,7 +186,7 @@ export function deltaOf(item: Pick<StatItem, "steady" | "down">): "steady" | "do
 
 export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
-  function StatItemView({ item, surface, framed, onPress, dense, large }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void; dense?: boolean; large?: boolean }): ReactNode {
+  function StatItemView({ item, surface, framed, onPress, dense, large, first }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void; dense?: boolean; large?: boolean; first: boolean }): ReactNode {
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     // Under glass a card-surface metric is a CONTENT-layer pane (the material rides
@@ -194,7 +195,9 @@ export function createStats(skin: StatsSkin) {
     // the shape stays on the tappable node, the sizing rides the RippleClip wrapper.
     const cardShape = surface === "card" ? dense ? skin.denseCard(tokens, !!large) : skin.cardSurface(tokens) : null;
     const metricLayout = dense ? { flexGrow: 1, flexShrink: 1, flexBasis: "0%" as const, minWidth: 0 } : itemLayout[surface];
-    const container = [cardShape, metricLayout];
+    // A plain metric carries its own inset and the rule that separates it from the one before.
+    const plainShape = surface === "plain" ? skin.plainItem(tokens, first) : null;
+    const container = [cardShape ?? plainShape, metricLayout];
     // The accent recolors ONLY the headline value, never the label or the delta:
     // the delta keeps its own rise/decline semantics, which an accent must not
     // overwrite.
@@ -249,7 +252,7 @@ export function createStats(skin: StatsSkin) {
             accessibilityRole="button"
             onPress={onPress}
             android_ripple={android_ripple}
-            style={({ pressed }) => [cardShape ? paneStyle(theme, cardShape) : null, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
+            style={({ pressed }) => [cardShape ? paneStyle(theme, cardShape) : plainShape, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
           >
             {cardShape ? <GlassPane layer="content" shape={cardShape} /> : null}
             {inner}
@@ -281,7 +284,7 @@ export function createStats(skin: StatsSkin) {
         {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
         <View style={[row, skin.rowGap[surface]]}>
           {items.map((item, i) => (
-            <StatItemView key={i} item={item} surface={surface} framed={props.framed} dense={props.compact || props.large} large={props.large && !props.compact} onPress={onPressItem ? () => onPressItem(i) : undefined} />
+            <StatItemView key={i} item={item} surface={surface} framed={props.framed} dense={props.compact || props.large} large={props.large && !props.compact} first={i === 0} onPress={onPressItem ? () => onPressItem(i) : undefined} />
           ))}
         </View>
       </Root>

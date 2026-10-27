@@ -141,12 +141,12 @@ describe("Chart (stacked columns)", () => {
     { label: "Client credentials", values: [10, 0] },
   ];
   const clients = ["acme", "globex"];
-  // Every bar/segment style, in DOM order (the plot row and the legend dots
-  // carry no bar radius, so this selects exactly the marks).
+  // Every bar/segment style, in DOM order (the legend swatches are the 8 px
+  // squares, so dropping `width: 8px` selects exactly the marks).
   const barStyles = (c: HTMLElement) =>
     Array.from(c.querySelectorAll("div"))
       .map((el) => el.getAttribute("style") ?? "")
-      .filter((st) => st.includes("border-top-left-radius") && st.includes("height:"));
+      .filter((st) => st.includes("border-radius") && st.includes("height:") && !st.includes("width: 8px"));
   const heightOf = (style: string) => Number(/height: (\d+)px/.exec(style)?.[1]);
 
   it("measures the axis against per-category totals, not the largest single value", () => {
@@ -162,15 +162,15 @@ describe("Chart (stacked columns)", () => {
     expect(barStyles(container).map(heightOf)).toEqual([140, 140, 70, 2]);
   });
 
-  it("caps the topmost non-empty segment and paints nothing for an empty one", () => {
+  it("rounds every non-empty segment at the bar corner and paints nothing for an empty one", () => {
     const { container } = ui(<Chart stacked labels={clients} series={grants} />);
     const [bottom, top, loneSegment, empty] = barStyles(container);
-    // Only the column's cap is rounded, so the stack reads as one column.
-    expect(bottom).toContain("border-top-left-radius: 0px");
-    expect(top).toContain("border-top-left-radius: 8px");
-    // globex's second grant type is 0: the surviving segment takes the cap and
+    // The v4 hand-off draws each segment as its own `rect rx="3"`.
+    expect(bottom).toContain("border-radius: 3px");
+    expect(top).toContain("border-radius: 3px");
+    // globex's second grant type is 0: the surviving segment keeps its corner and
     // the empty one has no height at all (a 2px floor would inflate the total).
-    expect(loneSegment).toContain("border-top-left-radius: 8px");
+    expect(loneSegment).toContain("border-radius: 3px");
     expect(heightOf(empty)).toBe(0);
   });
 

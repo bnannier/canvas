@@ -1,8 +1,14 @@
 import { useId } from "react";
-import { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
+import { Circle, Defs, LinearGradient, Path, Rect, Stop } from "react-native-svg";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
 import { type CartesianSeriesProps, chartShell, finite, seriesPoints, useSeriesChart } from "../shared/cartesian-series.js";
-import { areaPath, linePath, monotonePath, topRoundedRect } from "../shared/chart-math.js";
+import { areaPath, linePath, monotonePath } from "../shared/chart-math.js";
+import { CHART_LOOK } from "../shared/charts.styles.js";
+
+// The hand-off's composed bars: a 12-unit bar per 29.5-unit month (about 0.41 of the
+// band step), washed at .55 behind the lead line.
+const BAR_SHARE = 0.41;
+const BAR_OPACITY = 0.55;
 
 // ComposedChart: bars, lines, and gradient-washed areas sharing one
 // categorical axis (the "revenue bars with a margin line" chart), through the
@@ -54,7 +60,11 @@ export function createComposedChart(skin: ChartSkin) {
       const band = layout.band;
       // Grouped bar geometry: the bar-kind series split each band with a 2px
       // inner gap (the dataviz spacer rule the grouped Chart uses).
-      const barW = band && barSeries.length > 0 ? Math.max(1, (band.bandWidth - 2 * (barSeries.length - 1)) / barSeries.length) : 0;
+      const cluster = band ? Math.min(band.bandWidth, band.step * BAR_SHARE * Math.max(1, barSeries.length)) : 0;
+      const barW = band && barSeries.length > 0 ? Math.max(1, (cluster - 2 * (barSeries.length - 1)) / barSeries.length) : 0;
+      const clusterAt = (li: number): number => (band ? band.center(li) - cluster / 2 : 0);
+      // The lead line (the first line or area series) is drawn 2.2 wide, the rest 2.
+      const lead = props.series.findIndex((sr) => markOf(sr) !== "bars");
       return (
         <>
           {/* Area washes first (the backdrop), each with a per-instance
@@ -63,8 +73,8 @@ export function createComposedChart(skin: ChartSkin) {
             {props.series.map((sr, i) =>
               markOf(sr) === "area" ? (
                 <LinearGradient key={`g${sr.id ?? i}`} id={`${gradientId}a${i}`} x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor={ctx.colorOf(i)} stopOpacity={0.28} />
-                  <Stop offset="1" stopColor={ctx.colorOf(i)} stopOpacity={0.02} />
+                  <Stop offset="0" stopColor={ctx.colorOf(i)} stopOpacity={CHART_LOOK.fadeTop} />
+                  <Stop offset="1" stopColor={ctx.colorOf(i)} stopOpacity={0} />
                 </LinearGradient>
               ) : null,
             )}
@@ -87,10 +97,15 @@ export function createComposedChart(skin: ChartSkin) {
                   const h = Math.max(0, layout.plotH - y);
                   if (h <= 0) return null;
                   return (
-                    <Path
+                    <Rect
                       key={`b${sr.id ?? i}c${li}`}
-                      d={topRoundedRect(band.position(li) + bi * (barW + 2), y, barW, h, skin.barRadius)}
+                      x={clusterAt(li) + bi * (barW + 2)}
+                      y={y}
+                      width={barW}
+                      height={h}
+                      rx={Math.min(skin.barRadius, barW / 2, h / 2)}
                       fill={ctx.colorOf(i)}
+                      fillOpacity={BAR_OPACITY}
                     />
                   );
                 }),
@@ -106,7 +121,7 @@ export function createComposedChart(skin: ChartSkin) {
                 key={`l${sr.id ?? i}`}
                 d={curved ? monotonePath(pts) : linePath(pts)}
                 stroke={ctx.colorOf(i)}
-                strokeWidth={2}
+                strokeWidth={i === lead ? CHART_LOOK.leadStroke : CHART_LOOK.stroke}
                 fill="none"
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -119,7 +134,7 @@ export function createComposedChart(skin: ChartSkin) {
                 if (markOf(sr) === "bars") return [];
                 const pts = seriesPoints(sr, props.labels, layout);
                 return pts.map((p, j) => (
-                  <Circle key={`d${sr.id ?? i}p${j}`} cx={p.x} cy={p.y} r={4} fill={ctx.colorOf(i)} stroke={ctx.tokens.card} strokeWidth={1.5} />
+                  <Circle key={`d${sr.id ?? i}p${j}`} cx={p.x} cy={p.y} r={CHART_LOOK.dotRadius} fill={ctx.colorOf(i)} />
                 ));
               })
             : null}

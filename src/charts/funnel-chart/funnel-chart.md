@@ -1,8 +1,8 @@
 # FunnelChart
 
-Stage-by-stage conversion trapezoids with on-stage labels, values, and conversion percents.
+Stage-by-stage conversion bars: one centered row per stage, labelled on the left and valued on the right.
 
-The stages stack as a column of centered trapezoids, each stage's top width proportional to its value and tapering to the next stage's width (the last stage is rectangular), ramp-colored, with the stage's label, value, and conversion percent as text on the stage. The percent reads against the previous stage by default; `share` reads every stage against the first. Press a stage to select it (the others dim).
+The stages stack as a column of rows, each a ramp-colored bar centered in its track at the stage's share of the first stage's value, so the column tapers as the funnel drops off. The stage's label sits at the start of the row and its value, in the mono face, at the end; `share` shows every stage's percent of the first stage in the value slot instead. Each stage's accessible name carries its percent of the previous stage (of the first stage with `share`). Press a stage to select it (the others dim).
 
 ## Usage
 

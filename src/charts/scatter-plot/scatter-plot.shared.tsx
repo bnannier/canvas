@@ -11,7 +11,7 @@ import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../s
 import { formatCompact } from "../shared/chart-math.js";
 
 // ScatterPlot: numeric x/y point clouds through the shared CartesianFrame
-// (niced ticks and gridlines on BOTH axes). A "Shared" platform treatment
+// (niced ticks on BOTH axes, horizontal gridlines). A "Shared" platform treatment
 // like the rest of the Chart family: one implementation for iOS, Android,
 // and the web.
 
@@ -71,6 +71,9 @@ export function toneOf(p: ScatterPlotProps): Tone {
 }
 
 const PLOT_HEIGHT = { default: 180, compact: 120 } as const;
+// The hand-off's points: r 3 to 5 (the kit draws the middle, 4) at a .7 wash, no ring.
+const POINT_RADIUS = 4;
+const POINT_OPACITY = 0.7;
 
 /** Build a ScatterPlot from a platform skin. */
 export function createScatterPlot(skin: ChartSkin) {
@@ -220,12 +223,10 @@ export function createScatterPlot(skin: ChartSkin) {
                         key={`${sr.id ?? `s${i}`}p${j}`}
                         cx={layout.x(p.x)}
                         cy={layout.y(p.y)}
-                        r={4}
+                        r={POINT_RADIUS}
                         fill={color}
-                        fillOpacity={selected != null && !isSelected(i, j) ? DIM_OPACITY : 1}
-                        // A surface ring keeps overlapping points separable.
-                        stroke={tokens.card}
-                        strokeWidth={1.5}
+                        // The hand-off's points are washed at .7, so overlaps read through.
+                        fillOpacity={selected != null && !isSelected(i, j) ? DIM_OPACITY * POINT_OPACITY : POINT_OPACITY}
                       />
                     ) : null,
                   );

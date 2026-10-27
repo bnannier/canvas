@@ -35,11 +35,11 @@ describe("Feed", () => {
     expect(pressed).toBe(1);
   });
 
-  it("connector lead (default) shows the initials node, the avatar lead swaps it for the photo", () => {
+  it("connector lead (default) leads with a dot, the avatar lead swaps it for the photo", () => {
     const one = [{ actor: "Rachel Chen", action: "x", time: "y", avatar: "https://example.com/p.jpg" }];
-    // Default connector lead paints a node with the actor's initials ("RC").
+    // The default connector lead paints the v4 hand-off's dot, not the actor's initials.
     const conn = ui(<Feed items={one} />);
-    expect(within(conn.container).getByText("RC")).toBeTruthy();
+    expect(within(conn.container).queryByText("RC")).toBeNull();
     cleanup();
     // The avatar lead renders the photo instead, so no initials fallback is shown.
     const av = ui(<Feed avatar items={one} />);

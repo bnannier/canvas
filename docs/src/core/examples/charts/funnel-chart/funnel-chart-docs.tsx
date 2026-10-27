@@ -11,7 +11,7 @@ export const docs: ComponentDocs = {
   dir: "funnel-chart",
   category: "charts",
   overview: [
-    "The stages stack as a column of centered trapezoids, each stage's top width proportional to its value and tapering to the next stage's width (the last stage is rectangular), ramp-colored, with the stage's label, value, and conversion percent as text on the stage. The percent reads against the previous stage by default; `share` reads every stage against the first. Press a stage to select it (the others dim).",
+    "The stages stack as a column of rows, each a ramp-colored bar centered in its track at the stage's share of the first stage's value, so the column tapers as the funnel drops off. The stage's label sits at the start of the row and its value, in the mono face, at the end; `share` shows every stage's percent of the first stage in the value slot instead. Each stage's accessible name carries its percent of the previous stage (of the first stage with `share`). Press a stage to select it (the others dim).",
   ],
   examples: [
     { label: "Default", code: "<FunnelChart\n  stages={[\n    { label: \"Visits\", value: 12400 },\n    { label: \"Signups\", value: 4200 },\n    { label: \"Activated\", value: 1850 },\n    { label: \"Paid\", value: 480 },\n  ]}\n/>", render: e_charts_funnel_chart_example_0 },
@@ -27,6 +27,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["group","image","img"],"states":[],"aria":["aria-label"],"touchTarget":[]},
-  tokens: ["card","card-foreground","muted-foreground"],
+  tokens: ["card-foreground","muted-foreground"],
   related: ["chart","line-chart","area-chart","range-area-chart","composed-chart","sparkline","histogram","box-plot"],
 };

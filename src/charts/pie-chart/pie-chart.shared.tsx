@@ -2,6 +2,7 @@ import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { View, Text, Pressable, useTheme, useControllableState, devWarn, type LayoutStyle } from "../../style/index.js";
 import { seriesFill } from "../shared/charts.styles.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { arcPath, formatCompact, pieLayout } from "../shared/chart-math.js";
@@ -38,6 +39,11 @@ export interface PieChartProps {
   style?: LayoutStyle;
 }
 
+// The gap between the disc and its legend (the hand-off's 20).
+const LEGEND_GAP = 20;
+// The donut center's caption under the total: the hand-off's 10 px in the subtle ink.
+const CENTER_LABEL_TYPE = { fontSize: 10, lineHeight: 14 } as const;
+
 /** Proportional slices with a percent legend; as a donut it shows the total in its center. */
 export function PieChart(props: PieChartProps) {
   const { slices, label, donut, hideLegend, compact, testID, style } = props;
@@ -54,9 +60,13 @@ export function PieChart(props: PieChartProps) {
     "[canvas] <PieChart />: more than 8 slices cycles the series palette; fold small slices into an “Other” slice.",
   );
 
-  const size = compact ? 120 : 160;
+  // The v4 hand-off's disc (`K.def('pie-chart')`, a 160 viewBox drawn at 150 px): a pie
+  // to r 70, a donut ring 22 wide around r 58 (69 out, 47 in), the legend 20 px
+  // beside it.
+  const size = compact ? 120 : 150;
   const r = size / 2;
-  const rInner = donut ? r * 0.62 : 0;
+  const rOuter = r * (donut ? 69 / 80 : 70 / 80);
+  const rInner = donut ? r * (47 / 80) : 0;
   const layout = pieLayout(clean);
 
   // Press-to-inspect: pressing a slice dims the others; a donut swaps its
@@ -90,19 +100,19 @@ export function PieChart(props: PieChartProps) {
   const img = { accessibilityRole: "image", accessibilityLabel: name, "aria-label": name } as const;
 
   return (
-    <View testID={testID} style={style} {...(hideLegend ? img : {})}>
+    <View testID={testID} style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: LEGEND_GAP }, style]} {...(hideLegend ? img : {})}>
       <View {...(hideLegend ? {} : img)} style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
         <Svg width={size} height={size} style={{ position: "absolute" }}>
           {layout.map((slice, i) =>
             slice.fraction > 0 ? (
               <Path
                 key={i}
-                d={arcPath(r, r, r - 1, rInner, slice.startAngle, slice.endAngle)}
+                d={arcPath(r, r, rOuter, rInner, slice.startAngle, slice.endAngle)}
                 fill={seriesFill(tokens, i)}
                 fillOpacity={selected != null && selected !== i ? DIM_OPACITY : 1}
-                // A hairline of the card surface keeps adjacent fills separable.
-                stroke={tokens.card}
-                strokeWidth={2}
+                // The donut's ring leaves a hairline gap between its arcs (the hand-off's
+                // .02 rad); the pie's slices abut.
+                {...(donut ? { stroke: tokens.card, strokeWidth: 1.5 } : {})}
               />
             ) : null,
           )}
@@ -110,11 +120,11 @@ export function PieChart(props: PieChartProps) {
         {donut ? (
           // The center reads the total, or the selected slice while inspecting.
           <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: compact ? 20 : 24, lineHeight: compact ? 28 : 32, fontWeight: "600", color: tokens["card-foreground"] }}>
+            <Text style={{ fontFamily: DISPLAY_FONT, fontSize: compact ? 20 : 24, lineHeight: compact ? 26 : 30, fontWeight: "600", color: tokens["card-foreground"] }}>
               {selected != null && slices[selected] ? `${pctOf(slices[selected].value)}%` : formatCompact(rawTotal)}
             </Text>
             {(selected != null && slices[selected] ? slices[selected].label : label) ? (
-              <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>
+              <Text style={{ ...CENTER_LABEL_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>
                 {selected != null && slices[selected] ? slices[selected].label : label}
               </Text>
             ) : null}
@@ -133,10 +143,10 @@ export function PieChart(props: PieChartProps) {
       </View>
       {hideLegend ? null : (
         <ChartLegend
+          flush
           items={slices.map((sl, i) => ({
-            label: sl.label,
+            label: `${sl.label} · ${pctOf(sl.value)}%`,
             color: seriesFill(tokens, i),
-            detail: `${pctOf(sl.value)}%`,
           }))}
         />
       )}

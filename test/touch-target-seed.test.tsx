@@ -64,9 +64,9 @@ describe("the seed each control takes from its skin", () => {
 
   it("the CodeBlock copy chip: its padding and border around one 16px line, 26 tall", () => {
     const box = styleBox(StyleSheet.flatten(codeBlock.copyButton(t, false, true)) as ViewStyle, codeBlock.copyText(t, false).lineHeight);
-    expect(box).toEqual({ width: 22, height: 26 });
-    expect(seedSlop(ANDROID, box)).toEqual({ top: 11, bottom: 11, left: 13, right: 13 });
-    expect(seedSlop(IOS, box)).toEqual({ top: 9, bottom: 9, left: 11, right: 11 });
+    expect(box).toEqual({ width: 18, height: 26 });
+    expect(seedSlop(ANDROID, box)).toEqual({ top: 11, bottom: 11, left: 15, right: 15 });
+    expect(seedSlop(IOS, box)).toEqual({ top: 9, bottom: 9, left: 13, right: 13 });
   });
 
   it("a Switch: its track, the least the row renders at (a label only widens or heightens it)", () => {

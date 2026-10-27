@@ -8,6 +8,7 @@ import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
 import { boxStats, formatCompact } from "../shared/chart-math.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // BoxPlot: quartile boxes, whiskers, and outlier dots per category. Pass raw
 // samples per category; the chart computes the Tukey five-number summary
@@ -156,8 +157,8 @@ export function createBoxPlot(skin: ChartSkin) {
             {(layout) => {
               const band = layout.band;
               if (!band) return null;
-              // The box takes most of the band; whiskers span half the box.
-              const boxW = Math.max(6, Math.min(40, band.bandWidth * 0.5));
+              // The hand-off's box: 28 units of a 75-unit band (0.37 of the step).
+              const boxW = Math.max(6, Math.min(40, band.step * 0.37));
               return (
                 <>
                   {stats.map((st, i) => {
@@ -165,20 +166,18 @@ export function createBoxPlot(skin: ChartSkin) {
                     const dim = selected != null && selected !== i ? DIM_OPACITY : 1;
                     return (
                       <G key={data[i].id ?? i} opacity={dim}>
-                        {/* Whisker spine and caps. */}
+                        {/* The whisker spine (the hand-off draws no caps). */}
                         <Line x1={cx} y1={layout.y(st.max)} x2={cx} y2={layout.y(st.min)} stroke={fill} strokeWidth={1.5} />
-                        <Line x1={cx - boxW / 4} y1={layout.y(st.max)} x2={cx + boxW / 4} y2={layout.y(st.max)} stroke={fill} strokeWidth={1.5} />
-                        <Line x1={cx - boxW / 4} y1={layout.y(st.min)} x2={cx + boxW / 4} y2={layout.y(st.min)} stroke={fill} strokeWidth={1.5} />
                         {/* The interquartile box over the spine. */}
                         <Rect
                           x={cx - boxW / 2}
                           y={layout.y(st.q3)}
                           width={boxW}
                           height={Math.max(1, layout.y(st.q1) - layout.y(st.q3))}
-                          rx={Math.min(skin.barRadius, boxW / 4)}
+                          rx={Math.min(platformShape.web.mark, boxW / 4)}
                           fill={alpha(fill, 0.25)}
                           stroke={fill}
-                          strokeWidth={1.5}
+                          strokeWidth={1}
                         />
                         {/* Median line. */}
                         <Line x1={cx - boxW / 2} y1={layout.y(st.median)} x2={cx + boxW / 2} y2={layout.y(st.median)} stroke={fill} strokeWidth={2} />

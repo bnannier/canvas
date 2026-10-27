@@ -6,6 +6,7 @@ import { estimateTextWidth } from "../shared/chart-math.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusRingStyle } from "../../style/pressable.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { MONO_FONT } from "../../style/mono.js";
 
 // Heatmap is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -52,7 +53,12 @@ const HEATMAP_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", 
 // GitHub labels alternating rows so the seven-day column reads without crowding.
 const HEATMAP_WEEKDAYS = ["", "Mon", "", "Wed", "", "Fri", ""];
 // Level 0 is the empty (no-activity) box; 1–4 climb the primary hue.
-const HEATMAP_LEVEL_ALPHA = [0, 0.28, 0.5, 0.75, 1];
+// The v4 hand-off's ramp (`K.def('heatmap')`): chart-1 washed from .1 (no activity) to
+// .95, the steps its less-to-more legend draws.
+const HEATMAP_LEVEL_ALPHA = [0.1, 0.3, 0.55, 0.8, 0.95];
+// The grid's continuous wash: .08 at zero, climbing .85 to the full value.
+const GRID_FLOOR = 0.08;
+const GRID_SPAN = 0.85;
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
 const normCell = (v: HeatmapValue): HeatmapCell => (typeof v === "number" ? { value: v } : v);
@@ -67,9 +73,14 @@ function heatLevel(value: number): number {
   return 4;
 }
 
-/** The fill for a level: the muted track for empty (0), else a primary-hue step. */
+/** The fill for a level: a chart-1 wash, faint for empty (0), climbing to .95. */
 function levelFill(tokens: ColorTokens, lvl: number): string {
-  return lvl <= 0 ? tokens.muted : alpha(tokens.primary, HEATMAP_LEVEL_ALPHA[Math.min(4, lvl)]);
+  return alpha(tokens["chart-1"], HEATMAP_LEVEL_ALPHA[Math.max(0, Math.min(4, lvl))]);
+}
+
+// The legend's Less / More: 11 px in the subtle ink.
+function legendText(tokens: ColorTokens) {
+  return { fontSize: 11, lineHeight: 14, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }
 
 interface ParsedDate { y: number; mo: number; day: number }
@@ -101,7 +112,7 @@ export function Heatmap(props: HeatmapProps) {
 function GridHeatmap({ cells, label, hideLegend, testID, style }: HeatmapProps & { cells: HeatmapCell[] }) {
   const { tokens } = useTheme();
   const cell = (intensity: number, box: number, key: number) => (
-    <View key={key} style={{ borderRadius: platformShape.web.cell, height: box, width: box, backgroundColor: alpha(tokens.primary, Math.max(0.08, clamp01(intensity))) }} />
+    <View key={key} style={{ borderRadius: platformShape.web.heatCell, height: box, width: box, backgroundColor: alpha(tokens["chart-1"], GRID_FLOOR + GRID_SPAN * clamp01(intensity)) }} />
   );
   // Name the grid with its size so assistive tech hears the scope of the data.
   const name = `${label ?? "Heatmap"}, ${cells.length} cells`;
@@ -112,10 +123,10 @@ function GridHeatmap({ cells, label, hideLegend, testID, style }: HeatmapProps &
     <View testID={testID} style={style} {...(hideLegend ? img : {})}>
       <View {...(hideLegend ? {} : img)} style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>{cells.map((c, i) => cell(c.value, 18, i))}</View>
       {hideLegend ? null : (
-        <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Less</Text>
-          {[0.2, 0.4, 0.6, 0.8, 1].map((v, i) => cell(v, 12, 100 + i))}
-          <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>More</Text>
+        <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 4 }}>
+          <Text style={legendText(tokens)}>Less</Text>
+          {[0.02, 0.26, 0.55, 0.85, 1].map((v, i) => cell(v, CAL_CELL, 100 + i))}
+          <Text style={legendText(tokens)}>More</Text>
         </View>
       )}
     </View>
@@ -126,15 +137,12 @@ function GridHeatmap({ cells, label, hideLegend, testID, style }: HeatmapProps &
 // four climbing levels, matching the cells' bucketing.
 function HeatmapLevelLegend({ tokens }: { tokens: ColorTokens }) {
   return (
-    <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 6 }}>
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Less</Text>
+    <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 4 }}>
+      <Text style={legendText(tokens)}>Less</Text>
       {[0, 1, 2, 3, 4].map((lvl) => (
-        <View
-          key={lvl}
-          style={{ width: 11, height: 11, borderRadius: platformShape.web.cell, backgroundColor: levelFill(tokens, lvl), borderWidth: 1, borderColor: lvl === 0 ? tokens.border : "transparent" }}
-        />
+        <View key={lvl} style={{ width: CAL_CELL, height: CAL_CELL, borderRadius: platformShape.web.heatCell, backgroundColor: levelFill(tokens, lvl) }} />
       ))}
-      <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>More</Text>
+      <Text style={legendText(tokens)}>More</Text>
     </View>
   );
 }
@@ -154,15 +162,15 @@ function HeatmapLevelLegend({ tokens }: { tokens: ColorTokens }) {
 // reads that name). It takes no role or name of its own, which would only repeat the
 // image's (and a region would add a landmark).
 const CAL_CELL = 11;
-const CAL_GAP = 3;
+const CAL_GAP = 2;
 const CAL_PITCH = CAL_CELL + CAL_GAP;
 const CAL_ROWS = 7;
 const CAL_GUTTER = 32; // weekday-label column, wide enough for "Wed" at 10px
 const CAL_MONTH_H = 15; // month-label row
 // The calendar's axis labels (the month row, the weekday gutter) and the inspection
 // flag's second line.
-const CAL_MONTH_TYPE = { fontSize: 10, lineHeight: CAL_MONTH_H };
-const CAL_WEEKDAY_TYPE = { fontSize: 10, lineHeight: 11 };
+const CAL_MONTH_TYPE = { fontFamily: MONO_FONT, fontSize: 10, lineHeight: CAL_MONTH_H };
+const CAL_WEEKDAY_TYPE = { fontFamily: MONO_FONT, fontSize: 10, lineHeight: 11 };
 const FLAG_DETAIL_TYPE = { fontSize: 11, lineHeight: 15 };
 
 function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: HeatmapProps & { cells: HeatmapCell[] }) {
@@ -229,7 +237,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
             <View style={{ height: CAL_MONTH_H, marginLeft: CAL_GUTTER, width: gridW }}>
               {monthLabels.map((m, c) =>
                 m ? (
-                  <Text key={c} numberOfLines={1} style={{ position: "absolute", left: c * CAL_PITCH, top: 0, ...CAL_MONTH_TYPE, color: tokens["muted-foreground"] }}>
+                  <Text key={c} numberOfLines={1} style={{ position: "absolute", left: c * CAL_PITCH, top: 0, ...CAL_MONTH_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>
                     {m}
                   </Text>
                 ) : null,
@@ -241,7 +249,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
             <View style={{ width: CAL_GUTTER, gap: CAL_GAP, paddingRight: 4 }}>
               {HEATMAP_WEEKDAYS.map((wd, r) => (
                 <View key={r} style={{ height: CAL_CELL, justifyContent: "center" }}>
-                  {wd ? <Text numberOfLines={1} style={{ ...CAL_WEEKDAY_TYPE, textAlign: "right", color: tokens["muted-foreground"] }}>{wd}</Text> : null}
+                  {wd ? <Text numberOfLines={1} style={{ ...CAL_WEEKDAY_TYPE, textAlign: "right", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>{wd}</Text> : null}
                 </View>
               ))}
             </View>
@@ -267,10 +275,10 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
                           style={{
                             width: CAL_CELL,
                             height: CAL_CELL,
-                            borderRadius: platformShape.web.cell,
+                            borderRadius: platformShape.web.heatCell,
                             backgroundColor: levelFill(tokens, lvl),
                             borderWidth: 1,
-                            borderColor: isActive ? tokens.foreground : lvl === 0 ? tokens.border : "transparent",
+                            borderColor: isActive ? tokens.foreground : "transparent",
                           }}
                         />
                       );

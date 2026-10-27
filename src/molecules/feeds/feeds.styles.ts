@@ -2,27 +2,25 @@ import { tabularNums } from "../../style/numerals.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, surfaceRipple, shape } from "../../style/index.js";
 import { type FeedSkin } from "./feeds.shared.js";
+import { MONO_FONT } from "../../style/mono.js";
 
-// Co-located Feed skins, one per platform. Feed is a "Light" platform treatment:
-// ONE structure (a card surface framing connector-node rows or avatar rows, with
-// a muted actor/action line plus a relative timestamp) shared across every OS,
-// driven by the brand tokens (passed in from useTheme so the surface, node fill,
-// and divider follow light/dark). Feed uses one static content frame in glass
-// mode and the opaque tokens.card fill for its solid fallback; rows inherit
-// the shared frame. Only the small native touches shift per OS:
-//   Web: a card at the card corner with a 1px `border`, no shadow; rows pressed dim
-//     to 0.7 opacity (the kit's content default).
-//   iOS (HIG / SF conventions): a card at the iOS card corner, an extra hair of row
-//     breathing room, SF-style tightened tracking on the labels, and an opacity dim
-//     (~0.8) on press, matching the iOS list-row highlight. No connector/avatar structure changes (iOS composes
-//     feeds from plain lists, so the kit keeps its structure and applies only
-//     iOS conventions).
-//   Android (Material 3): the M3 medium-shape corner (the Android card corner, as M3
-//     cards and the kit's own Android Card atom), a flat surface (no shadow: M3
-//     cards are flat unless elevation is specified; the kit keeps the 1px
-//     hairline so the card stays legible on either theme), M3 type tracking
-//     (body-medium +0.25 action, body-small +0.4 timestamp), and a brand
-//     state-layer android_ripple on pressable rows instead of an opacity dim.
+// Co-located Feed skins, one per platform. Feed takes the Canvas v4 hand-off's feed
+// (`K.def('feeds')` in tools/v4/handoff/cv-kit-data.js, with its code-driven form in
+// cv-kit-code3.js `O('feeds')`) inside the kit's card: ONE structure (a card surface
+// framing connector-node rows or avatar rows, an actor/action line over a timestamp)
+// shared across every OS. Feed uses one static content frame in glass mode and the
+// opaque tokens.card fill for its solid fallback; rows inherit the shared frame.
+// Neither iOS nor Android ships an activity feed (PLATFORM-REFERENCES.md), so the native
+// skins draw the web parts in the platform's face, with the platform's press feedback
+// and minimum row height:
+//
+//   The card: the card corner on a 1px `border` hairline over the `card` fill, 24 in
+//     (20 compact). A row leads with its node: the 28px avatar on the avatar lead, an
+//     item's glyph on a 28px `secondary` disc in the muted ink, otherwise a 10px dot
+//     (the first in the accent); a 1px `field-border` line runs down from the node to
+//     the next row, 16 below (10 compact). The line is 400 13/19: the actor 600 in the
+//     foreground, the action in the muted ink; the timestamp 400 12 in the subtle ink,
+//     2 under it. Pressed rows dim to 0.7 on the web.
 
 // --- shared layout fragments (identical across platforms) -------------------
 
@@ -37,23 +35,11 @@ export const connectorContentColumn: ViewStyle = {
   paddingTop: 2,
 };
 
-// Avatar row base (flex-row items-start gap-3); per-density padding comes from the skin.
-export const avatarRow: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 12 };
-
 // Connector row base (relative flex-row gap-3).
 export const connectorRow: ViewStyle = { position: "relative", flexDirection: "row", gap: 12 };
 
-// The node's actor-less dot (h-1.5 w-1.5 rounded-full bg-muted-foreground).
-export function nodeDot(tokens: ColorTokens): ViewStyle {
-  return { height: 6, width: 6, borderRadius: 9999, backgroundColor: tokens["muted-foreground"] };
-}
-
-// ---------- Web: the bordered feed card ----------
-// A card at the card corner with a 1px `border` and no shadow; a
-// 14pt/20 line with a 500-weight actor and muted action; a 12pt/16 muted
-// timestamp; a 28px bordered connector node carrying 12pt/500 initials; a 1px
-// connector line under the node center; hairline-ruled avatar rows. Pressable
-// rows dim to 0.7 on press (the kit content default).
+// ---------- Web ----------
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
 export const webSkin: FeedSkin = {
   cardSurface: (t) => ({
     width: "100%",
@@ -63,14 +49,11 @@ export const webSkin: FeedSkin = {
     backgroundColor: t.card,
     overflow: "hidden",
   }),
-  // Connector surface padding by density: compact (p-5) vs default (p-6).
+  // Connector surface padding by density.
   connectorPad: (compact) => ({ padding: compact ? 20 : 24 }),
-  // Inter-row vertical rhythm by density: compact (pb-4) vs default (pb-6).
-  connectorRowGap: (compact) => ({ paddingBottom: compact ? 16 : 24 }),
-  // Row padding by density: compact (px-5 py-3) vs default (px-5 py-4).
-  avatarRowPad: (compact) => ({ paddingHorizontal: 20, paddingVertical: compact ? 12 : 16 }),
-  avatarDivider: (t) => ({ borderBottomWidth: 1, borderColor: t.border }),
-  // The leading connector node: a 28px bordered circle on the connector line.
+  // Inter-row vertical rhythm by density (the hand-off's 16 / 10).
+  connectorRowGap: (compact) => ({ paddingBottom: compact ? 10 : 16 }),
+  // The glyph node: a 28px disc on the secondary fill.
   node: (t) => ({
     height: 28,
     width: 28,
@@ -78,110 +61,45 @@ export const webSkin: FeedSkin = {
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 9999,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.card,
+    backgroundColor: t.secondary,
   }),
-  // The connector line under the node center (node 28 wide -> 14 center, -0.5 -> 13).
-  connectorLine: (t) => ({ position: "absolute", bottom: 0, start: 13, top: 28, width: 1, backgroundColor: t.border }),
-  nodeInitials: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] }),
-  lineText: { fontSize: 14, lineHeight: 20 },
-  actorLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
-  actionLabel: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
-  timeLabel: (t) => ({ marginTop: 2, fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  // A glyph-less event's node: a 10px dot centered in the 28 column, beside the first
+  // line, the first in the accent and the rest on the raised fill. The hand-off rings it
+  // in the page colour to part it from the line; here the line starts below the dot, and
+  // a ring in the page colour would show as a disc on the card.
+  dot: (t, first) => ({
+    width: 10,
+    height: 10,
+    marginVertical: 5,
+    marginHorizontal: 9,
+    flexShrink: 0,
+    borderRadius: 9999,
+    backgroundColor: first ? t.primary : t["surface-raised"] ?? t.secondary,
+  }),
+  // The connector line under the node center (node 28 wide -> 14 center, -0.5 -> 13),
+  // starting 2 under the disc, in the field boundary.
+  connectorLine: (t) => ({ position: "absolute", bottom: 0, start: 13, top: 30, width: 1, backgroundColor: t["field-border"] ?? t.border }),
+  lineText: { fontSize: 13, lineHeight: 19 },
+  actorLabel: (t) => ({ fontSize: 13, lineHeight: 19, fontWeight: "600", color: t.foreground }),
+  actionLabel: (t) => ({ fontSize: 13, lineHeight: 19, color: t["muted-foreground"] }),
+  timeLabel: (t) => ({ marginTop: 2, fontSize: 12, lineHeight: 16, color: subtle(t) }),
   pressedOpacity: 0.7,
   ripple: null,
   // Web pointer input has no finger-target minimum; keep the row layout as-is.
   minTarget: 0,
 };
 
-// ---------- iOS (HIG / SF conventions): softer card, tighter SF tracking ----------
-// iOS has no activity-feed control, so the kit keeps its structure and applies
-// only iOS conventions: the iOS card corner (12 radius), a hair more row
-// breathing room (default avatar py 17 / connector p 26), SF-style negative
-// tracking on the labels, and the iOS list-row highlight (opacity dim ~0.8) on
-// press. The brand survives; nothing here substitutes an iOS system color.
+// ---------- iOS: the web parts in SF Pro, the list-row dim, 44pt rows ----------
 export const iosSkin: FeedSkin = {
-  cardSurface: (t) => ({
-    width: "100%",
-    borderRadius: shape.ios.card,
-    // Apple's smooth/continuous (superellipse) corners; RN iOS-only, no-op elsewhere.
-    borderCurve: "continuous",
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.card,
-    overflow: "hidden",
-  }),
-  connectorPad: (compact) => ({ padding: compact ? 22 : 26 }),
-  connectorRowGap: (compact) => ({ paddingBottom: compact ? 18 : 26 }),
-  avatarRowPad: (compact) => ({ paddingHorizontal: 20, paddingVertical: compact ? 13 : 17 }),
-  avatarDivider: (t) => ({ borderBottomWidth: 1, borderColor: t.border }),
-  node: (t) => ({
-    height: 28,
-    width: 28,
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 9999,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.card,
-  }),
-  connectorLine: (t) => ({ position: "absolute", bottom: 0, start: 13, top: 28, width: 1, backgroundColor: t.border }),
-  // SF Pro Text tracking: 12pt = 0 (initials), 15pt = -0.24 (line), 13pt = -0.08 (time).
-  nodeInitials: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", letterSpacing: 0, color: t["muted-foreground"] }),
-  lineText: { fontSize: 15, lineHeight: 20, letterSpacing: -0.24 },
-  actorLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t.foreground }),
-  actionLabel: (t) => ({ fontSize: 15, lineHeight: 20, letterSpacing: -0.24, color: t["muted-foreground"] }),
-  timeLabel: (t) => ({ marginTop: 2, fontSize: 13, lineHeight: 16, letterSpacing: -0.08, color: t["muted-foreground"] }),
+  ...webSkin,
   pressedOpacity: 0.8,
-  ripple: null,
   // HIG minimum interactive target (floors the short final connector row up to 44pt).
   minTarget: 44,
 };
 
-// ---------- Android (Material 3): larger corner, flat surface, ripple ----------
-// M3 has no activity-feed component (feeds compose from lists/cards), so the kit
-// keeps its structure and applies M3 surface conventions: the M3 medium-shape
-// corner (12 radius, matching M3 cards and the kit's own Android Card atom), a
-// flat surface (no shadow; M3 cards are flat unless elevation is specified — the
-// kit keeps the 1px hairline so the card is legible on either theme), M3 body
-// type tracking (body-medium +0.25 action, body-small +0.4 timestamp), and a
-// brand state-layer android_ripple on pressable rows in place of the opacity
-// dim. The brand survives; the ripple ink is the foreground at low alpha.
+// ---------- Android: the web parts in Roboto, the ripple, 48dp rows ----------
 export const androidSkin: FeedSkin = {
-  cardSurface: (t) => ({
-    width: "100%",
-    // M3 medium shape (12dp), matching M3 cards and the kit's own Android Card atom.
-    borderRadius: shape.android.card,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.card,
-    overflow: "hidden",
-  }),
-  connectorPad: (compact) => ({ padding: compact ? 20 : 24 }),
-  connectorRowGap: (compact) => ({ paddingBottom: compact ? 16 : 24 }),
-  avatarRowPad: (compact) => ({ paddingHorizontal: 20, paddingVertical: compact ? 12 : 16 }),
-  avatarDivider: (t) => ({ borderBottomWidth: 1, borderColor: t.border }),
-  node: (t) => ({
-    height: 28,
-    width: 28,
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 9999,
-    borderWidth: 1,
-    borderColor: t.border,
-    backgroundColor: t.card,
-  }),
-  connectorLine: (t) => ({ position: "absolute", bottom: 0, start: 13, top: 28, width: 1, backgroundColor: t.border }),
-  nodeInitials: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.1, color: t["muted-foreground"] }),
-  // actorLabel = M3 title-small (14/20/500/+0.1); actionLabel = body-medium
-  // (14/20/400/+0.25); timeLabel = body-small (12/16/400/+0.4).
-  lineText: { fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },
-  actorLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
-  actionLabel: (t) => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: t["muted-foreground"] }),
-  timeLabel: (t) => ({ marginTop: 2, fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
+  ...webSkin,
   pressedOpacity: null,
   ripple: (t) => surfaceRipple(t),
   // M3 minimum touch target (floors the short final connector row up to 48dp).
@@ -189,13 +107,15 @@ export const androidSkin: FeedSkin = {
 };
 
 
-// Argus activity and trace rows are unframed content in their owning panel.
+// The activity and trace rows are unframed content in their owning panel: the hand-off's
+// 400 13/19 line, its time the 400 12 mono caption in the subtle ink, a trace's kind the
+// 11px mono eyebrow.
 export const activityRow = (t: ColorTokens): ViewStyle => ({ flexDirection: "row", gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: t.border, alignItems: "flex-start" });
-export const activityTime = (t: ColorTokens): TextStyle => ({ fontSize: 10.5, fontWeight: "700", lineHeight: 13.65, color: t["muted-foreground"], width: 30, paddingTop: 2 });
-export const activityText = (t: ColorTokens): TextStyle => ({ flex: 1, fontSize: 12, fontWeight: "500", lineHeight: 17.4, color: t.foreground });
+export const activityTime = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "400", lineHeight: 19, color: subtle(t), ...tabularNums(), width: 44 });
+export const activityText = (t: ColorTokens): TextStyle => ({ flex: 1, fontSize: 13, fontWeight: "400", lineHeight: 19, color: t.foreground });
 export const traceRow = (time?: string): ViewStyle => ({ flexDirection: "row", gap: 12, alignItems: "flex-start", paddingVertical: time ? 5 : 6 });
-export const traceTime = (t: ColorTokens): TextStyle => ({ fontSize: 11, fontWeight: "700", lineHeight: 16.5, color: t["muted-foreground"], ...tabularNums(), width: 40, paddingTop: 1 });
+export const traceTime = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "400", lineHeight: 19, color: subtle(t), ...tabularNums(), width: 44 });
 export const traceMarkerSlot = (hasTime: boolean): ViewStyle => ({ width: hasTime ? 12 : 14, alignItems: "flex-start" });
 export const traceMarker = (color: string, halo?: string): ViewStyle => ({ width: 10, height: 10, borderRadius: 9999, marginTop: 4, backgroundColor: color, boxShadow: halo ? `0 0 0 3px ${halo}` : undefined });
-export const traceText = (t: ColorTokens): TextStyle => ({ flex: 1, fontSize: 12.5, fontWeight: "500", lineHeight: 18.75, color: t.foreground });
-export const traceKind = (t: ColorTokens): TextStyle => ({ fontSize: 9.5, fontWeight: "700", lineHeight: 14.25, textTransform: "uppercase", letterSpacing: 1.33, color: t["muted-foreground"] });
+export const traceText = (t: ColorTokens): TextStyle => ({ flex: 1, fontSize: 13, fontWeight: "400", lineHeight: 19, color: t.foreground });
+export const traceKind = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 11, fontWeight: "500", lineHeight: 19, textTransform: "uppercase", letterSpacing: 0.88, color: subtle(t) });

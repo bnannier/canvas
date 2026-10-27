@@ -54,6 +54,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["header","heading","progressbar","text"],"states":["busy"],"aria":["aria-busy","aria-hidden","aria-label","aria-level","aria-live"],"touchTarget":[]},
-  tokens: ["action-foreground","border","card","foreground","muted","muted-foreground","primary-foreground","ring"],
+  tokens: ["action-foreground","border","card","field-border","foreground","muted-foreground","primary-foreground","primary-soft","ring","secondary","subtle-foreground","surface-sunken"],
   related: ["typography","icon","empty-state","row-column","button","card","stats","data-table"],
 };

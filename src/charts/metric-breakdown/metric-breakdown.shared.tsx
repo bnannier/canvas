@@ -7,12 +7,13 @@ import { formatCompact } from "../shared/chart-math.js";
 import { BreakdownRows, type BreakdownRow } from "../shared/breakdown-rows.js";
 import { Sparkline } from "../sparkline/sparkline.js";
 import { Chip as WebChip } from "../../atoms/chip/chip.js";
+import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
 
 // Shared MetricBreakdown shell. The decomposed-metric dashboard card: a
-// preformatted headline value with its caption, an optional secondary rate
-// readout top right, an optional trend strip (the kit Sparkline's line
-// variant) with a latest-value caption, per-category breakdown rows with
-// proportional share bars, and a chip footer for recent notable codes. Every
+// preformatted headline value under its caption, an optional secondary rate
+// readout under it, an optional trend strip beside them (the kit Sparkline's
+// bar strip) with a latest-value caption, per-category breakdown rows with
+// proportional share meters, and a chip footer for recent notable codes. Every
 // section is independently optional; the card renders exactly what it is
 // given.
 //
@@ -49,18 +50,18 @@ export interface MetricBreakdownChip {
 export interface MetricBreakdownProps {
   /** The headline figure, preformatted (e.g. "3,771"). */
   value: string;
-  /** Small caption under the headline (e.g. "Tokens issued"). */
+  /** Small caption over the headline (e.g. "Tokens issued"). */
   label: string;
-  /** Secondary metric, top right (e.g. "1.39%"). */
+  /** Secondary metric, under the headline (e.g. "1.39%"). */
   rate?: string;
-  /** Caption under the rate (e.g. "Error rate"). */
+  /** Caption after the rate (e.g. "Error rate"). */
   rateLabel?: string;
   // Rate tone (slot-scoped; pick one; default muted). Precedence:
   // rateSuccess > rateWarning > rateDestructive (first match wins).
   rateSuccess?: boolean;
   rateWarning?: boolean;
   rateDestructive?: boolean;
-  /** Trend series rendered as a Sparkline line strip under the header.
+  /** Trend series rendered as a Sparkline bar strip beside the headline.
    *  Needs at least two points to draw. */
   spark?: number[];
   /** Unit suffix on the latest-value caption (e.g. "req/s"). */
@@ -94,19 +95,20 @@ export function rateColor(tokens: ColorTokens, p: MetricBreakdownProps): string 
 }
 
 
-// The uppercase caption under the headline and the rate (11/14 muted).
+// The v4 hand-off's card (`K.def('metric-breakdown')`): the label (500 12 px, subtle) over
+// the value (the display face, 600 32 px at a 1.1 line, -0.02em) over the rate (500 12 px
+// mono), the trend a 120 px bar strip beside them, the share rows under, 12 px apart (8
+// compact).
+const VALUE_SIZE = 32;
+const SPARK_WIDTH = 120;
 // The trend's trailing value tag: a value annotation.
 const SPARK_TAG_TYPE = { fontSize: 11, lineHeight: 14, fontWeight: "500" as const };
 
+// The label over the headline and the rate's caption: 500 12 px in the subtle ink.
 function captionStyle(tokens: ColorTokens) {
-  return {
-    fontSize: 11,
-    lineHeight: 14,
-    textTransform: "uppercase" as const,
-    letterSpacing: 0.5,
-    color: tokens["muted-foreground"],
-  };
+  return { fontSize: 12, lineHeight: 16, fontWeight: "500" as const, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }
+
 
 /**
  * The components a MetricBreakdown draws with that look different per platform. The web
@@ -147,7 +149,7 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
     // The latest-value caption inherits the rate tone when one is set.
     const tagColor = props.rateSuccess || props.rateWarning || props.rateDestructive ? rateColor(tokens, props) : tokens["muted-foreground"];
     const last = spark != null ? spark[spark.length - 1] : 0;
-    const sectionGap = compact ? 10 : 14;
+    const sectionGap = compact ? s.CHART_LOOK.gap.compact : s.CHART_LOOK.gap.default;
 
     return (
       <View
@@ -164,43 +166,53 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
         {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
-        {/* Header: headline + caption left, rate + caption right. */}
+        {/* Header: the label, the headline and the rate stacked at the left, the trend
+            strip at the right on their foot. */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
-          <View style={{ flexShrink: 1, gap: 2 }}>
-            <Text style={{ fontSize: 22, lineHeight: 26, fontWeight: "600", letterSpacing: -0.4, color: tokens["card-foreground"], ...tabularNums() }}>
+          <View style={{ flexShrink: 1 }}>
+            <Text numberOfLines={1} style={captionStyle(tokens)}>{label}</Text>
+            <Text
+              style={{
+                fontFamily: DISPLAY_FONT,
+                fontSize: VALUE_SIZE,
+                lineHeight: Math.round(VALUE_SIZE * 1.1),
+                fontWeight: "600",
+                letterSpacing: -0.02 * VALUE_SIZE,
+                color: tokens["card-foreground"],
+                ...tabularNums(),
+              }}
+            >
               {value}
             </Text>
-            <Text numberOfLines={1} style={captionStyle(tokens)}>{label}</Text>
+            {hasRate ? (
+              <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: 6 }}>
+                {rate != null && rate !== "" ? (
+                  <Text style={{ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: rateColor(tokens, props), ...tabularNums() }}>
+                    {rate}
+                  </Text>
+                ) : null}
+                {rateLabel != null && rateLabel !== "" ? <Text numberOfLines={1} style={captionStyle(tokens)}>{rateLabel}</Text> : null}
+              </View>
+            ) : null}
           </View>
-          {hasRate ? (
-            <View style={{ alignItems: "flex-end", gap: 2 }}>
-              {rate != null && rate !== "" ? (
-                <Text style={{ fontSize: 13, lineHeight: 18, fontWeight: "500", color: rateColor(tokens, props), ...tabularNums() }}>
-                  {rate}
+          {/* The trend: the latest-value tag over the bar strip. The tag is
+              presentational; the strip's name carries the data. */}
+          {spark != null ? (
+            <View style={{ width: SPARK_WIDTH, flexShrink: 0 }}>
+              <View
+                aria-hidden
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={{ alignSelf: "flex-end" }}
+              >
+                <Text style={{ ...SPARK_TAG_TYPE, color: tagColor, ...tabularNums() }}>
+                  {sparkUnit != null && sparkUnit !== "" ? `${formatValue(last)} ${sparkUnit}` : formatValue(last)}
                 </Text>
-              ) : null}
-              {rateLabel != null && rateLabel !== "" ? <Text numberOfLines={1} style={captionStyle(tokens)}>{rateLabel}</Text> : null}
+              </View>
+              <Sparkline values={spark} tall={!compact} accessibilityLabel={`${label} trend`} />
             </View>
           ) : null}
         </View>
-
-        {/* Reserve a reading row so the caption needs no opaque knockout and
-            never hides a trend point, including in plain compositions. */}
-        {spark != null ? (
-          <View>
-            <View
-              aria-hidden
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              style={{ alignSelf: "flex-end", paddingHorizontal: 4 }}
-            >
-              <Text style={{ ...SPARK_TAG_TYPE, color: tagColor, ...tabularNums() }}>
-                {sparkUnit != null && sparkUnit !== "" ? `${formatValue(last)} ${sparkUnit}` : formatValue(last)}
-              </Text>
-            </View>
-            <Sparkline line values={spark} compact={compact} accessibilityLabel={`${label} trend`} />
-          </View>
-        ) : null}
 
         {/* Per-category share rows (share of the visible rows' sum). */}
         {breakdown != null && breakdown.length > 0 ? (

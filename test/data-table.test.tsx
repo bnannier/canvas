@@ -615,25 +615,28 @@ describe("DataTable loading and empty states", () => {
   });
 });
 
-// The web header band: a soft band at its own 10px corner (the web row's `tableHeader`)
-// when the table stands alone, squared to the frame when the table is framed (its own
-// `bordered` outline, or an `attached` parent frame), so no fill peeks out under the
-// band's bottom corners inside a clipped panel.
-describe("DataTable header band framing (web)", () => {
+// The web table (the v4 hand-off's): a standalone table draws its own frame at the
+// table-frame corner, `bordered` draws it on the field boundary, and `attached` drops it
+// for the frame its parent draws. The header band is square in every case: the frame
+// clips its corners.
+describe("DataTable frame (web)", () => {
   const band = (container: HTMLElement) => container.querySelector('[role="row"]') as HTMLElement;
+  const wrap = (container: HTMLElement) => container.firstElementChild as HTMLElement;
 
-  it("floats the band with rounded corners when the table stands alone", () => {
+  it("frames a standalone table on the border hairline at the table-frame corner", () => {
     const { container } = ui(<DataTable columns={COLUMNS} rows={ROWS} />);
-    expect(band(container).style.borderRadius).toBe(`${platformShape.web.tableHeader}px`);
+    expect(wrap(container).style.borderRadius).toBe(`${platformShape.web.tableFrame}px`);
+    expect(wrap(container).style.borderWidth).toBe("1px");
+    expect(band(container).style.borderRadius).toBe("");
   });
 
-  it("`attached` squares the band to a frame the parent draws", () => {
+  it("`attached` drops the frame for one the parent draws", () => {
     const { container } = ui(<DataTable attached columns={COLUMNS} rows={ROWS} />);
-    expect(band(container).style.borderRadius).toBe("0px");
+    expect(wrap(container).style.borderWidth).toBe("");
   });
 
-  it("`bordered` squares the band to the table's own outline", () => {
+  it("`bordered` draws the frame on the field boundary", () => {
     const { container } = ui(<DataTable bordered columns={COLUMNS} rows={ROWS} />);
-    expect(band(container).style.borderRadius).toBe("0px");
+    expect(wrap(container).style.borderRadius).toBe(`${platformShape.web.tableFrame}px`);
   });
 });

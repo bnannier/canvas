@@ -1,5 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { Line, Rect } from "react-native-svg";
+import { Rect } from "react-native-svg";
 import { View, Text, useControllableState, statusColors, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
@@ -143,7 +143,8 @@ export function createWaterfallChart(skin: ChartSkin) {
             {(layout) => {
               const band = layout.band;
               if (!band) return null;
-              const barW = Math.max(4, band.bandWidth * 0.6);
+              // The hand-off's bars: 40 units of a 64-unit step, the deltas washed at .85.
+              const barW = Math.max(4, band.step * 0.625);
               return (
                 <>
                   {bars.map((bar, i) => {
@@ -160,25 +161,8 @@ export function createWaterfallChart(skin: ChartSkin) {
                         height={Math.max(1, yBot - yTop)}
                         rx={Math.min(platformShape.web.mark, barW / 4)}
                         fill={barFill(bar.kind)}
+                        fillOpacity={bar.kind === "total" ? 1 : 0.85}
                         opacity={dim}
-                      />
-                    );
-                  })}
-                  {/* Hairline connectors from each bar's end to the next start. */}
-                  {bars.map((bar, i) => {
-                    if (i === bars.length - 1) return null;
-                    const next = bars[i + 1];
-                    const yEnd = layout.y(bar.end);
-                    const from = next.kind === "total" ? yEnd : layout.y(next.start);
-                    return (
-                      <Line
-                        key={`c${i}`}
-                        x1={band.center(i) + barW / 2}
-                        y1={yEnd}
-                        x2={band.center(i + 1) - barW / 2}
-                        y2={from}
-                        stroke={tokens.border}
-                        strokeWidth={1}
                       />
                     );
                   })}

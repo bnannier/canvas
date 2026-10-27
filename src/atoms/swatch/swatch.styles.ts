@@ -18,15 +18,17 @@ export interface SwatchSkin {
   radius: Record<SwatchSize, number>;
   /** Extra shape refinement on the block (iOS: the continuous superellipse corner curve). */
   shape: ViewStyle;
-  /** Gap between the block and its label column. */
+  /** Gap between the block and its label column (the label under the block). */
   gap: number;
+  /** Gap between the block and its label column when `inline` puts the label beside it. */
+  inlineGap: number;
   /** Gap between the label column's lines (a tight name/value/detail lockup). */
   lineGap: number;
-  /** The name line's type (weight/tracking); size, line height, and color come from the shell. */
+  /** The name line's type; color comes from the shell. */
   name: TextStyle;
-  /** The primary mono value line's type; size, line height, family, and color come from the shell. */
+  /** The primary mono value line's type; family and color come from the shell. */
   value: TextStyle;
-  /** The secondary mono detail line's type; size, line height, family, and color come from the shell. */
+  /** The secondary mono detail line's type; family and color come from the shell. */
   detail: TextStyle;
   /** The palette picker's disc edge, in px. */
   picker: number;
@@ -38,24 +40,29 @@ export interface SwatchSkin {
 }
 
 // Platform-neutral metrics, shared by all three skins (the Emblem precedent: only a
-// real per-OS difference is written out per skin).
-const box: Record<SwatchSize, number> = { small: 40, default: 56, large: 72 };
+// real per-OS difference is written out per skin). The hand-off's Swatch renderer
+// (`K.def('swatch')` in tools/v4/handoff/cv-kit-controls.js): a 32, 48 or 72 px chip at
+// the tile corner (`shape.web.tile`), the label 8 px under it (10 px beside it when inline), the name a
+// 500 13 px line and the value lines 400 11 px mono in the subtle ink, set flush (each line
+// at its face's normal line box, rounded up to a whole pixel).
+const box: Record<SwatchSize, number> = { small: 32, default: 48, large: 72 };
 const gap = 8;
-const lineGap = 2;
+const inlineGap = 10;
+const lineGap = 0;
 
-// Web: Dark Factory's tile corner at every size, the continuous corner curve where the
-// platform draws one (iOS; ignored elsewhere), and its label weights, a 700 name over a
-// 500 value and a 400 detail. A color sample has no platform control, so the native skins
-// are the web skin.
+// Web: the hand-off's chip at every size, the continuous corner curve where the platform
+// draws one (iOS; ignored elsewhere). A color sample has no platform control, so the
+// native skins are the web skin.
 export const webSkin: SwatchSkin = {
   box,
   radius: { small: shape.web.tile, default: shape.web.tile, large: shape.web.tile },
   shape: { borderCurve: "continuous" },
   gap,
+  inlineGap,
   lineGap,
-  name: { fontWeight: "700" },
-  value: { fontWeight: "500" },
-  detail: { fontWeight: "400" },
+  name: { fontSize: 13, lineHeight: 17, fontWeight: "500" },
+  value: { fontSize: 11, lineHeight: 15, fontWeight: "400" },
+  detail: { fontSize: 11, lineHeight: 15, fontWeight: "400" },
   // The hand-off docs navbar's hue swatch (Controls.dc.html): a 16 px disc that grows to
   // 1.25 under the pointer on a .4 s overshooting curve. Local to this skin rather than in
   // the HOVER table: no other control grows on hover, and the value is the hand-off's.

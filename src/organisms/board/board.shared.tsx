@@ -15,7 +15,6 @@ import {
   GlassSurface,
   withInnerFill,
 } from "../../style/index.js";
-import { Card as WebCard } from "../../molecules/card/card.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { RowMenu as WebRowMenu } from "../row-menu/row-menu.js";
 import {
@@ -25,26 +24,25 @@ import {
   DragHandle as WebDragHandle,
 } from "../drag-drop/drag-drop.js";
 import { useDragActive, type DropEvent, type DragDropProviderProps, type DropZoneProps, type DraggableProps, type DragHandleProps } from "../drag-drop/drag-drop.shared.js";
-import { type CardProps } from "../../molecules/card/card.shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type RowMenuProps } from "../row-menu/row-menu.shared.js";
 import { type RowMenuItem } from "../row-menu/row-menu.styles.js";
 import { type BoardColumn, type BoardItem, type BoardMove } from "./board.types.js";
 import { boardMoveFor, applyBoardMove } from "./board.logic.js";
-import { type BoardSkin, plainLane, plainColumn, plainHeader, plainLabel, plainEmpty, plainEmptyLabel } from "./board.styles.js";
+import { type BoardSkin, plainLane, plainColumn } from "./board.styles.js";
 import { SeamLimitProvider, splitSeam, type SeamLimit } from "../../style/touch-seam.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 
 // Shared Board shell. A data-driven kanban board: a horizontal ScrollView of column lanes,
-// each lane a DropZone listing its cards in array order, each card a Draggable kit Card with
-// a DragHandle grip, an optional trailing badge, an optional kebab RowMenu, a muted 2-line
+// each lane a DropZone listing its cards in array order, each card a Draggable lane card (the
+// skin's surface) with a DragHandle grip, an optional trailing badge, an optional kebab RowMenu, a 2-line
 // description, and a free-form `chips` slot. The whole drag interaction (pointer ghost,
 // insertion indicator, keyboard grab/move/drop, screen-reader announcements) comes from the
 // kit's own DragDrop family; Board adds only the kanban structure and the move bookkeeping.
 //
 // Board is a "Light" treatment: this shell owns the structure and logic once; a platform file
 // supplies its skin (lane/column shape and density, type scale, press feedback) plus the
-// platform-styled composed parts (Card, Badge, RowMenu, and the DnD family) and calls
+// platform-styled composed parts (Badge, RowMenu, and the DnD family) and calls
 // createBoard. The literal per-OS part imports exist for the WEB docs 3-up, where a barrel
 // import would resolve the web builds (the StackedList precedent).
 //
@@ -120,7 +118,6 @@ export interface BoardParts {
   DropZone: ComponentType<DropZoneProps>;
   Draggable: ComponentType<DraggableProps<BoardItem>>;
   DragHandle: ComponentType<DragHandleProps>;
-  Card: ComponentType<CardProps>;
   Badge: ComponentType<BadgeProps>;
   RowMenu: ComponentType<RowMenuProps>;
 }
@@ -130,7 +127,6 @@ const WEB_PARTS: BoardParts = {
   DropZone: WebDropZone,
   Draggable: WebDraggable,
   DragHandle: WebDragHandle,
-  Card: WebCard,
   Badge: WebBadge,
   RowMenu: WebRowMenu,
 };
@@ -142,7 +138,7 @@ const BODY: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
 /** Build a Board component from a platform skin and its platform-styled parts. */
 export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
-  const { DragDropProvider, DropZone, Draggable, DragHandle, Card, Badge, RowMenu } = parts;
+  const { DragDropProvider, DropZone, Draggable, DragHandle, Badge, RowMenu } = parts;
   // The grip and the menu trigger split the cluster's gap between their facing touch areas.
   // Both reach further than half of it on every platform (the grip 8 on each side, the trigger
   // to the platform minimum), so each keeps half (splitSeam).
@@ -187,7 +183,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     const renderBody = (item: BoardItem): ReactNode => {
       const content = (
         <>
-          <Text style={skin.cardTitle(tokens)}>{item.title}</Text>
+          <Text style={skin.cardTitle(tokens, compact)}>{item.title}</Text>
           {item.description != null ? (
             <Text style={skin.cardDescription(tokens)} numberOfLines={2}>
               {item.description}
@@ -224,7 +220,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       const menu = item.menu != null && item.menu.length > 0 ? item.menu : null;
       return (
         <Draggable key={item.id} id={item.id} data={item} label={item.title} disabled={disabled}>
-          <Card compact={compact}>
+          <GlassSurface layer="content" style={skin.card(tokens, compact)}>
             <View style={skin.cardRow}>
               {renderBody(item)}
               <View style={skin.trailingColumn}>
@@ -249,7 +245,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
                 {item.badge != null ? <Badge secondary>{item.badge}</Badge> : null}
               </View>
             </View>
-          </Card>
+          </GlassSurface>
         </Draggable>
       );
     };
@@ -275,11 +271,15 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
               <GlassSurface layer="content" style={skin.column(tokens, compact)}>
                 <View style={skin.columnHeader}>
                   <Text style={skin.columnLabel(tokens)}>{col.label}</Text>
-                  <Badge secondary>{col.badge ?? String(colItems.length)}</Badge>
+                  <Text style={skin.columnCount(tokens)}>{col.badge ?? String(colItems.length)}</Text>
                 </View>
                 <View style={skin.cardList(compact)}>
                   {colItems.map(renderCard)}
-                  {colItems.length === 0 ? <Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text> : null}
+                  {colItems.length === 0 ? (
+                    <View style={skin.emptySlot(tokens)}>
+                      <Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text>
+                    </View>
+                  ) : null}
                 </View>
               </GlassSurface>
             </DropZone>
@@ -315,15 +315,15 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       {columns.map((column) => {
         const cards = list.filter((item) => item.columnId === column.id);
         const content = <>
-          <View style={plainHeader}><Text style={plainLabel(tokens)}>{column.label}</Text><Badge start count secondary>{column.badge ?? String(cards.length)}</Badge></View>
+          <View style={skin.columnHeader}><Text style={skin.columnLabel(tokens)}>{column.label}</Text><Text style={skin.columnCount(tokens)}>{column.badge ?? String(cards.length)}</Text></View>
           {cards.map((item) => {
             const dragHandle = draggable ? <DragHandle label={`Move ${item.title}`} /> : null;
-            const card = renderItem ? renderItem(item, { dragHandle }) : <Card><View style={skin.cardRow}><View style={BODY}><Text>{item.title}</Text></View>{dragHandle}</View></Card>;
+            const card = renderItem ? renderItem(item, { dragHandle }) : <GlassSurface layer="content" style={skin.card(tokens, false)}><View style={skin.cardRow}><View style={BODY}><Text style={skin.cardTitle(tokens, false)}>{item.title}</Text></View>{dragHandle}</View></GlassSurface>;
             return draggable
               ? <Draggable key={item.id} id={item.id} data={item} label={item.title} disabled={disabled}>{card}</Draggable>
               : <View key={item.id}>{card}</View>;
           })}
-          {cards.length === 0 ? <View style={plainEmpty(tokens)}><Text style={plainEmptyLabel(tokens)}>{emptyLabel}</Text></View> : null}
+          {cards.length === 0 ? <View style={skin.emptySlot(tokens)}><Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text></View> : null}
         </>;
         // Stretch each target to the full lane height, including the space below
         // an empty placeholder, so a horizontal drag lands anywhere in that column.

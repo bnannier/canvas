@@ -282,12 +282,12 @@ it("bounds plain lane content to its container and retains narrow horizontal ove
   resize(1024);
   expect(row().style.width).toBe("1024px");
   resize(360);
-  expect(row().style.width).toBe("714px"); // Four 168px lanes + three 14px gaps.
+  expect(row().style.width).toBe("708px"); // Four 168px lanes + three 12px gaps.
 
   rerender(<ThemeProvider><Board plain testID="work-board" bleed={20} columns={fourColumns} items={items} /></ThemeProvider>);
-  expect(row().style.width).toBe("754px"); // Bleed pads are outside the lane minimums.
+  expect(row().style.width).toBe("748px"); // Bleed pads are outside the lane minimums.
   rerender(<ThemeProvider><Board plain testID="work-board" bleed={20} columns={columns} items={items} /></ThemeProvider>);
-  expect(row().style.width).toBe("390px");
+  expect(row().style.width).toBe("388px");
 });
 
 describe("draggable plain work lanes", () => {

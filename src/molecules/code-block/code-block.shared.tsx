@@ -28,19 +28,18 @@ import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 //
 // - Variant (pick one; default is the plain block):
 //     `terminal` > `numbered` > `inline` > plain.
-//   - plain: the muted code surface, padded, monospace, syntax-highlighted.
-//   - terminal: a dark window with a chrome bar (traffic-light dots + a label)
+//   - plain: the sunken code card, padded, monospace, syntax-highlighted.
+//   - terminal: a fixed dark window with a header row (status dots + a label)
 //     over a dark body, for shell transcripts. Lines starting with the prompt
 //     marker ("$ " by default) render as commands; when any line carries the
 //     marker, the remaining lines render as dimmed output.
 //   - numbered: the plain surface with a pinned left gutter of right-aligned
 //     line numbers (offset by `startLine`), one per line.
-//   - inline: a short, single token rendered as an inline pill (rounded bg-muted
-//     chip), for code mentioned mid-sentence. With `copy` the pill becomes the
+//   - inline: a short, single token rendered as an inline pill (a muted chip), for code mentioned mid-sentence. With `copy` the pill becomes the
 //     hand-off's import chip: a raised mono pill with a trailing copy glyph, the
 //     whole pill one copy button.
 // - Density (pick one; default is the comfortable ramp): `compact` tightens the
-//   type ramp (13/20) and padding for dense contexts such as docs panes.
+//   type ramp (12 / 1.7) and padding for dense contexts such as docs panes.
 // - Orthogonal booleans that stack: `copy` (clipboard chip), `wrap` (soft-wrap
 //   long lines instead of scrolling), `diff` (+/- line tinting), `collapsible`
 //   (fold long blocks behind an expander), `attached` (square the top edge to
@@ -444,9 +443,9 @@ export function createCodeBlock(skin: CodeBlockSkin) {
           accessibilityLabel={copied ? "Copied" : "Copy code"}
         >
           {copied ? (
-            <Icon check size={12} decorative {...(dark ? { primaryForeground: true } : { success: true })} />
+            <Icon check size={13} decorative color={skin.copyText(tokens, dark).color as string} />
           ) : (
-            <Icon copy size={12} decorative {...(dark ? { primaryForeground: true } : { muted: true })} />
+            <Icon copy size={13} decorative color={skin.copyText(tokens, dark).color as string} />
           )}
           <Text style={skin.copyText(tokens, dark)}>{copied ? "Copied" : "Copy"}</Text>
         </Pressable>
@@ -536,7 +535,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
                 pressDim(pressed, skin.copyPressedOpacity),
               ]}
             >
-              <Text style={[skin.tabLabel(tokens, isActive, dark), MONO]} numberOfLines={1}>
+              <Text style={skin.tabLabel(tokens, isActive, dark)} numberOfLines={1}>
                 {tab.label}
               </Text>
             </Pressable>

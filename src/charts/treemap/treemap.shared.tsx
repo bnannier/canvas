@@ -8,6 +8,8 @@ import { CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { estimateTextWidth, formatCompact, squarify } from "../shared/chart-math.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { MONO_FONT } from "../../style/mono.js";
+import { contrastRatio, inkOn, mixOklab } from "../../style/color.js";
 
 // Shared Treemap shell. Squarified value tiles (Bruls layout through the
 // shared chart-math helper): each datum becomes a ramp-colored rectangle
@@ -52,8 +54,29 @@ export interface TreemapProps {
 
 const PLOT_HEIGHT = { default: 240, compact: 160 } as const;
 const MAX_TILES = 24;
-// A tile's value under its label: a value annotation.
-const TILE_VALUE_TYPE = { fontSize: 11, lineHeight: 14 };
+// The v4 hand-off's tiles (`K.def('treemap')`): each inset 2 px in its cell, at the
+// treemap-tile corner, filled with its series colour mixed 70% over the card, an 8 px
+// inset, the label 600 12 px and the value 500 11 px mono at .75, in the hand-off's
+// near-black ink (or the tile's own best ink where that falls under 4.5:1). A fill on
+// which neither ink reaches 4.5:1 (a mid-lightness series, the amber accent on the dark
+// card) steps its mix back toward the card by TILE_MIX_STEP until one does.
+const TILE_INSET = 2;
+const TILE_PAD = 8;
+const TILE_MIX = 0.7;
+const TILE_MIX_STEP = 0.02;
+const TILE_INK = "#0a0a0f";
+const TILE_VALUE_TYPE = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "500" as const };
+
+/** The tile's fill and ink: the series colour mixed over the card, and the ink it carries. */
+export function tileLook(card: string, series: string): { fill: string; ink: string } {
+  for (let mix = TILE_MIX; mix > 0; mix -= TILE_MIX_STEP) {
+    const fill = mixOklab(card, series, mix);
+    if (contrastRatio(TILE_INK, fill) >= 4.5) return { fill, ink: TILE_INK };
+    const ink = inkOn(fill);
+    if (contrastRatio(ink, fill) >= 4.5) return { fill, ink };
+  }
+  return { fill: card, ink: inkOn(card) };
+}
 
 export function createTreemap(skin: ChartSkin) {
   return function Treemap(props: TreemapProps) {
@@ -117,36 +140,36 @@ export function createTreemap(skin: ChartSkin) {
         >
           {rects.map((r, i) => {
             if (r.w <= 0 || r.h <= 0) return null;
-            // Labels render only when they fit the tile (with the 1px gap
-            // the border carves out); the name carries every tile anyway.
-            const labelFits = r.h >= 34 && estimateTextWidth(data[i].label, 12) + 12 <= r.w;
-            const valueFits = labelFits && r.h >= 50 && estimateTextWidth(formatValue(clean[i]), 11) + 12 <= r.w;
+            // Labels render only when they fit the tile (inside its 2 px inset and
+            // 8 px padding); the name carries every tile anyway.
+            const w = r.w - TILE_INSET * 2;
+            const h = r.h - TILE_INSET * 2;
+            if (w <= 0 || h <= 0) return null;
+            const labelFits = h >= 32 && estimateTextWidth(data[i].label, 12) + TILE_PAD * 2 <= w;
+            const valueFits = labelFits && h >= 46 && estimateTextWidth(formatValue(clean[i]), 11) + TILE_PAD * 2 <= w;
+            const look = tileLook(tokens.card, s.seriesFill(tokens, i));
             return (
               <View
                 key={data[i].id ?? i}
                 style={{
                   position: "absolute",
-                  left: r.x,
-                  top: r.y,
-                  width: r.w,
-                  height: r.h,
-                  backgroundColor: s.seriesFill(tokens, i),
-                  // The card-colored hairline keeps adjacent tiles separable
-                  // (the pie slice rule, as a border on a View).
-                  borderWidth: 1,
-                  borderColor: tokens.card,
-                  borderRadius: platformShape.web.mark,
-                  padding: 6,
+                  left: r.x + TILE_INSET,
+                  top: r.y + TILE_INSET,
+                  width: w,
+                  height: h,
+                  backgroundColor: look.fill,
+                  borderRadius: Math.min(platformShape.web.chartTile, w / 2, h / 2),
+                  padding: TILE_PAD,
                   opacity: selected != null && selected !== i ? DIM_OPACITY : 1,
                 }}
               >
                 {labelFits ? (
-                  <Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 16, fontWeight: "600", color: tokens.card }}>
+                  <Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 16, fontWeight: "600", color: look.ink }}>
                     {data[i].label}
                   </Text>
                 ) : null}
                 {valueFits ? (
-                  <Text numberOfLines={1} style={{ ...TILE_VALUE_TYPE, color: tokens.card, opacity: 0.85, ...tabularNums() }}>
+                  <Text numberOfLines={1} style={{ ...TILE_VALUE_TYPE, color: look.ink, opacity: 0.75, ...tabularNums() }}>
                     {formatValue(clean[i])}
                   </Text>
                 ) : null}

@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, statusColors, type ColorTokens, type ViewStyle, type LayoutStyle, innerFill } from "../../style/index.js";
+import { View, Text, alpha, statusColors, type ColorTokens, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type EmblemSkin } from "./emblem.styles.js";
@@ -56,15 +56,19 @@ export function sizeOf(p: EmblemProps): EmblemSize {
   return "default";
 }
 
-// Tinted surface fill per tone: the tone's soft wash from statusColors (primary is the
-// info tone, the primary family); `muted` uses the solid muted token, which under glass
-// becomes an ink tint so the tile stays a wash over the pane it sits on, like the tone
-// washes already are.
+// The tone's base colour, the one the tile's wash and ring are mixed from (the hand-off's
+// `--ion`, `--ok`, `--warn`, `--bad` and `--tx3`): the solid accent and status roles, and
+// the subtle ink for `muted`.
 const STATUS_TONE = { primary: "info", destructive: "error", success: "success", warning: "warning" } as const;
 
-function tintBg(theme: Parameters<typeof innerFill>[0], tone: Tone): string {
-  if (tone === "muted") return innerFill(theme, "muted", "soft");
-  return statusColors(theme.tokens, STATUS_TONE[tone]).wash;
+function toneBase(tokens: ColorTokens, tone: Tone): string {
+  switch (tone) {
+    case "primary": return tokens.primary;
+    case "destructive": return tokens.destructive;
+    case "success": return tokens.success;
+    case "warning": return tokens.warning;
+    case "muted": return tokens["subtle-foreground"] ?? tokens["muted-foreground"];
+  }
 }
 
 // The Icon color boolean to inject per tone (so the glyph matches its tint).
@@ -88,6 +92,8 @@ export function createEmblem(skin: EmblemSkin) {
     const { children, label, circle, testID, style } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
+    const base = toneBase(tokens, toneOf(props));
+    const wash = alpha(base, skin.washAlpha);
     const tone = toneOf(props);
     const size = sizeOf(props);
     const box = skin.box[size];
@@ -99,7 +105,10 @@ export function createEmblem(skin: EmblemSkin) {
       width: box,
       height: box,
       borderRadius: circle ? 9999 : skin.radius[size],
-      backgroundColor: tintBg(theme, tone),
+      backgroundColor: wash,
+      borderWidth: 1,
+      borderColor: alpha(base, skin.ringAlpha),
+      ...(tokens.highlight ? { boxShadow: `inset 0px 1px 0px ${tokens.highlight}` } : null),
       ...skin.shape,
     };
 
@@ -107,7 +116,7 @@ export function createEmblem(skin: EmblemSkin) {
     // size by cloning the Icon child, so the caller writes only the glyph.
     const inner =
       label != null ? (
-        <Text style={[skin.monogram, { color: labelColor(tokens, tone), fontSize: Math.round(glyph * 0.85), lineHeight: glyph }]}>
+        <Text style={[skin.monogram, { color: labelColor(tokens, tone), fontSize: skin.monogramSize[size], lineHeight: skin.monogramSize[size] }]}>
           {label}
         </Text>
       ) : isValidElement(children) ? (
@@ -119,9 +128,11 @@ export function createEmblem(skin: EmblemSkin) {
     return (
       <View
         testID={testID}
-        style={[paneStyle(theme, tileShape), style]}
+        // The tone's ring is part of the tile, not a resting hairline, so under glass it
+        // stays a border over the pane (the state-border form of paneStyle).
+        style={[paneStyle(theme, tileShape, true), style]}
       >
-        <GlassPane static layer="control" shape={tileShape} tint={tone === "muted" ? undefined : tintBg(theme, tone)} />
+        <GlassPane static layer="control" shape={tileShape} tint={wash} stateBorder />
         {inner}
       </View>
     );

@@ -12,7 +12,7 @@ export default function Example(scope: ExampleScope) {
 ]}>
   {(cards, setCards) => (
     <DragDropProvider>
-      <DropZone id="list" label="Tasks" onDrop={(e) => setCards(applyDrop(cards, e))}>
+      <DropZone bordered id="list" label="Tasks" onDrop={(e) => setCards(applyDrop(cards, e))}>
         <Column snug>
           {cards.map((c) => (
             <Draggable key={c.id} id={c.id} data={c} label={c.title}>

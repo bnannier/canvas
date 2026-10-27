@@ -35,6 +35,7 @@ export const docs: ComponentDocs = {
   category: "molecules",
   overview: [
     "The variant axis picks the surface (`terminal` > `numbered` > `inline` > plain, first match wins); `compact` tightens the density; `copy`, `wrap`, `diff`, `collapsible`, `attached`, and `headerless` stack orthogonally. `language` drives the in-kit highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything else renders monochrome) and, with no `filename`, labels a header bar above the code; `headerless` keeps the highlighting and drops that bar (a `tabs` strip and the terminal chrome stay), so `copy` floats over the code's corner. Long lines scroll horizontally instead of truncating, and every run of code, highlighted tokens included, is set in the theme's mono face.",
+    "The block is the v4 hand-off's code card on every platform: the sunken well on a hairline at a 14 px corner, a 36 px header of 12 px mono labels, 13 / 1.7 code, line numbers in the subtle ink, and keywords, strings, numbers and tags in the accent, mint, amber and cyan (each light-scheme ink held to 4.5:1 on the well). The terminal is a fixed dark window in every scheme.",
     "`inline` honours `copy` alone of the orthogonal booleans: `<CodeBlock inline copy>` is the import chip, a raised monospace pill (34 tall, the control corner, the `popover` fill and `field-border` hairline, 12 px mono in `muted-foreground`) whose whole surface is one copy button, with a trailing copy glyph that turns to a check for a moment once the code is on the clipboard. The chip copies the code verbatim, announces itself as \"Copy\" followed by the code, sets the code in one ink (no syntax colours), and on the web its hairline turns to the accent under the pointer. Under glass it is a control-layer pane.",
     "When a line is wider than the block, Tab reaches the scrollable code and the platform's arrow keys scroll it; while it has keyboard focus, the block's card draws the theme's focus ring. Short content, `wrap`, and `inline` do not add a scrolling tab stop. Native scrolling continues to use the native ScrollView.",
   ],
@@ -70,6 +71,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["button","tab","tablist"],"states":["expanded","selected"],"aria":["aria-expanded","aria-selected"],"touchTarget":["hitSlop","useSeededMinTargetSlop"]},
-  tokens: ["background","border","field-border","foreground","input","muted","muted-foreground","popover","primary"],
+  tokens: ["background","border","card","chart-2","chart-3","chart-4","destructive","destructive-soft","field-border","foreground","input","muted","muted-foreground","popover","primary","primary-soft","primary-text","subtle-foreground","success","success-soft","surface-sunken","warning"],
   related: ["badge","button","row-column","typography","card","stats","data-table","stacked-lists"],
 };

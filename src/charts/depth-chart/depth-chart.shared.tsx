@@ -118,7 +118,7 @@ export function createDepthChart(skin: ChartSkin) {
                   ) : null}
                   {askPts.length ? (
                     <>
-                      <Path d={stepAreaPath(askPts, layout.plotH)} fill={alpha(tokens.destructive, 0.25)} />
+                      <Path d={stepAreaPath(askPts, layout.plotH)} fill={alpha(tokens.destructive, 0.22)} />
                       <Path d={stepAreaPath(askPts, layout.plotH)} fill="none" stroke={tokens.destructive} strokeWidth={2} strokeLinejoin="round" />
                     </>
                   ) : null}

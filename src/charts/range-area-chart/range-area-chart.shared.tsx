@@ -178,7 +178,8 @@ export function createRangeAreaChart(skin: ChartSkin) {
                 : [];
               return (
                 <>
-                  <Path d={areaBandPath(top, bottom, curved)} fill={alpha(fill, 0.2)} stroke={alpha(fill, 0.45)} strokeWidth={1} />
+                  {/* The hand-off's band: a .22 wash with no edge, the middle line over it. */}
+                  <Path d={areaBandPath(top, bottom, curved)} fill={alpha(fill, 0.22)} />
                   {mids.length > 0 ? (
                     <Path
                       d={curved ? monotonePath(mids) : linePath(mids)}
