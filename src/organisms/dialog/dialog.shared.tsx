@@ -12,7 +12,6 @@ import { Icon } from "../../atoms/icon/icon.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { scrimFill } from "../../style/scrim.js";
-import { glassMessageStyle } from "../../style/glass-message.js";
 import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
 
 // Shared Dialog shell. The structure (an optional trigger plus a modal panel
@@ -380,7 +379,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                         </Text>
                       ) : null}
                       {description != null ? (
-                        <Text nativeID={descriptionId} style={glassMessageStyle(skin.body(tokens), theme)}>
+                        <Text nativeID={descriptionId} style={skin.body(tokens)}>
                           {description}
                         </Text>
                       ) : null}
@@ -388,7 +387,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                         <View style={skin.formBody}>
                           <Text nativeID={amountId} style={skin.fieldLabel(tokens)}>Amount</Text>
                           <View style={skin.amountRow}>
-                            <Text style={glassMessageStyle(skin.currency(tokens), theme)}>$</Text>
+                            <Text style={skin.currency(tokens)}>$</Text>
                             <Input value="90.00" accessibilityLabel="Amount" aria-labelledby={amountId}/>
                           </View>
                           <Text nativeID={reasonId} style={[skin.fieldLabel(tokens), skin.fieldLabelGap]}>Reason</Text>

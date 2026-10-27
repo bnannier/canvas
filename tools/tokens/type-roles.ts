@@ -43,20 +43,13 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     "typeScale.eyebrow": "caption",
     "typeScale.eyebrowLg": "caption",
     "typeScale.stageLabel": "caption",
+    "typeRoles.tiny": "tiny",
+    "typeRoles.eyebrow": "caption",
+    "typeRoles.tag": "caption",
   },
+  // The roles themselves read typeRoles above (their floors are checked on each skin).
   "src/atoms/typography/typography.styles.ts": {
     sectionDescription: "small",
-    "roleType.micro": "caption",
-    "roleType.tag": "caption",
-    "roleType.eyebrow": "caption",
-    "roleType.eyebrowLg": "caption",
-    "roleType.stageLabel": "caption",
-
-    "roleType.small": "small",
-    "roleType.muted": "small",
-    "roleType.code": "small",
-    "roleType.tiny": "tiny",
-    "roleType.caption": "caption",
   },
   "src/style/menu-look.ts": {
     menuSection: "caption",

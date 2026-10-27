@@ -16,20 +16,20 @@ const write = (relative: string, text: string) => {
 
 const STYLES = `import { shape } from "../../style/index.js";
 
-// The z skins. Web: the field at the 10px field corner, the list a card at the 12px
+// The z skins. Web: the field at the 10px field corner, the list a card at the 16px
 // menu corner.
 export type Size = "small" | "large";
 
 export const webSkin = {
-  // The list: a card at the 12px menu corner.
+  // The list: a card at the 16px menu corner.
   popover: { borderRadius: shape.web.menu },
   // Rows with a 10px corner, like the field's.
-  row: { borderRadius: shape.web.control },
+  row: { borderRadius: shape.web.card },
   field: { borderRadius: shape.web.field }, // the 10px field corner
   // --- stepper (rounded 8) ---
   stepperArrow: { height: 32 },
   // A box with a rounded 1px border at the
-  // 8px corner.
+  // 10px corner.
   box: { borderWidth: 1, borderRadius: shape.web.control },
 };
 
@@ -40,9 +40,9 @@ export const iosSkin = { row: { borderRadius: shape.ios.field }, label };
 export const sizedSkin = { box: (size: Size) => ({ borderRadius: size === "small" ? 6 : 8 }) };
 // The whole skin: a 12pt card corner and an 8pt editor corner.
 export const wholeSkin = { outline: { borderRadius: shape.ios.card }, editor: { borderRadius: shape.ios.field }, dot: { borderRadius: 9999 } };
-// The menu skin at its 12px corner, its dots round.
+// The menu skin at its 16px corner, its dots round.
 export const menuSkin = { card: { borderRadius: shape.web.menu }, dot: { borderRadius: 9999 } };
-// The iOS 12pt corner, on rows that draw 8.
+// The iOS 12pt corner, on rows that draw 10.
 export const versionSkin = { row: { borderRadius: shape.web.control } };
 // The Material 3 continuous look, and the iOS 26 corner style: versions, not corners.
 export const plainSkin = { row: { borderRadius: shape.web.control } };
@@ -87,9 +87,9 @@ describe("a corner a comment states", () => {
   const at = (file: string, line: number) => judged().filter((c) => c.file === file && c.line === line);
 
   it("is held to the element the comment sits on", () => {
-    expect(at(FILES[0], 8)).toEqual([{ line: 8, file: FILES[0], value: 12, on: "popover: { borderRadius: shape.web.menu }", drawn: true }]);
-    // The rows' corner stated over the rows, which draw 8: the field's 10 elsewhere does not count.
-    expect(at(FILES[0], 10)).toEqual([{ line: 10, file: FILES[0], value: 10, on: "row: { borderRadius: shape.web.control }", drawn: false }]);
+    expect(at(FILES[0], 8)).toEqual([{ line: 8, file: FILES[0], value: 16, on: "popover: { borderRadius: shape.web.menu }", drawn: true }]);
+    // The rows' corner stated over the rows, which draw 16: the field's 10 elsewhere does not count.
+    expect(at(FILES[0], 10)).toEqual([{ line: 10, file: FILES[0], value: 10, on: "row: { borderRadius: shape.web.card }", drawn: false }]);
   });
 
   it("binds a trailing comment to the code it ends", () => {
@@ -100,15 +100,15 @@ describe("a corner a comment states", () => {
     // The module header sits on `export type Size`; the section comment on a corner-less part.
     expect(at(FILES[0], 3).map((c) => [c.value, c.drawn])).toEqual([
       [10, false],
-      [12, false],
+      [16, false],
     ]);
     expect(at(FILES[0], 13).map((c) => [c.value, c.on, c.drawn])).toEqual([[8, "stepperArrow: { height: 32 }", false]]);
   });
 
   it("reads a phrase wrapped across lines, and not a border's width", () => {
-    // "a rounded 1px border" states a width; "at the / 8px corner" runs over two lines.
+    // "a rounded 1px border" states a width; "at the / 10px corner" runs over two lines.
     expect(at(FILES[0], 15)).toEqual([]);
-    expect(at(FILES[0], 16).map((c) => [c.value, c.drawn])).toEqual([[8, true]]);
+    expect(at(FILES[0], 16).map((c) => [c.value, c.drawn])).toEqual([[10, true]]);
   });
 
   it("finds the comments after a template literal", () => {
@@ -128,7 +128,7 @@ describe("a corner a comment states", () => {
       [8, false],
     ]);
     // A dot drawn as the pill is a shape, not a corner of its own.
-    expect(at(FILES[0], 27).map((c) => [c.value, c.drawn])).toEqual([[12, true]]);
+    expect(at(FILES[0], 27).map((c) => [c.value, c.drawn])).toEqual([[16, true]]);
   });
 
   it("reads a measure after a platform or version word, and leaves the version alone", () => {

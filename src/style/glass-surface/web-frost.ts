@@ -1,77 +1,73 @@
-// The web glass material: Dark Factory's plain frost, the one material a browser
-// renders under `<ThemeProvider glass>` (decision 5b of the Dark Factory direction:
-// it replaced the Chromium lens), and the blur Dark Factory's modal scrim lays over the
-// page it dims (the owner's GS-6 decision, `scrimBlur`, rendered by scrim-frost.tsx).
-// This table is the only place their numbers live, the tunables the tuning harness
-// judges against the `df-frost` reference card (tools/native/liquid-motion.md; harness
-// route /testing/materials). The gate in .tuning-harness.json refuses a push that
-// changes a value here without an evidence row.
+// The web glass material: the v4 hand-off's lit glass, the one material a browser renders
+// under `<ThemeProvider glass>`: the page behind a surface blurred and saturated
+// (`--bf: blur(20px) saturate(1.6)`), the layer's tint over it (`--gl`, the card surface at
+// 62% on the functional layer), and a 1px rim in the hand-off's strong hairline (`--ln2`).
+// It also holds the blur the modal scrim lays over the page it dims (the hand-off's
+// `blur(2px)` under `--scrim`, rendered by scrim-frost.tsx). This table is the only place
+// their numbers live, the tunables the tuning harness judges against the `v4-glass`
+// reference card (tools/native/liquid-motion.md; harness route /testing/materials). The
+// gate in .tuning-harness.json refuses a push that changes a value here without an
+// evidence row.
 //
 // iOS Liquid Glass and the native frosts do not read this file: Android's tints are the
-// public `glassByScheme` (glass-tints.android.ts), iOS's its own table (ios-tints.ts, the
-// same set but for the dark control puck).
+// public `glassByScheme` (glass-tints.android.ts), iOS's its own table (ios-tints.ts).
 
 import type { ColorScheme, GlassTokens } from "../tokens.js";
 import type { GlassLayer } from "./glass-surface.shared.js";
 
 export const WEB_FROST = {
-  /** The backdrop blur in px: DF's shell, `blur(24px)`, with no saturation shift. */
-  blur: 24,
-  /** Original Argus modal dim: blur the backdrop by two pixels. */
+  /** The backdrop blur in px: the hand-off's `blur(20px)`. */
+  blur: 20,
+  /** The backdrop saturation the blur carries: the hand-off's `saturate(1.6)`. */
+  saturate: 1.6,
+  /** The modal veil: blur the backdrop by two pixels, as the hand-off's overlay stages do. */
   veilBlur: 2,
   /**
-   * A clear surface (a field on its pane, a pill) frosts nothing: DF draws its fields
-   * as an unblurred translucent fill, so the backdrop reads through them unsoftened.
+   * A clear surface (a field on its pane, a pill) frosts nothing: the hand-off draws its
+   * fields as a plain fill, so the backdrop reads through them unsoftened.
    */
   clearBlur: 0,
   /** The sheer content treatment: the layer's fill drawn at this opacity. */
   sheerFillOpacity: 0.75,
   /** The rim: one inset hairline, no specular highlight and no refraction. */
   rimWidth: 1,
-  /** DF's shell line, the rim on the functional and content layers. */
-  shellLine: { light: "rgba(255, 255, 255, 0.75)", dark: "rgba(255, 255, 255, 0.08)" } as Record<ColorScheme, string>,
+  /** The hand-off's strong hairline (`--ln2`), the rim on every layer. */
+  rim: { light: "rgba(17, 17, 24, 0.16)", dark: "rgba(255, 255, 255, 0.16)" } as Record<ColorScheme, string>,
   /**
-   * The modal scrim's backdrop blur in px: DF's overlay scrim, `blur(2px)` under its tinted
-   * dim (the `scrim` token), on the web under glass only. 0 turns it off.
+   * The modal scrim's backdrop blur in px: the hand-off's `blur(2px)` under its dim (the
+   * `scrim` token), on the web under glass only. 0 turns it off.
    */
   scrimBlur: 2,
 } as const;
 
 /**
- * The layer tints: DF's shell over its pastel page for the functional layer (white 0.52,
- * and white 0.045 in dark), DF's input fill for the control puck (0.70, and 0.06 in dark),
- * and denser content and dense panes, seeded between DF's shell and its opaque card so
- * text keeps its contrast (test/glass-tint.test.tsx holds the ordering and the floors).
- * `light` is the blush palette; `mint` is the mint palette's light scheme, DF's mint shell
- * (0.58) and input fill (0.75), with its content and dense panes at blush's place between
- * the shell and the opaque card (5/12 and 10/12 of the way: 0.76 and 0.93). The dark
- * scheme has one palette.
+ * The layer tints: the hand-off's `--gl` (its card surface at 62%) on the functional
+ * layer; the content and dense panes the same surface denser, so text keeps its contrast
+ * over any page (test/glass-tint.test.tsx holds the ordering and the floors); the control
+ * puck the raised step (`secondary`) at control density. One set per scheme: the accent
+ * palette never moves the glass.
  */
-export const WEB_TINTS: Record<ColorScheme | "mint", GlassTokens> = {
+export const WEB_TINTS: Record<ColorScheme, GlassTokens> = {
   light: {
-    "glass-tint": "rgba(255, 255, 255, 0.52)",
-    "glass-tint-content": "rgba(255, 255, 255, 0.72)",
-    "glass-tint-control": "rgba(255, 255, 255, 0.70)",
+    "glass-tint": "rgba(255, 255, 255, 0.62)",
+    "glass-tint-content": "rgba(255, 255, 255, 0.8)",
+    "glass-tint-control": "rgba(241, 241, 246, 0.72)",
     "glass-tint-dense": "rgba(255, 255, 255, 0.92)",
   },
-  mint: {
-    "glass-tint": "rgba(255, 255, 255, 0.58)",
-    "glass-tint-content": "rgba(255, 255, 255, 0.76)",
-    "glass-tint-control": "rgba(255, 255, 255, 0.75)",
-    "glass-tint-dense": "rgba(255, 255, 255, 0.93)",
-  },
   dark: {
-    "glass-tint": "rgba(255, 255, 255, 0.045)",
-    "glass-tint-content": "rgba(37, 39, 65, 0.72)",
-    "glass-tint-control": "rgba(255, 255, 255, 0.06)",
-    "glass-tint-dense": "rgba(37, 39, 65, 0.92)",
+    "glass-tint": "rgba(18, 18, 26, 0.62)",
+    "glass-tint-content": "rgba(18, 18, 26, 0.8)",
+    "glass-tint-control": "rgba(30, 30, 41, 0.72)",
+    "glass-tint-dense": "rgba(18, 18, 26, 0.92)",
   },
 };
 
-/**
- * The rim colour for a layer: DF's shell line on the floating and content layers, and
- * the palette's hairline on controls and the dense menus, which DF edges with its line.
- */
-export function webRimColor(layer: GlassLayer, scheme: ColorScheme, border: string): string {
-  return layer === "functional" || layer === "content" ? WEB_FROST.shellLine[scheme] : border;
+/** The backdrop filter for a blur radius: the radius with the material's saturation. */
+export function webBackdrop(blur: number): string {
+  return `blur(${blur}px) saturate(${WEB_FROST.saturate})`;
+}
+
+/** The rim colour for a layer: the hand-off's strong hairline on every layer. */
+export function webRimColor(_layer: GlassLayer, scheme: ColorScheme, _border: string): string {
+  return WEB_FROST.rim[scheme];
 }

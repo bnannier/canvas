@@ -11,7 +11,7 @@ import {
 } from "../src/charts/index.ts";
 import { ChartValueFlag } from "../src/charts/shared/chart-inspect.tsx";
 import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
-import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
+import { WEB_FROST, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 
 // These tests verify material ownership, fallback and state wiring in RNW.
 // SVG is stubbed by the harness; screenshots and native runs verify rendered ink.
@@ -101,7 +101,7 @@ for (const [name, chart] of Object.entries(framed)) {
     result.rerender(ui(child, true));
     expect(screen.getByTestId("chart")).toBe(host);
     expect(materials(host)).toHaveLength(1);
-    expect(frostOf(materials(host)[0])?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+    expect(frostOf(materials(host)[0])?.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
     expect(dataNames()).toEqual(names);
     result.rerender(ui(child, false));
     expect(materials(host)).toHaveLength(0);

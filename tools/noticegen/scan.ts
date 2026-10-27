@@ -77,8 +77,9 @@
  *      No lucide JavaScript survives into any bundle, but the shipped data is a copy of
  *      lucide's icons, and its ISC licence requires the copyright and permission notice
  *      to appear in all copies. Attribute the exact package the data is transcribed from.
- *      The same holds for the typefaces: docs/scripts/subset-fonts.mjs cuts the Manrope
- *      and Geist Mono faces down from the @expo-google-fonts packages into
+ *      The same holds for the typefaces: docs/scripts/subset-fonts.mjs cuts the Instrument
+ *      Sans, Bricolage Grotesque and JetBrains Mono faces down from the @expo-google-fonts
+ *      packages into
  *      docs/assets/fonts, so those packages' JavaScript never ships while their font
  *      software does, under OFL-1.1, whose condition 2 is exactly that the notice travel
  *      with every copy, modified ones included. Each is located the way its own
@@ -235,13 +236,14 @@ for (const platform of ["ios", "android"]) {
 // See the header: the lucide glyph geometry ships (in icon.glyphs.ts and the menu-glyph
 // PNGs) even though the package's own code never does, and ISC requires the notice to
 // travel with it. lucide-static, not lucide-react-native, is what tools/icongen reads.
-// The two typeface packages ship as the subset faces in docs/assets/fonts (OFL-1.1).
+// The three typeface packages ship as the subset faces in docs/assets/fonts (OFL-1.1).
 // `from` is the directory the generator resolves the package from: tools/icongen reads
 // the root's node_modules/lucide-static, docs/scripts/subset-fonts.mjs require.resolves
 // the faces from docs/scripts.
 const BAKED_DATA = [
-  { name: "@expo-google-fonts/geist-mono", from: "docs/scripts" },
-  { name: "@expo-google-fonts/manrope", from: "docs/scripts" },
+  { name: "@expo-google-fonts/bricolage-grotesque", from: "docs/scripts" },
+  { name: "@expo-google-fonts/instrument-sans", from: "docs/scripts" },
+  { name: "@expo-google-fonts/jetbrains-mono", from: "docs/scripts" },
   { name: "lucide-static", from: "tools/icongen" },
 ];
 const fromBaked = new Set<string>();

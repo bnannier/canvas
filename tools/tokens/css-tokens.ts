@@ -15,6 +15,8 @@
  * and the functions stay directly testable.
  */
 
+import { oklchHex } from "../../src/style/color.ts";
+
 /** Remove `/* ... *\/` comments, which appear INSIDE values (`var(--x) /* @kind other *\/`). */
 export function stripComments(value: string): string {
   return value.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -27,24 +29,7 @@ export function stripComments(value: string): string {
 // (Ottosson), then the sRGB transfer function; the result is the same 8-bit triple a
 // browser paints, so an exact string compare is the right test.
 export function oklchToHex(L: number, C: number, hDeg: number): string {
-  const h = (hDeg * Math.PI) / 180;
-  const a = C * Math.cos(h);
-  const b = C * Math.sin(h);
-  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
-  const linear = [
-    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
-  ];
-  const channel = (v: number) => {
-    const c = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(Math.max(v, 0), 1 / 2.4) - 0.055;
-    return Math.round(Math.min(1, Math.max(0, c)) * 255)
-      .toString(16)
-      .padStart(2, "0");
-  };
-  return `#${linear.map(channel).join("")}`;
+  return oklchHex(L, C, hDeg);
 }
 
 /**
@@ -69,6 +54,14 @@ export function cssColorToHex(raw: string): string | null {
  */
 export function cssRgbaToCanonical(raw: string): string | null {
   const value = stripComments(raw).trim().toLowerCase();
+  // The accent's translucent roles are authored `oklch(L C H / a)`: the clipped sRGB of the
+  // colour at that alpha, which is what the browser composites.
+  const oklchA = value.match(/^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\/\s*([\d.]+)\s*\)$/);
+  if (oklchA) {
+    const hex = oklchToHex(Number(oklchA[1]), Number(oklchA[2]), Number(oklchA[3]));
+    const [r, g, b] = [1, 3, 5].map((o) => parseInt(hex.slice(o, o + 2), 16));
+    return `rgba(${r}, ${g}, ${b}, ${Number(oklchA[4])})`;
+  }
   const m = value.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/);
   if (!m) return null;
   const alpha = m[4] === undefined ? 1 : Number(m[4]);
@@ -99,12 +92,51 @@ function blockBody(css: string, selector: string): string | null {
 }
 
 /**
- * The selector of the mint palette's block in styles/tokens/colors.css: the attribute,
- * excluded on a `.dark` element and under one (Dark Factory has one dark palette), the
- * exclusion inside :where() so the block keeps the specificity of one attribute and the
- * accessibility fallbacks in surface.css still win over its frost tints.
+ * The selector of a palette's block in styles/tokens/colors.css: one `--hue` each
+ * (tools/v4/derive-css.ts writes them).
  */
-export const MINT_SELECTOR = '[data-palette="mint"]:not(:where(.dark, .dark *))';
+export function paletteSelector(palette: string): string {
+  return `[data-palette="${palette}"]`;
+}
+
+/**
+ * The selector of a palette's dark block: the palette's solved inks in the dark scheme, on a
+ * palette element that is dark itself or sits inside a dark context.
+ */
+export function darkPaletteSelector(palette: string): string {
+  const p = paletteSelector(palette);
+  return `.dark${p},.dark ${p},${p}.dark`;
+}
+
+/**
+ * The selectors of the accent blocks in styles/tokens/colors.css, per scheme: every
+ * hue-dependent role is declared again on each palette wrapper, and the dark rows win
+ * inside a `.dark` context.
+ */
+export const ACCENT_SELECTOR = {
+  light: ":root,[data-palette]",
+  dark: ".dark,.dark [data-palette],[data-palette].dark",
+} as const;
+
+/**
+ * The custom properties a palette resolves to in a scheme: the scheme's literal block
+ * over :root, the palette's own block (its hue and its solved light inks), its dark block
+ * in the dark scheme, then the accent block with the palette's `--hue` substituted, so an
+ * `oklch(L C var(--hue))` declaration reads as a plain colour.
+ */
+export function paletteDeclarations(css: string, palette: string, scheme: "light" | "dark"): Record<string, string> {
+  const own = declarationsIn(css, paletteSelector(palette));
+  const hue = own.hue?.trim();
+  const merged = {
+    ...declarationsIn(css, ":root"),
+    ...(scheme === "dark" ? declarationsIn(css, ".dark") : {}),
+    ...own,
+    ...(scheme === "dark" ? declarationsIn(css, darkPaletteSelector(palette)) : {}),
+    ...declarationsIn(css, ACCENT_SELECTOR[scheme]),
+  };
+  if (hue === undefined) return merged;
+  return Object.fromEntries(Object.entries(merged).map(([k, v]) => [k, v.replace(/var\(\s*--hue\s*\)/g, hue)]));
+}
 
 /**
  * Pull the declarations out of one selector block, so the light (:root), mint

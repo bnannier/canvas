@@ -13,7 +13,7 @@ import { Button, Card, Column, Row, Sidebar, ThemeProvider, Typography, useReduc
 function Readouts({ glass, dark, mint, presses }: { glass: boolean; dark: boolean; mint: boolean; presses: number }) {
   const reduced = useReducedMotion();
   return <>
-    <Typography testID="hover-mode">Mode: {glass ? "glass" : "solid"}; scheme: {dark ? "dark" : "light"}; palette: {mint ? "mint" : "blush"}</Typography>
+    <Typography testID="hover-mode">Mode: {glass ? "glass" : "solid"}; scheme: {dark ? "dark" : "light"}; palette: {mint ? "mint" : "violet"}</Typography>
     <Typography testID="hover-reduced-motion">Reduce Motion: {reduced ? "on, changes are instant" : "off"}</Typography>
     <Typography testID="hover-presses">Presses: {presses}</Typography>
   </>;

@@ -34,7 +34,7 @@ describe("theme helpers without a document (native / SSR)", () => {
     withoutDocument(() => {
       clearThemeStorage();
       expect(getTheme()).toBe("light");
-      expect(getPalette()).toBe("blush");
+      expect(getPalette()).toBe("violet");
       expect(getSurface()).toBe("solid");
       expect(getDensity()).toBe("regular");
     });

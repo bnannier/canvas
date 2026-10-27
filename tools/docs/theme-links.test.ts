@@ -53,9 +53,9 @@ describe("docs external appearance links", () => {
 
   it("reads the palette axis beside the other two and accepts only the kit's light palettes", () => {
     expect(themeFromURL("canvas:///theming?palette=mint")).toEqual({ palette: "mint" });
-    expect(themeFromURL("canvas:///theming?palette=blush")).toEqual({ palette: "blush" });
+    expect(themeFromURL("canvas:///theming?palette=violet")).toEqual({ palette: "violet" });
     expect(themeFromURL("canvas:///theming?palette=Mint")).toEqual({});
-    expect(themeFromParams({ palette: ["mint", "blush"] })).toEqual({ palette: "mint" });
+    expect(themeFromParams({ palette: ["mint", "violet"] })).toEqual({ palette: "mint" });
     expect(themeFromURL("https://canvas.nannier.com/components/button?scheme=light&surface=solid&palette=mint")).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
   });
 
@@ -67,12 +67,12 @@ describe("docs external appearance links", () => {
   it("applies a warm palette-only request, including the same link reopened after a manual change", () => {
     const url = "canvas:///theming?palette=mint";
     const links = nativeLinks(url);
-    let theme: ThemeLinkOverrides = { scheme: "dark", surface: "glass", palette: "blush" };
+    let theme: ThemeLinkOverrides = { scheme: "dark", surface: "glass", palette: "violet" };
     const unsubscribe = subscribeThemeLinks(links.source, url, (next) => { theme = { ...theme, ...next }; });
-    expect(theme).toEqual({ scheme: "dark", surface: "glass", palette: "blush" });
+    expect(theme).toEqual({ scheme: "dark", surface: "glass", palette: "violet" });
     links.open(url);
     expect(theme).toEqual({ scheme: "dark", surface: "glass", palette: "mint" });
-    theme = { ...theme, palette: "blush" };
+    theme = { ...theme, palette: "violet" };
     links.open(url);
     expect(theme).toEqual({ scheme: "dark", surface: "glass", palette: "mint" });
     unsubscribe();
@@ -84,10 +84,10 @@ describe("docs external appearance links", () => {
     const unsubscribe = subscribeThemeLinks(links.source, null, (next) => { theme = { ...theme, ...next }; });
     links.open("canvas:///theming?scheme=dark");
     expect(theme).toEqual({ scheme: "dark", surface: "solid", palette: "mint" });
-    links.open("canvas:///theming?palette=blush");
-    expect(theme).toEqual({ scheme: "dark", surface: "solid", palette: "blush" });
+    links.open("canvas:///theming?palette=violet");
+    expect(theme).toEqual({ scheme: "dark", surface: "solid", palette: "violet" });
     links.open("canvas:///theming?palette=teal");
-    expect(theme).toEqual({ scheme: "dark", surface: "solid", palette: "blush" });
+    expect(theme).toEqual({ scheme: "dark", surface: "solid", palette: "violet" });
     unsubscribe();
   });
 
@@ -148,8 +148,8 @@ describe("the look a Preview deep link lands in", () => {
   const MINT = "canvas:///components/button?scheme=light&palette=mint";
   const FULL = "canvas:///components/button?scheme=light&surface=solid&palette=mint";
 
-  it("starts every platform's export from dark glass in blush", () => {
-    expect(EXPORTED_LOOK).toEqual({ scheme: "dark", surface: "glass", palette: "blush" });
+  it("starts every platform's export from dark glass in violet", () => {
+    expect(EXPORTED_LOOK).toEqual({ scheme: "dark", surface: "glass", palette: "violet" });
   });
 
   for (const os of ["ios", "android"]) {
@@ -167,8 +167,8 @@ describe("the look a Preview deep link lands in", () => {
   }
 
   it("lets the native launch URL win an axis the router params also name, and keeps the params' other axes", () => {
-    expect(launchRequest({ scheme: "dark", surface: "solid", palette: "blush" }, MINT)).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
-    expect(launchRequest({ palette: ["mint", "blush"] }, null)).toEqual({ palette: "mint" });
+    expect(launchRequest({ scheme: "dark", surface: "solid", palette: "violet" }, MINT)).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
+    expect(launchRequest({ palette: ["mint", "violet"] }, null)).toEqual({ palette: "mint" });
     expect(launchRequest({ surface: "invalid" }, "canvas:///components/button?surface=solid")).toEqual({ surface: "solid" });
   });
 
@@ -191,12 +191,12 @@ describe("the look a Preview deep link lands in", () => {
       const unsubscribe = subscribeThemeLinks(links.source, MINT, (next) => { look = withOverrides(look, next); });
       expect(look).toEqual({ scheme: "light", surface: "glass", palette: "mint" });
 
-      links.open("canvas:///components/card?palette=blush");
-      expect(look).toEqual({ scheme: "light", surface: "glass", palette: "blush" });
+      links.open("canvas:///components/card?palette=violet");
+      expect(look).toEqual({ scheme: "light", surface: "glass", palette: "violet" });
       links.open("canvas:///components/card?scheme=dark&surface=solid");
-      expect(look).toEqual({ scheme: "dark", surface: "solid", palette: "blush" });
+      expect(look).toEqual({ scheme: "dark", surface: "solid", palette: "violet" });
       links.navigate("canvas:///components/badge?scheme=light&palette=mint");
-      expect(look).toEqual({ scheme: "dark", surface: "solid", palette: "blush" });
+      expect(look).toEqual({ scheme: "dark", surface: "solid", palette: "violet" });
       links.open(MINT);
       expect(look).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
       unsubscribe();

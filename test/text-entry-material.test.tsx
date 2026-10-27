@@ -173,12 +173,12 @@ describe("clear web text-entry material", () => {
       expect(painted).toHaveLength(name === "InputOTP" ? 2 : 1);
       for (const material of painted) {
         // A clear field frosts nothing: its under-fill (the light neutral veil), then the
-        // control layer's hairline rim in the palette's border colour, and no backdrop filter.
+        // material's rim in the hand-off's strong hairline (`--ln2`), and no backdrop filter.
         const layers = [...material.children] as HTMLElement[];
         expect(layers).toHaveLength(2);
         expect(material.querySelector('[style*="backdrop-filter"]')).toBeNull();
         expect(rgbaOf(layers[0].style.backgroundColor)).toEqual(rgbaOf(clearSurfaceTint(lightColors, false)));
-        expect(layers[1].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${lightColors.border}`);
+        expect(layers[1].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${WEB_FROST.rim.light}`);
       }
       result.rerender(mode(<View testID="field">{field}</View>, false));
       expect(materials(screen.getByTestId("field"))).toHaveLength(0);

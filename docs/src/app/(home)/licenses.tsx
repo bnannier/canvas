@@ -20,13 +20,14 @@ import {
 // actually ships (see tools/noticegen), so this screen only arranges it.
 //
 // This page is not decorative. MIT requires its copyright and permission notice to travel
-// with the software, and OFL-1.1 requires the same for the Manrope and Geist Mono
-// typefaces bundled as .ttf files in the binary. Reproducing the notices somewhere the user can reach them is
+// with the software, and OFL-1.1 requires the same for the Instrument Sans, Bricolage
+// Grotesque and JetBrains Mono typefaces bundled as .ttf files in the binary. Reproducing the notices somewhere the user can reach them is
 // how those conditions are met, which is why each licence panel below lists the copyright
 // lines of every package sharing that text before the text itself.
 
-const MANROPE_URL = "https://github.com/sharanda/manrope";
-const GEIST_URL = "https://github.com/vercel/geist-font";
+const INSTRUMENT_SANS_URL = "https://github.com/Instrument/instrument-sans";
+const BRICOLAGE_URL = "https://github.com/ateliertriay/bricolage";
+const JETBRAINS_MONO_URL = "https://github.com/JetBrains/JetBrainsMono";
 const SYMBOLS_URL = "https://github.com/google/material-design-icons";
 
 /** A licence body arrives as one string; blank lines are its paragraph breaks. */
@@ -43,7 +44,7 @@ export default function LicensesScreen() {
 
   const rows = THIRD_PARTY_PACKAGES.map((p) => {
     const name = <InlineCode key={`${p.name}-n`}>{p.name}</InlineCode>;
-    // A dual-licensed package (the Geist wrappers: MIT code, OFL-1.1 typeface) carries
+    // A dual-licensed package (the typeface wrappers: MIT code, OFL-1.1 typeface) carries
     // one badge per licence rather than appearing as two near-identical rows.
     const licenses = (
       <Row key={`${p.name}-l`} tight wrap>
@@ -113,17 +114,25 @@ export default function LicensesScreen() {
               outline
               small
               iconRight={<Icon arrowRight size={14} />}
-              onPress={() => Linking.openURL(MANROPE_URL)}
+              onPress={() => Linking.openURL(INSTRUMENT_SANS_URL)}
             >
-              Manrope on GitHub
+              Instrument Sans on GitHub
             </Button>
             <Button
               outline
               small
               iconRight={<Icon arrowRight size={14} />}
-              onPress={() => Linking.openURL(GEIST_URL)}
+              onPress={() => Linking.openURL(BRICOLAGE_URL)}
             >
-              Geist Mono on GitHub
+              Bricolage Grotesque on GitHub
+            </Button>
+            <Button
+              outline
+              small
+              iconRight={<Icon arrowRight size={14} />}
+              onPress={() => Linking.openURL(JETBRAINS_MONO_URL)}
+            >
+              JetBrains Mono on GitHub
             </Button>
             <Button
               outline

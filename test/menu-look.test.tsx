@@ -19,7 +19,11 @@ afterEach(cleanup);
 const t = lightColors;
 const flat = (value: string) => value.replace(/\s/g, "");
 const rgbaOf = (hex: string) => flat(alpha(hex, 1)).replace(/,1\)$/, ",1.00)");
-const wash = /rgba\(123,\s*108,\s*240,\s*0\.08\)/;
+// The scheme's hover wash (the hand-off's `--hover`), as react-native-web prints it.
+const wash = (() => {
+  const [r, g, b, a] = lightColors.hover!.match(/[\d.]+/g)!;
+  return new RegExp(`rgba\\(${r},\\s*${g},\\s*${b},\\s*${Number(a).toFixed(2)}\\)`);
+})();
 const ITEMS = [
   { label: "Rename", icon: "pencil" as const },
   { label: "Archive", disabled: true },
@@ -45,8 +49,9 @@ describe("Dark Factory's menu on the web", () => {
   });
 
   it("draws Dark Factory's panel and rows", () => {
-    expect(menuPanel(t)).toMatchObject({ borderRadius: 12, padding: 8, borderWidth: 1, borderColor: t.border, backgroundColor: t.popover, boxShadow: expect.stringContaining("26px 50px -20px") });
-    expect(menuRow).toMatchObject({ borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, gap: 10 });
+    // The panel's corner is the hand-off's menu radius (16) and its shade the ladder's lg step.
+    expect(menuPanel(t)).toMatchObject({ borderRadius: 16, padding: 8, borderWidth: 1, borderColor: t.border, backgroundColor: t.popover, boxShadow: expect.stringContaining("30px 80px -16px") });
+    expect(menuRow).toMatchObject({ borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, gap: 10 });
     expect(menuRowLabel).toMatchObject({ fontSize: 12.5, lineHeight: 17, fontWeight: "700" });
     expect(menuSection(t)).toMatchObject({ fontSize: 10, fontWeight: "700", textTransform: "uppercase", color: t["muted-foreground"] });
     expect([MENU_OFFSET, MENU_ROW_GAP]).toEqual([8, 2]);

@@ -1,0 +1,126 @@
+// Photographs the vendored v4 design hand-off (tools/v4/handoff) into .v4-reference/, the
+// design images Lookout's design-parity judge compares the docs against (lookout.config.ts
+// `design:`), and that a person compares side by side with a docs page.
+//
+//   bun tools/v4/capture-references.ts [--only <name-substring>] [--light | --light-only]
+//
+// It serves the hand-off from this checkout, opens each page at 1440 wide in Playwright's
+// Chromium, and writes, per scheme:
+//   pages/<page>.png               the whole page (Library, the eight sections, Skins)
+//   cards/<card-id>.png            every section card (`#c-*`), as the section page draws it
+//   components/<slug>.png          a component's detail page down to its Platforms section
+//   components/<slug>-platforms.png  the detail page's three-platform skins row
+//   templates/<template>-<platform>.png  every template in every device frame
+//
+// The hand-off loads Google Fonts and a QR script from a CDN, so this needs the network.
+
+import { mkdirSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { chromium, type Page } from "playwright";
+
+const ROOT = resolve(import.meta.dir, "handoff");
+const OUT = resolve(import.meta.dir, "../../.v4-reference");
+const args = process.argv.slice(2);
+const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : undefined;
+const schemes = args.includes("--light-only")
+  ? (["light"] as const)
+  : args.includes("--light")
+    ? (["dark", "light"] as const)
+    : (["dark"] as const);
+
+const SECTIONS = ["Library", "Foundations", "Layout", "Controls", "Inputs", "Navigation", "Data", "Charts", "Overlays", "Skins"];
+
+const server = Bun.serve({
+  port: 0,
+  hostname: "127.0.0.1",
+  async fetch(req) {
+    const path = decodeURIComponent(new URL(req.url).pathname);
+    const file = Bun.file(join(ROOT, path));
+    return (await file.exists()) ? new Response(file) : new Response("not found", { status: 404 });
+  },
+});
+const base = `http://127.0.0.1:${server.port}`;
+const pageUrl = (name: string) => `${base}/${encodeURIComponent(`Canvas v4.0.0 ${name}.dc.html`)}`;
+
+const want = (name: string) => !only || name.includes(only);
+
+/** Waits for the prototype runtime, its fonts and its looping heroes' first frame. */
+async function settle(page: Page) {
+  await page.waitForLoadState("networkidle");
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(1200);
+}
+
+/** The navbar's scheme switch is the one control that sets the prototype's scheme. */
+async function setScheme(page: Page, scheme: "dark" | "light") {
+  if (scheme === "dark") return;
+  await page.getByText("Light", { exact: true }).first().click();
+  await page.waitForTimeout(700);
+}
+
+async function shoot(page: Page, file: string, selector?: string) {
+  mkdirSync(resolve(file, ".."), { recursive: true });
+  if (selector) await page.locator(selector).first().screenshot({ path: file, animations: "disabled" });
+  else await page.screenshot({ path: file, fullPage: true, animations: "disabled" });
+}
+
+const browser = await chromium.launch();
+const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1, reducedMotion: "reduce" });
+const page = await context.newPage();
+
+for (const scheme of schemes) {
+  const dir = join(OUT, scheme);
+  for (const section of SECTIONS) {
+    if (!want(section)) continue;
+    await page.goto(pageUrl(section));
+    await settle(page);
+    await setScheme(page, scheme);
+    await shoot(page, join(dir, "pages", `${section.toLowerCase()}.png`));
+    for (const id of await page.locator('[id^="c-"]').evaluateAll((els) => els.map((e) => e.id))) {
+      await shoot(page, join(dir, "cards", `${id.slice(2)}.png`), `#${id}`);
+    }
+    console.log(`${scheme} ${section}`);
+  }
+
+  const slugs: string[] = await (async () => {
+    await page.goto(pageUrl("Component"));
+    await settle(page);
+    return page.evaluate(() => (window as unknown as { CV_DOCS: { order: string[] } }).CV_DOCS.order);
+  })();
+  for (const slug of slugs) {
+    if (!want(slug)) continue;
+    await page.goto(`${pageUrl("Component")}#${slug}`);
+    await page.reload();
+    await settle(page);
+    await setScheme(page, scheme);
+    await shoot(page, join(dir, "components", `${slug}.png`));
+    if (await page.locator("#cv-pf").count()) await shoot(page, join(dir, "components", `${slug}-platforms.png`), "#cv-pf");
+  }
+  console.log(`${scheme} components: ${slugs.length}`);
+
+  if (want("templates")) {
+    await page.goto(pageUrl("Templates"));
+    await settle(page);
+    // The Templates header carries its own scheme toggle in place of the navbar switch.
+    if (scheme === "light") {
+      await page.getByRole("button", { name: "Toggle scheme" }).click();
+      await page.waitForTimeout(700);
+    }
+    // The template list is the page's sticky left nav; each entry reads "<name>\n<nn>".
+    // (A template's own sidebar is an <aside> inside the stage, so it is not the list.)
+    const list = page.locator('nav[style*="sticky"] button');
+    const names = (await list.allInnerTexts()).map((t) => t.split("\n")[0]!.trim());
+    for (const platform of ["Web", "iOS", "Android"]) {
+      await page.getByRole("button", { name: platform, exact: true }).first().click();
+      for (const [i, name] of names.entries()) {
+        await list.nth(i).click();
+        await page.waitForTimeout(500);
+        await shoot(page, join(dir, "templates", `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${platform.toLowerCase()}.png`), "main");
+      }
+    }
+    console.log(`${scheme} templates`);
+  }
+}
+
+await browser.close();
+server.stop();

@@ -151,7 +151,7 @@ function resolvedLook(theme: Live["theme"]): ResolvedLook {
   return {
     scheme: theme.scheme === "dark" ? "dark" : "light",
     surface: theme.surface === "glass" ? "glass" : "solid",
-    palette: theme.palette === "mint" ? "mint" : "blush",
+    palette: theme.palette,
     dark: theme.dark,
     reducedTransparency: theme.reducedTransparency,
     increasedContrast: theme.increasedContrast,

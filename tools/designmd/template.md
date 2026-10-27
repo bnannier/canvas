@@ -12,9 +12,9 @@ One component API, three native looks. Canvas is a React Native UI kit that rend
 natively on iOS and Android and, through React Native Web, in a browser, from a single
 codebase. Each component ships a shared shell and a skin per platform, so a Button is
 an iOS capsule with a semibold label, a Material 3 stadium with a ripple, and a
-12px-rounded web control in Dark Factory's colors (a green call to action, a violet
-selection color, white cards on a lavender page), without the caller choosing between
-them.
+10px-rounded web control in the v4 "Light as material" colors (one accent hue for
+selection and calls to action, near-black or near-white surfaces, glass that frosts and
+saturates what sits behind it), without the caller choosing between them.
 
 The rest of this document is what an agent or a developer needs to build with the kit
 and get it right: the values, and the four rules that are easy to break by accident.
@@ -65,29 +65,32 @@ appears.
 
 ## Colors
 
-Semantic tokens, one set per palette, derived from Dark Factory's palettes: blush (the
-light default), mint (the light alternative) and its single dark palette (the source is
-vendored at `tools/darkfactory/theme.json`). Every role is a Dark Factory value or a
-recorded rule over Dark Factory values in `tools/darkfactory/derive-tokens.ts`, which
-solves a role to the kit's contrast floors where the raw value falls short; `bun run
-check-df` holds the shipped values to that derivation. Components read them through
-`useTheme()`; the scheme follows the OS unless `<ThemeProvider dark>` or `<ThemeProvider
-light>` forces one, and `<ThemeProvider mint>` paints the light scheme in mint. The dark
-scheme has one palette, so `dark` wins over `mint`. On the web the same values ship as
-custom properties in `styles/canvas.css`, where dark keys off a `.dark` class on the root
-rather than `prefers-color-scheme` and mint off `data-palette="mint"` (`setPalette`), with
-`.dark` winning when both are set.
+Semantic tokens, one set per accent palette and scheme, from the Canvas v4 design
+hand-off (vendored at `tools/v4/handoff`): its neutrals, status colours and glass as
+literal values, and its accent and chart series as `oklch(L C hue)` formulas converted to
+sRGB within one channel unit of what a browser paints. Five palettes, each one hue for the
+whole accent: violet (the default), cyan, mint, rose and amber, and a palette applies in
+both schemes. Read any pair with `colorsFor(palette, scheme)`. Roles keep their function
+where the hand-off's raw value falls short of a floor: the control boundary `input` is
+solved to WCAG 1.4.11's 3:1, and the light `destructive-text` to 4.5:1. Components read
+the tokens through `useTheme()`; the scheme follows the OS unless `<ThemeProvider dark>`
+or `<ThemeProvider light>` forces one, and `<ThemeProvider cyan>` (or `mint`, `rose`,
+`amber`) picks the accent. On the web the same values ship as custom properties in
+`styles/canvas.css`, generated from the token table: dark keys off a `.dark` class on the
+root rather than `prefers-color-scheme`, and a palette is one `--hue` set by
+`data-palette` (`setPalette`) on the root or on any wrapper.
 
-Two roles carry the brand, and they differ on purpose. `primary` is the selection color:
-checked, selected and current states, links and the focus ring. `action` is the
-call-to-action fill: primary buttons, meters, count badges. A theme that overrides
-`primary` alone repaints both, since `action` follows an overriding `primary` unless the
-theme sets it too. `scrim` dims the page behind every modal (under glass on the web it also
+Two roles carry the brand. `primary` is the selection color: checked, selected and
+current states, links and the focus ring. `action` is the call-to-action fill: primary
+buttons, meters, count badges. In every palette both are the accent; a theme that
+overrides `primary` alone repaints both, since `action` follows an overriding `primary`
+unless the theme sets it too. `scrim` dims the page behind every modal (under glass on the web it also
 blurs it by 2 px). `inverse`,
 `inverse-foreground` and `inverse-primary` are the toast pill, its ink and the action on
 it (every toast paints them: the web and iOS pill and the Android snackbar;
 `inverse-primary` is the palette's own brand hue lightened to read on the pill). The `-soft` washes, `shade` (the shadow tint) and
-`field-fill` are optional roles the skins adopt as they take the Dark Factory look; a
+`field-fill` are optional roles the skins adopt as they take the v4 look, beside the
+new `surface-sunken`, `surface-raised`, `subtle-foreground`, `glow` and the shade roles; a
 theme that omits any of these keeps the older fallbacks.
 
 <!-- @generated:colors -->
@@ -115,14 +118,14 @@ a supported way to get one.
 
 ## Typography
 
-Two faces, Manrope and Geist Mono, and one scale: Dark Factory's dense one, bold titles
-stepping down from the display 24 to the heading 14, body copy at 12.5 medium. The
+Three faces and one scale, the hand-off's. Instrument Sans sets the interface,
+Bricolage Grotesque the web skins' headings and big numbers (the `display` role of the
+ThemeProvider's `fonts`), and JetBrains Mono code and meta; iOS and Android set their text
+in SF Pro and Roboto. Titles are medium weight with tightened tracking, stepping from the
+display 56 through 44, 34, 26 and 21 to the 17 h5; body copy is 15 regular, small 13,
+caption 12 and tiny 11, and the eyebrow an 11px mono uppercase label tracked +0.1em. The
 semantic roles below are what the Typography component renders. Headings lead tighter
-than body copy. Reading copy sits at 12px or above and small labels at 11 (the smallest
-reading and label styles iOS and Material 3 define), and the roles under that, `tiny` and
-the uppercase `caption` eyebrow at 10, are for metadata and labels rather than for
-anything a reader has to work through. Dynamic Type, Android font scale and browser zoom
-all still apply.
+than body copy. Dynamic Type, Android font scale and browser zoom all still apply.
 
 <!-- @generated:typography -->
 <!-- @/generated -->
@@ -146,8 +149,9 @@ Corner radius by role and the platform touch minimums, which differ by design. E
 corner is a role of its platform's row, named where the corner is written: the roles
 every platform draws are `shape` in `src/style/tokens.ts`, below, and the roles only one
 platform or only the kit draws are that platform's own, in the second table. The web
-follows Dark Factory: 8 on rectangular controls, 10 on fields, 12 on menus and tiles, 14
-on cards, 18 on dialogs, 22 on sheets and the app shell, and a pill on every capsule.
+follows the v4 hand-off: 10 on rectangular controls and fields, 16 on cards and menus, 20
+on dialogs, 22 on sheets and the app shell, 12 on tiles, 5 on the checkbox box, and a
+pill on every capsule.
 iOS draws capsule controls, 8 on fields, 12 on cards, 26 on menus, 28 on dialogs, the 38
 sheet and the circular selection checkbox, with Apple's continuous curve; Material 3
 draws stadium controls, 4 on the filled field's top corners and on menus, its 12 medium
@@ -156,7 +160,7 @@ shape on cards and 28 on dialogs and sheets.
 <!-- @generated:shapes -->
 <!-- @/generated -->
 
-Each platform's own roles: on the web, Dark Factory's key step on keycaps and inline
+Each platform's own roles: on the web, the key step on keycaps and inline
 boxes, its chip step on the tooltip, a calendar event and a chart's bar, and the smaller
 chart marks; on iOS, the action sheet, the inset grouped list and the calendar event; on
 Android, each Material 3 component at the step of the M3 scale its spec names, and the
@@ -206,18 +210,17 @@ Android, 8 on iOS).
 
 ## Elevation and depth
 
-One ladder, Dark Factory's: each shade is cast straight down with a negative spread, so
-it pools under a surface's lower edge rather than haloing it, in the palette's own
-`shade` (a violet wash in light, black in dark). No horizontal offset, the shade never
-rises, and as rendered its darkest point beside a surface stays within 1.6:1 of that
-surface (the old 0.2 opacity cap's own limit), so a shadow reads as depth rather than as
-a border. The values below are the light palette's; `xl`, the dialog's shade, is a black
-top-layer separator on every palette.
+Three shadows, the hand-off's. In the light scheme each drops a soft ink shade and rings
+the surface in a 1px hairline at 3%; in the dark scheme each lights the surface's top edge
+with a 1px inset highlight over a black drop. `sm` (1px over 2px) rests under cards and
+tiles, `md` (12px over 32px) under raised cards, menus and floating chrome, and `lg` (30px
+over 80px) under overlays; `DEFAULT` is `sm` and `xl` is `lg`. The values below are the
+light scheme's.
 
 <!-- @generated:elevation -->
 <!-- @/generated -->
 
-Cards rest at `sm`, raised cards at `md`, overlays at `lg` and `xl`. iOS surfaces are
+Cards rest at `sm`, raised cards at `md`, overlays at `lg`. iOS surfaces are
 flat by convention and take no shadow at all.
 
 ## Motion and interaction

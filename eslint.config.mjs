@@ -67,6 +67,9 @@ export default tseslint.config(
       // Local Claude Code session state. It is gitignored, and it holds nested git
       // worktrees whose checkouts would otherwise be linted as if they were this one.
       ".claude/**",
+      // The vendored v4 design hand-off: a prototype snapshot kept verbatim as the design
+      // reference (tools/v4/README.md), never Canvas source.
+      "tools/v4/handoff/**",
     ],
   },
   {

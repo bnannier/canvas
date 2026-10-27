@@ -163,7 +163,7 @@ async function capture(page: Page, problems: PageProblems, cell: StateCell, reci
     stage: stage(page).first(),
     row,
     platform: cell.row,
-    ring: rgb(colorsFor(look.palette ?? "blush", look.scheme).ring),
+    ring: rgb(colorsFor(look.palette ?? "violet", look.scheme).ring),
   };
   const header = {
     schema: 1,

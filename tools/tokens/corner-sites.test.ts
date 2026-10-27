@@ -377,16 +377,16 @@ describe("CornerSites", () => {
 
   it("reports a corner written concentric, which the rules take only with a declared container", () => {
     const { values } = scan();
-    expect(one(values, "webSkin.media")).toMatchObject({ value: 13, concentric: "inside shape.web.card by 1" });
+    expect(one(values, "webSkin.media")).toMatchObject({ value: 15, concentric: "inside shape.web.card by 1" });
     expect(one(values, "webSkin.wrap")).toMatchObject({ value: 12, concentric: "around a capsule by 3" });
-    // The form alone proves no container: an off-table 7 written as the menu corner less 5.
-    expect(one(values, "webSkin.menuLess")).toMatchObject({ value: 7, concentric: "inside shape.web.menu by 5" });
+    // The form alone proves no container: an off-table 11 written as the menu corner less 5.
+    expect(one(values, "webSkin.menuLess")).toMatchObject({ value: 11, concentric: "inside shape.web.menu by 5" });
     // Half of a size is not concentric with anything.
     expect(one(values, "webSkin.track")).toMatchObject({ value: 3, kind: "computed", concentric: null });
   });
 
   it("reports a min between two corners as a computation, not as either corner", () => {
-    expect(one(scan().values, "webSkin.pick")).toMatchObject({ value: 8, kind: "computed", concentric: null });
+    expect(one(scan().values, "webSkin.pick")).toMatchObject({ value: 10, kind: "computed", concentric: null });
   });
 
   it("follows an import, a namespace member's parameter and a shell's skin to the number", () => {

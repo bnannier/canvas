@@ -112,9 +112,13 @@ describe("the pager renders kit icons, not text glyphs", () => {
 });
 
 describe("hover and platforms", () => {
+  // The scheme's hover wash (the hand-off's `--hover`), as react-native-web prints it.
+  const wash = (() => {
+    const [r, g, b, a] = lightColors.hover!.match(/[\d.]+/g)!;
+    return new RegExp(`rgba\\(${r},\\s*${g},\\s*${b},\\s*${Number(a).toFixed(2)}\\)`);
+  })();
   it("washes a resting page and an arrow at once on hover, never the current page or a disabled arrow", () => {
     render(<ThemeProvider light solid><Pagination total={3} defaultPage={1} /></ThemeProvider>);
-    const wash = /rgba\(123,\s*108,\s*240,\s*0\.08\)/;
     for (const name of ["Page 2", "Next page"]) {
       const cell = screen.getByRole("button", { name });
       expect(cell.style.getPropertyValue("transition-property"), name).toBe("");
@@ -133,7 +137,6 @@ describe("hover and platforms", () => {
   });
 
   it("washes the rows-per-page trigger on hover, and nothing in a disabled pager", () => {
-    const wash = /rgba\(123,\s*108,\s*240,\s*0\.08\)/;
     render(<ThemeProvider light solid><Pagination withSize total={3} /></ThemeProvider>);
     const trigger = screen.getByRole("button", { name: "Rows per page" });
     fireEvent.pointerEnter(trigger, { pointerType: "mouse" });

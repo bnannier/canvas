@@ -162,6 +162,41 @@
       "dark + light": "dark"
     }
   },
+  "ThemeProvider.palette": {
+    "kind": "axis",
+    "components": [
+      "ThemeProvider"
+    ],
+    "pages": [],
+    "resolver": "src/style/theme.tsx#requestedPaletteOf",
+    "order": [
+      "cyan",
+      "mint",
+      "rose",
+      "amber",
+      "violet"
+    ],
+    "none": "violet",
+    "single": {
+      "cyan": "cyan",
+      "mint": "mint",
+      "rose": "rose",
+      "amber": "amber",
+      "violet": "violet"
+    },
+    "pairs": {
+      "amber + cyan": "cyan",
+      "amber + mint": "mint",
+      "amber + rose": "rose",
+      "amber + violet": "amber",
+      "cyan + mint": "cyan",
+      "cyan + rose": "cyan",
+      "cyan + violet": "cyan",
+      "mint + rose": "mint",
+      "mint + violet": "mint",
+      "rose + violet": "rose"
+    }
+  },
   "ThemeProvider.surface": {
     "kind": "axis",
     "components": [
@@ -5239,8 +5274,8 @@
     ],
     "none": "muted-foreground",
     "single": {
-      "rateSuccess": "success",
-      "rateWarning": "warning",
+      "rateSuccess": "success-text",
+      "rateWarning": "warning-text",
       "rateDestructive": "destructive-text"
     },
     "pairs": {

@@ -39,24 +39,31 @@ export default function TypographyScreen() {
       <Column loose>
         <Column cozy>
           <TokenH1>Typography</TokenH1>
-          <TokenLede>Manrope carries the titles, labels and reading text. Geist Mono carries code and identifiers. Typography exposes the type scale through boolean roles; components own the typography of their labels.</TokenLede>
+          <TokenLede>Instrument Sans carries the labels and reading text. Bricolage Grotesque carries the display role, the headings h1 to h4 and stat values. JetBrains Mono carries code and identifiers. Typography exposes the type scale through boolean roles; components own the typography of their labels.</TokenLede>
         </Column>
 
         <TokenSection title="Font families" description="Register the faces in the application and pass them to ThemeProvider fonts. The package ships no font files; the system face stands in until the configured family is available. Nested providers inherit the registered faces.">
-          <Grid minTileWidth={280} columns={2} relaxed>
+          <Grid minTileWidth={240} columns={3} relaxed>
             <Card>
               <Typography caption>Sans serif</Typography>
-              <Typography display>Manrope</Typography>
+              <Typography h5>Instrument Sans</Typography>
               <Typography code>--font-sans</Typography>
               <Typography>The quick brown fox jumps over the lazy dog 0123456789</Typography>
-              <Typography small muted>The docs register weights 400, 500, 600, 700 and 800.</Typography>
+              <Typography small muted>The docs register weights 400, 500, 600 and 700.</Typography>
+            </Card>
+            <Card>
+              <Typography caption>Display</Typography>
+              <Typography h3>Bricolage Grotesque</Typography>
+              <Typography code>--font-display</Typography>
+              <Typography h4>The quick brown fox 0123456789</Typography>
+              <Typography small muted>The docs register weights 500 and 600; without a display face the sans face stands in.</Typography>
             </Card>
             <Card>
               <Typography caption>Monospace</Typography>
-              <Typography mono>Geist Mono</Typography>
+              <Typography mono>JetBrains Mono</Typography>
               <Typography code>--font-mono</Typography>
               <Typography mono>{'const id = "01HZ73K"'}</Typography>
-              <Typography small muted>For code, identifiers and copyable values.</Typography>
+              <Typography small muted>For code, identifiers and copyable values. The docs register weights 400, 500 and 600.</Typography>
             </Card>
           </Grid>
         </TokenSection>

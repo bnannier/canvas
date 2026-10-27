@@ -1,10 +1,12 @@
 import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { CSSMediaRule, CSSStyleRule, Window } from "happy-dom";
-import { lightColors, darkColors, mintColors, colorsByScheme, colorsFor, glassByScheme, palette } from "../src/style/tokens.ts";
-import { WEB_FROST, WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
+import { lightColors, darkColors, colorsByScheme, colorsFor, glassByScheme, palette, PALETTES } from "../src/style/tokens.ts";
+import { WEB_FROST, WEB_TINTS, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 import { statusHues } from "../src/style/status-hue.ts";
 import { LOOKS, type Look } from "./fixtures/looks.ts";
+import { ACCENT_SELECTOR, paletteSelector } from "../tools/tokens/css-tokens.ts";
+import { composite, contrastRatio } from "../src/style/color.ts";
 
 const REQUIRED = [
   "background",
@@ -26,25 +28,28 @@ const REQUIRED = [
 ] as const;
 
 describe("color tokens", () => {
-  it("blush, mint and dark define every required token as a string", () => {
-    for (const k of REQUIRED) {
-      expect(typeof lightColors[k]).toBe("string");
-      expect(typeof mintColors[k]).toBe("string");
-      expect(typeof darkColors[k]).toBe("string");
+  it("every palette in both schemes defines every required token as a string", () => {
+    for (const look of LOOKS) for (const k of REQUIRED) expect(typeof look.tokens[k], `${look.name} ${k}`).toBe("string");
+  });
+
+  it("each palette is keyed exactly like the default and moves only its accent", () => {
+    for (const p of PALETTES) {
+      for (const scheme of ["light", "dark"] as const) {
+        const t = colorsFor(p, scheme);
+        const base = colorsByScheme[scheme];
+        expect(Object.keys(t).sort()).toEqual(Object.keys(base).sort());
+        // The neutrals are the scheme's, whatever the hue.
+        expect(t.background).toBe(base.background);
+        expect(t.foreground).toBe(base.foreground);
+        if (p !== "violet") expect(t.primary, `${p} ${scheme}`).not.toBe(base.primary);
+      }
     }
   });
 
-  it("mint is a full palette of its own, keyed exactly like blush", () => {
-    expect(Object.keys(mintColors).sort()).toEqual(Object.keys(lightColors).sort());
-    expect(mintColors.primary).not.toBe(lightColors.primary);
-    expect(mintColors.background).not.toBe(lightColors.background);
-  });
-
-  it("colorsFor resolves each palette in each scheme, with one dark palette", () => {
-    expect(colorsFor("blush", "light")).toBe(lightColors);
-    expect(colorsFor("mint", "light")).toBe(mintColors);
-    expect(colorsFor("blush", "dark")).toBe(darkColors);
-    expect(colorsFor("mint", "dark")).toBe(darkColors);
+  it("colorsFor resolves each palette in each scheme, the default violet the published constants", () => {
+    expect(colorsFor("violet", "light")).toBe(lightColors);
+    expect(colorsFor("violet", "dark")).toBe(darkColors);
+    expect(colorsFor("mint", "dark")).not.toBe(darkColors);
   });
 
   it("light and dark use distinct surface + text colors", () => {
@@ -61,14 +66,12 @@ describe("color tokens", () => {
   it("defines the eight categorical chart tokens in every palette", () => {
     for (let i = 1; i <= 8; i++) {
       const key = `chart-${i}` as const;
-      expect(lightColors[key]).toMatch(/^#[0-9a-f]{6}$/);
-      expect(mintColors[key]).toMatch(/^#[0-9a-f]{6}$/);
-      expect(darkColors[key]).toMatch(/^#[0-9a-f]{6}$/);
+      for (const look of LOOKS) expect(look.tokens[key], `${look.name} ${key}`).toMatch(/^#[0-9a-f]{6}$/);
     }
   });
 
   it("keeps series colors distinct and off the reserved status tokens", () => {
-    for (const colors of [lightColors, mintColors, darkColors]) {
+    for (const colors of LOOKS.map((look) => look.tokens)) {
       const series = Array.from({ length: 8 }, (_, i) => colors[`chart-${i + 1}` as keyof typeof colors]);
       // No duplicate slots: identity encoding needs eight distinct hues.
       expect(new Set(series).size).toBe(8);
@@ -99,12 +102,12 @@ describe("statusHues", () => {
 
 describe("glassByScheme and WEB_TINTS (the glass material's own tokens)", () => {
   it("gives the material its own rgba fill in each scheme", () => {
-    // The native set: iOS Liquid Glass and frost and the Android blur read it, unchanged
-    // since the web took Dark Factory's frost. The web's set is WEB_TINTS, which the CSS
-    // hand-off carries (checked against the shipped stylesheet below, and by
+    // The native set: iOS Liquid Glass and frost and the Android blur read it, seeded on the
+    // hand-off's 62% `--gl` for the functional layer. The web's set is WEB_TINTS, which the
+    // CSS hand-off carries (checked against the shipped stylesheet below, and by
     // scripts/validate-tokens.ts).
-    expect(glassByScheme.light["glass-tint"]).toBe("rgba(255, 255, 255, 0.20)");
-    expect(glassByScheme.dark["glass-tint"]).toBe("rgba(22, 22, 28, 0.30)");
+    expect(glassByScheme.light["glass-tint"]).toBe("rgba(255, 255, 255, 0.62)");
+    expect(glassByScheme.dark["glass-tint"]).toBe("rgba(18, 18, 26, 0.62)");
     for (const scheme of ["light", "dark"] as const) {
       for (const tint of Object.values(WEB_TINTS[scheme])) expect(tint).toMatch(/^rgba\(\d+, \d+, \d+, 0\.\d+\)$/);
     }
@@ -166,8 +169,12 @@ describe("CSS material handoff fallbacks", () => {
         values.set(key, rule.style.getPropertyValue(key).trim());
       }
     };
+    // The look's blocks in sheet order: the light scheme, the dark one, the palette's hue,
+    // the accent rows, and the glass root.
+    const squash = (selector: string) => selector.replace(/\s*,\s*/g, ",");
+    const own = [":root", ...(look.scheme === "dark" ? [".dark"] : []), paletteSelector(look.palette), ACCENT_SELECTOR[look.scheme], GLASS_ROOT].map(squash);
     for (const rule of sheet.cssRules) {
-      if (rule instanceof CSSStyleRule && [":root", look.selector, GLASS_ROOT].includes(rule.selectorText)) apply(rule);
+      if (rule instanceof CSSStyleRule && own.includes(squash(rule.selectorText))) apply(rule);
       if (rule instanceof CSSMediaRule && rule.conditionText === media) {
         for (const nested of rule.cssRules) {
           if (nested instanceof CSSStyleRule && nested.selectorText === FALLBACK_SELECTOR) apply(nested);
@@ -192,19 +199,19 @@ describe("CSS material handoff fallbacks", () => {
     const { name: scheme } = look;
     it(`retains translucent ${scheme} material when no fallback is active`, () => {
       const value = materialValues(look);
-      // The hand-off is the WEB material: Dark Factory's frost, whose table is web-frost.ts.
+      // The hand-off is the WEB material: the v4 frost, whose table is web-frost.ts.
       for (const [tint, fill] of Object.entries(look.webGlass)) {
-        expect(value(`--${tint}`)).toMatch(/^rgba\(.+,0\.\d+\)$/);
+        expect(value(`--${tint}`)).toMatch(/^rgba\(.+,\s*0\.\d+\)$/);
         expect(channels(value(`--${tint}`))).toEqual(channels(fill));
       }
-      // One blur with no saturation shift.
+      // One blur with the hand-off's saturation lift.
       expect(value("--glass-blur")).toBe(`${WEB_FROST.blur}px`);
-      expect(value("--glass-frost")).toBe(`blur(${WEB_FROST.blur}px)`);
+      expect(value("--glass-frost")).toBe(webBackdrop(WEB_FROST.blur));
       // The lens is gone, and its tokens with it.
       expect(() => value("--glass-lens")).toThrow("Missing CSS token");
       expect(() => value("--glass-illumination")).toThrow("Missing CSS token");
-      // The rim is one inset hairline in Dark Factory's shell line, no specular highlight.
-      expect(channels(value("--glass-edge"))).toEqual(channels(WEB_FROST.shellLine[look.scheme]));
+      // The rim is one inset hairline in the hand-off's strong line, no specular highlight.
+      expect(channels(value("--glass-edge"))).toEqual(channels(WEB_FROST.rim[look.scheme]));
       expect(value("--glass-specular")).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${value("--glass-edge")}`);
       // The page behind the frost is the app's own: the kit ships no backdrop token.
       expect(() => value("--surface-backdrop")).toThrow("Missing CSS token");
@@ -216,7 +223,7 @@ describe("CSS material handoff fallbacks", () => {
         for (const tint of Object.keys(look.webGlass)) {
           const fill = value(`--${tint}`);
           expect([value("--card"), value("--popover")]).toContain(fill);
-          expect(fill).toMatch(/^oklch\([^/]+\)$/);
+          expect(fill).toMatch(/^#[0-9a-f]{6}$/);
         }
         expect(value("--glass-frost")).toBe("none");
         expect([value("--border"), value("--input")]).toContain(value("--glass-edge"));
@@ -236,7 +243,7 @@ describe("CSS material handoff fallbacks", () => {
  * text fields, checkbox, radio, the switch track, select, autocomplete, a disabled pager's
  * current page),
  * and for several of them it is the ONLY thing separating the control from the page.
- * (The web's outline Button is Dark Factory's hairline pill in `border`: its label
+ * (The web's outline Button is a hairline pill in `border`: its label
  * identifies it, so its boundary is not the visual information 1.4.11 protects.)
  *
  * `border` is deliberately NOT held to the same floor. It separates two SURFACES
@@ -289,17 +296,16 @@ describe("control boundary contrast (WCAG 1.4.11)", () => {
   }
 
   it("`field-border` is the field's resting hairline: between `border` and `input`, below the floor on purpose", () => {
-    // A text field rests on Dark Factory's line densified until the box reads apart
-    // from a divider (tools/darkfactory/derive-tokens.ts), a disclosed WCAG 1.4.11
-    // trade-off scoped to the field skins (src/style/field-colors.ts). It must stay
-    // distinct from both neighbours: collapsing it onto `input` would re-heavy the box,
-    // collapsing it onto `border` would make the box vanish on the card.
+    // A text field rests on the hand-off's strong hairline (`--ln2`, translucent), denser
+    // than a divider, a disclosed WCAG 1.4.11 trade-off scoped to the field skins
+    // (src/style/field-colors.ts). It must stay distinct from both neighbours: collapsing
+    // it onto `input` would re-heavy the box, collapsing it onto `border` would make the
+    // box vanish on the card. The translucent lines are judged as painted on the card.
     for (const { tokens: t } of LOOKS) {
-      const rest = t["field-border"]!;
-      expect(rest).toMatch(/^#[0-9a-f]{6}$/);
-      expect(contrast(rest, t.card)).toBeLessThan(3);
-      expect(contrast(rest, t.card)).toBeGreaterThan(contrast(t.border, t.card));
-      expect(contrast(rest, t.card)).toBeLessThan(contrast(t.input, t.card));
+      const rest = composite(t["field-border"]!, t.card);
+      expect(contrastRatio(rest, t.card)).toBeLessThan(3);
+      expect(contrastRatio(rest, t.card)).toBeGreaterThan(contrastRatio(composite(t.border, t.card), t.card));
+      expect(contrastRatio(rest, t.card)).toBeLessThan(contrastRatio(t.input, t.card));
     }
   });
 
@@ -308,7 +314,7 @@ describe("control boundary contrast (WCAG 1.4.11)", () => {
     // by collapsing border back onto input would coarsen every divider and card
     // edge in the kit. These are expected to stay well under 3:1.
     for (const { tokens: t } of LOOKS) {
-      expect(contrast(t.border, t.background)).toBeLessThan(3);
+      expect(contrastRatio(composite(t.border, t.background), t.background)).toBeLessThan(3);
       expect(t.border).not.toBe(t.input);
     }
   });

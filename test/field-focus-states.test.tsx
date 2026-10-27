@@ -110,7 +110,7 @@ describe("fields paint their own focus state", () => {
     );
     const flush = screen.getByTestId("flush");
     expect(outline(flush, "style")).toBe("");
-    expect(outline(flush, "offset")).toBe(`-${FOCUS_RING_OFFSET}px`);
+    expect(outline(flush, "offset")).toBe(`-${FOCUS_RING_WIDTH}px`);
     expect(outline(screen.getByTestId("framed"), "style")).toBe("solid");
     expect(outline(screen.getByTestId("framed"), "width")).toBe("0px");
   });

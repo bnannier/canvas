@@ -27,7 +27,7 @@ import type { ColorTokens } from "../../src/style/tokens.ts";
 import { widths } from "../../src/style/tokens.ts";
 import type { BooleanProps } from "../../src/style/axis.ts";
 import { stepOf, type MeasureProps } from "../../src/style/sizing.ts";
-import { requestedSchemeOf, requestedSurfaceOf, type ThemeProviderProps } from "../../src/style/theme.tsx";
+import { requestedPaletteOf, requestedSchemeOf, requestedSurfaceOf, type ThemeProviderProps } from "../../src/style/theme.tsx";
 import { sizeOf as autocompleteSize } from "../../src/atoms/autocomplete/autocomplete.shared.tsx";
 import { sizeOf as avatarSize, shapeOf as avatarShape, overlapOf } from "../../src/atoms/avatar/avatar.shared.tsx";
 import { alignEndOf } from "../../src/atoms/avatar/avatar-menu.shared.tsx";
@@ -186,7 +186,16 @@ export const SUBJECTS: readonly AnySubject[] = [
     resolver: "src/style/theme.tsx#requestedSchemeOf",
     members: ["dark", "light"],
     resolve: (p) => requestedSchemeOf(p, "light"),
-    notes: ["With neither, the legacy `scheme` value, then the OS appearance.", "`dark` also wins over the `mint` palette, which paints only the light scheme."],
+    notes: ["With neither, the legacy `scheme` value, then the OS appearance."],
+  }),
+  subject<Pick<ThemeProviderProps, "violet" | "cyan" | "mint" | "rose" | "amber">>({
+    id: "ThemeProvider.palette",
+    components: ["ThemeProvider"],
+    pages: [],
+    resolver: "src/style/theme.tsx#requestedPaletteOf",
+    members: ["cyan", "mint", "rose", "amber", "violet"],
+    resolve: requestedPaletteOf,
+    notes: ["With none, the default violet. A palette applies in both schemes."],
   }),
   subject<Pick<ThemeProviderProps, "glass" | "solid" | "surface">>({
     id: "ThemeProvider.surface",

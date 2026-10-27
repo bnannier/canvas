@@ -2,7 +2,7 @@ import type { MenuNode } from "../data/nav";
 import { paletteMenuSection, type Palette } from "./theme-toggles";
 
 // The iOS header's trailing UIMenu, as data: the section's site map with the current page
-// check-marked, then (in the light scheme) the Palette section with the palette in force
+// check-marked, then the Palette section with the palette in force
 // check-marked. NativeHeader hands it to expo-router's `unstable_headerRightItems`, which
 // react-native-screens turns into a native UIMenu; it lives apart from the header so its
 // selection groups can be tested without the native stack.
@@ -38,7 +38,6 @@ export interface NativeHeaderMenuOptions {
   nodes: MenuNode[];
   /** The current page's slug (`getActiveSlug`); its row is check-marked. */
   activeSlug: string;
-  scheme: "light" | "dark";
   palette: Palette;
   setPalette: (palette: Palette) => void;
   /** Opens a page row's route. */
@@ -50,15 +49,14 @@ export interface NativeHeaderMenuOptions {
 /**
  * The iOS header menu: the menu tree mapped to native UIMenu items (a leaf becomes an
  * action, check-marked when it is the current page; a submenu becomes a native submenu
- * that slides over, nested arbitrarily deep), followed by the Palette section in the
- * light scheme.
+ * that slides over, nested arbitrarily deep), followed by the Palette section.
  */
-export function nativeHeaderMenu({ nodes, activeSlug, scheme, palette, setPalette, navigate, icon }: NativeHeaderMenuOptions): NativeHeaderMenu {
+export function nativeHeaderMenu({ nodes, activeSlug, palette, setPalette, navigate, icon }: NativeHeaderMenuOptions): NativeHeaderMenu {
   const toItems = (ns: MenuNode[]): NativeMenuItem[] =>
     ns.map((n): NativeMenuItem =>
       n.kind === "leaf"
         ? { type: "action", label: n.label, icon: icon?.(n.icon), onPress: () => navigate(n.href), ...(n.slug === activeSlug ? { state: "on" as const } : {}) }
         : { type: "submenu", label: n.label, icon: icon?.(n.icon), ...(n.inline ? { inline: true as const } : {}), items: toItems(n.items) },
     );
-  return { multiselectable: true, items: [...toItems(nodes), ...paletteMenuSection(scheme, palette, setPalette)] };
+  return { multiselectable: true, items: [...toItems(nodes), ...paletteMenuSection(palette, setPalette)] };
 }

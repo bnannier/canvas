@@ -1,3 +1,4 @@
+import type { Palette } from "@nannier/canvas";
 // The wire protocol between the in-app audit driver (driver.native.tsx, built only into
 // the native audit app) and the capture host (tools/audit/native/server.ts). Types and
 // constants only, so the host can import it under plain bun with no React Native in
@@ -23,7 +24,7 @@ export type AuditPlatform = "ios" | "android";
 export interface AuditLook {
   scheme: "light" | "dark";
   surface: "solid" | "glass";
-  palette: "blush" | "mint";
+  palette: Palette;
 }
 
 /** What the running theme resolved, read from the kit's useTheme(), not from what was asked. */

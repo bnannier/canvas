@@ -4,6 +4,7 @@ import { Text } from "react-native";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
 import { resolveMaterial, type MaterialCapabilities } from "../src/style/glass-surface/material-resolution.ts";
+import { WEB_FROST, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 afterEach(cleanup);
 
 const solid = { surface: "solid", reducedTransparency: false, increasedContrast: false } as const;
@@ -27,7 +28,7 @@ test("frame frost keeps controls solid and paints the exact frame or veil blur o
   try {
     const { getByTestId, getByText, rerender } = render(<ThemeProvider solid><GlassSurface frosted tint="rgba(255,255,255,0.52)" style={{ backgroundColor: "#ffffff" }} testID="frame"><Child /></GlassSurface></ThemeProvider>);
     const frame = getByTestId("frame");
-    expect(frame.style.backdropFilter).toBe("blur(24px)");
+    expect(frame.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
     expect(getByText("solid")).toBeTruthy();
     rerender(<ThemeProvider solid><GlassSurface veil tint="rgba(40,30,90,0.28)" style={{ backgroundColor: "#ffffff" }} testID="frame"><Child /></GlassSurface></ThemeProvider>);
     expect(getByTestId("frame")).toBe(frame);

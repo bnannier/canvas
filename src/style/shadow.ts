@@ -1,35 +1,39 @@
 import { Platform, type ViewStyle } from "react-native";
 import { lightColors, type ColorTokens } from "./tokens.js";
 
-// Elevation presets, as ready-to-spread RN ViewStyle objects. The web ladder is Dark
-// Factory's: a shade cast straight down with a negative spread, so it pools under the
-// surface's lower edge instead of haloing it, tinted by the palette (`shade`, a violet
-// wash in the light palettes and black in the dark one) so a card reads as lifted off
-// the page rather than ringed in gray. sm is DF's tile, DEFAULT its card, md its hovered
-// card, lg its popover (DF's 1px ring stays the skin's own border), and xl its dialog,
-// the one top-layer shade, which is black at every palette because it separates a modal
-// from whatever lies under it rather than lifting a surface off the page.
+// Elevation presets, as ready-to-spread RN ViewStyle objects. The web ladder is the v4
+// hand-off's three shadows (`--sh-sm`, `--sh-md`, `--sh-lg`): a drop in the scheme's shade
+// with a 1px hairline ring in the light scheme, and a lit 1px top edge over a black drop in
+// the dark one. sm is the resting card and tile, md the raised card, menu and floating
+// chrome, lg the overlay (dialog, sheet, popover). The legacy levels map onto the three:
+// row, empty and DEFAULT rest at sm, xl is the overlay's lg.
 //
 // On native the levels keep the platform geometry they always had (iOS `shadow*` props,
-// Android `elevation`), retinted from the ink to the palette's shade. On
-// react-native-web the `shadow*` props are deprecated in favor of the cross-platform
-// `boxShadow` string, so the web branch emits boxShadow. Pass the active tokens to tint
-// by the active palette: `{ ...shadow("md", t) }`. Without them the light palette's
-// shade stands in.
+// Android `elevation`), coloured by the scheme's shade. On react-native-web the `shadow*`
+// props are deprecated in favor of the cross-platform `boxShadow` string, so the web
+// branch emits boxShadow. Pass the active tokens to colour by the active scheme:
+// `{ ...shadow("md", t) }`. Without them the light scheme stands in.
 
 export type ShadowLevel = "none" | "row" | "empty" | "sm" | "DEFAULT" | "md" | "lg" | "xl";
 
-// The web ladder's geometry, [offsetY, blur, spread], painted in the palette's shade.
-const LADDER: Record<Exclude<ShadowLevel, "none" | "xl">, readonly [number, number, number]> = {
-  row: [16, 36, -24],
-  empty: [18, 40, -22],
-  sm: [16, 32, -22],
-  DEFAULT: [20, 44, -24],
-  md: [30, 54, -24],
-  lg: [26, 50, -20],
+type ShadeTokens = Pick<ColorTokens, "shade" | "shade-md" | "shade-lg" | "shade-ring" | "shade-inset">;
+
+// The hand-off's geometry per step, [offsetY, blur, spread], and the shade role it drops in.
+const LADDER = {
+  sm: { drop: [1, 2, 0], shade: "shade" },
+  md: { drop: [12, 32, -10], shade: "shade-md" },
+  lg: { drop: [30, 80, -16], shade: "shade-lg" },
+} as const satisfies Record<string, { drop: readonly [number, number, number]; shade: keyof ShadeTokens }>;
+
+const STEP: Record<Exclude<ShadowLevel, "none">, keyof typeof LADDER> = {
+  row: "sm",
+  empty: "sm",
+  sm: "sm",
+  DEFAULT: "sm",
+  md: "md",
+  lg: "lg",
+  xl: "lg",
 };
-// Dark Factory's dialog shade: a top-layer separator, the same on every palette.
-const TOP_LAYER = "0px 50px 100px -30px rgba(0, 0, 0, 0.45)";
 
 const NATIVE_SHADOWS: Record<Exclude<ShadowLevel, "none">, ViewStyle> = {
   row: { shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2 },
@@ -41,9 +45,11 @@ const NATIVE_SHADOWS: Record<Exclude<ShadowLevel, "none">, ViewStyle> = {
   xl: { shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.18, shadowRadius: 30, elevation: 12 },
 };
 
-/** The palette's shade, or the light palette's when a caller passes no tokens. */
-function shadeOf(tokens?: Pick<ColorTokens, "shade">): string {
-  return tokens?.shade ?? lightColors.shade ?? "rgba(0, 0, 0, 0.2)";
+/** A shade role from the passed tokens, falling back along the ladder, then to the light scheme's. */
+function role(tokens: Partial<ShadeTokens> | undefined, name: keyof ShadeTokens): string | undefined {
+  const pick = (t: Partial<ShadeTokens>) =>
+    t[name] ?? (name === "shade-lg" ? (t["shade-md"] ?? t.shade) : name === "shade-md" ? t.shade : undefined);
+  return (tokens && pick(tokens)) ?? pick(lightColors);
 }
 
 /** An rgba() or hex colour as an opaque rgb(), for the native shadowColor (the level sets the opacity). */
@@ -54,19 +60,33 @@ function opaque(color: string): string {
 }
 
 /**
- * The elevation preset for a level (defaults to the standard `shadow`), tinted by the
- * palette's `shade` when the active tokens are passed.
+ * The web boxShadow of a level: the lit top edge, the drop and the hairline ring, each in
+ * its scheme role (a scheme without one carries it transparent, as styles/tokens/shadows.css
+ * spells the same three layers).
  */
-export function shadow(level: ShadowLevel = "DEFAULT", tokens?: Pick<ColorTokens, "shade">): ViewStyle {
+export function webShadow(level: Exclude<ShadowLevel, "none">, tokens?: Partial<ShadeTokens>): string {
+  const step = LADDER[STEP[level]];
+  const [y, blur, spread] = step.drop;
+  const clear = "rgba(0, 0, 0, 0)";
+  return [
+    `inset 0px 1px 0px 0px ${role(tokens, "shade-inset") ?? clear}`,
+    `0px ${y}px ${blur}px ${spread}px ${role(tokens, step.shade) ?? "rgba(0, 0, 0, 0.2)"}`,
+    `0px 0px 0px 1px ${role(tokens, "shade-ring") ?? clear}`,
+  ].join(", ");
+}
+
+/**
+ * The elevation preset for a level (defaults to the standard `shadow`), coloured by the
+ * scheme's shade roles when the active tokens are passed.
+ */
+export function shadow(level: ShadowLevel = "DEFAULT", tokens?: Partial<ShadeTokens>): ViewStyle {
   if (Platform.OS === "web") {
     if (level === "none") return { boxShadow: "none" };
-    if (level === "xl") return { boxShadow: TOP_LAYER };
-    const [y, blur, spread] = LADDER[level];
-    return { boxShadow: `0px ${y}px ${blur}px ${spread}px ${shadeOf(tokens)}` };
+    return { boxShadow: webShadow(level, tokens) };
   }
   if (level === "none") return { shadowOpacity: 0, elevation: 0 };
-  // The top layer stays black on native too, like the web's dialog shade.
-  return { ...NATIVE_SHADOWS[level], shadowColor: level === "xl" ? "#000000" : opaque(shadeOf(tokens)) };
+  const drop = role(tokens, LADDER[STEP[level]].shade) ?? "rgba(0, 0, 0, 0.2)";
+  return { ...NATIVE_SHADOWS[level], shadowColor: level === "xl" ? "#000000" : opaque(drop) };
 }
 
 /**

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { lightColors, radius, spacing } from "../../src/style/tokens.ts";
+import { typeRoles } from "../../src/style/type-scale.ts";
 
 // DESIGN.md is the kit's design system, written to be read by the agents and people
 // building on it. Its value depends on two things being true at once: that the numbers
@@ -51,9 +52,9 @@ describe("the frontmatter", () => {
 
   it("describes a type role fully enough to render it", () => {
     const body = (data.typography as Record<string, Record<string, unknown>>).body;
-    expect(body.fontSize).toBe("12.5px");
-    expect(body.fontWeight).toBe(500);
-    expect(String(body.fontFamily)).toContain("Manrope");
+    expect(body.fontSize).toBe(`${typeRoles.body.fontSize}px`);
+    expect(body.fontWeight).toBe(400);
+    expect(String(body.fontFamily)).toContain("Instrument Sans");
     expect(String(body.lineHeight)).toMatch(/^\d+px$/);
   });
 

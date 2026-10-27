@@ -5,7 +5,7 @@ import { View, Pressable, useTheme, useReducedMotion, pressDim } from "../../sty
 import { liftStyle, useHover } from "../../style/hover.js";
 import { HOVER } from "../../style/motion.js";
 import { identityDisc, identityHue } from "../../style/identity-hue.js";
-import { lightColors, mintColors, darkColors } from "../../style/tokens.js";
+import { colorsFor } from "../../style/tokens.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Typography } from "../../atoms/typography/typography.js";
@@ -52,7 +52,7 @@ function ArtPanel({ angle, stops, style, children }: { angle: number; stops: { c
 /** Authored brand artwork remains opaque identity content in every material mode. */
 export function BrandCard(props: CardProps & { mode: BrandCardMode; hoverEnabled: boolean }) {
   const { tokens, scheme, palette } = useTheme();
-  const base = scheme === "dark" ? darkColors : palette === "mint" ? mintColors : lightColors;
+  const base = colorsFor(palette, scheme);
   const { hovered, target } = useHover(props.hoverEnabled && props.onPress != null);
   const reduced = useReducedMotion();
   const active = props.hoverEnabled && (props.testOnly_hovered ?? hovered);
@@ -63,7 +63,7 @@ export function BrandCard(props: CardProps & { mode: BrandCardMode; hoverEnabled
     const art = <ArtPanel angle={props.mode === "promo" ? 135 : 115} stops={props.mode === "promo" ? promoStops : featureStops} style={[props.children != null ? s[artworkInsetOf(props)] : s.artwork, props.onPress ? null : props.style]}>{props.children}</ArtPanel>;
     return props.onPress ? <Pressable {...target} onPress={props.onPress} accessibilityRole="button" accessibilityLabel={props.accessibilityLabel} style={[s.artwork, props.style]} testID={props.testID}>{art}</Pressable> : art;
   }
-  if (props.mode === "promo") return <ArtPanel angle={135} stops={promoStops} style={{ ...s.promo, boxShadow: `0 26px 50px -24px ${tokens.ring}` }}>
+  if (props.mode === "promo") return <ArtPanel angle={135} stops={promoStops} style={{ ...s.promo, boxShadow: `0 26px 50px -24px ${tokens.glow ?? tokens.ring}` }}>
     <View style={s.promoOrb} />
     <Typography h4 bold captionLeading tightTracking inverse style={s.promoTitle}>{props.title}</Typography>
     <Typography small medium bodyLeading inverseHint style={{ marginTop: 8 }}>{props.body}</Typography>

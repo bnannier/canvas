@@ -8,14 +8,12 @@ import { darkGlass, lightGlass, type ColorScheme, type GlassTokens } from "../to
 // `IOS_GLASS` is what the ThemeProvider publishes as `theme.glass` on iOS (glass-tints.ios.ts):
 // the fill the iOS frost paints over its blur, the fill iOS 26's Liquid Glass carries, and the
 // tints every legibility solve composites (`legibleWash`, `legibleInnerFill`, `inverseDenseTint`).
-// It is the public native set (`glassByScheme`, which Android keeps unchanged) but for the dark
-// control puck, white 0.05 where the native set says 0.12 (the owner's GS-8 decision): once the
-// frost painted a field's tint over its blur (glass-surface-native-frost-self-sample-1), a dark
-// text field's body read #373740 at 0.12 and the GS-2 cap left its addon no fill; at 0.05 the
-// body reads #272730, as it did while the frost's veil darkened the tint, and the addon keeps a
-// faint fill (measured on the iPhone 17 Pro simulator, iOS 27 runtime). The light scheme is
-// the native set's. test/ios-tints.test.ts holds the table and what it leaves the dark field.
+// Under the v4 hand-off it is the public native set (`glassByScheme`) in both schemes: the old
+// dark control override (white 0.05, the owner's GS-8 decision) existed because the native set's
+// dark puck was a LIGHT tint (white 0.12) that read #373740 under the frost; the v4 dark puck is
+// the hand-off's own raised surface (#1e1e29 at 0.72), which reads as the hand-off's control on
+// any dark pane, so the override has nothing left to correct. test/ios-tints.test.ts holds it.
 export const IOS_GLASS: Record<ColorScheme, GlassTokens> = {
   light: lightGlass,
-  dark: { ...darkGlass, "glass-tint-control": "rgba(255, 255, 255, 0.05)" },
+  dark: darkGlass,
 };

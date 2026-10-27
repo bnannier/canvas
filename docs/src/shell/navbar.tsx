@@ -2,13 +2,12 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Row, Icon, TabBar, OverlayProvider, GlassBlurPlane, useGlassBlurPlane, useTheme, useFormFactor, alpha, type IconProps } from "@nannier/canvas";
+import { View, Row, Icon, TabBar, OverlayProvider, useTheme, useFormFactor, alpha, type IconProps } from "@nannier/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { PageBackdrop } from "./page-backdrop";
-import { PageFrame } from "./page-frame";
 import { ScrollEdgeProvider } from "./scroll-edge";
 import { SearchModal } from "./search-modal";
 import { ThemeToggles } from "./theme-toggles";
@@ -85,8 +84,6 @@ function sectionIcon(name: string, active: boolean) {
 // current section's sub-nav, mirroring the native iOS app). The cmd-K search modal and
 // the web scrollbar gutter are shared.
 function WebNav() {
-  // The page backdrop is the blur plane the frame's material frosts on Android (./page-frame.tsx).
-  const plane = useGlassBlurPlane();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const router = useRouter();
@@ -123,54 +120,49 @@ function WebNav() {
   // Only the navigation siblings change: desktop gets the sidebar rail and Topbar;
   // narrow web gets MobileNavBar, bottom tabs and the responsive sidebar drawer.
   return (
-    // The shell's first child is the page look (./page-backdrop.tsx), Dark Factory's
-    // gradient and orbs fixed to the window behind everything; a native screen mounts its
-    // own inside ScreenFrame. Nothing above it paints a page fill, so the e2e paint check
-    // reads the look off the backdrop's own stops; the marker stays for the tools that
-    // find the shell.
+    // The shell's first child is the page (./page-backdrop.tsx), the hand-off's flat page
+    // fixed to the window behind everything; a native screen mounts its own inside
+    // ScreenFrame. Nothing above it paints a page fill, so the e2e paint check reads the
+    // page off the backdrop itself; the marker stays for the tools that find the shell.
     <ScrollEdgeProvider>
       <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1 }} edges={["top"]}>
-        <GlassBlurPlane plane={plane}><PageBackdrop /></GlassBlurPlane>
+        <PageBackdrop />
         <WebScrollbarTheme />
         <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
-        {/* Dark Factory's frosted shell (./page-frame.tsx), filling the window over the
-            page look: the sidebar, the top bar and the page live inside it. */}
-        <PageFrame plane={plane}>
-          <Row flush fill>
-            {wide ? (
-              // The rail column is marked for the document root's one pre-hydration rule
-              // (docs/src/app/+html.tsx): a pre-rendered page always carries the desktop
-              // shell, because a server cannot measure a window, and on a phone that rail
-              // would squeeze the content into the remaining 170px until the bundle ran.
-              // The rule hides it below the desktop cut; after hydration the rail is
-              // simply not rendered there, so the rule matches nothing. (A web-only
-              // attribute, spread through a cast the way page.tsx marks its scroller.)
-              <View {...({ dataSet: { shellRail: "" } } as object)}>
-                <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
-              </View>
-            ) : null}
-            <View style={{ flex: 1, minWidth: 0 }}>
-              {/* The page content is the main landmark at every width. */}
-              <View role="main" style={{ flex: 1 }}>
-                <OverlayProvider viewport viewportInsets={{ top: headerHeight, bottom: wide ? 0 : barHeight }}>
-                  <Slot />
-                </OverlayProvider>
-              </View>
-              <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
-                {wide ? (
-                  <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
-                ) : (
-                  <MobileNavBar
-                    title={titleFor(pathname).title}
-                    showBack={!atRoot}
-                    onBack={goBack}
-                    onMenu={() => setMenuOpen(true)}
-                  />
-                )}
-              </View>
+        <Row flush fill>
+          {wide ? (
+            // The rail column is marked for the document root's one pre-hydration rule
+            // (docs/src/app/+html.tsx): a pre-rendered page always carries the desktop
+            // shell, because a server cannot measure a window, and on a phone that rail
+            // would squeeze the content into the remaining 170px until the bundle ran.
+            // The rule hides it below the desktop cut; after hydration the rail is
+            // simply not rendered there, so the rule matches nothing. (A web-only
+            // attribute, spread through a cast the way page.tsx marks its scroller.)
+            <View {...({ dataSet: { shellRail: "" } } as object)}>
+              <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
             </View>
-          </Row>
-        </PageFrame>
+          ) : null}
+          <View style={{ flex: 1, minWidth: 0 }}>
+            {/* The page content is the main landmark at every width. */}
+            <View role="main" style={{ flex: 1 }}>
+              <OverlayProvider viewport viewportInsets={{ top: headerHeight, bottom: wide ? 0 : barHeight }}>
+                <Slot />
+              </OverlayProvider>
+            </View>
+            <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
+              {wide ? (
+                <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
+              ) : (
+                <MobileNavBar
+                  title={titleFor(pathname).title}
+                  showBack={!atRoot}
+                  onBack={goBack}
+                  onMenu={() => setMenuOpen(true)}
+                />
+              )}
+            </View>
+          </View>
+        </Row>
         {!wide ? (
           // The bar floats over the page like the iOS 26 tab bar: an absolute overlay along
           // the bottom, touches passing through its margins to the page beneath, which

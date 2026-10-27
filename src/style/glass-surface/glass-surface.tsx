@@ -9,7 +9,7 @@ import { Platform, View, type ViewStyle } from "react-native";
 import { FrostView, requiresBlurTarget } from "./material-runtime.js";
 import { frostedKindOf } from "./material-resolution.js";
 import { useMaterialResolution } from "./use-material-theme.js";
-import { WEB_FROST, webRimColor } from "./web-frost.js";
+import { WEB_FROST, webBackdrop, webRimColor } from "./web-frost.js";
 import {
   GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, frostMethodProps, materialFill, surfaceIntensity,
   type GlassSurfaceProps,
@@ -62,9 +62,9 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const solid = resolved.renderer === "solid";
   const frame = frostedKindOf(props);
   if (frame != null && !solid && Platform.OS === "web") {
-    // The frame paints its tint over its own backdrop filter, exactly as Argus.
+    // The frame paints its tint over its own backdrop filter.
     // It owns its exterior shadow and hairline; no additional material rim is added.
-    const backdrop = `blur(${frame === "veil" ? WEB_FROST.veilBlur : WEB_FROST.blur}px)`;
+    const backdrop = frame === "veil" ? `blur(${WEB_FROST.veilBlur}px)` : webBackdrop(WEB_FROST.blur);
     const paint = { backgroundColor: props.tint ?? (frame === "veil" ? theme.tokens.scrim : theme.tokens.card), backdropFilter: backdrop, WebkitBackdropFilter: backdrop } as ViewStyle;
     return <GlassBox {...props} style={[style, paint]} solid material={null} />;
   }
@@ -72,11 +72,11 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const translucent = sheer && layer === "content";
   const fill = materialFill(style, props.stateBorder);
   const blur = clear ? WEB_FROST.clearBlur : WEB_FROST.blur;
-  const frost = blur > 0 ? `blur(${blur}px)` : undefined;
+  const frost = blur > 0 ? webBackdrop(blur) : undefined;
   const scheme = theme.dark ? "dark" : "light";
   const rim: ViewStyle = { ...fill, boxShadow: `inset 0 0 0 ${WEB_FROST.rimWidth}px ${webRimColor(layer, scheme, theme.tokens.border)}` };
   // The fill: the layer's tint, a `tint` wash or a solved `brand` colour (`frostFill`). It
-  // paints OVER the blur, as Dark Factory's frost paints its background over its own filtered
+  // paints OVER the blur, as the hand-off's glass paints its background over its own filtered
   // backdrop. A backdrop filter samples everything painted before it, so a fill beneath it was
   // blurred into the material it belongs to (no material may sample itself), and at a rounded
   // corner the wedges outside the fill's curve, where the page shows unfilled, bled into the

@@ -3,7 +3,6 @@ import { useScrimFrost } from "../../style/glass-surface/scrim-frost.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { glassMessageStyle } from "../../style/glass-message.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "../../style/safe-area.js";
 import {
@@ -192,8 +191,8 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
     const headerNode = hasHeader ? (
       <Fragment>
         <View style={skin.header}>
-          {title != null ? <Text style={glassMessageStyle(skin.headerTitle(tokens), theme)}>{title}</Text> : null}
-          {message != null ? <Text style={glassMessageStyle(skin.headerMessage(tokens), theme)}>{message}</Text> : null}
+          {title != null ? <Text style={skin.headerTitle(tokens)}>{title}</Text> : null}
+          {message != null ? <Text style={skin.headerMessage(tokens)}>{message}</Text> : null}
         </View>
         {skin.divider ? <View style={skin.divider(tokens)} /> : null}
       </Fragment>

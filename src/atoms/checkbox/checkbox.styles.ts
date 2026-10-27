@@ -71,7 +71,7 @@ function boxBase(box: number, nudge: boolean): ViewStyle {
   };
 }
 
-// ---------- Web: a 20px box at the base size with the 6px corner ----------
+// ---------- Web: a 20px box at the base size with the 5px corner ----------
 export const webSkin: CheckboxSkin = {
   box: (t, filled, size, nudge) => ({
     ...boxBase(WEB_BOX[size], nudge),

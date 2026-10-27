@@ -14,7 +14,7 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode, type RefObject } from "react";
 import { View, PixelRatio, StyleSheet, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
 import { frameBedsFor, type ColorTokens, type GlassTokens, type ColorScheme, type Palette } from "../tokens.js";
-import { alpha, composite, contrastRatio, inkOn } from "../color.js";
+import { alpha, contrastOver, inkOn } from "../color.js";
 import { actionFill, actionInk } from "../action.js";
 import { MaterialBehind } from "./material-behind.js";
 import { useIsomorphicLayoutEffect } from "../use-isomorphic-layout-effect.js";
@@ -212,7 +212,7 @@ export function brandTint(brand: string, page: string | readonly string[], ink: 
   const beds = typeof page === "string" ? [page] : page;
   for (let a = BRAND_TINT_ALPHA; a < 1; a += BRAND_TINT_STEP) {
     const fill = alpha(brand, Math.round(a * 100) / 100);
-    if (beds.every((bed) => contrastRatio(composite(fill, bed), ink) >= BRAND_INK_CONTRAST)) return fill;
+    if (beds.every((bed) => contrastOver(fill, bed, ink) >= BRAND_INK_CONTRAST)) return fill;
   }
   return alpha(brand, 1);
 }

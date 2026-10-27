@@ -3,7 +3,7 @@ import { cleanup, renderHook } from "@testing-library/react";
 import * as React from "react";
 
 // The docs' iOS header menu (docs/src/shell/native-menu.ts) carries two check marks at
-// once: the page you are on and, in the light scheme, the palette in force. This follows
+// once: the page you are on and the palette in force. This follows
 // the menu the way the app ships it: through expo-router's own header config (the real
 // useHeaderConfigProps, which turns a header item's menu into react-native-screens' bar
 // button config) and react-native-screens' own prepareHeaderBarButtonItems (the dicts
@@ -64,14 +64,14 @@ const { prepareHeaderBarButtonItems } = await import("../docs/node_modules/react
 const { nativeHeaderMenu } = await import("../docs/src/shell/native-menu.ts");
 const { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug } = await import("../docs/src/data/nav.ts");
 
-type Palette = "blush" | "mint";
+type Palette = "violet" | "cyan" | "mint" | "rose" | "amber";
+const LABELS: Record<Palette, string> = { violet: "Violet", cyan: "Cyan", mint: "Mint", rose: "Rose", amber: "Amber" };
 
-/** The header menu NativeHeader declares on `pathname`, in `scheme` with `palette` in force. */
-function headerMenu(pathname: string, scheme: "light" | "dark", palette: Palette, picked: Palette[] = []) {
+/** The header menu NativeHeader declares on `pathname` with `palette` in force. */
+function headerMenu(pathname: string, palette: Palette, picked: Palette[] = []) {
   return nativeHeaderMenu({
     nodes: nativeMenuFor(sectionFor(pathname), getActiveGroup(pathname)),
     activeSlug: getActiveSlug(pathname),
-    scheme,
     palette,
     setPalette: (p) => picked.push(p),
     navigate: () => {},
@@ -118,9 +118,9 @@ afterEach(cleanup);
 
 describe("the docs' iOS header menu", () => {
   it("shows both the current page and the palette in force as checked, each in a group of its own", () => {
-    for (const palette of ["blush", "mint"] as const) {
-      const menu = nativeMenuDict(headerMenu("/components/chip", "light", palette));
-      const label = palette === "mint" ? "Mint" : "Blush";
+    for (const palette of ["violet", "mint", "amber"] as const) {
+      const menu = nativeMenuDict(headerMenu("/components/chip", palette));
+      const label = LABELS[palette];
       expect(checked(menu)).toEqual(["Chip", label]);
       // No group asks UIKit to show two checks: the page's category and the Palette
       // section each hold their own one.
@@ -132,29 +132,34 @@ describe("the docs' iOS header menu", () => {
   });
 
   it("is no single-selection group at its root, since the page and the palette are independent", () => {
-    const menu = nativeMenuDict(headerMenu("/components/chip", "light", "mint"));
+    const menu = nativeMenuDict(headerMenu("/components/chip", "mint"));
     expect(menu.singleSelection).toBe(false);
     // Each section stays a single-selection group, as the HIG marks the one choice of several.
     const palette = menu.items!.find((el) => el.title === "Palette")!;
     expect(palette).toMatchObject({ displayInline: true, singleSelection: true });
-    expect(palette.items!.map((row) => [row.title, row.state])).toEqual([["Blush", undefined], ["Mint", "on"]]);
+    expect(palette.items!.map((row) => [row.title, row.state])).toEqual([
+      ["Violet", undefined],
+      ["Cyan", undefined],
+      ["Mint", "on"],
+      ["Rose", undefined],
+      ["Amber", undefined],
+    ]);
   });
 
   it("keeps the palette's check on every section's menu", () => {
     for (const pathname of ["/components/button", "/about", "/tokens/colors"]) {
-      const menu = nativeMenuDict(headerMenu(pathname, "light", "mint"));
+      const menu = nativeMenuDict(headerMenu(pathname, "mint"));
       expect(checked(menu)).toContain("Mint");
       for (const group of selectionGroups(menu)) expect(group.checked.length).toBeLessThanOrEqual(1);
     }
   });
 
-  it("picks the palette from its rows and drops the section in the dark scheme", () => {
+  it("picks the palette from its rows, in the kit's order", () => {
     const picked: Palette[] = [];
-    const menu = headerMenu("/components/chip", "light", "blush", picked);
+    const menu = headerMenu("/components/chip", "violet", picked);
     const section = menu.items.find((el) => el.label === "Palette");
-    if (section?.type !== "submenu") throw new Error("no Palette section in the light scheme");
+    if (section?.type !== "submenu") throw new Error("no Palette section");
     for (const row of section.items) if (row.type === "action") row.onPress();
-    expect(picked).toEqual(["blush", "mint"]);
-    expect(headerMenu("/components/chip", "dark", "mint").items.some((el) => el.label === "Palette")).toBe(false);
+    expect(picked).toEqual(["violet", "cyan", "mint", "rose", "amber"]);
   });
 });

@@ -95,7 +95,9 @@ describe("the web Button is Dark Factory's pill", () => {
         <Button outline disabled onPress={() => {}}>Pending</Button>
       </ThemeProvider>,
     );
-    const hoverFill = /rgba\(123,\s*108,\s*240,\s*0\.08\)/;
+    // The scheme's hover wash, as react-native-web prints it.
+    const [r, g, b, a] = lightColors.hover!.match(/[\d.]+/g)!;
+    const hoverFill = new RegExp(`rgba\\(${r},\\s*${g},\\s*${b},\\s*${Number(a).toFixed(2)}\\)`);
     for (const name of ["Review", "Details", "Cancel"]) {
       const button = screen.getByRole("button", { name });
       expect(button.style.getPropertyValue("transition-property"), name).toBe("");

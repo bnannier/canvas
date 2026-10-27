@@ -3,7 +3,6 @@ import {
   breakpoints,
   darkColors,
   fontWeight,
-  lightColors,
   radius,
   spacing,
   widths,
@@ -120,9 +119,13 @@ describe("elevation", () => {
     }
   }
 
-  it("tints the ladder by the palette's shade, and keeps the top layer black", () => {
-    for (const { tokens } of LOOKS) expect(boxShadowOf("DEFAULT", tokens)).toContain(tokens.shade as string);
-    expect(boxShadowOf("xl", lightColors)).toBe(boxShadowOf("xl", darkColors));
+  it("tints the ladder by the scheme's shade, and tops it at lg", () => {
+    // The hand-off's ladder has three steps (sm, md, lg); its dialogs take lg, so the
+    // top-layer separator is the lg step, tinted like the rest, not a separate black drop.
+    for (const { tokens } of LOOKS) {
+      expect(boxShadowOf("DEFAULT", tokens)).toContain(tokens.shade as string);
+      expect(boxShadowOf("xl", tokens)).toBe(boxShadowOf("lg", tokens));
+    }
   });
 
   it("none really is none", () => {
@@ -131,12 +134,15 @@ describe("elevation", () => {
 
   for (const level of LEVELS.filter((l) => l !== "none")) {
     it(`${level} lights the scene from directly above`, () => {
-      const value = (shadow(level) as { boxShadow?: string }).boxShadow ?? "";
-      const [x, y] = value.split(/\s+/);
-      // One light source across the whole ladder: no horizontal offset, and the
-      // shadow always falls downward. Mixed directions in one view are the defect.
-      expect(x).toBe("0px");
-      expect(Number.parseFloat(y)).toBeGreaterThanOrEqual(0);
+      const layers = shadeLayers((shadow(level) as { boxShadow?: string }).boxShadow ?? "");
+      expect(layers.length).toBeGreaterThan(0);
+      // One light source across the whole ladder: no horizontal offset, and every layer
+      // (the drop, the ring, and the inset top highlight) falls or lights downward. Mixed
+      // directions in one view are the defect.
+      for (const layer of layers) {
+        expect(layer.x).toBe(0);
+        expect(layer.y).toBeGreaterThanOrEqual(0);
+      }
     });
   }
 

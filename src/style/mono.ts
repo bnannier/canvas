@@ -19,3 +19,15 @@ export const MONO_FONT = Platform.select({
   android: "monospace",
   default: "monospace",
 }) as string;
+
+// The display face's sentinel, the same mechanism as MONO_FONT: a skin that sets its
+// headings in the display face asks for this family, and the themed Text swaps in the
+// app's registered `display` face (ThemeProvider `fonts.display`, Bricolage Grotesque in
+// the v4 design). With nothing registered it is the platform's system face, so the label
+// still renders in a real font everywhere.
+/** The kit's display face per platform when no display face is registered. */
+export const DISPLAY_FONT = Platform.select({
+  ios: "System",
+  android: "sans-serif",
+  default: "system-ui",
+}) as string;

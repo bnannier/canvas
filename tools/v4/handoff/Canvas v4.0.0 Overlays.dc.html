@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="./canvas-assets.js"></script>
+<style>
+:root{--sb:rgba(255,255,255,.18);--sb-h:rgba(255,255,255,.32)}
+:root:has([data-ion][data-scheme="light"]:not([data-ion] *)){--sb:rgba(17,17,24,.2);--sb-h:rgba(17,17,24,.36);background:#f2f2f7}
+*{scrollbar-width:thin;scrollbar-color:var(--sb) transparent}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}::-webkit-scrollbar-thumb{background:var(--sb);border-radius:10px;border:2px solid transparent;background-clip:padding-box}::-webkit-scrollbar-thumb:hover{background-color:var(--sb-h)}
+html,body{margin:0;padding:0;background:#0a0a0f}
+*{box-sizing:border-box}
+body{font-family:"Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+nav>div{scrollbar-width:none}nav>div::-webkit-scrollbar{display:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit;background:none;border:0;outline:0;margin:0}
+input::placeholder,textarea::placeholder{color:var(--tx3)}
+img{display:block}
+cv-icon{display:inline-block;width:1em;height:1em;flex:none;line-height:0}cv-world,cv-qr{display:block}cv-icon svg,cv-world svg,cv-qr svg{display:block;width:100%;height:100%}
+a{color:var(--ion-tx);text-decoration:none}a:hover{text-decoration:underline}
+[data-ion]{--sb:rgba(255,255,255,.18);--sb-h:rgba(255,255,255,.32);
+--hue:285;
+--bg:#0a0a0f;--bg2:#0e0e15;--sf:#12121a;--sf2:#171720;--sf3:#1e1e29;--sf4:#282836;
+--ln:rgba(255,255,255,.08);--ln2:rgba(255,255,255,.16);--hl:rgba(255,255,255,.1);
+--tx:#f4f4f8;--tx2:#a4a4b6;--tx3:#7f7f93;
+--ion:oklch(.74 .17 var(--hue));--ion-fg:#0a0a0f;--ion-tx:oklch(.8 .14 var(--hue));
+--ion-soft:oklch(.74 .17 var(--hue) / .16);--ion-glow:oklch(.74 .17 var(--hue) / .5);--ion-ring:oklch(.74 .17 var(--hue) / .35);
+--cyan:oklch(.82 .13 205);--mint:oklch(.85 .15 165);
+--c1:var(--ion);--c2:var(--cyan);--c3:var(--mint);--c4:oklch(.82 .14 75);--c5:oklch(.72 .17 20);--c6:oklch(.72 .14 255);--c7:oklch(.74 .16 330);--c8:oklch(.78 .1 125);
+--ok:#3ddc97;--ok-fg:#04291a;--warn:#f6b84c;--warn-fg:#2a1800;--bad:#ff6b7a;--bad-fg:#2b0009;
+--ok-soft:rgba(61,220,151,.14);--warn-soft:rgba(246,184,76,.14);--bad-soft:rgba(255,107,122,.14);
+--gl:rgba(18,18,26,.62);--bf:blur(20px) saturate(1.6);--scrim:rgba(5,5,10,.55);
+--sh-sm:inset 0 1px 0 var(--hl),0 1px 2px rgba(0,0,0,.5);
+--sh-md:inset 0 1px 0 var(--hl),0 12px 32px -10px rgba(0,0,0,.7);
+--sh-lg:inset 0 1px 0 var(--hl),0 30px 80px -16px rgba(0,0,0,.8);
+--aur:.55;--grain-o:.07;
+--fd:"Bricolage Grotesque",system-ui,sans-serif;--ft:"Instrument Sans",system-ui,sans-serif;--fm:"JetBrains Mono",ui-monospace,Menlo,monospace;
+--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-ion][data-scheme="light"]{--sb:rgba(17,17,24,.2);--sb-h:rgba(17,17,24,.36);
+--bg:#f2f2f7;--bg2:#fafafd;--sf:#ffffff;--sf2:#ffffff;--sf3:#f1f1f6;--sf4:#e4e4ee;
+--ln:rgba(17,17,24,.08);--ln2:rgba(17,17,24,.16);--hl:rgba(255,255,255,.8);
+--tx:#111118;--tx2:#5a5a70;--tx3:#6c6c82;
+--ion:oklch(.5 .22 var(--hue));--ion-fg:#ffffff;--ion-tx:oklch(.47 .2 var(--hue));
+--ion-soft:oklch(.5 .22 var(--hue) / .1);--ion-glow:oklch(.5 .22 var(--hue) / .4);--ion-ring:oklch(.5 .22 var(--hue) / .28);
+--cyan:oklch(.62 .13 205);--mint:oklch(.66 .15 165);
+--c4:oklch(.64 .15 70);--c5:oklch(.57 .19 20);--c6:oklch(.54 .17 255);--c7:oklch(.55 .2 330);--c8:oklch(.58 .12 125);
+--ok:#0b7a53;--ok-fg:#fff;--warn:#a55d00;--warn-fg:#fff;--bad:#d62a4b;--bad-fg:#fff;
+--ok-soft:rgba(11,122,83,.1);--warn-soft:rgba(165,93,0,.1);--bad-soft:rgba(214,42,75,.1);
+--gl:rgba(255,255,255,.62);--scrim:rgba(17,17,24,.3);
+--sh-sm:0 1px 2px rgba(17,17,24,.05),0 0 0 1px rgba(17,17,24,.03);
+--sh-md:0 12px 32px -10px rgba(17,17,24,.16),0 0 0 1px rgba(17,17,24,.03);
+--sh-lg:0 30px 80px -16px rgba(17,17,24,.25),0 0 0 1px rgba(17,17,24,.03);
+--aur:.4;--grain-o:.05;
+}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(8%,12%) scale(1.15)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes springy{0%,100%{transform:translateX(0)}50%{transform:translateX(140px)}}
+@keyframes blink{50%{opacity:0}}
+@keyframes indet{from{transform:translateX(-110%)}to{transform:translateX(260%)}}
+@keyframes dots{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--ion-ring)}70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
+</style>
+</helmet>
+<div data-ion id="top" data-scheme="{{ scheme }}" style="--hue:{{ hue }};--bf:{{ bf }};--gl:{{ gl }};min-height:100vh;background:var(--bg);color:var(--tx);font-family:var(--ft);transition:background .4s,color .4s;overflow-x:clip">
+<div style="position:fixed;inset:0;pointer-events:none;z-index:100;opacity:var(--grain-o);background-image:var(--grain);background-size:180px 180px"></div>
+
+<nav style="position:sticky;top:0;z-index:40;height:0;display:flex;justify-content:center;align-items:flex-start;padding:0 16px">
+<div style="margin-top:14px;display:flex;align-items:center;gap:2px;padding:5px;border-radius:999px;background:var(--gl);backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-md);max-width:100%;overflow-x:auto">
+<a href="Canvas v4.0.0 Library.dc.html" style="display:inline-flex;align-items:center;gap:8px;padding:0 12px;height:32px;font:600 14px/1 var(--fd);letter-spacing:-.01em;color:var(--tx);white-space:nowrap" style-hover="text-decoration:none"><img src="docs/public/favicon.svg" alt="" style="width:20px;height:20px;flex:none">Canvas</a>
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<a href="Canvas v4.0.0 Foundations.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Foundations</a>
+<a href="Canvas v4.0.0 Layout.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Layout</a>
+<a href="Canvas v4.0.0 Controls.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Controls</a>
+<a href="Canvas v4.0.0 Inputs.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Inputs</a>
+<a href="Canvas v4.0.0 Navigation.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Navigation</a>
+<a href="Canvas v4.0.0 Data.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Data</a>
+<a href="Canvas v4.0.0 Charts.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Charts</a>
+<a href="Canvas v4.0.0 Overlays.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;background:var(--sf3);color:var(--tx)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Overlays</a>
+<a href="Canvas v4.0.0 Skins.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Skins</a>
+<a href="Canvas v4.0.0 Templates.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Templates</a>
+
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<div style="display:flex;align-items:center;gap:6px;padding:0 6px">
+<sc-for list="{{ hues }}" as="h" hint-placeholder-count="5"><button onClick="{{ h.on }}" title="{{ h.n }}" style="width:16px;height:16px;border-radius:50%;background:oklch(.72 .17 {{ h.h }});box-shadow:{{ h.ring }};transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-hover="transform:scale(1.25)"></button></sc-for>
+</div>
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<div style="position:relative;display:grid;grid-template-columns:1fr 1fr;height:32px;padding:3px;border-radius:999px;background:var(--sf3);border:1px solid var(--ln)">
+<div style="position:absolute;top:3px;left:3px;width:calc(50% - 3px);height:calc(100% - 8px);border-radius:999px;background:var(--sf);box-shadow:var(--sh-sm);transform:translateX({{ schemeX }});transition:transform .45s cubic-bezier(.34,1.56,.64,1)"></div>
+<button onClick="{{ setDark }}" style="position:relative;padding:0 12px;font:500 12px/1 var(--ft);color:{{ darkC }};transition:color .2s">Dark</button>
+<button onClick="{{ setLight }}" style="position:relative;padding:0 12px;font:500 12px/1 var(--ft);color:{{ lightC }};transition:color .2s">Light</button>
+</div>
+<button onClick="{{ toggleGlass }}" aria-pressed="{{ glassP }}" title="Toggle glass surfaces" style="margin-left:4px;height:32px;padding:0 12px 0 8px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;flex:none;font:500 12px/1 var(--ft);white-space:nowrap;color:{{ glassC }};background:var(--sf3);border:1px solid var(--ln);transition:color .2s" style-hover="color:var(--tx)"><span style="position:relative;width:26px;height:16px;flex:none;border-radius:999px;background:{{ glassTr }};border:1px solid var(--ln2);transition:background .25s"><span style="position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.35);transform:{{ glassX }};transition:transform .35s cubic-bezier(.34,1.56,.64,1)"></span></span>Glass</button>
+</div>
+</nav>
+
+<div style="max-width:1440px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:{{ railCols }};gap:28px;align-items:start">
+<aside style="display:{{ railD }};position:sticky;top:76px;margin-top:96px;max-height:calc(100vh - 92px);overflow-y:auto;padding:4px 6px 32px 0;scrollbar-width:thin"><dc-import name="CanvasRail" room="Overlays &amp; feedback" hint-size="226px,900px"></dc-import></aside>
+<div style="min-width:0">
+
+<section id="overlays" data-screen-label="07 Overlays and feedback" style="padding:96px 0 0;scroll-margin-top:72px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:28px 40px;align-items:center;margin-bottom:40px">
+<div style="display:flex;flex-direction:column;gap:12px;max-width:620px">
+<h2 style="margin:0;font:500 44px/1.05 var(--fd);letter-spacing:-.03em;text-wrap:balance">Overlays & feedback</h2>
+<p style="margin:0;font:400 22px/1.3 var(--fd);letter-spacing:-.015em;color:var(--tx);text-wrap:balance">Glass over the app, never a curtain.</p>
+<p style="margin:0;font:400 17px/1.55 var(--ft);color:var(--tx2);text-wrap:pretty">Dialogs, drawers and toasts sit on the densest tint so the page stays legible underneath. They rise 16px on entry and settle, not fade.</p>
+</div>
+<x-import component-from-global-scope="cv-hero" from="./canvas-hero.js" kind="overlays" hint-size="100%,300px"></x-import>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px">
+
+<div id="c-dialog" style="scroll-margin-top:80px;position:relative;height:460px;border-radius:20px;overflow:hidden;background:var(--bg2);border:1px solid var(--ln)">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#dialog" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Dialog<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:absolute;inset:0;padding:24px;display:grid;grid-template-columns:160px 1fr;gap:20px;opacity:.9">
+<div style="display:flex;flex-direction:column;gap:10px"><div style="height:10px;width:70%;border-radius:5px;background:var(--sf3)"></div><div style="height:10px;width:50%;border-radius:5px;background:var(--sf3)"></div><div style="height:10px;width:80%;border-radius:5px;background:var(--sf3)"></div><div style="height:10px;width:60%;border-radius:5px;background:var(--sf3)"></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start"><div style="height:90px;border-radius:14px;background:var(--sf3)"></div><div style="height:90px;border-radius:14px;background:var(--sf3)"></div><div style="height:180px;border-radius:14px;background:var(--sf3);grid-column:1/-1"></div></div>
+</div>
+<div style="position:absolute;left:25%;top:10%;width:50%;height:60%;border-radius:50%;background:radial-gradient(circle,var(--ion),transparent 62%);filter:blur(50px);opacity:.6"></div>
+<div style="position:absolute;inset:0;background:var(--scrim)"></div>
+<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,88%);padding:28px;border-radius:24px;background:var(--gl);backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg)">
+<div style="width:40px;height:40px;border-radius:12px;background:var(--ion-soft);color:var(--ion-tx);display:grid;place-items:center;font:500 18px var(--fd)">↗</div>
+<h3 style="margin:20px 0 8px;font:500 24px/1.2 var(--fd);letter-spacing:-.02em">Publish v4.0.0 tokens?</h3>
+<p style="margin:0;font:400 14px/1.55 var(--ft);color:var(--tx2)">This regenerates DESIGN.md and pushes the web hand-off CSS to every consumer overlay. Native skins are unaffected.</p>
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:24px"><button style="height:40px;padding:0 16px;border-radius:10px;font:500 14px/1 var(--ft);color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx)">Cancel</button><button style="height:40px;padding:0 16px;border-radius:10px;font:500 14px/1 var(--ft);background:var(--ion);color:var(--ion-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px -8px var(--ion-glow);transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-active="transform:scale(.96)">Publish</button></div>
+</div>
+<div style="position:absolute;left:16px;top:14px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Dialog · glass-tint-dense</div>
+</div>
+
+<div id="c-drawer" style="scroll-margin-top:80px;position:relative;height:460px;border-radius:20px;overflow:hidden;background:var(--bg2);border:1px solid var(--ln)">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#drawer" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Drawer<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:absolute;inset:0;padding:24px;display:flex;flex-direction:column;gap:14px;opacity:.9"><div style="height:12px;width:30%;border-radius:6px;background:var(--sf3)"></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"><div style="height:80px;border-radius:14px;background:var(--sf3)"></div><div style="height:80px;border-radius:14px;background:var(--sf3)"></div><div style="height:80px;border-radius:14px;background:var(--sf3)"></div></div><div style="height:200px;border-radius:14px;background:var(--sf3)"></div></div>
+<div style="position:absolute;right:20%;top:20%;width:50%;height:60%;border-radius:50%;background:radial-gradient(circle,var(--cyan),transparent 62%);filter:blur(50px);opacity:.5"></div>
+<div style="position:absolute;inset:0;background:var(--scrim)"></div>
+<div style="position:absolute;top:12px;right:12px;bottom:12px;width:min(340px,80%);border-radius:20px;background:var(--gl);backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px;border-bottom:1px solid var(--ln)"><div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em">Invite member</div><button style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:var(--tx3);font-size:18px" style-hover="background:var(--sf3);color:var(--tx)">×</button></div>
+<div style="padding:20px;display:flex;flex-direction:column;gap:16px;flex:1;overflow:auto">
+<div style="display:flex;flex-direction:column;gap:6px"><label style="font:500 13px/1.3 var(--ft);color:var(--tx2)">Email</label><div style="height:40px;padding:0 12px;border-radius:10px;background:var(--bg2);border:1px solid var(--ion);box-shadow:0 0 0 4px var(--ion-ring);font:400 14px var(--ft);display:flex;align-items:center">kira@ionize.io<span style="width:1.5px;height:16px;background:var(--ion);margin-left:1px;animation:blink 1s steps(1) infinite"></span></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label style="font:500 13px/1.3 var(--ft);color:var(--tx2)">Role</label><div style="height:40px;padding:0 12px;border-radius:10px;background:var(--bg2);border:1px solid var(--ln2);font:400 14px var(--ft);display:flex;align-items:center;justify-content:space-between">Editor<span style="width:7px;height:7px;border-style:solid;border-color:var(--tx3);border-width:0 1.5px 1.5px 0;transform:rotate(45deg) translate(-1px,-1px);margin-right:4px"></span></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-top:1px solid var(--ln)"><div><div style="font:500 14px/1.3 var(--ft)">Send welcome email</div><div style="font:400 12px/1.4 var(--ft);color:var(--tx3)">Includes the workspace guide</div></div><div style="position:relative;flex:none;width:44px;height:26px;border-radius:999px;background:var(--ion);box-shadow:inset 0 1px 0 rgba(255,255,255,.2)"><div style="position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transform:translateX(18px)"></div></div></div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 20px;border-top:1px solid var(--ln)"><button style="height:40px;padding:0 16px;border-radius:10px;font:500 14px/1 var(--ft);color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx)">Cancel</button><button style="height:40px;padding:0 16px;border-radius:10px;font:500 14px/1 var(--ft);background:var(--ion);color:var(--ion-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px -8px var(--ion-glow)">Send invite</button></div>
+</div>
+<div style="position:absolute;left:16px;top:14px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Drawer · right · 12px inset</div>
+</div>
+
+<div id="c-toast" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:20px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Toast · stack + intents</span><span>bottom-right, 3 max</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#toast" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Toast<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:relative;height:96px">
+<div style="position:absolute;left:0;right:0;top:0;height:56px;border-radius:14px;background:var(--gl);border:1px solid var(--ln2);transform:scale(.9);opacity:.45"></div>
+<div style="position:absolute;left:0;right:0;top:10px;height:56px;border-radius:14px;background:var(--gl);border:1px solid var(--ln2);transform:scale(.95);opacity:.7"></div>
+<div style="position:absolute;left:0;right:0;top:22px;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--gl);backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg)"><div style="width:24px;height:24px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;flex:none"><span style="width:5px;height:9px;border-style:solid;border-color:currentColor;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)"></span></div><div style="flex:1;min-width:0"><div style="font:500 14px/1.3 var(--ft)">Tokens published</div><div style="font:400 12px/1.3 var(--ft);color:var(--tx3)">DESIGN.md regenerated · 3 consumers synced</div></div><button style="font:500 13px/1 var(--ft);color:var(--ion-tx)" style-hover="text-decoration:underline">View</button><button style="width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--tx3);font-size:16px" style-hover="background:var(--sf3);color:var(--tx)">×</button></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;padding-top:8px">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--sf2);border:1px solid var(--ln2);box-shadow:var(--sh-md)"><span style="width:8px;height:8px;border-radius:50%;background:var(--ion);box-shadow:0 0 10px var(--ion-glow);flex:none"></span><div style="flex:1;font:500 14px/1.3 var(--ft)">Syncing native builds…</div><span style="width:14px;height:14px;border-width:2px;border-style:solid;border-color:var(--ion) transparent var(--ion) var(--ion);border-radius:50%;animation:spin .8s linear infinite"></span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--sf2);border:1px solid var(--ln2);box-shadow:var(--sh-md)"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn);flex:none"></span><div style="flex:1;font:500 14px/1.3 var(--ft)">Android blur module needs a rebuild</div><button style="font:500 13px/1 var(--ft);color:var(--ion-tx)" style-hover="text-decoration:underline">Rebuild</button></div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--sf2);border:1px solid var(--ln2);box-shadow:var(--sh-md)"><span style="width:8px;height:8px;border-radius:50%;background:var(--bad);flex:none"></span><div style="flex:1;font:500 14px/1.3 var(--ft)">Publish failed · contrast floor not met</div><button style="font:500 13px/1 var(--ft);color:var(--ion-tx)" style-hover="text-decoration:underline">Details</button></div>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">const {{ '{' }} toast {{ '}' }} = useToast() · toast({{ '{' }} title: "Tokens published" {{ '}' }}) · &lt;ToastProvider&gt;</div>
+</div>
+
+<div id="c-alert" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:12px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:8px"><span>Alert · Empty state · Progress</span><span>inline</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#alert" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Alert<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#empty-state" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">EmptyState<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="display:flex;gap:12px;padding:14px 16px;border-radius:14px;background:var(--ion-soft);border:1px solid var(--ion-ring)"><span style="width:20px;height:20px;border-radius:50%;background:var(--ion);color:var(--ion-fg);display:grid;place-items:center;font:600 12px var(--fm);flex:none">i</span><div style="flex:1"><div style="font:500 14px/1.3 var(--ft)">Glass is a theming mode, not a prop</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx2);margin-top:2px">Use &lt;ThemeProvider glass&gt; — there is no per-component switch.</div></div><button style="width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--tx3);font-size:16px;flex:none" style-hover="background:var(--sf3);color:var(--tx)">×</button></div>
+<div style="display:flex;gap:12px;padding:14px 16px;border-radius:14px;background:var(--bad-soft);border:1px solid var(--bad)"><span style="width:20px;height:20px;border-radius:50%;background:var(--bad);color:var(--bad-fg);display:grid;place-items:center;font:600 13px var(--fm);flex:none">!</span><div style="flex:1"><div style="font:500 14px/1.3 var(--ft)">2 tokens fail the contrast floor</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx2);margin-top:2px">warning-foreground on warning is 3.9:1 in light.</div></div></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 16px;border-radius:14px;border:1px dashed var(--ln2);text-align:center"><div style="width:44px;height:44px;border-radius:14px;background:var(--sf3);border:1px solid var(--ln2);display:grid;place-items:center"><span style="width:14px;height:14px;transform:rotate(45deg);border-radius:3px;border:2px solid var(--tx3)"></span></div><div style="font:500 16px/1.3 var(--fd);letter-spacing:-.01em">No workspaces yet</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx3);max-width:28ch">Create one to start syncing tokens across your apps.</div><button style="height:36px;padding:0 14px;border-radius:9px;font:500 13px/1 var(--ft);background:var(--sf3);color:var(--tx);border:1px solid var(--ln2);box-shadow:inset 0 1px 0 var(--hl);margin-top:4px" style-hover="background:var(--sf4)">New workspace</button></div>
+<div style="display:flex;flex-direction:column;gap:6px;padding-top:4px"><div style="display:flex;justify-content:space-between;font:400 13px var(--ft);color:var(--tx2)"><span>Uploading tokens.json</span><span style="font:500 12px var(--fm)">64%</span></div><div style="height:6px;border-radius:3px;background:var(--sf4);overflow:hidden"><div style="width:64%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--ion),var(--cyan));box-shadow:0 0 12px var(--ion-glow)"></div></div></div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Alert info dismissible&gt; · &lt;Alert destructive&gt; · &lt;EmptyState&gt; · &lt;Progress value={{ '{' }}64{{ '}' }}&gt;</div>
+</div>
+
+<div id="c-alert-dialog" style="scroll-margin-top:80px;position:relative;height:460px;border-radius:20px;overflow:hidden;background:var(--bg2);border:1px solid var(--ln)">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#alert-dialog" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">AlertDialog<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:absolute;inset:0;padding:24px;display:flex;flex-direction:column;gap:14px"><div style="height:12px;width:34%;border-radius:6px;background:var(--sf3)"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div style="height:90px;border-radius:14px;background:var(--sf3)"></div><div style="height:90px;border-radius:14px;background:var(--sf3)"></div></div><div style="height:180px;border-radius:14px;background:var(--sf3)"></div></div>
+<div style="position:absolute;left:20%;top:15%;width:60%;height:60%;border-radius:50%;background:radial-gradient(circle,var(--bad),transparent 62%);filter:blur(60px);opacity:.35"></div>
+<div style="position:absolute;inset:0;background:var(--scrim)"></div>
+<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,86%);padding:24px;border-radius:24px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);display:flex;flex-direction:column;gap:14px">
+<span style="width:40px;height:40px;border-radius:12px;background:var(--bad-soft);color:var(--bad);display:grid;place-items:center;font-size:19px"><cv-icon n="trash2"></cv-icon></span>
+<div><h3 style="margin:0 0 6px;font:500 21px/1.2 var(--fd);letter-spacing:-.02em">Delete “Riskora”?</h3><p style="margin:0;font:400 14px/1.55 var(--ft);color:var(--tx2)">24 members lose access now. Boards, tokens and history are gone for good.</p></div>
+<div style="height:40px;padding:0 12px;border-radius:10px;background:var(--bg2);border:1px solid var(--ln2);display:flex;align-items:center;font:400 14px var(--fm);color:var(--tx3)">type riskora to confirm</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button style="height:40px;border-radius:10px;font:500 14px/1 var(--ft);background:var(--sf3);border:1px solid var(--ln2)" style-hover="background:var(--sf4)">Cancel</button><button style="height:40px;border-radius:10px;font:500 14px/1 var(--ft);background:var(--bad);color:var(--bad-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.25);opacity:.45;cursor:not-allowed">Delete</button></div>
+</div>
+<div style="position:absolute;left:16px;top:14px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">AlertDialog · blocks until answered</div>
+</div>
+
+<div id="c-action-sheet" style="scroll-margin-top:80px;position:relative;height:460px;border-radius:20px;overflow:hidden;background:var(--bg2);border:1px solid var(--ln)">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#action-sheet" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">ActionSheet<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:absolute;inset:0;padding:48px 20px 20px;display:flex;flex-direction:column;gap:12px"><div style="height:160px;border-radius:16px;overflow:hidden"><img src="docs/public/grace-hopper.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div><div style="height:12px;width:60%;border-radius:6px;background:var(--sf3)"></div><div style="height:12px;width:40%;border-radius:6px;background:var(--sf3)"></div></div>
+<div style="position:absolute;inset:0;background:var(--scrim)"></div>
+<div style="position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px;animation:rise .5s cubic-bezier(.2,.8,.2,1) both">
+<div style="border-radius:28px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);overflow:hidden">
+<div style="padding:14px 16px 12px;text-align:center;font:400 13px/1.4 var(--ft);color:var(--tx3);border-bottom:1px solid var(--ln)">Share “Q4 plan” with 3 people</div>
+<div style="height:50px;display:flex;align-items:center;justify-content:center;gap:10px;font:400 16px var(--ft);color:var(--ion-tx);border-bottom:1px solid var(--ln);cursor:pointer" style-hover="background:var(--sf3)"><cv-icon n="link" style="font-size:17px"></cv-icon>Copy link</div>
+<div style="height:50px;display:flex;align-items:center;justify-content:center;gap:10px;font:400 16px var(--ft);color:var(--ion-tx);border-bottom:1px solid var(--ln);cursor:pointer" style-hover="background:var(--sf3)"><cv-icon n="download" style="font-size:17px"></cv-icon>Export as PDF</div>
+<div style="height:50px;display:flex;align-items:center;justify-content:center;gap:10px;font:400 16px var(--ft);color:var(--bad);cursor:pointer" style-hover="background:var(--bad-soft)"><cv-icon n="trash2" style="font-size:17px"></cv-icon>Remove access</div>
+</div>
+<div style="height:54px;border-radius:28px;background:var(--sf2);border:1px solid var(--ln2);box-shadow:var(--sh-lg);display:grid;place-items:center;font:600 16px var(--ft);cursor:pointer" style-hover="background:var(--sf3)">Cancel</div>
+</div>
+<div style="position:absolute;left:16px;top:14px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">ActionSheet · bottom sheet of choices</div>
+</div>
+
+<div id="c-popover" style="scroll-margin-top:80px;position:relative;height:460px;border-radius:20px;overflow:hidden;background:var(--bg2);border:1px solid var(--ln)">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#popover" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Popover<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#tooltip" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Tooltip<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#dropdown" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Dropdown<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:absolute;right:-10%;top:-10%;width:60%;height:60%;border-radius:50%;background:radial-gradient(circle,var(--ion),transparent 62%);filter:blur(60px);opacity:.35"></div>
+<div style="position:absolute;inset:0;padding:22px 20px 24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+<div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0">
+<div style="position:relative;padding:6px 9px;border-radius:8px;background:var(--tx);color:var(--bg);font:500 12px/1 var(--ft);display:flex;align-items:center;gap:8px;box-shadow:var(--sh-md);white-space:nowrap">Filter rows<span style="font:500 10px var(--fm);opacity:.6">F</span><span style="position:absolute;left:18px;bottom:-4px;width:8px;height:8px;background:var(--tx);transform:rotate(45deg);border-radius:1px"></span></div>
+<div style="display:flex;gap:6px">
+<button style="height:36px;padding:0 12px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;font:500 13px/1 var(--ft);background:var(--sf);border:1px solid var(--ion);box-shadow:0 0 0 4px var(--ion-ring)"><cv-icon n="filter" style="font-size:15px;color:var(--ion-tx)"></cv-icon>Filter<cv-icon n="chevronDown" style="font-size:13px;color:var(--tx3)"></cv-icon></button>
+<button style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--sf);border:1px solid var(--ln2);font-size:15px;color:var(--tx2)"><cv-icon n="share2"></cv-icon></button>
+</div>
+<div style="width:100%;max-width:200px;padding:6px;border-radius:14px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);display:flex;flex-direction:column;gap:2px">
+<div style="padding:6px 8px 4px;font:500 10px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Status</div>
+<div style="height:34px;padding:0 8px;border-radius:9px;display:flex;align-items:center;gap:8px;font:400 14px var(--ft);background:var(--ion-soft)"><cv-icon n="check" style="font-size:14px;color:var(--ion-tx)"></cv-icon>Active</div>
+<div style="height:34px;padding:0 8px 0 30px;border-radius:9px;display:flex;align-items:center;font:400 14px var(--ft)" style-hover="background:var(--sf3)">Invited</div>
+<div style="height:34px;padding:0 8px 0 30px;border-radius:9px;display:flex;align-items:center;font:400 14px var(--ft)" style-hover="background:var(--sf3)">Suspended</div>
+<div style="height:1px;margin:4px 6px;background:var(--ln)"></div>
+<div style="height:34px;padding:0 8px;border-radius:9px;display:flex;align-items:center;gap:8px;font:400 14px var(--ft)" style-hover="background:var(--sf3)"><cv-icon n="listOrdered" style="font-size:14px;color:var(--tx3)"></cv-icon><span style="flex:1;min-width:0">Sort by</span><cv-icon n="chevronRight" style="font-size:13px;color:var(--tx3)"></cv-icon></div>
+</div>
+<div style="margin-top:auto;font:500 11px/1.5 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Tooltip · Dropdown<br>Popover</div>
+</div>
+<div style="display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;gap:14px;min-width:0">
+<div style="position:relative;width:100%;max-width:218px;padding:16px;border-radius:16px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);display:flex;flex-direction:column;gap:10px">
+<div><div style="font:500 15px/1.25 var(--fd);letter-spacing:-.01em">Invite to Q4 plan</div><div style="font:400 12px/1.45 var(--ft);color:var(--tx2);margin-top:3px">They get edit access to this board only.</div></div>
+<div style="height:36px;padding:0 10px;border-radius:9px;background:var(--bg2);border:1px solid var(--ln2);display:flex;align-items:center;font:400 13px var(--ft);color:var(--tx3);overflow:hidden;white-space:nowrap">name@company.com</div>
+<button style="height:34px;border-radius:9px;font:500 13px/1 var(--ft);background:var(--ion);color:var(--ion-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px -8px var(--ion-glow)">Send invite</button>
+<span style="position:absolute;right:36px;bottom:-7px;width:12px;height:12px;background:var(--sf2);border-right:1px solid var(--ln2);border-bottom:1px solid var(--ln2);transform:rotate(45deg);border-radius:0 0 3px 0"></span>
+</div>
+<button style="height:36px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;font:500 13px/1 var(--ft);background:var(--sf);border:1px solid var(--ln2);box-shadow:var(--sh-sm)"><cv-icon n="userPlus" style="font-size:15px;color:var(--ion-tx)"></cv-icon>Invite</button>
+</div>
+</div>
+</div>
+
+<div id="c-skeleton" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:18px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Skeleton · Spinner · Progress</span><span>loading states</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#progress" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Progress<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#spinner" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Spinner<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#skeleton" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Skeleton<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="padding:16px;border-radius:16px;border:1px solid var(--ln);display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(90deg,var(--sf3) 25%,var(--sf4) 50%,var(--sf3) 75%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;flex:none"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="height:12px;width:50%;border-radius:6px;background:linear-gradient(90deg,var(--sf3) 25%,var(--sf4) 50%,var(--sf3) 75%);background-size:200% 100%;animation:shimmer 1.6s linear infinite .1s"></div><div style="height:10px;width:32%;border-radius:5px;background:linear-gradient(90deg,var(--sf3) 25%,var(--sf4) 50%,var(--sf3) 75%);background-size:200% 100%;animation:shimmer 1.6s linear infinite .2s"></div></div></div>
+<div style="height:96px;border-radius:12px;background:linear-gradient(90deg,var(--sf3) 25%,var(--sf4) 50%,var(--sf3) 75%);background-size:200% 100%;animation:shimmer 1.6s linear infinite .3s"></div>
+<div style="height:10px;width:86%;border-radius:5px;background:linear-gradient(90deg,var(--sf3) 25%,var(--sf4) 50%,var(--sf3) 75%);background-size:200% 100%;animation:shimmer 1.6s linear infinite .4s"></div>
+</div>
+<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="width:14px;height:14px;border-width:2px;border-style:solid;border-color:var(--ion) transparent var(--ion) var(--ion);border-radius:50%;animation:spin .8s linear infinite"></span>small</span><span style="display:inline-flex;align-items:center;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="width:20px;height:20px;border-width:2.5px;border-style:solid;border-color:var(--ion) transparent var(--ion) var(--ion);border-radius:50%;animation:spin .8s linear infinite"></span>default</span><span style="display:inline-flex;align-items:center;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="width:30px;height:30px;border-width:3px;border-style:solid;border-color:var(--ion) transparent var(--ion) var(--ion);border-radius:50%;animation:spin .8s linear infinite;filter:drop-shadow(0 0 6px var(--ion-glow))"></span>large</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font:400 13px var(--ft);color:var(--tx2)"><span>Indexing components</span><span style="font:500 11px var(--fm);color:var(--tx3)">indeterminate</span></div><div style="position:relative;height:6px;border-radius:3px;background:var(--sf4);overflow:hidden"><div style="position:absolute;top:0;left:0;width:40%;height:100%;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ion),var(--cyan));animation:indet 1.4s cubic-bezier(.4,0,.2,1) infinite"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font:400 13px var(--ft);color:var(--tx2)"><span>Password strength</span><span style="font:500 11px var(--fm);color:var(--ok)">strong</span></div><div style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px;height:6px"><span style="border-radius:3px;background:var(--ok)"></span><span style="border-radius:3px;background:var(--ok)"></span><span style="border-radius:3px;background:var(--ok)"></span><span style="border-radius:3px;background:var(--ok)"></span><span style="border-radius:3px;background:var(--ok)"></span><span style="border-radius:3px;background:var(--ok)"></span><span style="border-radius:3px;background:var(--sf4)"></span><span style="border-radius:3px;background:var(--sf4)"></span></div></div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Skeleton&gt; mirrors the shape it replaces · &lt;Spinner small | large&gt; · &lt;Progress indeterminate&gt; · segmented meter · spinners ignore reduced motion</div>
+</div>
+
+<div id="c-alert-variants" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:12px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:8px"><span>Alert · intents · announcement</span><span>inline</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 10px 10px 14px;border-radius:12px;background:linear-gradient(90deg,var(--ion),color-mix(in oklch,var(--ion) 60%,var(--cyan)));color:var(--ion-fg);box-shadow:0 10px 26px -12px var(--ion-glow)"><cv-icon n="sparkles" style="font-size:16px"></cv-icon><span style="flex:1;font:500 13px/1.35 var(--ft)">Canvas v4.0.0 is live: all 107 components on lit glass.</span><a href="Canvas v4.0.0 Library.dc.html#index" style="font:600 13px var(--ft);color:var(--ion-fg);white-space:nowrap" style-hover="text-decoration:underline">See what moved</a><button style="width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:14px;color:var(--ion-fg)" style-hover="background:rgba(255,255,255,.15)"><cv-icon n="x"></cv-icon></button></div>
+<div style="display:flex;gap:12px;padding:14px 16px;border-radius:14px;background:var(--ok-soft);border:1px solid color-mix(in oklch,var(--ok) 35%,transparent)"><cv-icon n="circleCheck" style="font-size:20px;color:var(--ok);flex:none"></cv-icon><div style="flex:1"><div style="font:500 14px/1.3 var(--ft)">Contrast checks pass</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx2);margin-top:2px">Every text token holds 4.5:1 on solid and tonal surfaces.</div></div></div>
+<div style="display:flex;gap:12px;padding:14px 16px;border-radius:14px;background:var(--warn-soft);border:1px solid color-mix(in oklch,var(--warn) 35%,transparent)"><cv-icon n="alertTriangle" style="font-size:20px;color:var(--warn);flex:none"></cv-icon><div style="flex:1"><div style="font:500 14px/1.3 var(--ft)">Glass needs verifying in the app</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx2);margin-top:2px">Contrast over glass depends on what sits behind it.</div><div style="display:flex;gap:14px;margin-top:10px"><button style="font:500 13px var(--ft);color:var(--tx)" style-hover="text-decoration:underline">Open checklist</button><button style="font:500 13px var(--ft);color:var(--tx3)" style-hover="color:var(--tx)">Dismiss</button></div></div></div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Alert success&gt; · &lt;Alert warning&gt; · announcement bar spans the page · for blocking prompts use AlertDialog</div>
+</div>
+
+<div id="c-wizard" style="scroll-margin-top:80px;grid-column:1/-1;position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--ln);min-height:540px;display:grid;place-items:center;padding:48px 20px;background:var(--bg2)">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#wizard" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Wizard<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:absolute;left:5%;top:-25%;width:45%;height:90%;border-radius:50%;background:radial-gradient(circle,var(--ion),transparent 62%);filter:blur(70px);opacity:.5"></div>
+<div style="position:absolute;right:0;bottom:-35%;width:45%;height:90%;border-radius:50%;background:radial-gradient(circle,var(--mint),transparent 62%);filter:blur(70px);opacity:.35"></div>
+<div style="position:absolute;inset:0;background:var(--scrim)"></div>
+<div style="position:relative;width:min(700px,100%);border-radius:24px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);display:flex;flex-direction:column;overflow:hidden">
+<div style="padding:20px 20px 16px;border-bottom:1px solid var(--ln);display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em">New workspace</div><button title="Close" style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:var(--tx3);font-size:16px" style-hover="background:var(--sf3);color:var(--tx)"><cv-icon n="x"></cv-icon></button></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<div style="display:flex;flex-direction:column;gap:8px"><div style="height:4px;border-radius:2px;background:var(--ion)"></div><div style="display:flex;align-items:center;gap:6px;font:500 13px var(--ft)"><cv-icon n="circleCheck" style="font-size:14px;color:var(--ion-tx)"></cv-icon>Basics</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="height:4px;border-radius:2px;background:var(--ion);box-shadow:0 0 12px var(--ion-glow)"></div><div style="font:500 13px var(--ft);color:var(--ion-tx)">2 · Brand</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="height:4px;border-radius:2px;background:var(--sf4)"></div><div style="font:500 13px var(--ft);color:var(--tx3)">3 · Invite</div></div>
+</div>
+</div>
+<div style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px;max-height:300px;overflow:auto">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px/1.3 var(--ft);color:var(--tx2)">Accent hue · repaints this whole page</label><div style="display:flex;gap:10px"><sc-for list="{{ hues }}" as="h" hint-placeholder-count="5"><button onClick="{{ h.on }}" title="{{ h.n }}" style="width:32px;height:32px;border-radius:50%;background:oklch(.72 .17 {{ h.h }});box-shadow:{{ h.ring }};transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-hover="transform:scale(1.12)"></button></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label style="font:500 13px/1.3 var(--ft);color:var(--tx2)">Workspace mark</label><div style="display:flex;gap:8px"><span style="width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--ion),var(--cyan));display:grid;place-items:center;font:600 16px var(--fd);color:var(--ion-fg);box-shadow:0 10px 24px -10px var(--ion-glow)">Rk</span><span style="width:44px;height:44px;border-radius:13px;background:var(--ion-soft);color:var(--ion-tx);display:grid;place-items:center;font-size:20px"><cv-icon n="sparkles"></cv-icon></span><span style="width:44px;height:44px;border-radius:13px;border:1.5px dashed var(--ln2);display:grid;place-items:center;font-size:18px;color:var(--tx3)"><cv-icon n="upload"></cv-icon></span></div></div>
+</div>
+<div style="padding:16px;border-radius:16px;background:var(--bg2);border:1px solid var(--ln);display:flex;flex-direction:column;gap:12px"><div style="font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Preview</div><div style="display:flex;gap:8px;flex-wrap:wrap"><span style="height:36px;padding:0 14px;border-radius:9px;display:inline-flex;align-items:center;font:500 13px var(--ft);background:var(--ion);color:var(--ion-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px -8px var(--ion-glow)">Primary</span><span style="height:36px;padding:0 12px;border-radius:9px;display:inline-flex;align-items:center;gap:6px;font:500 13px var(--ft);background:var(--ion-soft);color:var(--ion-tx)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>Selected</span></div><div style="height:6px;border-radius:3px;background:var(--sf4);overflow:hidden"><div style="width:62%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--ion),var(--cyan))"></div></div></div>
+</div>
+<div style="padding:14px 20px;border-top:1px solid var(--ln);display:flex;align-items:center;gap:8px"><span style="font:400 12px var(--fm);color:var(--tx3);margin-right:auto">Step 2 of 3</span><button style="height:40px;padding:0 16px;border-radius:10px;font:500 14px/1 var(--ft);color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx)">Back</button><button style="height:40px;padding:0 16px;border-radius:10px;font:500 14px/1 var(--ft);display:inline-flex;align-items:center;gap:8px;background:var(--ion);color:var(--ion-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px -8px var(--ion-glow);transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-active="transform:scale(.96)">Continue<cv-icon n="arrowRight" style="font-size:15px"></cv-icon></button></div>
+</div>
+<div style="position:absolute;left:16px;top:14px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">Wizard · Dialog + Steps + Button, fixed chrome around a scrolling body</div>
+</div>
+<div id="c-command" style="scroll-margin-top:80px;grid-column:1/-1;position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--ln);min-height:560px;display:grid;place-items:center;padding:48px 24px;background:var(--bg2)">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#command" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Command<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:absolute;left:10%;top:-20%;width:40%;height:80%;border-radius:50%;background:radial-gradient(circle,var(--ion),transparent 62%);filter:blur(60px);opacity:.55"></div>
+<div style="position:absolute;right:5%;bottom:-30%;width:45%;height:90%;border-radius:50%;background:radial-gradient(circle,var(--cyan),transparent 62%);filter:blur(70px);opacity:.45"></div>
+<div style="position:absolute;inset:24px;display:grid;grid-template-columns:200px 1fr;gap:24px;opacity:.5;pointer-events:none">
+<div style="display:flex;flex-direction:column;gap:12px"><div style="height:12px;width:60%;border-radius:6px;background:var(--sf3)"></div><div style="height:12px;width:80%;border-radius:6px;background:var(--sf3)"></div><div style="height:12px;width:50%;border-radius:6px;background:var(--sf3)"></div><div style="height:12px;width:70%;border-radius:6px;background:var(--sf3)"></div></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-content:start"><div style="height:120px;border-radius:16px;background:var(--sf3)"></div><div style="height:120px;border-radius:16px;background:var(--sf3)"></div><div style="height:120px;border-radius:16px;background:var(--sf3)"></div><div style="height:200px;border-radius:16px;background:var(--sf3);grid-column:1/-1"></div></div>
+</div>
+<div style="position:absolute;inset:0;background:var(--scrim)"></div>
+<div style="position:relative;width:min(600px,100%);border-radius:18px;background:var(--gl);backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);overflow:hidden">
+<div style="display:flex;align-items:center;gap:12px;height:56px;padding:0 18px;border-bottom:1px solid var(--ln)">
+<span style="position:relative;width:16px;height:16px;flex:none"><span style="position:absolute;left:0;top:0;width:11px;height:11px;border:1.5px solid var(--tx2);border-radius:50%"></span><span style="position:absolute;right:0;bottom:0;width:6px;height:1.5px;background:var(--tx2);transform:rotate(45deg) translate(0,-1px)"></span></span>
+<input value="{{ q }}" onChange="{{ onQ }}" placeholder="Type a command or search…" style="flex:1;min-width:0;font:400 16px var(--ft);color:var(--tx)">
+<span style="height:22px;padding:0 6px;border-radius:5px;background:var(--sf3);border:1px solid var(--ln2);font:500 11px/20px var(--fm);color:var(--tx2)">esc</span>
+</div>
+<div style="padding:8px;display:flex;flex-direction:column;max-height:340px;overflow:auto">
+<sc-for list="{{ cmds }}" as="c" hint-placeholder-count="6">
+<div>
+<sc-if value="{{ c.showG }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 10px 6px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">{{ c.g }}</div></sc-if>
+<div onClick="{{ c.on }}" style="display:flex;align-items:center;gap:12px;height:44px;padding:0 10px;border-radius:10px;background:{{ c.bg }};color:{{ c.c }};cursor:pointer;transition:background .15s" style-hover="background:var(--sf3)">
+<span style="width:28px;height:28px;border-radius:8px;background:var(--sf3);border:1px solid var(--ln);display:grid;place-items:center"><span style="width:8px;height:8px;border-radius:2px;background:var(--tx3);transform:rotate(45deg)"></span></span>
+<span style="flex:1;font:500 14px var(--ft)">{{ c.n }}</span>
+<span style="height:22px;padding:0 6px;border-radius:5px;background:var(--sf3);border:1px solid var(--ln2);font:500 11px/20px var(--fm);color:var(--tx2)">{{ c.k }}</span>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{ cmdEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:36px;text-align:center;font:400 14px var(--ft);color:var(--tx3)">No commands match “{{ q }}”.</div></sc-if>
+</div>
+<div style="display:flex;align-items:center;gap:16px;height:44px;padding:0 18px;border-top:1px solid var(--ln);font:400 12px var(--ft);color:var(--tx3)"><span><span style="font:500 11px var(--fm);color:var(--tx2)">↑↓</span> navigate</span><span><span style="font:500 11px var(--fm);color:var(--tx2)">↵</span> run</span><span style="margin-left:auto;font:400 11px var(--fm)">&lt;Command /&gt; · glass-tint-dense</span></div>
+</div>
+</div>
+</div>
+</section>
+
+</div>
+</div>
+<footer style="max-width:1440px;margin:0 auto;padding:96px 48px 64px">
+<div style="border-top:1px solid var(--ln);padding-top:32px;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;font:600 16px/1 var(--fd)"><img src="docs/public/favicon.svg" alt="" style="width:22px;height:22px;flex:none">Canvas v4.0.0 · component library</div><div style="font:400 13px/1.5 var(--ft);color:var(--tx3);max-width:52ch">Direction "Light as material". Restyles all 107 exports of @nannier/canvas and replaces the Dark Factory blush / mint web skin (Manrope, Geist Mono). Tokens above map 1:1 onto src/style/tokens.ts and styles/tokens/*.css; iOS and Android skins keep their platform shapes and pick up the ion + neutral ramps.</div></div>
+<div style="display:flex;flex-direction:column;gap:6px;font:400 12px/1.6 var(--fm);color:var(--tx3)"><span>display · Bricolage Grotesque 300–800</span><span>ui · Instrument Sans 400–700</span><span>mono · JetBrains Mono 400–600</span><span>accent · oklch(L C var(--hue))</span><a href="https://github.com/bnannier/canvas" style="color:var(--ion-tx)">github.com/bnannier/canvas ↗</a></div>
+</div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dark&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;tsType&quot;:&quot;'dark' | 'light'&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;hue&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:285,&quot;min&quot;:0,&quot;max&quot;:360,&quot;step&quot;:5,&quot;unit&quot;:&quot;°&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;glass&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Materials&quot;}}">
+const PEOPLE=[
+{n:'Ada Lovelace',e:'ada@ionize.io',img:'docs/public/ada-lovelace.jpg',team:'Platform',st:'Active',amt:'12,480.00',sp:[40,55,45,70,62,80,74,92]},
+{n:'Grace Hopper',e:'grace@ionize.io',img:'docs/public/grace-hopper.jpg',team:'Compilers',st:'Active',amt:'9,120.50',sp:[30,34,52,48,66,70,84,90]},
+{n:'Kira Tanaka',e:'kira@ionize.io',img:'docs/public/kira-tanaka.jpg',team:'Design',st:'Invited',amt:'4,300.00',sp:[50,52,50,55,53,58,56,60]},
+{n:'Noor Park',e:'noor@ionize.io',img:'docs/public/noor-park.jpg',team:'Mobile',st:'Active',amt:'7,845.25',sp:[70,62,66,50,54,42,46,38]},
+{n:'Marcus Allen',e:'marcus@ionize.io',img:'docs/public/marcus-allen.jpg',team:'Growth',st:'Suspended',amt:'0.00',sp:[60,58,40,42,30,28,20,18]},
+{n:'Liang Bao',e:'liang@ionize.io',img:'docs/public/liang-bao.jpg',team:'Data',st:'Active',amt:'15,002.00',sp:[20,30,45,60,66,75,80,95]}];
+const CMDS=[
+{g:'Navigate',n:'Go to Components',k:'G C'},{g:'Navigate',n:'Go to Foundations',k:'G F'},{g:'Navigate',n:'Open platform skins',k:'G P'},
+{g:'Actions',n:'Toggle color scheme',k:'⌘ J',act:'scheme'},{g:'Actions',n:'Shift ion hue',k:'⌘ H',act:'hue'},{g:'Actions',n:'Copy component snippet',k:'⌘ C'},{g:'Actions',n:'New workspace…',k:'⌘ N'}];
+const SWATCHES=[
+{n:'bg',d:'#0a0a0f',l:'#f2f2f7'},{n:'bg-2',d:'#0e0e15',l:'#fafafd'},{n:'surface',d:'#12121a',l:'#ffffff'},{n:'surface-3',d:'#1e1e29',l:'#f1f1f6'},
+{n:'surface-4',d:'#282836',l:'#e4e4ee'},{n:'text',d:'#f4f4f8',l:'#111118'},{n:'text-2',d:'#a4a4b6',l:'#5a5a70'},{n:'text-3',d:'#7f7f93',l:'#6c6c82'}];
+const STATUS={Active:['var(--ok-soft)','var(--ok)'],Invited:['var(--ion-soft)','var(--ion-tx)'],Suspended:['var(--bad-soft)','var(--bad)']};
+const HUES=[{h:285,n:'Ion violet'},{h:205,n:'Plasma cyan'},{h:165,n:'Mint'},{h:20,n:'Rose'},{h:75,n:'Amber'}];
+const SEL_OPTS=['Design engineer','Product designer','Frontend engineer','Founder'];
+const TABS=['Overview','Components','Tokens','Changelog'];
+const SEGS=['Day','Week','Month'];
+const TG={A:['var(--sf3)','var(--tx2)'],P:['var(--bg2)','var(--tx3)'],M:['var(--ion-soft)','var(--ion-tx)'],O:['color-mix(in oklch,var(--cyan) 18%,transparent)','var(--cyan)'],C:['color-mix(in oklch,var(--mint) 18%,transparent)','var(--mint)']};
+const IDX=[
+['Foundations','Canvas v4.0.0 Foundations.dc.html','01','Typography:A:typography|Text:P:typography|Icon:A:icon|Emblem:A:emblem|Swatch:A:emblem|Reveal:A:motion'],
+['Layout','Canvas v4.0.0 Layout.dc.html','02','Row & Column:A:layout|Container:A:layout|Grid:A:layout|Divider:A:layout|View:P:layout|ScrollView:P:layout|Pressable:P:layout|AppFrame:O:app-frame|DashboardGrid:O:dashboard-grid'],
+['Controls','Canvas v4.0.0 Controls.dc.html','03','Button:A:button|ButtonGroup:A:button-group|Switch:A:switch|Checkbox:A:switch|Radio:A:radio|Slider:A:slider|Stepper:A:slider|Chip:A:avatar|Avatar:A:avatar|Badge:A:avatar|Kbd:A:avatar'],
+['Inputs','Canvas v4.0.0 Inputs.dc.html','04','Input:A:input|TextInput:P:input-addons|Textarea:A:select|Select:A:select|InputOTP:A:select|Autocomplete:A:autocomplete|Listbox:A:autocomplete|PhoneInput:M:phone-input|Field:M:phone-input|Form:M:form|FilterPanel:O:filter-panel'],
+['Navigation','Canvas v4.0.0 Navigation.dc.html','05','Tabs:O:tabs|TabBar:O:tab-bar|Navbar:O:navbar|Sidebar:O:navbar|Breadcrumb:A:tabs|Pagination:A:tabs|Steps:O:steps|RowMenu:O:row-menu'],
+['Surfaces & data','Canvas v4.0.0 Data.dc.html','06','Card:M:card|Stats:M:stats|DataTable:O:data-table|StackedList:M:stacked-list|GridList:M:grid-list|MediaObject:M:media-object|Feed:M:feed|DescriptionList:M:description-list|ActionPanel:M:description-list|Accordion:M:accordion|Collapsible:M:accordion|CodeBlock:M:code-block|Carousel:O:carousel|Image:A:media|Video:A:media|QRCode:A:media|Calendar:O:calendar|Chat:O:chat|Board:O:board|Drag & drop:O:board'],
+['Charts','Canvas v4.0.0 Charts.dc.html','06','Chart:C:chart|LineChart:C:chart|AreaChart:C:area-chart|RangeAreaChart:C:range-area-chart|ComposedChart:C:composed-chart|Sparkline:C:sparkline|Histogram:C:histogram|BoxPlot:C:box-plot|ScatterPlot:C:scatter-plot|WaterfallChart:C:waterfall-chart|PieChart:C:pie-chart|Treemap:C:treemap|StackedBar:C:stacked-bar|FunnelChart:C:funnel-chart|Gauge:C:gauge|ProgressRing:C:progress-ring|RadialBarChart:C:radial-bar-chart|BulletChart:C:bullet-chart|RadarChart:C:radar-chart|MetricBreakdown:C:metric-breakdown|BarList:C:bar-list|DepthChart:C:depth-chart|Heatmap:C:heatmap|CandlestickChart:C:candlestick-chart|UptimeBar:C:uptime-bar|ServiceHealthList:C:uptime-bar|GeoMap:C:geo-map'],
+['Overlays & feedback','Canvas v4.0.0 Overlays.dc.html','07','Dialog:O:dialog|AlertDialog:M:alert-dialog|Drawer:O:drawer|ActionSheet:O:action-sheet|Popover:A:popover|Tooltip:A:popover|Dropdown:A:popover|Command:O:command|Wizard:O:wizard|Toast:O:toast|Alert:M:alert|EmptyState:M:alert|Progress:A:skeleton|Spinner:A:skeleton|Skeleton:A:skeleton']];
+const ICON_SET=['search','bell','settings','user','users','home','inbox','calendar','mail','lock','shield','sparkles','layers','layoutGrid','chartLine','database','cloud','code','gitBranch','rocket','zap','star','heart','trash2'];
+const VIEWS=[{n:'List',i:'layoutList'},{n:'Grid',i:'layoutGrid'},{n:'Board',i:'columns2'}];
+const FMTS=[{k:'b',n:'B',fw:'700',fs:'normal',td:'none'},{k:'i',n:'I',fw:'500',fs:'italic',td:'none'},{k:'u',n:'U',fw:'500',fs:'normal',td:'underline'}];
+const PLANS=[{k:'stable',n:'Stable',price:'3.0.0',i:'shieldCheck'},{k:'beta',n:'Beta',price:'3.1.0-beta.2',i:'gitBranch'},{k:'canary',n:'Canary',price:'nightly',i:'bird'}];
+const RUNTIMES=[['Expo','SDK 57'],['React Native','0.86'],['React Native Web','web'],['Next.js','App Router'],['Remix','web'],['Vite','web'],['Metro','bundler'],['Electron','desktop']];
+const LB=[{n:'Mentions',d:'Someone tags you in a comment or on a board.'},{n:'Token changes',d:'Any value in src/style/tokens.ts moves.'},{n:'Releases',d:'A new version of the kit reaches npm.'}];
+const FP=[{t:'Status',items:[['active','Active',18],['invited','Invited',4],['suspended','Suspended',2]]},{t:'Team',items:[['platform','Platform',6],['design','Design',4],['mobile','Mobile',5],['data','Data',6]]}];
+const PTABS=[['All',107],['Changed',64],['New',12]];
+const VTABS=[{n:'General',i:'settings2',b:'Name, URL and region. Shown to everyone in the workspace.'},{n:'Members',i:'users',b:'24 members and 3 pending invites. Roles map straight onto board permissions.'},{n:'Integrations',i:'plug',b:'GitHub and Figma are connected. Token changes open a pull request.'},{n:'Security',i:'shieldCheck',b:'SSO is enforced. Sessions end after 12 idle hours.'}];
+const ACC=[{t:'Is glass a component prop?',b:'No. Glass is a theming mode: <ThemeProvider glass>. Each surface then takes its own tint layer, from sheer shells to dense menus.'},{t:'Can I pass variant="primary"?',b:'String enums are not part of the API. Pass the boolean that names the meaning: <Button primary>.'},{t:'How do I rebrand?',b:'Set one hue. --ion is oklch(L C var(--hue)), so every fill, ring and glow moves together and stays in gamut.'}];
+const CODE={tsx:['import { ThemeProvider, Button } from "@nannier/canvas";','','export function Save() {','  return (','    <ThemeProvider dark glass>','      <Button variant="primary">Save</Button>','      <Button primary large>Save</Button>','    </ThemeProvider>','  );','}'],css:['[data-ion] {','  --hue: 285;','  --ion: oklch(.74 .17 var(--hue));','  --ion-soft: oklch(.74 .17 var(--hue) / .16);','  --ion-ring: oklch(.74 .17 var(--hue) / .35);','}']};
+const CODE_MARK={tsx:{4:'em',5:'del',6:'add'},css:{2:'em'}};
+const KW=new Set(['import','from','export','function','return','const']);
+function tok(line){const out=[];const re=/("[^"]*"|--[\w-]+|[A-Za-z_][\w-]*|\d[\d.]*|\s+|[^\sA-Za-z_"\d])/g;let m;while((m=re.exec(line))){const t=m[0];const before=line.slice(0,m.index);let c='var(--tx)';
+  if(t[0]==='"')c='var(--mint)';else if(t.startsWith('--'))c='var(--warn)';else if(KW.has(t))c='var(--ion-tx)';else if(/^[A-Z]/.test(t))c='var(--cyan)';else if(/^\d/.test(t))c='var(--mint)';else if(/^[a-z][\w-]*$/.test(t)&&line[m.index+t.length]==='(')c='var(--ion-tx)';else if(/^[a-z][\w-]*$/.test(t)&&/<[A-Z]\w*[^<>]*\s$/.test(before))c='var(--warn)';else if(/^[^\w\s]$/.test(t))c='var(--tx3)';
+  out.push({t,c});}return out;}
+const CAL_EV={5:[['--ion','10:00','Sprint planning','1h']],12:[['--cyan','14:00','Token review','45m'],['--ion','16:30','Design crit','30m']],14:[['--mint','11:00','Release v6.2','all day']],21:[['--ion','09:30','Accessibility audit','2h']],26:[['--ion','10:00','Design review','1h'],['--cyan','13:30','Token sync','45m'],['--mint','16:00','Release v6.3','all day']],28:[['--warn','15:00','Android blur rebuild','1h']],30:[['--cyan','12:00','Quarterly planning','3h']]};
+const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const SPARKS=[{n:'Signups',v:'1,204',c:'var(--c1)',d:[30,42,38,50,46,58,52,64,60,72,78,92]},{n:'Uptime',v:'99.94%',c:'var(--ok)',d:[99.2,99.6,99.4,99.9,99.7,99.8,100,99.9,99.5,100,99.9,100]},{n:'Errors',v:'312',c:'var(--bad)',d:[20,24,22,30,28,26,40,38,52,48,66,84]}];
+const SPARK_V=SPARKS.map((x,i)=>{const mn=Math.min(...x.d),mx=Math.max(...x.d);return{n:x.n,v:x.v,c:x.c,bt:i?'1px solid var(--ln)':'0',bars:x.d.map((v,j)=>({h:(18+(v-mn)/((mx-mn)||1)*82).toFixed(1)+'%',o:j===x.d.length-1?1:.32}))}});
+const HEAT=(()=>{const end=new Date(2026,9,25);const start=new Date(end);start.setDate(end.getDate()-34*7+1);let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};const lv=['var(--sf3)','color-mix(in oklch,var(--ion) 28%,var(--sf3))','color-mix(in oklch,var(--ion) 50%,var(--sf3))','color-mix(in oklch,var(--ion) 75%,var(--sf3))','var(--ion)'];let total=0;const weeks=[];
+  for(let w=0;w<34;w++){const d=[];let m='';for(let k=0;k<7;k++){const dt=new Date(start);dt.setDate(start.getDate()+w*7+k);if(k===0&&dt.getDate()<=7)m=MON[dt.getMonth()];const r=rnd();const n=Math.max(0,Math.floor(r*(.4+w/34*.6)*(k>=5?.45:1)*13-1));total+=n;const L=n===0?0:n<3?1:n<6?2:n<9?3:4;d.push({bg:lv[L],t:n+' commits · '+MON[dt.getMonth()]+' '+dt.getDate()});}weeks.push({m,d});}
+  return{weeks,total:total.toLocaleString('en-US')};})();
+const UPT=Array.from({length:60},(_,i)=>{const s=i===3?'unk':(i===17||i===41)?'warn':i===52?'bad':'ok';const dt=new Date(2026,9,26);dt.setDate(dt.getDate()-59+i);return{bg:{ok:'var(--ok)',warn:'var(--warn)',bad:'var(--bad)',unk:'var(--sf4)'}[s],t:MON[dt.getMonth()]+' '+dt.getDate()+' · '+{ok:'operational',warn:'degraded',bad:'down 18 min',unk:'no data'}[s]}});
+const SVC=[['API','operational','99.98%',[]],['Web app','operational','100%',[]],['Push notifications','degraded','98.21%',[22,26,27,29]],['Android capture module','down','96.40%',[12,24,25,29]]].map(([n,st,d,bad],i)=>({n,d,st:st[0].toUpperCase()+st.slice(1),c:{operational:'var(--ok)',degraded:'var(--warn)',down:'var(--bad)'}[st],soft:{operational:'var(--ok-soft)',degraded:'var(--warn-soft)',down:'var(--bad-soft)'}[st],bt:i?'1px solid var(--ln)':'0',p:Array.from({length:30},(_,j)=>bad.includes(j)?(st==='down'&&j===29?'var(--bad)':'var(--warn)'):'var(--ok)')}));
+function NE(lon,lat){const l=lon*Math.PI/180,p=lat*Math.PI/180,p2=p*p,p4=p2*p2;return{x:l*(0.8707-0.131979*p2+p4*(-0.013791+p4*(0.003971*p2-0.001529*p4))),y:p*(1.007226+p2*(0.015085+p4*(-0.044475+0.028874*p2-0.005916*p4)))};}
+const NMX=NE(180,0).x,NMY=NE(0,90).y;
+const GEO=[['San Francisco',-122.42,37.77,2400],['New York',-74.0,40.71,3100],['São Paulo',-46.63,-23.55,1300],['London',-0.13,51.51,2650],['Berlin',13.4,52.52,1920],['Lagos',3.38,6.52,640],['Mumbai',72.88,19.08,1480],['Singapore',103.82,1.35,1210],['Tokyo',139.69,35.69,2280],['Sydney',151.21,-33.87,1390]].map(([n,lo,la,c])=>{const q=NE(lo,la);return{n,x:((q.x/NMX+1)/2*100).toFixed(2)+'%',y:((-q.y/NMY+1)/2*100).toFixed(2)+'%',s:Math.round(8+Math.sqrt(c/3100)*30)+'px',t:n+' · '+c.toLocaleString('en-US')+' sessions'}});
+const GEO_TIP=(()=>{const b=GEO.find(g=>g.n==='Berlin');return{x:b.x,y:b.y,label:'Berlin · 1,920 sessions'}})();
+const CHAT0=[{me:false,t:'Hi. Ask how any Canvas component sizes itself, or which props it takes.'},{me:true,t:'Does Card take a style prop?'},{me:false,t:'No. There is no style escape hatch. Use the semantic booleans: <Card raised selected>.'}];
+const REPLIES=['Every visual variation is a boolean prop. Within one axis you pass at most one.','Components fill or hug. The parent provides the bounds: a Container step, a Grid tile or a Row span.','Glass is a theming mode, never a prop. Wrap the app in <ThemeProvider glass>.','Anything that changes shape measures its own width: compact, regular or wide.'];
+const LAY_ROWS=[{n:'Ada Lovelace',img:'docs/public/ada-lovelace.jpg',role:'Owner',st:'Active',amt:'$12.4k'},{n:'Grace Hopper',img:'docs/public/grace-hopper.jpg',role:'Admin',st:'Active',amt:'$9.1k'},{n:'Kira Tanaka',img:'docs/public/kira-tanaka.jpg',role:'Editor',st:'Invited',amt:'$4.3k'},{n:'Noor Park',img:'docs/public/noor-park.jpg',role:'Viewer',st:'Active',amt:'$7.8k'}];
+const RZ=[{n:'Phone',w:360,i:'smartphone'},{n:'Tablet',w:768,i:'tablet'},{n:'Desktop',w:1180,i:'monitor'},{n:'Fit',w:null,i:'maximize2'}];
+const TIERC={compact:['color-mix(in oklch,var(--mint) 16%,transparent)','var(--mint)'],regular:['color-mix(in oklch,var(--cyan) 16%,transparent)','var(--cyan)'],wide:['var(--ion-soft)','var(--ion-tx)']};
+const tierOf=(w)=>w<560?'compact':w<900?'regular':'wide';
+const MODE={fill:['var(--ion-soft)','var(--ion-tx)'],hug:['color-mix(in oklch,var(--cyan) 16%,transparent)','var(--cyan)'],fixed:['color-mix(in oklch,var(--mint) 16%,transparent)','var(--mint)'],tiles:['var(--warn-soft)','var(--warn)']};
+const SIZING=[
+['Controls','Button · ButtonGroup · Chip · Badge · Kbd','hug','hug','32 · 40 · 48','—','—','Labels never truncate. A Button takes block when its container is compact.'],
+['Marks','Switch · Checkbox · Radio · Avatar · Icon · Emblem','fixed','fixed','own size','—','—','Never reflow. The touch area grows to 44 / 48 with hitSlop; the shape stays put.'],
+['Fields','Input · Select · Textarea · Autocomplete · PhoneInput','fill','fill','40 · Textarea grows','160','—','Addons and icons stay; the value column absorbs the change.'],
+['Surfaces','Card · Alert · ActionPanel · EmptyState · MediaObject','fill','fill','hug content','240','—','Media stacks above the text when compact.'],
+['Tiles','Grid · Stats · GridList · DashboardGrid','tiles','tiles','hug','minTileWidth','columns · span','As many equal columns as fit. Spans reflow to narrowSpan, then stack.'],
+['Forms','Form · Field · DescriptionList','fill','fill','hug','280','xxl 672','Two columns from regular; stacked when compact.'],
+['Data','DataTable · StackedList · Calendar · Board','fill','fill','hug · scrolls','320','—','Table rows become cards when compact. Board columns scroll sideways.'],
+['Charts','all 27 chart types','fill','fill','fixed or aspect','240','—','The legend drops below the plot when compact; ticks thin out.'],
+['Navigation','Navbar · Tabs · Breadcrumb · Pagination · Steps','fill','fill','fixed','—','—','Links fold into a menu when compact; Pagination keeps prev and next.'],
+['Shells','Sidebar · FilterPanel · AppFrame · Page','fixed','fixed rail','fill','—','page step','Viewport tier: a rail from lg, a drawer below.'],
+['Overlays','Dialog · Drawer · Popover · ActionSheet · Wizard','fill','fill to cap','hug · body scrolls','—','md 448 · lg 512','Viewport tier: a bottom sheet on phones.']].map(([f,m,mode,w,h,min,max,r])=>({f,m,w,h,min,max,r,wb:MODE[mode][0],wc:MODE[mode][1]}));
+
+class Component extends DCLogic {
+  state={scheme:null,hue:null,sw:{a:true,b:false,c:true},cb:{a:true,b:false,c:'mixed'},radio:'stable',tab:1,seg:1,qty:2,sl:62,selOpen:true,selVal:'Design engineer',q:'',cmd:1,sel:{1:true,3:true},chips:{a:true,b:false,c:true},iosSw:true,andSw:true,
+    view:0,splitOpen:false,fmt:{b:true,i:false,u:false},bill:'y',pw:'canvas-v4-glass',pwShow:false,clr:'--ion',acQ:'re',lb:{0:true,2:true},fp:{active:true,mobile:true},formA:true,ptab:0,vtab:0,acc:0,colOpen:false,cbTab:'tsx',copied:false,car:0,calSel:26,
+    chatMsgs:CHAT0,chatDraft:'',chatTyping:false,dlEdit:false,dlVal:'Bobby Nannier',dlDraft:'',vw:1440,rw:1180,fw:0,sz:false,drag:false};
+  frameRef=React.createRef();chatRef=React.createRef();
+  stackRef=React.createRef();
+  componentDidMount(){
+    this._mm=(e)=>{const el=this.stackRef.current;if(!el)return;const r=el.getBoundingClientRect();if(!r.width)return;
+      const x=Math.max(-1,Math.min(1,(e.clientX-(r.left+r.width/2))/r.width));const y=Math.max(-1,Math.min(1,(e.clientY-(r.top+r.height/2))/r.height));
+      el.style.transform=`rotateX(${14-y*8}deg) rotateY(${-22+x*10}deg) rotateZ(3deg)`;};
+    window.addEventListener('mousemove',this._mm);
+    this._rs=()=>this.setState({vw:window.innerWidth});this._rs();window.addEventListener('resize',this._rs);
+    this._obs();this._chatBottom();
+  }
+  componentDidUpdate(){this._obs();const m=this.state.chatMsgs,t=this.state.chatTyping;if(m!==this._pm||t!==this._pt){this._pm=m;this._pt=t;this._chatBottom();}}
+  componentWillUnmount(){window.removeEventListener('mousemove',this._mm);window.removeEventListener('resize',this._rs);if(this._ro)this._ro.disconnect();clearTimeout(this._chatT);clearTimeout(this._ct);}
+  _obs(){const el=this.frameRef.current;if(!el||this._roEl===el||!window.ResizeObserver)return;if(this._ro)this._ro.disconnect();this._roEl=el;this._ro=new ResizeObserver(()=>{const w=el.offsetWidth;if(w&&w!==this.state.fw)this.setState({fw:w});});this._ro.observe(el);}
+  _chatBottom(){const c=this.chatRef.current;if(c)requestAnimationFrame(()=>{c.scrollTop=c.scrollHeight;});}
+  sendChat(){const t=(this.state.chatDraft||'').trim();if(!t)return;this.setState(s=>({chatMsgs:[...s.chatMsgs,{me:true,t}],chatDraft:'',chatTyping:true}));clearTimeout(this._chatT);this._chatT=setTimeout(()=>{this._ri=((this._ri||0)+1)%REPLIES.length;this.setState(s=>({chatMsgs:[...s.chatMsgs,{me:false,t:REPLIES[this._ri]}],chatTyping:false}));},1100);}
+  rzDown=(e)=>{const fr=this.frameRef.current;if(!fr)return;e.preventDefault();const x0=e.clientX,w0=fr.offsetWidth;const st=fr.parentElement;const max=st?st.clientWidth-48:2400;this.setState({drag:true,rw:w0});
+    const mv=(ev)=>this.setState({rw:Math.max(300,Math.min(max,Math.round(w0+(ev.clientX-x0))))});
+    const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);this.setState({drag:false});};
+    window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);};
+  extra(s,scheme,hue){
+    const self=this;
+    const swv=(v)=>({bg:v?'var(--ion)':'var(--sf4)',bd:v?'var(--ion)':'var(--ln2)',x:v?'translateX(18px)':'translateX(0)'});
+    const index=IDX.map(([cat,href,num,list])=>{const items=list.split('|').map(x=>{const [n,t,id]=x.split(':');return{n,t,href:href+'#c-'+id,tb:TG[t][0],tc:TG[t][1]}});return{cat,href,num,count:items.length,items}});
+    const calDays=[];for(let i=0;i<35;i++){const day=i-2;const out=day<1||day>31;const d=day<1?30+day:day>31?day-31:day;const ev=out?[]:(CAL_EV[day]||[]);const sel=!out&&day===s.calSel;const today=!out&&day===26;
+      calDays.push({d,c:sel?'var(--ion-fg)':out?'var(--tx3)':'var(--tx)',bg:sel?'var(--ion)':'transparent',sh:sel?'0 8px 20px -8px var(--ion-glow)':today?'inset 0 0 0 1.5px var(--ion)':'none',dots:ev.map(e=>sel?'var(--ion-fg)':'var('+e[0]+')'),on:()=>{if(!out)self.setState({calSel:day})}});}
+    const selEv=CAL_EV[s.calSel]||[];
+    const lines=CODE[s.cbTab],marks=CODE_MARK[s.cbTab];
+    const q=(s.acQ||'').trim().toLowerCase();
+    const acList=RUNTIMES.filter(([n])=>!q||n.toLowerCase().includes(q)).slice(0,4);
+    const fw=s.fw||s.rw||1180;const tier=tierOf(fw);const gutN=tier==='compact'?14:tier==='regular'?22:28;const inner=Math.min(fw,1024)-2*gutN;const wide=tier==='wide';
+    const formW=wide?(inner-14)/2.35:inner,tableW=wide?(inner-14)*1.35/2.35:inner;const formT=tierOf(formW),tableT=tierOf(tableW);const cols=Math.max(1,Math.min(4,Math.floor((inner+10)/142)));
+    const rules=[['Navbar folds its links into a menu',tier==='compact'],['Stats auto-fit '+cols+' up, no JS',true],['Form and table sit side by side',wide],['Form fields in two columns',formT!=='compact'],['Members table turns into cards',tableT==='compact'],['Buttons go block',formT==='compact']];
+    const vw=s.vw;const bp=vw<=640?'sm':vw<=768?'md':vw<=1024?'lg':vw<=1280?'xl':vw<=1536?'2xl':'base';const ff=vw<=640?'phone':vw<=1024?'tablet':'desktop';
+    const sz=s.sz;const off='0 solid transparent';
+    return {
+      index,iconSet:ICON_SET,ionVal:scheme==='dark'?'oklch(.74 .17 '+hue+')':'oklch(.5 .22 '+hue+')',
+      views:VIEWS.map((v,i)=>({...v,c:s.view===i?'var(--tx)':'var(--tx3)',on:()=>self.setState({view:i})})),viewX:(s.view*100)+'%',
+      splitOpen:s.splitOpen,toggleSplit:()=>self.setState({splitOpen:!s.splitOpen}),splitRot:s.splitOpen?'rotate(180deg)':'none',
+      fmts:FMTS.map(f=>{const on=!!s.fmt[f.k];return{...f,c:on?'var(--tx)':'var(--tx3)',bg:on?'var(--sf)':'transparent',sh:on?'var(--sh-sm)':'none',on:()=>self.patch('fmt',x=>({...x,[f.k]:!x[f.k]}))}}),
+      plans:PLANS.map(p=>{const on=s.radio===p.k;return{...p,bg:on?'var(--ion-soft)':'var(--bg2)',bd:on?'var(--ion)':'var(--ln)',sh:on?'0 0 0 4px var(--ion-ring)':'none',ic:on?'var(--ion-tx)':'var(--tx3)',b:on?'6px solid var(--ion)':'2px solid var(--ln2)',on:()=>self.setState({radio:p.k})}}),
+      billM:{b:s.bill==='m'?'6px solid var(--ion)':'2px solid var(--ln2)',on:()=>self.setState({bill:'m'})},billY:{b:s.bill==='y'?'6px solid var(--ion)':'2px solid var(--ln2)',on:()=>self.setState({bill:'y'})},
+      pw:s.pw,pwType:s.pwShow?'text':'password',pwIcon:s.pwShow?'eyeOff':'eye',onPw:(e)=>self.setState({pw:e.target.value}),togPw:()=>self.setState({pwShow:!s.pwShow}),
+      clr:s.clr,clrOn:s.clr.length>0,onClr:(e)=>self.setState({clr:e.target.value}),clrX:()=>self.setState({clr:''}),
+      acQ:s.acQ,onAc:(e)=>self.setState({acQ:e.target.value}),acEmpty:acList.length===0,
+      acRes:acList.map(([n,meta],i)=>{const ix=q?n.toLowerCase().indexOf(q):-1;return{a:ix>=0?n.slice(0,ix):n,m:ix>=0?n.slice(ix,ix+q.length):'',b:ix>=0?n.slice(ix+q.length):'',meta,bg:i===0?'var(--ion-soft)':'transparent',on:()=>self.setState({acQ:n})}}),
+      lbOpts:LB.map((o,i)=>{const on=!!s.lb[i];return{...o,bg:on?'var(--ion-soft)':'transparent',op:on?1:0,on:()=>self.patch('lb',x=>({...x,[i]:!x[i]}))}}),
+      fpGroups:FP.map(g=>({t:g.t,items:g.items.map(([k,n,c])=>{const on=!!s.fp[k];return{n,c,cbg:on?'var(--ion)':'transparent',cbd:on?'var(--ion)':'var(--ln2)',op:on?1:0,bbg:on?'var(--ion-soft)':'var(--sf3)',bc:on?'var(--ion-tx)':'var(--tx3)',on:()=>self.patch('fp',x=>({...x,[k]:!x[k]}))}})})),
+      fpCount:Object.values(s.fp).filter(Boolean).length,fpClear:()=>self.setState({fp:{}}),
+      swFormA:swv(s.formA),togFormA:()=>self.setState({formA:!s.formA}),
+      ptabs:PTABS.map(([n,k],i)=>{const on=s.ptab===i;return{n,k,bg:on?'var(--sf)':'transparent',c:on?'var(--tx)':'var(--tx2)',sh:on?'var(--sh-sm)':'none',bb:on?'var(--ion-soft)':'var(--sf4)',bc:on?'var(--ion-tx)':'var(--tx3)',on:()=>self.setState({ptab:i})}}),
+      vtabs:VTABS.map((t,i)=>({n:t.n,i:t.i,c:s.vtab===i?'var(--tx)':'var(--tx3)',on:()=>self.setState({vtab:i})})),vtabY:(s.vtab*36)+'px',vtabTitle:VTABS[s.vtab].n,vtabBody:VTABS[s.vtab].b,
+      accItems:ACC.map((a,i)=>({t:a.t,b:a.b,open:s.acc===i,rot:s.acc===i?'rotate(180deg)':'none',bt:i?'1px solid var(--ln)':'0',on:()=>self.setState({acc:s.acc===i?-1:i})})),
+      togCol:()=>self.setState({colOpen:!s.colOpen}),colOpen:s.colOpen,colRot:s.colOpen?'rotate(90deg)':'none',
+      cbTabs:[['tsx','Save.tsx'],['css','tokens.css']].map(([k,n])=>({n,c:s.cbTab===k?'var(--tx)':'var(--tx3)',bg:s.cbTab===k?'var(--sf3)':'transparent',on:()=>self.setState({cbTab:k})})),
+      cbLines:lines.map((l,i)=>{const k=marks[i];return{n:i+1,m:k==='del'?'−':k==='add'?'+':'',mc:k==='del'?'var(--bad)':'var(--ok)',bg:k==='em'?'var(--ion-soft)':k==='del'?'var(--bad-soft)':k==='add'?'var(--ok-soft)':'transparent',bar:k==='em'?'inset 2px 0 0 var(--ion)':k==='del'?'inset 2px 0 0 var(--bad)':k==='add'?'inset 2px 0 0 var(--ok)':'none',s:l?tok(l):[{t:' ',c:'var(--tx)'}]}}),
+      copy:()=>{try{navigator.clipboard&&navigator.clipboard.writeText(CODE[s.cbTab].join('\n')).catch(()=>{})}catch(_){}self.setState({copied:true});clearTimeout(self._ct);self._ct=setTimeout(()=>self.setState({copied:false}),1600);},
+      copyC:s.copied?'var(--ok)':'var(--tx2)',copyI:s.copied?'check':'copy',copyL:s.copied?'Copied':'Copy',
+      carX:(-s.car*100)+'%',carPrev:()=>self.setState({car:(s.car+3)%4}),carNext:()=>self.setState({car:(s.car+1)%4}),carDots:[0,1,2,3].map(i=>({w:i===s.car?'22px':'6px',bg:i===s.car?'var(--ion)':'var(--sf4)',on:()=>self.setState({car:i})})),
+      calDays,calLabel:DOW[(s.calSel+2)%7]+', Oct '+s.calSel+(selEv.length?' · '+selEv.length+(selEv.length>1?' events':' event'):''),calEmpty:selEv.length===0,
+      calEvents:selEv.map(([c,t,n,dur])=>({c:'var('+c+')',bg:'color-mix(in oklch,var('+c+') 14%,transparent)',t,n,dur})),
+      sparks:SPARK_V,heat:HEAT.weeks,heatTotal:HEAT.total,uptime:UPT,services:SVC,geo:GEO,geoTip:GEO_TIP,
+      chatRef:this.chatRef,chatTyping:s.chatTyping,chatDraft:s.chatDraft,onChat:(e)=>self.setState({chatDraft:e.target.value}),chatKey:(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();self.sendChat();}},chatSend:()=>self.sendChat(),
+      chatMsgs:s.chatMsgs.map(m=>m.me?{t:m.t,j:'flex-end',bg:'var(--ion)',c:'var(--ion-fg)',r:'18px 18px 6px 18px',bd:'0',sh:'0 8px 20px -10px var(--ion-glow)'}:{t:m.t,j:'flex-start',bg:'var(--sf)',c:'var(--tx)',r:'18px 18px 18px 6px',bd:'1px solid var(--ln)',sh:'var(--sh-sm)'}),
+      dlEdit:s.dlEdit,dlView:!s.dlEdit,dlVal:s.dlVal,dlDraft:s.dlDraft,onDl:(e)=>self.setState({dlDraft:e.target.value}),
+      dlKey:(e)=>{if(e.key==='Enter')self.setState(x=>({dlVal:x.dlDraft.trim()||x.dlVal,dlEdit:false}));if(e.key==='Escape')self.setState({dlEdit:false});},
+      dlSave:()=>self.setState(x=>({dlVal:x.dlDraft.trim()||x.dlVal,dlEdit:false})),dlCancel:()=>self.setState({dlEdit:false}),dlOpen:()=>self.setState(x=>({dlEdit:true,dlDraft:x.dlVal})),
+      vw,vpX:Math.min(99.5,vw/1800*100).toFixed(2)+'%',vpLabel:vw+'px · '+bp+' · '+ff,
+      rzPresets:RZ.map(r=>{const on=r.w===null?!s.rw:s.rw===r.w;return{n:r.n,i:r.i,c:on?'var(--tx)':'var(--tx3)',bg:on?'var(--sf)':'transparent',sh:on?'var(--sh-sm)':'none',on:()=>self.setState({rw:r.w})}}),
+      frameRef:this.frameRef,rzDown:this.rzDown,sz,togSz:()=>self.setState({sz:!s.sz}),
+      szSw:{bg:sz?'var(--ion)':'var(--sf4)',bd:sz?'var(--ion)':'var(--ln2)',x:sz?'translateX(14px)':'translateX(0)'},
+      szO:{fill:sz?'1.5px dashed var(--ion)':off,hug:sz?'1.5px dashed var(--cyan)':off,fixed:sz?'1.5px dashed var(--mint)':off,grid:sz?'1.5px dashed var(--warn)':off},
+      lay:{fw:s.rw?s.rw+'px':'100%',tr:s.drag?'none':'width .55s cubic-bezier(.2,.8,.2,1)',wl:fw+'px',tier,tb:TIERC[tier][0],tc:TIERC[tier][1],gut:gutN+'px',links:tier!=='compact',menu:tier==='compact',cols,
+        region:wide?'minmax(0,1fr) minmax(0,1.35fr)':'minmax(0,1fr)',formCols:formT==='compact'?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))',formT,formWl:Math.round(formW)+'px',tableT,tableWl:Math.round(tableW)+'px',table:tableT!=='compact',cards:tableT==='compact',btnFlex:formT==='compact'?'1 1 0':'0 0 auto',
+        rules:rules.map(([t,on])=>({t,bg:on?'var(--ion-soft)':'transparent',c:on?'var(--ion-tx)':'var(--tx3)',bd:on?'var(--ion-ring)':'var(--ln)',dot:on?1:.35}))},
+      layRows:LAY_ROWS.map(r=>({...r,stBg:STATUS[r.st][0],stFg:STATUS[r.st][1]})),sizing:SIZING
+    };
+  }
+  patch(k,fn){this.setState(s=>({[k]:fn(s[k])}))}
+  slDown=(e)=>{const el=e.currentTarget;const r=el.getBoundingClientRect();
+    const set=(cx)=>this.setState({sl:Math.max(0,Math.min(100,Math.round((cx-r.left)/r.width*100)))});
+    set(e.clientX);try{el.setPointerCapture(e.pointerId)}catch(_){}
+    const mv=(ev)=>set(ev.clientX);const up=()=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up)};
+    el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);};
+  renderVals(){
+    const s=this.state,p=this.props;
+    const scheme=s.scheme??p.scheme??'dark';
+    const hue=s.hue??p.hue??285;
+    const glass=this.state.glass??p.glass??true;
+    const swv=(v)=>({bg:v?'var(--ion)':'var(--sf4)',bd:v?'var(--ion)':'var(--ln2)',x:v?'translateX(18px)':'translateX(0)'});
+    const cbv=(v)=>({bg:v?'var(--ion)':'transparent',bd:v?'var(--ion)':'var(--ln2)',chk:v===true?1:0,dash:v==='mixed'?1:0});
+    const rdv=(k)=>({b:s.radio===k?'6px solid var(--ion)':'2px solid var(--ln2)',on:()=>this.setState({radio:k})});
+    const cycle=(v)=>v===true?false:v===false?'mixed':true;
+    const chip=(k)=>{const v=s.chips[k];return{bg:v?'var(--ion-soft)':'transparent',bd:v?'var(--ion)':'var(--ln2)',c:v?'var(--ion-tx)':'var(--tx2)',on:()=>this.patch('chips',x=>({...x,[k]:!x[k]}))}};
+    const filt=CMDS.filter(c=>!s.q||c.n.toLowerCase().includes(s.q.toLowerCase()));
+    let lastG=null;
+    const cmds=filt.map((c,i)=>{const showG=c.g!==lastG;lastG=c.g;const act=i===s.cmd;
+      return{...c,showG,bg:act?'var(--ion-soft)':'transparent',c:act?'var(--tx)':'var(--tx2)',
+        on:()=>{const next={cmd:i};if(c.act==='scheme')next.scheme=scheme==='dark'?'light':'dark';
+          if(c.act==='hue')next.hue=HUES[(HUES.findIndex(h=>h.h===hue)+1)%HUES.length].h;this.setState(next);}}});
+    const rows=PEOPLE.map((r,i)=>{const on=!!s.sel[i];const st=STATUS[r.st];
+      return{...r,bg:on?'var(--ion-soft)':'transparent',cbg:on?'var(--ion)':'transparent',cbd:on?'var(--ion)':'var(--ln2)',cop:on?1:0,stBg:st[0],stFg:st[1],
+        toggle:()=>this.patch('sel',x=>({...x,[i]:!x[i]}))}});
+    const selCount=Object.values(s.sel).filter(Boolean).length;
+    const allOn=selCount===PEOPLE.length;
+    return {
+      stackRef:this.stackRef,railCols:this.state.vw<760?'minmax(0,1fr)':'200px minmax(0,1fr)',railD:this.state.vw<760?'none':'block',
+      scheme,schemeX:scheme==='dark'?'0%':'100%',
+      setDark:()=>this.setState({scheme:'dark'}),setLight:()=>this.setState({scheme:'light'}),
+      darkC:scheme==='dark'?'var(--tx)':'var(--tx3)',lightC:scheme==='light'?'var(--tx)':'var(--tx3)',
+      hue,bf:glass?'':'none',gl:glass?'':'var(--sf2)',toggleGlass:()=>this.setState({glass:!glass}),glassP:glass?'true':'false',glassC:glass?'var(--tx)':'var(--tx3)',glassTr:glass?'var(--ion)':'var(--sf4)',glassX:glass?'translateX(10px)':'none',
+      hues:HUES.map(h=>({...h,ring:h.h===hue?'0 0 0 2px var(--sf),0 0 0 4px var(--tx2)':'none',on:()=>this.setState({hue:h.h})})),
+      swatches:SWATCHES,
+      swA:swv(s.sw.a),swB:swv(s.sw.b),swC:swv(s.sw.c),
+      togA:()=>this.patch('sw',x=>({...x,a:!x.a})),togB:()=>this.patch('sw',x=>({...x,b:!x.b})),togC:()=>this.patch('sw',x=>({...x,c:!x.c})),
+      cbA:cbv(s.cb.a),cbB:cbv(s.cb.b),cbC:cbv(s.cb.c),
+      tcbA:()=>this.patch('cb',x=>({...x,a:!x.a})),tcbB:()=>this.patch('cb',x=>({...x,b:!x.b})),tcbC:()=>this.patch('cb',x=>({...x,c:cycle(x.c)})),
+      rd:{stable:rdv('stable'),beta:rdv('beta'),canary:rdv('canary')},
+      tabs:TABS.map((n,i)=>({n,c:i===s.tab?'var(--tx)':'var(--tx3)',on:()=>this.setState({tab:i})})),tabX:(s.tab*100)+'%',
+      segs:SEGS.map((n,i)=>({n,c:i===s.seg?'var(--tx)':'var(--tx3)',on:()=>this.setState({seg:i})})),segX:(s.seg*100)+'%',
+      qty:s.qty,inc:()=>this.setState({qty:Math.min(99,s.qty+1)}),dec:()=>this.setState({qty:Math.max(0,s.qty-1)}),
+      sl:s.sl,slPct:s.sl+'%',slDown:this.slDown,
+      chipA:chip('a'),chipB:chip('b'),chipC:chip('c'),
+      selOpen:s.selOpen,selVal:s.selVal,toggleSel:()=>this.setState({selOpen:!s.selOpen}),
+      selRot:s.selOpen?'rotate(225deg) translate(-1px,-1px)':'rotate(45deg) translate(-1px,-1px)',selBd:s.selOpen?'var(--ion)':'var(--ln2)',selSh:s.selOpen?'0 0 0 4px var(--ion-ring)':'none',
+      selOpts:SEL_OPTS.map(o=>({label:o,chk:o===s.selVal?1:0,bg:o===s.selVal?'var(--ion-soft)':'transparent',on:()=>this.setState({selVal:o,selOpen:false})})),
+      q:s.q,onQ:(e)=>this.setState({q:e.target.value,cmd:0}),cmds,cmdEmpty:cmds.length===0,
+      rows,selCount,allBg:allOn?'var(--ion)':'transparent',allBd:allOn?'var(--ion)':'var(--ln2)',allOp:allOn?1:0,
+      toggleAll:()=>this.setState({sel:allOn?{}:Object.fromEntries(PEOPLE.map((_,i)=>[i,true]))}),
+      iosSw:{bg:s.iosSw?'var(--ion)':'var(--sf4)',x:s.iosSw?'translateX(20px)':'translateX(0)'},togIos:()=>this.setState({iosSw:!s.iosSw}),
+      andSw:{bg:s.andSw?'var(--ion)':'var(--sf4)',bd:s.andSw?'var(--ion)':'var(--tx3)',x:s.andSw?'translateX(20px)':'translateX(0)',sz:s.andSw?'24px':'16px',tbg:s.andSw?'var(--ion-fg)':'var(--tx3)',m:s.andSw?'2px':'6px'},togAnd:()=>this.setState({andSw:!s.andSw}),
+      ...this.extra(s,scheme,hue)
+    };
+  }
+}
+</script>
+</body>
+</html>

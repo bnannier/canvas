@@ -22,9 +22,9 @@ describe("the native run's queue", () => {
   });
 
   test("spells the looks the way the docs theme sets them", () => {
-    expect(lookFor("blush", "glass")).toEqual({ scheme: "light", surface: "glass", palette: "blush" });
+    expect(lookFor("blush", "glass")).toEqual({ scheme: "light", surface: "glass", palette: "violet" });
     expect(lookFor("mint", "solid")).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
-    expect(lookFor("dark", "glass")).toEqual({ scheme: "dark", surface: "glass", palette: "blush" });
+    expect(lookFor("dark", "glass")).toEqual({ scheme: "dark", surface: "glass", palette: "violet" });
   });
 
   test("dumps accessibility for every variant in blush solid and the first example elsewhere by default", () => {

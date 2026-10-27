@@ -1,11 +1,11 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { darkColors, glassByScheme, lightColors, mintColors, palette } from "../src/style/tokens.ts";
+import { PALETTES, colorsFor, glassByScheme, lightColors, palette } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 // The oklch conversion and the block parser moved to tools/tokens so the design-rule
 // tests and the DESIGN.md generator can read the hand-off with the same parser this
 // script trusts. Nothing can import from HERE: the checks below run at import time.
-import { MINT_SELECTOR, cssColorToHex, cssRgbaToCanonical, declarationsIn } from "../tools/tokens/css-tokens.ts";
+import { cssColorToHex, cssRgbaToCanonical, paletteDeclarations } from "../tools/tokens/css-tokens.ts";
 
 const STYLES_DIR = join(import.meta.dir, "..", "styles");
 
@@ -99,17 +99,19 @@ if (glassMissingInCss.length) {
 // native. The hand-off is the source of truth; the JS must be its sRGB rendering.
 const colorsCss = await readFile(join(STYLES_DIR, "tokens", "colors.css"), "utf-8");
 const paletteCss = await readFile(join(STYLES_DIR, "tokens", "palette.css"), "utf-8");
-const cssLight = declarationsIn(colorsCss, ":root");
-// The mint palette's block applies over :root, as the cascade resolves data-palette="mint".
-const cssMint = { ...cssLight, ...declarationsIn(colorsCss, MINT_SELECTOR) };
-const cssDark = { ...cssLight, ...declarationsIn(colorsCss, ".dark") };
+// Every palette in both schemes: the scheme's block over :root, the accent block with the
+// palette's --hue substituted (tools/tokens/css-tokens.ts paletteDeclarations).
+const LOOKS = PALETTES.flatMap((p) =>
+  (["light", "dark"] as const).map((scheme) => ({
+    label: `${p}/${scheme}`,
+    scheme,
+    js: colorsFor(p, scheme),
+    css: paletteDeclarations(colorsCss, p, scheme),
+  })),
+);
 
 const drifted: string[] = [];
-for (const [scheme, js, css] of [
-  ["light", lightColors, cssLight],
-  ["mint", mintColors, cssMint],
-  ["dark", darkColors, cssDark],
-] as const) {
+for (const { label: scheme, js, css } of LOOKS) {
   for (const [name, jsValue] of Object.entries(js)) {
     const raw = css[name];
     if (raw === undefined) continue; // the name check above already reports this
@@ -120,16 +122,16 @@ for (const [scheme, js, css] of [
       const cssRgba = cssRgbaToCanonical(raw);
       const jsRgba = cssRgbaToCanonical(jsValue);
       if (cssRgba === null || jsRgba === null) {
-        drifted.push(`  ${scheme.padEnd(5)} --${name.padEnd(24)} not an rgba() on both sides: css ${raw.trim()}  /  js ${jsValue}`);
+        drifted.push(`  ${scheme.padEnd(12)} --${name.padEnd(24)} not an rgba() on both sides: css ${raw.trim()}  /  js ${jsValue}`);
       } else if (cssRgba !== jsRgba) {
-        drifted.push(`  ${scheme.padEnd(5)} --${name.padEnd(24)} css ${cssRgba}  !=  js ${jsRgba}`);
+        drifted.push(`  ${scheme.padEnd(12)} --${name.padEnd(24)} css ${cssRgba}  !=  js ${jsRgba}`);
       }
       continue;
     }
     const cssHex = cssColorToHex(raw);
     if (cssHex === null) continue; // var() alias or non-color; nothing to compare
     if (cssHex !== jsValue.toLowerCase()) {
-      drifted.push(`  ${scheme.padEnd(5)} --${name.padEnd(24)} css ${cssHex}  !=  js ${jsValue}`);
+      drifted.push(`  ${scheme.padEnd(12)} --${name.padEnd(24)} css ${cssHex}  !=  js ${jsValue}`);
     }
   }
 }
@@ -147,21 +149,18 @@ for (const m of paletteCss.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) {
 // above, an UNPARSEABLE value fails rather than being skipped: these tokens are rgba by
 // contract (the material composites over whatever is behind it), so a value neither side
 // can parse as rgba is itself the drift.
-for (const [scheme, css] of [
-  ["light", cssLight],
-  ["mint", cssMint],
-  ["dark", cssDark],
-] as const) {
+for (const { label, scheme: look, css } of LOOKS) {
+  const scheme = label;
   for (const key of glassKeys) {
     const raw = css[key];
     if (raw === undefined) continue; // the name check above already reports this
-    const jsValue = WEB_TINTS[scheme][key];
+    const jsValue = WEB_TINTS[look][key];
     const cssRgba = cssRgbaToCanonical(raw);
     const jsRgba = cssRgbaToCanonical(jsValue);
     if (cssRgba === null || jsRgba === null) {
-      drifted.push(`  ${scheme.padEnd(5)} --${key.padEnd(24)} not an rgba() on both sides: css ${raw.trim()}  /  js ${jsValue}`);
+      drifted.push(`  ${scheme.padEnd(12)} --${key.padEnd(24)} not an rgba() on both sides: css ${raw.trim()}  /  js ${jsValue}`);
     } else if (cssRgba !== jsRgba) {
-      drifted.push(`  ${scheme.padEnd(5)} --${key.padEnd(24)} css ${cssRgba}  !=  js ${jsRgba}`);
+      drifted.push(`  ${scheme.padEnd(12)} --${key.padEnd(24)} css ${cssRgba}  !=  js ${jsRgba}`);
     }
   }
 }
@@ -175,7 +174,7 @@ if (drifted.length) {
 
 console.log(
   `\nTokens: ${defined.size} defined, ${referenced.size} referenced; ${Object.keys(lightColors).length} JS color tokens + ` +
-    `${glassKeys.length * 3} JS glass values (blush, mint, dark) cross-checked`,
+    `${glassKeys.length * LOOKS.length} JS glass values (${PALETTES.length} palettes x 2 schemes) cross-checked`,
 );
 if (!failed) console.log("Token validation passed.");
 else process.exit(1);

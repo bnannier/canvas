@@ -1,9 +1,11 @@
+import { PALETTES, type Palette } from "@nannier/canvas";
+
 /** Explicit appearance choices carried by an external docs link. */
 export interface ThemeLinkOverrides {
   scheme?: "light" | "dark";
   surface?: "solid" | "glass";
-  /** The light palette. The kit paints its one dark palette whenever the scheme is dark. */
-  palette?: "blush" | "mint";
+  /** The accent palette, in either scheme. */
+  palette?: Palette;
 }
 
 /** A whole docs appearance: one value on every axis a link can name. */
@@ -11,8 +13,8 @@ export type DocsLook = Required<ThemeLinkOverrides>;
 
 // The appearance every pre-rendered page ships with (app.json `web.output: "static"`):
 // the docs default to dark on every platform, to glass everywhere, not just iOS 26, and
-// to blush, the kit's own light default, for when the scheme turns light.
-export const EXPORTED_LOOK: DocsLook = { scheme: "dark", surface: "glass", palette: "blush" };
+// to violet, the kit's default accent.
+export const EXPORTED_LOOK: DocsLook = { scheme: "dark", surface: "glass", palette: "violet" };
 
 type SearchValue = string | string[] | undefined;
 
@@ -24,8 +26,12 @@ export function themeFromParams(params: { scheme?: SearchValue; surface?: Search
   return {
     ...(scheme === "light" || scheme === "dark" ? { scheme } : {}),
     ...(surface === "solid" || surface === "glass" ? { surface } : {}),
-    ...(palette === "blush" || palette === "mint" ? { palette } : {}),
+    ...(isPalette(palette) ? { palette } : {}),
   };
+}
+
+function isPalette(value: string | undefined): value is Palette {
+  return (PALETTES as readonly string[]).includes(value ?? "");
 }
 
 /** Missing or invalid axes leave the current in-app choice alone. */

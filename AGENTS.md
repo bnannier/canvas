@@ -3,33 +3,53 @@
 Canvas is a React Native UI kit, published as `@nannier/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
-## Design language: Dark Factory
+## Design language: Canvas v4, "Light as material"
 
-On 2026-09-23 the owner decided that Canvas takes the Dark Factory (DF) UI (the
-repository at `~/Workspaces/Argus`: the component library `Ui/Components`, the app
-`Apps/Argus`, its `/ui` playground on http://localhost:8090 under `bun run dev`). The
-migration lands in ordered phases on main; until a phase lands, the code it covers
-still shows the Riskora look it replaces, and the sections below describe that code
-until the phase that changes it rewrites them. These decisions bind all new work now:
+On 2026-10-27 the owner decided that Canvas takes the Canvas v4 design hand-off ("Light as
+material", the prototype vendored at `tools/v4/handoff`, its reference images captured by
+`tools/v4/capture-references.ts` into `.v4-reference/`) and ships it as 4.0.0. It
+replaces the Dark Factory (DF) language of 2026-09-23. The migration lands in ordered
+phases on main (`audit/v4-redesign/PLAN.md`, decisions D1 to D12); until a phase lands,
+the code it covers still shows the DF look it replaces, and the sections below describe
+that code until the phase that changes it rewrites them. These decisions bind all new
+work now:
 
-1. **Tokens.** DF's tokens replace Canvas's own brand on web, iOS and Android: the
-   Riskora palette, Urbanist and the Riskora Figma parity go. `primary` is DF's violet
-   (selection, checked, current, links, focus); a new optional `action` role carries
-   DF's green (call-to-action buttons, meters, count badges) and derives from an
-   overriding `primary`. Palettes: blush (the light default), mint (`<ThemeProvider
-   mint>`, `mintColors`), and DF's one dark palette (`dark` wins over `mint`).
-2. **Web.** Every component takes DF's full look on the web.
-3. **iOS and Android.** A component keeps its iOS 27 or Material 3 shape only on a
+1. **Tokens.** The hand-off's tokens on web, iOS and Android (`src/style/tokens.ts`,
+   `colorsFor(palette, scheme)`): its neutrals, status colours, glass and shades as
+   literal values, its accent and chart series as `oklch(L C hue)` formulas converted
+   to sRGB by `oklchHex` (within one channel unit of what Chrome paints;
+   `test/v4-accent.test.ts`). `primary` and `action` are the accent ("ion"); roles keep
+   their function, so `input`, the non-field control boundary, is solved to the WCAG
+   1.4.11 3:1 floor where the hand-off's hairline is about 1.5:1. The same holds for
+   text: an ink the hand-off picks below 4.5:1 on a bed it is drawn on (`primary-text`
+   and `info` per palette, `inverse-primary`, and the `destructive-text`,
+   `success-text` and `warning-text` inks) is walked in oklch lightness at its own hue
+   until every bed clears (`src/style/ink-floor.ts`), and a passing hand-off value is
+   never moved; fills and washes keep the hand-off's values. The focus ring keeps the
+   hand-off's geometry (a 2 px gap, then a 2 px band) with `ring` the solid accent, so
+   the band clears 3:1. The CSS hand-off (`styles/tokens/colors.css`) is GENERATED from
+   the table by `bun run tokens:css` (`tools/v4/derive-css.ts`) and keeps the literal
+   `oklch(... var(--hue))` forms, with the solved inks as literals.
+2. **Palettes.** Five accent hues, each a ThemeProvider boolean and a `data-palette`
+   value: violet 285 (the default), cyan 205, mint 165, rose 20, amber 75. A palette
+   applies in BOTH schemes (`<ThemeProvider dark rose>` is the rose accent on the dark
+   page). Blush, DF's light default, is gone (the 4.0.0 break).
+3. **Web.** Every component takes the hand-off's full look on the web; its renderers
+   (`tools/v4/handoff/cv-kit*.js`, the `K.PF` platform rows) are the measurement source
+   over its prose where they disagree.
+4. **iOS and Android.** A component keeps its iOS 27 or Material 3 shape only on a
    platform that ships a real control for its job (the rows of
-   `PLATFORM-REFERENCES.md`), redrawn in DF's colors and Manrope; everywhere else its
-   native skin is the DF look, aliasing the web skin. Every Canvas native skin is
-   hand-drawn, so a look-alike of a control the platform lacks has no claim to a
-   native shape.
-4. **Type.** Manrope everywhere, at DF's dense sizes (body 12.5, labels 11 to 12). The
-   reading floors are the platforms' smallest reading styles (body and lead 12, small
-   11, tiny and caption 10) by the owner's decision; the 10 px source floor stays, so
-   DF's 9.5 px eyebrows render at 10.
-5. **One job, different control.** Where the idiomatic control for a job differs by
+   `PLATFORM-REFERENCES.md`), in the hand-off's colors and the platform's own face (SF
+   Pro, Roboto), as its `K.PF` rows draw them; everywhere else its native skin is the
+   web look. Every Canvas native skin is hand-drawn, so a look-alike of a control the
+   platform lacks has no claim to a native shape.
+5. **Type.** Instrument Sans for the interface, Bricolage Grotesque for display
+   (headings and big numbers, the ThemeFonts `display` role, the web skins only), JetBrains
+   Mono for code and meta. The scale is the hand-off's (`src/style/type-scale.ts`
+   `typeRoles`, held to its Typography renderer by `test/v4-type-scale.test.ts`): display
+   56, h1 44, h2 34, h3 26, h4 21, h5 17, lead 19, body 15, small 13, caption 12, tiny 11,
+   the 11 px mono eyebrow. The 10 px source floor stays.
+6. **One job, different control.** Where the idiomatic control for a job differs by
    platform or form factor, the component renders that control: a standalone Checkbox
    renders the platform switch on iOS and Android, option lists use trailing
    checkmarks on iOS and Material 3 checkboxes on Android, Radio is a checkmark list
@@ -41,35 +61,31 @@ until the phase that changes it rewrites them. These decisions bind all new work
    check only for a listed mechanism, the window read only by the listed chrome), and
    `check:skins` holds the docs registry to the same definition of "looks different"
    (`tools/skins/divergence.ts`).
-6. **Glass.** The web's glass is DF's plain frost (white over a 24 px blur, a 1 px
-   inset hairline); the Chromium lens goes. iOS Liquid Glass and the Android blur keep
-   their own material and tints.
-7. **Page look.** DF's page (the pastel gradient, the blurred orbs, the frosted shell)
-   is docs-only scaffolding and static; no page, shell or backdrop component enters
-   the kit. The docs draw it from one table, `docs/src/shell/page-look.ts`: the
-   backdrop (`page-backdrop.tsx`, behind the web shell and inside each native screen)
-   is one react-native-svg drawing whose orbs are radial gradients sampled from the
-   exact blurred ellipse, since react-native-svg's Android `FeGaussianBlur` caps its
-   radius at 25 device pixels; the shell is a frame fixed to the viewport around the
-   docs' own sidebar, top bar and scroller (the owner's 2026-10-13 decisions), and fills
-   it with no margin, width cap or corner radius (the owner's 2026-10-23 decision; both
-   in the evidence log's page-look section). The e2e paint check reads the look off the
-   backdrop's gradient stops.
-8. **Examples.** A docs example is shown only when an existing kit component fits it;
+7. **Glass.** The web's glass is the hand-off's material: the layer's tint over a
+   `blur(20px) saturate(1.6)` backdrop with a 1 px hairline rim
+   (`glass-surface/web-frost.ts`). iOS Liquid Glass and the Android blur keep their own
+   material, with the hand-off's tints. Solid keeps each skin's complete opaque look.
+8. **Docs.** The docs take the hand-off's information architecture and chrome (the
+   floating pill navbar with hue swatches and the scheme and glass switches, the grain,
+   one page per section with its rail, a detail page per component, the Skins and
+   Templates pages). Component routes stay `components/<slug>`. The page is the
+   hand-off's flat page, the scheme's `background` in every palette
+   (`docs/src/shell/page-look.ts`, since 2026-10-27); Dark Factory's gradient, orbs,
+   frosted shell and wedges are retired.
+9. **Examples.** A docs example is shown only when an existing kit component fits it;
    never create a kit component to satisfy an example (see "Dogfood the kit").
-9. **Hover.** DF's hover lifts are ported (a card rises 2 px over 180 ms with its
-   shadow in step, a primary button 1 px over 150 ms, a nav row's wash fades in over
-   150 ms) as transitions the browser runs itself, tuned against the `df-hover-lift`
-   card; the rest of the motion section stands.
+10. **Version.** The owner authorized the 4.0.0 major for this redesign ("bump to
+    4.0.0", 2026-10-27). A push never bumps a major: the release is the Deploy workflow
+    dispatched with `major=true` and `major_version=4.0.0` once the last phase lands.
 
-The reference cards for everything judged by eye (`df-argus-shell`, `df-frost`,
-`df-hover-lift`, `df-avatar`) are in `tools/native/liquid-motion.md` under
-`## References`, their strips under `tools/native/reference/df-*`. On 2026-10-23 the
-owner removed every deprecated JS export and every helper published by accident, since
-nothing consumed them (a minor, by that decision); the deprecated `styles/*` custom
-properties keep working as aliases until the owner authorizes a major. Why: the owner
-prefers DF's components, and a native shape is only worth keeping where the platform
-itself defines one.
+The reference cards for everything judged by eye are in `tools/native/liquid-motion.md`
+under `## References` (`v4-glass` and the cards each phase adds; the `df-*` cards stay as
+the record of the DF work), their strips under `tools/native/reference/`. On 2026-10-23
+the owner removed every deprecated JS export and every helper published by accident,
+since nothing consumed them (a minor, by that decision); the deprecated `styles/*`
+custom properties keep working as aliases until a major says otherwise. Why: the owner
+chose the v4 hand-off as Canvas's own look, and a native shape is only worth keeping
+where the platform itself defines one.
 
 ## React-Native-everywhere principle
 
@@ -168,8 +184,8 @@ a missing kit feature.
 Examples are the one narrowing (the owner's 2026-09-23 decision): a docs example, a
 pattern section or a catalog tile is shown only when an existing kit component fits
 it. Never create a kit component just to satisfy an example; when nothing fits, the
-example is not shown. The docs' page frame (the DF page look: backdrop, frosted
-shell, the frame around the examples) is docs-only scaffolding under the same rule:
+example is not shown. The docs' page frame (the flat page backdrop and the frame
+around the examples) is docs-only scaffolding under the same rule:
 use a kit component wherever one fits, and never add one to the kit for the frame.
 A real functional gap (a date field, a selection mode) is still built in the kit.
 
@@ -334,10 +350,11 @@ helper is `setSurface("glass")` / `setSurface("solid")`. The scheme axis speaks 
 same grammar: `<ThemeProvider dark>` / `<ThemeProvider light>` force a scheme
 (`dark` wins if both are passed), omitting both follows the OS appearance, and the
 legacy `scheme` value prop is likewise supported. The palette axis too: `<ThemeProvider
-mint>` paints the light scheme in DF's mint palette and omitting it gives blush; DF has
-one dark palette, so `dark` wins over `mint` (`.dark` wins over `data-palette="mint"`
-in the CSS hand-off). `ssrPalette` mirrors `ssrScheme`, and the web DOM helpers are
-`setPalette("mint")` / `getPalette()`. The platform default is computed from
+cyan>` (or `mint`, `rose`, `amber`) paints the accent in that hue in either scheme, and
+omitting them gives violet; precedence is cyan, mint, rose, amber, violet. In the CSS
+hand-off a palette is one `--hue` on `data-palette`, on the root or any wrapper.
+`ssrPalette` mirrors `ssrScheme`, and the web DOM helpers are `setPalette("mint")` /
+`getPalette()`. The platform default is computed from
 `liquidGlassAvailable()` (exported from the kit).
 
 Under glass EVERY surface renders through the material, layered. The model has four
@@ -380,9 +397,9 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
 
 Those surfaces render through the shared `GlassSurface` primitive
 (`src/style/glass-surface`), which paints the active material per platform: Apple's
-real native Liquid Glass via `expo-glass-effect` on iOS 26+, Dark Factory's plain frost
-on the web (the layer's tint, a 24px backdrop blur with no saturation shift and a 1px
-inset hairline; `glass-surface/web-frost.ts`, no module needed), a genuine frosted blur
+real native Liquid Glass via `expo-glass-effect` on iOS 26+, the hand-off's material on
+the web (the layer's tint, a `blur(20px) saturate(1.6)` backdrop and a 1px hairline rim;
+`glass-surface/web-frost.ts`, no module needed), a genuine frosted blur
 via `expo-blur` on Android and iOS < 26, and the layer's tint fill as a fallback when no
 material is available. Pass it the skin's shape style (it
 strips the fill and border and supplies the material) and its `layer`. Where the node
@@ -589,8 +606,8 @@ hover on iPad, but React Native 0.86 delivers no pointer hover on iOS or Android
 the host app opts into W3C pointer events natively (`RCTSetDispatchW3CPointerEvents` and
 the `shouldPressibilityUseW3CPointerEventsForHover` flag, both off by default), and
 Dark Factory's own app does not, so its lifts exist on the web only; the native half
-waits on the owner. The DF page look in the docs is static scaffolding (item 7); it
-never animates.
+waits on the owner. The page behind the docs is static scaffolding (design-language
+item 8); it never animates.
 
 Effects that remain judged by eye (the glass material and its frost, a gradient, a
 new functional transition) still go through the global `tuning-harness` skill:
@@ -647,15 +664,14 @@ it is clickable:
 The links are route-only by default. When the work is judged in one look (the mint
 palette, the dark scheme, solid or glass), each link may also carry an optional look
 query naming any of `scheme` (`light` | `dark`), `surface` (`solid` | `glass`) and
-`palette` (`blush` | `mint`): `?scheme=light&palette=mint` after the route on the Web
+`palette` (`violet` | `cyan` | `mint` | `rose` | `amber`): `?scheme=light&palette=mint` after the route on the Web
 link, and `&scheme=light&palette=mint` after the route on the iOS and Android links
 (`http://localhost:8790/ios?route=components/button&scheme=light&palette=mint`). An
-axis left out takes the exported look (dark, glass, blush) on a cold launch or a fresh web
+axis left out takes the exported look (dark, glass, violet) on a cold launch or a fresh web
 load, and keeps the running app's choice on a link opened while it runs. The opener refuses a value outside an
 axis's set instead of dropping it, and the app takes the look both on a cold launch
 and from a link opened while it runs (`docs/src/theme/docs-theme.tsx`). The palette
-is a light-scheme choice: with `scheme=dark` the kit paints its one dark palette
-whatever `palette` names.
+applies in either scheme.
 
 These assume `bun run dev` is running in `docs/` (it starts Metro on 8081 and the
 opener on 8790) and, for the native two, a simulator/emulator booted with the Canvas
@@ -686,11 +702,3 @@ two conditional overrides), so no aliases or extra links are involved.
   because no sibling checkout exists there. Never switch a consumer's
   dependency to `link:`/`file:`, and never commit anything under
   node_modules.
-
-## Argus conversion reference precision (owner, 2026-10-14)
-
-The owner requires no deviation from the current Argus look and feel, especially
-the sidebar. The existing 9.5px eyebrows therefore remain available through the
-Typography eyebrow/stage-label roles; their reading floor is 9.5 rather than the
-previous rounded 10px. Exact fractional web line heights are retained through
-semantic leading props. Other reading floors and existing component defaults stay.

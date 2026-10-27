@@ -1,5 +1,5 @@
 
-import type { Palette } from "./style/tokens.js";
+import { PALETTES, type Palette } from "./style/tokens.js";
 
 export type Theme = "light" | "dark";
 export type Surface = "solid" | "glass";
@@ -53,34 +53,39 @@ export function toggleTheme(): Theme {
   return next;
 }
 
-// The palette axis: `data-palette="mint"` on the root selects the mint block of
-// styles/tokens/colors.css, and blush (the default) is the attribute's absence. `.dark`
-// still wins in the stylesheet, as `dark` wins over `mint` on the ThemeProvider.
+// The palette axis: `data-palette` on the root names the accent palette the CSS hand-off
+// paints (styles/tokens/colors.css sets `--hue` from it), and violet (the default) is the
+// attribute's absence. A palette applies in both schemes.
 /**
- * The web palette, `"blush"` or `"mint"`: the persisted one, else the document root's
- * `data-palette`. Returns `"blush"` off the web.
+ * The web palette (`"violet"`, `"cyan"`, `"mint"`, `"rose"` or `"amber"`): the persisted
+ * one, else the document root's `data-palette`. Returns `"violet"` off the web.
  */
 export function getPalette(): Palette {
   const saved = load(STORAGE_KEY_PALETTE);
-  if (saved === "blush" || saved === "mint") return saved;
-  if (!hasDocument()) return "blush";
-  return document.documentElement.dataset.palette === "mint" ? "mint" : "blush";
+  if (isPalette(saved)) return saved;
+  if (!hasDocument()) return "violet";
+  const attr = document.documentElement.dataset.palette;
+  return isPalette(attr) ? attr : "violet";
 }
 
 /**
- * Persists the web palette and sets `data-palette` on the document root (blush, the
- * default, removes it). Pass the same choice to ThemeProvider's `mint` so React Native
- * components follow it.
+ * Persists the web palette and sets `data-palette` on the document root (violet, the
+ * default, removes it). Pass the same choice to ThemeProvider (`<ThemeProvider cyan>`) so
+ * React Native components follow it.
  */
 export function setPalette(palette: Palette): void {
   if (hasDocument()) {
-    if (palette === "blush") {
+    if (palette === "violet") {
       delete document.documentElement.dataset.palette;
     } else {
       document.documentElement.dataset.palette = palette;
     }
   }
   store(STORAGE_KEY_PALETTE, palette);
+}
+
+function isPalette(value: string | null | undefined): value is Palette {
+  return value != null && (PALETTES as readonly string[]).includes(value);
 }
 
 /**

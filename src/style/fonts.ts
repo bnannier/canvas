@@ -2,7 +2,7 @@
 //
 // React Native has no font loading of its own: an app registers faces (expo-font,
 // a native asset, an @font-face rule on the web) and refers to them by the family
-// name it registered. So the kit cannot bundle Manrope; it names the brand faces
+// name it registered. So the kit cannot bundle its faces; it names the brand faces
 // (`typeface`) and lets the app hand the registered families to its root
 // ThemeProvider (`fonts`; nested providers inherit them), from which the themed
 // Text/TextInput primitives (src/style/text.tsx) paint every kit label. With no
@@ -14,7 +14,7 @@
 //   platform resolves by weight (a web @font-face with a `font-weight` range, a
 //   font installed on the OS). `fontWeight` stays on the style.
 // - A MAP from weight to the face registered for it (expo-google-fonts ships one
-//   module per weight: Manrope_400Regular, Manrope_500Medium, ...). The face
+//   module per weight: InstrumentSans_400Regular, InstrumentSans_500Medium, ...). The face
 //   already encodes the weight, so the resolver picks the nearest registered face
 //   and DROPS `fontWeight`: on iOS a weight on a single-weight family falls back
 //   to the system face, and on the web the browser would synthesize a fake bold.
@@ -25,24 +25,31 @@ export type FontWeightKey = "100" | "200" | "300" | "400" | "500" | "600" | "700
 /** A registered typeface: one family for every weight, or a face per weight. */
 export type FontFaces = string | Partial<Record<FontWeightKey, string>>;
 
-/** The families an app hands to the ThemeProvider. Both optional: a missing face keeps the system default. */
+/** The families an app hands to the ThemeProvider. All optional: a missing face keeps the system default. */
 export interface ThemeFonts {
   /** The text face (the brand's is `typeface.sans`). */
   sans?: FontFaces;
   /** The monospace face, substituted wherever the kit asks for `MONO_FONT`. */
   mono?: FontFaces;
+  /**
+   * The display face the web skins set their headings, titles and big numbers in (the
+   * brand's is `typeface.display`). Omit it to set those in the `sans` face.
+   */
+  display?: FontFaces;
 }
 
 /**
- * The brand faces by name: what the design specifies and what an app is expected
- * to register. Manrope is Dark Factory's face, registered there as static faces from
- * 400 to 800 (`@expo-google-fonts/manrope`); Geist Mono stays the kit's code face,
- * since Dark Factory has none and its x-height sits within a hundredth of an em of
- * Manrope's.
+ * The brand faces by name: what the v4 design specifies and what an app is expected to
+ * register. Instrument Sans is the interface face (400 to 700), Bricolage Grotesque the
+ * display face of the web skins' headings and big numbers (300 to 800), and JetBrains Mono
+ * the code face (400 to 600), each on Google Fonts and `@expo-google-fonts`. The iOS and
+ * Android skins set their text in the platform's own face (SF Pro, Roboto) whatever is
+ * registered.
  */
 export const typeface = {
-  sans: "Manrope",
-  mono: "Geist Mono",
+  sans: "Instrument Sans",
+  display: "Bricolage Grotesque",
+  mono: "JetBrains Mono",
 } as const;
 
 /**

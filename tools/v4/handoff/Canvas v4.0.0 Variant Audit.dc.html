@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="./canvas-assets.js"></script>
+<script src="./canvas-docs.js"></script>
+<script src="./cv-kit.js"></script>
+<script src="./cv-kit-controls.js"></script>
+<script src="./cv-kit-inputs.js"></script>
+<script src="./cv-kit-data.js"></script>
+<script src="./cv-kit-charts.js"></script>
+<script src="./cv-kit-overlays.js"></script>
+<script src="./cv-jsx.js"></script>
+<script src="./cv-kit-code.js"></script>
+<script src="./cv-kit-code2.js"></script>
+<script src="./cv-kit-code3.js"></script>
+<script src="./cv-kit-code4.js"></script>
+<script src="./cv-kit-code5.js"></script>
+<script src="./cv-kit-platform.js"></script>
+<script src="./cv-kit-code6.js"></script>
+<script src="./cv-kit-code7.js"></script>
+<script src="./cv-kit-code8.js"></script>
+<script src="./cv-audit.js"></script>
+<style>
+:root{--sb:rgba(255,255,255,.18);--sb-h:rgba(255,255,255,.32)}
+:root:has([data-ion][data-scheme="light"]:not([data-ion] *)){--sb:rgba(17,17,24,.2);--sb-h:rgba(17,17,24,.36);background:#f2f2f7}
+*{scrollbar-width:thin;scrollbar-color:var(--sb) transparent}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}::-webkit-scrollbar-thumb{background:var(--sb);border-radius:10px;border:2px solid transparent;background-clip:padding-box}::-webkit-scrollbar-thumb:hover{background-color:var(--sb-h)}
+html,body{margin:0;padding:0;background:#0a0a0f}
+*{box-sizing:border-box}
+body{font-family:"Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit;background:none;border:0;outline:0;margin:0}
+input::placeholder,textarea::placeholder{color:var(--tx3)}
+img{display:block}
+cv-icon{display:inline-block;width:1em;height:1em;flex:none;line-height:0}cv-world,cv-qr{display:block}cv-icon svg,cv-world svg,cv-qr svg{display:block;width:100%;height:100%}
+a{color:var(--ion-tx);text-decoration:none}a:hover{text-decoration:underline}
+[data-ion]{--seg:#5a5a63;--sb:rgba(255,255,255,.18);--sb-h:rgba(255,255,255,.32);--hue:285;
+--bg:#0a0a0f;--bg2:#0e0e15;--sf:#12121a;--sf2:#171720;--sf3:#1e1e29;--sf4:#282836;
+--ln:rgba(255,255,255,.08);--ln2:rgba(255,255,255,.16);--hl:rgba(255,255,255,.1);
+--tx:#f4f4f8;--tx2:#a4a4b6;--tx3:#7f7f93;
+--ion:oklch(.74 .17 var(--hue));--ion-fg:#0a0a0f;--ion-tx:oklch(.8 .14 var(--hue));
+--ion-soft:oklch(.74 .17 var(--hue) / .16);--ion-glow:oklch(.74 .17 var(--hue) / .5);--ion-ring:oklch(.74 .17 var(--hue) / .35);
+--cyan:oklch(.82 .13 205);--mint:oklch(.85 .15 165);
+--c1:var(--ion);--c2:var(--cyan);--c3:var(--mint);--c4:oklch(.82 .14 75);--c5:oklch(.72 .17 20);--c6:oklch(.72 .14 255);--c7:oklch(.74 .16 330);--c8:oklch(.78 .1 125);
+--ok:#3ddc97;--ok-fg:#04291a;--warn:#f6b84c;--warn-fg:#2a1800;--bad:#ff6b7a;--bad-fg:#2b0009;
+--ok-soft:rgba(61,220,151,.14);--warn-soft:rgba(246,184,76,.14);--bad-soft:rgba(255,107,122,.14);
+--gl:rgba(18,18,26,.62);--bf:blur(20px) saturate(1.6);--scrim:rgba(5,5,10,.55);
+--sh-sm:inset 0 1px 0 var(--hl),0 1px 2px rgba(0,0,0,.5);
+--sh-md:inset 0 1px 0 var(--hl),0 12px 32px -10px rgba(0,0,0,.7);
+--sh-lg:inset 0 1px 0 var(--hl),0 30px 80px -16px rgba(0,0,0,.8);
+--fd:"Bricolage Grotesque",system-ui,sans-serif;--ft:"Instrument Sans",system-ui,sans-serif;--fm:"JetBrains Mono",ui-monospace,Menlo,monospace;}
+[data-ion][data-scheme="light"]{--seg:#ffffff;--sb:rgba(17,17,24,.2);--sb-h:rgba(17,17,24,.36);
+--bg:#f2f2f7;--bg2:#fafafd;--sf:#ffffff;--sf2:#ffffff;--sf3:#f1f1f6;--sf4:#e4e4ee;
+--ln:rgba(17,17,24,.08);--ln2:rgba(17,17,24,.16);--hl:rgba(255,255,255,.8);
+--tx:#111118;--tx2:#5a5a70;--tx3:#6c6c82;
+--ion:oklch(.5 .22 var(--hue));--ion-fg:#ffffff;--ion-tx:oklch(.47 .2 var(--hue));
+--ion-soft:oklch(.5 .22 var(--hue) / .1);--ion-glow:oklch(.5 .22 var(--hue) / .4);--ion-ring:oklch(.5 .22 var(--hue) / .28);
+--cyan:oklch(.62 .13 205);--mint:oklch(.66 .15 165);
+--c4:oklch(.64 .15 70);--c5:oklch(.57 .19 20);--c6:oklch(.54 .17 255);--c7:oklch(.55 .2 330);--c8:oklch(.58 .12 125);
+--ok:#0b7a53;--ok-fg:#fff;--warn:#a55d00;--warn-fg:#fff;--bad:#d62a4b;--bad-fg:#fff;
+--ok-soft:rgba(11,122,83,.1);--warn-soft:rgba(165,93,0,.1);--bad-soft:rgba(214,42,75,.1);
+--gl:rgba(255,255,255,.62);--scrim:rgba(17,17,24,.3);
+--sh-sm:0 1px 2px rgba(17,17,24,.05),0 0 0 1px rgba(17,17,24,.03);
+--sh-md:0 12px 32px -10px rgba(17,17,24,.16),0 0 0 1px rgba(17,17,24,.03);
+--sh-lg:0 30px 80px -16px rgba(17,17,24,.25),0 0 0 1px rgba(17,17,24,.03);}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes cvRevLoop{0%{opacity:0;transform:translate(var(--rx,0),var(--ry,16px))}25%,100%{opacity:1;transform:none}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes blink{50%{opacity:0}}
+@keyframes indet{from{transform:translateX(-110%)}to{transform:translateX(260%)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--ion-ring)}70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
+</style>
+</helmet>
+<div data-ion data-scheme="{{ scheme }}" style="min-height:100vh;background:var(--bg);color:var(--tx);font-family:var(--ft)">
+<div style="max-width:1200px;margin:0 auto;padding:40px 24px 96px;display:flex;flex-direction:column;gap:24px">
+
+<header style="display:flex;flex-direction:column;gap:16px">
+<a href="Canvas v4.0.0 Library.dc.html" style="align-self:flex-start;display:inline-flex;align-items:center;gap:8px;font:600 14px/1 var(--fd);color:var(--tx)" style-hover="text-decoration:none"><img src="docs/public/favicon.svg" alt="" style="width:20px;height:20px;flex:none">Canvas</a>
+<h1 style="margin:0;font:500 clamp(36px,4.5vw,56px)/1.02 var(--fd);letter-spacing:-.035em">Variant audit</h1>
+<p style="margin:0;max-width:78ch;font:400 16px/1.55 var(--ft);color:var(--tx2);text-wrap:pretty">Every Variants example and playground control, rendered the way the detail page does it on Web, iOS and Android, then checked: each prop must change the preview, each value must draw its own result, every piece of copy must be visible, accessibility props must reach the markup, every size, state and anatomy part must be distinct, and nothing may leak or overflow.</p>
+<div style="display:flex;flex-wrap:wrap;gap:10px">
+<sc-for list="{{ stats }}" as="st" hint-placeholder-count="4"><div style="min-width:150px;padding:14px 16px;border-radius:14px;border:1px solid var(--ln);background:var(--sf);display:flex;flex-direction:column;gap:6px"><span style="font:500 28px/1 var(--fd);letter-spacing:-.02em">{{ st.n }}</span><span style="font:400 13px/1.3 var(--ft);color:var(--tx2)">{{ st.l }}</span></div></sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;font:400 13px/1.4 var(--ft);color:var(--tx2)">
+<span style="display:inline-flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--bad)"></span>High: the preview does not show what the code describes</span>
+<span style="display:inline-flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn)"></span>Medium: state, style or sizing is off</span>
+<span style="display:inline-flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--tx3)"></span>Low: truncated or non-visual</span>
+</div>
+</header>
+
+<div style="position:sticky;top:0;z-index:5;padding:12px 0;background:var(--bg);display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--ln)">
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ chips }}" as="ch" hint-placeholder-count="10"><button onClick="{{ ch.pick }}" style="height:30px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;font:500 12px/1 var(--ft);border:1px solid {{ ch.bd }};background:{{ ch.bg }};color:{{ ch.c }}">{{ ch.l }}<span style="font:500 11px/1 var(--fm);opacity:.75">{{ ch.n }}</span></button></sc-for></div>
+<div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:10px;background:var(--sf2);border:1px solid var(--ln2);max-width:360px"><cv-icon n="search" style="font-size:14px;color:var(--tx3)"></cv-icon><input value="{{ q }}" onChange="{{ onQ }}" placeholder="Filter by component or example" style="flex:1;min-width:0;font:400 13px var(--ft)"></div>
+</div>
+
+<sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}"><div style="padding:80px 0;text-align:center;font:500 13px var(--fm);color:var(--tx3)">Rendering and checking every example…</div></sc-if>
+<sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}"><div style="padding:80px 0;text-align:center;font:400 15px var(--ft);color:var(--tx2)">No examples match this filter.</div></sc-if>
+
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="0">
+<section style="border:1px solid var(--ln);border-radius:18px;background:var(--sf);overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;background:var(--sf2)">
+<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><a href="{{ g.href }}" style="font:500 19px/1.2 var(--fd);letter-spacing:-.01em;color:var(--tx)">{{ g.name }}</a><span style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">{{ g.room }}</span></div>
+<span style="font:400 12px var(--fm);color:var(--tx2)">{{ g.count }}</span>
+</div>
+<sc-for list="{{ g.rows }}" as="r">
+<div style="border-top:1px solid var(--ln);padding:14px 18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+<div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:8px;height:8px;border-radius:50%;flex:none;background:{{ r.dot }}"></span><span style="font:500 15px/1.3 var(--ft)">{{ r.t }}</span></div>
+<button onClick="{{ r.toggle }}" style="height:28px;padding:0 11px;border-radius:999px;font:500 12px/1 var(--ft);color:var(--tx2);border:1px solid var(--ln2)" style-hover="color:var(--tx);background:var(--sf3)">{{ r.btn }}</button>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ r.iss }}" as="i"><div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><span style="flex:none;height:22px;padding:0 8px;border-radius:999px;display:inline-flex;align-items:center;font:500 11px/1 var(--ft);background:{{ i.bg }};color:{{ i.c }}">{{ i.l }}</span><span style="min-width:0;flex:1 1 280px;font:400 12.5px/1.55 var(--fm);color:var(--tx2);overflow-wrap:anywhere">{{ i.d }}</span></div></sc-for>
+</div>
+<sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px">
+<pre style="margin:0;padding:12px 14px;border-radius:12px;background:var(--bg2);border:1px solid var(--ln);font:400 12px/1.6 var(--fm);color:var(--tx2);overflow:auto;max-height:320px;white-space:pre">{{ r.code }}</pre>
+<div style="min-height:160px;padding:24px;border-radius:12px;border:1px solid var(--ln);background:var(--bg2);display:flex;align-items:center;justify-content:center;overflow:auto" dangerouslySetInnerHTML="{{ r.html }}"></div>
+</div></sc-if>
+</div>
+</sc-for>
+</section>
+</sc-for>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;expandAll&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const CATS0=['unparsed','missing','error','content','data','text','label','flag','state','style','size','truncated','behavior'];
+const SEV={high:['var(--bad-soft)','var(--bad)'],medium:['var(--warn-soft)','var(--warn)'],low:['var(--sf3)','var(--tx2)']};
+class Component extends DCLogic {
+  state={res:null,cat:'all',q:'',open:{}};
+  componentDidMount(){this._w();}
+  componentWillUnmount(){clearTimeout(this._t);}
+  _w(){const K=window.CVK,D=window.CV_DOCS;if(K&&D&&K.btn&&K.pfv&&K.codev&&K.codev2&&K.codev3&&K.codev4&&K.codev5&&K.codev6&&K.codev7&&K.codev8&&window.CVX&&window.CVAudit&&Object.keys(K.R||{}).length>=107){const A=window.CVAudit;this.setState({res:[...A.run(),...(A.deep?A.deep():[]),...(A.deep2?A.deep2():[])]});return;}this._t=setTimeout(()=>this._w(),80);}
+  preview(r){const K=window.CVK,D=window.CV_DOCS,sp=K.spec(r.slug),c=D.c[r.slug],tags=sp.jsx||[c.name.replace(/[^A-Za-z]/g,'')],fill=sp.w==='fill';
+    const R=window.CVX.run(r.code);let hs;if(R.ok)hs=window.CVX.roots(R.tree).map(n=>window.CVX.html(n,{pf:'web'}));else{const ks=K.knobs(sp.k);hs=[K.render(r.slug,K.props(ks,K.init(ks)),{pf:'web'})];}
+    return {__html:`<div style="${K.PF.web};width:100%;min-width:0;display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;font-family:var(--f-ui)">${hs.map(h=>fill?'<div style="width:100%;min-width:0;display:flex;justify-content:center">'+h+'</div>':h).join('')}</div>`};}
+  renderVals(){
+    const s=this.state,p=this.props,scheme=p.scheme??'dark';
+    if(!s.res)return {scheme,loading:true,empty:false,groups:[],chips:[],stats:[],q:s.q,onQ:e=>this.setState({q:e.target.value})};
+    const A=window.CVAudit,D=window.CV_DOCS,res=s.res,CATS=[...CATS0.filter(c=>A.CAT[c]),...Object.keys(A.CAT).filter(c=>!CATS0.includes(c))],ql=s.q.trim().toLowerCase(),has=(r,c)=>r.iss.some(i=>i.c===c);
+    const chips=[{k:'all',l:'All',n:res.length},...CATS.map(c=>({k:c,l:A.CAT[c][0],n:res.filter(r=>has(r,c)).length})).filter(x=>x.n)].map(x=>{const on=s.cat===x.k;return {...x,bg:on?'var(--ion-soft)':'transparent',bd:on?'var(--ion)':'var(--ln2)',c:on?'var(--ion-tx)':'var(--tx2)',pick:()=>this.setState({cat:x.k})};});
+    const list=res.filter(r=>(s.cat==='all'||has(r,s.cat))&&(!ql||r.name.toLowerCase().includes(ql)||r.t.toLowerCase().includes(ql)));
+    const groups=[];
+    list.forEach(r=>{let g=groups.find(x=>x.slug===r.slug);
+      if(!g){const tot=(D.c[r.slug].variants||[]).filter(v=>v.code).length;g={slug:r.slug,name:r.name,room:r.room,href:'Canvas v4.0.0 Component.dc.html#'+r.slug,tot,rows:[]};groups.push(g);}
+      const key=r.slug+':'+r.vi,open=s.open[key]??!!p.expandAll;
+      g.rows.push({t:r.t,dot:SEV[r.sev][1],open,btn:open?'Hide code':'Code and preview',toggle:()=>this.setState(st=>({open:{...st.open,[key]:!open}})),
+        iss:r.iss.map(i=>{const cat=A.CAT[i.c],sv=SEV[cat[1]];return {l:cat[0],bg:sv[0],c:sv[1],d:(i.props.length?i.props.join(', ')+' \u2014 ':'')+(i.d||cat[2])};}),
+        code:open?r.code:'',html:open?this.preview(r):{__html:''}});});
+    groups.forEach(g=>g.count=g.rows.length+' of '+g.tot+(g.tot===1?' example':' examples'));
+    const stats=[{n:A.total(),l:'examples checked'},{n:res.length,l:'disagree with their code'},{n:res.filter(r=>r.sev==='high').length,l:'high impact'},{n:new Set(res.map(r=>r.slug)).size+' / '+D.order.length,l:'components affected'}];
+    return {scheme,loading:false,empty:!groups.length,groups,chips,stats,q:s.q,onQ:e=>this.setState({q:e.target.value})};
+  }
+}
+</script>
+</body>
+</html>

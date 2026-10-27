@@ -49,7 +49,7 @@ const channels = (color: string) => {
   }
   return (/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color) ?? []).slice(1, 4).join(",");
 };
-const INSET = `-${FOCUS_RING_OFFSET}px`;
+const INSET = `-${FOCUS_RING_WIDTH}px`;
 const AROUND = `${FOCUS_RING_OFFSET}px`;
 
 // The browser's one material question: does it render a CSS backdrop filter?

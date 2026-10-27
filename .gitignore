@@ -37,3 +37,6 @@ LICENSE
 android/build/
 android/.gradle/
 android/.cxx/
+
+# Reference images photographed from the vendored v4 hand-off (tools/v4/capture-references.ts).
+.v4-reference/

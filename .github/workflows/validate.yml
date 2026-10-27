@@ -151,13 +151,11 @@ jobs:
       - name: Check parity with the design hand-off
         run: bun run check-parity:check
 
-      # Compares every semantic colour token with the table derived by rule from Dark
-      # Factory's palettes (tools/darkfactory/tokens.json, from the vendored DF theme), and
-      # the table with what the rules produce now. The other colour guards compare files
-      # that both live behind this commit; these two read the design source. The DF theme is
-      # a snapshot too: `bun run df:vendor:check` against a DF checkout is the refresh.
-      - name: Check colour tokens against the Dark Factory derivation
-        run: bun run check-df && bun run df:tokens:check
+      # styles/tokens/colors.css is generated from src/style/tokens.ts (the v4 hand-off's
+      # table) by tools/v4/derive-css.ts; validate-tokens above holds the values equal for
+      # every palette and scheme, and this holds the file itself to what the generator writes.
+      - name: Check the CSS colour hand-off is generated
+        run: bun run tokens:css:check
 
       - name: Check CSS + JS size budgets
         run: bun run check-size
@@ -181,7 +179,7 @@ jobs:
         run: bun run check:patches
 
       # The /licenses screen carries obligations, not decoration: MIT requires its notice
-      # to ship with the software and OFL-1.1 requires the same for the bundled Geist
+      # to ship with the software and OFL-1.1 requires the same for the bundled
       # typefaces. This fails if a dependency changed without re-running `notices:gen`,
       # so the notices cannot fall silently out of step with what the app ships. It reads
       # tools/noticegen/shipped.json and never runs an export, so it stays CI-fast.

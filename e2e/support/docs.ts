@@ -5,7 +5,7 @@
  * Two things about this app make a naive `goto` unreliable, and both are handled
  * here rather than in every spec:
  *
- *   1. The root layout renders NOTHING until the Geist faces load (a deliberate
+ *   1. The root layout renders NOTHING until the docs' faces load (a deliberate
  *      trade recorded in docs/src/app/_layout.tsx: rendering early moved Cumulative
  *      Layout Shift from 0.006 to 0.16). So "loaded" is not "painted", and the wait
  *      has to be for paint.
@@ -13,7 +13,7 @@
  *      ?surface, ?palette, read once by a lazy useState initializer in
  *      docs/src/theme/docs-theme.tsx, since the docs store nothing by privacy
  *      declaration). A client-side navigation cannot change them, and the app defaults
- *      to dark + glass (+ blush once light).
+ *      to dark + glass in violet.
  *
  * Reading the scheme and the palette back off the painted pixels covers both at once,
  * and it is what keeps a silent no-op from passing as a capture: the screenshot script
@@ -23,26 +23,26 @@
  * instead.
  */
 import { expect, type Locator, type Page } from "@playwright/test";
-import { PAGE_LOOK, lookFor } from "../../docs/src/shell/page-look.ts";
+import { colorsFor } from "../../src/style/tokens.ts";
+import { pageColor } from "../../docs/src/shell/page-look.ts";
 
 export type Scheme = "dark" | "light";
 export type Surface = "solid" | "glass";
-export type Palette = "blush" | "mint";
+export type Palette = "violet" | "cyan" | "mint" | "rose" | "amber";
 export type FormFactor = "phone" | "largePhone" | "tablet" | "laptop" | "desktop" | "full";
 
 /**
- * A look the docs open in: a scheme, and for the light scheme the palette it paints.
- * Dark names no palette, since the kit paints its one dark palette whatever the link
- * says (`lookFor` resolves it the same way). The id names a capture's directory.
+ * A look the docs open in: a scheme, and the accent palette it paints (violet, the kit's
+ * default, unless named). The id names a capture's directory.
  */
 export interface Look {
-  id: "blush" | "mint" | "dark";
+  id: "light" | "mint" | "dark";
   scheme: Scheme;
   palette?: Palette;
 }
 
 export const LOOKS: readonly Look[] = [
-  { id: "blush", scheme: "light", palette: "blush" },
+  { id: "light", scheme: "light", palette: "violet" },
   { id: "mint", scheme: "light", palette: "mint" },
   { id: "dark", scheme: "dark" },
 ];
@@ -58,37 +58,36 @@ export const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
 export const BASE_PATH = (process.env.E2E_BASE_PATH ?? "").replace(/\/+$/, "");
 
 /**
- * The page look as painted: the page gradient's three stops, each as [r, g, b], from the
- * top-left corner to the bottom-right.
+ * The page as painted, [r, g, b], and the accent the app's theme resolved.
  *
  * The docs are react-native-web, so the DOM carries only generated `css-*` class
- * names: there is no `.dark` class and no data attribute to read the scheme off.
- * Reading what the app actually paints is the only honest answer, and it has to be
- * read off the node that paints the page. Since the docs took Dark Factory's page look
- * (docs/src/shell/page-backdrop.tsx), no node paints a flat page fill: the page is the
- * backdrop's SVG gradient, with its orbs over it, fixed behind the shell, and nothing
- * between it and the content paints. So the read is the gradient's own stop colours, the
- * computed `stop-color` of each stop under the backdrop's marker (`data-page-backdrop`),
- * which is exactly what the renderer interpolates. The largest opaque box is not that
- * node: a solid card paints the `card` token, opaque white in both light palettes, and
- * its bounds can run past the viewport on a long page.
+ * names: there is no `.dark` class to read the scheme off. Reading what the app
+ * actually paints is the only honest answer, and it has to be read off the node that
+ * paints the page: the backdrop (docs/src/shell/page-backdrop.tsx), the v4 hand-off's
+ * flat page fixed behind the shell, under its marker (`data-page-backdrop`). The largest
+ * opaque box is not that node: a solid card paints the `card` token, and its bounds can
+ * run past the viewport on a long page.
+ *
+ * The flat page is the scheme's `background` in every palette, so the palette is read
+ * off the same node's `data-accent`, the `primary` token the kit's ThemeProvider handed
+ * the docs (the colour every primary control paints).
  *
  * Only a page with no backdrop, which is not the docs app (the baked static page under
  * docs/public shadows /privacy and paints straight onto body), falls back to the largest
- * opaque background, with `body` in the scan, read as a one-stop look.
+ * opaque background, with `body` in the scan, and reports no accent.
  *
  * Runs in the page, so it must stay self-contained.
  */
-function pageLook(): [number, number, number][] | null {
+function pageLook(): { page: [number, number, number]; accent: string | null } | null {
   const parse = (value: string): [number, number, number, number] | null => {
     const m = /^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/.exec(value);
     return m ? [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])] : null;
   };
-  const backdrop = document.querySelector("[data-page-backdrop]");
+  const backdrop = document.querySelector<HTMLElement>("[data-page-backdrop]");
   if (backdrop) {
-    const stops = Array.from(backdrop.querySelectorAll("linearGradient stop")).map((stop) => parse(getComputedStyle(stop).stopColor));
-    if (stops.length !== 3 || stops.some((stop) => !stop || stop[3] < 1)) return null;
-    return stops.map((stop) => [stop![0], stop![1], stop![2]]);
+    const color = parse(getComputedStyle(backdrop).backgroundColor);
+    if (!color || color[3] < 1) return null;
+    return { page: [color[0], color[1], color[2]], accent: backdrop.dataset.accent ?? null };
   }
   // Only an opaque surface says which scheme is being painted; the translucent scrims
   // and glass fills layered over the page fall below this.
@@ -104,28 +103,37 @@ function pageLook(): [number, number, number][] | null {
     bestArea = area;
     best = [color[0], color[1], color[2]];
   }
-  return best ? [best] : null;
+  return best ? { page: best, accent: null } : null;
 }
 
-/** The page look's stops as [r, g, b] each, or null before the page is painted. */
-export async function readPageLook(page: Page): Promise<[number, number, number][] | null> {
-  return page.evaluate(pageLook).catch(() => null);
+/** The painted page colour as [r, g, b], or null before the page is painted. */
+export async function readPageLook(page: Page): Promise<[number, number, number] | null> {
+  const look = await page.evaluate(pageLook).catch(() => null);
+  return look?.page ?? null;
 }
 
-/**
- * The scheme the page is painted in, or null before it is painted: the luminance of the
- * look's middle stop (Dark Factory's light stops are all light, its dark ones all dark).
- */
+/** The accent the docs' theme resolved (its `primary` token, lowercase hex), or null before the app paints. */
+export async function readAccent(page: Page): Promise<string | null> {
+  const look = await page.evaluate(pageLook).catch(() => null);
+  return look?.accent?.toLowerCase() ?? null;
+}
+
+/** The scheme the page is painted in, or null before it is painted: the page colour's luminance. */
 export async function readScheme(page: Page): Promise<Scheme | null> {
-  const stops = await readPageLook(page);
-  if (!stops) return null;
-  const [r, g, b] = stops[Math.floor(stops.length / 2)]!;
+  const color = await readPageLook(page);
+  if (!color) return null;
+  const [r, g, b] = color;
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5 ? "dark" : "light";
 }
 
-/** The page look a scheme and palette paint (dark wins over the palette), as [r, g, b] stops. */
-export function lookStops(scheme: Scheme, palette: Palette = "blush"): [number, number, number][] {
-  return PAGE_LOOK.palettes[lookFor(scheme, palette)].stops.map(channels);
+/** The page colour a scheme paints, as [r, g, b]: the same in every palette. */
+export function pageChannels(scheme: Scheme): [number, number, number] {
+  return channels(pageColor(colorsFor("violet", scheme)));
+}
+
+/** The accent a palette resolves to in a scheme, as `readAccent` reports it. */
+export function accentOf(scheme: Scheme, palette: Palette): string {
+  return colorsFor(palette, scheme).primary.toLowerCase();
 }
 
 /** A `#rrggbb` token as the [r, g, b] a computed style reports it. */
@@ -134,18 +142,11 @@ export function channels(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-// How far, per channel, a painted stop may sit from the palette's. A computed style
-// reports a stop's colour exactly; the allowance is for a renderer that rounds it, not
-// for a different colour. The light looks are far apart (blush's first stop #fde3ee and
-// mint's #def4ec sit 31 apart on red), and the check measures the LARGEST channel
-// distance over the three stops, so the allowance stays far below what separates them.
-const PALETTE_TOLERANCE = 2;
-
 export interface GotoOptions {
   scheme?: Scheme;
   /** Solid is the default here (glass frosts are GPU-nondeterministic). */
   surface?: Surface;
-  /** The light palette; blush, the kit's default, unless named. Dark paints the one dark palette whichever is named. */
+  /** The accent palette; violet, the kit's default, unless named. */
   palette?: Palette;
   /** Resize before navigating, so the app lays out once at the target width. */
   viewport?: { width: number; height: number };
@@ -170,15 +171,15 @@ export interface GotoOptions {
  * `emulateMedia` matters for exactly one page: the baked static /privacy export
  * follows prefers-color-scheme, since it is plain HTML and never sees the seed.
  *
- * In the light scheme the painted page look is then held to the palette's own stops
- * (`PAGE_LOOK`, docs/src/shell/page-look.ts), since a light page in the wrong palette
- * reads as light all the same. That page without an app has no palette axis at all: a
- * palette asked for by name fails there rather than passing unpainted.
+ * The resolved accent is then held to the palette's own `primary`, in either scheme,
+ * since the flat page reads the same in every palette. The page without an app has no
+ * palette axis at all: a palette asked for by name fails there rather than passing
+ * unpainted.
  */
 export async function gotoDocs(page: Page, route: string, options: GotoOptions = {}): Promise<void> {
   const scheme = options.scheme ?? "dark";
   const surface = options.surface ?? "solid";
-  const palette = options.palette ?? "blush";
+  const palette = options.palette ?? "violet";
   if (options.viewport) await page.setViewportSize(options.viewport);
   await page.emulateMedia({ colorScheme: scheme });
   const query = `scheme=${scheme}&surface=${surface}&palette=${palette}`;
@@ -218,21 +219,16 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
       { cause: error },
     );
   }
-  if (scheme !== "light") return;
   if (!app) {
     if (options.palette) throw new Error(`${route} is baked HTML with no app to seed a palette into, so it cannot open in ${options.palette}`);
     return;
   }
   // The palette lands in the same commit as the scheme (one transition applies the
-  // whole seed), so by now the page look is the palette's, or it is the wrong one.
-  const expected = lookStops("light", palette);
-  const painted = await readPageLook(page);
-  const distance = painted && painted.length === expected.length
-    ? Math.max(...painted.flatMap((stop, i) => stop.map((channel, c) => Math.abs(channel - expected[i]![c]!))))
-    : Infinity;
-  if (distance > PALETTE_TOLERANCE) {
-    const show = (stops: [number, number, number][] | null) => (stops ? stops.map((stop) => `rgb(${stop.join(", ")})`).join(" / ") : "not painted");
-    throw new Error(`${route} painted in light but not in ${palette}: the page look is ${show(painted)} where ${palette}'s is ${show(expected)}`);
+  // whole seed), so by now the accent is the palette's, or it is the wrong one.
+  const expected = accentOf(scheme, palette);
+  const accent = await readAccent(page);
+  if (accent !== expected) {
+    throw new Error(`${route} painted in ${scheme} but not in ${palette}: the accent is ${accent ?? "not reported"} where ${palette}'s is ${expected}`);
   }
 }
 

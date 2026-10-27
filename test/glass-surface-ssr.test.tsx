@@ -6,7 +6,7 @@ import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 // Web build (the alias serves <name>.tsx); the per-OS skins never hydrate server markup.
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
-import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
+import { WEB_FROST, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 import { useHydrated } from "../src/style/use-hydrated.ts";
 
 afterEach(cleanup);
@@ -73,7 +73,7 @@ describe("GlassSurface server render", () => {
     const frost = frostOf(container);
     expect(frost).not.toBeNull();
     // Dark Factory's plain frost: one blur, with no saturation shift.
-    expect(frost!.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+    expect(frost!.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
     expect(html).toContain("Glass body");
     expect(html).toContain("server");
   });
@@ -102,7 +102,7 @@ describe("GlassSurface hydration", () => {
       // server assumed, so the material the server shipped stays in place untouched.
       await waitFor(() => expect(container.textContent).toContain("client"));
       expect(frostOf(container)).toBe(serverFrost!);
-      expect(serverFrost!.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+      expect(serverFrost!.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
     } finally {
       act(() => root.unmount());
       container.remove();

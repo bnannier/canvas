@@ -58,10 +58,14 @@ export interface RunOptions {
   reduceMotion: boolean;
 }
 
-/** A look as the docs theme sets it. Dark Factory has one dark palette, so dark is spelled with blush. */
+/**
+ * A look as the docs theme sets it. The audit's look ids predate the v4 palette axis and
+ * name its run directories, so they stay: "blush" is the default light look, now the
+ * violet accent, and "dark" the dark scheme in violet.
+ */
 export function lookFor(look: Look, surface: Surface): AuditLook {
-  if (look === "dark") return { scheme: "dark", surface, palette: "blush" };
-  return { scheme: "light", surface, palette: look };
+  if (look === "dark") return { scheme: "dark", surface, palette: "violet" };
+  return { scheme: "light", surface, palette: look === "blush" ? "violet" : look };
 }
 
 /**

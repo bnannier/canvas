@@ -6,211 +6,204 @@ description: >-
   natively on iOS and Android and, through React Native Web, in the browser. Every
   visual variation is a semantic boolean prop; there is no style escape hatch.
 colors:
-  featured-start: "#2b2a5e"
-  featured-middle: "#4b3a8c"
-  featured-end: "#7a55c8"
-  featured-stack: "rgba(255, 255, 255, 0.5)"
-  promo-start: "#8e7cf5"
-  promo-middle: "#c98be9"
-  promo-end: "#f3a5c8"
-  background: "#f5f2fe"
-  foreground: "#3b3c5c"
+  background: "#f2f2f7"
+  surface-sunken: "#fafafd"
+  foreground: "#111118"
   card: "#ffffff"
-  card-foreground: "#3b3c5c"
+  card-foreground: "#111118"
   popover: "#ffffff"
-  popover-foreground: "#3b3c5c"
-  primary: "#7262e5"
-  primary-text: "#5d48c9"
-  primary-foreground: "#ffffff"
-  primary-soft: "rgba(123, 108, 240, 0.14)"
-  action: "#21804b"
-  action-foreground: "#ffffff"
-  secondary: "#f5f2fc"
-  secondary-foreground: "#3b3c5c"
-  muted: "#f5f2fc"
-  muted-foreground: "#606183"
-  accent: "#f4f3fe"
-  accent-foreground: "#3b3c5c"
-  destructive: "#b53a44"
-  destructive-text: "#9a1f2f"
+  popover-foreground: "#111118"
+  secondary: "#f1f1f6"
+  secondary-foreground: "#111118"
+  muted: "#f1f1f6"
+  muted-foreground: "#5a5a70"
+  subtle-foreground: "#6c6c82"
+  accent: "#f1f1f6"
+  accent-foreground: "#111118"
+  surface-raised: "#e4e4ee"
+  destructive: "#d62a4b"
+  destructive-text: "#c22543"
   destructive-foreground: "#ffffff"
-  destructive-soft: "rgba(181, 58, 68, 0.12)"
-  success: "#0b7440"
+  destructive-soft: "rgba(214, 42, 75, 0.1)"
+  success: "#0b7a53"
   success-foreground: "#ffffff"
-  success-soft: "rgba(33, 128, 75, 0.12)"
-  warning: "#965801"
+  success-soft: "rgba(11, 122, 83, 0.1)"
+  warning: "#a55d00"
   warning-foreground: "#ffffff"
-  warning-soft: "rgba(240, 160, 40, 0.18)"
-  border: "#eae8f3"
-  input: "#898ba0"
-  field-border: "#d6d3e7"
-  field-fill: "rgba(255, 255, 255, 0.7)"
-  hover: "rgba(123, 108, 240, 0.08)"
-  ring: "#7b6cf0"
-  scrim: "rgba(40, 30, 90, 0.28)"
-  shade: "rgba(121, 100, 214, 0.22)"
-  inverse: "#26264a"
+  warning-soft: "rgba(165, 93, 0, 0.1)"
+  border: "rgba(17, 17, 24, 0.08)"
+  field-border: "rgba(17, 17, 24, 0.16)"
+  input: "#8a8a9b"
+  field-fill: "#fafafd"
+  hover: "rgba(17, 17, 24, 0.06)"
+  highlight: "rgba(255, 255, 255, 0.8)"
+  scrim: "rgba(17, 17, 24, 0.3)"
+  shade: "rgba(17, 17, 24, 0.05)"
+  shade-md: "rgba(17, 17, 24, 0.16)"
+  shade-lg: "rgba(17, 17, 24, 0.25)"
+  shade-ring: "rgba(17, 17, 24, 0.03)"
+  shade-inset: "rgba(255, 255, 255, 0)"
+  inverse: "#111118"
   inverse-foreground: "#ffffff"
-  inverse-primary: "#cecfff"
-colorsMint:
-  featured-start: "#0f2b45"
-  featured-middle: "#174a6a"
-  featured-end: "#1e8a72"
+  primary: "#5f3ed8"
+  primary-text: "#573bc3"
+  primary-foreground: "#ffffff"
+  primary-soft: "rgba(95, 62, 216, 0.1)"
+  action: "#5f3ed8"
+  action-foreground: "#ffffff"
+  action-soft: "rgba(95, 62, 216, 0.1)"
+  info: "#573bc3"
+  info-soft: "rgba(95, 62, 216, 0.1)"
+  ring: "rgba(95, 62, 216, 0.28)"
+  glow: "rgba(95, 62, 216, 0.4)"
+  inverse-primary: "#b5b0ff"
+  featured-start: "#5f3ed8"
+  featured-middle: "#009bab"
+  featured-end: "#00ae7b"
   featured-stack: "rgba(255, 255, 255, 0.5)"
-  promo-start: "#3f7fe0"
-  promo-middle: "#4fb6c9"
-  promo-end: "#8fe0b8"
-  background: "#f0f7fd"
-  foreground: "#2e3d4f"
-  card: "#ffffff"
-  card-foreground: "#2e3d4f"
-  popover: "#ffffff"
-  popover-foreground: "#2e3d4f"
-  primary: "#3474d4"
-  primary-text: "#1a5bb9"
-  primary-foreground: "#ffffff"
-  primary-soft: "rgba(63, 127, 224, 0.14)"
-  action: "#1f8049"
-  action-foreground: "#ffffff"
-  secondary: "#f1f6fb"
-  secondary-foreground: "#2e3d4f"
-  muted: "#f1f6fb"
-  muted-foreground: "#5a6b7e"
-  accent: "#f0f5fd"
-  accent-foreground: "#2e3d4f"
-  destructive: "#b53a44"
-  destructive-text: "#9a1f2f"
-  destructive-foreground: "#ffffff"
-  destructive-soft: "rgba(181, 58, 68, 0.12)"
-  success: "#0b753f"
-  success-foreground: "#ffffff"
-  success-soft: "rgba(31, 128, 73, 0.12)"
-  warning: "#8a5200"
-  warning-foreground: "#ffffff"
-  warning-soft: "rgba(240, 160, 40, 0.18)"
-  border: "#e4eaf1"
-  input: "#858e9a"
-  field-border: "#ccd6e5"
-  field-fill: "rgba(255, 255, 255, 0.75)"
-  hover: "rgba(63, 127, 224, 0.08)"
-  ring: "#3f7fe0"
-  scrim: "rgba(20, 50, 90, 0.28)"
-  shade: "rgba(60, 110, 190, 0.2)"
-  inverse: "#26264a"
-  inverse-foreground: "#ffffff"
-  inverse-primary: "#b9d4ff"
+  promo-start: "#5f3ed8"
+  promo-middle: "#009bab"
+  promo-end: "#00ae7b"
+palettes:
+  violet: 285
+  cyan: 205
+  mint: 165
+  rose: 20
+  amber: 75
 colorsDark:
-  featured-start: "#2c2f72"
-  featured-middle: "#5a3ab0"
-  featured-end: "#a24fb4"
-  featured-stack: "rgba(255, 255, 255, 0.14)"
-  promo-start: "#5b4bd6"
-  promo-middle: "#9a5cc9"
-  promo-end: "#d16aa6"
-  background: "#272544"
-  foreground: "#ebebf7"
-  card: "#252741"
-  card-foreground: "#ebebf7"
-  popover: "#252741"
-  popover-foreground: "#ebebf7"
-  primary: "#a496ff"
-  primary-text: "#b8b0ff"
-  primary-foreground: "#221f3a"
-  primary-soft: "rgba(164, 150, 255, 0.16)"
-  action: "#5fd18a"
-  action-foreground: "#0d2a17"
-  secondary: "#2d2f4c"
-  secondary-foreground: "#ebebf7"
-  muted: "#2d2f4c"
-  muted-foreground: "#a6a8c9"
-  accent: "#323254"
-  accent-foreground: "#ebebf7"
-  destructive: "#ff8b93"
-  destructive-text: "#ffadb0"
-  destructive-foreground: "#38181b"
-  destructive-soft: "rgba(255, 139, 147, 0.16)"
-  success: "#5fd18a"
-  success-foreground: "#0d2a17"
-  success-soft: "rgba(95, 209, 138, 0.16)"
-  warning: "#ffc46b"
-  warning-foreground: "#311f03"
-  warning-soft: "rgba(255, 180, 80, 0.16)"
-  border: "#3b3d54"
-  input: "#7c7e93"
-  field-border: "#44455c"
-  field-fill: "rgba(255, 255, 255, 0.06)"
-  hover: "rgba(164, 150, 255, 0.1)"
-  ring: "#a496ff"
-  scrim: "rgba(5, 5, 20, 0.55)"
+  background: "#0a0a0f"
+  surface-sunken: "#0e0e15"
+  foreground: "#f4f4f8"
+  card: "#12121a"
+  card-foreground: "#f4f4f8"
+  popover: "#171720"
+  popover-foreground: "#f4f4f8"
+  secondary: "#1e1e29"
+  secondary-foreground: "#f4f4f8"
+  muted: "#1e1e29"
+  muted-foreground: "#a4a4b6"
+  subtle-foreground: "#7f7f93"
+  accent: "#1e1e29"
+  accent-foreground: "#f4f4f8"
+  surface-raised: "#282836"
+  destructive: "#ff6b7a"
+  destructive-text: "#ff6b7a"
+  destructive-foreground: "#2b0009"
+  destructive-soft: "rgba(255, 107, 122, 0.14)"
+  success: "#3ddc97"
+  success-foreground: "#04291a"
+  success-soft: "rgba(61, 220, 151, 0.14)"
+  warning: "#f6b84c"
+  warning-foreground: "#2a1800"
+  warning-soft: "rgba(246, 184, 76, 0.14)"
+  border: "rgba(255, 255, 255, 0.08)"
+  field-border: "rgba(255, 255, 255, 0.16)"
+  input: "#686979"
+  field-fill: "#0e0e15"
+  hover: "rgba(255, 255, 255, 0.05)"
+  highlight: "rgba(255, 255, 255, 0.1)"
+  scrim: "rgba(5, 5, 10, 0.55)"
   shade: "rgba(0, 0, 0, 0.5)"
-  inverse: "#26264a"
-  inverse-foreground: "#ffffff"
-  inverse-primary: "#b1a7ff"
+  shade-md: "rgba(0, 0, 0, 0.7)"
+  shade-lg: "rgba(0, 0, 0, 0.8)"
+  shade-ring: "rgba(0, 0, 0, 0)"
+  shade-inset: "rgba(255, 255, 255, 0.1)"
+  inverse: "#f4f4f8"
+  inverse-foreground: "#0a0a0f"
+  primary: "#a298ff"
+  primary-text: "#b5b0ff"
+  primary-foreground: "#0a0a0f"
+  primary-soft: "rgba(162, 152, 255, 0.16)"
+  action: "#a298ff"
+  action-foreground: "#0a0a0f"
+  action-soft: "rgba(162, 152, 255, 0.16)"
+  info: "#b5b0ff"
+  info-soft: "rgba(162, 152, 255, 0.16)"
+  ring: "rgba(162, 152, 255, 0.35)"
+  glow: "rgba(162, 152, 255, 0.5)"
+  inverse-primary: "#573bc3"
+  featured-start: "#a298ff"
+  featured-middle: "#36dcec"
+  featured-end: "#56ecb5"
+  featured-stack: "rgba(255, 255, 255, 0.14)"
+  promo-start: "#a298ff"
+  promo-middle: "#36dcec"
+  promo-end: "#56ecb5"
 chart:
-  chart-1: "#7b6cf0"
-  chart-2: "#03919d"
-  chart-3: "#d36225"
-  chart-4: "#d25798"
-  chart-5: "#4382e3"
-  chart-6: "#009574"
-  chart-7: "#b560cf"
-  chart-8: "#a37e05"
+  chart-1: "#5f3ed8"
+  chart-2: "#009bab"
+  chart-3: "#00ae7b"
+  chart-4: "#c57800"
+  chart-5: "#cf3546"
+  chart-6: "#106dce"
+  chart-7: "#ad36a7"
+  chart-8: "#6a862d"
 typography:
   display:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "24px"
-    fontWeight: 700
-    lineHeight: "27px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "56px"
+    fontWeight: 500
+    lineHeight: "56px"
   h1:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "20px"
-    fontWeight: 700
-    lineHeight: "25px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "44px"
+    fontWeight: 500
+    lineHeight: "47px"
   h2:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "17px"
-    fontWeight: 700
-    lineHeight: "22px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "34px"
+    fontWeight: 500
+    lineHeight: "38px"
   h3:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "16px"
-    fontWeight: 700
-    lineHeight: "20px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "26px"
+    fontWeight: 500
+    lineHeight: "30px"
   h4:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "15px"
-    fontWeight: 700
-    lineHeight: "20px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "21px"
+    fontWeight: 500
+    lineHeight: "26px"
   h5:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "14px"
-    fontWeight: 700
-    lineHeight: "19px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "17px"
+    fontWeight: 600
+    lineHeight: "23px"
   lead:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "14px"
-    fontWeight: 500
-    lineHeight: "21px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "19px"
+    fontWeight: 400
+    lineHeight: "29px"
   body:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "12.5px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: "24px"
+  label:
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "13px"
     fontWeight: 500
-    lineHeight: "19px"
-  small:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "11.5px"
-    fontWeight: 600
     lineHeight: "17px"
-  tiny:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "11px"
-    fontWeight: 600
-    lineHeight: "15px"
+  small:
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: "20px"
   caption:
-    fontFamily: "\"Manrope\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
-    fontSize: "10px"
-    fontWeight: 700
-    lineHeight: "13px"
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: "18px"
+  tiny:
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "11px"
+    fontWeight: 400
+    lineHeight: "16px"
+  eyebrow:
+    fontFamily: "\"Instrument Sans\",ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",\"Helvetica Neue\",Arial,sans-serif"
+    fontSize: "11px"
+    fontWeight: 500
+    lineHeight: "11px"
 spacing:
   "0": "0px"
   "1": "4px"
@@ -253,11 +246,11 @@ rounded:
   full: "9999px"
 shadows:
   none: none
-  sm: "0px 16px 32px -22px rgba(121,100,214,0.22)"
-  base: "0px 20px 44px -24px rgba(121,100,214,0.22)"
-  md: "0px 30px 54px -24px rgba(121,100,214,0.22)"
-  lg: "0px 26px 50px -20px rgba(121,100,214,0.22)"
-  xl: "0px 50px 100px -30px rgba(0,0,0,0.45)"
+  sm: "inset 0px 1px 0px 0px rgba(255, 255, 255, 0),0px 1px 2px 0px rgba(17, 17, 24, 0.05),0px 0px 0px 1px rgba(17, 17, 24, 0.03)"
+  md: "inset 0px 1px 0px 0px rgba(255, 255, 255, 0),0px 12px 32px -10px rgba(17, 17, 24, 0.16),0px 0px 0px 1px rgba(17, 17, 24, 0.03)"
+  lg: "inset 0px 1px 0px 0px rgba(255, 255, 255, 0),0px 30px 80px -16px rgba(17, 17, 24, 0.25),0px 0px 0px 1px rgba(17, 17, 24, 0.03)"
+  base: "var(--shadow-sm)"
+  xl: "var(--shadow-lg)"
 motion:
   duration-fast: "120ms"
   duration-base: "180ms"
@@ -301,7 +294,7 @@ fontWeights:
   black: "900"
 components:
   stats:
-    stat-radius: "14px"
+    stat-radius: "16px"
     stat-pad: "24px"
     stat-gap: "16px"
     stat-shadow: "var(--shadow)"
@@ -309,18 +302,18 @@ components:
     stat-value-tracking: "0px"
     stat-label-tracking: "0px"
   emptystate:
-    empty-radius: "14px"
+    empty-radius: "16px"
   card:
-    card-radius: "14px"
+    card-radius: "16px"
     card-shadow: "var(--shadow)"
     card-shadow-raised: "var(--shadow-md)"
   autocomplete:
     ac-radius: "10px"
     ac-radius-bottom: "10px"
-    ac-menu-radius: "12px"
-    ac-row-radius: "8px"
+    ac-menu-radius: "16px"
+    ac-row-radius: "10px"
   avatar:
-    avatar-square-radius: "8px"
+    avatar-square-radius: "10px"
   buttongroup:
     seg-radius: "9999px"
     seg-track-radius: "9999px"
@@ -328,13 +321,13 @@ components:
   button:
     btn-radius: "9999px"
   checkbox:
-    check-radius: "6px"
+    check-radius: "5px"
   chip:
     chip-radius: "9999px"
   dropdown:
     menu-shadow: "var(--shadow-lg)"
-    menu-radius: "12px"
-    menu-row-radius: "8px"
+    menu-radius: "16px"
+    menu-row-radius: "10px"
   emblem:
     emblem-radius-small: "12px"
     emblem-radius-default: "12px"
@@ -348,8 +341,8 @@ components:
     select-panel-shadow: "var(--shadow-lg)"
     select-radius: "10px"
     select-radius-bottom: "10px"
-    select-panel-radius: "12px"
-    select-row-radius: "8px"
+    select-panel-radius: "16px"
+    select-row-radius: "10px"
   stepper:
     stepper-btn-radius: "0px"
     stepper-group-radius: "10px"
@@ -363,51 +356,51 @@ components:
     field-radius: "10px"
     field-radius-bottom: "10px"
   accordion:
-    acc-card-radius: "14px"
+    acc-card-radius: "16px"
     acc-container-radius: "0px"
   alertdialog:
-    ad-radius: "18px"
+    ad-radius: "20px"
     ad-btn-radius: "9999px"
   alert:
     alert-radius: "12px"
   descriptionlist:
     dl-shadow: "var(--shadow-sm)"
-    dl-radius: "14px"
+    dl-radius: "16px"
   feed:
-    feed-radius: "14px"
+    feed-radius: "16px"
   gridlist:
-    grid-gallery-radius: "8px"
+    grid-gallery-radius: "10px"
   mediaobject:
-    media-radius: "14px"
+    media-radius: "16px"
     media-shadow: none
-    media-icon-radius: "8px"
+    media-icon-radius: "10px"
   stackedlist:
     list-shadow: "var(--shadow)"
-    list-radius: "14px"
+    list-radius: "16px"
   actionsheet:
-    sheet-card-radius-top: "18px"
-    sheet-card-radius: "18px"
+    sheet-card-radius-top: "20px"
+    sheet-card-radius: "20px"
     sheet-row-radius: "0px"
-    sheet-cancel-radius: "18px"
+    sheet-cancel-radius: "20px"
   board:
-    board-col-radius: "14px"
-    board-card-radius: "8px"
+    board-col-radius: "16px"
+    board-card-radius: "10px"
   calendar:
-    cal-radius: "14px"
-    cal-chevron-radius: "8px"
+    cal-radius: "16px"
+    cal-chevron-radius: "10px"
   carousel:
-    carousel-slide-radius: "14px"
+    carousel-slide-radius: "16px"
   dialog:
     dialog-shadow: "var(--shadow-xl)"
-    dialog-radius: "18px"
+    dialog-radius: "20px"
     alert-btn-radius: "9999px"
   drawer:
     drawer-side-radius: "22px"
     drawer-sheet-radius: "22px"
   navbar:
-    nav-link-radius: "8px"
+    nav-link-radius: "10px"
   sidebar:
-    side-toggle-radius: "8px"
+    side-toggle-radius: "10px"
     side-row-radius: "0px"
   steps:
     steps-connector-radius: "0px"
@@ -420,7 +413,7 @@ components:
     otp-radius: "10px"
     otp-inner-radius: "0px"
   popover:
-    popover-radius: "12px"
+    popover-radius: "16px"
     popover-shadow: "var(--shadow-lg)"
   swatch:
     swatch-radius-small: "12px"
@@ -430,12 +423,12 @@ components:
     tip-radius: "8px"
     tip-shadow: "var(--shadow-md)"
   command:
-    cmd-radius: "12px"
+    cmd-radius: "16px"
   datatable:
-    table-radius: "14px"
+    table-radius: "16px"
   draghandle:
     drag-handle-size: "32px"
-    drag-handle-radius: "8px"
+    drag-handle-radius: "10px"
     drag-handle-icon: "16px"
   tabbar:
     tabbar-radius: "9999px"
@@ -445,7 +438,7 @@ components:
     tab-item-radius: "9999px"
     tab-pill-track-radius: "9999px"
     tab-pill-radius: "9999px"
-    tab-v-radius: "8px"
+    tab-v-radius: "10px"
 platformSkins:
   ios:
     stats:
@@ -508,7 +501,7 @@ platformSkins:
       grid-gallery-radius: "12px"
     mediaobject:
       media-radius: "12px"
-      media-icon-radius: "8px"
+      media-icon-radius: "10px"
     stackedlist:
       list-shadow: none
       list-radius: "26px"
@@ -519,7 +512,7 @@ platformSkins:
       sheet-cancel-radius: "9999px"
     board:
       board-col-radius: "26px"
-      board-card-radius: "8px"
+      board-card-radius: "10px"
     calendar:
       cal-radius: "12px"
       cal-chevron-radius: "9999px"
@@ -545,12 +538,12 @@ platformSkins:
     popover:
       popover-radius: "26px"
     command:
-      cmd-radius: "12px"
+      cmd-radius: "16px"
     datatable:
       table-radius: "12px"
     draghandle:
       drag-handle-size: "32px"
-      drag-handle-radius: "8px"
+      drag-handle-radius: "10px"
       drag-handle-icon: "18px"
     tabbar:
       tabbar-radius: "9999px"
@@ -560,7 +553,7 @@ platformSkins:
       tab-item-radius: "9999px"
       tab-pill-track-radius: "9999px"
       tab-pill-radius: "9999px"
-      tab-v-radius: "8px"
+      tab-v-radius: "10px"
   android:
     stats:
       stat-radius: "12px"
@@ -639,7 +632,7 @@ platformSkins:
       sheet-cancel-radius: "0px"
     board:
       board-col-radius: "16px"
-      board-card-radius: "8px"
+      board-card-radius: "10px"
     calendar:
       cal-radius: "12px"
       cal-chevron-radius: "9999px"
@@ -669,7 +662,7 @@ platformSkins:
       tip-radius: "4px"
       tip-shadow: none
     command:
-      cmd-radius: "12px"
+      cmd-radius: "16px"
     datatable:
       table-radius: "12px"
     draghandle:
@@ -697,9 +690,9 @@ One component API, three native looks. Canvas is a React Native UI kit that rend
 natively on iOS and Android and, through React Native Web, in a browser, from a single
 codebase. Each component ships a shared shell and a skin per platform, so a Button is
 an iOS capsule with a semibold label, a Material 3 stadium with a ripple, and a
-12px-rounded web control in Dark Factory's colors (a green call to action, a violet
-selection color, white cards on a lavender page), without the caller choosing between
-them.
+10px-rounded web control in the v4 "Light as material" colors (one accent hue for
+selection and calls to action, near-black or near-white surfaces, glass that frosts and
+saturates what sits behind it), without the caller choosing between them.
 
 The rest of this document is what an agent or a developer needs to build with the kit
 and get it right: the values, and the four rules that are easy to break by accident.
@@ -750,80 +743,95 @@ appears.
 
 ## Colors
 
-Semantic tokens, one set per palette, derived from Dark Factory's palettes: blush (the
-light default), mint (the light alternative) and its single dark palette (the source is
-vendored at `tools/darkfactory/theme.json`). Every role is a Dark Factory value or a
-recorded rule over Dark Factory values in `tools/darkfactory/derive-tokens.ts`, which
-solves a role to the kit's contrast floors where the raw value falls short; `bun run
-check-df` holds the shipped values to that derivation. Components read them through
-`useTheme()`; the scheme follows the OS unless `<ThemeProvider dark>` or `<ThemeProvider
-light>` forces one, and `<ThemeProvider mint>` paints the light scheme in mint. The dark
-scheme has one palette, so `dark` wins over `mint`. On the web the same values ship as
-custom properties in `styles/canvas.css`, where dark keys off a `.dark` class on the root
-rather than `prefers-color-scheme` and mint off `data-palette="mint"` (`setPalette`), with
-`.dark` winning when both are set.
+Semantic tokens, one set per accent palette and scheme, from the Canvas v4 design
+hand-off (vendored at `tools/v4/handoff`): its neutrals, status colours and glass as
+literal values, and its accent and chart series as `oklch(L C hue)` formulas converted to
+sRGB within one channel unit of what a browser paints. Five palettes, each one hue for the
+whole accent: violet (the default), cyan, mint, rose and amber, and a palette applies in
+both schemes. Read any pair with `colorsFor(palette, scheme)`. Roles keep their function
+where the hand-off's raw value falls short of a floor: the control boundary `input` is
+solved to WCAG 1.4.11's 3:1, and the light `destructive-text` to 4.5:1. Components read
+the tokens through `useTheme()`; the scheme follows the OS unless `<ThemeProvider dark>`
+or `<ThemeProvider light>` forces one, and `<ThemeProvider cyan>` (or `mint`, `rose`,
+`amber`) picks the accent. On the web the same values ship as custom properties in
+`styles/canvas.css`, generated from the token table: dark keys off a `.dark` class on the
+root rather than `prefers-color-scheme`, and a palette is one `--hue` set by
+`data-palette` (`setPalette`) on the root or on any wrapper.
 
-Two roles carry the brand, and they differ on purpose. `primary` is the selection color:
-checked, selected and current states, links and the focus ring. `action` is the
-call-to-action fill: primary buttons, meters, count badges. A theme that overrides
-`primary` alone repaints both, since `action` follows an overriding `primary` unless the
-theme sets it too. `scrim` dims the page behind every modal (under glass on the web it also
+Two roles carry the brand. `primary` is the selection color: checked, selected and
+current states, links and the focus ring. `action` is the call-to-action fill: primary
+buttons, meters, count badges. In every palette both are the accent; a theme that
+overrides `primary` alone repaints both, since `action` follows an overriding `primary`
+unless the theme sets it too. `scrim` dims the page behind every modal (under glass on the web it also
 blurs it by 2 px). `inverse`,
 `inverse-foreground` and `inverse-primary` are the toast pill, its ink and the action on
 it (every toast paints them: the web and iOS pill and the Android snackbar;
 `inverse-primary` is the palette's own brand hue lightened to read on the pill). The `-soft` washes, `shade` (the shadow tint) and
-`field-fill` are optional roles the skins adopt as they take the Dark Factory look; a
+`field-fill` are optional roles the skins adopt as they take the v4 look, beside the
+new `surface-sunken`, `surface-raised`, `subtle-foreground`, `glow` and the shade roles; a
 theme that omits any of these keeps the older fallbacks.
 
 <!-- @generated:colors -->
-| Token | Blush (light) | Mint (light) | Dark |
-| --- | --- | --- | --- |
-| `featured-start` | `#2b2a5e` | `#0f2b45` | `#2c2f72` |
-| `featured-middle` | `#4b3a8c` | `#174a6a` | `#5a3ab0` |
-| `featured-end` | `#7a55c8` | `#1e8a72` | `#a24fb4` |
-| `featured-stack` | `rgba(255, 255, 255, 0.5)` | `rgba(255, 255, 255, 0.5)` | `rgba(255, 255, 255, 0.14)` |
-| `promo-start` | `#8e7cf5` | `#3f7fe0` | `#5b4bd6` |
-| `promo-middle` | `#c98be9` | `#4fb6c9` | `#9a5cc9` |
-| `promo-end` | `#f3a5c8` | `#8fe0b8` | `#d16aa6` |
-| `background` | `#f5f2fe` | `#f0f7fd` | `#272544` |
-| `foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
-| `card` | `#ffffff` | `#ffffff` | `#252741` |
-| `card-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
-| `popover` | `#ffffff` | `#ffffff` | `#252741` |
-| `popover-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
-| `primary` | `#7262e5` | `#3474d4` | `#a496ff` |
-| `primary-text` | `#5d48c9` | `#1a5bb9` | `#b8b0ff` |
-| `primary-foreground` | `#ffffff` | `#ffffff` | `#221f3a` |
-| `primary-soft` | `rgba(123, 108, 240, 0.14)` | `rgba(63, 127, 224, 0.14)` | `rgba(164, 150, 255, 0.16)` |
-| `action` | `#21804b` | `#1f8049` | `#5fd18a` |
-| `action-foreground` | `#ffffff` | `#ffffff` | `#0d2a17` |
-| `secondary` | `#f5f2fc` | `#f1f6fb` | `#2d2f4c` |
-| `secondary-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
-| `muted` | `#f5f2fc` | `#f1f6fb` | `#2d2f4c` |
-| `muted-foreground` | `#606183` | `#5a6b7e` | `#a6a8c9` |
-| `accent` | `#f4f3fe` | `#f0f5fd` | `#323254` |
-| `accent-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
-| `destructive` | `#b53a44` | `#b53a44` | `#ff8b93` |
-| `destructive-text` | `#9a1f2f` | `#9a1f2f` | `#ffadb0` |
-| `destructive-foreground` | `#ffffff` | `#ffffff` | `#38181b` |
-| `destructive-soft` | `rgba(181, 58, 68, 0.12)` | `rgba(181, 58, 68, 0.12)` | `rgba(255, 139, 147, 0.16)` |
-| `success` | `#0b7440` | `#0b753f` | `#5fd18a` |
-| `success-foreground` | `#ffffff` | `#ffffff` | `#0d2a17` |
-| `success-soft` | `rgba(33, 128, 75, 0.12)` | `rgba(31, 128, 73, 0.12)` | `rgba(95, 209, 138, 0.16)` |
-| `warning` | `#965801` | `#8a5200` | `#ffc46b` |
-| `warning-foreground` | `#ffffff` | `#ffffff` | `#311f03` |
-| `warning-soft` | `rgba(240, 160, 40, 0.18)` | `rgba(240, 160, 40, 0.18)` | `rgba(255, 180, 80, 0.16)` |
-| `border` | `#eae8f3` | `#e4eaf1` | `#3b3d54` |
-| `input` | `#898ba0` | `#858e9a` | `#7c7e93` |
-| `field-border` | `#d6d3e7` | `#ccd6e5` | `#44455c` |
-| `field-fill` | `rgba(255, 255, 255, 0.7)` | `rgba(255, 255, 255, 0.75)` | `rgba(255, 255, 255, 0.06)` |
-| `hover` | `rgba(123, 108, 240, 0.08)` | `rgba(63, 127, 224, 0.08)` | `rgba(164, 150, 255, 0.1)` |
-| `ring` | `#7b6cf0` | `#3f7fe0` | `#a496ff` |
-| `scrim` | `rgba(40, 30, 90, 0.28)` | `rgba(20, 50, 90, 0.28)` | `rgba(5, 5, 20, 0.55)` |
-| `shade` | `rgba(121, 100, 214, 0.22)` | `rgba(60, 110, 190, 0.2)` | `rgba(0, 0, 0, 0.5)` |
-| `inverse` | `#26264a` | `#26264a` | `#26264a` |
-| `inverse-foreground` | `#ffffff` | `#ffffff` | `#ffffff` |
-| `inverse-primary` | `#cecfff` | `#b9d4ff` | `#b1a7ff` |
+| Token | Light (violet) | Dark (violet) |
+| --- | --- | --- |
+| `background` | `#f2f2f7` | `#0a0a0f` |
+| `surface-sunken` | `#fafafd` | `#0e0e15` |
+| `foreground` | `#111118` | `#f4f4f8` |
+| `card` | `#ffffff` | `#12121a` |
+| `card-foreground` | `#111118` | `#f4f4f8` |
+| `popover` | `#ffffff` | `#171720` |
+| `popover-foreground` | `#111118` | `#f4f4f8` |
+| `secondary` | `#f1f1f6` | `#1e1e29` |
+| `secondary-foreground` | `#111118` | `#f4f4f8` |
+| `muted` | `#f1f1f6` | `#1e1e29` |
+| `muted-foreground` | `#5a5a70` | `#a4a4b6` |
+| `subtle-foreground` | `#6c6c82` | `#7f7f93` |
+| `accent` | `#f1f1f6` | `#1e1e29` |
+| `accent-foreground` | `#111118` | `#f4f4f8` |
+| `surface-raised` | `#e4e4ee` | `#282836` |
+| `destructive` | `#d62a4b` | `#ff6b7a` |
+| `destructive-text` | `#c22543` | `#ff6b7a` |
+| `destructive-foreground` | `#ffffff` | `#2b0009` |
+| `destructive-soft` | `rgba(214, 42, 75, 0.1)` | `rgba(255, 107, 122, 0.14)` |
+| `success` | `#0b7a53` | `#3ddc97` |
+| `success-foreground` | `#ffffff` | `#04291a` |
+| `success-soft` | `rgba(11, 122, 83, 0.1)` | `rgba(61, 220, 151, 0.14)` |
+| `warning` | `#a55d00` | `#f6b84c` |
+| `warning-foreground` | `#ffffff` | `#2a1800` |
+| `warning-soft` | `rgba(165, 93, 0, 0.1)` | `rgba(246, 184, 76, 0.14)` |
+| `border` | `rgba(17, 17, 24, 0.08)` | `rgba(255, 255, 255, 0.08)` |
+| `field-border` | `rgba(17, 17, 24, 0.16)` | `rgba(255, 255, 255, 0.16)` |
+| `input` | `#8a8a9b` | `#686979` |
+| `field-fill` | `#fafafd` | `#0e0e15` |
+| `hover` | `rgba(17, 17, 24, 0.06)` | `rgba(255, 255, 255, 0.05)` |
+| `highlight` | `rgba(255, 255, 255, 0.8)` | `rgba(255, 255, 255, 0.1)` |
+| `scrim` | `rgba(17, 17, 24, 0.3)` | `rgba(5, 5, 10, 0.55)` |
+| `shade` | `rgba(17, 17, 24, 0.05)` | `rgba(0, 0, 0, 0.5)` |
+| `shade-md` | `rgba(17, 17, 24, 0.16)` | `rgba(0, 0, 0, 0.7)` |
+| `shade-lg` | `rgba(17, 17, 24, 0.25)` | `rgba(0, 0, 0, 0.8)` |
+| `shade-ring` | `rgba(17, 17, 24, 0.03)` | `rgba(0, 0, 0, 0)` |
+| `shade-inset` | `rgba(255, 255, 255, 0)` | `rgba(255, 255, 255, 0.1)` |
+| `inverse` | `#111118` | `#f4f4f8` |
+| `inverse-foreground` | `#ffffff` | `#0a0a0f` |
+| `primary` | `#5f3ed8` | `#a298ff` |
+| `primary-text` | `#573bc3` | `#b5b0ff` |
+| `primary-foreground` | `#ffffff` | `#0a0a0f` |
+| `primary-soft` | `rgba(95, 62, 216, 0.1)` | `rgba(162, 152, 255, 0.16)` |
+| `action` | `#5f3ed8` | `#a298ff` |
+| `action-foreground` | `#ffffff` | `#0a0a0f` |
+| `action-soft` | `rgba(95, 62, 216, 0.1)` | `rgba(162, 152, 255, 0.16)` |
+| `info` | `#573bc3` | `#b5b0ff` |
+| `info-soft` | `rgba(95, 62, 216, 0.1)` | `rgba(162, 152, 255, 0.16)` |
+| `ring` | `rgba(95, 62, 216, 0.28)` | `rgba(162, 152, 255, 0.35)` |
+| `glow` | `rgba(95, 62, 216, 0.4)` | `rgba(162, 152, 255, 0.5)` |
+| `inverse-primary` | `#b5b0ff` | `#573bc3` |
+| `featured-start` | `#5f3ed8` | `#a298ff` |
+| `featured-middle` | `#009bab` | `#36dcec` |
+| `featured-end` | `#00ae7b` | `#56ecb5` |
+| `featured-stack` | `rgba(255, 255, 255, 0.5)` | `rgba(255, 255, 255, 0.14)` |
+| `promo-start` | `#5f3ed8` | `#a298ff` |
+| `promo-middle` | `#009bab` | `#36dcec` |
+| `promo-end` | `#00ae7b` | `#56ecb5` |
 <!-- @/generated -->
 
 The chart series is a fixed assignment: series one is always `chart-1`, and filtering a
@@ -848,29 +856,31 @@ a supported way to get one.
 
 ## Typography
 
-Two faces, Manrope and Geist Mono, and one scale: Dark Factory's dense one, bold titles
-stepping down from the display 24 to the heading 14, body copy at 12.5 medium. The
+Three faces and one scale, the hand-off's. Instrument Sans sets the interface,
+Bricolage Grotesque the web skins' headings and big numbers (the `display` role of the
+ThemeProvider's `fonts`), and JetBrains Mono code and meta; iOS and Android set their text
+in SF Pro and Roboto. Titles are medium weight with tightened tracking, stepping from the
+display 56 through 44, 34, 26 and 21 to the 17 h5; body copy is 15 regular, small 13,
+caption 12 and tiny 11, and the eyebrow an 11px mono uppercase label tracked +0.1em. The
 semantic roles below are what the Typography component renders. Headings lead tighter
-than body copy. Reading copy sits at 12px or above and small labels at 11 (the smallest
-reading and label styles iOS and Material 3 define), and the roles under that, `tiny` and
-the uppercase `caption` eyebrow at 10, are for metadata and labels rather than for
-anything a reader has to work through. Dynamic Type, Android font scale and browser zoom
-all still apply.
+than body copy. Dynamic Type, Android font scale and browser zoom all still apply.
 
 <!-- @generated:typography -->
 | Role | Size | Line height | Weight |
 | --- | --- | --- | --- |
-| `display` | 24px | 27px | 700 |
-| `h1` | 20px | 25px | 700 |
-| `h2` | 17px | 22px | 700 |
-| `h3` | 16px | 20px | 700 |
-| `h4` | 15px | 20px | 700 |
-| `h5` | 14px | 19px | 700 |
-| `lead` | 14px | 21px | 500 |
-| `body` | 12.5px | 19px | 500 |
-| `small` | 11.5px | 17px | 600 |
-| `tiny` | 11px | 15px | 600 |
-| `caption` | 10px | 13px | 700 |
+| `display` | 56px | 56px | 500 |
+| `h1` | 44px | 47px | 500 |
+| `h2` | 34px | 38px | 500 |
+| `h3` | 26px | 30px | 500 |
+| `h4` | 21px | 26px | 500 |
+| `h5` | 17px | 23px | 600 |
+| `lead` | 19px | 29px | 400 |
+| `body` | 15px | 24px | 400 |
+| `label` | 13px | 17px | 500 |
+| `small` | 13px | 20px | 400 |
+| `caption` | 12px | 18px | 400 |
+| `tiny` | 11px | 16px | 400 |
+| `eyebrow` | 11px | 11px | 500 |
 <!-- @/generated -->
 
 ## Layout
@@ -893,8 +903,9 @@ Corner radius by role and the platform touch minimums, which differ by design. E
 corner is a role of its platform's row, named where the corner is written: the roles
 every platform draws are `shape` in `src/style/tokens.ts`, below, and the roles only one
 platform or only the kit draws are that platform's own, in the second table. The web
-follows Dark Factory: 8 on rectangular controls, 10 on fields, 12 on menus and tiles, 14
-on cards, 18 on dialogs, 22 on sheets and the app shell, and a pill on every capsule.
+follows the v4 hand-off: 10 on rectangular controls and fields, 16 on cards and menus, 20
+on dialogs, 22 on sheets and the app shell, 12 on tiles, 5 on the checkbox box, and a
+pill on every capsule.
 iOS draws capsule controls, 8 on fields, 12 on cards, 26 on menus, 28 on dialogs, the 38
 sheet and the circular selection checkbox, with Apple's continuous curve; Material 3
 draws stadium controls, 4 on the filled field's top corners and on menus, its 12 medium
@@ -903,12 +914,12 @@ shape on cards and 28 on dialogs and sheets.
 <!-- @generated:shapes -->
 | Platform | Control | Field | Card | Dialog | Menu | Sheet | Checkbox | Pill | Tile | Minimum touch target |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| web | 8px | 10px | 14px | 18px | 12px | 22px | 6px | 9999px | 12px | 0px |
+| web | 10px | 10px | 16px | 20px | 16px | 22px | 5px | 9999px | 12px | 0px |
 | ios | 9999px | 8px | 12px | 28px | 26px | 38px | 9999px | 9999px | 12px | 44px |
 | android | 9999px | 4px | 12px | 28px | 4px | 28px | 2px | 9999px | 12px | 48px |
 <!-- @/generated -->
 
-Each platform's own roles: on the web, Dark Factory's key step on keycaps and inline
+Each platform's own roles: on the web, the key step on keycaps and inline
 boxes, its chip step on the tooltip, a calendar event and a chart's bar, and the smaller
 chart marks; on iOS, the action sheet, the inset grouped list and the calendar event; on
 Android, each Material 3 component at the step of the M3 scale its spec names, and the
@@ -1034,26 +1045,25 @@ Android, 8 on iOS).
 
 ## Elevation and depth
 
-One ladder, Dark Factory's: each shade is cast straight down with a negative spread, so
-it pools under a surface's lower edge rather than haloing it, in the palette's own
-`shade` (a violet wash in light, black in dark). No horizontal offset, the shade never
-rises, and as rendered its darkest point beside a surface stays within 1.6:1 of that
-surface (the old 0.2 opacity cap's own limit), so a shadow reads as depth rather than as
-a border. The values below are the light palette's; `xl`, the dialog's shade, is a black
-top-layer separator on every palette.
+Three shadows, the hand-off's. In the light scheme each drops a soft ink shade and rings
+the surface in a 1px hairline at 3%; in the dark scheme each lights the surface's top edge
+with a 1px inset highlight over a black drop. `sm` (1px over 2px) rests under cards and
+tiles, `md` (12px over 32px) under raised cards, menus and floating chrome, and `lg` (30px
+over 80px) under overlays; `DEFAULT` is `sm` and `xl` is `lg`. The values below are the
+light scheme's.
 
 <!-- @generated:elevation -->
 | Level | Value |
 | --- | --- |
 | `none` | `none` |
-| `sm` | `0px 16px 32px -22px rgba(121,100,214,0.22)` |
-| `base` | `0px 20px 44px -24px rgba(121,100,214,0.22)` |
-| `md` | `0px 30px 54px -24px rgba(121,100,214,0.22)` |
-| `lg` | `0px 26px 50px -20px rgba(121,100,214,0.22)` |
-| `xl` | `0px 50px 100px -30px rgba(0,0,0,0.45)` |
+| `sm` | `inset 0px 1px 0px 0px rgba(255, 255, 255, 0),0px 1px 2px 0px rgba(17, 17, 24, 0.05),0px 0px 0px 1px rgba(17, 17, 24, 0.03)` |
+| `md` | `inset 0px 1px 0px 0px rgba(255, 255, 255, 0),0px 12px 32px -10px rgba(17, 17, 24, 0.16),0px 0px 0px 1px rgba(17, 17, 24, 0.03)` |
+| `lg` | `inset 0px 1px 0px 0px rgba(255, 255, 255, 0),0px 30px 80px -16px rgba(17, 17, 24, 0.25),0px 0px 0px 1px rgba(17, 17, 24, 0.03)` |
+| `base` | `var(--shadow-sm)` |
+| `xl` | `var(--shadow-lg)` |
 <!-- @/generated -->
 
-Cards rest at `sm`, raised cards at `md`, overlays at `lg` and `xl`. iOS surfaces are
+Cards rest at `sm`, raised cards at `md`, overlays at `lg`. iOS surfaces are
 flat by convention and take no shadow at all.
 
 ## Motion and interaction

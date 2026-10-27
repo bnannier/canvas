@@ -59,7 +59,7 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   })),
   {
     file: "docs/src/shell/native-header.tsx", owner: "ScreenFrame", tag: "View", attribute: "style", keys: ["flex", "overflow"], occurrences: 2,
-    reason: "The Expo native stack needs a screen host that fills its available height, and the scroller inside the page-look frame clips itself to the frame, since the frame does not clip.",
+    reason: "The Expo native stack needs a screen host that fills its available height, and the scroller inside the screen frame clips itself to that frame, since the frame does not clip.",
   },
   {
     file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "style", keys: ["flex"], occurrences: 1,
@@ -118,19 +118,7 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The native screen root fills the viewport; keyboard/safe-area bounds anchor the real Canvas results above the OS-owned search field.",
   },
   {
-    file: "docs/src/shell/page-backdrop.tsx", owner: "PageBackdrop", tag: "View", attribute: "style", keys: ["backgroundColor", "bottom", "left", "overflow", "pointerEvents", "position", "right", "top"], occurrences: 1,
-    reason: "Dark Factory's page look, docs-only scaffolding under design-language item 7: an untouchable layer fixed to the window behind the shell, clipping the drawing to it, over the gradient's last stop.",
-  },
-  {
-    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "overflow", "position", "right", "top"], occurrences: 2,
-    reason: "Dark Factory's shell as the docs' frame, docs-only scaffolding under design-language item 7: the frame fills the window (the owner's 2026-10-23 decision), and a layer the size of the frame clips the material's hairline bleed so its rim falls outside the window.",
-  },
-  {
-    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "GlassSurface", attribute: "style", keys: ["backgroundColor", "bottom", "left", "position", "right", "top"], occurrences: 1,
-    reason: "Dark Factory's frosted shell as the docs' frame (design-language item 7): the material as its own layer under the content (so only it frosts the blur plane), run a hairline past the frame on every side and given its solid fill, handed to the kit's GlassSurface as the skin style it frosts.",
-  },
-  {
-    file: "docs/src/shell/page-frame.tsx", owner: "ShellWedges", tag: "View", attribute: "style", keys: ["bottom", "left", "overflow", "pointerEvents", "position", "right", "top"], occurrences: 1,
-    reason: "Dark Factory's shell wedges (design-language item 7): an untouchable layer over the frame's surface, clipping its roster-tall drawing to the frame.",
+    file: "docs/src/shell/page-backdrop.tsx", owner: "PageBackdrop", tag: "View", attribute: "style", keys: ["backgroundColor", "bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "The v4 hand-off's flat page, docs-only scaffolding under design-language item 8: an untouchable layer fixed to the window behind the shell, painted the scheme's background.",
   },
 ];

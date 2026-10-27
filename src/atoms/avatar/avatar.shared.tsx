@@ -253,7 +253,7 @@ export function createAvatar(skin: AvatarSkin) {
     const foreground = props.whiteInk || props.inverse ? "#ffffff" : disc ? disc.ink : tokens["muted-foreground"];
     const shapeStyle = { ...containerStyle(tokens, skin, size, shape, !!ring, background), width: diameter, height: diameter,
       ...(props.inverse || referenceGeometry != null ? { backgroundColor: "transparent" } : null),
-      ...(props.logo ? { borderRadius: platformShape.web.brandMark, boxShadow: `0 10px 18px -8px ${tokens.ring}` } : null),
+      ...(props.logo ? { borderRadius: platformShape.web.brandMark, boxShadow: `0 10px 18px -8px ${tokens.glow ?? tokens.ring}` } : null),
       ...(props.glow ? { boxShadow: `0 0 0 2px ${tokens.card}, 0 0 0 3.5px ${tokens.primary}` } : null),
     };
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;

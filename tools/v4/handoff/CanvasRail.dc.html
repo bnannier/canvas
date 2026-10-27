@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./canvas-rail-data.js"></script>
+</helmet>
+<div style="display:flex;flex-direction:column">
+<div style="margin-bottom:16px;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:10px;background:var(--sf2);border:1px solid var(--ln2)">
+<cv-icon n="search" style="font-size:14px;color:var(--tx3)"></cv-icon>
+<input value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ ph }}" style="flex:1;min-width:0;font:400 13px var(--ft);color:var(--tx);background:none;border:0;outline:0">
+</div>
+<sc-for list="{{ rooms }}" as="r" hint-placeholder-count="8">
+<div style="margin-bottom:16px;display:flex;flex-direction:column;gap:1px">
+<a href="{{ r.href }}" style="padding:0 10px 6px;display:flex;justify-content:space-between;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:{{ r.c }}" style-hover="color:var(--tx);text-decoration:none"><span>{{ r.room }}</span><span>{{ r.count }}</span></a>
+<sc-for list="{{ r.items }}" as="it" hint-placeholder-count="6"><a href="{{ it.href }}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;height:30px;padding:0 10px;border-radius:8px;font:{{ it.fw }} 13px/1 var(--ft);color:{{ it.c }};background:{{ it.bg }}" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none"><span>{{ it.n }}</span><span style="width:5px;height:5px;border-radius:50%;background:{{ it.dot }}"></span></a></sc-for>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;240px&quot;,&quot;height&quot;:&quot;900px&quot;},&quot;room&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Controls&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;active&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state={q:'',ready:!!window.CV_RAIL};
+  componentDidMount(){const w=()=>{if(window.CV_RAIL){this.setState({ready:true});return;}this._t=setTimeout(w,50);};if(!this.state.ready)w();}
+  componentWillUnmount(){clearTimeout(this._t);}
+  renderVals(){
+    const R=window.CV_RAIL||[],room=this.props.room||'',active=this.props.active||'',q=this.state.q.trim().toLowerCase();
+    const rooms=R.filter(r=>r.room===room).map(r=>{const cur=r.room===room;const items=r.items.filter(x=>!q||x[0].toLowerCase().includes(q)).map(([n,s])=>({n,href:'Canvas v4.0.0 Component.dc.html#'+s,fw:s===active?'600':'500',c:s===active?'var(--ion-tx)':cur?'var(--tx)':'var(--tx2)',bg:s===active?'var(--ion-soft)':'transparent',dot:s===active?'var(--ion)':cur?'var(--ln2)':'transparent'}));
+      return {room:r.room,href:r.page,count:items.length,c:cur?'var(--ion-tx)':'var(--tx3)',items};}).filter(r=>r.items.length);
+    const n=(R.find(r=>r.room===room)||{items:[]}).items.length;
+    return {rooms,ph:'Filter '+n+' components',q:this.state.q,onQ:e=>this.setState({q:e.target.value})};
+  }
+}
+</script>
+</body>
+</html>

@@ -15,7 +15,8 @@ import {
 } from "../tools/tokens/css-tokens.ts";
 import { breakpoints, radius, shape, spacing, widths } from "../src/style/tokens.ts";
 import { isRing, renderedContrast, shadeLayers, SHADE_LIMIT } from "../tools/tokens/shade.ts";
-import { LOOKS } from "./fixtures/looks.ts";
+import { LOOKS, lookDeclarations } from "./fixtures/looks.ts";
+import { channelsOf, composite, oklchOf } from "../src/style/color.ts";
 
 // Design rules, CSS side: the web hand-off under styles/tokens.
 //
@@ -92,7 +93,7 @@ describe("elevation in the hand-off", () => {
   const colorsCss = read("colors");
   const palettes = LOOKS.map((look) => ({
     name: look.name,
-    decls: { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, look.selector), ...rootShadows },
+    decls: { ...lookDeclarations(colorsCss, look), ...rootShadows },
     tokens: look.tokens,
   }));
   // The top layer: the dialog's shade and the toast pill's (Dark Factory's deep drop
@@ -161,55 +162,53 @@ describe("elevation in the hand-off", () => {
 });
 
 describe("one neutral family", () => {
-  // Mixing a warm gray with a cool one in the same interface is the defect. Dark Factory's
-  // neutrals are TINTED on purpose (blue-slate inks over blush-violet surfaces), so the
+  // Mixing a warm gray with a cool one in the same interface is the defect. The v4
+  // hand-off's neutrals are TINTED on purpose (a cool slate under every palette), so the
   // rule is read per class: the surfaces share one hue, the inks share one hue, the two
   // classes sit in one family (medians within 25 degrees), and a neutral stays quiet next
   // to the intents (its chroma at most 0.06 and at most half the least intent's). `accent`
-  // is DF's hover wash, a tint of the brand, so it is checked against `primary` instead.
-  // A zero-chroma value (white) has no meaningful hue and says nothing either way.
+  // is the hand-off's hover surface, a neutral like `secondary`, so it is a surface here.
+  // The CSS writes the neutrals as hex (a hairline as an ink rgba, read where it lands, on
+  // the page background) and the intents over var(--hue), so the intents are read from the
+  // look's published tokens. A zero-chroma value (white) has no meaningful hue and says
+  // nothing either way.
   const colorsCss = read("colors");
-  const SURFACES = ["background", "card", "popover", "secondary", "muted", "border"];
+  const SURFACES = ["background", "card", "popover", "secondary", "muted", "accent", "border"];
   const INKS = ["foreground", "card-foreground", "popover-foreground", "secondary-foreground", "muted-foreground", "accent-foreground", "input"];
-  const INTENTS = ["primary", "action", "destructive", "success", "warning"];
-  const parse = (value: string | undefined) => {
-    const m = /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)$/.exec((value ?? "").trim());
-    return m ? { chroma: Number(m[2]), hue: Number(m[3]) } : null;
-  };
+  const INTENTS = ["primary", "action", "destructive", "success", "warning"] as const;
+  const toHex = (rgb: string) => `#${channelsOf(rgb)!.slice(0, 3).map((v) => v.toString(16).padStart(2, "0")).join("")}`;
   const median = (hues: number[]) => [...hues].sort((a, b) => a - b)[Math.floor(hues.length / 2)]!;
 
   for (const look of LOOKS) {
-    const scheme = look.selector;
-    const decls = { ...declarationsIn(colorsCss, ":root"), ...declarationsIn(colorsCss, look.selector) };
+    const decls = lookDeclarations(colorsCss, look);
+    const parse = (value: string | undefined) => {
+      const raw = (value ?? "").trim();
+      const opaque = raw.startsWith("rgba(") ? toHex(composite(raw, decls.background!)) : raw;
+      const o = oklchOf(opaque);
+      return o ? { chroma: o[1], hue: o[2] } : null;
+    };
     const classOf = (names: string[]) => names.map((name) => ({ name, ...parse(decls[name])! }));
     const surfaces = classOf(SURFACES);
     const inks = classOf(INKS);
 
-    it(`${scheme} neutrals carry a quiet tint`, () => {
+    it(`${look.name} neutrals carry a quiet tint`, () => {
       for (const { name, chroma } of [...surfaces, ...inks]) {
-        expect(Number.isFinite(chroma), `--${name} is oklch()`).toBe(true);
+        expect(Number.isFinite(chroma), `--${name} is an opaque hex or an rgba over the page`).toBe(true);
         expect(chroma, `--${name}`).toBeLessThanOrEqual(0.06);
       }
       const loudest = Math.max(...[...surfaces, ...inks].map((n) => n.chroma));
-      for (const name of INTENTS) expect(parse(decls[name])!.chroma, `--${name}`).toBeGreaterThanOrEqual(2 * loudest);
+      for (const name of INTENTS) expect(oklchOf(look.tokens[name])![1], `--${name}`).toBeGreaterThanOrEqual(2 * loudest);
     });
 
-    it(`${scheme} surfaces share one hue and inks share one hue, in one family`, () => {
+    it(`${look.name} surfaces share one hue and inks share one hue, in one family`, () => {
       const medians = [surfaces, inks].map((members) => {
-        const hues = members.filter((m) => m.chroma > 0).map((m) => m.hue);
+        const hues = members.filter((m) => m.chroma > 0.002).map((m) => m.hue);
         expect(hues.length).toBeGreaterThan(2);
         const m = median(hues);
-        for (const member of members.filter((n) => n.chroma > 0)) expect(Math.abs(member.hue - m), `--${member.name}`).toBeLessThanOrEqual(6);
+        for (const member of members.filter((n) => n.chroma > 0.002)) expect(Math.abs(member.hue - m), `--${member.name}`).toBeLessThanOrEqual(6);
         return m;
       });
       expect(Math.abs(medians[0]! - medians[1]!)).toBeLessThanOrEqual(25);
-    });
-
-    it(`${scheme} accent is a tint of the brand`, () => {
-      const accent = parse(decls.accent)!;
-      const primary = parse(decls.primary)!;
-      expect(accent.chroma).toBeLessThanOrEqual(0.06);
-      expect(Math.abs(accent.hue - primary.hue)).toBeLessThanOrEqual(10);
     });
   }
 });

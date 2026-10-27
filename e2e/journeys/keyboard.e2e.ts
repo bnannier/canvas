@@ -267,7 +267,7 @@ test("a windowed list's overflowing rows are one keyboard stop, in every engine"
     const style = getComputedStyle(node);
     return style.outlineStyle === "auto" || (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0);
   });
-  const ring = rgb(colorsFor("blush", "light").ring);
+  const ring = rgb(colorsFor("violet", "light").ring);
   for (const name of ["stacked", "stacked-plain", "feed", "feed-avatar", "grid"]) {
     const list = page.getByTestId(`scroll-${name}`);
     const scroller = name === "grid" ? list : list.getByRole("list");
@@ -325,7 +325,7 @@ test("a raw TextInput's keyboard ring is the palette's ring", async ({ page }) =
   // The kit's TextInput primitive hands the browser the palette's `ring` and a 2 px offset,
   // as its Pressable does (src/style/text.tsx), so the ring Tab draws on a raw field is the
   // theme's, not the browser's default blue.
-  for (const look of [{ scheme: "light", palette: "blush" }, { scheme: "light", palette: "mint" }, { scheme: "dark", palette: "blush" }] as const) {
+  for (const look of [{ scheme: "light", palette: "violet" }, { scheme: "light", palette: "mint" }, { scheme: "dark", palette: "violet" }] as const) {
     await gotoDocs(page, "/components/text-input", look);
     const field = platformRow(page, "web").getByRole("textbox", { name: "Your name" });
     await field.evaluate((node) => {
@@ -363,7 +363,7 @@ test("a zoomable GeoMap's ring goes round the whole chart, clear of its zoom bar
   });
   await page.keyboard.press("Tab");
   await expect(map).toBeFocused();
-  const ring = rgb(colorsFor("blush", "light").ring);
+  const ring = rgb(colorsFor("violet", "light").ring);
   await chart.evaluate((node) => node.scrollIntoView({ block: "center" }));
   await expect.poll(() => ringShows(page, chart, ring)).toEqual(ALL_SIDES);
   // The map draws none of its own, so no ring line runs under the bar.
@@ -390,7 +390,7 @@ test("a zoomable GeoMap's ring goes round the whole chart, clear of its zoom bar
 // the CI runner one look of it takes about half a minute, so the two looks together ran
 // past the test's minute in every engine.
 const SWEEP_LOOKS = [
-  { scheme: "light", surface: "solid", palette: "blush" },
+  { scheme: "light", surface: "solid", palette: "violet" },
   { scheme: "light", surface: "glass", palette: "mint" },
 ] as const;
 for (const route of componentRoutes()) {

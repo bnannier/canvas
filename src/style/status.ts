@@ -38,9 +38,9 @@ const WASH = SOFT_ALPHA.light;
 export function statusColors(tokens: ColorTokens, tone: StatusColorTone): StatusColors {
   switch (tone) {
     case "success":
-      return { ink: tokens.success, wash: tokens["success-soft"] ?? alpha(tokens.success, WASH.success), dot: tokens.success };
+      return { ink: tokens["success-text"] ?? tokens.success, wash: tokens["success-soft"] ?? alpha(tokens.success, WASH.success), dot: tokens.success };
     case "warning":
-      return { ink: tokens.warning, wash: tokens["warning-soft"] ?? alpha(tokens.warning, WASH.warning), dot: tokens.warning };
+      return { ink: tokens["warning-text"] ?? tokens.warning, wash: tokens["warning-soft"] ?? alpha(tokens.warning, WASH.warning), dot: tokens.warning };
     case "error":
       return { ink: destructiveText(tokens), wash: tokens["destructive-soft"] ?? alpha(tokens.destructive, WASH.error), dot: tokens.destructive };
     case "info":

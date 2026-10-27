@@ -33,6 +33,8 @@ test("the public privacy policy is a script-free Canvas render with local fonts"
   expect(page).not.toMatch(/<script\b/i);
   expect(page.match(/<main data-privacy-theme=/g)).toHaveLength(2);
   const fontPaths = [...page.matchAll(/src:url\("(\/privacy\/fonts\/[^\"]+)"\)/g)].map(match => match[1]);
-  expect(fontPaths).toHaveLength(4);
+  // Instrument Sans at 400 to 700 for the text, Bricolage Grotesque at 500 and 600 for the
+  // headings (tools/privacygen/render.tsx).
+  expect(fontPaths).toHaveLength(6);
   for (const path of fontPaths) expect(readFileSync(new URL(`../../docs/public${path}`, import.meta.url)).byteLength).toBeGreaterThan(1000);
 });

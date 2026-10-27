@@ -14,9 +14,10 @@
 //
 // The appearance axes the docs read from a launch URL (docs/src/theme/theme-links.ts)
 // ride along: `scheme` (light | dark), `surface` (solid | glass) and `palette`
-// (blush | mint) are each validated on their own and appended to the deep link and
-// the web redirect. An absent axis leaves the app's current choice alone; a value
-// outside its set is refused, so a mistyped palette never opens blush quietly.
+// (violet | cyan | mint | rose | amber) are each validated on their own and appended to
+// the deep link and the web redirect. An absent axis leaves the app's current choice
+// alone; a value outside its set is refused, so a mistyped palette never opens violet
+// quietly.
 //
 // Safety: the route is validated to [a-z0-9/-], the axes to their closed sets, and
 // both reach the device as execFile arguments, never through a shell on this machine;
