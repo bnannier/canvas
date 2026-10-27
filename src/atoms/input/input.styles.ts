@@ -225,10 +225,15 @@ export const webSkin: InputSkin = {
   // height, the stretched input fills it, and a single line self-centers. Any
   // vertical padding would only inflate the row past the bare field's height.
   // Beside a passive suffix the value keeps the hand-off's 8px gap to the inline text.
+  // `minWidth: 0` lets the value shrink below a text box's intrinsic width (the
+  // browser sizes an <input> to 20 characters of its face), so a narrow field never
+  // overflows its box and never resizes when the face changes on a keystroke
+  // (PhoneInput sets its number in the mono face once there is one).
   groupField: (t, { leadingIcon, trailingIcon, hasSuffix, action }) => ({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
+    minWidth: 0,
     paddingStart: leadingIcon ? WEB_ICON_GUTTER : WEB_INSET,
     paddingEnd: trailingIcon ? WEB_ICON_GUTTER : hasSuffix && !action ? 8 : WEB_INSET,
     color: t.foreground,
@@ -357,6 +362,7 @@ export const iosSkin: InputSkin = {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
+    minWidth: 0,
     color: t.foreground,
     // Brand caret + outline suppression on the inner grouped field too.
     ...iosWebFieldReset(t),
@@ -487,6 +493,7 @@ export const androidSkin: InputSkin = {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
+    minWidth: 0,
     color: t.foreground,
     // Content inset is 16dp per side, EXCEPT when a prefix/suffix affix already
     // supplies that inset plus a tight gap: there the field drops its padding so

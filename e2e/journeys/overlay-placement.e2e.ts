@@ -93,7 +93,8 @@ for (const scheme of ["light", "dark"] as const) {
     await expect(input).toBeInViewport({ ratio: 1 });
     const banner = await page.getByRole("banner").boundingBox();
     expect((await input.boundingBox())!.y).toBeGreaterThanOrEqual(banner!.y + banner!.height);
-    await expect(page.getByText("to close", { exact: true })).toBeInViewport({ ratio: 1 });
+    // The footer's last mono hint (the v4 footer reads "↑↓ move / ↵ open / esc close").
+    await expect(page.getByText("esc close", { exact: true })).toBeInViewport({ ratio: 1 });
     await expect(input).toBeFocused();
     const shot = info.outputPath(`command-edge-${scheme}.png`);
     await page.screenshot({ path: shot });

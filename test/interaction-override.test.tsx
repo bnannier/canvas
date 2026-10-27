@@ -207,6 +207,19 @@ describe("pinned focus on a control's own focused look", () => {
     expect(screen.getByTestId("s").style.getPropertyValue("box-shadow")).toBe("");
   });
 
+  it("rings an open Select trigger with the kit's keyboard ring, since its edge is the ring already", () => {
+    // Open, the edge is the ring at rest, so the halo alone would be the focus cue: the
+    // trigger wears the outline ring instead, outside its box.
+    render(light(<InteractionOverride focused><Select testID="s" open label="Size" options={["Small"]} /></InteractionOverride>));
+    const pinned = screen.getByTestId("s").style;
+    expect(pinned.getPropertyValue("outline-width")).toBe(`${FOCUS_RING_WIDTH}px`);
+    expect(pinned.getPropertyValue("outline-style")).toBe("solid");
+    expect(pinned.getPropertyValue("box-shadow")).toBe("");
+    cleanup();
+    render(light(<Select testID="s" open label="Size" options={["Small"]} />));
+    expect(screen.getByTestId("s").style.getPropertyValue("outline-width")).toBe("0px");
+  });
+
   it("rings the Slider thumb and a drag grip", () => {
     render(light(<InteractionOverride focused><Slider testID="v" defaultValue={40} accessibilityLabel="Volume" /></InteractionOverride>));
     expect(screen.getByTestId("v-thumb").style.getPropertyValue("outline-width")).toBe(`${FOCUS_RING_WIDTH}px`);

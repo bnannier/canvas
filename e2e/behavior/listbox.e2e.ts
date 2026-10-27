@@ -59,27 +59,34 @@ test("multi-select Tab skips decorative indicators and keeps one roving row", as
   await expect(group.locator('[tabindex="0"]')).toHaveCount(1);
 });
 
-test("Listbox multi previews mark a choice the way each platform does", async ({ page }, testInfo) => {
+test("Listbox multi previews mark a choice with the trailing check on every platform", async ({ page }, testInfo) => {
   await gotoDocs(page, "/components/listbox/multi");
-  for (const [platform, width, corner] of [["android", 18, 2], ["web", 18, 5]] as const) {
+  // Neither iOS nor Material 3 ships a listbox (PLATFORM-REFERENCES `listbox`, Shared), so
+  // every platform draws the v4 list: a chosen row carries a 16px check at its END, in multi
+  // select as in single, and composes no selection Checkbox. The check's slot stays on an
+  // unchosen row too, empty, so a choice never reflows the label.
+  for (const platform of ["web", "ios", "android"] as const) {
     const group = platformRow(page, platform).getByRole("group", { name: "Teams" });
-    const row = group.getByRole("checkbox", { name: "Backend", exact: true });
-    await expect(row).toHaveAttribute("aria-checked", "true");
-    // Match the platform's selection Checkbox, border included: the Android M3 box
-    // (18, a 2 dp corner) and the web box (18, a 5 px corner). A bare nested import in
-    // the shared shell would give both the same corner.
-    // The first match is the box; the box hides its own glyph as well, so the glyph's
-    // text node also sits under a hidden node two levels down.
-    const box = row.locator('[aria-hidden="true"] > div > div').first();
-    await expect(box).toHaveCSS("width", `${width}px`);
-    await expect(box).toHaveCSS("height", `${width}px`);
-    await expect(box).toHaveCSS("border-top-left-radius", `${corner}px`);
+    const chosen = group.getByRole("checkbox", { name: "Backend", exact: true });
+    await expect(chosen).toHaveAttribute("aria-checked", "true");
+    const mark = chosen.locator(':scope > [aria-hidden="true"]');
+    await expect(mark, `${platform}: one decorative mark`).toHaveCount(1);
+    await expect(mark.locator("svg"), `${platform}: the check glyph`).toHaveCount(1);
+    const markBox = (await mark.boundingBox())!;
+    const labelBox = (await chosen.getByText("Backend", { exact: true }).boundingBox())!;
+    expect(markBox.width, `${platform}: the 16px check`).toBe(16);
+    expect(markBox.x, `${platform}: the check trails the label`).toBeGreaterThanOrEqual(labelBox.x + labelBox.width);
+    // No Checkbox: no box drawn around a glyph, before or after the label.
+    await expect(chosen.locator('[aria-hidden="true"] > div > div'), `${platform}: no selection Checkbox`).toHaveCount(0);
+
+    const unchosen = group.getByRole("checkbox", { name: "Frontend", exact: true });
+    await expect(unchosen).toHaveAttribute("aria-checked", "false");
+    const slot = unchosen.locator(':scope > [aria-hidden="true"]');
+    await expect(slot, `${platform}: the empty check slot`).toHaveCount(1);
+    await expect(slot.locator("svg")).toHaveCount(0);
+    // The empty slot has no height, which Playwright counts as not visible, so read its box directly.
+    expect(await slot.evaluate((node) => node.getBoundingClientRect().width), `${platform}: the slot keeps the check's width`).toBe(16);
   }
-  // An iOS list marks a chosen row with a trailing check and composes no Checkbox.
-  const iosRow = platformRow(page, "ios").getByRole("group", { name: "Teams" }).getByRole("checkbox", { name: "Backend", exact: true });
-  await expect(iosRow).toHaveAttribute("aria-checked", "true");
-  await expect(iosRow.locator('[aria-hidden="true"]')).toHaveText(["✓"]);
-  await expect(iosRow.locator('[aria-hidden="true"] > div > div')).toHaveCount(0);
   const findings = await scan(page, '[data-platform-row="web"]');
   await attach(testInfo, "listbox-multi", findings);
   expect(findings, describeViolations(findings)).toEqual([]);
