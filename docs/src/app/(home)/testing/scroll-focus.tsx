@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Button, Card, Carousel, CodeBlock, Column, Command, DataTable, Feed, GridList, Heatmap, Select, StackedList, Typography } from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 
-const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec", "Winnipeg", "Calgary", "Ottawa", "Edmonton"];';
+// One line longer than the widest content column (the 1440 px frame), so every code
+// block overflows and its scrollport is a tab stop at every width the specs walk.
+const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec", "Winnipeg", "Calgary", "Ottawa", "Edmonton", "Saskatoon", "Regina", "St. John\'s", "Charlottetown", "Fredericton", "Whitehorse", "Yellowknife", "Iqaluit"];';
 const SHORT = "const ready = true;";
 const columns = ["Name", "Location", "Status", "Joined", "Team"];
 // More cities than the option card's cap holds, so its list scrolls (and the command

@@ -29,15 +29,16 @@ const PALETTE_OPTIONS: readonly { value: Palette; label: string }[] = [
 
 /**
  * The palette control: the hand-off navbar's five hue swatches, one kit Swatch palette
- * picker per palette in a radio group, the palette in force ringed. Row's `compact` gap
- * is the hand-off's 6 px: the ring is a shadow outside the disc's box, so it clears its
- * neighbour by 2 px as the hand-off's does.
+ * picker per palette in a radio group, the palette in force ringed. Row's `snug` gap is
+ * 8 px where the hand-off has 6: its 16 px discs at a 22 px pitch fail WCAG 2.5.8's
+ * 24 px target spacing, so the gap moves the 2 px that clears it (decision D1's rule:
+ * the hand-off's value unless it fails WCAG, then the smallest move that passes).
  */
 export function HueSwatches() {
   const { palette, setPalette } = useDocsTheme();
   return (
     <View role="radiogroup" aria-label="Palette">
-      <Row compact alignCenter>
+      <Row snug alignCenter>
         {PALETTE_OPTIONS.map((p) => (
           <Swatch
             key={p.value}
