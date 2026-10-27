@@ -11,6 +11,7 @@ export default function Example(scope: ExampleScope) {
     compact
     markers
     defaultActive="button"
+    accessibilityLabel="Controls components"
     header={<Input small leadingIcon icon="search" placeholder="Filter 3 components" accessibilityLabel="Filter components" />}
     sections={[
       { title: "Controls", count: 3, items: [

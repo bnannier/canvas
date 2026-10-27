@@ -504,8 +504,15 @@ export function materialCorners(shape: StyleProp<ViewStyle>, inside = false): Vi
  * It publishes whether its material renders to everything inside it (`MaterialBehind`), so a
  * borderless Android ripple there draws in front of the frost instead of beneath it.
  */
+// A surface's landmark name, as the RN prop and its aria alias (react-native-web forwards
+// neither on its own; Form's precedent). An unnamed surface spreads nothing, so its markup
+// is unchanged.
+function landmarkName(label: string | undefined) {
+  return label != null ? { accessibilityLabel: label, "aria-label": label } : null;
+}
+
 export function GlassBox({
-  style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, stateBorder = false,
+  style, children, pointerEvents, testID, role, accessibilityLabel, onLayout, onAccessibilityEscape, stateBorder = false,
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
   const host = solid ? null : stateBorder ? clearedPaint(style, true) : borderAsPadding(style);
@@ -516,7 +523,7 @@ export function GlassBox({
   // a stacking context of its own holds the material inside the box. React Native Web drops
   // the prop before the DOM.
   return (
-    <View style={[style, host, pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={material || onAccessibilityEscape ? false : undefined}>
+    <View style={[style, host, pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} {...landmarkName(accessibilityLabel)} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={material || onAccessibilityEscape ? false : undefined}>
       {material ? (
         <View testID="glass-material" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style, stateBorder), { overflow: "hidden", zIndex: -1 }]}>
           {material}
@@ -530,9 +537,9 @@ export function GlassBox({
 // One plain View wearing the skin's style untouched, which is what GlassBox renders where the
 // material resolves solid: AnchoredOverlay's opaque card (`opaque`, a card that never takes
 // glass) renders it, so an option list looks and lays out the same under either surface.
-export function PlainSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape }: GlassSurfaceProps) {
+export function PlainSurface({ style, children, pointerEvents, testID, role, accessibilityLabel, onLayout, onAccessibilityEscape }: GlassSurfaceProps) {
   return (
-    <View style={[style, pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View style={[style, pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} {...landmarkName(accessibilityLabel)} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {children}
     </View>
   );

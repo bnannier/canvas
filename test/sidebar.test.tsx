@@ -380,3 +380,56 @@ describe("Sidebar v4 web rail", () => {
     expect(header.style.height).toBe("");
   });
 });
+
+// A page holding two navigation landmarks (the app's top navigation beside a sidebar, two
+// sidebars) needs a distinct name on each (axe's landmark-unique), so the sidebar names its
+// landmark with `accessibilityLabel`, in every frame and in solid and glass alike, and an
+// unnamed sidebar stays exactly as it was.
+describe("Sidebar landmark name", () => {
+  const items = [{ id: "one", label: "One" }];
+  for (const surface of ["solid", "glass"] as const) {
+    for (const [frame, extra] of [
+      ["flush", {}],
+      ["bordered", { bordered: true }],
+      ["embedded", { embedded: true }],
+      ["shell", { header: <Text>Brand</Text> }],
+    ] as const) {
+      it(`names the ${frame} navigation landmark (${surface})`, () => {
+        render(
+          <ThemeProvider solid={surface === "solid"} glass={surface === "glass"}>
+            <Sidebar {...extra} items={items} accessibilityLabel="Workspace" />
+          </ThemeProvider>,
+        );
+        const nav = screen.getByRole("navigation", { name: "Workspace" });
+        expect(nav.getAttribute("aria-label")).toBe("Workspace");
+      });
+    }
+  }
+
+  it("tells two sidebars on one page apart", () => {
+    ui(
+      <>
+        <Sidebar embedded items={items} accessibilityLabel="Controls components" />
+        <Sidebar embedded items={items} accessibilityLabel="Example workspace" />
+      </>,
+    );
+    expect(screen.getAllByRole("navigation")).toHaveLength(2);
+    expect(screen.getByRole("navigation", { name: "Controls components" })).toBeTruthy();
+    expect(screen.getByRole("navigation", { name: "Example workspace" })).toBeTruthy();
+  });
+
+  it("leaves an unnamed sidebar's landmark without a name", () => {
+    ui(<Sidebar items={items} />);
+    expect(screen.getByRole("navigation").hasAttribute("aria-label")).toBe(false);
+  });
+
+  it("names the responsive drawer with the same label", () => {
+    resizeViewport(375);
+    try {
+      ui(<Sidebar responsive open items={items} accessibilityLabel="Workspace" />);
+      expect(screen.getByRole("dialog", { name: "Workspace" })).toBeTruthy();
+    } finally {
+      resizeViewport(1280);
+    }
+  });
+});

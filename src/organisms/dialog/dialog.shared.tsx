@@ -99,6 +99,14 @@ export interface DialogProps {
   /** Cancel when the backdrop is pressed. Off by default, including destructive dialogs. */
   dismissible?: boolean;
   /**
+   * Show the open dialog as a non-modal specimen in the page, for a catalogue or a
+   * showcase: it keeps its look, its dialog role and its labelling, but does not take
+   * focus when it opens, trap Tab, return focus, claim `aria-modal`, or cancel on
+   * Escape, native back or a backdrop press. Ignored with `trigger`, which always opens
+   * a live modal.
+   */
+  embedded?: boolean;
+  /**
    * The dialog's accessible name, for the case where `children` supply the panel
    * body. Children REPLACE the built-in title/description, so there is no
    * element left for `aria-labelledby` to point at, and the dialog would
@@ -191,6 +199,8 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     const window = useWindowDimensions();
     const workspaceHeight = s.workspaceHeight(window.height, insets?.top ?? 0, insets?.bottom ?? 0);
     const accessibilityLabel = props.accessibilityLabel;
+    // An embedded dialog is a specimen, not a live modal; a trigger always opens a live one.
+    const modal = !(props.embedded === true && trigger == null);
 
     const confirm = () => {
       onConfirm?.();
@@ -206,11 +216,12 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     // Tab within it, and return focus to the trigger on close. This focus helper
     // does nothing natively or under SSR. The shared escape scope routes browser
     // Escape and native accessibility escape through the same Cancel policy.
-    const panelRef = useDialogFocus(open);
-    const escapeScope = useEscapeLayer(open, cancel);
+    // An embedded specimen takes none of this: focus, Tab, Escape and Back stay the page's.
+    const panelRef = useDialogFocus(open && modal);
+    const escapeScope = useEscapeLayer(open && modal, cancel);
     // Inline catalogue panels do not own page navigation. A presented overlay
     // consumes native Back and lets a nested escape layer dismiss first.
-    useHardwareBack(open && overlay, escapeScope.onRequestClose);
+    useHardwareBack(open && overlay && modal, escapeScope.onRequestClose);
 
     // The confirm/cancel footer. Three platform shapes:
     //   - web (footerKind "buttons", no skin.textButton): the ghost Cancel +
@@ -310,7 +321,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
           <EscapeLayerProvider scope={escapeScope}>
           <View
             ref={panelRef} testID={form && overlay && trigger == null ? testID : undefined}
-            tabIndex={-1}
+            tabIndex={modal ? -1 : undefined}
             // The overlay carries the dialog semantics so assistive tech announces
             // it. `role` ("dialog", or "alertdialog" for a destructive confirm) +
             // `aria-modal` make web screen readers treat it as a modal dialog and
@@ -321,9 +332,9 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
             // aria-modal alias). On the web this boundary also traps Tab focus and
             // returns focus to the trigger on close (see useDialogFocus).
             role={destructive ? "alertdialog" : "dialog"}
-            accessibilityViewIsModal={true}
-            onAccessibilityEscape={escapeScope.onAccessibilityEscape}
-            aria-modal={true}
+            accessibilityViewIsModal={modal}
+            onAccessibilityEscape={modal ? escapeScope.onAccessibilityEscape : undefined}
+            aria-modal={modal ? true : undefined}
             aria-label={accessibilityLabel}
             aria-labelledby={accessibilityLabel == null && (form || children == null) && title != null ? titleId : undefined}
             aria-describedby={(form || children == null) && description != null ? descriptionId : undefined}
@@ -335,7 +346,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                 neither (a blur here would cut the card's frost off from the page). A form
                 dialog's dim is its own veil instead. */}
             {form ? <GlassSurface veil tint={scrimFill(tokens, 0.6)} pointerEvents="none" style={[s.dismissBackdrop, { backgroundColor: scrimFill(tokens, 0.6) }]} /> : scrim.layer}
-            {props.dismissible ? (
+            {props.dismissible && modal ? (
               <Pressable accessible={false} focusable={false} tabIndex={-1}
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
             ) : null}

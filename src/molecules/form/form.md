@@ -2,7 +2,9 @@
 
 Stitch your own fields inside it; Form adds the stacked or two-column rhythm, titled sections, the submit and cancel actions row, and Enter to submit.
 
-The actions row sits under a hairline rule, a ghost cancel before the primary submit; each FormSection closes with the same rule, and in the two-column flow a section takes the whole row. A `disabled` form dims as a whole and disables its actions.
+The actions row sits under a hairline rule, a ghost cancel before the primary submit; each FormSection closes with the same rule. A `disabled` form dims as a whole and disables its actions.
+
+`twoColumn` lays the rows out in exactly two equal columns 16px apart, however wide the form: the fields fill their columns left to right, an odd last field keeps its half, and a FormSection takes the whole row, after which the next field starts a new one. The form measures itself, and at 512px or narrower (the `lg` width step) the rows stack in one full-width column instead.
 
 ## Usage
 

@@ -79,6 +79,13 @@ export interface AlertDialogProps {
    * `OverlayProvider`; with none in the tree it renders in place.
    */
   overlay?: boolean;
+  /**
+   * Show the open dialog as a non-modal specimen in the page, for a catalogue or a
+   * showcase: it keeps its look, its alertdialog role and its labelling, but does not
+   * take focus when it opens, trap Tab, return focus, claim `aria-modal`, or cancel on
+   * Escape or native back. Ignored with `trigger`, which always opens a live modal.
+   */
+  embedded?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -136,6 +143,8 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
       style,
     } = props;
     const overlay = props.overlay === true;
+    // An embedded dialog is a specimen, not a live modal; a trigger always opens a live one.
+    const modal = !(props.embedded === true && trigger == null);
 
     const { tokens } = useTheme();
 
@@ -181,11 +190,12 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
     // Tab within it, and return focus to the trigger on close. This focus helper
     // does nothing natively or under SSR. The shared escape scope routes browser
     // Escape and native accessibility escape through the same Cancel policy.
-    const panelRef = useDialogFocus(open);
-    const escapeScope = useEscapeLayer(open, handleCancel);
+    // An embedded specimen takes none of this: focus, Tab, Escape and Back stay the page's.
+    const panelRef = useDialogFocus(open && modal);
+    const escapeScope = useEscapeLayer(open && modal, handleCancel);
     // Inline catalogue panels do not own page navigation. A presented overlay
     // consumes native Back through the same cancellation policy as Escape.
-    useHardwareBack(open && overlay, escapeScope.onRequestClose);
+    useHardwareBack(open && overlay && modal, escapeScope.onRequestClose);
 
     // The action row. iOS renders the UIAlertController's two action cells drawn by
     // the skin; the web and Android render the hand-off's row of the shell's Buttons
@@ -272,9 +282,9 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
             // below also traps Tab focus and returns focus to the trigger on close
             // (see useDialogFocus).
             role="alertdialog"
-            accessibilityViewIsModal={true}
-            onAccessibilityEscape={escapeScope.onAccessibilityEscape}
-            aria-modal={true}
+            accessibilityViewIsModal={modal}
+            onAccessibilityEscape={modal ? escapeScope.onAccessibilityEscape : undefined}
+            aria-modal={modal ? true : undefined}
             aria-labelledby={title != null ? titleId : undefined}
             aria-describedby={description != null ? descriptionId : undefined}
             style={scrim.style}
@@ -299,7 +309,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
                   the content in a KeyboardAvoidingView so the iOS keyboard never
                   covers the confirmation field (padding behavior on iOS; a plain
                   passthrough View on web/Android). Neither wrapper adds layout. */}
-              <View ref={panelRef} tabIndex={-1}>
+              <View ref={panelRef} tabIndex={modal ? -1 : undefined}>
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
                   <View style={skin.content}>
                   {skin.emblem != null ? (

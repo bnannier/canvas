@@ -42,6 +42,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `emphasis` | Emphasis | [ ] | [ ] | [ ] |  |
 | `withleadingicon` | With leading icon | [ ] | [ ] | [ ] |  |
 | `removablefilters` | Removable filters | [ ] | [ ] | [ ] |  |
+| `link` | Link | [ ] | [ ] | [ ] |  |
 | `selectable` | Selectable | [ ] | [ ] | [ ] |  |
 | `pickone` | Pick one | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->

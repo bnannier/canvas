@@ -3,7 +3,7 @@ import { attach, describe as describeViolations, scanStructure, STRUCTURAL_RULES
 import { expect, test } from "../support/fixtures";
 
 const PAGES = [
-  { path: "/", title: "One codebase. Every platform. One component API." },
+  { path: "/", title: "Light as material." },
   { path: "/components", title: "Components" },
   { path: "/tokens/colors", title: "Colors & Theme" },
   { path: "/integration", title: "Integration" },
@@ -12,6 +12,15 @@ const PAGES = [
   { path: "/components/typography", title: "Typography" },
   { path: "/templates/activity", title: "Activity" },
   { path: "/patterns/accessibility", title: "Accessibility" },
+  // The section pages (docs/src/sections): the room's title is the page's h1.
+  { path: "/sections/foundations", title: "Foundations" },
+  { path: "/sections/layout", title: "Layout" },
+  { path: "/sections/controls", title: "Controls" },
+  { path: "/sections/inputs", title: "Inputs" },
+  { path: "/sections/navigation", title: "Navigation" },
+  { path: "/sections/data", title: "Surfaces & data" },
+  { path: "/sections/charts", title: "Charts" },
+  { path: "/sections/overlays", title: "Overlays & feedback" },
 ];
 
 // A component page's Do/Don't section heading (docs/src/ui/dont.tsx), named after the

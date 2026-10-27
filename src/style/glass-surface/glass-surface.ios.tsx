@@ -33,10 +33,10 @@ export type { GlassLayer, GlassSurfaceProps } from "./glass-surface-props.js";
  * glass the fill gives way to the material and a resting border becomes padding, so the
  * material covers the surface's whole solid footprint; a `stateBorder` stays over it.
  *
- * Accessibility: its root is the one node it adds, carrying only the `role`, `testID` and
- * accessibility-escape handler it is given, the same in solid, glass and every rung of the
+ * Accessibility: its root is the one node it adds, carrying only the `role`, its `accessibilityLabel`, the
+ * `testID` and the accessibility-escape handler it is given, the same in solid, glass and every rung of the
  * accessibility ladder, so a screen reader and the keyboard meet its children as they would
- * in a plain View: it takes no focus stop and adds no name. Its material is hidden from
+ * in a plain View: it takes no focus stop and adds no name beyond the one it is given. Its material is hidden from
  * VoiceOver and TalkBack (`accessibilityElementsHidden`, `importantForAccessibility`
  * `no-hide-descendants`) and on the web is a set of empty, pointer-transparent boxes with no
  * role or text. Every touch passes through the material to the children and their hit slop,

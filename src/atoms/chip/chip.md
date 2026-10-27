@@ -40,6 +40,15 @@ publish a Canvas sizing context.
 `steadyPress` retains the resting opacity during a press, while selection,
 hover feedback and the native ripple keep working.
 
+`href` makes the chip a link to a route or a URL: a real anchor on the web (so
+middle-click and open-in-new-tab work and assistive tech hears a link), with
+`hrefAttrs` forwarding `target`, `rel` and `download`. Native platforms have no
+anchors, so pair `href` with an `onPress` that navigates through the app's router; it
+receives the press event, so a web app routing on the client calls
+`event?.preventDefault()` there. A hovering pointer turns a link chip's ink and edge to
+the accent instead of brightening it. A link is not a toggle: `href` is ignored on a
+selectable chip or a ChipGroup option.
+
 ## Usage
 
 ```tsx
@@ -103,6 +112,18 @@ matches without threading the color through.
 
 ```tsx
 <Chip onRemove={() => {}}>Role: Admin</Chip>
+```
+
+### Link
+
+A chip that names a destination, such as the component chips at the head of a docs
+card. A trailing `<Icon arrowUpRight />` says it leaves the page.
+
+```tsx
+<Row wrap compact>
+  <Chip outline href="/components/switch" trailing={<Icon arrowUpRight size={12} />}>Switch</Chip>
+  <Chip outline href="/components/checkbox" trailing={<Icon arrowUpRight size={12} />}>Checkbox</Chip>
+</Row>
 ```
 
 ### Selectable

@@ -517,6 +517,17 @@ const isNullish = (value: ts.Expression): boolean => {
   const v = unwrap(value);
   return v.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(v) && v.text === "undefined");
 };
+/**
+ * A tab index that never makes an element a stop: `-1`, or no index at all, on every branch
+ * of a condition (`tabIndex={modal ? -1 : undefined}`, a dialog panel that only a modal
+ * focuses programmatically). A Pressable is a stop by default, so this frees only the other
+ * primitives, whose absent index is no stop.
+ */
+function neverAStop(value: ts.Expression): boolean {
+  const v = unwrap(value);
+  if (ts.isConditionalExpression(v)) return neverAStop(v.whenTrue) && neverAStop(v.whenFalse);
+  return isMinusOne(v) || isNullish(v);
+}
 
 const isSourceModule = (file: string) => /\.tsx?$/.test(file) && !/\.(test|spec)\.tsx?$/.test(file) && !file.endsWith(".d.ts");
 
@@ -2701,7 +2712,7 @@ function tabStop(tag: string, given: readonly Attr[]): { what: string; attr: Att
   }
   if (tag === "TextInput" || out) return null;
   if (focusable && !isLiteralFalse(focusable.value)) return { what: `focusable on <${tag}>`, attr: focusable };
-  if (tabIndex && tabIndex.value && !isMinusOne(tabIndex.value)) return { what: `tabIndex on <${tag}>`, attr: tabIndex };
+  if (tabIndex && tabIndex.value && !neverAStop(tabIndex.value)) return { what: `tabIndex on <${tag}>`, attr: tabIndex };
   for (const name of ["accessibilityRole", "role"]) {
     const role = find(name);
     const literal = role?.value ? [...TAB_STOP_ROLES].map((r) => findLiteral(role.value!, r)).find(Boolean) : null;

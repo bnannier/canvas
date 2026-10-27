@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Row, Chip } = scope;
+  const { Icon, Row, Chip } = scope;
   return (
-<Row>
-  <Chip selectable defaultSelected>Design</Chip>
-  <Chip selectable>Engineering</Chip>
+<Row wrap compact>
+  <Chip outline href="/components/switch" trailing={<Icon arrowUpRight size={12} />}>Switch</Chip>
+  <Chip outline href="/components/checkbox" trailing={<Icon arrowUpRight size={12} />}>Checkbox</Chip>
 </Row>
   );
 }

@@ -10,6 +10,7 @@ import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Form, FormSection } from "../src/molecules/form/form.tsx";
 import { webSkin as formWeb, iosSkin as formIos, androidSkin as formAndroid } from "../src/molecules/form/form.styles.ts";
 import { lightColors } from "../src/style/tokens.ts";
+import { resizeViewport } from "./viewport.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -241,5 +242,96 @@ describe("Form follows the v4 hand-off", () => {
     );
     const section = container.querySelector('[aria-label="Notifications"]') as HTMLElement;
     expect((section.parentElement as HTMLElement).style.flexBasis).toBe("100%");
+  });
+});
+
+// twoColumn is the hand-off's two-column grid (cv-kit-code2.js `O('form')`: `1fr 1fr`, a
+// 16px gap, a FormSection across the whole line): exactly two half-width cells on a line
+// however wide the form, never as many as fit; and at or under 512 px one full-width column
+// that never wraps sideways. happy-dom never fires onLayout, so the flow resolves against
+// the viewport seed (useContainerWidth) until a measurement lands.
+describe("Form twoColumn flow", () => {
+  const cellOf = (container: HTMLElement, placeholder: string) => {
+    // input -> the Input's own root -> the cell (the rows wrapper's child)
+    let node = container.querySelector(`[placeholder="${placeholder}"]`) as HTMLElement;
+    while (node.parentElement && node.parentElement.style.flexDirection !== "row" && node.parentElement.style.flexDirection !== "column") {
+      node = node.parentElement;
+    }
+    // The first flex-direction ancestor met may be inside the field; climb to the rows wrapper.
+    while (node.parentElement && !node.parentElement.getAttribute("style")?.includes("gap")) node = node.parentElement;
+    return node;
+  };
+  const rowsOf = (container: HTMLElement, placeholder: string) => cellOf(container, placeholder).parentElement as HTMLElement;
+  const form = (
+    <Form twoColumn>
+      <Input label="Name" placeholder="a" />
+      <Input label="URL" placeholder="b" />
+      <Input label="Region" placeholder="c" />
+      <FormSection title="Members">
+        <Input label="Role" placeholder="d" />
+      </FormSection>
+      <Input label="After" placeholder="e" />
+      <Input label="Odd" placeholder="f" />
+      <Input label="Last" placeholder="g" />
+    </Form>
+  );
+
+  it("lays exactly two half-width cells on a line, the 16px gutter split between them", () => {
+    const { container } = ui(form);
+    const rows = rowsOf(container as HTMLElement, "a");
+    expect(rows.style.flexDirection).toBe("row");
+    expect(rows.style.flexWrap).toBe("wrap");
+    expect(rows.style.rowGap).toBe("16px");
+    expect(rows.style.columnGap).toBe("");
+    const a = cellOf(container as HTMLElement, "a");
+    const b = cellOf(container as HTMLElement, "b");
+    expect(a.style.width).toBe("50%");
+    expect(b.style.width).toBe("50%");
+    // No flex growth: a cell never stretches past its half, and a fifth never squeezes in.
+    expect(a.style.flexGrow).toBe("");
+    expect(b.style.flexGrow).toBe("");
+    const inset = (el: HTMLElement) => [el.style.paddingInlineStart || el.style.paddingLeft, el.style.paddingInlineEnd || el.style.paddingRight];
+    expect(inset(a)).toEqual(["", "8px"]);
+    expect(inset(b)).toEqual(["8px", ""]);
+  });
+
+  it("starts a new line after a FormSection, and keeps an odd last field at half width", () => {
+    const { container } = ui(form);
+    const c = cellOf(container as HTMLElement, "c");
+    const inset = (el: HTMLElement) => el.style.paddingInlineEnd || el.style.paddingRight;
+    // Region is the third field: the start column of the second line.
+    expect(inset(c)).toBe("8px");
+    const section = container.querySelector('[aria-label="Members"]')!.parentElement as HTMLElement;
+    expect(section.style.flexBasis).toBe("100%");
+    // After the section the next field starts a line again, in the start column.
+    expect(inset(cellOf(container as HTMLElement, "e"))).toBe("8px");
+    expect(inset(cellOf(container as HTMLElement, "f"))).toBe("");
+    const last = cellOf(container as HTMLElement, "g");
+    expect(last.style.width).toBe("50%");
+    expect(inset(last)).toBe("8px");
+  });
+
+  it("stacks one full-width column at a phone width: no wrap, no basis, no half cells", () => {
+    resizeViewport(390);
+    const { container } = ui(form);
+    const rows = rowsOf(container as HTMLElement, "a");
+    expect(rows.style.flexDirection).toBe("column");
+    expect(rows.style.flexWrap).toBe("");
+    expect(rows.style.gap || rows.style.rowGap).toBe("16px");
+    for (const p of ["a", "b", "c", "e", "f", "g"]) {
+      const cell = cellOf(container as HTMLElement, p);
+      expect(cell.style.width).toBe("");
+      expect(cell.style.flexBasis).toBe("");
+    }
+    const section = container.querySelector('[aria-label="Members"]')!.parentElement as HTMLElement;
+    // The section's cell carries no `flexBasis: 100%`, which in a column is a HEIGHT basis.
+    expect(section.style.flexBasis).toBe("");
+  });
+
+  it("lets a field fill its cell", () => {
+    const { container } = ui(form);
+    const cell = cellOf(container as HTMLElement, "a");
+    const field = cell.firstElementChild as HTMLElement;
+    expect(field.style.width).toBe("100%");
   });
 });

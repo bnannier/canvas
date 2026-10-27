@@ -155,7 +155,7 @@ describe("Form twoColumn container stacking", () => {
   // the wrapper resolves against the window until its own measurement lands.
   const rowsWrapperOf = (root: HTMLElement) => {
     const el = root.querySelector('[data-testid="probe-input"]') as HTMLElement;
-    // input -> field column -> twoColumnItem -> rows wrapper
+    // input -> field column -> cell -> rows wrapper
     let node: HTMLElement | null = el;
     while (node && node.style.flexDirection !== "row" && node.style.flexDirection !== "column") {
       node = node.parentElement;

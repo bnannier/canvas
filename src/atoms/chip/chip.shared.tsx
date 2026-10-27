@@ -1,4 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
+import type { GestureResponderEvent } from "react-native";
 import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, alpha, isGlass } from "../../style/index.js";
 import { composite, contrastRatio, oklchHex, oklchOf } from "../../style/color.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
@@ -101,8 +102,27 @@ export interface ChipProps {
   icon?: ReactNode;
   /** A trailing element (e.g. a chevron for a menu trigger). Rendered after the label. */
   trailing?: ReactNode;
-  /** Makes the whole chip tappable (e.g. toggling a filter). */
-  onPress?: () => void;
+  /**
+   * Makes the whole chip tappable (e.g. toggling a filter). Called with the press event,
+   * which a ChipGroup option's Space key does not have, so an `href` chip that routes on the
+   * client calls `event?.preventDefault()` here.
+   */
+  onPress?: (event?: GestureResponderEvent) => void;
+  /**
+   * Makes the chip a LINK to this destination (a route or a URL): on the web
+   * react-native-web renders the chip as an `<a href>`, so middle-click, cmd-click and
+   * open-in-new-tab work and assistive tech hears a link; it takes the link chip's hover
+   * (the accent ink inside an accent edge) in place of the brightening. Native platforms
+   * have no anchors, so pair it with an `onPress` that navigates through the host's
+   * router, as Button's `href` does. While `disabled` the anchor is suppressed. A link is
+   * not a toggle, so it is ignored on a selectable chip or a ChipGroup option.
+   */
+  href?: string;
+  /**
+   * Anchor attributes forwarded with `href` on the web (react-native-web's `hrefAttrs`):
+   * `target`, `rel`, `download`. Ignored without `href`, and everywhere natively.
+   */
+  hrefAttrs?: { target?: "_blank" | "_self"; rel?: string; download?: boolean | string };
   /** Adds a trailing "×" remove button firing this handler. */
   onRemove?: () => void;
   /**
@@ -279,7 +299,7 @@ function selectedTint(tokens: ColorTokens, edge: boolean): Appearance {
 /** Build a Chip from a platform skin. */
 export function createChip(skin: ChipSkin) {
   return function Chip(props: ChipProps) {
-    const { children, icon, trailing, onPress, onRemove, accessibilityLabel, testID, style } = props;
+    const { children, icon, trailing, onPress, onRemove, href, hrefAttrs, accessibilityLabel, testID, style } = props;
     // An option of a ChipGroup: the group owns its selection, its disabled flag and its
     // roving tab stop.
     const group = useChipGroup();
@@ -291,8 +311,10 @@ export function createChip(skin: ChipSkin) {
       props.selected !== undefined ||
       props.defaultSelected !== undefined ||
       props.onSelectedChange !== undefined;
+    // A link chip: a destination, never a toggle.
+    const link = href != null && !selectable;
     // Removing metadata does not make its body an action surface.
-    const staticMaterial = !(onPress || selectable);
+    const staticMaterial = !(onPress || selectable || link);
     const theme = useMaterialTheme({ static: staticMaterial, layer: "control" });
     const { tokens, dark } = theme;
     // Under glass the chip is a CONTROL-layer puck: a GlassPane paints the material
@@ -306,7 +328,7 @@ export function createChip(skin: ChipSkin) {
     // A tappable chip's touch area grows to the skin's minimum where it sets one (Android):
     // the pill's own shortfall, measured, and seeded from its padding and border around one
     // label line so it is in place before the first layout (src/style/touch-target-seed.ts).
-    const tappable = onPress != null || selectable;
+    const tappable = onPress != null || selectable || link;
     const bodyMin = tappable ? skin.bodyMinTarget ?? null : null;
     // The Android pill clips (its skin sets overflow hidden), and React Native hit-tests a
     // clipping view only inside its own bounds plus its own slop, so around a remove glyph
@@ -352,12 +374,20 @@ export function createChip(skin: ChipSkin) {
     } else {
       appearance = neutralTint(tokens, outline, mutedGray ? (props.neutral ? "neutral" : "gray") : null, !!skin.outlined, props.secondary === true, selectable);
     }
+    // A hovered link chip takes the accent ink inside an accent edge (the hand-off's link
+    // chips), a state edge like the selected chip's, where the skin brightens a chip on hover.
+    const linkHover = link && hovered && !disabled && skin.hoverBrightness != null;
+    if (linkHover) appearance = { ...appearance, border: tokens.primary, text: primaryText(tokens) };
 
-    const handlePress = () => {
+    const handlePress = (event?: GestureResponderEvent) => {
       if (option) option.select(props.value as string | number);
       else if (selectable) setSelected(!selectedState);
-      onPress?.();
+      onPress?.(event);
     };
+    // A real anchor on the web (react-native-web renders a Pressable carrying `href` as an
+    // `<a>` and forwards hrefAttrs); native ignores both. Suppressed while disabled, as
+    // Button's is. RN's prop types do not know these web-forwarded props, hence the spread.
+    const anchor = link && !disabled ? { href, hrefAttrs } : null;
 
     // A group option is a radio: checked when chosen, the group's one tab stop when it is
     // the chosen (or first enabled) chip, its arrow keys the group's, and Space activates
@@ -378,11 +408,17 @@ export function createChip(skin: ChipSkin) {
           onKeyUp: keyboard.onKeyUp,
           onBlur: keyboard.onBlur,
         }
-      : {
-          accessibilityRole: "button" as const,
-          accessibilityState: { selected: isSelected, disabled },
-          "aria-pressed": isSelected,
-        };
+      : link
+        ? {
+            accessibilityRole: "link" as const,
+            accessibilityState: { disabled },
+            "aria-disabled": disabled ? true : undefined,
+          }
+        : {
+            accessibilityRole: "button" as const,
+            accessibilityState: { selected: isSelected, disabled },
+            "aria-pressed": isSelected,
+          };
 
     // An icon-bearing side pads tighter than a text side, and the remove control's side
     // tighter still on the web; the shell resolves the per-side insets here. The selected
@@ -398,7 +434,7 @@ export function createChip(skin: ChipSkin) {
     const liquid = surfaced && !staticMaterial;
     const puck = liquid && isGlass(theme);
     // A selected chip's accent edge is a state edge: it stays a border over the pane.
-    const stateEdge = selectedActive && !!skin.selectedEdge;
+    const stateEdge = (selectedActive && !!skin.selectedEdge) || linkHover;
     // The pill's whole box, its per-side insets included, so that under glass paneStyle
     // turns the resting border into padding on top of them.
     const box: StyleProp<ViewStyle> = [
@@ -410,7 +446,7 @@ export function createChip(skin: ChipSkin) {
       disabled && !liquid ? { opacity: skin.disabledOpacity } : null,
       // The hover brightens the chip; a filter would cut a glass pane off from the backdrop
       // it samples, so a puck brightens nothing.
-      hovered && !disabled && !puck && skin.hoverBrightness != null ? { filter: `brightness(${skin.hoverBrightness})` } : null,
+      hovered && !disabled && !puck && !link && skin.hoverBrightness != null ? { filter: `brightness(${skin.hoverBrightness})` } : null,
       hug,
       style,
     ];
@@ -542,6 +578,7 @@ export function createChip(skin: ChipSkin) {
           <Pressable
             {...pillClip.measure("body")}
             {...hoverTarget}
+            {...(anchor ?? undefined)}
             onPress={handlePress}
             disabled={disabled}
             {...(semantics as object)}
@@ -568,6 +605,7 @@ export function createChip(skin: ChipSkin) {
           <Pressable
             onLayout={pillTarget.onLayout}
             {...hoverTarget}
+            {...(anchor ?? undefined)}
             onPress={handlePress}
             disabled={disabled}
             testID={testID}

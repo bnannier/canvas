@@ -2,6 +2,12 @@
 
 A modal workflow with fixed step navigation and footer actions around a bounded, scrolling body. The application owns stage content, validation, saving and transitions; Wizard composes the existing Dialog, Steps and Button controls.
 
+Add `embedded` to show an open wizard in a page as a specimen, the way a catalogue
+or a showcase does: it keeps its look, its dialog role and its labelling, but it is
+not modal. It does not take focus, trap Tab, set `aria-modal`, or close on Escape or
+native back. It still presents into the nearest `OverlayProvider`, so give it a host
+of the size it should fill.
+
 ## Usage
 
 `ViewportOverlay` is docs-only scaffolding that presents the example above the docs page. In an application, mount Wizard beneath the app-root OverlayProvider.

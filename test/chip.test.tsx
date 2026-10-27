@@ -149,3 +149,59 @@ describe("Chip's colour flags and neutral emphases, as the hand-off's override d
     expect(paint(screen.getByTestId("neutral"))).toEqual([channelsOf(lightColors.secondary), [0, 0, 0, 0]]);
   });
 });
+
+// `href`: the hand-off's component chips (26 px pills linking to a component page) are a
+// Chip that is a link, Button's anchor path (P5-C1).
+import { InteractionOverride } from "../src/style/interaction-override.tsx";
+import { primaryText } from "../src/style/primary-text.ts";
+
+describe("Chip href", () => {
+  it("is one link to its destination on the web, never a toggle", () => {
+    render(<ThemeProvider light solid><Chip outline href="/components/button">Button</Chip></ThemeProvider>);
+    const link = screen.getByRole("link", { name: "Button" });
+    expect(link.tagName).toBe("A");
+    expect(link.getAttribute("href")).toBe("/components/button");
+    expect(link.hasAttribute("aria-pressed")).toBe(false);
+    expect(screen.queryAllByRole("button")).toHaveLength(0);
+  });
+
+  it("forwards hrefAttrs and calls onPress with the press event, so a client router can take the click", () => {
+    let prevented = false;
+    render(<ThemeProvider light solid>
+      <Chip outline href="https://example.com" hrefAttrs={{ target: "_blank", rel: "noreferrer" }} onPress={(event) => { event?.preventDefault(); prevented = true; }}>Docs</Chip>
+    </ThemeProvider>);
+    const link = screen.getByRole("link", { name: "Docs" });
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toBe("noreferrer");
+    fireEvent.click(link);
+    expect(prevented).toBe(true);
+  });
+
+  it("drops the anchor while disabled, as Button does", () => {
+    render(<ThemeProvider light solid><Chip outline disabled href="/components/button">Button</Chip></ThemeProvider>);
+    const link = screen.getByRole("link", { name: "Button" });
+    expect(link.hasAttribute("href")).toBe(false);
+    expect(link.getAttribute("aria-disabled")).toBe("true");
+  });
+
+  it("is ignored on a selectable chip, which stays a toggle", () => {
+    render(<ThemeProvider light solid><Chip selectable href="/components/button">Button</Chip></ThemeProvider>);
+    expect(screen.queryAllByRole("link")).toHaveLength(0);
+    expect(screen.getByRole("button", { name: "Button" }).getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("hovers to the accent ink inside an accent edge instead of brightening", () => {
+    render(<ThemeProvider light solid>
+      <InteractionOverride hovered>
+        <Chip outline href="/components/button" testID="link">Button</Chip>
+        <Chip onPress={() => {}} testID="tag">Tag</Chip>
+      </InteractionOverride>
+    </ThemeProvider>);
+    const link = screen.getByTestId("link");
+    expect(channelsOf(link.style.borderTopColor || link.style.borderColor)).toEqual(channelsOf(lightColors.primary));
+    expect(link.style.filter).toBe("");
+    expect(channelsOf(screen.getByText("Button").style.color)).toEqual(channelsOf(primaryText(lightColors)));
+    // An ordinary tappable chip keeps its brightening.
+    expect(screen.getByTestId("tag").style.filter).toContain("brightness");
+  });
+});

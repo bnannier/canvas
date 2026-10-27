@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, View, Text, Button, Dialog } = scope;
   return (
-<Dialog open medium>
+<Dialog open embedded medium>
   <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Unsaved changes</Text>
   <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 8 }}>You have edits that are not saved.</Text>
   <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
