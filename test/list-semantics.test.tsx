@@ -240,6 +240,13 @@ describe("GridList is a list of its tiles", () => {
       const { rows } = theList();
       for (const row of rows) expect(row.querySelector('[role="button"]')).not.toBeNull();
     });
+
+    it(`(${platform}) a people tile with actions nests no button in a button`, () => {
+      ui(<List items={TILES} onPressItem={() => {}} />);
+      const { rows } = theList();
+      for (const row of rows) expect(row.querySelector('[role="button"] [role="button"]')).toBeNull();
+      expect(rows[0]!.querySelector('[role="button"]')!.textContent).toBe("Message");
+    });
   }
 });
 
