@@ -30,15 +30,18 @@ const DESCRIPTION =
 const TITLE = "Canvas: One component API. Three native looks.";
 const IMAGE_ALT = "The same Canvas Select component rendered as native iOS, Material 3 Android, and web, side by side";
 
-// Pre-hydration only. Every page is pre-rendered with the desktop shell (the server
-// cannot measure a window and the kit resolves an unmeasured viewport to desktop), so
-// on a phone the sidebar rail would sit beside content squeezed into the remaining
-// width until the bundle ran, and the reflow at hydration measured as a Cumulative
-// Layout Shift of 0.3 to 0.9. The rail (marked by the shell, docs/src/shell/navbar.tsx)
-// is hidden below the kit's desktop cut (width > lg, 1024) until then; after hydration
-// the shell renders no rail at those widths, so the rule matches nothing. The id prefix
-// outranks the class rule react-native-web writes for the same node.
-const SHELL_CSS = "@media (max-width:1024px){#root [data-shell-rail]{display:none}}";
+// Pre-hydration only. Every page is pre-rendered for a window the server cannot measure,
+// so the web shell assumes a wide one and renders the room rail beside a room's pages,
+// with the page's content inset to clear it. On a phone the rail would cover the content
+// until the bundle ran, and the reflow at hydration measured as a Cumulative Layout
+// Shift. Below the hand-off's 760 px rail cut (S9) the rail (marked by
+// docs/src/shell/rail.tsx) is hidden and the content's inset (marked by
+// docs/src/ui/page.tsx) dropped until then; after hydration the shell renders no rail at
+// those widths and no inset, so the rules change nothing. The id prefix outranks the
+// class rules react-native-web writes, and the inset's rule must also outrank the inline
+// style it writes for a computed value, hence !important.
+const SHELL_CSS =
+  "@media (max-width:759.98px){#root [data-shell-rail]{display:none}#root [data-shell-content]{padding-left:0!important}}";
 
 export default function Root({ children }: PropsWithChildren) {
   const { bodyAttributes, bodyNodes, htmlAttributes, headNodes } = useServerDocumentContext();

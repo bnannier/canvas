@@ -3,14 +3,14 @@ import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Row, Button, Icon } from "@nannier/canvas";
-import { titleFor } from "./topbar";
+import { titleFor } from "./titles";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
 import { Sidebar } from "./sidebar";
 import { PaletteRow, ThemeToggles } from "./theme-toggles";
 import { nativeHeaderMenu, type MenuIcon } from "./native-menu";
 import { useDocsTheme } from "../theme/docs-theme";
-import { PageBackdrop } from "./page-backdrop";
+import { PageBackdrop, PageGrain } from "./page-backdrop";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
 // menu, and hosts the Android menu drawer) can sit as a sibling of the content, with the
@@ -18,7 +18,8 @@ import { PageBackdrop } from "./page-backdrop";
 // backgrounds under a screen, so each screen draws its own. On web this is a
 // no-op passthrough: it renders the scroller exactly as before, with NO wrapping View (an
 // extra flex wrapper there collapses onLayout-measured tile grids), and the web shell
-// mounts the one backdrop behind every route.
+// mounts the one backdrop behind every route. The grain (decision S6) lies over the screen
+// and its header layer, as the web shell lays it over the whole window.
 export function ScreenFrame({ children }: { children: ReactNode }) {
   if (Platform.OS === "web") return <>{children}</>;
   return (
@@ -26,6 +27,7 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
       <PageBackdrop />
       <View style={{ flex: 1, overflow: "hidden" }}>{children}</View>
       <NativeHeader />
+      <PageGrain />
     </View>
   );
 }
@@ -33,8 +35,8 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
 // Per-screen config for the NATIVE iOS/Android navigation bar (a real UINavigationBar,
 // Liquid Glass on iOS 26; a Material top app bar on Android). It sets the title and the
 // section menu. Search is NOT here: it lives in the bottom tab bar (the rightmost Search
-// tab opens the full-screen search screen). Returns null on web, where the build keeps
-// its own custom Topbar + cmd-K modal.
+// tab opens the full-screen search screen). Returns null on web, where the shell keeps
+// its own pill navbar + cmd-K modal.
 //
 // MUST render as a sibling of (not inside) each screen's scroller (a no-op passthrough on
 // web), so it can drive the per-screen Stack header options without wrapping the scroller.

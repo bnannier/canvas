@@ -1,25 +1,25 @@
-import { Slot, usePathname, useRouter } from "expo-router";
+import { Slot, usePathname } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Row, Icon, TabBar, OverlayProvider, useTheme, useFormFactor, alpha, type IconProps } from "@nannier/canvas";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, OverlayProvider, useTheme, alpha } from "@nannier/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
-import { Sidebar } from "./sidebar";
-import { Topbar, titleFor } from "./topbar";
-import { MobileNavBar } from "./mobile-nav-bar";
-import { PageBackdrop } from "./page-backdrop";
-import { ScrollEdgeProvider } from "./scroll-edge";
+import { PageBackdrop, PageGrain } from "./page-backdrop";
+import { PillNav, PILL_BAND } from "./pill-nav";
+import { Rail } from "./rail";
+import { ShellFrameProvider, useRailFits } from "./frame";
 import { SearchModal } from "./search-modal";
-import { ThemeToggles } from "./theme-toggles";
-import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
-import { MOBILE_TABS, sectionFor } from "../data/nav";
+import { SHELL } from "./page-look";
+import { WebScrollbarTheme, WebScrollPadding } from "../ui/web-scrollbar";
+import { MOBILE_TABS } from "../data/nav";
+import { roomFor } from "../data/rooms";
 
-// The one adaptive navigation component. On the web it is the sidebar + topbar shell at
-// desktop widths, and a mobile iOS-style shell (bottom tab bar + nav bar + category
-// drill-down) at narrow widths; on iOS and Android it is a native tab bar (real Liquid
-// Glass on iOS 26, Material 3 on Android, native sidebar on tablets via sidebarAdaptable)
-// over the route groups. Screen bodies are platform-agnostic; this is the single,
-// user-authorized platform branch, scoped to navigation chrome.
+// The one adaptive navigation component. On the web it is the v4 hand-off's shell at every
+// width: the floating pill navbar, the room rail beside a room's pages in a window of
+// 760 px or more, and the grain over everything; on iOS and Android it is a native tab
+// bar (real Liquid Glass on iOS 26, Material 3 on Android, native sidebar on tablets via
+// sidebarAdaptable) over the route groups. Screen bodies are platform-agnostic; this is
+// the single, user-authorized platform branch, scoped to navigation chrome.
 export function Navbar() {
   return Platform.OS === "web" ? <WebNav /> : <NativeNav />;
 }
@@ -56,46 +56,19 @@ function NativeNav() {
   );
 }
 
-// The mobile-web bottom tab sections (the web counterpart of mobile.tabs): a kit Icon glyph
-// + the section root href. The active section is derived from the path via sectionFor, so
-// the bar highlights the right tab on any page within a section.
-const MOBILE_SECTIONS = [
-  { id: "home", label: "Home", icon: "home", href: "/" },
-  { id: "components", label: "Components", icon: "layoutGrid", href: "/components" },
-  { id: "utilities", label: "Utilities", icon: "palette", href: "/tokens/colors" },
-];
-
-// The bottom tab bar's rightmost tab key: an action (opens search), not a section.
-const SEARCH_TAB = "search";
-
-// The kit Icon is styled by boolean glyph props; the section glyph is data, so it is built
-// dynamically and cast to IconProps (the one place a name string drives the Icon).
-function sectionIcon(name: string, active: boolean) {
-  return { [name]: true, [active ? "primary" : "muted"]: true } as unknown as Omit<IconProps, "key">;
-}
-
-// The appearance controls live in ./theme-toggles, shared with the native bars: the narrow
-// drawer's footer here carries their labeled form, and the native header (./native-header)
-// shows the compact form in the iOS and Android bars and the palette control in the iOS
-// header menu and the Android menu drawer.
-
-// Web (every width): desktop = sidebar + glass topbar; narrow = the mobile iOS shell (a
-// bottom kit TabBar for the sections + the glass topbar whose hamburger drills into the
-// current section's sub-nav, mirroring the native iOS app). The cmd-K search modal and
-// the web scrollbar gutter are shared.
+// Web (every width): the hand-off's shell (design-language item 8). The page fills the
+// window under the chrome and scrolls itself (../ui/page.tsx); the pill floats over its
+// top (./pill-nav.tsx), the rail stands at the frame's start edge on a room's pages
+// (./rail.tsx), and the grain lies over all of it (./page-backdrop.tsx). The pill scrolls
+// sideways where it does not fit, so it is the navigation at every width: the phone tab
+// bar, the mobile top bar and their drawer are retired (S2), and the reference pages the
+// pill does not name are linked from the rail of their room and the footer. The cmd-K
+// search modal is shared, opened from the pill's search button too.
 function WebNav() {
-  const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const router = useRouter();
-  // The kit's form-factor tier draws the same desktop line the old `width >= 1024`
-  // check did (desktop is width > lg = 1024; only a viewport of exactly 1024 moves
-  // from the desktop shell to the mobile shell, matching the sidebar's drawer cut).
-  const wide = useFormFactor() === "desktop";
   const [searchOpen, setSearchOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(0);
-  const [barHeight, setBarHeight] = useState(0);
+  const place = roomFor(pathname);
+  const rail = useRailFits() && place != null;
 
   // Global cmd-K / ctrl-K to toggle search (web only; document/window are web globals).
   useEffect(() => {
@@ -110,95 +83,35 @@ function WebNav() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const section = sectionFor(pathname);
-  const sectionRoot = MOBILE_SECTIONS.find((s) => s.id === section)?.href ?? "/";
-  const atRoot = MOBILE_SECTIONS.some((s) => s.href === pathname);
-  const goBack = () => (router.canGoBack() ? router.back() : router.push(sectionRoot as never));
-
-  // Keep the route's ancestor chain stable across widths. Switching the whole shell
-  // between a View and a Row remounts Slot, discarding open overlays and form drafts.
-  // Only the navigation siblings change: desktop gets the sidebar rail and Topbar;
-  // narrow web gets MobileNavBar, bottom tabs and the responsive sidebar drawer.
+  // The route's ancestor chain is the same at every width and on every page (the rail is
+  // a sibling of the page, never its parent), so a resize or a route change never
+  // remounts Slot, an open overlay or a form draft.
   return (
     // The shell's first child is the page (./page-backdrop.tsx), the hand-off's flat page
     // fixed to the window behind everything; a native screen mounts its own inside
     // ScreenFrame. Nothing above it paints a page fill, so the e2e paint check reads the
     // page off the backdrop itself; the marker stays for the tools that find the shell.
-    <ScrollEdgeProvider>
+    <ShellFrameProvider rail={rail}>
       <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1 }} edges={["top"]}>
         <PageBackdrop />
         <WebScrollbarTheme />
-        <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
-        <Row flush fill>
-          {wide ? (
-            // The rail column is marked for the document root's one pre-hydration rule
-            // (docs/src/app/+html.tsx): a pre-rendered page always carries the desktop
-            // shell, because a server cannot measure a window, and on a phone that rail
-            // would squeeze the content into the remaining 170px until the bundle ran.
-            // The rule hides it below the desktop cut; after hydration the rail is
-            // simply not rendered there, so the rule matches nothing. (A web-only
-            // attribute, spread through a cast the way page.tsx marks its scroller.)
-            <View {...({ dataSet: { shellRail: "" } } as object)}>
-              <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
-            </View>
-          ) : null}
-          <View style={{ flex: 1, minWidth: 0 }}>
-            {/* The page content is the main landmark at every width. */}
-            <View role="main" style={{ flex: 1 }}>
-              <OverlayProvider viewport viewportInsets={{ top: headerHeight, bottom: wide ? 0 : barHeight }}>
-                <Slot />
-              </OverlayProvider>
-            </View>
-            <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
-              {wide ? (
-                <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
-              ) : (
-                <MobileNavBar
-                  title={titleFor(pathname).title}
-                  showBack={!atRoot}
-                  onBack={goBack}
-                  onMenu={() => setMenuOpen(true)}
-                />
-              )}
-            </View>
-          </View>
-        </Row>
-        {!wide ? (
-          // The bar floats over the page like the iOS 26 tab bar: an absolute overlay along
-          // the bottom, touches passing through its margins to the page beneath, which
-          // scrolls under the capsule's glass and keeps its last row clear of it through
-          // CONTENT_BOTTOM_INSET (docs/src/shell/topbar.tsx).
-          <View role="navigation" accessibilityLabel="Primary" aria-label="Primary" onLayout={(event) => setBarHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", left: 0, right: 0, bottom: 0, pointerEvents: "box-none", zIndex: 10 }}>
-            <TabBar
-              items={[
-                ...MOBILE_SECTIONS.map((s) => ({
-                  key: s.id,
-                  label: s.label,
-                  icon: (active: boolean) => <Icon {...sectionIcon(s.icon, active)} size={22} />,
-                })),
-                // Search opens the shared modal rather than navigating to a section.
-                { key: SEARCH_TAB, label: "Search", icon: () => <Icon search muted size={22} /> },
-              ]}
-              active={section}
-              onSelect={(key) => {
-                if (key === SEARCH_TAB) {
-                  setSearchOpen(true);
-                  return;
-                }
-                const s = MOBILE_SECTIONS.find((m) => m.id === key);
-                if (s) router.push(s.href as never);
-              }}
-              bottomInset={insets.bottom}
-            />
-          </View>
-        ) : null}
-        {!wide ? (
-          // The drawer's footer hosts the labeled appearance toggles (their old bottom-sheet
-          // footer home); the desktop rail has no footer.
-          <Sidebar responsive open={menuOpen} onOpenChange={setMenuOpen} onNavigate={() => setMenuOpen(false)} footer={<ThemeToggles />} />
-        ) : null}
+        {/* Content scrolled into view parks below the pill, as the hand-off's sections
+            keep their 72 px scroll margin. */}
+        <WebScrollPadding top={PILL_BAND + SHELL.navTop} bottom={0} />
+        {/* The banner and the rail lead the document, so a keyboard reaches the
+            navigation first; they float over the page, which lies under them. */}
+        <PillNav onSearch={() => setSearchOpen(true)} />
+        {rail && place ? <Rail room={place.room} active={place.active} /> : null}
+        {/* The page content is the main landmark at every width. */}
+        <View role="main" style={{ flex: 1 }}>
+          <OverlayProvider viewport viewportInsets={{ top: PILL_BAND, bottom: 0 }}>
+            <Slot />
+          </OverlayProvider>
+        </View>
         <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
+        {/* Last, so it lies over the pill and the rail too (the hand-off's z-index 100). */}
+        <PageGrain />
       </SafeAreaView>
-    </ScrollEdgeProvider>
+    </ShellFrameProvider>
   );
 }

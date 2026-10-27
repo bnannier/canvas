@@ -64,6 +64,56 @@
       "label": "Overview",
       "href": "/boilerplate",
       "icon": "rocket"
+    },
+    "section-foundations": {
+      "label": "Foundations",
+      "href": "/sections/foundations",
+      "icon": "layout-grid"
+    },
+    "section-layout": {
+      "label": "Layout",
+      "href": "/sections/layout",
+      "icon": "layout-grid"
+    },
+    "section-controls": {
+      "label": "Controls",
+      "href": "/sections/controls",
+      "icon": "layout-grid"
+    },
+    "section-inputs": {
+      "label": "Inputs",
+      "href": "/sections/inputs",
+      "icon": "layout-grid"
+    },
+    "section-navigation": {
+      "label": "Navigation",
+      "href": "/sections/navigation",
+      "icon": "layout-grid"
+    },
+    "section-data": {
+      "label": "Surfaces & data",
+      "href": "/sections/data",
+      "icon": "layout-grid"
+    },
+    "section-charts": {
+      "label": "Charts",
+      "href": "/sections/charts",
+      "icon": "layout-grid"
+    },
+    "section-overlays": {
+      "label": "Overlays & feedback",
+      "href": "/sections/overlays",
+      "icon": "layout-grid"
+    },
+    "skins": {
+      "label": "Platform skins",
+      "href": "/skins",
+      "icon": "layers"
+    },
+    "templates": {
+      "label": "Templates",
+      "href": "/templates",
+      "icon": "layout-grid"
     }
   },
   "web": {

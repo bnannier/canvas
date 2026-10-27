@@ -1,15 +1,22 @@
 import { type ReactNode, type RefObject, createContext, useContext, useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { ScrollView, View, Column, Container, OverlayProvider } from "@nannier/canvas";
-import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
+import { Footer } from "../shell/footer";
+import { RAIL_INSET, useShellFrame } from "../shell/frame";
+import { SHELL } from "../shell/page-look";
 import { H1, Lead } from "./prose";
 import { DocsHead } from "./docs-head";
 import { useAuditProbe } from "../audit/probe-context";
-import { useScrollEdgeReporter } from "../shell/scroll-edge";
 
-// The standard scrollable content frame uses the kit page measure and padding. ScreenFrame adds the native header + search overlay
-// on iOS/Android and is a transparent passthrough on web.
+// The standard scrollable content frame: the v4 hand-off's page frame (design-language
+// item 8). The content sits in a column capped at the hand-off's 1440 px and centred
+// (docs scaffolding: 1440 is off the kit's widths scale), inside the kit Container's 24 px
+// gutter, starting 96 px down on the web under the floating pill (../shell/pill-nav.tsx),
+// and clearing the rail where the web shell stands one at its start edge
+// (../shell/rail.tsx). The footer closes every page (../shell/footer.tsx). ScreenFrame
+// adds the native header + search overlay on iOS/Android and is a transparent passthrough
+// on web.
 //
 // The OverlayProvider is the page-level overlay host: overlays opened anywhere in
 // the page body (a Dropdown in a Do/Don't card, a Select in a template preview) are
@@ -37,8 +44,7 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
   const probe = useAuditProbe();
   const Sensor = probe?.Sensor;
   const scrollerRef = useRef<ScrollView>(null);
-  // Tells the web shell's top bar when content has scrolled under it (../shell/scroll-edge.tsx).
-  const onScroll = useScrollEdgeReporter();
+  const { rail } = useShellFrame();
   useEffect(() => probe?.scroller({ ref: scrollerRef }), [probe]);
   // Runtime fixtures need viewport modals and a sibling capture plane. Keep the
   // catalogue's content host by default so anchored previews scroll as before.
@@ -58,24 +64,34 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
         // no-op on native.
         {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
         style={{ flex: 1 }}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          // Web: clear the absolute Topbar overlay (CONTENT_TOP_INSET = 72). Native: iOS
-          // owns the inset via contentInsetAdjustmentBehavior, so we add 0 and let content
-          // sit under the transparent nav bar.
-          paddingTop: CONTENT_TOP_INSET + 24,
-          paddingBottom: Math.max(80, CONTENT_BOTTOM_INSET + 24),
+          // Web: the hand-off's 96 px, clearing the pill floating over the page's top.
+          // Native: iOS owns the inset via contentInsetAdjustmentBehavior, so the content
+          // only takes a gutter's breathing room under the transparent nav bar. The footer
+          // closes the page, so the foot adds nothing.
+          paddingTop: Platform.OS === "web" ? SHELL.contentTop : SHELL.gutter,
           width: "100%",
+          alignItems: "center",
         }}
       >
         {/* The longhands override the provider's app-root default (flex: 1) so the
             box wraps its content: react-native-web expands `flex: 0` to basis 0%,
             which collapses a content-sized scroll child to 0 height, so basis is
             set to auto explicitly. The column gap moves here from the content
-            container, which now has one child. */}
-        <ContentHost style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto" }}><Container page padLoose><Column loose>{children}</Column></Container></ContentHost>
+            container, which now has one child. The host is the frame: full width, capped
+            at 1440 and centred by the content container. */}
+        <ContentHost style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto", width: "100%", maxWidth: SHELL.frameMax }}>
+          <View
+            // Marked for the document root's pre-hydration rule (docs/src/app/+html.tsx),
+            // which drops the rail's inset on a phone until the bundle runs. Web-only.
+            {...(Platform.OS === "web" ? ({ dataSet: { shellContent: "" } } as object) : null)}
+            style={{ paddingLeft: rail ? RAIL_INSET : 0 }}
+          >
+            <Container padLoose><Column loose>{children}</Column></Container>
+          </View>
+          <Footer />
+        </ContentHost>
       </ScrollView>
   );
   return (

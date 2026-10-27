@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
-import { GRAIN, SCROLLBAR, SHELL, grainOpacity, grainSvg, pageColor, shellTier } from "../docs/src/shell/page-look.ts";
+import { FOOTER, GRAIN, SCROLLBAR, SHELL, grainOpacity, grainSvg, pageColor, shellTier } from "../docs/src/shell/page-look.ts";
 import { PALETTES, colorsFor } from "../src/style/tokens.ts";
 
 // The docs' page (docs/src/shell/page-look.ts) is the v4 hand-off's flat page: the scheme's
@@ -119,5 +119,12 @@ describe("the shell geometry", () => {
     expect(PAGE).toMatch(new RegExp(`<aside style="[^"]*margin-top:${SHELL.railTop}px`));
     expect(PAGE).toMatch(new RegExp(`<section id="controls"[^>]*padding:${SHELL.contentTop}px 0 0`));
     expect(PAGE).toContain(`railCols:this.state.vw<${SHELL.railMinWidth}?'minmax(0,1fr)':'${SHELL.railWidth}px minmax(0,1fr)'`);
+  });
+});
+
+describe("the footer frame", () => {
+  it("is the hand-off's", () => {
+    expect(PAGE).toContain(`<footer style="max-width:${SHELL.frameMax}px;margin:0 auto;padding:${FOOTER.top}px ${FOOTER.side}px ${FOOTER.bottom}px">`);
+    expect(PAGE).toContain(`<div style="border-top:1px solid var(--ln);padding-top:${FOOTER.ruleGap}px;`);
   });
 });
