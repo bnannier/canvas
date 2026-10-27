@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="./canvas-assets.js"></script>
+<style>
+:root{--sb:rgba(255,255,255,.18);--sb-h:rgba(255,255,255,.32)}
+:root:has([data-ion][data-scheme="light"]:not([data-ion] *)){--sb:rgba(17,17,24,.2);--sb-h:rgba(17,17,24,.36);background:#f2f2f7}
+*{scrollbar-width:thin;scrollbar-color:var(--sb) transparent}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}::-webkit-scrollbar-thumb{background:var(--sb);border-radius:10px;border:2px solid transparent;background-clip:padding-box}::-webkit-scrollbar-thumb:hover{background-color:var(--sb-h)}
+html,body{margin:0;padding:0;background:#0a0a0f}
+*{box-sizing:border-box}
+body{font-family:"Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+nav>div{scrollbar-width:none}nav>div::-webkit-scrollbar{display:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit;background:none;border:0;outline:0;margin:0}
+input::placeholder,textarea::placeholder{color:var(--tx3)}
+img{display:block}
+cv-icon{display:inline-block;width:1em;height:1em;flex:none;line-height:0}cv-world,cv-qr{display:block}cv-icon svg,cv-world svg,cv-qr svg{display:block;width:100%;height:100%}
+a{color:var(--ion-tx);text-decoration:none}a:hover{text-decoration:underline}
+[data-ion]{--sb:rgba(255,255,255,.18);--sb-h:rgba(255,255,255,.32);
+--hue:285;
+--bg:#0a0a0f;--bg2:#0e0e15;--sf:#12121a;--sf2:#171720;--sf3:#1e1e29;--sf4:#282836;
+--ln:rgba(255,255,255,.08);--ln2:rgba(255,255,255,.16);--hl:rgba(255,255,255,.1);
+--tx:#f4f4f8;--tx2:#a4a4b6;--tx3:#7f7f93;
+--ion:oklch(.74 .17 var(--hue));--ion-fg:#0a0a0f;--ion-tx:oklch(.8 .14 var(--hue));
+--ion-soft:oklch(.74 .17 var(--hue) / .16);--ion-glow:oklch(.74 .17 var(--hue) / .5);--ion-ring:oklch(.74 .17 var(--hue) / .35);
+--cyan:oklch(.82 .13 205);--mint:oklch(.85 .15 165);
+--c1:var(--ion);--c2:var(--cyan);--c3:var(--mint);--c4:oklch(.82 .14 75);--c5:oklch(.72 .17 20);--c6:oklch(.72 .14 255);--c7:oklch(.74 .16 330);--c8:oklch(.78 .1 125);
+--ok:#3ddc97;--ok-fg:#04291a;--warn:#f6b84c;--warn-fg:#2a1800;--bad:#ff6b7a;--bad-fg:#2b0009;
+--ok-soft:rgba(61,220,151,.14);--warn-soft:rgba(246,184,76,.14);--bad-soft:rgba(255,107,122,.14);
+--gl:rgba(18,18,26,.62);--bf:blur(20px) saturate(1.6);--scrim:rgba(5,5,10,.55);
+--sh-sm:inset 0 1px 0 var(--hl),0 1px 2px rgba(0,0,0,.5);
+--sh-md:inset 0 1px 0 var(--hl),0 12px 32px -10px rgba(0,0,0,.7);
+--sh-lg:inset 0 1px 0 var(--hl),0 30px 80px -16px rgba(0,0,0,.8);
+--aur:.55;--grain-o:.07;
+--fd:"Bricolage Grotesque",system-ui,sans-serif;--ft:"Instrument Sans",system-ui,sans-serif;--fm:"JetBrains Mono",ui-monospace,Menlo,monospace;
+--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-ion][data-scheme="light"]{--sb:rgba(17,17,24,.2);--sb-h:rgba(17,17,24,.36);
+--bg:#f2f2f7;--bg2:#fafafd;--sf:#ffffff;--sf2:#ffffff;--sf3:#f1f1f6;--sf4:#e4e4ee;
+--ln:rgba(17,17,24,.08);--ln2:rgba(17,17,24,.16);--hl:rgba(255,255,255,.8);
+--tx:#111118;--tx2:#5a5a70;--tx3:#6c6c82;
+--ion:oklch(.5 .22 var(--hue));--ion-fg:#ffffff;--ion-tx:oklch(.47 .2 var(--hue));
+--ion-soft:oklch(.5 .22 var(--hue) / .1);--ion-glow:oklch(.5 .22 var(--hue) / .4);--ion-ring:oklch(.5 .22 var(--hue) / .28);
+--cyan:oklch(.62 .13 205);--mint:oklch(.66 .15 165);
+--c4:oklch(.64 .15 70);--c5:oklch(.57 .19 20);--c6:oklch(.54 .17 255);--c7:oklch(.55 .2 330);--c8:oklch(.58 .12 125);
+--ok:#0b7a53;--ok-fg:#fff;--warn:#a55d00;--warn-fg:#fff;--bad:#d62a4b;--bad-fg:#fff;
+--ok-soft:rgba(11,122,83,.1);--warn-soft:rgba(165,93,0,.1);--bad-soft:rgba(214,42,75,.1);
+--gl:rgba(255,255,255,.62);--scrim:rgba(17,17,24,.3);
+--sh-sm:0 1px 2px rgba(17,17,24,.05),0 0 0 1px rgba(17,17,24,.03);
+--sh-md:0 12px 32px -10px rgba(17,17,24,.16),0 0 0 1px rgba(17,17,24,.03);
+--sh-lg:0 30px 80px -16px rgba(17,17,24,.25),0 0 0 1px rgba(17,17,24,.03);
+--aur:.4;--grain-o:.05;
+}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(8%,12%) scale(1.15)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes springy{0%,100%{transform:translateX(0)}50%{transform:translateX(140px)}}
+@keyframes blink{50%{opacity:0}}
+@keyframes indet{from{transform:translateX(-110%)}to{transform:translateX(260%)}}
+@keyframes dots{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--ion-ring)}70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
+</style>
+</helmet>
+<div data-ion id="top" data-scheme="{{ scheme }}" style="--hue:{{ hue }};--bf:{{ bf }};--gl:{{ gl }};min-height:100vh;background:var(--bg);color:var(--tx);font-family:var(--ft);transition:background .4s,color .4s;overflow-x:clip">
+<div style="position:fixed;inset:0;pointer-events:none;z-index:100;opacity:var(--grain-o);background-image:var(--grain);background-size:180px 180px"></div>
+
+<nav style="position:sticky;top:0;z-index:40;height:0;display:flex;justify-content:center;align-items:flex-start;padding:0 16px">
+<div style="margin-top:14px;display:flex;align-items:center;gap:2px;padding:5px;border-radius:999px;background:var(--gl);backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-md);max-width:100%;overflow-x:auto">
+<a href="Canvas v4.0.0 Library.dc.html" style="display:inline-flex;align-items:center;gap:8px;padding:0 12px;height:32px;font:600 14px/1 var(--fd);letter-spacing:-.01em;color:var(--tx);white-space:nowrap" style-hover="text-decoration:none"><img src="docs/public/favicon.svg" alt="" style="width:20px;height:20px;flex:none">Canvas</a>
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<a href="Canvas v4.0.0 Foundations.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Foundations</a>
+<a href="Canvas v4.0.0 Layout.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Layout</a>
+<a href="Canvas v4.0.0 Controls.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Controls</a>
+<a href="Canvas v4.0.0 Inputs.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Inputs</a>
+<a href="Canvas v4.0.0 Navigation.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Navigation</a>
+<a href="Canvas v4.0.0 Data.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;background:var(--sf3);color:var(--tx)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Data</a>
+<a href="Canvas v4.0.0 Charts.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Charts</a>
+<a href="Canvas v4.0.0 Overlays.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Overlays</a>
+<a href="Canvas v4.0.0 Skins.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Skins</a>
+<a href="Canvas v4.0.0 Templates.dc.html" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">Templates</a>
+
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<div style="display:flex;align-items:center;gap:6px;padding:0 6px">
+<sc-for list="{{ hues }}" as="h" hint-placeholder-count="5"><button onClick="{{ h.on }}" title="{{ h.n }}" style="width:16px;height:16px;border-radius:50%;background:oklch(.72 .17 {{ h.h }});box-shadow:{{ h.ring }};transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-hover="transform:scale(1.25)"></button></sc-for>
+</div>
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<div style="position:relative;display:grid;grid-template-columns:1fr 1fr;height:32px;padding:3px;border-radius:999px;background:var(--sf3);border:1px solid var(--ln)">
+<div style="position:absolute;top:3px;left:3px;width:calc(50% - 3px);height:calc(100% - 8px);border-radius:999px;background:var(--sf);box-shadow:var(--sh-sm);transform:translateX({{ schemeX }});transition:transform .45s cubic-bezier(.34,1.56,.64,1)"></div>
+<button onClick="{{ setDark }}" style="position:relative;padding:0 12px;font:500 12px/1 var(--ft);color:{{ darkC }};transition:color .2s">Dark</button>
+<button onClick="{{ setLight }}" style="position:relative;padding:0 12px;font:500 12px/1 var(--ft);color:{{ lightC }};transition:color .2s">Light</button>
+</div>
+<button onClick="{{ toggleGlass }}" aria-pressed="{{ glassP }}" title="Toggle glass surfaces" style="margin-left:4px;height:32px;padding:0 12px 0 8px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;flex:none;font:500 12px/1 var(--ft);white-space:nowrap;color:{{ glassC }};background:var(--sf3);border:1px solid var(--ln);transition:color .2s" style-hover="color:var(--tx)"><span style="position:relative;width:26px;height:16px;flex:none;border-radius:999px;background:{{ glassTr }};border:1px solid var(--ln2);transition:background .25s"><span style="position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.35);transform:{{ glassX }};transition:transform .35s cubic-bezier(.34,1.56,.64,1)"></span></span>Glass</button>
+</div>
+</nav>
+
+<div style="max-width:1440px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:{{ railCols }};gap:28px;align-items:start">
+<aside style="display:{{ railD }};position:sticky;top:76px;margin-top:96px;max-height:calc(100vh - 92px);overflow-y:auto;padding:4px 6px 32px 0;scrollbar-width:thin"><dc-import name="CanvasRail" room="Surfaces &amp; data" hint-size="226px,900px"></dc-import></aside>
+<div style="min-width:0">
+
+<section id="data" data-screen-label="06 Surfaces and data" style="padding:96px 0 0;scroll-margin-top:72px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:28px 40px;align-items:center;margin-bottom:40px">
+<div style="display:flex;flex-direction:column;gap:12px;max-width:620px">
+<h2 style="margin:0;font:500 44px/1.05 var(--fd);letter-spacing:-.03em;text-wrap:balance">Surfaces & data</h2>
+<p style="margin:0;font:400 22px/1.3 var(--fd);letter-spacing:-.015em;color:var(--tx);text-wrap:balance">Cards, stats, charts and tables on one lit surface.</p>
+<p style="margin:0;font:400 17px/1.55 var(--ft);color:var(--tx2);text-wrap:pretty">Content panes take the denser glass tint so text keeps its contrast. Numbers are tabular, marks are the ion, and the chart series never renumber.</p>
+</div>
+<x-import component-from-global-scope="cv-hero" from="./canvas-hero.js" kind="data" hint-size="100%,300px"></x-import>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px">
+
+<div id="c-card" style="scroll-margin-top:80px;padding:24px;border-radius:20px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:12px;transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .3s" style-hover="transform:translateY(-3px);box-shadow:var(--sh-md)">
+<div style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Card · default</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#card" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Card<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em">Welcome to Canvas</div>
+<p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">Rests at elevation sm. Lifts to md on hover, on the spring.</p>
+<div style="margin-top:auto;display:flex;gap:8px"><button style="height:36px;padding:0 14px;border-radius:9px;font:500 13px/1 var(--ft);background:var(--ion);color:var(--ion-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)">Save</button><button style="height:36px;padding:0 14px;border-radius:9px;font:500 13px/1 var(--ft);color:var(--tx2)" style-hover="background:var(--sf3);color:var(--tx)">Later</button></div>
+</div>
+<div style="padding:24px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,0)),var(--sf2);border:1px solid var(--ln2);box-shadow:var(--sh-md);display:flex;flex-direction:column;gap:12px">
+<div style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Card · raised</div>
+<div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em">Canvas v4.0.0</div>
+<div style="font:500 40px/1 var(--fd);letter-spacing:-.03em;font-variant-numeric:tabular-nums">107<span style="font:400 16px var(--ft);color:var(--tx3)"> components</span></div>
+<p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">MIT licensed. Web, iOS and Android from one tree.</p>
+</div>
+<div style="position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--ln);background:var(--bg2);min-height:220px">
+<div style="position:absolute;left:-20%;top:-30%;width:80%;height:120%;border-radius:50%;background:radial-gradient(circle,var(--ion),transparent 62%);filter:blur(40px);opacity:.8"></div>
+<div style="position:absolute;right:-20%;bottom:-40%;width:80%;height:120%;border-radius:50%;background:radial-gradient(circle,var(--mint),transparent 62%);filter:blur(40px);opacity:.7"></div>
+<div style="position:absolute;inset:20px;padding:20px;border-radius:16px;background:var(--gl);backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-md);display:flex;flex-direction:column;gap:10px">
+<div style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Card · glass</div>
+<div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em">glass-tint-content</div>
+<p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">Denser than the shell tint, so this paragraph stays at 4.5:1 over anything.</p>
+</div>
+</div>
+<div style="padding:24px;border-radius:20px;background:var(--sf);border:1px solid var(--ion);box-shadow:0 0 0 4px var(--ion-ring),var(--sh-sm);display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Card · selected</div><span style="width:20px;height:20px;border-radius:50%;background:var(--ion);display:grid;place-items:center"><span style="width:5px;height:9px;border-style:solid;border-color:var(--ion-fg);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)"></span></span></div>
+<div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em">Team · 24 members</div>
+<p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">Selection is a 1px ion border and a 4px ring. Never a fill.</p>
+<div style="margin-top:auto;height:96px;border-radius:12px;border:1px dashed var(--ln2);background:repeating-linear-gradient(135deg,var(--sf3) 0 8px,transparent 8px 16px);display:grid;place-items:center;font:400 11px var(--fm);color:var(--tx3)">media slot · 16:9</div>
+</div>
+
+<div id="c-card-anatomy" style="scroll-margin-top:80px;grid-column:1/-1;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:20px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Card · anatomy · modes</span><span>sub-components and special modes</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:24px;align-items:start">
+<div style="position:relative;border-radius:20px;background:var(--sf2);border:1px solid var(--ln2);box-shadow:var(--sh-md);overflow:hidden">
+<div style="position:relative;height:120px"><img src="docs/public/noor-park.jpg" alt="" style="width:100%;height:100%;object-fit:cover"><span style="position:absolute;left:10px;top:10px;z-index:2;height:18px;padding:0 6px;border-radius:5px;font:600 9.5px/18px var(--fm);background:var(--ion);color:var(--ion-fg);white-space:nowrap;box-shadow:0 4px 10px -4px var(--ion-glow)">CardMedia</span></div>
+<div style="position:relative;padding:20px 20px 14px;outline:1px dashed var(--ion-ring);outline-offset:-6px"><span style="position:absolute;right:10px;top:8px;z-index:2;height:18px;padding:0 6px;border-radius:5px;font:600 9.5px/18px var(--fm);background:var(--ion);color:var(--ion-fg);white-space:nowrap;box-shadow:0 4px 10px -4px var(--ion-glow)">CardHeader</span><div style="font:500 19px/1.2 var(--fd);letter-spacing:-.02em">Mobile release 6.3 <span style="font:600 9px var(--fm);color:var(--ion-tx);vertical-align:middle">CardTitle</span></div><div style="margin-top:4px;font:400 13px/1.5 var(--ft);color:var(--tx2)">Tab bar spacing and the Android blur rebuild. <span style="font:600 9px var(--fm);color:var(--ion-tx)">CardDescription</span></div></div>
+<div style="position:relative;height:1px;margin:0 20px;background:var(--ln2)"><span style="position:absolute;right:0;top:-9px;z-index:2;height:18px;padding:0 6px;border-radius:5px;font:600 9.5px/18px var(--fm);background:var(--ion);color:var(--ion-fg);white-space:nowrap;box-shadow:0 4px 10px -4px var(--ion-glow)">CardSeparator</span></div>
+<div style="position:relative;padding:16px 20px;display:flex;flex-direction:column;gap:10px;outline:1px dashed var(--ion-ring);outline-offset:-6px"><span style="position:absolute;right:10px;top:8px;z-index:2;height:18px;padding:0 6px;border-radius:5px;font:600 9.5px/18px var(--fm);background:var(--ion);color:var(--ion-fg);white-space:nowrap;box-shadow:0 4px 10px -4px var(--ion-glow)">CardContent</span><div style="display:flex;justify-content:space-between;font:400 13px var(--ft);color:var(--tx2)"><span>QA checklist</span><span style="font:500 12px var(--fm);color:var(--tx)">14 / 18</span></div><div style="height:6px;border-radius:3px;background:var(--sf4)"><div style="width:78%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--ion),var(--cyan))"></div></div></div>
+<div style="position:relative;padding:12px 20px 16px;display:flex;justify-content:flex-end;gap:8px;outline:1px dashed var(--ion-ring);outline-offset:-6px"><span style="position:absolute;left:10px;top:18px;z-index:2;height:18px;padding:0 6px;border-radius:5px;font:600 9.5px/18px var(--fm);background:var(--ion);color:var(--ion-fg);white-space:nowrap;box-shadow:0 4px 10px -4px var(--ion-glow)">CardFooter</span><button style="height:34px;padding:0 12px;border-radius:9px;font:500 13px/1 var(--ft);color:var(--tx2)">Later</button><button style="height:34px;padding:0 14px;border-radius:9px;font:500 13px/1 var(--ft);background:var(--ion);color:var(--ion-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)">Review</button></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px">
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0"><div style="position:relative;height:110px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,oklch(.32 .12 var(--hue)),oklch(.48 .17 calc(var(--hue) + 25)),oklch(.62 .16 calc(var(--hue) + 55)));padding:14px;display:flex;flex-direction:column;justify-content:flex-end"><span style="position:absolute;right:-26px;bottom:-26px;width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.14)"></span><span style="position:relative;font:500 15px/1.2 var(--fd);color:#fff">Canvas v4.0.0 is live</span><span style="position:relative;font:400 11px var(--ft);color:rgba(255,255,255,.75)">107 components</span></div><div style="display:flex;justify-content:space-between;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="color:var(--tx2)">featured</span><span>brand gradient</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0"><div style="position:relative;height:110px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,var(--ion),var(--cyan) 60%,var(--mint));padding:14px;display:flex;flex-direction:column;justify-content:space-between"><span style="position:absolute;right:-34px;bottom:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.16)"></span><span style="position:relative;font:500 15px/1.2 var(--fd);color:var(--ion-fg)">Glass ships in v4.0.0</span><span style="position:relative;align-self:flex-start;height:24px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.85);color:#111118;font:600 11px/24px var(--ft)">Read the guide</span></div><div style="display:flex;justify-content:space-between;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="color:var(--tx2)">promo</span><span>CTA on a wash</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0"><div style="position:relative;height:110px;border-radius:14px;overflow:hidden"><img src="docs/public/grace-hopper.jpg" alt="" style="width:100%;height:100%;object-fit:cover"><span style="position:absolute;left:8px;right:8px;bottom:8px;padding:6px 10px;border-radius:10px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);font:500 12px var(--ft)">Grace Hopper</span></div><div style="display:flex;justify-content:space-between;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="color:var(--tx2)">artwork</span><span>image fills the card</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0"><div style="height:110px;border-radius:14px;border:1px solid var(--ln2);background:var(--bg2);padding:12px;display:flex;flex-direction:column;justify-content:space-between"><div style="display:flex;align-items:center;gap:6px;font:500 11px var(--fm);color:var(--ion-tx)"><cv-icon n="bookOpenText" style="font-size:13px"></cv-icon>DESIGN.md · Shapes</div><div style="font:500 14px/1.3 var(--ft)">A nested surface is never rounder than its container.</div><div style="display:flex;align-items:center;gap:5px;font:400 11px var(--ft);color:var(--tx3)">bnannier/canvas<cv-icon n="externalLink" style="font-size:11px"></cv-icon></div></div><div style="display:flex;justify-content:space-between;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="color:var(--tx2)">reference</span><span>referenceKey · source</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0"><div style="height:110px;border-radius:14px;border:1px solid var(--ln);background:var(--sf2);padding:10px;display:flex;flex-direction:column;gap:6px"><div style="flex:1;padding:6px 8px;border-radius:10px;background:var(--ion-soft);font:500 11px/1.3 var(--ft);color:var(--ion-tx)">Note · glass is a theming mode</div><div style="flex:1;padding:6px 8px;border-radius:10px;background:var(--sf3);font:500 11px/1.3 var(--fm);color:var(--tx2)">v6.3.0 · Oct 26</div><div style="flex:1;padding:6px 8px;border-radius:10px;border:1px dashed var(--ln2);display:flex;align-items:center;gap:6px;font:500 11px var(--ft);color:var(--tx3)"><cv-icon n="sparkles" style="font-size:12px"></cv-icon>Experimental</div></div><div style="display:flex;justify-content:space-between;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="color:var(--tx2)">inset panels</span><span>note · version · gate</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0"><div style="height:110px;border-radius:14px;border:1px solid var(--ln);background:var(--sf2);padding:12px;display:flex;flex-direction:column;justify-content:space-between"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 13px var(--ft)">Glass</span><span style="position:relative;width:36px;height:22px;border-radius:999px;background:var(--ion)"><span style="position:absolute;top:2px;left:16px;width:18px;height:18px;border-radius:50%;background:#fff"></span></span></div><div style="display:flex;gap:4px"><span style="flex:1;height:26px;border-radius:8px;background:var(--sf);box-shadow:var(--sh-sm);display:grid;place-items:center;font:500 11px var(--ft)">Dark</span><span style="flex:1;height:26px;border-radius:8px;display:grid;place-items:center;font:500 11px var(--ft);color:var(--tx3)">Light</span></div></div><div style="display:flex;justify-content:space-between;gap:8px;font:400 11px var(--fm);color:var(--tx3)"><span style="color:var(--tx2)">controls</span><span>a settings surface</span></div></div>
+</div></div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3)">&lt;Card&gt; with &lt;CardMedia&gt; · &lt;CardHeader&gt; · &lt;CardTitle&gt; · &lt;CardDescription&gt; · &lt;CardSeparator&gt; · &lt;CardContent&gt; · &lt;CardFooter&gt; · modes: featured · promo · artwork · illustration · controls · referenceKey + referenceSource · inset note / version / gate</div>
+</div>
+<div id="c-stats" style="scroll-margin-top:80px;grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:20px">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#stats" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Stats<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="padding:22px;border-radius:20px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Revenue</span><span style="height:22px;padding:0 8px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font:500 12px/22px var(--ft)">+18.2%</span></div>
+<div style="font:500 36px/1 var(--fd);letter-spacing:-.03em;font-variant-numeric:tabular-nums">$128.4k</div>
+<div style="display:flex;gap:3px;align-items:end;height:36px;margin-top:6px"><div style="flex:1;height:40%;border-radius:2px;background:var(--ion);opacity:.4"></div><div style="flex:1;height:55%;border-radius:2px;background:var(--ion);opacity:.5"></div><div style="flex:1;height:45%;border-radius:2px;background:var(--ion);opacity:.6"></div><div style="flex:1;height:70%;border-radius:2px;background:var(--ion);opacity:.7"></div><div style="flex:1;height:62%;border-radius:2px;background:var(--ion);opacity:.8"></div><div style="flex:1;height:80%;border-radius:2px;background:var(--ion);opacity:.9"></div><div style="flex:1;height:74%;border-radius:2px;background:var(--ion)"></div><div style="flex:1;height:92%;border-radius:2px;background:linear-gradient(180deg,var(--cyan),var(--ion))"></div></div>
+</div>
+<div style="padding:22px;border-radius:20px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Active members</span><span style="height:22px;padding:0 8px;border-radius:999px;background:var(--ion-soft);color:var(--ion-tx);font:500 12px/22px var(--ft)">+6</span></div>
+<div style="font:500 36px/1 var(--fd);letter-spacing:-.03em;font-variant-numeric:tabular-nums">1,204</div>
+<div style="height:6px;border-radius:3px;background:var(--sf4);margin-top:auto;overflow:hidden"><div style="width:72%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--ion),var(--cyan))"></div></div>
+<div style="font:400 12px var(--ft);color:var(--tx3)">72% of 1,680 invited</div>
+</div>
+<div style="padding:22px;border-radius:20px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">p95 latency</span><span style="height:22px;padding:0 8px;border-radius:999px;background:var(--bad-soft);color:var(--bad);font:500 12px/22px var(--ft)">+41ms</span></div>
+<div style="font:500 36px/1 var(--fd);letter-spacing:-.03em;font-variant-numeric:tabular-nums">212<span style="font:400 16px var(--ft);color:var(--tx3)"> ms</span></div>
+<div style="display:flex;gap:3px;align-items:end;height:36px;margin-top:6px"><div style="flex:1;height:30%;border-radius:2px;background:var(--tx3);opacity:.5"></div><div style="flex:1;height:32%;border-radius:2px;background:var(--tx3);opacity:.5"></div><div style="flex:1;height:28%;border-radius:2px;background:var(--tx3);opacity:.5"></div><div style="flex:1;height:36%;border-radius:2px;background:var(--tx3);opacity:.5"></div><div style="flex:1;height:34%;border-radius:2px;background:var(--tx3);opacity:.5"></div><div style="flex:1;height:60%;border-radius:2px;background:var(--warn)"></div><div style="flex:1;height:78%;border-radius:2px;background:var(--bad)"></div><div style="flex:1;height:92%;border-radius:2px;background:var(--bad)"></div></div>
+</div>
+<div style="padding:22px;border-radius:20px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;align-items:center;gap:18px">
+<div style="position:relative;width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--ion) 0 64%,var(--cyan) 64% 82%,var(--mint) 82% 91%,var(--sf4) 91% 100%);flex:none"><div style="position:absolute;inset:10px;border-radius:50%;background:var(--sf);display:grid;place-items:center;font:500 18px var(--fd);letter-spacing:-.02em">91%</div></div>
+<div style="display:flex;flex-direction:column;gap:6px;font:400 12px var(--ft);color:var(--tx2)"><span style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Platforms</span><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:var(--ion)"></span>iOS 64%</span><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:var(--cyan)"></span>Android 18%</span><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:var(--mint)"></span>Web 9%</span></div>
+</div>
+</div>
+
+<div id="c-data-table" style="scroll-margin-top:80px;grid-column:1/-1;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);overflow:hidden;min-width:0">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#data-table" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">DataTable<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="padding:20px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--ln)">
+<div><div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em">Members</div><div style="font:400 13px/1.4 var(--ft);color:var(--tx3)">{{ selCount }} selected · 6 rows · click a row</div></div>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+<div style="height:36px;width:200px;padding:0 10px;border-radius:9px;background:var(--bg2);border:1px solid var(--ln2);display:flex;align-items:center;gap:8px;font:400 13px var(--ft);color:var(--tx3)"><span style="position:relative;width:13px;height:13px;flex:none"><span style="position:absolute;left:0;top:0;width:9px;height:9px;border:1.5px solid var(--tx3);border-radius:50%"></span><span style="position:absolute;right:0;bottom:0;width:5px;height:1.5px;background:var(--tx3);transform:rotate(45deg) translate(0,-1px)"></span></span>Filter members</div>
+<button style="height:36px;padding:0 14px;border-radius:9px;font:500 13px/1 var(--ft);background:var(--sf3);color:var(--tx);border:1px solid var(--ln2);box-shadow:inset 0 1px 0 var(--hl)" style-hover="background:var(--sf4)">Export</button>
+<button style="height:36px;padding:0 14px;border-radius:9px;font:500 13px/1 var(--ft);background:var(--ion);color:var(--ion-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px -8px var(--ion-glow)">Invite</button>
+</div>
+</div>
+<div style="overflow-x:auto"><div style="min-width:860px">
+<div style="display:grid;grid-template-columns:48px 1.7fr 1fr .9fr 1fr 1fr 40px;align-items:center;height:44px;padding:0 20px 0 16px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--ln);background:var(--bg2)">
+<div onClick="{{ toggleAll }}" style="cursor:pointer"><div style="width:18px;height:18px;border-radius:5px;background:{{ allBg }};border:1.5px solid {{ allBd }};display:grid;place-items:center;transition:background .2s,border-color .2s"><span style="width:4px;height:8px;border-style:solid;border-color:var(--ion-fg);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px);opacity:{{ allOp }}"></span></div></div>
+<div>Member</div><div>Team</div><div>Status</div><div style="text-align:right;display:flex;justify-content:flex-end;align-items:center;gap:4px">Balance <span style="font-size:9px">▾</span></div><div style="padding-left:16px">Activity · 8w</div><div></div>
+</div>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+<div onClick="{{ r.toggle }}" style="display:grid;grid-template-columns:48px 1.7fr 1fr .9fr 1fr 1fr 40px;align-items:center;height:60px;padding:0 20px 0 16px;border-bottom:1px solid var(--ln);background:{{ r.bg }};cursor:pointer;transition:background .15s" style-hover="background:var(--sf3)">
+<div><div style="width:18px;height:18px;border-radius:5px;background:{{ r.cbg }};border:1.5px solid {{ r.cbd }};display:grid;place-items:center;transition:background .2s,border-color .2s"><span style="width:4px;height:8px;border-style:solid;border-color:var(--ion-fg);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px);opacity:{{ r.cop }}"></span></div></div>
+<div style="display:flex;align-items:center;gap:12px;min-width:0"><img src="{{ r.img }}" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none"><div style="min-width:0"><div style="font:500 14px/1.3 var(--ft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.n }}</div><div style="font:400 12px/1.3 var(--ft);color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.e }}</div></div></div>
+<div style="font:400 14px var(--ft);color:var(--tx2)">{{ r.team }}</div>
+<div><span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font:500 12px/1 var(--ft);background:{{ r.stBg }};color:{{ r.stFg }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>{{ r.st }}</span></div>
+<div style="text-align:right;font:500 14px var(--fm);font-variant-numeric:tabular-nums">${{ r.amt }}</div>
+<div style="display:flex;gap:3px;align-items:end;height:24px;padding-left:16px"><sc-for list="{{ r.sp }}" as="v" hint-placeholder-count="8"><div style="flex:1;height:{{ v }}%;border-radius:2px;background:var(--ion);opacity:.7"></div></sc-for></div>
+<div style="text-align:right;color:var(--tx3);font-size:18px;line-height:1">›</div>
+</div>
+</sc-for>
+</div></div>
+<div style="padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font:400 13px var(--ft);color:var(--tx3)"><span>Showing 1–6 of 24</span><div style="display:flex;gap:4px"><button style="height:30px;padding:0 10px;border-radius:8px;font:500 13px var(--ft);color:var(--tx3);border:1px solid var(--ln)" style-hover="background:var(--sf3);color:var(--tx)">‹ Prev</button><button style="height:30px;padding:0 10px;border-radius:8px;font:500 13px var(--ft);color:var(--tx);border:1px solid var(--ln)" style-hover="background:var(--sf3)">Next ›</button></div></div>
+</div>
+
+
+<div id="g-lists" style="grid-column:1/-1;scroll-margin-top:80px;display:flex;align-items:baseline;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;padding:56px 0 14px;border-bottom:1px solid var(--ln)"><div style="font:500 30px/1.1 var(--fd);letter-spacing:-.025em">Lists & disclosure</div><div style="font:400 12px/1.5 var(--fm);color:var(--tx3)">StackedList · GridList · MediaObject · Feed · DescriptionList · ActionPanel · Accordion · Collapsible</div></div>
+<div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px">
+<div id="c-stacked-list" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>StackedList</span><span>avatar · two lines · meta</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#stacked-lists" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">StackedList<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="margin:0 -8px;display:flex;flex-direction:column;gap:2px">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;cursor:pointer;transition:background .15s" style-hover="background:var(--sf3)"><img src="docs/public/ada-lovelace.jpg" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none"><div style="flex:1;min-width:0"><div style="font:500 14px/1.3 var(--ft)">Ada Lovelace</div><div style="font:400 12px/1.3 var(--ft);color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ada@ionize.io</div></div><div style="text-align:right;flex:none"><div style="font:400 13px/1.3 var(--ft);color:var(--tx2)">Owner</div><div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;font:400 11px/1.4 var(--fm);color:var(--tx3)"><span style="width:6px;height:6px;border-radius:50%;background:var(--ok)"></span>online</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;cursor:pointer;transition:background .15s" style-hover="background:var(--sf3)"><img src="docs/public/grace-hopper.jpg" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none"><div style="flex:1;min-width:0"><div style="font:500 14px/1.3 var(--ft)">Grace Hopper</div><div style="font:400 12px/1.3 var(--ft);color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">grace@ionize.io</div></div><div style="text-align:right;flex:none"><div style="font:400 13px/1.3 var(--ft);color:var(--tx2)">Admin</div><div style="font:400 11px/1.4 var(--fm);color:var(--tx3)">2h ago</div></div></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;cursor:pointer;transition:background .15s" style-hover="background:var(--sf3)"><img src="docs/public/kira-tanaka.jpg" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none"><div style="flex:1;min-width:0"><div style="font:500 14px/1.3 var(--ft)">Kira Tanaka</div><div style="font:400 12px/1.3 var(--ft);color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">kira@ionize.io</div></div><span style="flex:none;height:22px;padding:0 8px;border-radius:999px;background:var(--ion-soft);color:var(--ion-tx);font:500 11px/22px var(--ft)">Invited</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;cursor:pointer;transition:background .15s" style-hover="background:var(--sf3)"><img src="docs/public/liang-bao.jpg" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none"><div style="flex:1;min-width:0"><div style="font:500 14px/1.3 var(--ft)">Liang Bao</div><div style="font:400 12px/1.3 var(--ft);color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">liang@ionize.io</div></div><div style="text-align:right;flex:none"><div style="font:400 13px/1.3 var(--ft);color:var(--tx2)">Viewer</div><div style="font:400 11px/1.4 var(--fm);color:var(--tx3)">yesterday</div></div></div>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;StackedList&gt; · rows take onPress and the whole row is the target · inset hairlines on iOS</div>
+</div>
+
+<div id="c-grid-list" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>GridList</span><span>directory · collections</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#grid-lists" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">GridList<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+<div style="padding:16px 10px 12px;border-radius:16px;background:var(--bg2);border:1px solid var(--ln);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,border-color .3s" style-hover="transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--ln2)"><img src="docs/public/noor-park.jpg" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover"><div><div style="font:500 14px/1.3 var(--ft)">Noor Park</div><div style="font:400 12px/1.3 var(--ft);color:var(--tx3)">Mobile lead</div></div><div style="display:flex;gap:6px"><button style="width:30px;height:30px;border-radius:9px;border:1px solid var(--ln2);display:grid;place-items:center;color:var(--tx2);font-size:14px" style-hover="background:var(--sf3);color:var(--tx)"><cv-icon n="mail"></cv-icon></button><button style="width:30px;height:30px;border-radius:9px;border:1px solid var(--ln2);display:grid;place-items:center;color:var(--tx2);font-size:14px" style-hover="background:var(--sf3);color:var(--tx)"><cv-icon n="messageCircle"></cv-icon></button></div></div>
+<div style="padding:16px 10px 12px;border-radius:16px;background:var(--bg2);border:1px solid var(--ln);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,border-color .3s" style-hover="transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--ln2)"><img src="docs/public/marcus-allen.jpg" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover"><div><div style="font:500 14px/1.3 var(--ft)">Marcus Allen</div><div style="font:400 12px/1.3 var(--ft);color:var(--tx3)">Growth</div></div><div style="display:flex;gap:6px"><button style="width:30px;height:30px;border-radius:9px;border:1px solid var(--ln2);display:grid;place-items:center;color:var(--tx2);font-size:14px" style-hover="background:var(--sf3);color:var(--tx)"><cv-icon n="mail"></cv-icon></button><button style="width:30px;height:30px;border-radius:9px;border:1px solid var(--ln2);display:grid;place-items:center;color:var(--tx2);font-size:14px" style-hover="background:var(--sf3);color:var(--tx)"><cv-icon n="messageCircle"></cv-icon></button></div></div>
+<div style="padding:14px;border-radius:16px;background:var(--bg2);border:1px solid var(--ln);display:flex;flex-direction:column;gap:12px;transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .3s" style-hover="transform:translateY(-3px);box-shadow:var(--sh-md)"><span style="width:36px;height:36px;border-radius:11px;background:var(--ion-soft);color:var(--ion-tx);display:grid;place-items:center;font-size:17px"><cv-icon n="palette"></cv-icon></span><div><div style="font:500 14px/1.3 var(--ft)">Tokens</div><div style="font:400 12px/1.3 var(--fm);color:var(--tx3)">48 roles</div></div></div>
+<div style="padding:14px;border-radius:16px;background:var(--bg2);border:1px solid var(--ln);display:flex;flex-direction:column;gap:12px;transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .3s" style-hover="transform:translateY(-3px);box-shadow:var(--sh-md)"><span style="width:36px;height:36px;border-radius:11px;background:color-mix(in oklch,var(--mint) 16%,transparent);color:var(--mint);display:grid;place-items:center;font-size:17px"><cv-icon n="chartPie"></cv-icon></span><div><div style="font:500 14px/1.3 var(--ft)">Charts</div><div style="font:400 12px/1.3 var(--fm);color:var(--tx3)">27 types</div></div></div>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;GridList&gt; people directories · collections · galleries · tiles lift on the spring</div>
+</div>
+
+<div id="c-media-object" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>MediaObject</span><span>media leads, text owns the rest</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#media-objects" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">MediaObject<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="display:flex;gap:12px"><img src="docs/public/kira-tanaka.jpg" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex:none"><div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:8px"><span style="font:500 14px var(--ft)">Kira Tanaka</span><span style="font:400 11px var(--fm);color:var(--tx3)">2m</span></div><p style="margin:4px 0 0;font:400 14px/1.5 var(--ft);color:var(--tx2);text-wrap:pretty">The ion ring reads better at 4px than 3. Shipping it with the field update.</p><div style="display:flex;gap:16px;margin-top:8px;font:500 12px var(--ft);color:var(--tx3)"><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px"><cv-icon n="heart" style="font-size:14px;color:var(--bad)"></cv-icon>12</span><span style="display:inline-flex;align-items:center;gap:5px"><cv-icon n="reply" style="font-size:14px"></cv-icon>Reply</span></div></div></div>
+<div style="display:flex;gap:12px;padding-top:16px;border-top:1px solid var(--ln)"><span style="width:36px;height:36px;border-radius:11px;background:var(--ion-soft);color:var(--ion-tx);display:grid;place-items:center;font-size:17px;flex:none"><cv-icon n="gitPullRequest"></cv-icon></span><div style="flex:1;min-width:0"><div style="font:500 14px/1.3 var(--ft)">Ready for review</div><div style="font:400 13px/1.4 var(--ft);color:var(--tx3)">#482 · Overlays move to glass-tint-dense</div></div><span style="font:400 11px var(--fm);color:var(--tx3)">9:41</span></div>
+<div style="display:flex;gap:14px;padding-top:16px;border-top:1px solid var(--ln)"><img src="docs/public/liang-bao.jpg" alt="" style="width:76px;height:76px;border-radius:12px;object-fit:cover;flex:none"><div style="min-width:0;display:flex;flex-direction:column;gap:4px"><div style="font:500 16px/1.25 var(--fd);letter-spacing:-.01em">Designing for three skins</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">One tree becomes an iOS capsule, a Material stadium and a lit web control.</div><div style="font:400 11px var(--fm);color:var(--tx3)">8 min read</div></div></div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;MediaObject&gt; · avatar, Emblem or Image in the media slot · the base of every row above</div>
+</div>
+
+<div id="c-feed" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Feed</span><span>activity · audit log</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#feeds" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Feed<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="display:flex;flex-direction:column">
+<div style="display:grid;grid-template-columns:32px 1fr;gap:12px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:32px;height:32px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;font-size:15px;flex:none"><cv-icon n="gitMerge"></cv-icon></span><span style="flex:1;width:1px;min-height:12px;background:var(--ln2);margin:4px 0"></span></div><div style="padding:6px 0 16px;min-width:0"><div style="font:400 14px/1.45 var(--ft);color:var(--tx2)"><span style="color:var(--tx);font-weight:500">Kira</span> merged <span style="font:500 12px var(--fm);color:var(--ion-tx)">#482</span> into main</div><div style="font:400 11px var(--fm);color:var(--tx3);margin-top:3px">2 min ago</div></div></div>
+<div style="display:grid;grid-template-columns:32px 1fr;gap:12px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:32px;height:32px;border-radius:50%;background:var(--ion-soft);color:var(--ion-tx);display:grid;place-items:center;font-size:15px;flex:none"><cv-icon n="palette"></cv-icon></span><span style="flex:1;width:1px;min-height:12px;background:var(--ln2);margin:4px 0"></span></div><div style="padding:6px 0 16px;min-width:0"><div style="font:400 14px/1.45 var(--ft);color:var(--tx2)"><span style="color:var(--tx);font-weight:500">Bobby</span> moved <span style="padding:1px 6px;border-radius:5px;background:var(--sf3);font:500 12px var(--fm);color:var(--tx)">--hue</span> from <span style="font:500 12px var(--fm)">285</span> to <span style="font:500 12px var(--fm)">205</span></div><div style="font:400 11px var(--fm);color:var(--tx3);margin-top:3px">1 hour ago</div></div></div>
+<div style="display:grid;grid-template-columns:32px 1fr;gap:12px"><div style="display:flex;flex-direction:column;align-items:center"><img src="docs/public/liang-bao.jpg" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex:none"><span style="flex:1;width:1px;min-height:12px;background:var(--ln2);margin:4px 0"></span></div><div style="padding:6px 0 16px;min-width:0"><div style="font:400 14px/1.45 var(--ft);color:var(--tx2)"><span style="color:var(--tx);font-weight:500">Liang</span> commented</div><div style="margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--bg2);border:1px solid var(--ln);font:400 13px/1.5 var(--ft);color:var(--tx2)">Filtering a series out never renumbers the rest. Keep chart-3 mint.</div><div style="font:400 11px var(--fm);color:var(--tx3);margin-top:6px">3 hours ago</div></div></div>
+<div style="display:grid;grid-template-columns:32px 1fr;gap:12px"><div><span style="width:32px;height:32px;border-radius:50%;background:var(--warn-soft);color:var(--warn);display:grid;place-items:center;font-size:15px"><cv-icon n="rocket"></cv-icon></span></div><div style="padding:6px 0 0;min-width:0"><div style="font:400 14px/1.45 var(--ft);color:var(--tx2)"><span style="font:500 12px var(--fm);color:var(--tx)">v6.2.0</span> published to npm</div><div style="font:400 11px var(--fm);color:var(--tx3);margin-top:3px">yesterday</div></div></div>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Feed&gt; · the icon names the event · one hairline spine, never a card per row</div>
+</div>
+
+<div id="c-description-list" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>DescriptionList · ActionPanel</span><span>update in place</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#description-lists" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">DescriptionList<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#action-panels" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">ActionPanel<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="display:flex;flex-direction:column">
+<div style="display:grid;grid-template-columns:104px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:52px;padding:8px 0"><span style="font:500 13px var(--ft);color:var(--tx3)">Display name</span><sc-if value="{{ dlEdit }}" hint-placeholder-val="{{ false }}"><input value="{{ dlDraft }}" onChange="{{ onDl }}" onKeyDown="{{ dlKey }}" style="height:34px;padding:0 10px;border-radius:9px;background:var(--bg2);border:1px solid var(--ion);box-shadow:0 0 0 4px var(--ion-ring);font:400 14px var(--ft);width:100%;min-width:0"></sc-if><sc-if value="{{ dlView }}" hint-placeholder-val="{{ true }}"><span style="font:400 14px var(--ft);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ dlVal }}</span></sc-if><sc-if value="{{ dlEdit }}" hint-placeholder-val="{{ false }}"><span style="display:flex;gap:4px"><button onClick="{{ dlSave }}" style="height:30px;padding:0 10px;border-radius:8px;font:500 12px/1 var(--ft);background:var(--ion);color:var(--ion-fg)">Save</button><button onClick="{{ dlCancel }}" style="height:30px;padding:0 8px;border-radius:8px;font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="background:var(--sf3)">Cancel</button></span></sc-if><sc-if value="{{ dlView }}" hint-placeholder-val="{{ true }}"><button onClick="{{ dlOpen }}" style="font:500 13px var(--ft);color:var(--ion-tx)" style-hover="text-decoration:underline">Update</button></sc-if></div>
+<div style="display:grid;grid-template-columns:104px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:52px;padding:8px 0;border-top:1px solid var(--ln)"><span style="font:500 13px var(--ft);color:var(--tx3)">Email</span><span style="font:400 14px var(--ft);min-width:0;overflow:hidden;text-overflow:ellipsis">bobby@nannier.com</span><button style="font:500 13px var(--ft);color:var(--ion-tx)" style-hover="text-decoration:underline">Update</button></div>
+<div style="display:grid;grid-template-columns:104px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:52px;padding:8px 0;border-top:1px solid var(--ln)"><span style="font:500 13px var(--ft);color:var(--tx3)">Workspace</span><span style="font:400 14px var(--ft)">Riskora · 24 members</span><span style="height:22px;padding:0 8px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font:500 11px/22px var(--ft)">Active</span></div>
+</div>
+<div style="padding:16px;border-radius:16px;background:var(--bg2);border:1px solid var(--ln);display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap"><div style="flex:1 1 180px"><div style="font:500 15px/1.3 var(--fd)">Export workspace</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx2)">Every board, token and asset as one .zip.</div></div><button style="height:36px;padding:0 14px;border-radius:9px;font:500 13px/1 var(--ft);background:var(--sf3);border:1px solid var(--ln2);box-shadow:inset 0 1px 0 var(--hl)" style-hover="background:var(--sf4)">Export</button></div>
+<div style="padding:16px;border-radius:16px;background:var(--bad-soft);border:1px solid color-mix(in oklch,var(--bad) 30%,transparent);display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap"><div style="flex:1 1 180px"><div style="font:500 15px/1.3 var(--fd)">Delete workspace</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx2)">Removes Riskora for all 24 members. There is no undo.</div></div><button style="height:36px;padding:0 14px;border-radius:9px;font:500 13px/1 var(--ft);background:var(--bad);color:var(--bad-fg);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)" style-hover="filter:brightness(1.06)">Delete</button></div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;DescriptionList&gt; rows flagged update edit in place · ↵ saves, esc cancels · &lt;ActionPanel&gt; one decision, one action</div>
+</div>
+
+<div id="c-accordion" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Accordion · Collapsible</span><span>live</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#accordion" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Accordion<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#collapsible" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Collapsible<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="border-radius:16px;border:1px solid var(--ln);overflow:hidden;background:var(--bg2)">
+<sc-for list="{{ accItems }}" as="a" hint-placeholder-count="3">
+<div style="border-top:{{ a.bt }}">
+<button onClick="{{ a.on }}" style="width:100%;min-height:52px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font:500 14px var(--ft);text-align:left;transition:background .15s" style-hover="background:var(--sf3)">{{ a.t }}<cv-icon n="chevronDown" style="font-size:16px;color:var(--tx3);transform:{{ a.rot }};transition:transform .45s cubic-bezier(.34,1.56,.64,1)"></cv-icon></button>
+<sc-if value="{{ a.open }}" hint-placeholder-val="{{ false }}"><div style="padding:0 16px 16px;font:400 14px/1.55 var(--ft);color:var(--tx2);text-wrap:pretty;animation:rise .35s cubic-bezier(.2,.8,.2,1) both">{{ a.b }}</div></sc-if>
+</div>
+</sc-for>
+</div>
+<div style="padding-top:4px">
+<button onClick="{{ togCol }}" style="display:flex;align-items:center;gap:8px;font:500 14px var(--ft)"><cv-icon n="chevronRight" style="font-size:15px;color:var(--tx3);transform:{{ colRot }};transition:transform .45s cubic-bezier(.34,1.56,.64,1)"></cv-icon>3 removed props</button>
+<sc-if value="{{ colOpen }}" hint-placeholder-val="{{ false }}"><div style="margin:10px 0 0 23px;display:flex;flex-wrap:wrap;gap:6px;animation:rise .35s cubic-bezier(.2,.8,.2,1) both"><span style="height:24px;padding:0 8px;border-radius:6px;background:var(--bad-soft);color:var(--bad);font:500 11px/24px var(--fm);text-decoration:line-through">variant="primary"</span><span style="height:24px;padding:0 8px;border-radius:6px;background:var(--bad-soft);color:var(--bad);font:500 11px/24px var(--fm);text-decoration:line-through">size="lg"</span><span style="height:24px;padding:0 8px;border-radius:6px;background:var(--bad-soft);color:var(--bad);font:500 11px/24px var(--fm);text-decoration:line-through">tone="destructive"</span></div></sc-if>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Accordion items={{ '{' }}…{{ '}' }}&gt; a stack of disclosures · &lt;Collapsible title="…"&gt; exactly one</div>
+</div>
+</div>
+<div id="g-content" style="grid-column:1/-1;scroll-margin-top:80px;display:flex;align-items:baseline;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;padding:56px 0 14px;border-bottom:1px solid var(--ln)"><div style="font:500 30px/1.1 var(--fd);letter-spacing:-.025em">Content & media</div><div style="font:400 12px/1.5 var(--fm);color:var(--tx3)">CodeBlock · Carousel · Image · Video · QRCode</div></div>
+<div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px">
+<div id="c-code-block" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>CodeBlock</span><span>tabs · emphasis · diff · copy</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#code-block" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">CodeBlock<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="border-radius:16px;border:1px solid var(--ln2);background:var(--bg2);overflow:hidden;min-width:0">
+<div style="display:flex;align-items:center;gap:2px;height:44px;padding:0 6px 0 8px;border-bottom:1px solid var(--ln)">
+<sc-for list="{{ cbTabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.on }}" style="height:30px;padding:0 10px;border-radius:8px;font:500 12px/1 var(--fm);color:{{ t.c }};background:{{ t.bg }};transition:background .2s,color .2s">{{ t.n }}</button></sc-for>
+<button onClick="{{ copy }}" style="margin-left:auto;height:30px;padding:0 10px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--ft);color:{{ copyC }};transition:color .2s" style-hover="background:var(--sf3)"><cv-icon n="{{ copyI }}" style="font-size:14px"></cv-icon>{{ copyL }}</button>
+</div>
+<div style="padding:10px 0;font:400 12.5px/1.75 var(--fm);overflow-x:auto">
+<sc-for list="{{ cbLines }}" as="l" hint-placeholder-count="9"><div style="display:flex;min-width:max-content;padding-right:16px;background:{{ l.bg }};box-shadow:{{ l.bar }}"><span style="width:38px;flex:none;text-align:right;padding-right:12px;color:var(--tx3);opacity:.7;user-select:none">{{ l.n }}</span><span style="width:16px;flex:none;color:{{ l.mc }}">{{ l.m }}</span><span style="white-space:pre"><sc-for list="{{ l.s }}" as="s" hint-placeholder-count="4"><span style="color:{{ s.c }}">{{ s.t }}</span></sc-for></span></div></sc-for>
+</div>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;CodeBlock&gt; highlight · line emphasis · diff · folding · tabbed alternatives · copy via expo-clipboard on native</div>
+</div>
+
+<div id="c-carousel" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Carousel</span><span>swipe · arrows · dots</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#carousel" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Carousel<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:relative;height:240px;border-radius:16px;overflow:hidden;border:1px solid var(--ln)">
+<div style="display:flex;height:100%;transform:translateX({{ carX }});transition:transform .65s cubic-bezier(.34,1.25,.64,1)">
+<div style="flex:0 0 100%;position:relative;overflow:hidden;background:var(--bg2)"><div style="position:absolute;left:-15%;top:-30%;width:70%;height:130%;border-radius:50%;background:radial-gradient(circle,var(--ion),transparent 62%);filter:blur(30px);opacity:.85"></div><div style="position:absolute;right:-15%;bottom:-40%;width:70%;height:130%;border-radius:50%;background:radial-gradient(circle,var(--cyan),transparent 62%);filter:blur(30px);opacity:.7"></div><div style="position:absolute;left:16px;right:16px;bottom:16px;padding:14px 16px;border-radius:14px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2)"><div style="font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">01 · Material</div><div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em;margin-top:4px">Light is the material</div></div></div>
+<div style="flex:0 0 100%;position:relative;overflow:hidden;background:var(--bg2)"><div style="position:absolute;left:10%;top:-40%;width:80%;height:130%;border-radius:50%;background:radial-gradient(circle,var(--mint),transparent 62%);filter:blur(30px);opacity:.8"></div><div style="position:absolute;left:16px;right:16px;bottom:16px;padding:14px 16px;border-radius:14px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2)"><div style="font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">02 · Accent</div><div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em;margin-top:4px">One charged hue does every job</div></div></div>
+<div style="flex:0 0 100%;position:relative;overflow:hidden;background:var(--bg2)"><div style="position:absolute;right:-10%;top:-30%;width:70%;height:130%;border-radius:50%;background:radial-gradient(circle,var(--c5),transparent 62%);filter:blur(30px);opacity:.75"></div><div style="position:absolute;left:-10%;bottom:-40%;width:60%;height:120%;border-radius:50%;background:radial-gradient(circle,var(--ion),transparent 62%);filter:blur(30px);opacity:.7"></div><div style="position:absolute;left:16px;right:16px;bottom:16px;padding:14px 16px;border-radius:14px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2)"><div style="font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">03 · Motion</div><div style="font:500 20px/1.2 var(--fd);letter-spacing:-.02em;margin-top:4px">Every press runs on one spring</div></div></div>
+<div style="flex:0 0 100%;position:relative;overflow:hidden"><img src="docs/public/noor-park.jpg" alt="Noor Park" style="width:100%;height:100%;object-fit:cover"><div style="position:absolute;left:16px;bottom:16px;padding:10px 14px;border-radius:12px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2)"><div style="font:500 14px var(--ft)">Noor Park</div><div style="font:400 12px var(--ft);color:var(--tx2)">Mobile lead · Seoul</div></div></div>
+</div>
+<button onClick="{{ carPrev }}" title="Previous" style="position:absolute;left:12px;top:calc(50% - 36px);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-md);font-size:16px;transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-active="transform:scale(.88)"><cv-icon n="chevronLeft"></cv-icon></button>
+<button onClick="{{ carNext }}" title="Next" style="position:absolute;right:12px;top:calc(50% - 36px);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-md);font-size:16px;transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-active="transform:scale(.88)"><cv-icon n="chevronRight"></cv-icon></button>
+</div>
+<div style="display:flex;justify-content:center;gap:6px"><sc-for list="{{ carDots }}" as="d" hint-placeholder-count="4"><button onClick="{{ d.on }}" style="height:6px;width:{{ d.w }};border-radius:3px;background:{{ d.bg }};transition:width .45s cubic-bezier(.34,1.56,.64,1),background .3s"></button></sc-for></div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Carousel&gt; one slide per page · slides take the card radius, 28 on Android</div>
+</div>
+
+<div id="c-media" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Image · Video · QRCode</span><span>media atoms</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#image" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Image<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#video" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Video<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#qrcode" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">QRCode<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:100px;border-radius:12px;overflow:hidden;border:1px solid var(--ln)"><img src="docs/public/marcus-allen.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div><span style="font:400 11px var(--fm);color:var(--tx3)">cover · crops</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:100px;border-radius:12px;overflow:hidden;border:1px solid var(--ln);background:repeating-linear-gradient(135deg,var(--sf3) 0 6px,transparent 6px 12px)"><img src="docs/public/marcus-allen.jpg" alt="" style="width:100%;height:100%;object-fit:contain"></div><span style="font:400 11px var(--fm);color:var(--tx3)">contain · letterboxes</span></div>
+</div>
+<div style="position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--ln);background:var(--bg2)">
+<img src="docs/public/grace-hopper.jpg" alt="" style="width:100%;height:100%;object-fit:cover;opacity:.9">
+<button title="Play" style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);font-size:22px;color:var(--tx);transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-hover="transform:translate(-50%,-50%) scale(1.08)"><cv-icon n="play" style="margin-left:3px"></cv-icon></button>
+<div style="position:absolute;left:10px;right:10px;bottom:10px;height:40px;padding:0 12px;border-radius:12px;display:flex;align-items:center;gap:12px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);font-size:15px"><cv-icon n="play"></cv-icon><div style="position:relative;flex:1;height:4px;border-radius:2px;background:var(--sf4)"><div style="width:34%;height:100%;border-radius:2px;background:var(--ion);box-shadow:0 0 10px var(--ion-glow)"></div><span style="position:absolute;left:34%;top:50%;width:12px;height:12px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.4)"></span></div><span style="font:500 11px var(--fm);color:var(--tx2);white-space:nowrap">0:42 / 2:05</span><cv-icon n="volume2"></cv-icon><cv-icon n="maximize"></cv-icon></div>
+</div>
+<div style="display:flex;align-items:center;gap:16px;padding-top:16px;border-top:1px solid var(--ln)">
+<div style="flex:none;width:112px;height:112px;padding:10px;border-radius:12px;background:#fff;box-shadow:var(--sh-md)"><cv-qr data="https://canvas.nannier.com"></cv-qr></div>
+<div style="min-width:0;display:flex;flex-direction:column;gap:4px"><div style="font:500 14px var(--ft)">canvas.nannier.com</div><div style="font:400 13px/1.45 var(--ft);color:var(--tx2);text-wrap:pretty">Always dark on white so any camera reads it, whatever the scheme.</div></div>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Image cover&gt; · &lt;Image contain&gt; · &lt;Video poster autoplay muted loop&gt; · &lt;QRCode value="…"&gt;</div>
+</div>
+</div>
+<div id="g-workspace" style="grid-column:1/-1;scroll-margin-top:80px;display:flex;align-items:baseline;justify-content:space-between;gap:8px 24px;flex-wrap:wrap;padding:56px 0 14px;border-bottom:1px solid var(--ln)"><div style="font:500 30px/1.1 var(--fd);letter-spacing:-.025em">Workspace</div><div style="font:400 12px/1.5 var(--fm);color:var(--tx3)">Calendar · Chat · Board · Drag & drop</div></div>
+<div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:20px">
+<div id="c-calendar" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Calendar</span><span>month · week · day · pick a day</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#calendar" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Calendar<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<div style="font:500 22px/1.1 var(--fd);letter-spacing:-.02em;margin-right:auto">October <span style="color:var(--tx3)">2026</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,auto);padding:3px;border-radius:10px;background:var(--sf3);border:1px solid var(--ln);font:500 12px/1 var(--ft)"><span style="height:28px;padding:0 10px;display:grid;place-items:center;border-radius:7px;background:var(--sf);box-shadow:var(--sh-sm)">Month</span><span style="height:28px;padding:0 10px;display:grid;place-items:center;color:var(--tx3)">Week</span><span style="height:28px;padding:0 10px;display:grid;place-items:center;color:var(--tx3)">Day</span></div>
+<button style="width:32px;height:32px;border-radius:9px;border:1px solid var(--ln2);display:grid;place-items:center;color:var(--tx2);font-size:15px" style-hover="background:var(--sf3);color:var(--tx)"><cv-icon n="chevronLeft"></cv-icon></button><button style="width:32px;height:32px;border-radius:9px;border:1px solid var(--ln2);display:grid;place-items:center;color:var(--tx2);font-size:15px" style-hover="background:var(--sf3);color:var(--tx)"><cv-icon n="chevronRight"></cv-icon></button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center">
+<span style="font:500 11px/24px var(--fm);color:var(--tx3)">M</span><span style="font:500 11px/24px var(--fm);color:var(--tx3)">T</span><span style="font:500 11px/24px var(--fm);color:var(--tx3)">W</span><span style="font:500 11px/24px var(--fm);color:var(--tx3)">T</span><span style="font:500 11px/24px var(--fm);color:var(--tx3)">F</span><span style="font:500 11px/24px var(--fm);color:var(--tx3)">S</span><span style="font:500 11px/24px var(--fm);color:var(--tx3)">S</span>
+<sc-for list="{{ calDays }}" as="c" hint-placeholder-count="35"><button onClick="{{ c.on }}" style="height:44px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 13px/1 var(--ft);font-variant-numeric:tabular-nums;color:{{ c.c }};background:{{ c.bg }};box-shadow:{{ c.sh }};transition:background .2s,box-shadow .3s,transform .4s cubic-bezier(.34,1.56,.64,1)" style-hover="background:var(--sf3)" style-active="transform:scale(.92)">{{ c.d }}<span style="display:flex;gap:3px;height:4px"><sc-for list="{{ c.dots }}" as="dt" hint-placeholder-count="1"><span style="width:4px;height:4px;border-radius:50%;background:{{ dt }}"></span></sc-for></span></button></sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding-top:14px;border-top:1px solid var(--ln)">
+<div style="font:500 13px var(--ft);color:var(--tx2);margin-bottom:2px">{{ calLabel }}</div>
+<sc-for list="{{ calEvents }}" as="ev" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:48px 1fr;gap:10px;align-items:stretch"><span style="font:500 12px/30px var(--fm);color:var(--tx3)">{{ ev.t }}</span><div style="padding:6px 10px;border-radius:8px;background:{{ ev.bg }};box-shadow:inset 3px 0 0 {{ ev.c }};display:flex;justify-content:space-between;gap:8px;font:500 13px/18px var(--ft)"><span>{{ ev.n }}</span><span style="font:400 11px/18px var(--fm);color:var(--tx3)">{{ ev.dur }}</span></div></div></sc-for>
+<sc-if value="{{ calEmpty }}" hint-placeholder-val="{{ false }}"><div style="font:400 13px var(--ft);color:var(--tx3);padding:6px 0">Nothing scheduled.</div></sc-if>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Calendar events={{ '{' }}…{{ '}' }}&gt; · dots in the month grid, blocks on the week and day timelines</div>
+</div>
+
+
+
+
+
+<div id="c-chat" style="scroll-margin-top:80px;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Chat</span><span>live · type and send</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#chat" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Chat<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="position:relative;height:440px;border-radius:18px;border:1px solid var(--ln);background:var(--bg2);overflow:hidden;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--ln);background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf)"><span style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--ion),var(--cyan));color:var(--ion-fg);display:grid;place-items:center;font-size:16px;box-shadow:0 6px 16px -6px var(--ion-glow)"><cv-icon n="sparkles"></cv-icon></span><div style="flex:1;min-width:0"><div style="font:500 14px/1.2 var(--ft)">Canvas assistant</div><div style="font:400 11px/1.3 var(--fm);color:var(--tx3)">provider · Claude</div></div><span style="display:inline-flex;align-items:center;gap:6px;font:500 11px var(--ft);color:var(--ok)"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span>online</span></div>
+<div ref="{{ chatRef }}" style="flex:1;overflow-y:auto;padding:16px 14px 96px;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ chatMsgs }}" as="m" hint-placeholder-count="3"><div style="display:flex;justify-content:{{ m.j }};animation:rise .4s cubic-bezier(.2,.8,.2,1) both"><div style="max-width:82%;padding:10px 14px;border-radius:{{ m.r }};background:{{ m.bg }};color:{{ m.c }};border:{{ m.bd }};font:400 14px/1.5 var(--ft);box-shadow:{{ m.sh }};white-space:pre-wrap">{{ m.t }}</div></div></sc-for>
+<sc-if value="{{ chatTyping }}" hint-placeholder-val="{{ false }}"><div style="display:flex"><div style="padding:12px 14px;border-radius:18px 18px 18px 6px;background:var(--sf);border:1px solid var(--ln);display:flex;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--tx3);animation:dots 1.2s infinite"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--tx3);animation:dots 1.2s .15s infinite"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--tx3);animation:dots 1.2s .3s infinite"></span></div></div></sc-if>
+</div>
+<div style="position:absolute;left:10px;right:10px;bottom:10px;padding:8px 8px 8px 14px;border-radius:20px;background:var(--gl);backdrop-filter:var(--bf);-webkit-backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-lg);display:flex;align-items:flex-end;gap:8px">
+<textarea rows="1" value="{{ chatDraft }}" onChange="{{ onChat }}" onKeyDown="{{ chatKey }}" placeholder="Ask about a component…" style="flex:1;min-width:0;resize:none;padding:7px 0;font:400 14px/1.4 var(--ft);max-height:96px"></textarea>
+<button title="Attach" style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--tx3);font-size:16px;flex:none" style-hover="background:var(--sf3);color:var(--tx)"><cv-icon n="paperclip"></cv-icon></button>
+<button onClick="{{ chatSend }}" title="Send" style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--ion);color:var(--ion-fg);font-size:16px;flex:none;box-shadow:0 6px 16px -6px var(--ion-glow);transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-active="transform:scale(.88)"><cv-icon n="arrowUp" w="2.2"></cv-icon></button>
+</div>
+</div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Chat&gt; = &lt;ChatThread&gt; + &lt;ChatMessage&gt; + &lt;ChatComposer&gt; · replies render through &lt;Markdown&gt; · bubbles 18 with a 6 tail · composer 20 on glass</div>
+</div>
+<div id="c-board" style="scroll-margin-top:80px;grid-column:1/-1;background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;justify-content:space-between;gap:12px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Board · Drag & drop</span><span>DropZone · Draggable · DragHandle</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:-6px"><a href="Canvas v4.0.0 Component.dc.html#board" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Board<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a><a href="Canvas v4.0.0 Component.dc.html#drag-drop" style="height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)" style-hover="color:var(--ion-tx);border-color:var(--ion);text-decoration:none">Drag &amp; drop<cv-icon n="arrowUpRight" style="font-size:12px"></cv-icon></a></div>
+<div style="overflow-x:auto;margin:0 -24px;padding:4px 24px 12px"><div style="position:relative;display:grid;grid-template-columns:repeat(3,minmax(200px,1fr));gap:12px;min-width:640px">
+<div style="padding:10px;border-radius:16px;background:var(--bg2);border:1px solid var(--ln);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;padding:2px 4px 4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--tx3)"></span><span style="font:500 13px var(--ft)">Backlog</span><span style="font:500 11px var(--fm);color:var(--tx3)">3</span><cv-icon n="plus" style="margin-left:auto;font-size:15px;color:var(--tx3)"></cv-icon></div>
+<div style="padding:12px;border-radius:12px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:flex-start;gap:6px"><cv-icon n="gripVertical" style="font-size:14px;color:var(--tx3);margin-top:2px;cursor:grab"></cv-icon><span style="flex:1;font:500 13px/1.35 var(--ft)">Calendar week timeline</span><cv-icon n="ellipsisVertical" style="font-size:14px;color:var(--tx3)"></cv-icon></div><div style="font:400 12px/1.45 var(--ft);color:var(--tx3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">Timed blocks on the hour grid, glass under the now-line.</div><div style="display:flex;gap:4px"><span style="height:20px;padding:0 7px;border-radius:999px;background:var(--sf3);font:500 11px/20px var(--ft);color:var(--tx2)">organism</span></div></div>
+<div style="padding:12px;border-radius:12px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:flex-start;gap:6px"><cv-icon n="gripVertical" style="font-size:14px;color:var(--tx3);margin-top:2px;cursor:grab"></cv-icon><span style="flex:1;font:500 13px/1.35 var(--ft)">GeoMap zoom clusters</span><span style="height:20px;padding:0 7px;border-radius:999px;background:var(--warn-soft);color:var(--warn);font:500 11px/20px var(--ft)">P2</span></div><div style="display:flex;gap:4px"><span style="height:20px;padding:0 7px;border-radius:999px;background:var(--sf3);font:500 11px/20px var(--ft);color:var(--tx2)">chart</span></div></div>
+<div style="height:64px;border-radius:12px;border:1.5px dashed var(--ln2);display:grid;place-items:center;font:500 12px var(--ft);color:var(--tx3)">Emptied by drag</div>
+</div>
+<div style="padding:10px;border-radius:16px;background:var(--bg2);border:1px solid var(--ln);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;padding:2px 4px 4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--ion);box-shadow:0 0 8px var(--ion-glow)"></span><span style="font:500 13px var(--ft)">In progress</span><span style="font:500 11px var(--fm);color:var(--tx3)">2</span><cv-icon n="plus" style="margin-left:auto;font-size:15px;color:var(--tx3)"></cv-icon></div>
+<div style="padding:12px;border-radius:12px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:flex-start;gap:6px"><cv-icon n="gripVertical" style="font-size:14px;color:var(--tx3);margin-top:2px;cursor:grab"></cv-icon><span style="flex:1;font:500 13px/1.35 var(--ft)">Overlays on glass-tint-dense</span><span style="height:20px;padding:0 7px;border-radius:999px;background:var(--ion-soft);color:var(--ion-tx);font:500 11px/20px var(--ft)">#482</span></div><div style="font:400 12px/1.45 var(--ft);color:var(--tx3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">Dialog, sheet, popover, toast and the command palette move to the densest tint.</div><div style="display:flex;align-items:center;gap:4px"><span style="height:20px;padding:0 7px;border-radius:999px;background:var(--sf3);font:500 11px/20px var(--ft);color:var(--tx2)">overlay</span><span style="height:20px;padding:0 7px;border-radius:999px;background:var(--sf3);font:500 11px/20px var(--ft);color:var(--tx2)">glass</span><img src="docs/public/kira-tanaka.jpg" alt="" style="margin-left:auto;width:22px;height:22px;border-radius:50%;object-fit:cover"></div></div>
+<div style="padding:12px;border-radius:12px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:flex-start;gap:6px"><cv-icon n="gripVertical" style="font-size:14px;color:var(--tx3);margin-top:2px;cursor:grab"></cv-icon><span style="flex:1;font:500 13px/1.35 var(--ft)">Chart series palette</span></div><div style="display:flex;gap:3px"><span style="width:14px;height:6px;border-radius:3px;background:var(--c1)"></span><span style="width:14px;height:6px;border-radius:3px;background:var(--c2)"></span><span style="width:14px;height:6px;border-radius:3px;background:var(--c3)"></span><span style="width:14px;height:6px;border-radius:3px;background:var(--c4)"></span><span style="width:14px;height:6px;border-radius:3px;background:var(--c5)"></span></div></div>
+</div>
+<div style="padding:10px;border-radius:16px;background:var(--ion-soft);border:1.5px dashed var(--ion);box-shadow:0 0 0 4px var(--ion-ring);display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;padding:2px 4px 4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--ok)"></span><span style="font:500 13px var(--ft)">Review</span><span style="font:500 11px var(--fm);color:var(--tx3)">1</span><span style="margin-left:auto;font:500 11px var(--fm);color:var(--ion-tx)">drop zone</span></div>
+<div style="padding:12px;border-radius:12px;background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:flex-start;gap:6px"><cv-icon n="gripVertical" style="font-size:14px;color:var(--tx3);margin-top:2px"></cv-icon><span style="flex:1;font:500 13px/1.35 var(--ft)">Switch thumb spring</span><span style="height:20px;padding:0 7px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font:500 11px/20px var(--ft)">ready</span></div></div>
+<div style="height:58px;border-radius:12px;background:color-mix(in oklch,var(--ion) 10%,transparent);border:1px dashed var(--ion-ring)"></div>
+</div>
+<div style="position:absolute;left:calc(66.6% - 70px);top:150px;width:210px;padding:12px;border-radius:12px;background:var(--sf2);border:1px solid var(--ion);box-shadow:0 0 0 4px var(--ion-ring),var(--sh-lg);transform:rotate(-3deg);display:flex;flex-direction:column;gap:8px;pointer-events:none"><div style="display:flex;align-items:flex-start;gap:6px"><cv-icon n="handGrab" style="font-size:14px;color:var(--ion-tx);margin-top:2px"></cv-icon><span style="flex:1;font:500 13px/1.35 var(--ft)">Tooltip on glass</span><span style="height:20px;padding:0 7px;border-radius:999px;background:var(--sf3);font:500 11px/20px var(--ft);color:var(--tx2)">atom</span></div><div style="font:400 12px/1.45 var(--ft);color:var(--tx3)">Lifted 3°, ion ring, lg shadow.</div></div>
+</div></div>
+<div style="font:400 12px/1.6 var(--fm);color:var(--tx3);margin-top:auto">&lt;Board columns={{ '{' }}…{{ '}' }}&gt; on &lt;DragDropProvider&gt; · every column is a &lt;DropZone&gt;, every card a &lt;Draggable&gt; with a &lt;DragHandle&gt;</div>
+</div>
+</div>
+
+</div>
+</section>
+
+</div>
+</div>
+<footer style="max-width:1440px;margin:0 auto;padding:96px 48px 64px">
+<div style="border-top:1px solid var(--ln);padding-top:32px;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;font:600 16px/1 var(--fd)"><img src="docs/public/favicon.svg" alt="" style="width:22px;height:22px;flex:none">Canvas v4.0.0 · component library</div><div style="font:400 13px/1.5 var(--ft);color:var(--tx3);max-width:52ch">Direction "Light as material". Restyles all 107 exports of @nannier/canvas and replaces the Dark Factory blush / mint web skin (Manrope, Geist Mono). Tokens above map 1:1 onto src/style/tokens.ts and styles/tokens/*.css; iOS and Android skins keep their platform shapes and pick up the ion + neutral ramps.</div></div>
+<div style="display:flex;flex-direction:column;gap:6px;font:400 12px/1.6 var(--fm);color:var(--tx3)"><span>display · Bricolage Grotesque 300–800</span><span>ui · Instrument Sans 400–700</span><span>mono · JetBrains Mono 400–600</span><span>accent · oklch(L C var(--hue))</span><a href="https://github.com/bnannier/canvas" style="color:var(--ion-tx)">github.com/bnannier/canvas ↗</a></div>
+</div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dark&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;tsType&quot;:&quot;'dark' | 'light'&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;hue&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:285,&quot;min&quot;:0,&quot;max&quot;:360,&quot;step&quot;:5,&quot;unit&quot;:&quot;°&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;glass&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Materials&quot;}}">
+const PEOPLE=[
+{n:'Ada Lovelace',e:'ada@ionize.io',img:'docs/public/ada-lovelace.jpg',team:'Platform',st:'Active',amt:'12,480.00',sp:[40,55,45,70,62,80,74,92]},
+{n:'Grace Hopper',e:'grace@ionize.io',img:'docs/public/grace-hopper.jpg',team:'Compilers',st:'Active',amt:'9,120.50',sp:[30,34,52,48,66,70,84,90]},
+{n:'Kira Tanaka',e:'kira@ionize.io',img:'docs/public/kira-tanaka.jpg',team:'Design',st:'Invited',amt:'4,300.00',sp:[50,52,50,55,53,58,56,60]},
+{n:'Noor Park',e:'noor@ionize.io',img:'docs/public/noor-park.jpg',team:'Mobile',st:'Active',amt:'7,845.25',sp:[70,62,66,50,54,42,46,38]},
+{n:'Marcus Allen',e:'marcus@ionize.io',img:'docs/public/marcus-allen.jpg',team:'Growth',st:'Suspended',amt:'0.00',sp:[60,58,40,42,30,28,20,18]},
+{n:'Liang Bao',e:'liang@ionize.io',img:'docs/public/liang-bao.jpg',team:'Data',st:'Active',amt:'15,002.00',sp:[20,30,45,60,66,75,80,95]}];
+const CMDS=[
+{g:'Navigate',n:'Go to Components',k:'G C'},{g:'Navigate',n:'Go to Foundations',k:'G F'},{g:'Navigate',n:'Open platform skins',k:'G P'},
+{g:'Actions',n:'Toggle color scheme',k:'⌘ J',act:'scheme'},{g:'Actions',n:'Shift ion hue',k:'⌘ H',act:'hue'},{g:'Actions',n:'Copy component snippet',k:'⌘ C'},{g:'Actions',n:'New workspace…',k:'⌘ N'}];
+const SWATCHES=[
+{n:'bg',d:'#0a0a0f',l:'#f2f2f7'},{n:'bg-2',d:'#0e0e15',l:'#fafafd'},{n:'surface',d:'#12121a',l:'#ffffff'},{n:'surface-3',d:'#1e1e29',l:'#f1f1f6'},
+{n:'surface-4',d:'#282836',l:'#e4e4ee'},{n:'text',d:'#f4f4f8',l:'#111118'},{n:'text-2',d:'#a4a4b6',l:'#5a5a70'},{n:'text-3',d:'#7f7f93',l:'#6c6c82'}];
+const STATUS={Active:['var(--ok-soft)','var(--ok)'],Invited:['var(--ion-soft)','var(--ion-tx)'],Suspended:['var(--bad-soft)','var(--bad)']};
+const HUES=[{h:285,n:'Ion violet'},{h:205,n:'Plasma cyan'},{h:165,n:'Mint'},{h:20,n:'Rose'},{h:75,n:'Amber'}];
+const SEL_OPTS=['Design engineer','Product designer','Frontend engineer','Founder'];
+const TABS=['Overview','Components','Tokens','Changelog'];
+const SEGS=['Day','Week','Month'];
+const TG={A:['var(--sf3)','var(--tx2)'],P:['var(--bg2)','var(--tx3)'],M:['var(--ion-soft)','var(--ion-tx)'],O:['color-mix(in oklch,var(--cyan) 18%,transparent)','var(--cyan)'],C:['color-mix(in oklch,var(--mint) 18%,transparent)','var(--mint)']};
+const IDX=[
+['Foundations','Canvas v4.0.0 Foundations.dc.html','01','Typography:A:typography|Text:P:typography|Icon:A:icon|Emblem:A:emblem|Swatch:A:emblem|Reveal:A:motion'],
+['Layout','Canvas v4.0.0 Layout.dc.html','02','Row & Column:A:layout|Container:A:layout|Grid:A:layout|Divider:A:layout|View:P:layout|ScrollView:P:layout|Pressable:P:layout|AppFrame:O:app-frame|DashboardGrid:O:dashboard-grid'],
+['Controls','Canvas v4.0.0 Controls.dc.html','03','Button:A:button|ButtonGroup:A:button-group|Switch:A:switch|Checkbox:A:switch|Radio:A:radio|Slider:A:slider|Stepper:A:slider|Chip:A:avatar|Avatar:A:avatar|Badge:A:avatar|Kbd:A:avatar'],
+['Inputs','Canvas v4.0.0 Inputs.dc.html','04','Input:A:input|TextInput:P:input-addons|Textarea:A:select|Select:A:select|InputOTP:A:select|Autocomplete:A:autocomplete|Listbox:A:autocomplete|PhoneInput:M:phone-input|Field:M:phone-input|Form:M:form|FilterPanel:O:filter-panel'],
+['Navigation','Canvas v4.0.0 Navigation.dc.html','05','Tabs:O:tabs|TabBar:O:tab-bar|Navbar:O:navbar|Sidebar:O:navbar|Breadcrumb:A:tabs|Pagination:A:tabs|Steps:O:steps|RowMenu:O:row-menu'],
+['Surfaces & data','Canvas v4.0.0 Data.dc.html','06','Card:M:card|Stats:M:stats|DataTable:O:data-table|StackedList:M:stacked-list|GridList:M:grid-list|MediaObject:M:media-object|Feed:M:feed|DescriptionList:M:description-list|ActionPanel:M:description-list|Accordion:M:accordion|Collapsible:M:accordion|CodeBlock:M:code-block|Carousel:O:carousel|Image:A:media|Video:A:media|QRCode:A:media|Calendar:O:calendar|Chat:O:chat|Board:O:board|Drag & drop:O:board'],
+['Charts','Canvas v4.0.0 Charts.dc.html','06','Chart:C:chart|LineChart:C:chart|AreaChart:C:area-chart|RangeAreaChart:C:range-area-chart|ComposedChart:C:composed-chart|Sparkline:C:sparkline|Histogram:C:histogram|BoxPlot:C:box-plot|ScatterPlot:C:scatter-plot|WaterfallChart:C:waterfall-chart|PieChart:C:pie-chart|Treemap:C:treemap|StackedBar:C:stacked-bar|FunnelChart:C:funnel-chart|Gauge:C:gauge|ProgressRing:C:progress-ring|RadialBarChart:C:radial-bar-chart|BulletChart:C:bullet-chart|RadarChart:C:radar-chart|MetricBreakdown:C:metric-breakdown|BarList:C:bar-list|DepthChart:C:depth-chart|Heatmap:C:heatmap|CandlestickChart:C:candlestick-chart|UptimeBar:C:uptime-bar|ServiceHealthList:C:uptime-bar|GeoMap:C:geo-map'],
+['Overlays & feedback','Canvas v4.0.0 Overlays.dc.html','07','Dialog:O:dialog|AlertDialog:M:alert-dialog|Drawer:O:drawer|ActionSheet:O:action-sheet|Popover:A:popover|Tooltip:A:popover|Dropdown:A:popover|Command:O:command|Wizard:O:wizard|Toast:O:toast|Alert:M:alert|EmptyState:M:alert|Progress:A:skeleton|Spinner:A:skeleton|Skeleton:A:skeleton']];
+const ICON_SET=['search','bell','settings','user','users','home','inbox','calendar','mail','lock','shield','sparkles','layers','layoutGrid','chartLine','database','cloud','code','gitBranch','rocket','zap','star','heart','trash2'];
+const VIEWS=[{n:'List',i:'layoutList'},{n:'Grid',i:'layoutGrid'},{n:'Board',i:'columns2'}];
+const FMTS=[{k:'b',n:'B',fw:'700',fs:'normal',td:'none'},{k:'i',n:'I',fw:'500',fs:'italic',td:'none'},{k:'u',n:'U',fw:'500',fs:'normal',td:'underline'}];
+const PLANS=[{k:'stable',n:'Stable',price:'3.0.0',i:'shieldCheck'},{k:'beta',n:'Beta',price:'3.1.0-beta.2',i:'gitBranch'},{k:'canary',n:'Canary',price:'nightly',i:'bird'}];
+const RUNTIMES=[['Expo','SDK 57'],['React Native','0.86'],['React Native Web','web'],['Next.js','App Router'],['Remix','web'],['Vite','web'],['Metro','bundler'],['Electron','desktop']];
+const LB=[{n:'Mentions',d:'Someone tags you in a comment or on a board.'},{n:'Token changes',d:'Any value in src/style/tokens.ts moves.'},{n:'Releases',d:'A new version of the kit reaches npm.'}];
+const FP=[{t:'Status',items:[['active','Active',18],['invited','Invited',4],['suspended','Suspended',2]]},{t:'Team',items:[['platform','Platform',6],['design','Design',4],['mobile','Mobile',5],['data','Data',6]]}];
+const PTABS=[['All',107],['Changed',64],['New',12]];
+const VTABS=[{n:'General',i:'settings2',b:'Name, URL and region. Shown to everyone in the workspace.'},{n:'Members',i:'users',b:'24 members and 3 pending invites. Roles map straight onto board permissions.'},{n:'Integrations',i:'plug',b:'GitHub and Figma are connected. Token changes open a pull request.'},{n:'Security',i:'shieldCheck',b:'SSO is enforced. Sessions end after 12 idle hours.'}];
+const ACC=[{t:'Is glass a component prop?',b:'No. Glass is a theming mode: <ThemeProvider glass>. Each surface then takes its own tint layer, from sheer shells to dense menus.'},{t:'Can I pass variant="primary"?',b:'String enums are not part of the API. Pass the boolean that names the meaning: <Button primary>.'},{t:'How do I rebrand?',b:'Set one hue. --ion is oklch(L C var(--hue)), so every fill, ring and glow moves together and stays in gamut.'}];
+const CODE={tsx:['import { ThemeProvider, Button } from "@nannier/canvas";','','export function Save() {','  return (','    <ThemeProvider dark glass>','      <Button variant="primary">Save</Button>','      <Button primary large>Save</Button>','    </ThemeProvider>','  );','}'],css:['[data-ion] {','  --hue: 285;','  --ion: oklch(.74 .17 var(--hue));','  --ion-soft: oklch(.74 .17 var(--hue) / .16);','  --ion-ring: oklch(.74 .17 var(--hue) / .35);','}']};
+const CODE_MARK={tsx:{4:'em',5:'del',6:'add'},css:{2:'em'}};
+const KW=new Set(['import','from','export','function','return','const']);
+function tok(line){const out=[];const re=/("[^"]*"|--[\w-]+|[A-Za-z_][\w-]*|\d[\d.]*|\s+|[^\sA-Za-z_"\d])/g;let m;while((m=re.exec(line))){const t=m[0];const before=line.slice(0,m.index);let c='var(--tx)';
+  if(t[0]==='"')c='var(--mint)';else if(t.startsWith('--'))c='var(--warn)';else if(KW.has(t))c='var(--ion-tx)';else if(/^[A-Z]/.test(t))c='var(--cyan)';else if(/^\d/.test(t))c='var(--mint)';else if(/^[a-z][\w-]*$/.test(t)&&line[m.index+t.length]==='(')c='var(--ion-tx)';else if(/^[a-z][\w-]*$/.test(t)&&/<[A-Z]\w*[^<>]*\s$/.test(before))c='var(--warn)';else if(/^[^\w\s]$/.test(t))c='var(--tx3)';
+  out.push({t,c});}return out;}
+const CAL_EV={5:[['--ion','10:00','Sprint planning','1h']],12:[['--cyan','14:00','Token review','45m'],['--ion','16:30','Design crit','30m']],14:[['--mint','11:00','Release v6.2','all day']],21:[['--ion','09:30','Accessibility audit','2h']],26:[['--ion','10:00','Design review','1h'],['--cyan','13:30','Token sync','45m'],['--mint','16:00','Release v6.3','all day']],28:[['--warn','15:00','Android blur rebuild','1h']],30:[['--cyan','12:00','Quarterly planning','3h']]};
+const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const SPARKS=[{n:'Signups',v:'1,204',c:'var(--c1)',d:[30,42,38,50,46,58,52,64,60,72,78,92]},{n:'Uptime',v:'99.94%',c:'var(--ok)',d:[99.2,99.6,99.4,99.9,99.7,99.8,100,99.9,99.5,100,99.9,100]},{n:'Errors',v:'312',c:'var(--bad)',d:[20,24,22,30,28,26,40,38,52,48,66,84]}];
+const SPARK_V=SPARKS.map((x,i)=>{const mn=Math.min(...x.d),mx=Math.max(...x.d);return{n:x.n,v:x.v,c:x.c,bt:i?'1px solid var(--ln)':'0',bars:x.d.map((v,j)=>({h:(18+(v-mn)/((mx-mn)||1)*82).toFixed(1)+'%',o:j===x.d.length-1?1:.32}))}});
+const HEAT=(()=>{const end=new Date(2026,9,25);const start=new Date(end);start.setDate(end.getDate()-34*7+1);let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};const lv=['var(--sf3)','color-mix(in oklch,var(--ion) 28%,var(--sf3))','color-mix(in oklch,var(--ion) 50%,var(--sf3))','color-mix(in oklch,var(--ion) 75%,var(--sf3))','var(--ion)'];let total=0;const weeks=[];
+  for(let w=0;w<34;w++){const d=[];let m='';for(let k=0;k<7;k++){const dt=new Date(start);dt.setDate(start.getDate()+w*7+k);if(k===0&&dt.getDate()<=7)m=MON[dt.getMonth()];const r=rnd();const n=Math.max(0,Math.floor(r*(.4+w/34*.6)*(k>=5?.45:1)*13-1));total+=n;const L=n===0?0:n<3?1:n<6?2:n<9?3:4;d.push({bg:lv[L],t:n+' commits · '+MON[dt.getMonth()]+' '+dt.getDate()});}weeks.push({m,d});}
+  return{weeks,total:total.toLocaleString('en-US')};})();
+const UPT=Array.from({length:60},(_,i)=>{const s=i===3?'unk':(i===17||i===41)?'warn':i===52?'bad':'ok';const dt=new Date(2026,9,26);dt.setDate(dt.getDate()-59+i);return{bg:{ok:'var(--ok)',warn:'var(--warn)',bad:'var(--bad)',unk:'var(--sf4)'}[s],t:MON[dt.getMonth()]+' '+dt.getDate()+' · '+{ok:'operational',warn:'degraded',bad:'down 18 min',unk:'no data'}[s]}});
+const SVC=[['API','operational','99.98%',[]],['Web app','operational','100%',[]],['Push notifications','degraded','98.21%',[22,26,27,29]],['Android capture module','down','96.40%',[12,24,25,29]]].map(([n,st,d,bad],i)=>({n,d,st:st[0].toUpperCase()+st.slice(1),c:{operational:'var(--ok)',degraded:'var(--warn)',down:'var(--bad)'}[st],soft:{operational:'var(--ok-soft)',degraded:'var(--warn-soft)',down:'var(--bad-soft)'}[st],bt:i?'1px solid var(--ln)':'0',p:Array.from({length:30},(_,j)=>bad.includes(j)?(st==='down'&&j===29?'var(--bad)':'var(--warn)'):'var(--ok)')}));
+function NE(lon,lat){const l=lon*Math.PI/180,p=lat*Math.PI/180,p2=p*p,p4=p2*p2;return{x:l*(0.8707-0.131979*p2+p4*(-0.013791+p4*(0.003971*p2-0.001529*p4))),y:p*(1.007226+p2*(0.015085+p4*(-0.044475+0.028874*p2-0.005916*p4)))};}
+const NMX=NE(180,0).x,NMY=NE(0,90).y;
+const GEO=[['San Francisco',-122.42,37.77,2400],['New York',-74.0,40.71,3100],['São Paulo',-46.63,-23.55,1300],['London',-0.13,51.51,2650],['Berlin',13.4,52.52,1920],['Lagos',3.38,6.52,640],['Mumbai',72.88,19.08,1480],['Singapore',103.82,1.35,1210],['Tokyo',139.69,35.69,2280],['Sydney',151.21,-33.87,1390]].map(([n,lo,la,c])=>{const q=NE(lo,la);return{n,x:((q.x/NMX+1)/2*100).toFixed(2)+'%',y:((-q.y/NMY+1)/2*100).toFixed(2)+'%',s:Math.round(8+Math.sqrt(c/3100)*30)+'px',t:n+' · '+c.toLocaleString('en-US')+' sessions'}});
+const GEO_TIP=(()=>{const b=GEO.find(g=>g.n==='Berlin');return{x:b.x,y:b.y,label:'Berlin · 1,920 sessions'}})();
+const CHAT0=[{me:false,t:'Hi. Ask how any Canvas component sizes itself, or which props it takes.'},{me:true,t:'Does Card take a style prop?'},{me:false,t:'No. There is no style escape hatch. Use the semantic booleans: <Card raised selected>.'}];
+const REPLIES=['Every visual variation is a boolean prop. Within one axis you pass at most one.','Components fill or hug. The parent provides the bounds: a Container step, a Grid tile or a Row span.','Glass is a theming mode, never a prop. Wrap the app in <ThemeProvider glass>.','Anything that changes shape measures its own width: compact, regular or wide.'];
+const LAY_ROWS=[{n:'Ada Lovelace',img:'docs/public/ada-lovelace.jpg',role:'Owner',st:'Active',amt:'$12.4k'},{n:'Grace Hopper',img:'docs/public/grace-hopper.jpg',role:'Admin',st:'Active',amt:'$9.1k'},{n:'Kira Tanaka',img:'docs/public/kira-tanaka.jpg',role:'Editor',st:'Invited',amt:'$4.3k'},{n:'Noor Park',img:'docs/public/noor-park.jpg',role:'Viewer',st:'Active',amt:'$7.8k'}];
+const RZ=[{n:'Phone',w:360,i:'smartphone'},{n:'Tablet',w:768,i:'tablet'},{n:'Desktop',w:1180,i:'monitor'},{n:'Fit',w:null,i:'maximize2'}];
+const TIERC={compact:['color-mix(in oklch,var(--mint) 16%,transparent)','var(--mint)'],regular:['color-mix(in oklch,var(--cyan) 16%,transparent)','var(--cyan)'],wide:['var(--ion-soft)','var(--ion-tx)']};
+const tierOf=(w)=>w<560?'compact':w<900?'regular':'wide';
+const MODE={fill:['var(--ion-soft)','var(--ion-tx)'],hug:['color-mix(in oklch,var(--cyan) 16%,transparent)','var(--cyan)'],fixed:['color-mix(in oklch,var(--mint) 16%,transparent)','var(--mint)'],tiles:['var(--warn-soft)','var(--warn)']};
+const SIZING=[
+['Controls','Button · ButtonGroup · Chip · Badge · Kbd','hug','hug','32 · 40 · 48','—','—','Labels never truncate. A Button takes block when its container is compact.'],
+['Marks','Switch · Checkbox · Radio · Avatar · Icon · Emblem','fixed','fixed','own size','—','—','Never reflow. The touch area grows to 44 / 48 with hitSlop; the shape stays put.'],
+['Fields','Input · Select · Textarea · Autocomplete · PhoneInput','fill','fill','40 · Textarea grows','160','—','Addons and icons stay; the value column absorbs the change.'],
+['Surfaces','Card · Alert · ActionPanel · EmptyState · MediaObject','fill','fill','hug content','240','—','Media stacks above the text when compact.'],
+['Tiles','Grid · Stats · GridList · DashboardGrid','tiles','tiles','hug','minTileWidth','columns · span','As many equal columns as fit. Spans reflow to narrowSpan, then stack.'],
+['Forms','Form · Field · DescriptionList','fill','fill','hug','280','xxl 672','Two columns from regular; stacked when compact.'],
+['Data','DataTable · StackedList · Calendar · Board','fill','fill','hug · scrolls','320','—','Table rows become cards when compact. Board columns scroll sideways.'],
+['Charts','all 27 chart types','fill','fill','fixed or aspect','240','—','The legend drops below the plot when compact; ticks thin out.'],
+['Navigation','Navbar · Tabs · Breadcrumb · Pagination · Steps','fill','fill','fixed','—','—','Links fold into a menu when compact; Pagination keeps prev and next.'],
+['Shells','Sidebar · FilterPanel · AppFrame · Page','fixed','fixed rail','fill','—','page step','Viewport tier: a rail from lg, a drawer below.'],
+['Overlays','Dialog · Drawer · Popover · ActionSheet · Wizard','fill','fill to cap','hug · body scrolls','—','md 448 · lg 512','Viewport tier: a bottom sheet on phones.']].map(([f,m,mode,w,h,min,max,r])=>({f,m,w,h,min,max,r,wb:MODE[mode][0],wc:MODE[mode][1]}));
+
+class Component extends DCLogic {
+  state={scheme:null,hue:null,sw:{a:true,b:false,c:true},cb:{a:true,b:false,c:'mixed'},radio:'stable',tab:1,seg:1,qty:2,sl:62,selOpen:true,selVal:'Design engineer',q:'',cmd:1,sel:{1:true,3:true},chips:{a:true,b:false,c:true},iosSw:true,andSw:true,
+    view:0,splitOpen:false,fmt:{b:true,i:false,u:false},bill:'y',pw:'canvas-v4-glass',pwShow:false,clr:'--ion',acQ:'re',lb:{0:true,2:true},fp:{active:true,mobile:true},formA:true,ptab:0,vtab:0,acc:0,colOpen:false,cbTab:'tsx',copied:false,car:0,calSel:26,
+    chatMsgs:CHAT0,chatDraft:'',chatTyping:false,dlEdit:false,dlVal:'Bobby Nannier',dlDraft:'',vw:1440,rw:1180,fw:0,sz:false,drag:false};
+  frameRef=React.createRef();chatRef=React.createRef();
+  stackRef=React.createRef();
+  componentDidMount(){
+    this._mm=(e)=>{const el=this.stackRef.current;if(!el)return;const r=el.getBoundingClientRect();if(!r.width)return;
+      const x=Math.max(-1,Math.min(1,(e.clientX-(r.left+r.width/2))/r.width));const y=Math.max(-1,Math.min(1,(e.clientY-(r.top+r.height/2))/r.height));
+      el.style.transform=`rotateX(${14-y*8}deg) rotateY(${-22+x*10}deg) rotateZ(3deg)`;};
+    window.addEventListener('mousemove',this._mm);
+    this._rs=()=>this.setState({vw:window.innerWidth});this._rs();window.addEventListener('resize',this._rs);
+    this._obs();this._chatBottom();
+  }
+  componentDidUpdate(){this._obs();const m=this.state.chatMsgs,t=this.state.chatTyping;if(m!==this._pm||t!==this._pt){this._pm=m;this._pt=t;this._chatBottom();}}
+  componentWillUnmount(){window.removeEventListener('mousemove',this._mm);window.removeEventListener('resize',this._rs);if(this._ro)this._ro.disconnect();clearTimeout(this._chatT);clearTimeout(this._ct);}
+  _obs(){const el=this.frameRef.current;if(!el||this._roEl===el||!window.ResizeObserver)return;if(this._ro)this._ro.disconnect();this._roEl=el;this._ro=new ResizeObserver(()=>{const w=el.offsetWidth;if(w&&w!==this.state.fw)this.setState({fw:w});});this._ro.observe(el);}
+  _chatBottom(){const c=this.chatRef.current;if(c)requestAnimationFrame(()=>{c.scrollTop=c.scrollHeight;});}
+  sendChat(){const t=(this.state.chatDraft||'').trim();if(!t)return;this.setState(s=>({chatMsgs:[...s.chatMsgs,{me:true,t}],chatDraft:'',chatTyping:true}));clearTimeout(this._chatT);this._chatT=setTimeout(()=>{this._ri=((this._ri||0)+1)%REPLIES.length;this.setState(s=>({chatMsgs:[...s.chatMsgs,{me:false,t:REPLIES[this._ri]}],chatTyping:false}));},1100);}
+  rzDown=(e)=>{const fr=this.frameRef.current;if(!fr)return;e.preventDefault();const x0=e.clientX,w0=fr.offsetWidth;const st=fr.parentElement;const max=st?st.clientWidth-48:2400;this.setState({drag:true,rw:w0});
+    const mv=(ev)=>this.setState({rw:Math.max(300,Math.min(max,Math.round(w0+(ev.clientX-x0))))});
+    const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);this.setState({drag:false});};
+    window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);};
+  extra(s,scheme,hue){
+    const self=this;
+    const swv=(v)=>({bg:v?'var(--ion)':'var(--sf4)',bd:v?'var(--ion)':'var(--ln2)',x:v?'translateX(18px)':'translateX(0)'});
+    const index=IDX.map(([cat,href,num,list])=>{const items=list.split('|').map(x=>{const [n,t,id]=x.split(':');return{n,t,href:href+'#c-'+id,tb:TG[t][0],tc:TG[t][1]}});return{cat,href,num,count:items.length,items}});
+    const calDays=[];for(let i=0;i<35;i++){const day=i-2;const out=day<1||day>31;const d=day<1?30+day:day>31?day-31:day;const ev=out?[]:(CAL_EV[day]||[]);const sel=!out&&day===s.calSel;const today=!out&&day===26;
+      calDays.push({d,c:sel?'var(--ion-fg)':out?'var(--tx3)':'var(--tx)',bg:sel?'var(--ion)':'transparent',sh:sel?'0 8px 20px -8px var(--ion-glow)':today?'inset 0 0 0 1.5px var(--ion)':'none',dots:ev.map(e=>sel?'var(--ion-fg)':'var('+e[0]+')'),on:()=>{if(!out)self.setState({calSel:day})}});}
+    const selEv=CAL_EV[s.calSel]||[];
+    const lines=CODE[s.cbTab],marks=CODE_MARK[s.cbTab];
+    const q=(s.acQ||'').trim().toLowerCase();
+    const acList=RUNTIMES.filter(([n])=>!q||n.toLowerCase().includes(q)).slice(0,4);
+    const fw=s.fw||s.rw||1180;const tier=tierOf(fw);const gutN=tier==='compact'?14:tier==='regular'?22:28;const inner=Math.min(fw,1024)-2*gutN;const wide=tier==='wide';
+    const formW=wide?(inner-14)/2.35:inner,tableW=wide?(inner-14)*1.35/2.35:inner;const formT=tierOf(formW),tableT=tierOf(tableW);const cols=Math.max(1,Math.min(4,Math.floor((inner+10)/142)));
+    const rules=[['Navbar folds its links into a menu',tier==='compact'],['Stats auto-fit '+cols+' up, no JS',true],['Form and table sit side by side',wide],['Form fields in two columns',formT!=='compact'],['Members table turns into cards',tableT==='compact'],['Buttons go block',formT==='compact']];
+    const vw=s.vw;const bp=vw<=640?'sm':vw<=768?'md':vw<=1024?'lg':vw<=1280?'xl':vw<=1536?'2xl':'base';const ff=vw<=640?'phone':vw<=1024?'tablet':'desktop';
+    const sz=s.sz;const off='0 solid transparent';
+    return {
+      index,iconSet:ICON_SET,ionVal:scheme==='dark'?'oklch(.74 .17 '+hue+')':'oklch(.5 .22 '+hue+')',
+      views:VIEWS.map((v,i)=>({...v,c:s.view===i?'var(--tx)':'var(--tx3)',on:()=>self.setState({view:i})})),viewX:(s.view*100)+'%',
+      splitOpen:s.splitOpen,toggleSplit:()=>self.setState({splitOpen:!s.splitOpen}),splitRot:s.splitOpen?'rotate(180deg)':'none',
+      fmts:FMTS.map(f=>{const on=!!s.fmt[f.k];return{...f,c:on?'var(--tx)':'var(--tx3)',bg:on?'var(--sf)':'transparent',sh:on?'var(--sh-sm)':'none',on:()=>self.patch('fmt',x=>({...x,[f.k]:!x[f.k]}))}}),
+      plans:PLANS.map(p=>{const on=s.radio===p.k;return{...p,bg:on?'var(--ion-soft)':'var(--bg2)',bd:on?'var(--ion)':'var(--ln)',sh:on?'0 0 0 4px var(--ion-ring)':'none',ic:on?'var(--ion-tx)':'var(--tx3)',b:on?'6px solid var(--ion)':'2px solid var(--ln2)',on:()=>self.setState({radio:p.k})}}),
+      billM:{b:s.bill==='m'?'6px solid var(--ion)':'2px solid var(--ln2)',on:()=>self.setState({bill:'m'})},billY:{b:s.bill==='y'?'6px solid var(--ion)':'2px solid var(--ln2)',on:()=>self.setState({bill:'y'})},
+      pw:s.pw,pwType:s.pwShow?'text':'password',pwIcon:s.pwShow?'eyeOff':'eye',onPw:(e)=>self.setState({pw:e.target.value}),togPw:()=>self.setState({pwShow:!s.pwShow}),
+      clr:s.clr,clrOn:s.clr.length>0,onClr:(e)=>self.setState({clr:e.target.value}),clrX:()=>self.setState({clr:''}),
+      acQ:s.acQ,onAc:(e)=>self.setState({acQ:e.target.value}),acEmpty:acList.length===0,
+      acRes:acList.map(([n,meta],i)=>{const ix=q?n.toLowerCase().indexOf(q):-1;return{a:ix>=0?n.slice(0,ix):n,m:ix>=0?n.slice(ix,ix+q.length):'',b:ix>=0?n.slice(ix+q.length):'',meta,bg:i===0?'var(--ion-soft)':'transparent',on:()=>self.setState({acQ:n})}}),
+      lbOpts:LB.map((o,i)=>{const on=!!s.lb[i];return{...o,bg:on?'var(--ion-soft)':'transparent',op:on?1:0,on:()=>self.patch('lb',x=>({...x,[i]:!x[i]}))}}),
+      fpGroups:FP.map(g=>({t:g.t,items:g.items.map(([k,n,c])=>{const on=!!s.fp[k];return{n,c,cbg:on?'var(--ion)':'transparent',cbd:on?'var(--ion)':'var(--ln2)',op:on?1:0,bbg:on?'var(--ion-soft)':'var(--sf3)',bc:on?'var(--ion-tx)':'var(--tx3)',on:()=>self.patch('fp',x=>({...x,[k]:!x[k]}))}})})),
+      fpCount:Object.values(s.fp).filter(Boolean).length,fpClear:()=>self.setState({fp:{}}),
+      swFormA:swv(s.formA),togFormA:()=>self.setState({formA:!s.formA}),
+      ptabs:PTABS.map(([n,k],i)=>{const on=s.ptab===i;return{n,k,bg:on?'var(--sf)':'transparent',c:on?'var(--tx)':'var(--tx2)',sh:on?'var(--sh-sm)':'none',bb:on?'var(--ion-soft)':'var(--sf4)',bc:on?'var(--ion-tx)':'var(--tx3)',on:()=>self.setState({ptab:i})}}),
+      vtabs:VTABS.map((t,i)=>({n:t.n,i:t.i,c:s.vtab===i?'var(--tx)':'var(--tx3)',on:()=>self.setState({vtab:i})})),vtabY:(s.vtab*36)+'px',vtabTitle:VTABS[s.vtab].n,vtabBody:VTABS[s.vtab].b,
+      accItems:ACC.map((a,i)=>({t:a.t,b:a.b,open:s.acc===i,rot:s.acc===i?'rotate(180deg)':'none',bt:i?'1px solid var(--ln)':'0',on:()=>self.setState({acc:s.acc===i?-1:i})})),
+      togCol:()=>self.setState({colOpen:!s.colOpen}),colOpen:s.colOpen,colRot:s.colOpen?'rotate(90deg)':'none',
+      cbTabs:[['tsx','Save.tsx'],['css','tokens.css']].map(([k,n])=>({n,c:s.cbTab===k?'var(--tx)':'var(--tx3)',bg:s.cbTab===k?'var(--sf3)':'transparent',on:()=>self.setState({cbTab:k})})),
+      cbLines:lines.map((l,i)=>{const k=marks[i];return{n:i+1,m:k==='del'?'−':k==='add'?'+':'',mc:k==='del'?'var(--bad)':'var(--ok)',bg:k==='em'?'var(--ion-soft)':k==='del'?'var(--bad-soft)':k==='add'?'var(--ok-soft)':'transparent',bar:k==='em'?'inset 2px 0 0 var(--ion)':k==='del'?'inset 2px 0 0 var(--bad)':k==='add'?'inset 2px 0 0 var(--ok)':'none',s:l?tok(l):[{t:' ',c:'var(--tx)'}]}}),
+      copy:()=>{try{navigator.clipboard&&navigator.clipboard.writeText(CODE[s.cbTab].join('\n')).catch(()=>{})}catch(_){}self.setState({copied:true});clearTimeout(self._ct);self._ct=setTimeout(()=>self.setState({copied:false}),1600);},
+      copyC:s.copied?'var(--ok)':'var(--tx2)',copyI:s.copied?'check':'copy',copyL:s.copied?'Copied':'Copy',
+      carX:(-s.car*100)+'%',carPrev:()=>self.setState({car:(s.car+3)%4}),carNext:()=>self.setState({car:(s.car+1)%4}),carDots:[0,1,2,3].map(i=>({w:i===s.car?'22px':'6px',bg:i===s.car?'var(--ion)':'var(--sf4)',on:()=>self.setState({car:i})})),
+      calDays,calLabel:DOW[(s.calSel+2)%7]+', Oct '+s.calSel+(selEv.length?' · '+selEv.length+(selEv.length>1?' events':' event'):''),calEmpty:selEv.length===0,
+      calEvents:selEv.map(([c,t,n,dur])=>({c:'var('+c+')',bg:'color-mix(in oklch,var('+c+') 14%,transparent)',t,n,dur})),
+      sparks:SPARK_V,heat:HEAT.weeks,heatTotal:HEAT.total,uptime:UPT,services:SVC,geo:GEO,geoTip:GEO_TIP,
+      chatRef:this.chatRef,chatTyping:s.chatTyping,chatDraft:s.chatDraft,onChat:(e)=>self.setState({chatDraft:e.target.value}),chatKey:(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();self.sendChat();}},chatSend:()=>self.sendChat(),
+      chatMsgs:s.chatMsgs.map(m=>m.me?{t:m.t,j:'flex-end',bg:'var(--ion)',c:'var(--ion-fg)',r:'18px 18px 6px 18px',bd:'0',sh:'0 8px 20px -10px var(--ion-glow)'}:{t:m.t,j:'flex-start',bg:'var(--sf)',c:'var(--tx)',r:'18px 18px 18px 6px',bd:'1px solid var(--ln)',sh:'var(--sh-sm)'}),
+      dlEdit:s.dlEdit,dlView:!s.dlEdit,dlVal:s.dlVal,dlDraft:s.dlDraft,onDl:(e)=>self.setState({dlDraft:e.target.value}),
+      dlKey:(e)=>{if(e.key==='Enter')self.setState(x=>({dlVal:x.dlDraft.trim()||x.dlVal,dlEdit:false}));if(e.key==='Escape')self.setState({dlEdit:false});},
+      dlSave:()=>self.setState(x=>({dlVal:x.dlDraft.trim()||x.dlVal,dlEdit:false})),dlCancel:()=>self.setState({dlEdit:false}),dlOpen:()=>self.setState(x=>({dlEdit:true,dlDraft:x.dlVal})),
+      vw,vpX:Math.min(99.5,vw/1800*100).toFixed(2)+'%',vpLabel:vw+'px · '+bp+' · '+ff,
+      rzPresets:RZ.map(r=>{const on=r.w===null?!s.rw:s.rw===r.w;return{n:r.n,i:r.i,c:on?'var(--tx)':'var(--tx3)',bg:on?'var(--sf)':'transparent',sh:on?'var(--sh-sm)':'none',on:()=>self.setState({rw:r.w})}}),
+      frameRef:this.frameRef,rzDown:this.rzDown,sz,togSz:()=>self.setState({sz:!s.sz}),
+      szSw:{bg:sz?'var(--ion)':'var(--sf4)',bd:sz?'var(--ion)':'var(--ln2)',x:sz?'translateX(14px)':'translateX(0)'},
+      szO:{fill:sz?'1.5px dashed var(--ion)':off,hug:sz?'1.5px dashed var(--cyan)':off,fixed:sz?'1.5px dashed var(--mint)':off,grid:sz?'1.5px dashed var(--warn)':off},
+      lay:{fw:s.rw?s.rw+'px':'100%',tr:s.drag?'none':'width .55s cubic-bezier(.2,.8,.2,1)',wl:fw+'px',tier,tb:TIERC[tier][0],tc:TIERC[tier][1],gut:gutN+'px',links:tier!=='compact',menu:tier==='compact',cols,
+        region:wide?'minmax(0,1fr) minmax(0,1.35fr)':'minmax(0,1fr)',formCols:formT==='compact'?'minmax(0,1fr)':'repeat(2,minmax(0,1fr))',formT,formWl:Math.round(formW)+'px',tableT,tableWl:Math.round(tableW)+'px',table:tableT!=='compact',cards:tableT==='compact',btnFlex:formT==='compact'?'1 1 0':'0 0 auto',
+        rules:rules.map(([t,on])=>({t,bg:on?'var(--ion-soft)':'transparent',c:on?'var(--ion-tx)':'var(--tx3)',bd:on?'var(--ion-ring)':'var(--ln)',dot:on?1:.35}))},
+      layRows:LAY_ROWS.map(r=>({...r,stBg:STATUS[r.st][0],stFg:STATUS[r.st][1]})),sizing:SIZING
+    };
+  }
+  patch(k,fn){this.setState(s=>({[k]:fn(s[k])}))}
+  slDown=(e)=>{const el=e.currentTarget;const r=el.getBoundingClientRect();
+    const set=(cx)=>this.setState({sl:Math.max(0,Math.min(100,Math.round((cx-r.left)/r.width*100)))});
+    set(e.clientX);try{el.setPointerCapture(e.pointerId)}catch(_){}
+    const mv=(ev)=>set(ev.clientX);const up=()=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up)};
+    el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);};
+  renderVals(){
+    const s=this.state,p=this.props;
+    const scheme=s.scheme??p.scheme??'dark';
+    const hue=s.hue??p.hue??285;
+    const glass=this.state.glass??p.glass??true;
+    const swv=(v)=>({bg:v?'var(--ion)':'var(--sf4)',bd:v?'var(--ion)':'var(--ln2)',x:v?'translateX(18px)':'translateX(0)'});
+    const cbv=(v)=>({bg:v?'var(--ion)':'transparent',bd:v?'var(--ion)':'var(--ln2)',chk:v===true?1:0,dash:v==='mixed'?1:0});
+    const rdv=(k)=>({b:s.radio===k?'6px solid var(--ion)':'2px solid var(--ln2)',on:()=>this.setState({radio:k})});
+    const cycle=(v)=>v===true?false:v===false?'mixed':true;
+    const chip=(k)=>{const v=s.chips[k];return{bg:v?'var(--ion-soft)':'transparent',bd:v?'var(--ion)':'var(--ln2)',c:v?'var(--ion-tx)':'var(--tx2)',on:()=>this.patch('chips',x=>({...x,[k]:!x[k]}))}};
+    const filt=CMDS.filter(c=>!s.q||c.n.toLowerCase().includes(s.q.toLowerCase()));
+    let lastG=null;
+    const cmds=filt.map((c,i)=>{const showG=c.g!==lastG;lastG=c.g;const act=i===s.cmd;
+      return{...c,showG,bg:act?'var(--ion-soft)':'transparent',c:act?'var(--tx)':'var(--tx2)',
+        on:()=>{const next={cmd:i};if(c.act==='scheme')next.scheme=scheme==='dark'?'light':'dark';
+          if(c.act==='hue')next.hue=HUES[(HUES.findIndex(h=>h.h===hue)+1)%HUES.length].h;this.setState(next);}}});
+    const rows=PEOPLE.map((r,i)=>{const on=!!s.sel[i];const st=STATUS[r.st];
+      return{...r,bg:on?'var(--ion-soft)':'transparent',cbg:on?'var(--ion)':'transparent',cbd:on?'var(--ion)':'var(--ln2)',cop:on?1:0,stBg:st[0],stFg:st[1],
+        toggle:()=>this.patch('sel',x=>({...x,[i]:!x[i]}))}});
+    const selCount=Object.values(s.sel).filter(Boolean).length;
+    const allOn=selCount===PEOPLE.length;
+    return {
+      stackRef:this.stackRef,railCols:this.state.vw<760?'minmax(0,1fr)':'200px minmax(0,1fr)',railD:this.state.vw<760?'none':'block',
+      scheme,schemeX:scheme==='dark'?'0%':'100%',
+      setDark:()=>this.setState({scheme:'dark'}),setLight:()=>this.setState({scheme:'light'}),
+      darkC:scheme==='dark'?'var(--tx)':'var(--tx3)',lightC:scheme==='light'?'var(--tx)':'var(--tx3)',
+      hue,bf:glass?'':'none',gl:glass?'':'var(--sf2)',toggleGlass:()=>this.setState({glass:!glass}),glassP:glass?'true':'false',glassC:glass?'var(--tx)':'var(--tx3)',glassTr:glass?'var(--ion)':'var(--sf4)',glassX:glass?'translateX(10px)':'none',
+      hues:HUES.map(h=>({...h,ring:h.h===hue?'0 0 0 2px var(--sf),0 0 0 4px var(--tx2)':'none',on:()=>this.setState({hue:h.h})})),
+      swatches:SWATCHES,
+      swA:swv(s.sw.a),swB:swv(s.sw.b),swC:swv(s.sw.c),
+      togA:()=>this.patch('sw',x=>({...x,a:!x.a})),togB:()=>this.patch('sw',x=>({...x,b:!x.b})),togC:()=>this.patch('sw',x=>({...x,c:!x.c})),
+      cbA:cbv(s.cb.a),cbB:cbv(s.cb.b),cbC:cbv(s.cb.c),
+      tcbA:()=>this.patch('cb',x=>({...x,a:!x.a})),tcbB:()=>this.patch('cb',x=>({...x,b:!x.b})),tcbC:()=>this.patch('cb',x=>({...x,c:cycle(x.c)})),
+      rd:{stable:rdv('stable'),beta:rdv('beta'),canary:rdv('canary')},
+      tabs:TABS.map((n,i)=>({n,c:i===s.tab?'var(--tx)':'var(--tx3)',on:()=>this.setState({tab:i})})),tabX:(s.tab*100)+'%',
+      segs:SEGS.map((n,i)=>({n,c:i===s.seg?'var(--tx)':'var(--tx3)',on:()=>this.setState({seg:i})})),segX:(s.seg*100)+'%',
+      qty:s.qty,inc:()=>this.setState({qty:Math.min(99,s.qty+1)}),dec:()=>this.setState({qty:Math.max(0,s.qty-1)}),
+      sl:s.sl,slPct:s.sl+'%',slDown:this.slDown,
+      chipA:chip('a'),chipB:chip('b'),chipC:chip('c'),
+      selOpen:s.selOpen,selVal:s.selVal,toggleSel:()=>this.setState({selOpen:!s.selOpen}),
+      selRot:s.selOpen?'rotate(225deg) translate(-1px,-1px)':'rotate(45deg) translate(-1px,-1px)',selBd:s.selOpen?'var(--ion)':'var(--ln2)',selSh:s.selOpen?'0 0 0 4px var(--ion-ring)':'none',
+      selOpts:SEL_OPTS.map(o=>({label:o,chk:o===s.selVal?1:0,bg:o===s.selVal?'var(--ion-soft)':'transparent',on:()=>this.setState({selVal:o,selOpen:false})})),
+      q:s.q,onQ:(e)=>this.setState({q:e.target.value,cmd:0}),cmds,cmdEmpty:cmds.length===0,
+      rows,selCount,allBg:allOn?'var(--ion)':'transparent',allBd:allOn?'var(--ion)':'var(--ln2)',allOp:allOn?1:0,
+      toggleAll:()=>this.setState({sel:allOn?{}:Object.fromEntries(PEOPLE.map((_,i)=>[i,true]))}),
+      iosSw:{bg:s.iosSw?'var(--ion)':'var(--sf4)',x:s.iosSw?'translateX(20px)':'translateX(0)'},togIos:()=>this.setState({iosSw:!s.iosSw}),
+      andSw:{bg:s.andSw?'var(--ion)':'var(--sf4)',bd:s.andSw?'var(--ion)':'var(--tx3)',x:s.andSw?'translateX(20px)':'translateX(0)',sz:s.andSw?'24px':'16px',tbg:s.andSw?'var(--ion-fg)':'var(--tx3)',m:s.andSw?'2px':'6px'},togAnd:()=>this.setState({andSw:!s.andSw}),
+      ...this.extra(s,scheme,hue)
+    };
+  }
+}
+</script>
+</body>
+</html>

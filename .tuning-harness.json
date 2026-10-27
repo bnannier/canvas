@@ -92,6 +92,16 @@
         "tools/native/reference/solid-state-washes/control-boundaries-switch-off-dark.png"
       ],
       "card": "tools/native/liquid-motion.md#solid-state-washes"
+    },
+    {
+      "name": "v4-glass",
+      "what": "the Canvas v4 hand-off's glass: blur(20px) saturate(1.6) under the card surface at 62%, a 1 px rim in the strong hairline, the three-step shadow ladder and the 2 px scrim blur, on the hand-off's Foundations Depth card in light and dark",
+      "run": "captured 2026-10-27 by tools/v4/capture-references.ts from tools/v4/handoff at 1440 wide in Chromium",
+      "strips": [
+        "tools/native/reference/v4-glass/depth-light.png",
+        "tools/native/reference/v4-glass/depth-dark.png"
+      ],
+      "card": "tools/native/liquid-motion.md#v4-glass"
     }
   ],
   "harness": {

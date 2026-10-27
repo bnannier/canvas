@@ -230,7 +230,7 @@ for (const scheme of ["light", "dark"] as const) {
     render(<ThemeProvider scheme={scheme} solid><EscapeLayersBody scenario="glass-messages" /></ThemeProvider>);
     const description = "Check the refund amount and reason before continuing.";
     const message = "Choose a sharing action for this document.";
-    const color = colorsByScheme[scheme][scheme === "light" ? "popover-foreground" : "muted-foreground"];
+    const color = colorsByScheme[scheme]["muted-foreground"];
     const rgb = [1, 3, 5].map(index => parseInt(color.slice(index, index + 2), 16));
     const expectMessageColor = (node: HTMLElement) => {
       const rendered = /^rgba?\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/.exec(getComputedStyle(node).color);

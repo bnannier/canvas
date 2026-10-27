@@ -77,6 +77,31 @@ function srgbOf([L, a, b]: [number, number, number]): [number, number, number] {
 }
 
 /**
+ * An `oklch(L C h)` colour as the `#rrggbb` a browser paints for it: Oklab to linear sRGB,
+ * then each channel clipped to the displayable range, which is what Chrome renders for the
+ * v4 hand-off's accents (tools/v4/accent-samples.json). The accent palettes are authored in
+ * oklch and React Native cannot parse it, so the kit converts here.
+ */
+export function oklchHex(L: number, C: number, hueDeg: number): string {
+  const h = (hueDeg * Math.PI) / 180;
+  const [r, g, b] = srgbOf([L, C * Math.cos(h), C * Math.sin(h)]);
+  return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * A colour's oklch lightness, chroma and hue (degrees, 0..360), the inverse of `oklchHex`, or
+ * null when it is not opaque #rgb or #rrggbb hex. The token gates read a neutral's tint
+ * with it: a hand-off neutral is hex, and its hue and chroma say which family it is in.
+ */
+export function oklchOf(color: string): [number, number, number] | null {
+  const ch = hexChannels(color);
+  if (!ch) return null;
+  const [L, a, b] = oklabOf(ch);
+  const hue = (Math.atan2(b, a) * 180) / Math.PI;
+  return [L, Math.hypot(a, b), hue < 0 ? hue + 360 : hue];
+}
+
+/**
  * Blend `over` into `base` by `t` (a 0..1 fraction) in the Oklab space, returning
  * an `rgb(...)` string. The RN equivalent of the hand-off's
  * `color-mix(in oklab, <over> <t*100>%, <base>)`, matching it channel for channel,
@@ -133,6 +158,22 @@ export function contrastRatio(a: string, b: string): number {
   if (!channelsOf(a) || !channelsOf(b)) return 1;
   const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * The WCAG 2 contrast of `ink` on `tint` composited over the opaque `base`: the lower of the
+ * exact blend's and `composite`'s rounded channels', so a floor solved with it holds whichever
+ * way a renderer resolves the blend (1 when a colour does not parse).
+ */
+export function contrastOver(tint: string, base: string, ink: string): number {
+  const t = channelsOf(tint);
+  const b = channelsOf(base);
+  const i = channelsOf(ink);
+  if (!t || !b || !i) return 1;
+  const a = t[3];
+  const lum = ([r, g, bl]: readonly number[]) => 0.2126 * toLinear(r!) + 0.7152 * toLinear(g!) + 0.0722 * toLinear(bl!);
+  const [hi, lo] = [lum([0, 1, 2].map((k) => t[k]! * a + b[k]! * (1 - a))), lum(i)].sort((x, y) => y - x);
+  return Math.min((hi! + 0.05) / (lo! + 0.05), contrastRatio(composite(tint, base), ink));
 }
 
 /** The ink a colour carries best: white or near-black, whichever contrasts more. */

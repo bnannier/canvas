@@ -48,7 +48,7 @@ export function AvatarBody() {
   return <ThemeProvider glass={glass} solid={!glass} dark={dark} light={!dark} mint={mint}>
     <Column relaxed>
       <Typography h3>Identity discs</Typography>
-      <Typography testID="avatar-mode">Mode: {glass ? "glass" : "solid"}; scheme: {dark ? "dark" : "light"}; palette: {mint ? "mint" : "blush"}</Typography>
+      <Typography testID="avatar-mode">Mode: {glass ? "glass" : "solid"}; scheme: {dark ? "dark" : "light"}; palette: {mint ? "mint" : "violet"}</Typography>
       <Typography testID="avatar-presses">Presses: {presses}</Typography>
       <Row snug wrap>
         <Button onPress={() => setGlass((value) => !value)} testID="avatar-material-toggle">Switch material</Button>

@@ -10,10 +10,11 @@ import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 
 // `action` / `action-foreground`: the call-to-action fill and its ink, apart from
-// `primary` (what is selected, checked, current, linked or focused). The Dark Factory
-// design language paints actions green and selection violet; a legacy map without the
-// role paints actions with `primary`. This file pins the seam, the fallback and the
-// override rules.
+// `primary` (what is selected, checked, current, linked or focused). The v4 hand-off
+// draws both in its one accent, so the shipped palettes carry `action` equal to `primary`;
+// the seam stays for a theme that paints them apart (an `action` override), and a legacy
+// map without the role paints actions with `primary`. This file pins the seam, the
+// fallback and the override rules.
 
 afterEach(cleanup);
 
@@ -36,12 +37,12 @@ function Actions() {
 
 describe("the action role", () => {
   for (const scheme of ["light", "dark"] as const) {
-    it(`paints ${scheme} actions with the scheme's action pair, apart from primary`, () => {
+    it(`paints ${scheme} actions with the scheme's action pair, the hand-off's one accent`, () => {
       render(<ThemeProvider scheme={scheme}><Actions /></ThemeProvider>);
       const tokens = colorsByScheme[scheme];
       expect(tokens.action).toBeDefined();
       expect(fillOf("Save")).toBe(rgb(tokens.action!));
-      expect(fillOf("Save")).not.toBe(rgb(tokens.primary));
+      expect(tokens.action).toBe(tokens.primary);
       expect(inkOf("Save")).toBe(rgb(tokens["action-foreground"]!));
     });
   }

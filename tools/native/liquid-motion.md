@@ -940,6 +940,9 @@ judge before any completion claim.
 
 ### df-argus-shell
 
+- **Retired 2026-10-27:** the v4 redesign replaced this page look with the hand-off's flat
+  page (`v4-glass`, its Page item); the card stays as the record of what the DF page look
+  was judged against.
 - **What:** the Dark Factory (DF) page look on its shipped web app, Argus `/roster`
   (then at `~/Workspaces/Dark Factory`, since moved to `~/Workspaces/Argus`; commit cf7c580,
   `bun run dev` on port 8090), the
@@ -1041,6 +1044,31 @@ judge before any completion claim.
   over its BlurView; and the Dialog's and AlertDialog's scrim paints its dim on its blur
   layer, one element as DF's scrim is, where the layer had blurred beneath a node that wore
   the dim (glass-surface-scrim-self-sample-1).
+
+### v4-glass
+
+- **What:** the Canvas v4 hand-off's glass material ("Light as material"), the web glass
+  Canvas takes from v4.0.0 on, replacing `df-frost`. Recorded 2026-10-27 from the vendored
+  hand-off (`tools/v4/handoff`, `Canvas v4.0.0 Foundations.dc.html`, its "Depth ·
+  Elevation" card) by `tools/v4/capture-references.ts` at 1440 wide, Chromium, in both
+  schemes.
+- **Strips:** `tools/native/reference/v4-glass/depth-light.png`,
+  `tools/native/reference/v4-glass/depth-dark.png`.
+- **Material:** `backdrop-filter: blur(20px) saturate(1.6)` (`--bf`); the fill over it is
+  the card surface at 62% (`--gl`: white 0.62 light, rgba(18,18,26,0.62) dark); a 1 px rim
+  in the strong hairline (`--ln2`: ink 0.16 light, white 0.16 dark); no refraction and no
+  specular sweep. The page behind it reads through saturated, so an accent glow under a
+  pane tints the pane.
+- **Shadows beside it:** sm `0 1px 2px`, md `0 12px 32px -10px`, lg `0 30px 80px -16px`;
+  light adds a 1 px ink ring at 3%, dark a 1 px inset top highlight.
+- **Scrim:** `--scrim` rgba(17,17,24,0.3) light, rgba(5,5,10,0.55) dark, over a 2 px blur.
+- **Page:** flat, the scheme's `--bg` (#f2f2f7 light, #0a0a0f dark) in every palette; no
+  gradient, no orbs, no frosted shell. The hand-off's grain over it lands with the docs
+  shell (Phase 3). Canvas: `pageColor` (`docs/src/shell/page-look.ts`).
+- **Canvas:** `WEB_FROST` and `WEB_TINTS` (`src/style/glass-surface/web-frost.ts`); iOS
+  and Android keep their native materials and take the public `glassByScheme` tints
+  (`src/style/glass-surface/ios-tints.ts` drops the GS-8 dark control override, since the
+  v4 dark puck is the hand-off's raised surface).
 
 ### df-hover-lift
 
@@ -1484,3 +1512,17 @@ seconds per cycle, centered beside the project selector.
 2026-10-15 follow-up: owner requested red instead of amber. The shipped Argus desktop-shell browser check samples rgba(239,68,68,0.6); all three wave transforms remain none. Screenshot: `/private/tmp/argus-attention-red-tauri.png`. Timing, geometry and reduced-motion behavior are unchanged.
 
 2026-10-15 heartbeat follow-up: owner requested outward AND inward travel, like a heartbeat. Three fixed red glow bands now follow a shaped 1.8-second channel: strong swell/return, softer swell/return, pause. On the shipped Argus desktop-shell browser surface, sampled outer opacity at 144/324/504/936/1440 ms was 0.0066/0.7486/0.0046/0.3399/0.0. Inner opacity returned from 0.289 at the outer peak to 0.734 on the return. Every transform remains none, no animated inner border, reduced motion has no infinite animation. Native paint remains unverified.
+
+## Canvas v4 foundations, from 2026-10-27
+
+Phase 1 of the v4 redesign (`audit/v4-redesign/PLAN.md`): the tokens, the glass material, the
+shadows and the type move to the hand-off. The docs page look (`page-look.ts`) first mapped the
+five palettes onto the DF looks, then took the hand-off's flat page within the same phase.
+
+| Date | Effect | Runtime and device | Revision | Surface | Values tried | Frame p95 / max | Comparison | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-27 | v4-glass, web frost | Metro dev server, built-in browser pane (Chromium), 800 x 600 | bcac3458 + uncommitted Phase 1 | shipped `/components/card`, web, light, glass, violet | `WEB_FROST` blur 20, saturate 1.6, rim ink/white 0.16; `WEB_TINTS` functional 0.62, content 0.8, control #f1f1f6 at 0.72, dense 0.92 | not measured (static material) | Computed style on every glass pane reads `blur(20px) saturate(1.6)`, as the hand-off's `--bf`. The page behind the panes is still the Dark Factory blush gradient and orbs, and the text is still Manrope, so the frost reads over a different backdrop than the reference's. | differs: page backdrop is the DF blush page look, not the v4 page (Phase 3); text face not yet Instrument Sans (Phase 1 font swap pending); pane radii and component skins not yet v4 (Phases 2 and 4) | screenshot `/Users/bnannier/.claude/projects/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/tool-results/mcp-Claude_Browser-blob-1793083645265-yptknd.jpg`; reference strips `tools/native/reference/v4-glass/` |
+| 2026-10-27 | v4-glass, iOS tints | not run on a simulator | bcac3458 + uncommitted Phase 1 | shipped `/components/card`, iOS, dark, glass: not recorded | `IOS_GLASS.dark` = `darkGlass` (GS-8 override removed) | not measured | Not recorded on iOS in this phase; the value follows the public dark set, whose control tint is now the hand-off's raised surface. test/ios-tints.test.ts holds the table. | differs: not yet verified on the iOS simulator (Phase 8 native checks) | none |
+| 2026-10-27 | docs page look palette mapping | Metro dev server, built-in browser pane | bcac3458 + uncommitted Phase 1 | shipped `/components/card`, web, light, glass, violet | `lookFor`: dark to dark, mint to mint, every other palette to blush | not measured | The page paints the blush look for violet as it did for blush before; no page-look value changed. | differs: the v4 page look itself lands in Phase 3 | same screenshot as the first row |
+| 2026-10-27 | docs page, flat v4 page replacing the DF page look | Metro dev server, built-in browser pane (Chromium), 800 x 600 and 1280 x 800 | bcac3458 + uncommitted Phase 1 | shipped `/components/card` (web, light, glass, violet, 800 x 600) and `/components/button` (web, dark, glass, mint, 1280 x 800) | `pageColor` = the scheme's `background`; the gradient, orbs, frosted shell and wedges deleted | not measured (static) | The backdrop's computed background reads rgb(242, 242, 247) light and rgb(10, 10, 15) dark, the hand-off's `--bg` in both schemes, with no SVG under it; it reports the resolved accent (#5f3ed8 violet light, #00cb90 mint dark). test/docs-page-look.test.ts holds `pageColor` to the hand-off's `--bg` in every palette. | differs: the hand-off's grain is not drawn yet (Phase 3 docs shell); the navbar is not yet the floating pill (Phase 3); text and component skins not yet v4 (Phases 2 and 4) | screenshots `/Users/bnannier/.claude/projects/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/tool-results/mcp-Claude_Browser-blob-1793085931904-vk72lh.jpg`, `.../mcp-Claude_Browser-blob-1793085941212-qyu9o9.jpg` |
+

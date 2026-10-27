@@ -594,10 +594,13 @@ describe("axes are declared, not hand-rolled", () => {
 describe("axis tables load without React Native", () => {
   // The docs generator reads the axis tables to write each component's Precedence
   // section, and it runs under plain Bun with no React Native resolution. So a table, and
-  // src/style/axis.ts under it, may load values only from the axis primitive and the
-  // tokens (which import nothing); a component's props type comes in with `import type`,
-  // which the transpiler erases.
-  const LOADABLE = new Set(["src/style/axis.ts", "src/style/tokens.ts"]);
+  // src/style/axis.ts under it, may load values only from the axis primitive, the tokens
+  // and the pure colour math the tokens compute the accent with (src/style/color.ts,
+  // which imports nothing); a component's props type comes in with `import type`, which
+  // the transpiler erases.
+  // The token table and the pure colour modules it is computed with (ink-floor.ts solves its
+  // text inks from color.ts alone), none of which loads React Native.
+  const LOADABLE = new Set(["src/style/axis.ts", "src/style/tokens.ts", "src/style/color.ts", "src/style/ink-floor.ts"]);
   const tables = sources.filter(({ file }) => file.endsWith(".axes.ts")).map(({ file }) => file);
 
   // The modules a file loads at runtime: every import or re-export that is not type-only.

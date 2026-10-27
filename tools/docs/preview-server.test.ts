@@ -11,7 +11,7 @@ import { themeFromURL } from "../../docs/src/theme/theme-links";
 // work's Preview links. Its shell quoting is checked against real shells, not against
 // a string: `adb shell` joins its argv with spaces and the device's sh parses the line
 // again, so an unquoted `&` once backgrounded `am start` and the app opened with the
-// link's first axis only (a mint link painted blush), and the hand-run command the 502
+// link's first axis only (a mint link painted violet), and the hand-run command the 502
 // page prints is pasted into zsh, where an unquoted `?` is a glob that matches nothing
 // and aborts the line.
 
@@ -90,15 +90,15 @@ describe("preview opener appearance queries", () => {
   });
 
   it("refuses a value outside an axis's set, naming the axis and its values", () => {
-    expect(appearanceQuery(new URLSearchParams("palette=teal"))).toEqual({ invalid: { axis: "palette", values: ["blush", "mint"] } });
-    expect(appearanceQuery(new URLSearchParams("palette=Mint"))).toEqual({ invalid: { axis: "palette", values: ["blush", "mint"] } });
+    expect(appearanceQuery(new URLSearchParams("palette=teal"))).toEqual({ invalid: { axis: "palette", values: ["violet", "cyan", "mint", "rose", "amber"] } });
+    expect(appearanceQuery(new URLSearchParams("palette=Mint"))).toEqual({ invalid: { axis: "palette", values: ["violet", "cyan", "mint", "rose", "amber"] } });
     expect(appearanceQuery(new URLSearchParams("scheme=system&palette=mint"))).toEqual({ invalid: { axis: "scheme", values: ["light", "dark"] } });
     expect(appearanceQuery(new URLSearchParams("surface="))).toEqual({ invalid: { axis: "surface", values: ["solid", "glass"] } });
   });
 
   it("reads the first value of a repeated axis, as the app does", () => {
     expect(appearanceQuery(new URLSearchParams("palette=mint&palette=teal"))).toEqual({ suffix: "?palette=mint" });
-    expect(appearanceQuery(new URLSearchParams("palette=teal&palette=mint"))).toEqual({ invalid: { axis: "palette", values: ["blush", "mint"] } });
+    expect(appearanceQuery(new URLSearchParams("palette=teal&palette=mint"))).toEqual({ invalid: { axis: "palette", values: ["violet", "cyan", "mint", "rose", "amber"] } });
   });
 
   it("builds a deep link the app reads every axis back from", () => {
@@ -185,7 +185,7 @@ describe("preview opener server", () => {
         const refused = await request(`${base}/${platform}?route=components/button&scheme=light&palette=teal`);
         expect(refused.status).toBe(400);
         expect(refused.body).toContain("Invalid <code>palette</code>");
-        expect(refused.body).toContain("<code>blush</code>, <code>mint</code>");
+        expect(refused.body).toContain("<code>violet</code>, <code>cyan</code>, <code>mint</code>, <code>rose</code>, <code>amber</code>");
       }
 
       const route = await request(`${base}/ios?route=../secret`);

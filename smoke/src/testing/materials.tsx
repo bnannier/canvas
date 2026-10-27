@@ -36,7 +36,7 @@ function LiveEditor({ onFocus }: { onFocus: () => void }) {
 export function MaterialsBody() {
   const [glass, setGlass] = useState(false);
   const [dark, setDark] = useState(false);
-  // The palette driver: Dark Factory's mint against its blush, for the frost's mint row.
+  // The palette driver: the mint accent against the default violet.
   const [mint, setMint] = useState(false);
   const [nested, setNested] = useState(false);
   const [message, setMessage] = useState("Ready");
@@ -69,7 +69,7 @@ export function MaterialsBody() {
     <Column relaxed>
       <Typography h3>Material lifecycle</Typography>
       <Typography testID="material-mode">Mode: {glass ? "glass" : "solid"}; scheme: {dark ? "dark" : "light"}</Typography>
-      <Typography testID="material-palette">Palette: {mint ? "mint" : "blush"}</Typography>
+      <Typography testID="material-palette">Palette: {mint ? "mint" : "violet"}</Typography>
       <Row snug wrap>
         <Button onPress={() => setGlass((value) => !value)} testID="material-toggle">Switch material</Button>
         <Button onPress={() => setDark((value) => !value)}>Switch scheme</Button>

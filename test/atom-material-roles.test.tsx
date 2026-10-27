@@ -22,7 +22,7 @@ import { Emblem } from "../src/atoms/emblem/emblem.tsx";
 import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
 import { identityDisc, identityHue } from "../src/style/identity-hue.ts";
 import { channelsOf } from "../src/style/color.ts";
-import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
+import { WEB_FROST, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 
 const restores: Array<() => void> = [];
 
@@ -98,7 +98,7 @@ describe("atom surface roles and capability fallback", () => {
     // The web field is clear: its material frosts nothing at all.
     expect(frostOf(material("name"))).toBeNull();
     // The native wells are static frost: Dark Factory's one blur, with no saturation shift.
-    for (const id of ["ios-name", "android-name"]) expect(frostOf(material(id))?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+    for (const id of ["ios-name", "android-name"]) expect(frostOf(material(id))?.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
   });
 
   it("preserves complete solid fill and boundaries when no material can render", () => {
@@ -183,7 +183,7 @@ describe("identity material ownership", () => {
       for (const id of ["group", "emblem"]) {
         const painted = materials(screen.getByTestId(id));
         expect(painted).toHaveLength(1);
-        expect(frostOf(painted[0])?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+        expect(frostOf(painted[0])?.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
       }
       for (const id of ["identity", "photo"]) expect(materials(screen.getByTestId(id))).toHaveLength(0);
       // The disc's solid stand-in is its gradient's midpoint (the SVG itself renders to

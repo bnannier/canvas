@@ -232,7 +232,7 @@ export const webSkin: CommandSkin = {
   // (never a color emoji).
   searchGlyphSize: 16,
   searchPlaceholder: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
-  // The palette card: the 12px menu corner.
+  // The palette card: the 16px menu corner.
   cardShape: CARD_CORNER,
   // A 40px trigger, the height of its own result rows (10 above and below a 20 line).
   triggerMinHeight: 40,

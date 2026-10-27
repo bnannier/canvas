@@ -1,4 +1,4 @@
-import { Typography, Row, Icon, Button, ButtonGroup, liquidGlassAvailable } from "@nannier/canvas";
+import { Typography, Row, Icon, Button, ButtonGroup, liquidGlassAvailable, type Palette } from "@nannier/canvas";
 import { useDocsTheme } from "../theme/docs-theme";
 
 // The docs' appearance controls. The scheme + surface toggles show always-visible in the
@@ -9,43 +9,43 @@ import { useDocsTheme } from "../theme/docs-theme";
 // surface MODE, not the material a given platform happens to paint for it (Liquid Glass,
 // a lens, or a frost).
 //
-// The Blush/Mint palette control shows in the light scheme only (the dark scheme has one
-// palette, so the choice has nothing to paint there): in the labeled form, as the
-// Android menu drawer's footer row (PaletteRow), and as the Palette section of the iOS
-// header menu (paletteMenuSection). The desktop web Topbar does not carry it: the bar is
-// narrowest at the desktop cut, 775 px beside the 240 px rail in a 1025 px window, where
-// the longest page title (Open Source Licenses) leaves 116 px free and the control needs
-// 124 (its 112 px group plus the cluster's 12 px gap). A tablet-width window, 768 px,
-// shows the narrow shell instead, whose drawer carries the labeled form.
+// The palette control lists the kit's five accent hues and shows in both schemes, since
+// a palette paints its accent in either: in the labeled form, as the Android menu
+// drawer's footer row (PaletteRow), and as the Palette section of the iOS header menu
+// (paletteMenuSection). The desktop web Topbar does not carry it: the bar is narrowest at
+// the desktop cut, where the longest page title leaves no room for five segments. A
+// tablet-width window shows the narrow shell instead, whose drawer carries the labeled
+// form.
 
-export type Palette = "blush" | "mint";
+export type { Palette };
 
-/** The light palettes in the order every palette control lists them. */
-const PALETTES: readonly { value: Palette; label: string }[] = [
-  { value: "blush", label: "Blush" },
+/** The palettes in the order every palette control lists them, the kit's default first. */
+const PALETTE_OPTIONS: readonly { value: Palette; label: string }[] = [
+  { value: "violet", label: "Violet" },
+  { value: "cyan", label: "Cyan" },
   { value: "mint", label: "Mint" },
+  { value: "rose", label: "Rose" },
+  { value: "amber", label: "Amber" },
 ];
 
-/** The Blush/Mint segmented control; renders nothing in the dark scheme. */
+/** The palette segmented control. */
 export function PaletteToggle() {
-  const { scheme, palette, setPalette } = useDocsTheme();
-  if (scheme !== "light") return null;
+  const { palette, setPalette } = useDocsTheme();
   return (
     <ButtonGroup
       segmented
       small
       accessibilityLabel="Palette"
-      items={PALETTES.map((p) => p.label)}
-      active={PALETTES.findIndex((p) => p.value === palette)}
-      onSelect={(i) => setPalette(PALETTES[i].value)}
+      items={PALETTE_OPTIONS.map((p) => p.label)}
+      active={PALETTE_OPTIONS.findIndex((p) => p.value === palette)}
+      onSelect={(i) => setPalette(PALETTE_OPTIONS[i].value)}
     />
   );
 }
 
 // The Android menu drawer's footer: the palette control under its own label, as the
 // labeled form titles its row. The bar above the drawer already carries the compact
-// surface and scheme toggles, so the drawer adds only the palette. The caller mounts it
-// in the light scheme only, since the drawer draws its footer band for any footer given.
+// surface and scheme toggles, so the drawer adds only the palette.
 export function PaletteRow() {
   return (
     <>
@@ -74,19 +74,16 @@ export interface PaletteMenuSection {
 }
 
 /**
- * The iOS header menu's Palette section: Blush and Mint as native rows, the palette in
- * force check-marked, the way an iOS menu marks the one choice of several. Empty in the
- * dark scheme, so the menu loses the section rather than offering a choice that paints
- * nothing.
+ * The iOS header menu's Palette section: the five hues as native rows, the palette in
+ * force check-marked, the way an iOS menu marks the one choice of several.
  */
-export function paletteMenuSection(scheme: "light" | "dark", palette: Palette, setPalette: (p: Palette) => void): PaletteMenuSection[] {
-  if (scheme !== "light") return [];
+export function paletteMenuSection(palette: Palette, setPalette: (p: Palette) => void): PaletteMenuSection[] {
   return [
     {
       type: "submenu",
       label: "Palette",
       inline: true,
-      items: PALETTES.map((p) => ({
+      items: PALETTE_OPTIONS.map((p) => ({
         type: "action",
         label: p.label,
         onPress: () => setPalette(p.value),

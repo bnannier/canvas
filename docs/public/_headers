@@ -21,8 +21,8 @@
   # Trusted Types note below).
   #
   # `style-src` DOES need 'unsafe-inline'. React Native Web writes dynamic styles as
-  # inline style attributes (a heading arrives as style="font-family: Manrope_600SemiBold;
-  # font-size: 54px"), so removing it would strip the site's typography and colour. This
+  # inline style attributes (a heading arrives as style="font-family: BricolageGrotesque_500Medium;
+  # font-size: 44px"), so removing it would strip the site's typography and colour. This
   # is the accepted trade: CSP's XSS protection lives in script-src, which stays strict.
   #
   # `connect-src` names registry.npmjs.org because the version badge fetches the current

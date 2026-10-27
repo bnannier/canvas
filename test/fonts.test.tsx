@@ -17,8 +17,9 @@ afterEach(cleanup);
 // The faces an app registers per weight (the expo-google-fonts shape), plus a mono set.
 // Family names carry no spaces: a computed style quotes a name that has one.
 const FACES: ThemeFonts = {
-  sans: { "400": "Manrope_400Regular", "500": "Manrope_500Medium", "700": "Manrope_700Bold", "800": "Manrope_800ExtraBold" },
-  mono: { "400": "GeistMono_400Regular" },
+  sans: { "400": "InstrumentSans_400Regular", "500": "InstrumentSans_500Medium", "700": "InstrumentSans_700Bold", "800": "InstrumentSans_800ExtraBold" },
+  mono: { "400": "JetBrainsMono_400Regular" },
+  display: { "500": "BricolageGrotesque_500Medium", "600": "BricolageGrotesque_600SemiBold" },
 };
 // Module constants, the way the docs tell apps to pass `fonts` (a stable reference).
 const BRAND_SANS: ThemeFonts = { sans: "BrandSans" };
@@ -54,20 +55,20 @@ describe("resolveFontFace", () => {
   });
 
   it("returns one family verbatim and keeps the weight on the style", () => {
-    expect(resolveFontFace("Manrope", "700")).toEqual({ fontFamily: "Manrope", dropWeight: false });
+    expect(resolveFontFace("InstrumentSans", "700")).toEqual({ fontFamily: "InstrumentSans", dropWeight: false });
   });
 
   it("picks the registered face for the weight and drops the weight", () => {
-    expect(resolveFontFace(FACES.sans, "500")).toEqual({ fontFamily: "Manrope_500Medium", dropWeight: true });
+    expect(resolveFontFace(FACES.sans, "500")).toEqual({ fontFamily: "InstrumentSans_500Medium", dropWeight: true });
   });
 
   it("falls to the nearest registered weight, heavier on a tie", () => {
     // 600 sits between 500 and 700: the heavier face reads as emphasis.
-    expect(resolveFontFace(FACES.sans, "600")?.fontFamily).toBe("Manrope_700Bold");
+    expect(resolveFontFace(FACES.sans, "600")?.fontFamily).toBe("InstrumentSans_700Bold");
     // 300 has only heavier neighbours.
-    expect(resolveFontFace(FACES.sans, "300")?.fontFamily).toBe("Manrope_400Regular");
+    expect(resolveFontFace(FACES.sans, "300")?.fontFamily).toBe("InstrumentSans_400Regular");
     // 900 has only lighter neighbours.
-    expect(resolveFontFace(FACES.sans, "900")?.fontFamily).toBe("Manrope_800ExtraBold");
+    expect(resolveFontFace(FACES.sans, "900")?.fontFamily).toBe("InstrumentSans_800ExtraBold");
   });
 });
 
@@ -78,19 +79,19 @@ describe("fontStyle", () => {
   });
 
   it("applies the sans face for the style's weight and removes the weight", () => {
-    expect(fontStyle([{ fontSize: 14 }, { fontWeight: "500" }], FACES)).toEqual({ fontSize: 14, fontFamily: "Manrope_500Medium" });
+    expect(fontStyle([{ fontSize: 14 }, { fontWeight: "500" }], FACES)).toEqual({ fontSize: 14, fontFamily: "InstrumentSans_500Medium" });
   });
 
   it("keeps the weight when one family carries every weight", () => {
-    expect(fontStyle({ fontWeight: "700" }, { sans: "Manrope" })).toEqual([{ fontWeight: "700" }, { fontFamily: "Manrope" }]);
+    expect(fontStyle({ fontWeight: "700" }, { sans: "InstrumentSans" })).toEqual([{ fontWeight: "700" }, { fontFamily: "InstrumentSans" }]);
   });
 
   it("substitutes the mono face where the kit asked for MONO_FONT, and only there", () => {
-    expect(fontStyle({ fontFamily: MONO_FONT, fontSize: 13 }, FACES)).toEqual({ fontSize: 13, fontFamily: "GeistMono_400Regular" });
+    expect(fontStyle({ fontFamily: MONO_FONT, fontSize: 13 }, FACES)).toEqual({ fontSize: 13, fontFamily: "JetBrainsMono_400Regular" });
     // A caller's own explicit family is theirs.
     expect(fontStyle({ fontFamily: "Comic Sans" }, FACES)).toEqual({ fontFamily: "Comic Sans" });
     // No mono registered: the kit's alias stands.
-    expect(fontStyle({ fontFamily: MONO_FONT }, { sans: "Manrope" })).toEqual({ fontFamily: MONO_FONT });
+    expect(fontStyle({ fontFamily: MONO_FONT }, { sans: "InstrumentSans" })).toEqual({ fontFamily: MONO_FONT });
   });
 });
 
@@ -105,32 +106,33 @@ describe("the themed primitives", () => {
         <TextInput value="typed" onChangeText={() => {}} style={{ fontSize: 16 }} />
       </ThemeProvider>,
     );
-    expect(getComputedStyle(screen.getByText("Plain")).fontFamily).toBe("Manrope_700Bold");
+    expect(getComputedStyle(screen.getByText("Plain")).fontFamily).toBe("InstrumentSans_700Bold");
     expect(getComputedStyle(screen.getByText("Plain")).fontWeight).not.toBe("700");
-    // The call to action is Dark Factory's 800 label; the web skin's fontWeight resolves to that face.
-    expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("Manrope_800ExtraBold");
-    // Typography titles are bold in the Dark Factory scale: the h2 role asks for 700.
-    expect(getComputedStyle(screen.getByText("Title")).fontFamily).toBe("Manrope_700Bold");
+    // The call to action's label weight resolves to the registered face of that weight.
+    expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("InstrumentSans_800ExtraBold");
+    // Typography titles are medium display-face titles in the v4 scale: the h2 role asks for
+    // DISPLAY_FONT at 500 and gets the registered display face.
+    expect(getComputedStyle(screen.getByText("Title")).fontFamily).toBe("BricolageGrotesque_500Medium");
     // The code role asks for MONO_FONT and gets the registered mono face.
-    expect(getComputedStyle(screen.getByText("--primary")).fontFamily).toBe("GeistMono_400Regular");
-    expect(getComputedStyle(screen.getByDisplayValue("typed")).fontFamily).toBe("Manrope_400Regular");
+    expect(getComputedStyle(screen.getByText("--primary")).fontFamily).toBe("JetBrainsMono_400Regular");
+    expect(getComputedStyle(screen.getByDisplayValue("typed")).fontFamily).toBe("InstrumentSans_400Regular");
   });
 
   it("paint a field's own value in the registered face: Stepper's number on every skin", () => {
     for (const [skin, Component] of [["web", Stepper], ["ios", IosStepper], ["android", AndroidStepper]] as const) {
       render(<ThemeProvider fonts={FACES}><Component label={`${skin} quantity`} defaultValue={30} /></ThemeProvider>);
-      expect(getComputedStyle(screen.getByDisplayValue("30")).fontFamily, skin).toBe("Manrope_400Regular");
+      expect(getComputedStyle(screen.getByDisplayValue("30")).fontFamily, skin).toBe("InstrumentSans_400Regular");
       cleanup();
     }
   });
 
   it("render in the system face when no fonts are passed, as before", () => {
     render(<ThemeProvider><Text>Plain</Text></ThemeProvider>);
-    expect(getComputedStyle(screen.getByText("Plain")).fontFamily).not.toContain("Manrope");
+    expect(getComputedStyle(screen.getByText("Plain")).fontFamily).not.toContain("InstrumentSans");
   });
 
   it("name the brand faces the app is expected to register", () => {
-    expect(typeface).toEqual({ sans: "Manrope", mono: "Geist Mono" });
+    expect(typeface).toEqual({ sans: "Instrument Sans", display: "Bricolage Grotesque", mono: "JetBrains Mono" });
   });
 });
 
@@ -149,10 +151,10 @@ describe("nested providers", () => {
         </ThemeProvider>
       </ThemeProvider>,
     );
-    expect(family("Inner")).toBe("Manrope_700Bold");
-    expect(family("Save")).toBe("Manrope_800ExtraBold");
+    expect(family("Inner")).toBe("InstrumentSans_700Bold");
+    expect(family("Save")).toBe("InstrumentSans_800ExtraBold");
     // The whole map inherits, the mono role included.
-    expect(family("--inner")).toBe("GeistMono_400Regular");
+    expect(family("--inner")).toBe("JetBrainsMono_400Regular");
     expect(seen.inner?.fonts).toBe(FACES);
     expect(seen.inner?.scheme).toBe("dark");
   });
@@ -172,7 +174,7 @@ describe("nested providers", () => {
         </ThemeProvider>
       </ThemeProvider>,
     );
-    expect(family("Deep")).toBe("Manrope_400Regular");
+    expect(family("Deep")).toBe("InstrumentSans_400Regular");
     expect(family("Nearest")).toBe("BrandSans");
   });
 
@@ -189,7 +191,7 @@ describe("nested providers", () => {
       </ThemeProvider>,
     );
     expect(family("Explicit")).toBe("BrandSans");
-    expect(family("System")).not.toContain("Manrope");
+    expect(family("System")).not.toContain("InstrumentSans");
     expect(seen.optOut?.fonts).toBe(SYSTEM_FACE);
   });
 
@@ -203,7 +205,7 @@ describe("nested providers", () => {
       </ThemeProvider>,
     );
     // The nested map names no sans, so plain text is back in the system face.
-    expect(family("Plain")).not.toContain("Manrope");
+    expect(family("Plain")).not.toContain("InstrumentSans");
     expect(family("--mono")).toBe("BrandMono");
   });
 
@@ -215,7 +217,7 @@ describe("nested providers", () => {
       </ThemeProvider>,
     );
     expect(seen.root?.fonts).toEqual({});
-    expect(family("Root")).not.toContain("Manrope");
+    expect(family("Root")).not.toContain("InstrumentSans");
   });
 
   it("follow the parent's fonts when they change, and keep their value when only the parent's axes change", () => {
@@ -229,7 +231,7 @@ describe("nested providers", () => {
     );
     const { rerender } = render(tree(FACES, false));
     const first = seen.live;
-    expect(family("Live")).toBe("Manrope_400Regular");
+    expect(family("Live")).toBe("InstrumentSans_400Regular");
     // A parent scheme flip re-creates no nested value: the memo keys on the resolved faces.
     rerender(tree(FACES, true));
     expect(seen.live).toBe(first!);
@@ -250,14 +252,14 @@ describe("nested providers", () => {
     const { rerender } = render(tree(BRAND_SANS));
     expect(family("Toggled")).toBe("BrandSans");
     rerender(tree(undefined));
-    expect(family("Toggled")).toBe("Manrope_400Regular");
+    expect(family("Toggled")).toBe("InstrumentSans_400Regular");
     expect(seen.toggled?.fonts).toBe(FACES);
     rerender(tree(BRAND_SANS));
     expect(family("Toggled")).toBe("BrandSans");
     rerender(tree(SYSTEM_FACE));
-    expect(family("Toggled")).not.toContain("Manrope");
+    expect(family("Toggled")).not.toContain("InstrumentSans");
     rerender(tree(undefined));
-    expect(family("Toggled")).toBe("Manrope_400Regular");
+    expect(family("Toggled")).toBe("InstrumentSans_400Regular");
   });
 
   it("do not inherit the parent's tokens", () => {
@@ -287,7 +289,7 @@ describe("nested providers", () => {
       </ThemeProvider>,
     );
     // Fonts do not depend on the hydration state: the server pass already has them.
-    expect(html).toContain("Manrope_400Regular");
-    expect(html).toContain("GeistMono_400Regular");
+    expect(html).toContain("InstrumentSans_400Regular");
+    expect(html).toContain("JetBrainsMono_400Regular");
   });
 });

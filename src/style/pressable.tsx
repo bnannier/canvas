@@ -30,10 +30,17 @@ import {
 import { useTheme } from "./theme.js";
 import { frontRipple, useMaterialBehind } from "./glass-surface/material-behind.js";
 
-/** The ring's distance from the control, the CSS hand-off's `--ring-offset`. */
+/**
+ * The ring's distance from the control, the CSS hand-off's `--ring-offset`: the v4 hand-off's
+ * 2px page-colour gap between a control and its focus band.
+ */
 export const FOCUS_RING_OFFSET = 2;
 
-/** The ring's thickness where the kit draws it itself (a frame's ring), the CSS hand-off's `--ring-width`. */
+/**
+ * The ring's thickness, the CSS hand-off's `--ring-width`: the hand-off's 2px focus band, drawn
+ * in the solid accent (`ring`) so it holds WCAG 1.4.11's 3:1 where the hand-off's translucent
+ * band reads near 1.5:1.
+ */
 export const FOCUS_RING_WIDTH = 2;
 
 /**

@@ -296,7 +296,12 @@ describe("Increase Contrast only ever adds weight", () => {
     );
   }
   const channels = (color: string) => (/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color) ?? []).slice(1, 4).join(",");
-  const hex = (color: string) => { const n = Number.parseInt(color.slice(1, 7), 16); return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`; };
+  // A token's channels, hex or rgba (the v4 ring is the accent at a soft alpha).
+  const hex = (color: string) => {
+    if (!color.startsWith("#")) return channels(color);
+    const n = Number.parseInt(color.slice(1, 7), 16);
+    return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+  };
   const ring = (node: Element) => ({ width: borderOf(node, "top"), color: channels(getComputedStyle(node).getPropertyValue("border-top-color") || (node as HTMLElement).style.borderColor) });
 
   it("a 2 px radio ring stays 2 px, in foreground, checked or not", async () => {

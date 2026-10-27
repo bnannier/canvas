@@ -1,5 +1,5 @@
-// The modal scrim's blur on the web (the owner's GS-6 decision): Dark Factory's overlay scrim
-// blurs the page it dims by 2 px (`WEB_FROST.scrimBlur`, judged against the `df-frost`
+// The modal scrim's blur on the web (the owner's GS-6 decision): the hand-off's overlay scrim
+// blurs the page it dims by 2 px (`WEB_FROST.scrimBlur`, judged against the `v4-glass`
 // card), so under glass a browser's scrim lays that blur under its tinted dim. Solid mode,
 // Reduce Transparency, Increase Contrast and a browser without a backdrop filter keep the
 // plain dim: wherever the functional layer's material resolves solid, nothing here samples
@@ -10,7 +10,7 @@
 // what is inside it: a scrim that holds its modal's card (Dialog, AlertDialog) takes the
 // blur on a layer of its own beneath the card (`useHeldScrim`), never on itself, while a
 // scrim that is the card's sibling (Drawer, ActionSheet, the anchored phone sheet) wears
-// it (`useScrimFrost`). Either way the dim and the blur are one element, as Dark Factory's
+// it (`useScrimFrost`). Either way the dim and the blur are one element, as the hand-off's
 // scrim is: its background paints over its own filtered backdrop, so the blur samples the
 // page and never the dim (no material may sample itself). test/scrim-frost.test.tsx holds
 // both.

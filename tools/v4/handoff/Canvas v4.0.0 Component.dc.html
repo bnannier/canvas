@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="./canvas-assets.js"></script>
+<script src="./canvas-docs.js"></script>
+<script src="./cv-kit.js"></script>
+<script src="./cv-kit-controls.js"></script>
+<script src="./cv-kit-inputs.js"></script>
+<script src="./cv-kit-data.js"></script>
+<script src="./cv-kit-charts.js"></script>
+<script src="./cv-kit-overlays.js"></script>
+<script src="./cv-jsx.js"></script>
+<script src="./cv-kit-code.js"></script>
+<script src="./cv-kit-code2.js"></script>
+<script src="./cv-kit-code3.js"></script>
+<script src="./cv-kit-code4.js"></script>
+<script src="./cv-kit-code5.js"></script>
+<script src="./cv-kit-platform.js"></script>
+<script src="./cv-kit-code6.js"></script>
+<script src="./cv-kit-code7.js"></script>
+<script src="./cv-kit-code8.js"></script>
+<style>
+:root{--sb:rgba(255,255,255,.18);--sb-h:rgba(255,255,255,.32)}
+:root:has([data-ion][data-scheme="light"]:not([data-ion] *)){--sb:rgba(17,17,24,.2);--sb-h:rgba(17,17,24,.36);background:#f2f2f7}
+*{scrollbar-width:thin;scrollbar-color:var(--sb) transparent}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}::-webkit-scrollbar-thumb{background:var(--sb);border-radius:10px;border:2px solid transparent;background-clip:padding-box}::-webkit-scrollbar-thumb:hover{background-color:var(--sb-h)}
+html,body{margin:0;padding:0;background:#0a0a0f}
+*{box-sizing:border-box}
+body{font-family:"Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+nav>div{scrollbar-width:none}nav>div::-webkit-scrollbar{display:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit;background:none;border:0;outline:0;margin:0}
+input::placeholder,textarea::placeholder{color:var(--tx3)}
+input[type=range]{accent-color:var(--ion)}
+img{display:block}
+cv-icon{display:inline-block;width:1em;height:1em;flex:none;line-height:0}cv-world,cv-qr{display:block}cv-icon svg,cv-world svg,cv-qr svg{display:block;width:100%;height:100%}
+a{color:var(--ion-tx);text-decoration:none}a:hover{text-decoration:underline}
+[data-ion]{--seg:#5a5a63;--sb:rgba(255,255,255,.18);--sb-h:rgba(255,255,255,.32);
+--hue:285;
+--bg:#0a0a0f;--bg2:#0e0e15;--sf:#12121a;--sf2:#171720;--sf3:#1e1e29;--sf4:#282836;
+--ln:rgba(255,255,255,.08);--ln2:rgba(255,255,255,.16);--hl:rgba(255,255,255,.1);
+--tx:#f4f4f8;--tx2:#a4a4b6;--tx3:#7f7f93;
+--ion:oklch(.74 .17 var(--hue));--ion-fg:#0a0a0f;--ion-tx:oklch(.8 .14 var(--hue));
+--ion-soft:oklch(.74 .17 var(--hue) / .16);--ion-glow:oklch(.74 .17 var(--hue) / .5);--ion-ring:oklch(.74 .17 var(--hue) / .35);
+--cyan:oklch(.82 .13 205);--mint:oklch(.85 .15 165);
+--c1:var(--ion);--c2:var(--cyan);--c3:var(--mint);--c4:oklch(.82 .14 75);--c5:oklch(.72 .17 20);--c6:oklch(.72 .14 255);--c7:oklch(.74 .16 330);--c8:oklch(.78 .1 125);
+--ok:#3ddc97;--ok-fg:#04291a;--warn:#f6b84c;--warn-fg:#2a1800;--bad:#ff6b7a;--bad-fg:#2b0009;
+--ok-soft:rgba(61,220,151,.14);--warn-soft:rgba(246,184,76,.14);--bad-soft:rgba(255,107,122,.14);
+--gl:rgba(18,18,26,.62);--bf:blur(20px) saturate(1.6);--scrim:rgba(5,5,10,.55);
+--sh-sm:inset 0 1px 0 var(--hl),0 1px 2px rgba(0,0,0,.5);
+--sh-md:inset 0 1px 0 var(--hl),0 12px 32px -10px rgba(0,0,0,.7);
+--sh-lg:inset 0 1px 0 var(--hl),0 30px 80px -16px rgba(0,0,0,.8);
+--aur:.55;--grain-o:.07;
+--fd:"Bricolage Grotesque",system-ui,sans-serif;--ft:"Instrument Sans",system-ui,sans-serif;--fm:"JetBrains Mono",ui-monospace,Menlo,monospace;
+--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-ion][data-scheme="light"]{--seg:#ffffff;--sb:rgba(17,17,24,.2);--sb-h:rgba(17,17,24,.36);
+--bg:#f2f2f7;--bg2:#fafafd;--sf:#ffffff;--sf2:#ffffff;--sf3:#f1f1f6;--sf4:#e4e4ee;
+--ln:rgba(17,17,24,.08);--ln2:rgba(17,17,24,.16);--hl:rgba(255,255,255,.8);
+--tx:#111118;--tx2:#5a5a70;--tx3:#6c6c82;
+--ion:oklch(.5 .22 var(--hue));--ion-fg:#ffffff;--ion-tx:oklch(.47 .2 var(--hue));
+--ion-soft:oklch(.5 .22 var(--hue) / .1);--ion-glow:oklch(.5 .22 var(--hue) / .4);--ion-ring:oklch(.5 .22 var(--hue) / .28);
+--cyan:oklch(.62 .13 205);--mint:oklch(.66 .15 165);
+--c4:oklch(.64 .15 70);--c5:oklch(.57 .19 20);--c6:oklch(.54 .17 255);--c7:oklch(.55 .2 330);--c8:oklch(.58 .12 125);
+--ok:#0b7a53;--ok-fg:#fff;--warn:#a55d00;--warn-fg:#fff;--bad:#d62a4b;--bad-fg:#fff;
+--ok-soft:rgba(11,122,83,.1);--warn-soft:rgba(165,93,0,.1);--bad-soft:rgba(214,42,75,.1);
+--gl:rgba(255,255,255,.62);--scrim:rgba(17,17,24,.3);
+--sh-sm:0 1px 2px rgba(17,17,24,.05),0 0 0 1px rgba(17,17,24,.03);
+--sh-md:0 12px 32px -10px rgba(17,17,24,.16),0 0 0 1px rgba(17,17,24,.03);
+--sh-lg:0 30px 80px -16px rgba(17,17,24,.25),0 0 0 1px rgba(17,17,24,.03);
+--aur:.4;--grain-o:.05;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes cvRevLoop{0%{opacity:0;transform:translate(var(--rx,0),var(--ry,16px))}25%,100%{opacity:1;transform:none}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:0}}
+@keyframes indet{from{transform:translateX(-110%)}to{transform:translateX(260%)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--ion-ring)}70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes cvRev{from{opacity:0;transform:translate(var(--rx,0),var(--ry,16px))}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div data-ion id="top" data-scheme="{{ scheme }}" style="--hue:{{ hue }};--bf:{{ bf }};--gl:{{ gl }};min-height:100vh;background:var(--bg);color:var(--tx);font-family:var(--ft);transition:background .4s,color .4s;overflow-x:clip">
+<div style="position:fixed;inset:0;pointer-events:none;z-index:100;opacity:var(--grain-o);background-image:var(--grain);background-size:180px 180px"></div>
+
+<nav style="position:sticky;top:0;z-index:40;height:0;display:flex;justify-content:center;align-items:flex-start;padding:0 16px">
+<div style="margin-top:14px;display:flex;align-items:center;gap:2px;padding:5px;border-radius:999px;background:var(--gl);backdrop-filter:var(--bf);border:1px solid var(--ln2);box-shadow:var(--sh-md);max-width:100%;overflow-x:auto">
+<a href="Canvas v4.0.0 Library.dc.html" style="display:inline-flex;align-items:center;gap:8px;padding:0 12px;height:32px;font:600 14px/1 var(--fd);letter-spacing:-.01em;color:var(--tx);white-space:nowrap" style-hover="text-decoration:none"><img src="docs/public/favicon.svg" alt="" style="width:20px;height:20px;flex:none">Canvas</a>
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<sc-for list="{{ navLinks }}" as="nl" hint-placeholder-count="10"><a href="{{ nl.href }}" style="height:32px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 13px/1 var(--ft);white-space:nowrap;color:{{ nl.c }};background:{{ nl.bg }}" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none">{{ nl.n }}</a></sc-for>
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<div style="display:flex;align-items:center;gap:6px;padding:0 6px">
+<sc-for list="{{ hues }}" as="h" hint-placeholder-count="5"><button onClick="{{ h.on }}" title="{{ h.n }}" style="width:16px;height:16px;border-radius:50%;background:oklch(.72 .17 {{ h.h }});box-shadow:{{ h.ring }};transition:transform .4s cubic-bezier(.34,1.56,.64,1)" style-hover="transform:scale(1.25)"></button></sc-for>
+</div>
+<span style="width:1px;height:18px;background:var(--ln2);margin:0 4px;flex:none"></span>
+<div style="position:relative;display:grid;grid-template-columns:1fr 1fr;height:32px;padding:3px;border-radius:999px;background:var(--sf3);border:1px solid var(--ln)">
+<div style="position:absolute;top:3px;left:3px;width:calc(50% - 3px);height:calc(100% - 8px);border-radius:999px;background:var(--sf);box-shadow:var(--sh-sm);transform:translateX({{ schemeX }});transition:transform .45s cubic-bezier(.34,1.56,.64,1)"></div>
+<button onClick="{{ setDark }}" style="position:relative;padding:0 12px;font:500 12px/1 var(--ft);color:{{ darkC }};transition:color .2s">Dark</button>
+<button onClick="{{ setLight }}" style="position:relative;padding:0 12px;font:500 12px/1 var(--ft);color:{{ lightC }};transition:color .2s">Light</button>
+</div>
+<button onClick="{{ toggleGlass }}" aria-pressed="{{ glassP }}" title="Toggle glass surfaces" style="margin-left:4px;height:32px;padding:0 12px 0 8px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;flex:none;font:500 12px/1 var(--ft);white-space:nowrap;color:{{ glassC }};background:var(--sf3);border:1px solid var(--ln);transition:color .2s" style-hover="color:var(--tx)"><span style="position:relative;width:26px;height:16px;flex:none;border-radius:999px;background:{{ glassTr }};border:1px solid var(--ln2);transition:background .25s"><span style="position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.35);transform:{{ glassX }};transition:transform .35s cubic-bezier(.34,1.56,.64,1)"></span></span>Glass</button>
+</div>
+</nav>
+
+<div style="max-width:1440px;margin:0 auto;padding:{{ wrapPad }};display:grid;grid-template-columns:{{ cols }};gap:28px;align-items:start">
+<aside style="display:{{ railD }};position:{{ railPos }};top:76px;max-height:{{ railMax }};overflow-y:auto;padding:4px 6px 32px 0;scrollbar-width:thin">
+<div style="position:relative;margin-bottom:16px;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:10px;background:var(--sf2);border:1px solid var(--ln2)">
+<cv-icon n="search" style="font-size:14px;color:var(--tx3)"></cv-icon>
+<input value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ railPh }}" style="flex:1;min-width:0;font:400 13px var(--ft)">
+</div>
+<sc-for list="{{ rail }}" as="r" hint-placeholder-count="8">
+<div style="margin-bottom:16px;display:flex;flex-direction:column;gap:1px">
+<div style="padding:0 10px 6px;display:flex;justify-content:space-between;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>{{ r.room }}</span><span>{{ r.count }}</span></div>
+<sc-for list="{{ r.items }}" as="it" hint-placeholder-count="6"><a href="{{ it.href }}" onClick="{{ it.go }}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;height:30px;padding:0 10px;border-radius:8px;font:{{ it.fw }} 13px/1 var(--ft);color:{{ it.c }};background:{{ it.bg }}" style-hover="background:var(--sf3);color:var(--tx);text-decoration:none"><span>{{ it.n }}</span><span style="width:5px;height:5px;border-radius:50%;background:{{ it.dot }}"></span></a></sc-for>
+</div>
+</sc-for>
+</aside>
+
+<main style="min-width:0;display:flex;flex-direction:column;gap:64px;padding-bottom:24px">
+<sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}"><button onClick="{{ toggleRail }}" style="align-self:flex-start;height:36px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ln2);background:var(--sf2);font:500 13px var(--ft)"><cv-icon n="layoutList" style="font-size:14px"></cv-icon>{{ railBtn }}</button></sc-if>
+<sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}"><div style="padding:120px 0;text-align:center;font:500 13px var(--fm);color:var(--tx3)">Loading the component registry…</div></sc-if>
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ true }}">
+
+<header style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font:400 13px var(--ft);color:var(--tx3)"><a href="Canvas v4.0.0 Library.dc.html" style="color:var(--tx3)">Library</a><span>/</span><a href="{{ roomHref }}" style="color:var(--tx3)">{{ room }}</a><span>/</span><span style="color:var(--tx)">{{ name }}</span></div>
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><h1 style="margin:0;font:500 clamp(40px,5vw,64px)/1 var(--fd);letter-spacing:-.04em">{{ name }}</h1><span style="height:24px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;font:500 11px/1 var(--fm);letter-spacing:.06em;text-transform:uppercase;background:{{ tierBg }};color:{{ tierC }}">{{ tierL }}</span></div>
+<p style="margin:0;max-width:72ch;font:400 18px/1.55 var(--ft);color:var(--tx2);text-wrap:pretty" dangerouslySetInnerHTML="{{ summary }}"></p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+<button onClick="{{ copyImport }}" style="height:34px;padding:0 12px;border-radius:10px;display:inline-flex;align-items:center;gap:10px;background:var(--sf2);border:1px solid var(--ln2);font:400 12px var(--fm);color:var(--tx2)" style-hover="color:var(--tx);border-color:var(--ion)"><span>{{ importLine }}</span><cv-icon n="{{ impIcon }}" style="font-size:13px"></cv-icon></button>
+<a href="{{ gh }}" target="_blank" rel="noreferrer" style="height:34px;padding:0 12px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ln);font:400 12px var(--fm);color:var(--tx2)" style-hover="color:var(--tx);background:var(--sf3);text-decoration:none"><cv-icon n="code" style="font-size:14px"></cv-icon>{{ path }}</a>
+<a href="{{ cardHref }}" style="height:34px;padding:0 12px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ln);font:500 13px var(--ft);color:var(--tx2)" style-hover="color:var(--tx);background:var(--sf3);text-decoration:none">View in {{ room }}<cv-icon n="arrowUpRight" style="font-size:14px"></cv-icon></a>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;padding-top:16px;border-top:1px solid var(--ln)">
+<sc-for list="{{ jumps }}" as="j" hint-placeholder-count="10"><button onClick="{{ j.go }}" style="height:28px;padding:0 11px;border-radius:999px;font:500 12px/1 var(--ft);color:var(--tx2);border:1px solid var(--ln)" style-hover="color:var(--tx);background:var(--sf3)">{{ j.t }}</button></sc-for>
+</div>
+</header>
+
+<section id="cv-pg" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+<div style="display:flex;flex-direction:column;gap:6px"><h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Playground</h2><p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">Every control sets a real prop of {{ propsName }}. The JSX below updates as you go.</p></div>
+<div style="display:flex;padding:3px;gap:2px;border-radius:10px;background:var(--sf3);border:1px solid var(--ln)"><sc-for list="{{ pfs }}" as="pf" hint-placeholder-count="3"><button onClick="{{ pf.on }}" style="height:28px;padding:0 12px;border-radius:7px;font:500 12px/1 var(--ft);background:{{ pf.bg }};color:{{ pf.c }};box-shadow:{{ pf.sh }}">{{ pf.n }}</button></sc-for></div>
+</div>
+<div style="display:grid;grid-template-columns:{{ pgCols }};border:1px solid var(--ln);border-radius:20px;overflow:hidden;background:var(--sf)">
+<div ref="{{ stageRef }}" style="min-height:340px;padding:44px 28px;display:flex;align-items:center;justify-content:center;background-color:var(--bg2);background-image:radial-gradient(var(--ln) 1px,transparent 1px);background-size:16px 16px;min-width:0;overflow:auto" dangerouslySetInnerHTML="{{ pgHtml }}"></div>
+<div style="border-left:{{ kbBl }};border-top:{{ kbBt }};padding:18px;display:flex;flex-direction:column;gap:16px;max-height:560px;overflow-y:auto;min-width:0">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Props</span><button onClick="{{ resetKnobs }}" style="font:500 12px var(--ft);color:var(--ion-tx)">Reset</button></div>
+<sc-for list="{{ knobs }}" as="k" hint-placeholder-count="6">
+<div style="display:flex;flex-direction:column;gap:7px">
+<div style="display:flex;justify-content:space-between;gap:8px;font:500 12px/1 var(--fm);color:var(--tx2)"><span>{{ k.label }}</span><span style="color:var(--tx3)">{{ k.hint }}</span></div>
+<sc-if value="{{ k.isOpts }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ k.opts }}" as="o"><button onClick="{{ o.pick }}" style="height:26px;padding:0 9px;border-radius:7px;font:500 12px/1 var(--ft);border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.c }}">{{ o.l }}</button></sc-for></div></sc-if>
+<sc-if value="{{ k.isIcon }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ k.icons }}" as="o"><button onClick="{{ o.pick }}" title="{{ o.l }}" style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.c }};font:500 10px var(--fm)"><cv-icon n="{{ o.n }}" style="font-size:14px;display:{{ o.icD }}"></cv-icon><span style="display:{{ o.txD }}">none</span></button></sc-for></div></sc-if>
+<sc-if value="{{ k.isBool }}" hint-placeholder-val="{{ false }}"><button onClick="{{ k.toggle }}" style="position:relative;width:38px;height:22px;border-radius:999px;background:{{ k.swBg }};transition:background .2s"><span style="position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transform:{{ k.swX }};transition:transform .35s cubic-bezier(.34,1.56,.64,1)"></span></button></sc-if>
+<sc-if value="{{ k.isText }}" hint-placeholder-val="{{ false }}"><input value="{{ k.val }}" onChange="{{ k.onText }}" style="height:34px;padding:0 10px;border-radius:9px;background:var(--bg2);border:1px solid var(--ln2);font:400 13px var(--ft)"></sc-if>
+<sc-if value="{{ k.isNum }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:10px"><input type="range" min="{{ k.min }}" max="{{ k.max }}" step="{{ k.step }}" value="{{ k.val }}" onChange="{{ k.onNum }}" style="flex:1;min-width:0"><span style="min-width:32px;text-align:right;font:500 12px var(--fm)">{{ k.val }}</span></div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="border:1px solid var(--ln);border-radius:16px;background:var(--bg2);overflow:hidden">
+<div style="height:40px;padding:0 8px 0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--ln);background:var(--sf)"><span style="font:400 12px var(--fm);color:var(--tx3)">JSX · {{ propsName }}</span><button onClick="{{ copyCode }}" style="height:28px;padding:0 10px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;font:500 12px var(--ft);color:var(--tx2);border:1px solid var(--ln2)" style-hover="color:var(--tx)"><cv-icon n="{{ codeIcon }}" style="font-size:13px"></cv-icon>{{ codeLabel }}</button></div>
+<pre style="margin:0;padding:16px 18px;font:400 13px/1.7 var(--fm);overflow-x:auto;white-space:pre" dangerouslySetInnerHTML="{{ codeHtml }}"></pre>
+</div>
+</section>
+
+<sc-if value="{{ hasVariants }}" hint-placeholder-val="{{ true }}">
+<section id="cv-var" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<div style="display:flex;flex-direction:column;gap:6px"><h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Variants</h2><p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">{{ varNote }}</p></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px">
+<sc-for list="{{ variants }}" as="v" hint-placeholder-count="6">
+<div style="display:flex;flex-direction:column;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:var(--sf);min-width:0">
+<div style="min-height:160px;padding:28px 20px;display:flex;align-items:center;justify-content:center;background:var(--bg2);min-width:0;overflow:hidden" dangerouslySetInnerHTML="{{ v.html }}"></div>
+<div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--ln);min-width:0">
+<div style="font:500 14px/1.3 var(--ft)">{{ v.t }}</div>
+<sc-if value="{{ v.hasD }}" hint-placeholder-val="{{ false }}"><div style="font:400 13px/1.5 var(--ft);color:var(--tx2)" dangerouslySetInnerHTML="{{ v.d }}"></div></sc-if>
+<sc-if value="{{ v.hasCode }}" hint-placeholder-val="{{ true }}"><pre style="margin:0;padding:10px 12px;border-radius:10px;background:var(--bg2);border:1px solid var(--ln);font:400 11.5px/1.6 var(--fm);overflow:auto;max-height:150px;white-space:pre" dangerouslySetInnerHTML="{{ v.code }}"></pre></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ hasSizes }}" hint-placeholder-val="{{ true }}">
+<section id="cv-sz" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Sizes</h2>
+<div style="display:flex;flex-wrap:wrap;gap:14px">
+<sc-for list="{{ sizes }}" as="z" hint-placeholder-count="3"><div style="flex:1 1 200px;min-width:0;display:flex;flex-direction:column;border:1px solid var(--ln);border-radius:16px;overflow:hidden;background:var(--sf)"><div style="min-height:130px;padding:24px 16px;display:flex;align-items:center;justify-content:center;background:var(--bg2);overflow:hidden" dangerouslySetInnerHTML="{{ z.html }}"></div><div style="padding:10px 14px;border-top:1px solid var(--ln);font:500 12px var(--fm);color:var(--tx2)">{{ z.l }}</div></div></sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ hasStates }}" hint-placeholder-val="{{ true }}">
+<section id="cv-st" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<div style="display:flex;flex-direction:column;gap:6px"><h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">States</h2><p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">Hover, focus and press are pinned so they can be compared side by side; the rest are real props.</p></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:14px">
+<sc-for list="{{ states }}" as="z" hint-placeholder-count="5"><div style="min-width:0;display:flex;flex-direction:column;border:1px solid var(--ln);border-radius:16px;overflow:hidden;background:var(--sf)"><div style="min-height:130px;padding:24px 16px;display:flex;align-items:center;justify-content:center;background:var(--bg2);overflow:hidden" dangerouslySetInnerHTML="{{ z.html }}"></div><div style="padding:10px 14px;border-top:1px solid var(--ln);font:500 12px var(--fm);color:var(--tx2)">{{ z.l }}</div></div></sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ hasAnatomy }}" hint-placeholder-val="{{ true }}">
+<section id="cv-an" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Anatomy</h2>
+<div style="display:grid;grid-template-columns:{{ anCols }};gap:14px;align-items:stretch">
+<div ref="{{ anRef }}" style="position:relative;min-height:320px;padding:80px 40px;border-radius:20px;border:1px solid var(--ln);background-color:var(--bg2);background-image:radial-gradient(var(--ln) 1px,transparent 1px);background-size:16px 16px;display:flex;align-items:center;justify-content:center;min-width:0;overflow:hidden">
+<div style="width:100%;display:flex;justify-content:center;min-width:0;zoom:{{ anZoom }}" dangerouslySetInnerHTML="{{ anHtml }}"></div>
+<sc-for list="{{ marks }}" as="m"><span style="position:absolute;left:{{ m.lx }};top:{{ m.ly }};width:1px;height:{{ m.lh }};background:var(--ion);opacity:.7;pointer-events:none;z-index:1"></span><span style="position:absolute;left:{{ m.x }};top:{{ m.y }};width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;display:grid;place-items:center;background:var(--ion);color:var(--ion-fg);font:600 11px/1 var(--fm);box-shadow:0 0 0 3px var(--bg2),0 4px 12px rgba(0,0,0,.4);pointer-events:none;z-index:2">{{ m.n }}</span></sc-for>
+</div>
+<div style="padding:18px;border:1px solid var(--ln);border-radius:20px;background:var(--sf);display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ parts }}" as="pt" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:12px;font:500 14px var(--ft);opacity:{{ pt.op }}"><span style="width:22px;height:22px;flex:none;border-radius:50%;display:grid;place-items:center;background:{{ pt.bg }};color:{{ pt.c }};font:600 11px/1 var(--fm)">{{ pt.n }}</span><span>{{ pt.t }}</span></div></sc-for>
+<div style="margin-top:auto;font:400 12px/1.5 var(--ft);color:var(--tx3)">Dimmed parts appear only in some states or variants.</div>
+</div>
+</div>
+</section>
+</sc-if>
+
+<section id="cv-props" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<div style="display:flex;flex-direction:column;gap:6px"><h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Props</h2><p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">{{ propsNote }}</p></div>
+<sc-if value="{{ noProps }}" hint-placeholder-val="{{ false }}"><div style="padding:18px;border-radius:16px;border:1px dashed var(--ln2);font:400 14px/1.5 var(--ft);color:var(--tx2)">{{ noPropsText }}</div></sc-if>
+<sc-if value="{{ hasProps }}" hint-placeholder-val="{{ true }}">
+<div style="border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:var(--sf)">
+<div style="overflow-x:auto"><div style="min-width:720px">
+<div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(150px,1.2fr) 100px minmax(220px,2.2fr);gap:16px;padding:12px 16px;font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)"><span>Prop</span><span>Type</span><span>Default</span><span>Description</span></div>
+<sc-for list="{{ pgroups }}" as="g" hint-placeholder-count="3">
+<div style="padding:12px 16px 8px;display:flex;align-items:center;gap:8px;background:var(--bg2);border-top:1px solid var(--ln)"><span style="font:600 13px var(--ft)">{{ g.t }}</span><sc-if value="{{ g.one }}" hint-placeholder-val="{{ false }}"><span style="height:20px;padding:0 7px;border-radius:999px;display:inline-flex;align-items:center;background:var(--ion-soft);color:var(--ion-tx);font:500 11px var(--fm)">pick one</span></sc-if><span style="font:400 12px var(--fm);color:var(--tx3)">{{ g.count }}</span></div>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(150px,1.2fr) 100px minmax(220px,2.2fr);gap:16px;padding:10px 16px;border-top:1px solid var(--ln);align-items:start"><span style="font:500 13px/1.5 var(--fm);color:var(--ion-tx);word-break:break-word">{{ r.n }}<span style="color:var(--bad)">{{ r.req }}</span></span><span style="font:400 12px/1.55 var(--fm);color:var(--tx2);word-break:break-word">{{ r.t }}</span><span style="font:400 12px/1.55 var(--fm);color:var(--tx3);word-break:break-word">{{ r.def }}</span><span style="font:400 13px/1.55 var(--ft);color:var(--tx2)" dangerouslySetInnerHTML="{{ r.d }}"></span></div></sc-for>
+</sc-for>
+</div></div>
+<sc-if value="{{ moreProps }}" hint-placeholder-val="{{ false }}"><button onClick="{{ toggleProps }}" style="width:100%;height:44px;border-top:1px solid var(--ln);font:500 13px var(--ft);color:var(--ion-tx)" style-hover="background:var(--sf3)">{{ morePropsLabel }}</button></sc-if>
+</div>
+</sc-if>
+<sc-for list="{{ inherits }}" as="ih"><div style="padding:14px 16px;border-radius:14px;border:1px solid var(--ln);background:var(--sf2);display:flex;gap:10px;align-items:flex-start;font:400 13px/1.55 var(--ft);color:var(--tx2)"><cv-icon n="layers" style="font-size:15px;color:var(--ion-tx);margin-top:2px"></cv-icon><span><b style="font-weight:600;color:var(--tx)">{{ ih.n }}</b> · {{ ih.d }}</span></div></sc-for>
+<sc-for list="{{ subs }}" as="sb">
+<div style="border:1px solid var(--ln);border-radius:16px;overflow:hidden;background:var(--sf)">
+<button onClick="{{ sb.toggle }}" style="width:100%;height:46px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;font:600 14px var(--ft)" style-hover="background:var(--sf3)"><span>{{ sb.n }} <span style="font:400 12px var(--fm);color:var(--tx3)">{{ sb.count }}</span></span><cv-icon n="{{ sb.icon }}" style="font-size:16px;color:var(--tx3)"></cv-icon></button>
+<sc-if value="{{ sb.open }}" hint-placeholder-val="{{ false }}"><div style="overflow-x:auto"><div style="min-width:640px"><sc-for list="{{ sb.rows }}" as="r"><div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(150px,1.2fr) 100px minmax(200px,2fr);gap:16px;padding:10px 16px;border-top:1px solid var(--ln)"><span style="font:500 13px/1.5 var(--fm);color:var(--ion-tx);word-break:break-word">{{ r.n }}<span style="color:var(--bad)">{{ r.req }}</span></span><span style="font:400 12px/1.55 var(--fm);color:var(--tx2);word-break:break-word">{{ r.t }}</span><span style="font:400 12px/1.55 var(--fm);color:var(--tx3)">{{ r.def }}</span><span style="font:400 13px/1.55 var(--ft);color:var(--tx2)" dangerouslySetInnerHTML="{{ r.d }}"></span></div></sc-for></div></div></sc-if>
+</div>
+</sc-for>
+</section>
+
+<section id="cv-a11y" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Accessibility and keyboard</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px">
+<div style="padding:18px;border:1px solid var(--ln);border-radius:18px;background:var(--sf);display:flex;flex-direction:column;gap:12px">
+<div style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Keyboard</div>
+<sc-if value="{{ hasKb }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column"><sc-for list="{{ kb }}" as="r" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:14px;align-items:center;padding:9px 0;border-top:1px solid var(--ln)"><span style="justify-self:start;padding:3px 8px;border-radius:6px;background:var(--sf3);border:1px solid var(--ln2);border-bottom-width:2px;font:500 12px var(--fm)">{{ r.k }}</span><span style="font:400 13px/1.45 var(--ft);color:var(--tx2)">{{ r.d }}</span></div></sc-for></div></sc-if>
+<sc-if value="{{ noKb }}" hint-placeholder-val="{{ false }}"><div style="font:400 13px/1.5 var(--ft);color:var(--tx2)">Not focusable. It has no interaction of its own and takes the semantics of what it wraps.</div></sc-if>
+<sc-if value="{{ hasSrcKeys }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;font:400 12px var(--ft);color:var(--tx3)">Handled in source<sc-for list="{{ srcKeys }}" as="x"><span style="padding:2px 7px;border-radius:6px;border:1px solid var(--ln2);font:500 11px var(--fm);color:var(--tx2)">{{ x }}</span></sc-for></div></sc-if>
+</div>
+<div style="padding:18px;border:1px solid var(--ln);border-radius:18px;background:var(--sf);display:flex;flex-direction:column;gap:12px">
+<div style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Semantics</div>
+<sc-for list="{{ sem }}" as="sm"><div style="display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:start;padding:8px 0;border-top:1px solid var(--ln)"><span style="font:500 13px var(--ft);color:var(--tx2)">{{ sm.l }}</span><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ sm.v }}" as="x"><span style="height:22px;padding:0 8px;border-radius:999px;display:inline-flex;align-items:center;background:var(--ion-soft);color:var(--ion-tx);font:500 11px var(--fm)">{{ x }}</span></sc-for></div></div></sc-for>
+<sc-if value="{{ noSem }}" hint-placeholder-val="{{ false }}"><div style="font:400 13px/1.5 var(--ft);color:var(--tx2)">No role of its own in source; it reads as the content it renders.</div></sc-if>
+<sc-if value="{{ touch }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:10px;align-items:flex-start;font:400 13px/1.5 var(--ft);color:var(--tx2)"><cv-icon n="smartphone" style="font-size:15px;color:var(--ion-tx);margin-top:2px"></cv-icon>Below the platform minimum, the touch area grows to 44 pt on iOS and 48 dp on Android without moving the layout.</div></sc-if>
+</div>
+</div>
+<sc-if value="{{ hasNotes }}" hint-placeholder-val="{{ true }}"><div style="padding:18px 20px;border:1px solid var(--ln);border-radius:18px;background:var(--sf2);display:flex;flex-direction:column;gap:10px"><div style="font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">From the docs</div><sc-for list="{{ notes }}" as="nt"><p style="margin:0;font:400 14px/1.6 var(--ft);color:var(--tx2);max-width:80ch" dangerouslySetInnerHTML="{{ nt }}"></p></sc-for></div></sc-if>
+</section>
+
+<section id="cv-pf" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<div style="display:flex;flex-direction:column;gap:6px"><h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Platform skins</h2><p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">The playground's props on each platform: same tree, native shapes, type and touch sizes.</p></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px">
+<sc-for list="{{ skins }}" as="sk" hint-placeholder-count="3"><div style="min-width:0;display:flex;flex-direction:column;border:1px solid var(--ln);border-radius:18px;overflow:hidden;background:var(--sf)"><div style="min-height:240px;padding:32px 20px;display:flex;align-items:center;justify-content:center;background:var(--bg2);overflow:hidden;min-width:0" dangerouslySetInnerHTML="{{ sk.html }}"></div><div style="padding:12px 16px;border-top:1px solid var(--ln);display:flex;flex-direction:column;gap:3px"><span style="font:600 14px var(--ft)">{{ sk.l }}</span><span style="font:400 11px/1.4 var(--fm);color:var(--tx3)">{{ sk.sub }}</span></div></div></sc-for>
+</div>
+</section>
+
+<sc-if value="{{ hasUsage }}" hint-placeholder-val="{{ true }}">
+<section id="cv-use" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Usage</h2>
+<sc-for list="{{ usageP }}" as="up"><p style="margin:0;font:400 15px/1.6 var(--ft);color:var(--tx2);max-width:80ch" dangerouslySetInnerHTML="{{ up }}"></p></sc-for>
+<sc-if value="{{ hasUsageCode }}" hint-placeholder-val="{{ true }}"><pre style="margin:0;padding:16px 18px;border-radius:14px;background:var(--bg2);border:1px solid var(--ln);font:400 13px/1.7 var(--fm);overflow-x:auto;white-space:pre" dangerouslySetInnerHTML="{{ usageCode }}"></pre></sc-if>
+<sc-for list="{{ introP }}" as="ip"><p style="margin:0;font:400 14px/1.6 var(--ft);color:var(--tx2);max-width:80ch" dangerouslySetInnerHTML="{{ ip }}"></p></sc-for>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px">
+<sc-for list="{{ secs }}" as="x"><div style="min-width:0;padding:18px 20px;border:1px solid var(--ln);border-radius:18px;background:var(--sf);display:flex;flex-direction:column;gap:10px"><h3 style="margin:0;font:600 16px/1.3 var(--ft)">{{ x.t }}</h3><sc-for list="{{ x.p }}" as="xp"><p style="margin:0;font:400 13.5px/1.6 var(--ft);color:var(--tx2)" dangerouslySetInnerHTML="{{ xp }}"></p></sc-for><sc-if value="{{ x.hasCode }}" hint-placeholder-val="{{ false }}"><pre style="margin:0;padding:12px 14px;border-radius:10px;background:var(--bg2);border:1px solid var(--ln);font:400 12px/1.65 var(--fm);overflow:auto;max-height:220px;white-space:pre" dangerouslySetInnerHTML="{{ x.code }}"></pre></sc-if></div></sc-for>
+</div>
+</section>
+</sc-if>
+
+<section id="cv-tok" style="display:flex;flex-direction:column;gap:16px;scroll-margin-top:80px">
+<div style="display:flex;flex-direction:column;gap:6px"><h2 style="margin:0;font:500 28px/1.1 var(--fd);letter-spacing:-.02em">Tokens</h2><p style="margin:0;font:400 14px/1.5 var(--ft);color:var(--tx2)">Read from the playground render. Values follow the scheme and the ion hue.</p></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ toks }}" as="t" hint-placeholder-count="8"><div title="{{ t.v }}" style="height:32px;padding:0 12px 0 6px;border-radius:999px;border:1px solid var(--ln);background:var(--sf);display:inline-flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:{{ t.sw }};box-shadow:inset 0 0 0 1px var(--ln2);color:var(--tx3)"><cv-icon n="{{ t.ic }}" style="font-size:11px;display:{{ t.icD }}"></cv-icon></span><span style="font:500 12px var(--fm)">{{ t.n }}</span></div></sc-for>
+</div>
+<h3 style="margin:16px 0 0;font:600 16px var(--ft)">Related components</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:10px">
+<sc-for list="{{ related }}" as="rl" hint-placeholder-count="4"><a href="{{ rl.href }}" style="padding:14px 16px;border-radius:14px;border:1px solid var(--ln);background:var(--sf);display:flex;flex-direction:column;gap:6px;color:var(--tx)" style-hover="border-color:var(--ion);text-decoration:none;background:var(--sf2)"><span style="display:flex;justify-content:space-between;align-items:center;font:600 14px var(--ft)">{{ rl.n }}<cv-icon n="arrowRight" style="font-size:14px;color:var(--tx3)"></cv-icon></span><span style="font:400 12px/1.45 var(--ft);color:var(--tx3)">{{ rl.room }}</span></a></sc-for>
+</div>
+</section>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:24px;border-top:1px solid var(--ln)">
+<a href="{{ prev.href }}" style="padding:16px 18px;border-radius:16px;border:1px solid var(--ln);background:var(--sf);display:flex;flex-direction:column;gap:4px;color:var(--tx)" style-hover="border-color:var(--ion);text-decoration:none"><span style="font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Previous</span><span style="font:500 18px var(--fd)">{{ prev.n }}</span></a>
+<a href="{{ next.href }}" style="padding:16px 18px;border-radius:16px;border:1px solid var(--ln);background:var(--sf);display:flex;flex-direction:column;gap:4px;align-items:flex-end;text-align:right;color:var(--tx)" style-hover="border-color:var(--ion);text-decoration:none"><span style="font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)">Next</span><span style="font:500 18px var(--fd)">{{ next.n }}</span></a>
+</div>
+</sc-if>
+</main>
+</div>
+
+<footer style="max-width:1440px;margin:0 auto;padding:64px 32px 48px">
+<div style="border-top:1px solid var(--ln);padding-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font:400 12px/1.6 var(--fm);color:var(--tx3)"><span>Canvas v4.0.0 · component detail · props and examples read from bnannier/canvas</span><span>MIT licensed</span></div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;glass&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;platform&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;web&quot;,&quot;ios&quot;,&quot;android&quot;],&quot;default&quot;:&quot;web&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;scheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const NAV=[['Foundations','Foundations'],['Layout','Layout'],['Controls','Controls'],['Inputs','Inputs'],['Navigation','Navigation'],['Data','Surfaces & data'],['Charts','Charts'],['Overlays','Overlays & feedback'],['Skins',''],['Templates','']];
+const HUES=[{h:285,n:'Ion violet'},{h:205,n:'Plasma cyan'},{h:165,n:'Mint'},{h:20,n:'Rose'},{h:75,n:'Amber'}];
+const TIER={A:['Atom','var(--sf3)','var(--tx2)'],P:['Primitive','var(--bg2)','var(--tx3)'],M:['Molecule','var(--ion-soft)','var(--ion-tx)'],O:['Organism','color-mix(in oklch,var(--cyan) 18%,transparent)','var(--cyan)'],C:['Chart','color-mix(in oklch,var(--mint) 18%,transparent)','var(--mint)']};
+const ICONS=['','plus','sparkles','chevronDown','chevronRight','arrowRight','search','settings','bell','check','x','copy','send','heart','star','zap','globe','lock','user','trash2','download','tag'];
+const PFL={web:['Web','control 10 · field 10 · card 16 · Instrument Sans'],ios:['iOS','capsule controls · field 8 · card 12 · SF Pro · 44 pt'],android:['Android','Material 3 stadium · field 4 · card 12 · Roboto · 48 dp']};
+const VIS=['hover','focus','pressed'];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const md=t=>({__html:esc(t).replace(/`([^`]+)`/g,'<code style="font:400 .88em var(--fm);padding:1px 5px;border-radius:5px;background:var(--sf3);border:1px solid var(--ln);color:var(--tx)">$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b style="font-weight:600;color:var(--tx)">$1</b>').replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1</a>')});
+const hl=code=>({__html:esc(code).replace(/(\s)([a-z][\w-]*)(=)/g,'$1<span style="color:var(--cyan)">$2</span>$3').replace(/(&quot;[^&]*&quot;)/g,'<span style="color:var(--mint)">$1</span>').replace(/(&lt;\/?)([A-Z][\w.]*)/g,'$1<span style="color:var(--ion-tx)">$2</span>').replace(/(^|\n)(\s*\/\/[^\n]*)/g,'$1<span style="color:var(--tx3)">$2</span>')});
+const realDef=d=>d!=null&&!/^[{[<(]/.test(d)&&!/props\.|=>|\|\||&&/.test(d)&&d.length<28;
+const row=x=>({n:x.n,req:x.o?'':' *',t:x.t.length>140?x.t.slice(0,140)+'…':x.t,def:realDef(x.def)?x.def:(x.t==='boolean'?'false':'—'),d:md(x.d||'')});
+
+class Component extends DCLogic {
+  state={slug:null,kv:null,pf:null,q:'',scheme:null,hue:null,vw:1440,marks:[],toks:[],copied:'',subOpen:{},allProps:false,railOpen:false};
+  stageRef=React.createRef();anRef=React.createRef();
+  componentDidMount(){
+    this._hc=()=>this.go(this.fromHash(),true);window.addEventListener('hashchange',this._hc);
+    this._rs=()=>this.setState({vw:window.innerWidth});this._rs();window.addEventListener('resize',this._rs);
+    this._wait();
+  }
+  componentWillUnmount(){window.removeEventListener('hashchange',this._hc);window.removeEventListener('resize',this._rs);clearTimeout(this._t);clearTimeout(this._mt);clearTimeout(this._ct);}
+  _wait(){const K=window.CVK,D=window.CV_DOCS;if(K&&D&&K.btn&&K.pfv&&K.codev&&K.codev2&&K.codev3&&K.codev4&&K.codev5&&K.codev6&&K.codev7&&K.codev8&&window.CVX&&Object.keys(K.R||{}).length>=107){this.go(this.fromHash(),false);return;}this._t=setTimeout(()=>this._wait(),60);}
+  fromHash(){const D=window.CV_DOCS;const h=decodeURIComponent((location.hash||'').slice(1));return D&&D.c[h]?h:'button';}
+  go(slug,scroll){const ks=CVK.knobs(CVK.spec(slug).k);this._mk=this._tk=null;this.setState({slug,kv:CVK.init(ks),marks:[],toks:[],subOpen:{},allProps:false,railOpen:false});if(scroll)window.scrollTo(0,0);setTimeout(()=>this._measure(),450);}
+  componentDidUpdate(pp){const p=this.props,r={};if(pp.platform!==p.platform)r.pf=null;if(pp.glass!==p.glass)r.glass=null;if(pp.scheme!==p.scheme)r.scheme=null;if(Object.keys(r).length)this.setState(r);clearTimeout(this._mt);this._mt=setTimeout(()=>this._measure(),70);}
+  _measure(){
+    const an=this.anRef.current;if(an){const r=an.getBoundingClientRect(),seen={},pts=[];an.querySelectorAll('[data-a]').forEach(el=>{const n=+el.getAttribute('data-a');if(!n||seen[n])return;const b=el.getBoundingClientRect();if(!b.width&&!b.height)return;seen[n]=1;pts.push({n,cx:b.left-r.left+b.width/2,top:b.top-r.top,bot:b.bottom-r.top});});
+      pts.sort((a,b)=>a.n-b.n);const placed=[];
+      pts.forEach((q,i)=>{const up=i%2===0;let y=up?q.top-30:q.bot+30;y=Math.max(14,Math.min(y,r.height-14));let x=Math.max(14,Math.min(q.cx,r.width-14)),t=0;
+        while(placed.some(o=>Math.abs(o.x-x)<28&&Math.abs(o.y-y)<28)&&t<16){x+=28;if(x>r.width-14){x=14;y+=up?-28:28;}t++;}
+        const ly=up?y+11:q.bot,lh=up?q.top-(y+11):(y-11)-q.bot;placed.push({n:q.n,x,y,lx:Math.round(x)+'px',ly:Math.round(ly)+'px',lh:Math.max(0,Math.round(lh))+'px'});});
+      const m=placed.map(o=>({n:o.n,x:Math.round(o.x)+'px',y:Math.round(o.y)+'px',lx:o.lx,ly:o.ly,lh:o.lh}));const k=JSON.stringify(m);if(k!==this._mk){this._mk=k;this.setState({marks:m});}}
+    const st=this.stageRef.current;if(st){const set=new Set();st.querySelectorAll('*').forEach(el=>{const s=(el.getAttribute('style')||'')+' '+(el.getAttribute('fill')||'')+' '+(el.getAttribute('stroke')||'');(s.match(/var\(--[\w-]+/g)||[]).forEach(v=>set.add(v.slice(4)));});
+      const root=document.querySelector('[data-ion]'),cs=root?getComputedStyle(root):null;const list=[...set].filter(n=>!/^--(r-c|h-c|r-f|h-f|r-cd|f-ui|tw|fs|rx|ry|skA)$/.test(n)).sort().map(n=>({n,v:cs?cs.getPropertyValue(n).trim():''}));const k=JSON.stringify(list);if(k!==this._tk){this._tk=k;this.setState({toks:list});}}
+  }
+  copy(t,key){try{navigator.clipboard.writeText(t);}catch(e){}this.setState({copied:key});clearTimeout(this._ct);this._ct=setTimeout(()=>this.setState({copied:''}),1400);}
+  jump(id){const el=document.getElementById(id);if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'});}
+  renderVals(){
+    const s=this.state,p=this.props,D=window.CV_DOCS,K=window.CVK;
+    const scheme=s.scheme??p.scheme??'dark',hue=s.hue??p.hue??285,glass=s.glass??p.glass??true,pf=s.pf??p.platform??'web',vw=s.vw,narrow=vw<760;
+    const base={scheme,hue,bf:glass?'':'none',gl:glass?'':'var(--sf2)',toggleGlass:()=>this.setState({glass:!glass}),glassP:glass?'true':'false',glassC:glass?'var(--tx)':'var(--tx3)',glassTr:glass?'var(--ion)':'var(--sf4)',glassX:glass?'translateX(10px)':'none',schemeX:scheme==='dark'?'0%':'100%',
+      setDark:()=>this.setState({scheme:'dark'}),setLight:()=>this.setState({scheme:'light'}),darkC:scheme==='dark'?'var(--tx)':'var(--tx3)',lightC:scheme==='light'?'var(--tx)':'var(--tx3)',
+      hues:HUES.map(h=>({...h,ring:h.h===hue?'0 0 0 2px var(--sf),0 0 0 4px var(--tx2)':'none',on:()=>this.setState({hue:h.h})})),
+      narrow,cols:narrow?'minmax(0,1fr)':'200px minmax(0,1fr)',railD:narrow&&!s.railOpen?'none':'block',railPos:narrow?'static':'sticky',railMax:narrow?'none':'calc(100vh - 92px)',wrapPad:narrow?'88px 18px 0':'96px 24px 0',
+      railBtn:s.railOpen?'Hide components':'Components in this section',toggleRail:()=>this.setState({railOpen:!s.railOpen}),q:s.q,onQ:e=>this.setState({q:e.target.value})};
+    const ready=!!(D&&K&&s.slug&&s.kv);
+    const c=ready?D.c[s.slug]:null;
+    base.navLinks=NAV.map(([f,room])=>({n:f,href:'Canvas v4.0.0 '+f+'.dc.html',c:c&&c.room===room?'var(--tx)':'var(--tx2)',bg:c&&c.room===room?'var(--sf3)':'transparent'}));
+    if(!ready)return {...base,ready:false,loading:true,rail:[],railPh:'Filter components'};
+    const slug=s.slug,sp=K.spec(slug),ks=K.knobs(sp.k),kv=s.kv,pp=K.props(ks,kv);
+    const fill=sp.w==='fill',tags=sp.jsx||[c.name.replace(/[^A-Za-z]/g,'')];
+    const box=(html,f)=>({__html:`<div style="${K.PF[f||'web']};width:100%;min-width:0;display:flex;justify-content:center;align-items:center;font-family:var(--f-ui)">${fill?'<div style="width:100%;min-width:0;display:flex;justify-content:center">'+html+'</div>':html}</div>`});
+    const boxMany=(list,f)=>({__html:`<div style="${K.PF[f||'web']};width:100%;min-width:0;display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center">${list.map(h=>fill?'<div style="width:100%;min-width:0;display:flex;justify-content:center">'+h+'</div>':h).join('')}</div>`});
+    const jsxName=(sp.tag&&pp[sp.tag])||tags[0];
+    const cp={...pp};if(sp.tag)delete cp[sp.tag];if(sp.fp&&cp[sp.fp]&&cp[sp.fp].icon){const n=cp[sp.fp].icon;delete cp[sp.fp];const o={};o[n]=true;Object.assign(o,cp);Object.keys(cp).forEach(k=>delete cp[k]);Object.assign(cp,o);}
+    const code=K.code(jsxName,cp);
+    const set=(key,v)=>this.setState(st=>({kv:{...st.kv,[key]:v}}));
+    const knobs=ks.map(k=>{const key=k.ty==='flags'?'@'+k.l:k.n,v=kv[key];
+      const opts=(k.o||[]).map(o=>({l:o==='-'?'default':o===''?'none':o,bd:o===v?'var(--ion)':'var(--ln2)',bg:o===v?'var(--ion-soft)':'transparent',c:o===v?'var(--ion-tx)':'var(--tx2)',pick:()=>set(key,o)}));
+      return {label:k.ty==='flags'?k.l:k.n,hint:k.ty==='flags'?'pick one':k.ty==='bool'?'boolean':k.ty==='num'?'number':k.ty==='icon'?'icon':k.ty==='enum'?'one of':'string',
+        isOpts:k.ty==='flags'||k.ty==='enum',isIcon:k.ty==='icon',isBool:k.ty==='bool',isText:k.ty==='text',isNum:k.ty==='num',opts,val:v,min:k.min,max:k.max,step:k.max-k.min>20?1:1,
+        icons:ICONS.map(n=>({n:n||'x',l:n||'none',icD:n?'inline-block':'none',txD:n?'none':'inline',bd:n===v?'var(--ion)':'var(--ln2)',bg:n===v?'var(--ion-soft)':'transparent',c:n===v?'var(--ion-tx)':'var(--tx2)',pick:()=>set(key,n)})),
+        swBg:v?'var(--ion)':'var(--sf4)',swX:v?'translateX(16px)':'translateX(0)',toggle:()=>set(key,!v),onText:e=>set(key,e.target.value),onNum:e=>set(key,+e.target.value)};});
+    const X=window.CVX,fromCode=(src,f,fb)=>{const r=src?X.run(src):null;if(r&&r.ok){const roots=X.roots(r.tree);const out=roots.map(n=>X.html(n,{pf:f,narrow:vw<760}));if(out.join('').trim())return out;}return fb();};
+    const variants=(c.variants||[]).map(v=>({t:v.t,hasD:!!v.d,d:md(v.d),hasCode:!!v.code,code:hl(v.code),html:boxMany(fromCode(v.code,pf,()=>{const ps=K.parse(v.code,tags).slice(0,4);return (ps.length?ps:[pp]).map(x=>K.render(slug,x,{pf}));}),pf)}));
+    let sizes=[];if(sp.sz){const m=sp.sz.match(/^(\w+):(.+)$/);if(m)sizes=m[2].split('|').map(v=>({l:m[1]+' '+v,html:box(K.render(slug,{...pp,[m[1]]:+v},{pf}),pf)}));
+      else{const fl=sp.sz.split('|');sizes=fl.map(fn=>{const q={...pp};fl.forEach(x=>{if(x!=='-')delete q[x];});if(fn!=='-')q[fn]=true;return {l:fn==='-'?'default':fn,html:box(K.render(slug,q,{pf}),pf)};});}}
+    const states=(sp.st||'').split('|').filter(Boolean).map(st=>{const q={...pp};if(st!=='-'&&!VIS.includes(st))q[st]=true;return {l:st==='-'?'default':st,html:box(K.render(slug,q,{pf,st:VIS.includes(st)?st:null}),pf)};});
+    const seen=new Set(s.marks.map(m=>m.n));
+    const parts=(sp.an||[]).map((t,i)=>({n:i+1,t,op:seen.size&&!seen.has(i+1)?.45:1,bg:seen.has(i+1)?'var(--ion)':'var(--sf3)',c:seen.has(i+1)?'var(--ion-fg)':'var(--tx3)'}));
+    const m=c.main;let pgroups=[],total=0;
+    if(m){const G={};m.props.filter(x=>!/^testOnly/.test(x.n)).forEach(x=>{const g=x.g==null?-1:x.g;(G[g]=G[g]||[]).push(x);});
+      const keys=Object.keys(G).map(Number).sort((a,b)=>a-b);let left=s.allProps?1e9:28;
+      keys.forEach(g=>{const all=G[g];total+=all.length;const take=all.slice(0,Math.max(0,left));left-=take.length;if(!take.length)return;const gi=m.groups[g];pgroups.push({t:g<0?'Props':gi.t,one:!!(gi&&gi.one),count:all.length+(all.length===1?' prop':' props'),rows:take.map(row)});});
+      (m.ext||[]).forEach(e=>{if(e==='CartesianSeriesProps'&&D.shared[e]){const sh=D.shared[e];pgroups.push({t:'From CartesianSeriesProps',one:false,count:sh.props.length+' props',rows:sh.props.map(row)});}});}
+    const inherits=(m&&m.ext||[]).filter(e=>e!=='CartesianSeriesProps').map(e=>({n:e,d:e==='MeasureProps'?'width steps xxxs 192 · xxs 256 · xs 320 · sm 384 · md 448 · lg 512 · xl 576 · xxl 672 · xxxl 768 · wide 896 · wider 1024 · widest 1152 · page 1280, plus start to pin to the leading edge.':e==='TextEntryProps'?'the shared text-entry props (value, placeholder, keyboard, autocomplete and change handlers) common to Input and Textarea.':'shared props defined elsewhere in the kit.'}));
+    const subs=(c.subs||[]).map(sb=>{const open=!!s.subOpen[sb.n];return {n:sb.n,count:sb.props.length+' props',open,icon:open?'chevronUp':'chevronDown',rows:sb.props.slice(0,50).map(row),toggle:()=>this.setState(st=>({subOpen:{...st.subOpen,[sb.n]:!open}}))};});
+    const kb=(K.KB[sp.kb||'none']||[]).map(r=>({k:r[0],d:r[1]}));
+    const sem=[['Roles',c.roles],['States',c.states],['ARIA on web',c.aria]].filter(x=>x[1]&&x[1].length).map(x=>({l:x[0],v:x[1]}));
+    const order=D.order,ix=order.indexOf(slug),pv=order[(ix-1+order.length)%order.length],nx=order[(ix+1)%order.length];
+    const room=D.rooms.find(r=>r.room===c.room);
+    const rel=[...new Set([...(c.rel||[]),...(room?room.slugs:[])])].filter(x=>x!==slug&&D.c[x]).slice(0,8);
+    const tier=TIER[c.tier]||TIER.A,ql=s.q.trim().toLowerCase();
+    const rail=D.rooms.filter(r=>r.room===c.room).map(r=>{const items=r.slugs.filter(x=>!ql||D.c[x].name.toLowerCase().includes(ql)).map(x=>({n:D.c[x].name,href:'#'+x,go:()=>{},fw:x===slug?'600':'500',c:x===slug?'var(--ion-tx)':'var(--tx2)',bg:x===slug?'var(--ion-soft)':'transparent',dot:x===slug?'var(--ion)':'transparent'}));return {room:r.room,count:items.length,items};}).filter(r=>r.items.length);
+    const hasUsage=!!((c.usage&&(c.usage.code||c.usage.p.length))||c.intro.length||c.sections.length);
+    const J=[['cv-pg','Playground',1],['cv-var','Variants',variants.length],['cv-sz','Sizes',sizes.length],['cv-st','States',states.length],['cv-an','Anatomy',(sp.an||[]).length],['cv-props','Props',1],['cv-a11y','Accessibility',1],['cv-pf','Platforms',1],['cv-use','Usage',hasUsage],['cv-tok','Tokens',1]];
+    const importLine='import { '+tags.join(', ')+' } from "@nannier/canvas";';
+    return {...base,ready:true,loading:false,rail,slug,railPh:'Filter '+(room?room.slugs.length:0)+' components',
+      name:c.name,room:c.room,roomHref:c.page,cardHref:c.page+'#c-'+c.card,tierL:tier[0],tierBg:tier[1],tierC:tier[2],summary:md(c.summary),
+      importLine,impIcon:s.copied==='imp'?'check':'copy',copyImport:()=>this.copy(importLine,'imp'),gh:'https://github.com/bnannier/canvas/tree/main/'+c.path.replace(/\/$/,''),path:c.path.replace(/\/$/,''),
+      jumps:J.filter(j=>j[2]).map(j=>({t:j[1],go:()=>this.jump(j[0])})),
+      propsName:m?m.n:c.name,pfs:['web','ios','android'].map(x=>({n:PFL[x][0],on:()=>this.setState({pf:x}),bg:x===pf?'var(--sf)':'transparent',c:x===pf?'var(--tx)':'var(--tx2)',sh:x===pf?'var(--sh-sm)':'none'})),
+      stageRef:this.stageRef,anRef:this.anRef,pgHtml:box(fromCode(code,pf,()=>[K.render(slug,pp,{pf})]).join(''),pf),pgCols:vw<1180?'minmax(0,1fr)':'minmax(0,1fr) 300px',kbBl:vw<1180?'0':'1px solid var(--ln)',kbBt:vw<1180?'1px solid var(--ln)':'0',
+      knobs,resetKnobs:()=>this.setState({kv:K.init(ks)}),codeHtml:hl(code),codeIcon:s.copied==='code'?'check':'copy',codeLabel:s.copied==='code'?'Copied':'Copy',copyCode:()=>this.copy(code,'code'),
+      hasVariants:variants.length>0,variants,varNote:variants.length+' examples from '+c.path+c.slug.replace(/^.*$/,(c.path.split('/').slice(-2,-1)[0]||c.slug))+'.md, each rendered live from its own JSX.',
+      hasSizes:sizes.length>0,sizes,hasStates:states.length>0,states,
+      hasAnatomy:parts.length>0,anZoom:fill?'1':'1.6',anHtml:box(K.render(slug,{...pp,...(sp.ap||{})},{pf}),pf),marks:s.marks,parts,anCols:vw<900?'minmax(0,1fr)':'minmax(0,1.7fr) minmax(220px,1fr)',
+      hasProps:!!m,noProps:!m,noPropsText:'Accepts every React Native '+c.name+' prop unchanged. Canvas re-exports it so every component is built from the same primitive.',
+      propsNote:m?total+' props on '+m.n+', grouped as they are declared in source. Required props are marked *.':'A React Native primitive, re-exported as is.',
+      pgroups,moreProps:!!m&&total>28,morePropsLabel:s.allProps?'Show fewer':'Show all '+total+' props',toggleProps:()=>this.setState({allProps:!s.allProps}),inherits,subs,
+      hasKb:kb.length>0,noKb:!kb.length,kb,hasSrcKeys:(c.keys||[]).length>0,srcKeys:c.keys||[],sem,noSem:!sem.length,touch:['button','toggle','radio','slider','spin','tabs','menu','link','listbox','combobox','carousel'].includes(sp.kb),
+      hasNotes:(c.a11y||[]).length>0,notes:(c.a11y||[]).map(md),
+      skins:['web','ios','android'].map(x=>({l:PFL[x][0],sub:PFL[x][1],html:box(fromCode(code,x,()=>[K.render(slug,pp,{pf:x})]).join(''),x)})),
+      hasUsage,usageP:c.usage?c.usage.p.map(md):[],hasUsageCode:!!(c.usage&&c.usage.code),usageCode:hl(c.usage?c.usage.code:''),introP:c.intro.map(md),
+      secs:c.sections.slice(0,6).map(x=>({t:x.t,p:x.p.slice(0,3).map(md),hasCode:!!x.code,code:hl(x.code)})),
+      toks:s.toks.map(t=>{const col=/^(#|rgb|oklch|color-mix|hsl)/.test(t.v);return {n:t.n,v:t.v,sw:col?'var('+t.n+')':'var(--sf3)',ic:/^--f/.test(t.n)?'type':/^--sh/.test(t.n)?'layers':'sparkles',icD:col?'none':'inline-block'};}),
+      related:rel.map(x=>({n:D.c[x].name,href:'#'+x,room:D.c[x].room})),
+      prev:{n:D.c[pv].name,href:'#'+pv},next:{n:D.c[nx].name,href:'#'+nx}};
+  }
+}
+</script>
+</body>
+</html>

@@ -13,7 +13,7 @@ import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { DashboardGrid } from "../src/organisms/dashboard-grid/dashboard-grid.tsx";
 import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
-import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
+import { WEB_FROST, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 
 const restores: Array<() => void> = [];
 afterEach(() => {
@@ -144,7 +144,7 @@ describe("organism material roles", () => {
     expect(current.style.borderColor).not.toContain("0.00");
     const upcoming = screen.getByText("3").parentElement!;
     expect(materials(upcoming)).toHaveLength(1);
-    expect(frostOf(materials(upcoming)[0])?.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+    expect(frostOf(materials(upcoming)[0])?.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
   });
 
   it("keeps unfilled underline tabs unpainted and their ink indicator intact", () => {

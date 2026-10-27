@@ -2,7 +2,8 @@ import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type TextStyle } from "react-native";
 import { alpha, type ColorTokens } from "../../style/index.js";
-import { typeScale } from "../../style/type-scale.js";
+import { typeRoles } from "../../style/type-scale.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type TypographySkin } from "./typography.shared.js";
 
@@ -12,11 +13,7 @@ import { type TypographySkin } from "./typography.shared.js";
 // first-match precedence and spreads the matching fragment.
 //
 // Typography is a "Shared" platform treatment: there is no native type-scale
-// control to skin per OS, so iosSkin and androidSkin reference the exact same
-// values as webSkin (the kit type scale already maps cleanly onto iOS text
-// styles and Material 3 type roles via the shared tokens). The full file
-// structure exists to match the kit's platform-skin recipe; the columns are
-// identical and the atom is not registered for a docs preview.
+// control to skin per OS, so the three skins are one.
 //
 // Every fragment is a TextStyle: Typography renders a single Text, so layout +
 // type + color all live on the Text. The `code` role additionally carries the
@@ -51,69 +48,70 @@ export type Role =
   | "code"
   | "mono";
 
-// Type + layout per role, color-free (the parts that don't read a token). Every role
-// is a Dark Factory text style (src/style/type-scale.ts, derived from Dark Factory's
-// theme): the titles are bold and the hierarchy steps down in size from the display
-// 24 to the heading 14; body is Dark Factory's 12.5/19 medium; small, muted and tiny
-// are its 11.5 and 11 semibold labels; caption is its eyebrow (uppercase, tracked,
-// raised from 9.5 to the 10px floor). `lead` is the heading size at the body weight
-// and leading. `code` and `mono` are Geist Mono at the small and label sizes (Dark
-// Factory has no mono), and `code` carries the self-start pill box (radius + padding).
-const roleType: Record<Role, TextStyle> = {
-  subheading: { fontSize: 13.5, lineHeight: 17.55, fontWeight: "700" },
-  label: { fontSize: 12, lineHeight: 16.2, fontWeight: "600" },
-  micro: { fontSize: 10.5, lineHeight: 13.65, fontWeight: "600" },
-  tag: { fontSize: 10, lineHeight: 13, fontWeight: "700" },
-  eyebrow: { fontSize: 9.5, lineHeight: 12.35, fontWeight: "700", textTransform: "uppercase" },
-  eyebrowLg: { fontSize: 10, lineHeight: 13, fontWeight: "700", textTransform: "uppercase" },
-  stageLabel: { fontSize: 9.5, lineHeight: 12.35, fontWeight: "800", textTransform: "uppercase" },
-  statValue: { fontSize: 18, lineHeight: 19.8, fontWeight: "800" },
-  metricValue: { fontSize: 18, lineHeight: 21.6, fontWeight: "700" },
-  formValue: { fontSize: 13, lineHeight: 19.5, fontWeight: "600" },
+// Type + layout per role, color-free (the parts that don't read a token). Every role is
+// the v4 hand-off's (src/style/type-scale.ts `typeRoles`, from its Typography renderer):
+// the display and h1 to h4 titles are medium-weight Bricolage with tightened tracking,
+// h5 and the subheading are the 17px UI title, body is 15/1.55 regular, lead 19, small
+// 13, tiny 11 and caption 12, the eyebrow 11px mono tracked +0.1em. The legacy roles map
+// onto the scale: label and formValue are the UI label and body, micro the tiny step,
+// tag the tier tag (mono, at the 10px floor), eyebrowLg and stageLabel the eyebrow,
+// statValue and metricValue the 32px and h4 display numbers. `code` and `mono` are the
+// mono face at the small size, and `code` carries the pill box (radius + padding).
+const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
+  const d = (style: TextStyle): TextStyle => ({ ...style, ...display });
+  return {
+    subheading: typeRoles.subheading,
+    label: typeRoles.label,
+    micro: { ...typeRoles.tiny, fontWeight: "500" },
+    tag: typeRoles.tag,
+    eyebrow: typeRoles.eyebrow,
+    eyebrowLg: typeRoles.eyebrow,
+    stageLabel: typeRoles.eyebrow,
+    statValue: d(typeRoles.statValue),
+    metricValue: d(typeRoles.h4),
+    formValue: { ...typeRoles.body, fontWeight: "500" },
 
-  display: typeScale.display,
-  h1: typeScale.featuredTitle,
-  h2: typeScale.dialogTitle,
-  h3: typeScale.drawerTitle,
-  h4: typeScale.title,
-  h5: typeScale.heading,
-  lead: { fontSize: typeScale.heading.fontSize, lineHeight: 21, fontWeight: typeScale.body.fontWeight },
-  body: typeScale.body,
-  small: typeScale.small,
-  tiny: typeScale.caption,
-  muted: typeScale.small,
-  caption: typeScale.eyebrow,
-  // A muted pill (the fill is added in roleColor). The pill is HUG: the shell appends
-  // `useHugStyle()` for this role instead of a static alignSelf, so it keeps its content
-  // width in a Column without pinning a Row child.
-  code: {
-    borderRadius: platformShape.web.key,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    fontSize: typeScale.small.fontSize,
-    lineHeight: typeScale.small.lineHeight,
-  },
-  mono: { fontSize: typeScale.label.fontSize, lineHeight: typeScale.label.lineHeight },
+    display: d(typeRoles.display),
+    h1: d(typeRoles.h1),
+    h2: d(typeRoles.h2),
+    h3: d(typeRoles.h3),
+    h4: d(typeRoles.h4),
+    h5: typeRoles.h5,
+    lead: typeRoles.lead,
+    body: typeRoles.body,
+    small: typeRoles.small,
+    tiny: typeRoles.tiny,
+    muted: typeRoles.small,
+    caption: typeRoles.caption,
+    // A muted pill (the fill is added in roleColor). The pill is HUG: the shell appends
+    // `useHugStyle()` for this role instead of a static alignSelf, so it keeps its content
+    // width in a Column without pinning a Row child.
+    code: { ...typeRoles.mono, borderRadius: platformShape.web.key, paddingHorizontal: 6, paddingVertical: 2 },
+    mono: typeRoles.mono,
+  };
 };
 
-// Web base skin: the Dark Factory type scale.
-export const webSkin: TypographySkin = { roleType };
-
-// iOS (HIG) and Material 3 skins. Typography is a Shared treatment, so both
-// reference the exact same scale as the web skin: there is no native type-scale
-// control to diverge toward, and the kit's type tokens already serve iOS text
-// styles and Material 3 type roles. Keeping them identical is intentional, not
-// a placeholder.
+// One scale on every platform: Typography is a Shared treatment with no native type-scale
+// control to diverge toward. The titles and big numbers ask for the display face
+// (DISPLAY_FONT), which the themed Text swaps for the app's registered `display` face and
+// otherwise leaves the platform's system face, so the face is the app's registration, not
+// a per-platform skin.
+export const webSkin: TypographySkin = { roleType: roleTypeOf({ fontFamily: DISPLAY_FONT }) };
 export const iosSkin: TypographySkin = webSkin;
 export const androidSkin: TypographySkin = webSkin;
 
-// Text color (and the `code` role's muted fill) per role. The docs relied on
-// inherited page color; RN text does not cascade, so every role names its color
-// token explicitly: headings/body/code/mono on `foreground`, the helper styles
-// on `muted-foreground`.
+// Text color (and the `code` role's fill) per role. RN text does not cascade, so every
+// role names its color token explicitly, as the hand-off's renderer does: the eyebrow in
+// the accent text, the label and the muted role in the secondary ink, the caption in the
+// tertiary ink, everything else in `foreground`.
 export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
-  if (["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue"].includes(role)) return { color: tokens.foreground };
   switch (role) {
+    case "label":
+      return { color: tokens["muted-foreground"] };
+    case "eyebrow":
+    case "eyebrowLg":
+    case "stageLabel":
+      return { color: primaryText(tokens) };
     case "display":
     case "h1":
     case "h2":
@@ -125,19 +123,18 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "mono":
       return { color: tokens.foreground };
     case "code":
-      return { color: tokens.foreground, backgroundColor: tokens.muted };
-    case "small":
-    case "tiny":
+      return { color: tokens.foreground, backgroundColor: tokens.secondary };
     case "muted":
-    case "caption":
       return { color: tokens["muted-foreground"] };
+    case "caption":
+      return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
     default: return { color: tokens.foreground };
   }
 }
 
 // Roles whose face is monospace; RN has no font-family utility, so the component
 // supplies the cross-platform monospace alias inline (matches Badge's mono).
-export const MONO_ROLES = new Set<Role>(["code", "mono"]);
+export const MONO_ROLES = new Set<Role>(["code", "mono", "eyebrow", "eyebrowLg", "stageLabel", "tag"]);
 
 // Tone axis: an orthogonal color layer over the role's own color. Its names are
 // deliberately collision-free with the roles (so `muted`/`small`/`tiny`/`caption`
@@ -157,9 +154,9 @@ export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextS
     case "destructive":
       return { color: destructiveText(tokens) };
     case "success":
-      return { color: tokens.success };
+      return { color: tokens["success-text"] ?? tokens.success };
     case "warning":
-      return { color: tokens.warning };
+      return { color: tokens["warning-text"] ?? tokens.warning };
   }
 }
 
@@ -199,9 +196,9 @@ const TIGHT_RATIO = 1.25;
 
 // `tight` only ever TIGHTENS: the result is the role's own line height or the capped
 // one, whichever is smaller. Without the min, the ratio would LOOSEN the roles whose
-// line boxes are already at or below 1.25 (display 24/27 = 1.13, h1 20/25 = 1.25, h3
-// 16/20 = 1.25), so `<Typography display tightLeading>` would silently grow its line
-// box to 30. The clamp makes the prop safe on every role, which is what lets it be a
+// line boxes are already at or below 1.25 (display 56/56 = 1, h1 44/47 = 1.07, h3
+// 26/30 = 1.15), so `<Typography display tightLeading>` would silently grow its line
+// box to 70. The clamp makes the prop safe on every role, which is what lets it be a
 // free-standing axis rather than one that is only valid on some roles.
 export function leadingStyle(roleType: TextStyle, leading: Leading): TextStyle | null {
   const fontSize = roleType.fontSize;
@@ -227,8 +224,8 @@ export function decorationStyle(decoration: Decoration): TextStyle {
 // Numerals axis: an orthogonal figure-width layer over the role. A single value today
 // (tabular), so there is no precedence to resolve. Tabular figures give every digit the
 // same width, so a column of numbers lines up and a value that updates in place (a live
-// metric, a counter, a countdown) holds still as its digits change; Dark Factory sets
-// its figures that way. When the prop is absent the face's own proportional figures,
+// metric, a counter, a countdown) holds still as its digits change; the hand-off sets
+// its numbers that way. When the prop is absent the face's own proportional figures,
 // right for prose, stand. The style itself is the kit's one spelling of tabular figures
 // per platform (src/style/numerals.ts: React Native's font variant natively, the CSS
 // property on the web, where react-native-web drops the native spelling), so this shell

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { composite, contrastRatio } from "../src/style/color.ts";
 import { statusColors, type StatusColorTone } from "../src/style/status.ts";
+import { SOFT_ALPHA } from "../src/style/soft-roles.ts";
 import { lightColors } from "../src/style/tokens.ts";
 import { LOOKS } from "./fixtures/looks.ts";
 
@@ -28,17 +29,19 @@ describe("statusColors", () => {
   }
 
   it("reads the theme's roles, so an override repaints every toned surface", () => {
-    const tokens = { ...lightColors, success: "#0f6b3a", "success-soft": "rgba(15, 107, 58, 0.1)" };
+    // A brand override reaches statusColors through the ThemeProvider's merge, which carries an
+    // overriding `success` onto `success-text` too (src/style/theme.tsx).
+    const tokens = { ...lightColors, success: "#0f6b3a", "success-text": "#0f6b3a", "success-soft": "rgba(15, 107, 58, 0.1)" };
     expect(statusColors(tokens, "success")).toEqual({ ink: "#0f6b3a", wash: "rgba(15, 107, 58, 0.1)", dot: "#0f6b3a" });
     expect(statusColors(tokens, "info").dot).toBe(tokens.primary);
     expect(statusColors(tokens, "error").ink).toBe(tokens["destructive-text"]);
   });
 
-  it("falls back to Dark Factory's wash alphas when a map omits the soft roles", () => {
+  it("falls back to the hand-off's wash alphas when a map omits the soft roles", () => {
+    // The v4 hand-off washes every light tone at 0.1 (SOFT_ALPHA.light).
     const { "success-soft": _s, "warning-soft": _w, "destructive-soft": _d, "primary-soft": _p, ...legacy } = lightColors;
-    expect(statusColors(legacy, "success").wash).toMatch(/^rgba\(.*0\.12\)$/);
-    expect(statusColors(legacy, "warning").wash).toMatch(/^rgba\(.*0\.18\)$/);
-    expect(statusColors(legacy, "error").wash).toMatch(/^rgba\(.*0\.12\)$/);
-    expect(statusColors(legacy, "info").wash).toMatch(/^rgba\(.*0\.14\)$/);
+    for (const tone of ["success", "warning", "error", "info"] as const) {
+      expect(statusColors(legacy, tone).wash, tone).toMatch(new RegExp(`^rgba\\(.*, ${SOFT_ALPHA.light[tone]}\\)$`));
+    }
   });
 });

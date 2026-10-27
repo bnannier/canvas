@@ -373,8 +373,9 @@ describe("state washes", () => {
         }
       }
     }
-    // The selection wash misses only where its body does: Android's dark control puck (iOS's,
-    // at white 0.05 since GS-8, holds).
+    // The selection wash misses only where its body does, and under the v4 tints no body does:
+    // the dark control puck is the raised neutral (`secondary` at 0.72) on every platform,
+    // where Dark Factory's Android puck was white 0.12, so every pane carries its wash.
     const missed = LOOKS.flatMap((look) => (glassSets(look)).flatMap(([platform, g]) => panes
       .filter(({ web }) => !web || platform === "web")
       .filter(({ pane }) => {
@@ -383,7 +384,7 @@ describe("state washes", () => {
         return legibleWash({ tokens: t, glass: g, dark: look.scheme === "dark" }, "selection", pane) === body;
       })
       .map(({ name }) => `${platform} ${look.name} ${name}`)));
-    expect(missed).toEqual(["android dark control puck"]);
+    expect(missed).toEqual([]);
   });
 
   it("lays the selection wash at the solid recipe's own tint in every look, its inks still at 4.5:1", () => {
@@ -427,7 +428,7 @@ describe("state washes", () => {
     ];
     for (const look of LOOKS) {
       for (const node of hosts) {
-        const { container, unmount } = render(<ThemeProvider scheme={look.scheme} mint={look.palette === "mint"} glass>{node}</ThemeProvider>);
+        const { container, unmount } = render(<ThemeProvider {...lookProps(look)} glass>{node}</ThemeProvider>);
         await waitFor(() => expect(materialLayers(container)).toBeGreaterThan(0));
         const panes = Array.from(container.querySelectorAll("*")).filter((n) => (n as HTMLElement).style.zIndex === "-1" && n.querySelector(':scope > [data-testid="glass-material"]')) as HTMLElement[];
         for (const pane of panes) {
@@ -498,12 +499,14 @@ describe("solid mode", () => {
   });
 
   it("solves a brand puck over the docs' frame too, so its ink clears 4.5:1 on every bed of it", () => {
-    // The frame: Dark Factory's shell frost over its page look (docs/src/shell/page-look.ts),
-    // which the kit carries as frameBeds; the fixture derives the same beds from the docs.
+    // The frame: the docs' flat page (docs/src/shell/page-look.ts) and the sunken well and
+    // card a pane can also sit on, which the kit carries as frameBeds; every bed the docs
+    // paint must be one of them.
     for (const look of LOOKS) {
       const t = look.tokens;
       const beds = frameBedsFor(look.palette, look.scheme);
-      expect(beds.map((bed) => channelsOf(bed)!.slice(0, 3))).toEqual(shellBeds(look.name).map((bed) => channelsOf(bed)!.slice(0, 3)));
+      const kitBeds = beds.map((bed) => channelsOf(bed)!.slice(0, 3).join(","));
+      for (const bed of shellBeds(look)) expect(kitBeds).toContain(channelsOf(bed)!.slice(0, 3).join(","));
       for (const glass of [look.webGlass, look.nativeGlass]) {
         const fill = surfaceUnderFill(glass, "control", t.primary, undefined, t, beds);
         for (const bed of [t.background, ...beds]) {
@@ -723,11 +726,18 @@ describe("a fill that carries ink is capped for it (GS-2)", () => {
     }
   });
 
-  it("keeps the full soft strength where the ink already holds (the dark web field) and thins the dark control puck's", () => {
+  // Under the v4 tints the dark control puck is the raised neutral, not Dark Factory's bright
+  // white puck, so the muted ink holds on it at the full soft strength too: the cap is a
+  // no-op on both dark panes, and each still clears the floor plus headroom.
+  it("keeps the full soft strength where the ink already holds: the dark web field and the dark control puck", () => {
     const dark = LOOKS.find((look) => look.name === "dark")!;
     const theme = { tokens: dark.tokens, glass: dark.webGlass, dark: true };
-    expect(rgbaOf(legibleInnerFill(theme, { clear: true, layer: "control" }))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
-    expect(rgbaOf(legibleInnerFill(theme, { layer: "control" }))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.04)));
+    for (const pane of [{ clear: true, layer: "control" as const }, { layer: "control" as const }]) {
+      const fill = legibleInnerFill(theme, pane);
+      expect(rgbaOf(fill)).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
+      const body = pane.clear ? alpha(dark.tokens.card, 0.28) : surfaceUnderFill(dark.webGlass, pane.layer);
+      expect(contrastRatio(composite(fill, composite(body, dark.tokens.background)), dark.tokens["muted-foreground"])).toBeGreaterThanOrEqual(GLASS_WASH.inkContrast + GLASS_WASH.headroom);
+    }
   });
 
   it("renders the capped addon on the web host: the iOS skin's field in dark glass, and the web field's at full strength", async () => {
@@ -755,7 +765,7 @@ describe("a fill that carries ink is capped for it (GS-2)", () => {
   // leaves no fill and the `$` at 4.91. The field renders as an iOS build does (the platform
   // and its frost capability by spy); the theme's tints are the web's under test, so the cap
   // is read through the same resolver from the theme the field rendered with.
-  it("caps the addon on a native host too, where it once kept the full soft strength", async () => {
+  it("caps the addon on a native host too, through the same resolver as the web host", async () => {
     const os = Object.getOwnPropertyDescriptor(Platform, "OS")!;
     Object.defineProperty(Platform, "OS", { configurable: true, value: "ios" });
     const caps = spyOn(materialRuntime, "useMaterialCapabilities").mockReturnValue({ platform: "ios", frost: true, liquid: false, requiresTarget: false });
@@ -772,7 +782,9 @@ describe("a fill that carries ink is capped for it (GS-2)", () => {
       const addon = (dollar.parentElement as HTMLElement).style.backgroundColor;
       const capped = legibleInnerFill({ tokens: dark.tokens, glass: dark.webGlass, dark: true }, { layer: "control" }, "soft");
       expect(rgbaOf(addon)).toEqual(rgbaOf(capped));
-      expect(rgbaOf(addon)).not.toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
+      // The `$` the addon carries clears the floor on the field as the native frost composites it.
+      const body = composite(surfaceUnderFill(dark.webGlass, "control"), dark.tokens.background);
+      expect(contrastRatio(composite(addon, body), dark.tokens["muted-foreground"])).toBeGreaterThanOrEqual(GLASS_WASH.inkContrast);
     } finally {
       caps.mockRestore();
       Object.defineProperty(Platform, "OS", os);

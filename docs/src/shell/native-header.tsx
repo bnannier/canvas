@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Row, Button, Icon, GlassBlurPlane, useGlassBlurPlane } from "@nannier/canvas";
+import { View, Row, Button, Icon } from "@nannier/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
@@ -11,27 +11,20 @@ import { PaletteRow, ThemeToggles } from "./theme-toggles";
 import { nativeHeaderMenu, type MenuIcon } from "./native-menu";
 import { useDocsTheme } from "../theme/docs-theme";
 import { PageBackdrop } from "./page-backdrop";
-import { PageFrame } from "./page-frame";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
 // menu, and hosts the Android menu drawer) can sit as a sibling of the content, with the
-// page look (./page-backdrop.tsx) behind it and Dark Factory's frosted shell around it
-// (./page-frame.tsx): the native tab and stack containers paint
-// their own backgrounds under a screen, so each screen draws its own. On web this is a
+// page (./page-backdrop.tsx) behind it: the native tab and stack containers paint their own
+// backgrounds under a screen, so each screen draws its own. On web this is a
 // no-op passthrough: it renders the scroller exactly as before, with NO wrapping View (an
 // extra flex wrapper there collapses onLayout-measured tile grids), and the web shell
 // mounts the one backdrop behind every route.
 export function ScreenFrame({ children }: { children: ReactNode }) {
-  // The page backdrop is the blur plane the frame's material frosts on Android (./page-frame.tsx).
-  const plane = useGlassBlurPlane();
   if (Platform.OS === "web") return <>{children}</>;
   return (
     <View style={{ flex: 1 }}>
-      <GlassBlurPlane plane={plane}><PageBackdrop /></GlassBlurPlane>
-      <PageFrame plane={plane}>
-        {/* The scroller is clipped to the frame here (the frame does not clip). */}
-        <View style={{ flex: 1, overflow: "hidden" }}>{children}</View>
-      </PageFrame>
+      <PageBackdrop />
+      <View style={{ flex: 1, overflow: "hidden" }}>{children}</View>
       <NativeHeader />
     </View>
   );
@@ -57,7 +50,7 @@ export function NativeHeader() {
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { scheme, palette, setPalette } = useDocsTheme();
+  const { palette, setPalette } = useDocsTheme();
   if (Platform.OS === "web" || !isFocused) return null;
 
   const title = titleFor(pathname).title;
@@ -72,9 +65,8 @@ export function NativeHeader() {
   // so iOS slides over to the category's items natively. The current page is check-marked
   // (state "on"), and on a component page its category is surfaced FIRST as an inline section
   // (the native menu can't reopen pre-drilled into a submenu, so this reflects where you are);
-  // the remaining categories stay as drill-in submenus. In the light scheme the menu ends
-  // with the Palette section (Blush and Mint as check-marked rows); the dark scheme has one
-  // palette, so the section goes. The page and the palette are two independent check marks,
+  // the remaining categories stay as drill-in submenus. The menu ends with the Palette
+  // section (the five hues as check-marked rows). The page and the palette are two independent check marks,
   // so the menu's root is multiselectable (see native-menu.ts). The trailing items are ALWAYS
   // declared (returning [] when this section has no menu): the native bar merges options
   // across the sibling tab stacks, so a bare omission would leave a previous section's menu
@@ -110,7 +102,6 @@ export function NativeHeader() {
     const menu = nativeHeaderMenu({
       nodes,
       activeSlug,
-      scheme,
       palette,
       setPalette,
       navigate: (href) => router.push(href as never),
@@ -144,10 +135,9 @@ export function NativeHeader() {
   // always-visible in the trailing slot, matching the web's top-right controls, followed by the
   // section-menu hamburger. The hamburger opens the responsive Sidebar as an M3 start-edge
   // navigation drawer (the same kit Sidebar the desktop web shows as a rail, drilled down for the
-  // phone). The surface and scheme live in the bar; the drawer's footer adds the Blush/Mint
-  // palette row in the light scheme, and no footer at all in the dark one, where the drawer
-  // would otherwise draw an empty footer band. (iOS hosts the menu and the palette in the
-  // native header UIMenu; see the branch above.)
+  // phone). The surface and scheme live in the bar; the drawer's footer adds the palette
+  // row. (iOS hosts the menu and the palette in the native header UIMenu; see the branch
+  // above.)
   return (
     <>
       <Stack.Screen
@@ -169,7 +159,7 @@ export function NativeHeader() {
         // Lift the drawer's last rows above the native Material tab bar (M3 80dp, which paints on
         // top of the drawer's Modal). Guarded by the gesture inset for taller nav bars.
         drawerContentInsetBottom={Math.max(96, insets.bottom + 72)}
-        footer={scheme === "light" ? <PaletteRow /> : undefined}
+        footer={<PaletteRow />}
       />
     </>
   );

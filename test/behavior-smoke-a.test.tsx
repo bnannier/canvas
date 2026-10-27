@@ -23,9 +23,10 @@ const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 // The channels of a hex token, as react-native-web writes them into a style.
 const channels = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(", ");
 // The success token's channels.
-const SUCCESS = channels(lightColors.success);
-// A Stats delta reads in the status inks (statusColors): a rise in the success color, a
-// decline in the error ink (the destructive-text role).
+// Success TEXT reads in the success-text role (solved to its floor from the success colour,
+// src/style/ink-floor.ts): a Stats rise and the EmptyState success glyph. A Stats decline
+// reads in the error ink (the destructive-text role).
+const SUCCESS = channels(lightColors["success-text"]!);
 const GREEN = SUCCESS;
 const RED = channels(lightColors["destructive-text"]!);
 

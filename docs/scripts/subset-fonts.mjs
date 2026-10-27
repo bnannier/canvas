@@ -1,4 +1,4 @@
-// Cut the docs' seven faces down to the glyphs the docs can show, from the full files
+// Cut the docs' nine faces down to the glyphs the docs can show, from the full files
 // the @expo-google-fonts packages ship, into docs/assets/fonts (committed, so native
 // builds and the web export read the same bytes; run again after bumping a source
 // package or changing the ranges below).
@@ -6,9 +6,10 @@
 // Every one of these faces is on the first paint's critical path: the page preloads
 // them, and Lighthouse's model keeps every preloaded font that finished before the
 // paint on the Largest Contentful Paint path. The full files carry scripts the docs
-// never render (Geist Mono is 100 KB of Latin, Greek, Cyrillic and Vietnamese); the
-// Latin subset measured 22 KB against 48 KB over the wire for a mono face and 15 KB
-// against 23 KB for a sans face, about half the bytes before the first paint. A glyph
+// never render (JetBrains Mono is 112 KB of Latin, Greek, Cyrillic and Vietnamese); the
+// Latin subset measured 31 KB against 52 KB over the wire for a mono face, 37 KB against
+// 48 KB for a display face and 30 KB against 34 KB for a sans face, 297 KB for all nine
+// against 405 KB, a quarter of the bytes before the first paint. A glyph
 // outside the subset still renders: every platform falls back per glyph to a system
 // face, which is what the flags and other emoji in the examples already do.
 //
@@ -26,13 +27,15 @@ const OUT = path.join(DOCS, "assets", "fonts");
 
 // The faces docs/src/ui/fonts.ts registers, and the package file each comes from.
 const FACES = [
-  ["Manrope_400Regular", "@expo-google-fonts/manrope/400Regular/Manrope_400Regular.ttf"],
-  ["Manrope_500Medium", "@expo-google-fonts/manrope/500Medium/Manrope_500Medium.ttf"],
-  ["Manrope_600SemiBold", "@expo-google-fonts/manrope/600SemiBold/Manrope_600SemiBold.ttf"],
-  ["Manrope_700Bold", "@expo-google-fonts/manrope/700Bold/Manrope_700Bold.ttf"],
-  ["Manrope_800ExtraBold", "@expo-google-fonts/manrope/800ExtraBold/Manrope_800ExtraBold.ttf"],
-  ["GeistMono_400Regular", "@expo-google-fonts/geist-mono/400Regular/GeistMono_400Regular.ttf"],
-  ["GeistMono_600SemiBold", "@expo-google-fonts/geist-mono/600SemiBold/GeistMono_600SemiBold.ttf"],
+  ["InstrumentSans_400Regular", "@expo-google-fonts/instrument-sans/400Regular/InstrumentSans_400Regular.ttf"],
+  ["InstrumentSans_500Medium", "@expo-google-fonts/instrument-sans/500Medium/InstrumentSans_500Medium.ttf"],
+  ["InstrumentSans_600SemiBold", "@expo-google-fonts/instrument-sans/600SemiBold/InstrumentSans_600SemiBold.ttf"],
+  ["InstrumentSans_700Bold", "@expo-google-fonts/instrument-sans/700Bold/InstrumentSans_700Bold.ttf"],
+  ["BricolageGrotesque_500Medium", "@expo-google-fonts/bricolage-grotesque/500Medium/BricolageGrotesque_500Medium.ttf"],
+  ["BricolageGrotesque_600SemiBold", "@expo-google-fonts/bricolage-grotesque/600SemiBold/BricolageGrotesque_600SemiBold.ttf"],
+  ["JetBrainsMono_400Regular", "@expo-google-fonts/jetbrains-mono/400Regular/JetBrainsMono_400Regular.ttf"],
+  ["JetBrainsMono_500Medium", "@expo-google-fonts/jetbrains-mono/500Medium/JetBrainsMono_500Medium.ttf"],
+  ["JetBrainsMono_600SemiBold", "@expo-google-fonts/jetbrains-mono/600SemiBold/JetBrainsMono_600SemiBold.ttf"],
 ];
 
 // What the docs can show: Latin with the Western European accents and the extended

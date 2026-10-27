@@ -9,9 +9,9 @@
  *
  *   - MIT requires "the above copyright notice and this permission notice" to be included
  *     in all copies or substantial portions of the Software.
- *   - OFL-1.1 (the Geist and Geist Mono typefaces) is stricter still: condition 2 says the
- *     font may be bundled and redistributed "provided that each copy contains the above
- *     copyright notice and this license".
+ *   - OFL-1.1 (the Instrument Sans, Bricolage Grotesque and JetBrains Mono typefaces) is
+ *     stricter still: condition 2 says the font may be bundled and redistributed
+ *     "provided that each copy contains the above copyright notice and this license".
  *
  * The app bundles the .ttf files, so the licence has to travel with the artifact. Before
  * this generator existed, no licence text reached the build at all on any platform.
@@ -186,7 +186,7 @@ function collect(dir: string, name: string, version: string, declared: string): 
   const compound = /^(.*?)\s+AND\s+(\S+)$/i.exec(declared);
   const mainTag = font && compound ? compound[1].trim() : declared;
 
-  // The font file's tag comes from its own text, never from an assumption: the Geist
+  // The font file's tag comes from its own text, never from an assumption: the typeface
   // wrappers ship the OFL there, but material-symbols ships the Apache-2.0 text, and
   // hard-tagging every font file "OFL-1.1" (as this once did) badged that package with
   // a licence it does not carry.
@@ -384,7 +384,7 @@ export function renderNotices(found: Pkg[]): Notices {
     body: v.body,
     // Notices belong to the LICENCE FILE they were read from, not to the package as a
     // whole. A dual-licensed font package holds two unrelated copyrights (Expo's, over the
-    // wrapper code, and the Geist authors', over the typeface); attaching both to both
+    // wrapper code, and the typeface authors', over the font); attaching both to both
     // texts would put Expo's name on the OFL and imply it holds rights in the font.
     notices: [
       ...new Set(found.filter((p) => p.bodyHash === hash).flatMap((p) => p.copyright)),
@@ -445,7 +445,7 @@ export const THIRD_PARTY_CANVAS =
   ${q(`Canvas itself, its Android capture module included, is published to npm as @nannier/canvas under the MIT License. This app is its reference documentation.`)};
 
 export const THIRD_PARTY_FONTS =
-  ${q(`The Manrope and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.`)};
+  ${q(`The Instrument Sans, Bricolage Grotesque and JetBrains Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.`)};
 
 /** Package count by declared licence, most common first. */
 export const THIRD_PARTY_BREAKDOWN: { license: string; count: number }[] = ${JSON.stringify(breakdown.map(([license, count]) => ({ license, count })), null, 2)};

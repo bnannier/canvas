@@ -11,7 +11,7 @@ export const SCHEME = "canvas";
 export const APPEARANCE_AXES = {
   scheme: ["light", "dark"],
   surface: ["solid", "glass"],
-  palette: ["blush", "mint"],
+  palette: ["violet", "cyan", "mint", "rose", "amber"],
 };
 
 /** A docs route without its outer slashes, or null when it is not one. */

@@ -14,7 +14,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { TOKENS_URL } from "../../playwright.config";
 import { expect, test } from "../support/fixtures";
-import { MINT_SELECTOR, declarationsIn } from "../../tools/tokens/css-tokens.ts";
+import { paletteDeclarations } from "../../tools/tokens/css-tokens.ts";
+import { colorsFor } from "../../src/style/tokens.ts";
 
 for (const scheme of ["light", "dark"] as const) {
   test(`the token stylesheet in ${scheme}`, async ({ page }) => {
@@ -28,52 +29,70 @@ for (const scheme of ["light", "dark"] as const) {
   });
 }
 
-// The palette axis, where it actually resolves: the browser's cascade. Mint paints only
-// in a light context (on the root or on any wrapper) and a dark root or wrapper always
-// shows the one dark palette, the precedence the ThemeProvider gives `dark` over `mint`.
-// Under increased contrast every glass layer falls back to its opaque token, inside a
-// palette or scheme wrapper as much as on the root. Values come from the stylesheet itself.
+// The palette axis, where it actually resolves: the browser's cascade. A palette is one
+// --hue (on the root or on any wrapper) and paints its accent in both schemes; a wrapper's
+// own hue wins over the root's, and the scheme decides the neutrals and the accent's
+// lightness. Values come from the stylesheet itself (paletteDeclarations resolves the
+// oklch forms for a palette), and the browser's computed accent is compared as the
+// clipped sRGB it paints.
 const colorsCss = readFileSync(resolve(__dirname, "../../styles/tokens/colors.css"), "utf8");
-const blush = declarationsIn(colorsCss, ":root");
-const mint = { ...blush, ...declarationsIn(colorsCss, MINT_SELECTOR) };
-const dark = { ...blush, ...declarationsIn(colorsCss, ".dark") };
+const looks = {
+  violetLight: paletteDeclarations(colorsCss, "violet", "light"),
+  mintLight: paletteDeclarations(colorsCss, "mint", "light"),
+  mintDark: paletteDeclarations(colorsCss, "mint", "dark"),
+  roseDark: paletteDeclarations(colorsCss, "rose", "dark"),
+};
 
-test("the mint palette paints only in a light context", async ({ page }) => {
+test("a palette paints its accent in either scheme, on the root or a wrapper", async ({ page }) => {
   await page.goto(TOKENS_URL, { waitUntil: "networkidle" });
-  const read = (setup: { rootDark: boolean; rootMint: boolean; wrapperMint: boolean; wrapperDark?: boolean }) => page.evaluate((s) => {
+  const read = (setup: { rootDark: boolean; rootPalette?: string; wrapperPalette?: string; wrapperDark?: boolean }) => page.evaluate((s) => {
     const root = document.documentElement;
     root.classList.toggle("dark", s.rootDark);
-    if (s.rootMint) root.dataset.palette = "mint"; else delete root.dataset.palette;
+    if (s.rootPalette) root.dataset.palette = s.rootPalette; else delete root.dataset.palette;
     const wrapper = document.createElement("div");
-    if (s.wrapperMint) wrapper.dataset.palette = "mint";
+    if (s.wrapperPalette) wrapper.dataset.palette = s.wrapperPalette;
     if (s.wrapperDark) wrapper.classList.add("dark");
     document.body.append(wrapper);
-    const at = (node: Element) => ({
-      background: getComputedStyle(node).getPropertyValue("--background").trim(),
-      tint: getComputedStyle(node).getPropertyValue("--glass-tint").trim(),
-    });
+    // The accent through a real paint: a canvas fill reads back the sRGB the browser drew.
+    const paint = (node: Element) => {
+      const probe = document.createElement("span");
+      probe.style.color = "var(--primary)";
+      node.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      const ctx = document.createElement("canvas").getContext("2d")!;
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, 1, 1);
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      return `#${[r, g, b].map((c) => c!.toString(16).padStart(2, "0")).join("")}`;
+    };
+    const at = (node: Element) => ({ background: getComputedStyle(node).getPropertyValue("--background").trim(), primary: paint(node) });
     const values = { root: at(root), wrapper: at(wrapper) };
     wrapper.remove();
+    delete root.dataset.palette;
+    root.classList.remove("dark");
     return values;
   }, setup);
-  const expectLook = (seen: { background: string; tint: string }, look: Record<string, string | undefined>, name: string) => {
+  const near = (a: string, b: string) =>
+    Math.max(...[1, 3, 5].map((i) => Math.abs(parseInt(a.slice(i, i + 2), 16) - parseInt(b.slice(i, i + 2), 16)))) <= 1;
+  const expectLook = (seen: { background: string; primary: string }, look: Record<string, string>, hex: string, name: string) => {
     expect(seen.background, name).toBe(look.background);
-    expect(seen.tint, name).toBe(look["glass-tint"]);
+    expect(near(seen.primary, hex), `${name}: ${seen.primary} vs ${hex}`).toBe(true);
   };
 
-  let seen = await read({ rootDark: false, rootMint: false, wrapperMint: false });
-  expectLook(seen.root, blush, "no attribute: blush");
-  seen = await read({ rootDark: false, rootMint: true, wrapperMint: false });
-  expectLook(seen.root, mint, "mint on the root");
-  seen = await read({ rootDark: true, rootMint: true, wrapperMint: false });
-  expectLook(seen.root, dark, "dark and mint on the root: dark wins");
-  seen = await read({ rootDark: false, rootMint: false, wrapperMint: true });
-  expectLook(seen.root, blush, "a mint wrapper leaves the root blush");
-  expectLook(seen.wrapper, mint, "a mint wrapper in a light root");
-  seen = await read({ rootDark: true, rootMint: false, wrapperMint: true });
-  expectLook(seen.wrapper, dark, "a mint wrapper inside a dark root stays dark");
-  seen = await read({ rootDark: false, rootMint: true, wrapperMint: false, wrapperDark: true });
-  expectLook(seen.wrapper, dark, "a dark wrapper inside a mint root is dark");
+  let seen = await read({ rootDark: false });
+  expectLook(seen.root, looks.violetLight, colorsFor("violet", "light").primary, "no attribute: violet");
+  seen = await read({ rootDark: false, rootPalette: "mint" });
+  expectLook(seen.root, looks.mintLight, colorsFor("mint", "light").primary, "mint on the root");
+  seen = await read({ rootDark: true, rootPalette: "mint" });
+  expectLook(seen.root, looks.mintDark, colorsFor("mint", "dark").primary, "dark and mint on the root: the mint accent in the dark scheme");
+  seen = await read({ rootDark: false, wrapperPalette: "mint" });
+  expectLook(seen.root, looks.violetLight, colorsFor("violet", "light").primary, "a mint wrapper leaves the root violet");
+  expectLook(seen.wrapper, looks.mintLight, colorsFor("mint", "light").primary, "a mint wrapper in a light root");
+  seen = await read({ rootDark: true, wrapperPalette: "rose" });
+  expectLook(seen.wrapper, looks.roseDark, colorsFor("rose", "dark").primary, "a rose wrapper inside a dark root paints dark rose");
+  seen = await read({ rootDark: false, rootPalette: "mint", wrapperDark: true });
+  expectLook(seen.wrapper, looks.mintDark, colorsFor("mint", "dark").primary, "a dark wrapper inside a mint root is dark mint");
 });
 
 test("increased contrast turns the glass opaque inside palette and scheme wrappers too", async ({ page }) => {

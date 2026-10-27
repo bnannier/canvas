@@ -1,5 +1,5 @@
 import {
-  useTheme, colorsByScheme, mintColors, palette, statusHues, Swatch, Row,
+  useTheme, colorsByScheme, colorsFor, palette, statusHues, Swatch, Row,
   Column, Card, Alert, Badge, BadgeGroup, DataTable, Typography, Grid,
   ThemeProvider, Navbar, Input, Dropdown, useToast, type ColorTokens, type StatusTone,
 } from "@nannier/canvas";
@@ -11,7 +11,7 @@ import { colorFormats } from "../../../ui/color";
 import { TokenH1, TokenLede, TokenSection, Callout } from "../../../ui/tokens-kit";
 
 // Every value on this page is read from the kit at render time (useTheme,
-// colorsByScheme, mintColors, palette, the active glass tints). Nothing is restated here:
+// colorsByScheme, colorsFor, palette, the active glass tints). Nothing is restated here:
 // a hard-coded table is how this page used to end up publishing a five-color chart
 // palette the kit stopped shipping.
 
@@ -97,26 +97,22 @@ export const lightColors = {
   background: "${colorsByScheme.light.background}",
   // …
 };
-export const mintColors = {
-  primary: "${mintColors.primary}",
-  "primary-text": "${mintColors["primary-text"]}",
-  "destructive-text": "${mintColors["destructive-text"]}",
-  background: "${mintColors.background}",
-  // …
-};
 export const darkColors = {
   primary: "${colorsByScheme.dark.primary}",
   "primary-text": "${colorsByScheme.dark["primary-text"]}",
   "destructive-text": "${colorsByScheme.dark["destructive-text"]}",
   background: "${colorsByScheme.dark.background}",
   // …
-};`;
+};
+// Any accent palette in either scheme:
+colorsFor("mint", "light").primary; // "${colorsFor("mint", "light").primary}"
+colorsFor("rose", "dark").primary; // "${colorsFor("rose", "dark").primary}"`;
 
 const THEME_RUNTIME = `// ThemeProvider supplies the active scheme;
 // components read it through useTheme().
 const { tokens } = useTheme();
 
-tokens.primary; // Selection: "${colorsByScheme.light.primary}" blush, "${mintColors.primary}" mint, "${colorsByScheme.dark.primary}" dark
+tokens.primary; // Selection: "${colorsByScheme.light.primary}" violet light, "${colorsFor("mint", "light").primary}" mint light, "${colorsByScheme.dark.primary}" violet dark
 tokens.action ?? tokens.primary; // Call to action, including legacy token maps
 tokens["primary-text"] ?? tokens.primary; // Brand text, including legacy token maps
 tokens["destructive-text"] ?? tokens.destructive; // Error text, including legacy token maps`;
@@ -127,7 +123,7 @@ const DYNAMIC = `<Button primary>Save</Button>
 // builds { backgroundColor: tokens.action }, so one prop
 // resolves live per theme:
 //   light       → ${colorsByScheme.light.action}
-//   light mint  → ${mintColors.action}
+//   light mint  → ${colorsFor("mint", "light").action}
 //   dark        → ${colorsByScheme.dark.action}
 //   teal accent → #0d9488 (a primary-only override
 //                 repaints action too)`;

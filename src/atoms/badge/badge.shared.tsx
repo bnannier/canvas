@@ -259,7 +259,7 @@ export function createBadge(skin: BadgeSkin) {
     const small = metric === "small";
     const labelMetrics: TextStyle = { fontSize: reference ? props.large ? 11 : 10 : small || count || navigation ? 10 : 11 };
     const fontSize = Number(labelMetrics.fontSize);
-    const intentInk = intent === "action" ? actionFill(tokens) : intent === "primary" ? tokens["primary-text"] ?? tokens.primary : intent === "success" ? tokens.success : intent === "warning" ? tokens.warning : intent === "error" ? tokens["destructive-text"] ?? tokens.destructive : intent === "info" ? tokens.info ?? tokens.primary : tokens["muted-foreground"];
+    const intentInk = intent === "action" ? actionFill(tokens) : intent === "primary" ? tokens["primary-text"] ?? tokens.primary : intent === "success" ? tokens["success-text"] ?? tokens.success : intent === "warning" ? tokens["warning-text"] ?? tokens.warning : intent === "error" ? tokens["destructive-text"] ?? tokens.destructive : intent === "info" ? tokens.info ?? tokens.primary : tokens["muted-foreground"];
     const intentWash = intent === "action" ? tokens["action-soft"] ?? alpha(actionFill(tokens), 0.12) : intent === "primary" ? tokens["primary-soft"] ?? alpha(tokens.primary, 0.12) : intent === "success" ? tokens["success-soft"] ?? alpha(tokens.success, 0.12) : intent === "warning" ? tokens["warning-soft"] ?? alpha(tokens.warning, 0.12) : intent === "error" ? tokens["destructive-soft"] ?? alpha(tokens.destructive, 0.12) : intent === "info" ? tokens["info-soft"] ?? alpha(intentInk, 0.12) : tokens.muted;
     const base: ViewStyle = extended ? {
       flexDirection: "row", alignItems: "center", gap: 6,

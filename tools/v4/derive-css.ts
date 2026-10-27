@@ -1,0 +1,140 @@
+// Writes the CSS colour hand-off (styles/tokens/colors.css) from the kit's token table
+// (src/style/tokens.ts), so the web's custom properties and the native components' values
+// are one table, not two that a person keeps in step.
+//
+//   bun run tokens:css            write styles/tokens/colors.css
+//   bun run tokens:css:check      fail when the committed file is not what this writes
+//
+// The design hand-off (tools/v4/handoff) authors its accent as `oklch(L C var(--hue))`, one
+// formula per role over the palette's hue, so the CSS keeps exactly that form: a palette is
+// one `--hue` declaration (`[data-palette="cyan"]{--hue:205}`), and every hue-dependent role
+// is declared again on each `[data-palette]` element so a palette wrapper deeper in the page
+// recomputes the accent against its own hue (a custom property's var() resolves where it is
+// declared). The neutrals, status colours and glass are the scheme's literal values, and
+// the text inks solved to their legibility floor (primary-text, info, inverse-primary)
+// are literal per palette.
+// scripts/validate-tokens.ts resolves the file for every palette and scheme and holds it
+// equal to `colorsFor(palette, scheme)`.
+
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { ACCENT, PALETTES, SERIES, colorsFor, paletteHue, type ColorScheme, type Palette } from "../../src/style/tokens.ts";
+import { WEB_FROST, WEB_TINTS } from "../../src/style/glass-surface/web-frost.ts";
+import { ACCENT_SELECTOR, darkPaletteSelector, paletteSelector } from "../tokens/css-tokens.ts";
+
+const OUT = join(import.meta.dir, "..", "..", "styles", "tokens", "colors.css");
+
+/** The roles whose value moves with the hue, and the oklch formula each one takes. */
+function accentDeclarations(scheme: ColorScheme): [string, string][] {
+  const a = ACCENT[scheme];
+  const at = ([l, c]: readonly [number, number], alpha?: number) =>
+    `oklch(${l} ${c} var(--hue)${alpha === undefined ? "" : ` / ${alpha}`})`;
+  return [
+    ["primary", at(a.fill)],
+    ["primary-foreground", a.ink],
+    ["primary-soft", at(a.fill, a.soft)],
+    ["action", at(a.fill)],
+    ["action-foreground", a.ink],
+    ["action-soft", at(a.fill, a.soft)],
+    ["info-soft", at(a.fill, a.soft)],
+    ["ring", at(a.fill)],
+    ["glow", at(a.fill, a.glow)],
+    ["featured-start", at(a.fill)],
+    ["promo-start", at(a.fill)],
+    ["chart-1", at(a.fill)],
+  ];
+}
+
+const ACCENT_ROLES = new Set(accentDeclarations("light").map(([name]) => name));
+
+/**
+ * The text inks solved per palette (src/style/ink-floor.ts): the hand-off's formula at a
+ * lightness the palette's hue needs to clear its floor, so each palette declares its own
+ * value. The default palette's sit in the scheme's literal block too.
+ */
+const SOLVED_ROLES = ["primary-text", "info", "inverse-primary"] as const;
+
+function solvedDeclarations(palette: Palette, scheme: ColorScheme): [string, string][] {
+  const tokens = colorsFor(palette, scheme);
+  return SOLVED_ROLES.map((role) => [role, tokens[role]!]);
+}
+
+/** The scheme's literal roles: everything the hue does not move. */
+function literalDeclarations(scheme: ColorScheme): [string, string][] {
+  const tokens = colorsFor("violet", scheme);
+  const series = SERIES[scheme].map(([l, c, h]) => `oklch(${l} ${c} ${h})`);
+  const fromSeries: Record<string, string> = {
+    "featured-middle": series[0]!,
+    "featured-end": series[1]!,
+    "promo-middle": series[0]!,
+    "promo-end": series[1]!,
+    ...Object.fromEntries(series.map((v, i) => [`chart-${i + 2}`, v])),
+  };
+  return Object.entries(tokens)
+    .filter(([name]) => !ACCENT_ROLES.has(name))
+    .map(([name, value]) => [name, fromSeries[name] ?? value]);
+}
+
+/** The glass material's custom properties for a scheme (web-frost.ts is the tuned table). */
+function glassDeclarations(scheme: ColorScheme, withConstants: boolean): [string, string][] {
+  const tints = Object.entries(WEB_TINTS[scheme]) as [string, string][];
+  const constants: [string, string][] = withConstants
+    ? [
+        ["glass-blur", `${WEB_FROST.blur}px`],
+        ["glass-frost", `blur(${WEB_FROST.blur}px) saturate(${WEB_FROST.saturate}) /* @kind other */`],
+        ["glass-specular", "inset 0 0 0 1px var(--glass-edge) /* @kind shadow */"],
+        // Scroll edge effect: content dissolves into the backdrop as it passes under a
+        // floating bar, which keeps the bar's labels legible over moving content.
+        ["glass-scroll-edge", "76px /* @kind shadow */"],
+      ]
+    : [];
+  return [...tints, ["glass-edge", WEB_FROST.rim[scheme]], ...constants];
+}
+
+// The status aliases resolve where they are declared, so each scheme block declares them
+// again over its own status colours.
+const ALIASES: [string, string][] = [
+  ["p-menu-destructive", "var(--destructive-text)"],
+  ["panel-danger", "var(--destructive-text)"],
+  ["delta-up", "var(--success-text)"],
+  ["delta-down", "var(--destructive-text)"],
+];
+
+const block = (selector: string, decls: [string, string][]) =>
+  `${selector}{\n${decls.map(([n, v]) => `  --${n}:${v};`).join("\n")}\n}\n`;
+
+export function render(): string {
+  const out: string[] = [];
+  out.push(`/* Semantic color tokens: the v4 design hand-off's ("Light as material", vendored at
+   tools/v4/handoff). GENERATED by tools/v4/derive-css.ts from src/style/tokens.ts; edit the
+   table there and run \`bun run tokens:css\`. :root is the light scheme, .dark on <html> (or
+   any wrapper) the dark one. The accent is one oklch formula per role over --hue, and a
+   palette is one --hue: violet 285 (the default), cyan 205, mint 165, rose 20, amber 75,
+   selected by data-palette on <html> (setPalette) or on any wrapper. The rgba roles are
+   translucent by contract. */\n`);
+  out.push(block(":root", [["hue", String(paletteHue.violet)], ...literalDeclarations("light"), ...ALIASES, ...glassDeclarations("light", true)]));
+  out.push(block(".dark", [...literalDeclarations("dark"), ...ALIASES, ...glassDeclarations("dark", false)]));
+  out.push(`/* The palettes: one hue each, with the text inks solved for it (tokens.ts, ink-floor.ts),
+   light on the palette element and dark inside a .dark context. */\n`);
+  for (const p of PALETTES) out.push(block(paletteSelector(p), [["hue", String(paletteHue[p])], ...solvedDeclarations(p, "light")]));
+  for (const p of PALETTES) out.push(block(darkPaletteSelector(p), solvedDeclarations(p, "dark")));
+  out.push(`/* The accent, declared again on every palette wrapper so it resolves against that
+   wrapper's own --hue; the dark rows win inside a .dark context. */\n`);
+  out.push(block(ACCENT_SELECTOR.light, accentDeclarations("light")));
+  out.push(block(ACCENT_SELECTOR.dark, accentDeclarations("dark")));
+  return out.join("");
+}
+
+if (import.meta.main) {
+  const text = render();
+  if (process.argv.includes("--check")) {
+    if (readFileSync(OUT, "utf-8") !== text) {
+      console.error("styles/tokens/colors.css is stale: run `bun run tokens:css`.");
+      process.exit(1);
+    }
+    console.log("tokens:css --check: styles/tokens/colors.css matches src/style/tokens.ts.");
+  } else {
+    writeFileSync(OUT, text);
+    console.log(`wrote ${OUT}`);
+  }
+}

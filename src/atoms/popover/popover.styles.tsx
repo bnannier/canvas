@@ -103,7 +103,7 @@ const DESC_TYPE: TextStyle = { marginTop: 4, ...typeScale.body };
 export const webSkin: PopoverSkin = {
   cardWidth: 260,
   compactCard: (t) => menuPanel(t, true),
-  // The card at the menu corner (12).
+  // The card at the menu corner (16).
   card: (t) => ({
     width: 260,
     maxWidth: "100%",

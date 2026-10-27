@@ -5,9 +5,10 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { BRAND_TINT_ALPHA, clearSurfaceTint, surfaceUnderFill, surfaceIntensity, type GlassLayer } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { glassTintsFor } from "../src/style/glass-surface/glass-tints.ts";
-import { WEB_FROST, WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
+import { WEB_FROST, WEB_TINTS, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 import { IOS_GLASS } from "../src/style/glass-surface/ios-tints.ts";
-import { glassByScheme, lightColors, darkColors } from "../src/style/tokens.ts";
+import { PALETTES, glassByScheme, lightColors, darkColors } from "../src/style/tokens.ts";
+import { alpha, relativeLuminance } from "../src/style/color.ts";
 import { LOOKS, glassSets } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
 
@@ -154,19 +155,21 @@ describe("GlassSurface under-fill", () => {
     expect(DARK_TINT).not.toBe(darkColors.popover);
   });
 
-  // Mint frosts over its own shell (Dark Factory's mint shell, white 0.58), and the one
-  // dark palette keeps the dark frost whichever light palette was asked for.
-  it("paints the mint palette's own shell tint, and the dark frost under dark mint", async () => {
-    expect(glassTintsFor("light", "mint")).toBe(WEB_TINTS.mint);
-    expect(glassTintsFor("dark", "mint")).toBe(WEB_TINTS.dark);
+  // The accent palette never moves the glass: every palette frosts over its scheme's one
+  // set of tints, light or dark.
+  it("paints the same frost under every accent palette, the dark frost under dark", async () => {
+    for (const palette of PALETTES) {
+      expect(glassTintsFor("light", palette)).toBe(WEB_TINTS.light);
+      expect(glassTintsFor("dark", palette)).toBe(WEB_TINTS.dark);
+    }
     render(
       <>
         <ThemeProvider mint glass><Panel testID="mint-gs" /></ThemeProvider>
-        <ThemeProvider dark mint glass><Panel testID="dark-mint-gs" /></ThemeProvider>
+        <ThemeProvider dark rose glass><Panel testID="dark-rose-gs" /></ThemeProvider>
       </>,
     );
-    expect((await underFillOf("mint-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(WEB_TINTS.mint["glass-tint"])}`);
-    expect((await underFillOf("dark-mint-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(DARK_TINT)}`);
+    expect((await underFillOf("mint-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(LIGHT_TINT)}`);
+    expect((await underFillOf("dark-rose-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(DARK_TINT)}`);
   });
 
   it("still lets an explicit tint win (the Slider's bright Liquid Glass knob)", async () => {
@@ -260,11 +263,9 @@ describe("GlassSurface layers", () => {
     expect((await underFillOf("control-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(WEB_TINTS.light["glass-tint-control"])}`);
   });
 
-  it("renders Dark Factory's frost on the web: one 24px blur with no saturation, the layer's tint over it, then a 1px inset hairline", async () => {
-    // The rim is Dark Factory's shell line on the floating and content layers, and the
-    // palette's hairline on the controls and the dense menus.
-    const rimColor = (layer: GlassLayer, scheme: "light" | "dark") =>
-      layer === "functional" || layer === "content" ? WEB_FROST.shellLine[scheme] : (scheme === "light" ? lightColors : darkColors).border;
+  it("renders the hand-off's lit glass on the web: one 20px blur saturated 1.6, the layer's tint over it, then a 1px inset hairline", async () => {
+    // The rim is the hand-off's strong hairline (`--ln2`) on every layer.
+    const rimColor = (_layer: GlassLayer, scheme: "light" | "dark") => WEB_FROST.rim[scheme];
     const layers = [["functional", "glass-tint"], ["content", "glass-tint-content"], ["control", "glass-tint-control"], ["dense", "glass-tint-dense"]] as const;
     for (const scheme of ["light", "dark"] as const) {
       for (const [layer, tint] of layers) {
@@ -278,7 +279,7 @@ describe("GlassSurface layers", () => {
         // Exactly the frost, the fill and the rim: no refraction layer, no highlight. The fill
         // paints over the blur, so the blur samples the page and never the surface's own tint.
         expect(painted).toHaveLength(3);
-        expect(painted[0].style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+        expect(painted[0].style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
         expect(painted[0].style.backgroundColor).toBe("");
         expect(painted[1].style.backgroundColor).toBe(printed(WEB_TINTS[scheme][tint]));
         expect(painted[2].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${rimColor(layer, scheme)}`);
@@ -286,7 +287,7 @@ describe("GlassSurface layers", () => {
       }
     }
     // A clear surface (a field on its pane) frosts nothing: its light neutral veil and the
-    // same hairline, the unblurred translucent fill Dark Factory draws its fields with.
+    // same hairline, the unblurred translucent fill the hand-off draws its fields with.
     render(
       <ThemeProvider light glass>
         <Panel testID="clear-gs" layer="control" clear />
@@ -295,11 +296,11 @@ describe("GlassSurface layers", () => {
     const clear = Array.from((await underFillOf("clear-gs"))!.parentElement!.children) as HTMLElement[];
     expect(clear).toHaveLength(2);
     expect(clear[0].style.backgroundColor).toBe(printed(clearSurfaceTint(lightColors, false)));
-    expect(clear[1].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${lightColors.border}`);
+    expect(clear[1].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${WEB_FROST.rim.light}`);
     expect(screen.getByTestId("clear-gs").querySelector("[style*='backdrop-filter']")).toBeNull();
   });
 
-  it("orders the tints by density: functional < content < dense, and the control puck is the light one in dark", () => {
+  it("orders the tints by density: functional < content < dense, and the control puck is the raised step in dark", () => {
     const a = (v: string) => rgbaOf(v)[3];
     for (const look of LOOKS) {
       for (const [platform, g] of glassSets(look)) {
@@ -307,18 +308,22 @@ describe("GlassSurface layers", () => {
         expect(a(g["glass-tint-content"]), `${platform} ${look.name}`).toBeLessThan(a(g["glass-tint-dense"]));
       }
     }
+    // The puck is the hand-off's raised neutral (`secondary`), a step lighter than the
+    // functional pane it sits on, so a control reads as lifted off the dark glass.
+    const lum = (v: string) => relativeLuminance(`rgb(${rgbaOf(v).slice(0, 3).join(", ")})`);
     for (const [platform, tints] of TINT_SETS) {
-      expect(rgbaOf(tints.dark["glass-tint-control"]).slice(0, 3), platform).toEqual([255, 255, 255]);
+      expect(rgbaOf(tints.dark["glass-tint-control"]).slice(0, 3), platform).toEqual(rgbaOf(alpha(darkColors.secondary, 1)).slice(0, 3));
+      expect(lum(tints.dark["glass-tint-control"]), platform).toBeGreaterThan(lum(tints.dark["glass-tint"]));
     }
   });
 
   it("keeps foreground text at 4.5:1 on a content pane and a dense pane over the page AND over the docs' frame", () => {
-    // Every docs surface floats over the docs' frame: Dark Factory's shell frost over the page
-    // look (docs/src/shell/page-look.ts), its stops and its orb centres.
+    // Every docs surface floats over the docs' page (docs/src/shell/page-look.ts): the v4
+    // hand-off's flat page, the scheme's background, in every palette.
     for (const look of LOOKS) {
       const t = look.tokens;
       for (const [platform, g] of glassSets(look)) {
-        for (const base of [t.background, ...shellBeds(look.name)]) {
+        for (const base of [t.background, ...shellBeds(look)]) {
           for (const tint of [g["glass-tint-content"], g["glass-tint-dense"]]) {
             expect(contrast(over(tint, base), rgb(t.foreground)), `${platform} ${look.name} foreground on ${tint} over ${base}`).toBeGreaterThanOrEqual(4.5);
           }
@@ -330,14 +335,12 @@ describe("GlassSurface layers", () => {
     }
   });
 
-  it("keeps foreground and muted text at 4.5:1 on the docs' frosted shell over the page look", () => {
-    // A page's lead, prose and the sidebar's rows sit straight on the shell: Dark Factory's
-    // shell fill (which the docs' frame passes as its tint on every platform) over the
-    // page look. The muted ink is solved to this floor (tools/darkfactory/derive-tokens.ts).
+  it("keeps foreground and muted text at 4.5:1 on the docs' page", () => {
+    // A page's lead, prose and the sidebar's rows sit straight on the docs' flat page.
     for (const look of LOOKS) {
-      for (const bed of shellBeds(look.name)) {
-        expect(contrast(rgb(bed), rgb(look.tokens.foreground)), `${look.name} foreground on the shell over ${bed}`).toBeGreaterThanOrEqual(4.5);
-        expect(contrast(rgb(bed), rgb(look.tokens["muted-foreground"])), `${look.name} muted on the shell over ${bed}`).toBeGreaterThanOrEqual(4.5);
+      for (const bed of shellBeds(look)) {
+        expect(contrast(rgb(bed), rgb(look.tokens.foreground)), `${look.name} foreground on the page ${bed}`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(rgb(bed), rgb(look.tokens["muted-foreground"])), `${look.name} muted on the page ${bed}`).toBeGreaterThanOrEqual(4.5);
       }
     }
   });

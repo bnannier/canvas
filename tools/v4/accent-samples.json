@@ -1,0 +1,14 @@
+{
+  "source": "Chrome 151 2D canvas fill of each oklch() value in tools/v4/handoff/*.dc.html, sampled 2026-10-27",
+  "accent": {
+    "285": { "dark": { "ion": "#a198ff", "ionText": "#b5b0ff" }, "light": { "ion": "#5f3ed8", "ionText": "#573bc3" } },
+    "205": { "dark": { "ion": "#00c7dd", "ionText": "#00d7e8" }, "light": { "ion": "#007f9e", "ionText": "#00748f" } },
+    "165": { "dark": { "ion": "#00cb90", "ionText": "#51daa7" }, "light": { "ion": "#008541", "ionText": "#00793c" } },
+    "20": { "dark": { "ion": "#ff787d", "ionText": "#ff9798" }, "light": { "ion": "#c10028", "ionText": "#af0027" } },
+    "75": { "dark": { "ion": "#e89800", "ionText": "#f2af48" }, "light": { "ion": "#a74100", "ionText": "#973d00" } }
+  },
+  "chart2to8": {
+    "dark": ["#36dcec", "#56ecb5", "#f9b64f", "#fd7277", "#65a7fa", "#e282da", "#a9c37b"],
+    "light": ["#009bab", "#00ae7b", "#c57800", "#cf3546", "#106dce", "#ad36a7", "#6a862d"]
+  }
+}

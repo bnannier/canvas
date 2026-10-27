@@ -83,7 +83,7 @@ for (const width of [1280, 390]) {
   for (const scheme of ["light", "dark"] as const) {
     test(`overflowing content is reachable and scrolls with the keyboard (${width}, ${scheme})`, async ({ page }, testInfo) => {
       await gotoDocs(page, "/testing/scroll-focus", { scheme, viewport: { width, height: 900 } });
-      const ring = rgb(colorsFor("blush", scheme).ring);
+      const ring = rgb(colorsFor("violet", scheme).ring);
       for (const name of ["plain", "numbered", "terminal", ...(width < 640 ? ["table", "attached", "heatmap"] : []), "carousel"]) {
         const scrollport = scrollportOf(page, name);
         await expect(scrollport).toHaveCount(1);
@@ -124,7 +124,7 @@ for (const width of [1280, 390]) {
   for (const scheme of ["light", "dark"] as const) {
     test(`a windowed table's overflowing body is a stop its card rings (${width}, ${scheme})`, async ({ page }, testInfo) => {
       await gotoDocs(page, "/testing/scroll-focus", { scheme, viewport: { width, height: 900 } });
-      const ring = rgb(colorsFor("blush", scheme).ring);
+      const ring = rgb(colorsFor("violet", scheme).ring);
       const table = page.getByTestId("scroll-windowed");
       const body = scrollportOf(page, "windowed");
       await expect(table.locator('[tabindex="0"]')).toHaveCount(width < 640 ? 2 : 1);
@@ -167,7 +167,7 @@ for (const width of [1280, 390]) {
   for (const scheme of ["light", "dark"] as const) {
     test(`a windowed list's overflowing rows are one stop its frame rings (${width}, ${scheme})`, async ({ page }, testInfo) => {
       await gotoDocs(page, "/testing/scroll-focus", { scheme, viewport: { width, height: 900 } });
-      const ring = rgb(colorsFor("blush", scheme).ring);
+      const ring = rgb(colorsFor("violet", scheme).ring);
       const session = await page.context().newCDPSession(page);
       for (const name of WINDOWED_LISTS) {
         const list = page.getByTestId(`scroll-${name}`);
@@ -290,7 +290,7 @@ for (const width of [1280, 390]) {
         }
         return null;
       });
-      const ring = rgb(colorsFor("blush", scheme).ring);
+      const ring = rgb(colorsFor("violet", scheme).ring);
       await expect.poll(frame).toEqual({ style: "solid", color: ring, clips: true });
       expect(await drawsOutline(port)).toBe(false);
       // The card that draws it is the palette's card (the port sits in its results pane, a
@@ -400,7 +400,7 @@ for (const scheme of ["light", "dark"] as const) {
     for (let k = 0; k < 10 && (await scroller.count()) === 0; k++) await page.keyboard.press("Tab");
     await expect(scroller).toHaveCount(1);
     expect(await scroller.getAttribute("tabindex")).toBeNull();
-    const ring = rgb(colorsFor("blush", scheme).ring);
+    const ring = rgb(colorsFor("violet", scheme).ring);
     expect(await scroller.evaluate((node) => {
       const style = getComputedStyle(node);
       return { focusVisible: node.matches(":focus-visible"), color: style.outlineColor, offset: style.outlineOffset };

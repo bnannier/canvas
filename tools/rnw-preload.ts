@@ -3,8 +3,7 @@
 // `react-native` resolves to `react-native-web` (Bun cannot parse react-native's
 // Flow-typed entry), and the optional native peers are stubbed. The `bun test` preload
 // (test/setup.ts) imports it, and so does any tool that reads the kit's skins outside a
-// test run: `bun --preload ./tools/rnw-preload.ts <script>` (the Dark Factory token
-// solver, tools/darkfactory/derive-tokens.ts).
+// test run: `bun --preload ./tools/rnw-preload.ts <script>`.
 import { GlobalRegistrator } from "@happy-dom/global-registrator";
 if (!(globalThis as { document?: unknown }).document) GlobalRegistrator.register();
 

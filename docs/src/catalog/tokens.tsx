@@ -10,7 +10,7 @@ function SpacingPreview() {
 }
 
 function TypographyPreview() {
-  return <Column tight><Typography h2>Aa</Typography><Typography>Manrope</Typography><Typography mono small>Geist Mono</Typography></Column>;
+  return <Column tight><Typography h2>Aa</Typography><Typography>Instrument Sans</Typography><Typography mono small>JetBrains Mono</Typography></Column>;
 }
 
 export const TOKENS_TILES: CatTile[] = [

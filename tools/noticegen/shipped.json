@@ -4,13 +4,14 @@
     "javascriptBundle": 105,
     "expoModules": 27,
     "classicModules": 9,
-    "bakedData": 3,
+    "bakedData": 4,
     "nativeOnly": 13,
-    "total": 121
+    "total": 122
   },
   "bakedData": [
-    "@expo-google-fonts/geist-mono",
-    "@expo-google-fonts/manrope",
+    "@expo-google-fonts/bricolage-grotesque",
+    "@expo-google-fonts/instrument-sans",
+    "@expo-google-fonts/jetbrains-mono",
     "lucide-static"
   ],
   "nativeOnly": [
@@ -32,11 +33,14 @@
     "@babel/runtime": [
       "docs/node_modules/@babel/runtime"
     ],
-    "@expo-google-fonts/geist-mono": [
-      "docs/node_modules/@expo-google-fonts/geist-mono"
+    "@expo-google-fonts/bricolage-grotesque": [
+      "docs/node_modules/@expo-google-fonts/bricolage-grotesque"
     ],
-    "@expo-google-fonts/manrope": [
-      "docs/node_modules/@expo-google-fonts/manrope"
+    "@expo-google-fonts/instrument-sans": [
+      "docs/node_modules/@expo-google-fonts/instrument-sans"
+    ],
+    "@expo-google-fonts/jetbrains-mono": [
+      "docs/node_modules/@expo-google-fonts/jetbrains-mono"
     ],
     "@expo-google-fonts/material-symbols": [
       "docs/node_modules/@expo-google-fonts/material-symbols"

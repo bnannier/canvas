@@ -5,12 +5,14 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 
 afterEach(cleanup);
 
-test("preserves Argus's exact eyebrow metrics and accessible title", () => {
+// The leading and tracking props resolve against the role's own size: the v4 eyebrow is 11px
+// (the hand-off's mono eyebrow), so the label leading is 11 x 1.3 and the wide tracking 11 x 0.16.
+test("resolves the eyebrow's exact metrics and keeps its accessible title", () => {
   render(<ThemeProvider light><Typography eyebrow bold labelLeading uppercase wideTracking accessibilityRole="header">Factory</Typography></ThemeProvider>);
   const label = screen.getByRole("heading", { name: "Factory" });
-  expect(label.style.fontSize).toBe("9.5px");
-  expect(label.style.lineHeight).toBe("12.35px");
-  expect(label.style.letterSpacing).toBe("1.52px");
+  expect(label.style.fontSize).toBe("11px");
+  expect(label.style.lineHeight).toBe("14.3px");
+  expect(label.style.letterSpacing).toBe("1.76px");
   expect(label.style.textTransform).toBe("uppercase");
 });
 
@@ -20,10 +22,11 @@ test("a muted tone does not replace an explicit small reading role", () => {
   expect(screen.getByText("v2.3").style.lineHeight).toBe("16.5px");
 });
 
+// The v4 label is 13px, so the lockup leading is 13 x 1.15.
 test("preserves compact lockups, extra-bold metrics and explicit accessible names", () => {
   render(<ThemeProvider light><Typography label extraBold lockupLeading accessibilityLabel="Current spend">$412</Typography></ThemeProvider>);
   const label = screen.getByLabelText("Current spend");
-  expect(label.style.lineHeight).toBe("13.8px");
+  expect(label.style.lineHeight).toBe("14.95px");
   expect(label.style.fontWeight).toBe("800");
 });
 

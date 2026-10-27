@@ -48,10 +48,21 @@ prototype's machinery (`support.js`, `cv-jsx.js`).
   hand-off's `ln2` hairline is ~1.5:1 there, a recorded deviation), `field-border` takes
   `ln2` under the existing field exception, and every palette is validated against the
   contrast floors (review R1).
+  - *As landed in Phase 1.* The same function rule covers text inks: `primary-text` and
+    `info` (per palette), `inverse-primary`, and `destructive-text`, `success-text`,
+    `warning-text` (per scheme) are solved by `src/style/ink-floor.ts`, which walks the
+    hand-off's oklch lightness at its own hue (in-gamut chroma, so the hue holds) until
+    every bed the ink is drawn on clears 4.5:1 exactly and through one-channel rounding;
+    an ink that already passes keeps the hand-off's value. Fills and washes are not moved.
+    `ring` is the solid accent (the hand-off's translucent `ion-ring` is ~1.6:1); the
+    ring keeps the hand-off's 2 px gap and 2 px band. ChatGPT agreed (2026-10-27).
 - **D5 Radii.** The component renderers (`cv-kit*.js`, `K.PF`) are the measurement source,
   over the Foundations prose where they disagree: web control 10, field 10, card 16,
   dialog 20, menu 16, sheet 22, checkbox 5, tile 12; iOS and Android keep their native
-  rows except the iOS dialog, which is the 22 sheet top (the alert is 14).
+  rows, which the hand-off's `K.PF` ios and android rows agree with (capsule controls,
+  8 and 4 fields, 12 cards). Amended in phase 1: the earlier "iOS dialog 22, alert 14"
+  exception came from a template's chrome, not the renderer, so it is settled per
+  component when the Dialog and AlertDialog skins are redone (phase 4).
 - **D6 Type.** Bricolage Grotesque (display), Instrument Sans (UI), JetBrains Mono (code) on
   the web skin; SF Pro on iOS and Roboto on Android (the system faces) per `K.PF`. The type
   scale is the hand-off's (display 56 .. caption 12, eyebrow 11 mono). `ThemeFonts` gains
@@ -101,11 +112,18 @@ baselines and tuning evidence land WITH the visual phase that moves them, never 
    type scale and fonts, shape rows, shadows, web glass. Retire the DF tooling; replace its
    parity checks with `tools/v4/derive-tokens.ts` + a parity test over the hand-off's
    formulas. Regenerate DESIGN.md. Update every test the inventory lists.
+   *As landed:* the flat page (the scheme's `background`) was pulled forward from Phase 3
+   on ChatGPT's advice, since the DF gradient and frosted shell under v4 tokens were
+   neither look; the e2e paint check reads the page colour and the resolved accent. The
+   light-glass muted-message promotion (`glass-message.ts`) was removed with it: it only
+   existed because muted text failed on the DF frame, and on the flat page every skin's
+   own ink clears 4.5:1.
 2. **Foundational skins and a detail-page pilot.** Button, Input, Switch, Checkbox, Card,
    Badge on all platforms, and the Button detail page end to end, exercising the kit
    before the showcase is composed from it.
 3. **Docs shell.** Navbar pill (hue swatches, scheme and glass switches), grain, scrollbars,
-   rail, footer, page frame; retire the DF page look and its reference cards.
+   rail, footer; the hand-off's grain over the flat page (the DF page look itself is
+   already retired in Phase 1).
 4. **Remaining component skins, section by section:** Controls, Inputs, Navigation,
    Data, Charts, Overlays, Layout, Foundations.
 5. **Section pages and the Library landing.** The eight section pages with hero vignettes

@@ -80,8 +80,10 @@ const outsideControls = (card: HTMLElement, nodes: Element[]) =>
   });
 const materialsOf = (card: HTMLElement) => outsideControls(card, Array.from(card.querySelectorAll('[data-testid="glass-material"]')));
 const materialLayers = (card: HTMLElement) => materialsOf(card).length;
+// The material's rim is a zero-offset inset ring; the v4 elevation's own inset is its top
+// highlight (`inset 0px 1px ...`), part of the card's shade, not a rim.
 const rimLayers = (card: HTMLElement) =>
-  outsideControls(card, Array.from(card.querySelectorAll("*")).filter((n) => (n.getAttribute("style") ?? "").includes("box-shadow: inset"))).length;
+  outsideControls(card, Array.from(card.querySelectorAll("*")).filter((n) => /box-shadow: inset 0(px)? 0(px)? 0(px)? /.test(n.getAttribute("style") ?? ""))).length;
 // The surface's fill: the layer inside its material wrapper that paints a background (on the
 // web the layer order is frost, fill, rim, and the content follows the wrapper).
 const underFillOf = (card: HTMLElement): string =>

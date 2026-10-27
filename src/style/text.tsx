@@ -37,7 +37,7 @@ import {
   type TextStyle,
 } from "react-native";
 import { resolveFontFace, type ThemeFonts } from "./fonts.js";
-import { MONO_FONT } from "./mono.js";
+import { DISPLAY_FONT, MONO_FONT } from "./mono.js";
 import { useFocusRingStyle } from "./pressable.js";
 import { useTheme } from "./theme.js";
 
@@ -46,10 +46,11 @@ import { useTheme } from "./theme.js";
  * paint text through something other than Text (an SVG label, a native module).
  */
 export function fontStyle(style: StyleProp<TextStyle>, fonts: ThemeFonts): StyleProp<TextStyle> {
-  if (!fonts.sans && !fonts.mono) return style;
+  if (!fonts.sans && !fonts.mono && !fonts.display) return style;
   const flat = StyleSheet.flatten(style) as TextStyle | undefined;
   const family = flat?.fontFamily;
-  const faces = family == null ? fonts.sans : family === MONO_FONT ? fonts.mono : undefined;
+  const faces =
+    family == null ? fonts.sans : family === MONO_FONT ? fonts.mono : family === DISPLAY_FONT ? (fonts.display ?? fonts.sans) : undefined;
   const face = resolveFontFace(faces, flat?.fontWeight);
   if (!face) return style;
   if (!face.dropWeight) return [style, { fontFamily: face.fontFamily }];

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { AccessibilityInfo, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { FOCUS_RING_OFFSET } from "../src/style/pressable.tsx";
+import { FOCUS_RING_WIDTH } from "../src/style/pressable.tsx";
 import { lightColors } from "../src/style/tokens.ts";
 import { Video } from "../src/atoms/video/video.tsx";
 import { Video as IOSVideo } from "../src/atoms/video/video.ios.tsx";
@@ -244,7 +244,7 @@ describe("Video controls on iOS and Android", () => {
       // themed ring, inside it since the picture clips to its corners.
       const ring = StyleSheet.flatten(current().viewProps.style as StyleProp<ViewStyle>) ?? {};
       expect(ring.outlineColor).toBe(lightColors.ring);
-      expect(ring.outlineOffset).toBe(-FOCUS_RING_OFFSET);
+      expect(ring.outlineOffset).toBe(-FOCUS_RING_WIDTH);
       expect(ring.outlineWidth).toBeUndefined();
     });
 

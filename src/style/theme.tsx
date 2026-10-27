@@ -57,9 +57,8 @@ function overridesFor(tokens: ThemeTokenOverrides | undefined, scheme: ColorSche
 export interface ThemeValue {
   scheme: ColorScheme;
   /**
-   * The light-scheme palette in force: `"blush"` (the default) or `"mint"`. It names
-   * the palette the provider was asked for; in the dark scheme the tokens are the one dark
-   * palette whichever it is.
+   * The accent palette in force: `"violet"` (the default), `"cyan"`, `"mint"`, `"rose"` or
+   * `"amber"`. It applies in both schemes.
    */
   palette: Palette;
   surface: Surface;
@@ -89,10 +88,10 @@ export interface ThemeValue {
 const NO_FONTS: ThemeFonts = {};
 const FALLBACK: ThemeValue = {
   scheme: "light",
-  palette: "blush",
+  palette: "violet",
   surface: "solid",
-  tokens: colorsFor("blush", "light"),
-  glass: glassTintsFor("light", "blush"),
+  tokens: colorsFor("violet", "light"),
+  glass: glassTintsFor("light", "violet"),
   fonts: NO_FONTS,
   dark: false,
   reducedTransparency: false,
@@ -129,17 +128,25 @@ export interface ThemeProviderProps {
    * next-themes `defaultTheme`). Omit in client-only apps and on native.
    */
   ssrScheme?: ColorScheme;
-  // Palette axis (omit for the default, blush). Dark Factory's light palettes, spelled
-  // like every other axis: the prop name is the value. The dark scheme has one palette,
-  // so `dark` wins over `mint`: `<ThemeProvider dark mint>` paints the dark palette.
-  /** Paint the light scheme in Dark Factory's mint palette instead of blush. */
+  // Palette axis (pick one; omit for the default, violet). The accent hue, spelled like
+  // every other axis: the prop name is the value. It applies in both schemes. When more
+  // than one is passed the first in this order wins: cyan, mint, rose, amber, violet.
+  /** Paint the accent violet (hue 285), the default. */
+  violet?: boolean;
+  /** Paint the accent cyan (hue 205). */
+  cyan?: boolean;
+  /** Paint the accent mint (hue 165). */
   mint?: boolean;
+  /** Paint the accent rose (hue 20). */
+  rose?: boolean;
+  /** Paint the accent amber (hue 75). */
+  amber?: boolean;
   /**
    * The palette the SERVER rendered, for SSR/SSG apps whose client palette can differ
    * from it (a stored preference: `getPalette()` reads one on the web). The `ssrScheme`
    * contract applied to the palette axis: the server render and the hydration render
-   * paint this palette, matching the server HTML exactly, and the requested one (`mint`)
-   * applies right after mount. Omit in client-only apps and on native.
+   * paint this palette, matching the server HTML exactly, and the requested one (`cyan`,
+   * `mint` and so on) applies right after mount. Omit in client-only apps and on native.
    */
   ssrPalette?: Palette;
   /**
@@ -186,11 +193,11 @@ export interface ThemeProviderProps {
   tokens?: ThemeTokenOverrides;
   /**
    * The typefaces the app registered, so the kit can paint its labels in the brand
-   * face (`typeface.sans` is Manrope, `typeface.mono` Geist Mono). Each entry is
-   * either one family name that carries every weight (a variable font, an
-   * OS-installed family) or a map from weight to the face registered for that
-   * weight (expo-google-fonts style: `{ "400": "Manrope_400Regular", "500":
-   * "Manrope_500Medium" }`).
+   * faces (`typeface.sans` is Instrument Sans, `typeface.display` Bricolage Grotesque,
+   * `typeface.mono` JetBrains Mono). Each entry is either one family name that carries
+   * every weight (a variable font, an OS-installed family) or a map from weight to the
+   * face registered for that weight (expo-google-fonts style: `{ "400":
+   * "InstrumentSans_400Regular", "500": "InstrumentSans_500Medium" }`).
    *
    * Pass it once, on the app's root provider: the faces are what the app loaded, not
    * a per-subtree choice, so a nested ThemeProvider that omits `fonts` keeps the
@@ -211,6 +218,11 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
+// The palette axis: first match in the documented precedence, else the default violet.
+export function requestedPaletteOf(p: Pick<ThemeProviderProps, "violet" | "cyan" | "mint" | "rose" | "amber">): Palette {
+  return p.cyan ? "cyan" : p.mint ? "mint" : p.rose ? "rose" : p.amber ? "amber" : "violet";
+}
+
 // The scheme axis: first match (dark over light), then the legacy value form, then the
 // OS appearance. Mirrors the surface axis below: the prop name is the value.
 export function requestedSchemeOf(p: Pick<ThemeProviderProps, "dark" | "light" | "scheme">, system: ReturnType<typeof useColorScheme>): ColorScheme {
@@ -226,11 +238,11 @@ export function requestedSurfaceOf(p: Pick<ThemeProviderProps, "glass" | "solid"
 
 /**
  * Resolves the theme for everything below it: the scheme (`dark`, `light`, or the OS
- * appearance), the palette (blush, or `mint`), the surface (`glass`, `solid`, or the
+ * appearance), the palette (violet, or `cyan`, `mint`, `rose`, `amber`), the surface (`glass`, `solid`, or the
  * platform default), token overrides and the app's registered fonts. Read it with
  * useTheme.
  */
-export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette, ssrBreakpoint, glass, solid, surface, tokens, fonts, children }: ThemeProviderProps) {
+export function ThemeProvider({ dark, light, scheme, ssrScheme, violet, cyan, mint, rose, amber, ssrPalette, ssrBreakpoint, glass, solid, surface, tokens, fonts, children }: ThemeProviderProps) {
   const system = useColorScheme();
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
   // glass REACTIVE: when the user toggles Reduce Transparency / Increase Contrast,
@@ -262,14 +274,12 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
   }, [hydrated]);
   const requested = requestedSchemeOf({ dark, light, scheme }, system);
   const active: ColorScheme = hydrated ? requested : (ssrScheme ?? requested);
-  // The palette axis: `mint` or the default blush, with the server's palette held
-  // through hydration like the scheme.
-  const requestedPalette: Palette = mint ? "mint" : "blush";
+  // The palette axis, with the server's palette held through hydration like the scheme.
+  const requestedPalette: Palette = requestedPaletteOf({ violet, cyan, mint, rose, amber });
   const palette: Palette = hydrated ? requestedPalette : (ssrPalette ?? requestedPalette);
   const resolved = requestedSurfaceOf({ glass, solid, surface }, defaultSurface);
   const value = useMemo<ThemeValue>(() => {
-    // Merge order: the palette's base for the scheme (blush or mint in light, the one
-    // dark palette in dark), then brand overrides. That is the WHOLE token merge:
+    // Merge order: the palette's base for the scheme, then brand overrides. That is the WHOLE token merge:
     // the surface mode does not touch the semantic set at all. Glass used to swap
     // `popover` translucent here, which made every popover-filled surface see-through
     // the moment the theme went to glass (menus and select lists included), and the
@@ -286,10 +296,12 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
       // Undefined is omission, so it cannot erase the scheme's authored role.
       "primary-text": brand["primary-text"] ?? brand.primary ?? paletteBase["primary-text"],
       "destructive-text": brand["destructive-text"] ?? brand.destructive ?? paletteBase["destructive-text"],
+      "success-text": brand["success-text"] ?? brand.success ?? paletteBase["success-text"],
+      "warning-text": brand["warning-text"] ?? brand.warning ?? paletteBase["warning-text"],
       // A primary-only rebrand repaints the call-to-action too, fill and ink together;
       // an explicit `action` wins (see actionOverride).
       ...actionOverride(paletteBase, brand),
-      // A rebranded tone color repaints its soft wash too, at Dark Factory's alpha for
+      // A rebranded tone color repaints its soft wash too, at the hand-off's alpha for
       // the scheme; an explicit soft role wins (see softOverride).
       ...softOverride(active, paletteBase, brand),
     } : paletteBase;

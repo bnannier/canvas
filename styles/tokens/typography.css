@@ -1,11 +1,13 @@
-/* Type. Two faces and a neutral size ladder (px values, matching src/style/tokens.ts
-   fontSize: size / line-height pairs). The sans face is Dark Factory's Manrope and the
-   code face Geist Mono. Custom fonts don't auto-map weight in
-   React Native, so the kit selects a face per weight (ThemeProvider `fonts`); on the
-   web the weight axis is enough when the family is registered with a weight range. */
+/* Type. Three faces and a neutral size ladder (px values, matching src/style/tokens.ts
+   fontSize: size / line-height pairs). The v4 hand-off's faces: Instrument Sans for the
+   interface, Bricolage Grotesque for display (headings and big numbers), JetBrains Mono
+   for code and meta. Custom fonts don't auto-map weight in React Native, so the kit
+   selects a face per weight (ThemeProvider `fonts`); on the web the weight axis is enough
+   when the family is registered with a weight range. */
 :root{
-  --font-sans:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
-  --font-mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --font-sans:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --font-display:"Bricolage Grotesque","Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 
   --text-xs:12px;   --leading-xs:16px;
   --text-sm:14px;   --leading-sm:20px;
@@ -32,20 +34,23 @@
   --tracking-wider:0.8px;
   --tracking-widest:1.6px;
 
-  /* Semantic roles (Typography atom), Dark Factory's dense scale: bold titles stepping
-     from the display 24 down to the heading 14, body 12.5 medium, the 11.5 and 11
-     semibold labels for small and tiny, and the eyebrow for caption (uppercase and
-     tracked +0.16em in the component; raised from 9.5 to the 10px floor). The Typography
-     roles in src/atoms/typography carry the same values (test/df-type-scale.test.ts). */
-  --role-display:var(--weight-bold) 24px/27px var(--font-sans);
-  --role-h1:var(--weight-bold) 20px/25px var(--font-sans);
-  --role-h2:var(--weight-bold) 17px/22px var(--font-sans);
-  --role-h3:var(--weight-bold) 16px/20px var(--font-sans);
-  --role-h4:var(--weight-bold) 15px/20px var(--font-sans);
-  --role-h5:var(--weight-bold) 14px/19px var(--font-sans);
-  --role-lead:var(--weight-medium) 14px/21px var(--font-sans);
-  --role-body:var(--weight-medium) 12.5px/19px var(--font-sans);
-  --role-small:var(--weight-semibold) 11.5px/17px var(--font-sans);
-  --role-tiny:var(--weight-semibold) 11px/15px var(--font-sans);
-  --role-caption:var(--weight-bold) 10px/13px var(--font-sans);
+  /* Semantic roles (Typography atom), the v4 hand-off's scale (src/style/type-scale.ts
+     typeRoles, test/v4-type-scale.test.ts): medium display-face titles with tightened
+     tracking from the 56 display down to the 21 h4, the 17 UI h5, body 15/24, lead 19,
+     small 13, caption 12, tiny 11, and the 11px mono eyebrow (uppercase, tracked +0.1em). */
+  --role-display:500 56px/56px var(--font-display);
+  --role-h1:500 44px/47px var(--font-display);
+  --role-h2:500 34px/38px var(--font-display);
+  --role-h3:500 26px/30px var(--font-display);
+  --role-h4:500 21px/26px var(--font-display);
+  --role-h5:var(--weight-semibold) 17px/23px var(--font-sans);
+  --role-lead:var(--weight-normal) 19px/29px var(--font-sans);
+  --role-body:var(--weight-normal) 15px/24px var(--font-sans);
+  --role-label:var(--weight-medium) 13px/17px var(--font-sans);
+  --role-small:var(--weight-normal) 13px/20px var(--font-sans);
+  --role-caption:var(--weight-normal) 12px/18px var(--font-sans);
+  --role-tiny:var(--weight-normal) 11px/16px var(--font-sans);
+  --role-eyebrow:var(--weight-medium) 11px/11px var(--font-mono);
+  --tracking-display:-0.04em;
+  --tracking-eyebrow:0.1em;
 }

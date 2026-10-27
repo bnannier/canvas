@@ -9,11 +9,10 @@ import { createAlert } from "../src/molecules/alert/alert.shared.tsx";
 import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
 import { darkColors, lightColors, palette, type ColorTokens } from "../src/style/tokens.ts";
 import { inverseDenseTint } from "../src/style/glass-fill.ts";
-import { composite as compositeOver, contrastRatio } from "../src/style/color.ts";
+import { composite as compositeOver, contrastRatio, oklchOf } from "../src/style/color.ts";
 import { IDENTITY_HUES, identityDisc, identityHue } from "../src/style/identity-hue.ts";
-import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
+import { LOOKS, lookDeclarations, lookProps, type Look } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
-import { oklchOf } from "../tools/darkfactory/derive-tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { blockDeclarations, cssColorToHex, stripComments } from "../tools/tokens/css-tokens.ts";
 import * as actionSheetSkins from "../src/organisms/action-sheet/action-sheet.styles.ts";
@@ -49,7 +48,7 @@ import { Avatar as AndroidAvatar } from "../src/atoms/avatar/avatar.android.tsx"
 
 afterEach(cleanup);
 
-const hueOf = (hex: string) => oklchOf(hex)[2];
+const hueOf = (hex: string) => oklchOf(hex)![2];
 
 type PairedToken = Exclude<keyof ColorTokens, "primary-text" | "destructive-text">;
 const PAIRS: [PairedToken, PairedToken][] = [
@@ -78,7 +77,7 @@ describe("normal text contrast (WCAG 1.4.3)", () => {
 
   for (const look of LOOKS) {
     const { name: scheme, tokens } = look;
-    const declarations = blockDeclarations(css, look.selector).decls;
+    const declarations = lookDeclarations(css, look);
     it(`keeps every resting ${scheme} web ActionSheet action and Cancel readable`, () => {
       const fill = actionSheetSkins.webSkin.actionsCard(tokens).backgroundColor as string;
       const cancelFill = actionSheetSkins.webSkin.cancelCard!(tokens).backgroundColor as string;
@@ -168,7 +167,7 @@ describe("error and destructive text on authored enabled surfaces", () => {
   for (const look of LOOKS) {
     const { name: scheme, tokens: t } = look;
     it(`keeps ${scheme} error/action text readable through surface and press rounding`, () => {
-      const declarations = blockDeclarations(css, look.selector).decls;
+      const declarations = lookDeclarations(css, look);
       expect(cssColorToHex(declarations["destructive-text"])).toBe(destructiveText(t));
       for (const { name, text, fill } of destructiveStates(t)) {
         for (const foreground of neighborhood(text)) for (const background of neighborhood(fill)) {
@@ -206,7 +205,8 @@ describe("error and destructive text on authored enabled surfaces", () => {
     // The focus ring is a non-text indicator (WCAG 1.4.11): 3:1 on every surface it can
     // sit on, in each palette.
     for (const { tokens: t } of LOOKS) {
-      for (const surface of [t.background, t.card, t.popover, t.muted]) expect(contrast(t.ring, surface)).toBeGreaterThanOrEqual(3);
+      // The v4 ring is translucent (the accent at 0.28 / 0.35), so it is read where it lands.
+      for (const surface of [t.background, t.card, t.popover, t.muted]) expect(contrast(composite(t.ring, surface), surface)).toBeGreaterThanOrEqual(3);
     }
   });
 });
@@ -245,7 +245,7 @@ describe("primary text on authored surfaces", () => {
       const text = tokens["primary-text"];
       expect(typeof text).toBe("string");
       if (!text) throw new Error("Default themes must resolve primary-text");
-      const declarations = blockDeclarations(css, look.selector).decls;
+      const declarations = lookDeclarations(css, look);
       expect(cssColorToHex(declarations["primary-text"])).toBe(text);
       for (const [name, fill] of primaryTextSurfaces(tokens)) {
         expect(contrast(text, fill), name).toBeGreaterThanOrEqual(4.65);
@@ -308,8 +308,7 @@ describe("primary text on authored surfaces", () => {
     });
 
     // The M3 snackbar's action is the palette's own brand on the toast pill, never another
-    // palette's: it keeps the palette's primary hue (mint's action is blue, not the dark
-    // palette's violet) and reads at 4.5:1 on the pill as the shell paints it: solid, and
+    // palette's: it keeps the palette's accent hue (mint's action is green, not violet) and reads at 4.5:1 on the pill as the shell paints it: solid, and
     // under glass at the inverse dense tint (the web frost's alpha and the native one) over
     // the page and a card, each resting and under the pressed ripple.
     // The web and iOS toast is Dark Factory's pill on the same inverse surface: its message,
@@ -355,7 +354,14 @@ describe("primary text on authored surfaces", () => {
           }
         }
       }
-      expect(Math.abs(hueOf(action) - hueOf(tokens.primary))).toBeLessThanOrEqual(2);
+      // The hand-off's inverse primary is the accent at another lightness (oklch .8 .14 in
+      // light, .47 .2 in dark), so sRGB clipping moves its hue a little; it still sits
+      // nearer its own palette's accent hue than any other palette's.
+      const distance = (a: number, b: number) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+      const own = distance(hueOf(action), hueOf(tokens.primary));
+      for (const other of LOOKS.filter((l) => l.scheme === look.scheme && l.palette !== look.palette)) {
+        expect(own, `${scheme} action nearer ${look.palette} than ${other.palette}`).toBeLessThan(distance(hueOf(action), hueOf(other.tokens.primary)));
+      }
     });
 
     it(`renders the actual ${scheme} Android pill label over its selected fill and muted track`, () => {
@@ -369,7 +375,6 @@ describe("primary text on authored surfaces", () => {
         const background = composite(tab.style.backgroundColor, track.style.backgroundColor);
         expect(hexOf(label.style.color)).toBe(tokens["primary-text"]);
         expect(contrast(label.style.color, background)).toBeGreaterThanOrEqual(4.65);
-        if (look.scheme === "dark" && tokens.primary !== tokens["primary-text"]) expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
       }
     });
 
@@ -383,7 +388,6 @@ describe("primary text on authored surfaces", () => {
       const label = within(today).getByText("4");
       expect(hexOf(label.style.color)).toBe(tokens["primary-text"]);
       expect(contrast(label.style.color, background)).toBeGreaterThanOrEqual(4.65);
-      if (tokens.primary !== tokens["primary-text"]) expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
       const endpoint = screen.getByRole("button", { name: "2, selected, start of range" });
       expect(hexOf(endpoint.style.backgroundColor)).toBe(tokens.primary);
       expect(hexOf(within(endpoint).getByText("2").style.color)).toBe(tokens["primary-foreground"]);
@@ -420,9 +424,10 @@ describe("the inverse roles' fallbacks for legacy token maps", () => {
   });
 
   it("picks the brand text by the bar's lightness when a map sets the pill but not its action", () => {
-    // Dark Factory's pill is dark in the dark scheme too, so the dark palette's text serves.
+    // The hand-off's dark-scheme pill is light (its inverse is the light ink), so the light
+    // palette's text serves.
     const painted = snackbar(legacy(darkColors, ["inverse", "inverse-foreground"]));
-    expect(painted).toEqual({ bar: darkColors.inverse!, text: darkColors["inverse-foreground"]!, action: darkColors["primary-text"]! });
+    expect(painted).toEqual({ bar: darkColors.inverse!, text: darkColors["inverse-foreground"]!, action: lightColors["primary-text"]! });
     expect(contrast(painted.action, painted.bar)).toBeGreaterThanOrEqual(4.5);
   });
 });
@@ -480,24 +485,19 @@ describe("Dialog message contrast", () => {
         ];
         for (const { node, original } of fields) {
           const rendered = node.style.color;
-          const expected = light && surface === "glass" ? tokens["popover-foreground"] : original.color;
-          expect(hexOf(rendered)).toBe(expected);
+          expect(hexOf(rendered)).toBe(original.color);
           expect(Number.parseFloat(getComputedStyle(node).fontSize)).toBe(original.fontSize);
           expect(Number.parseFloat(getComputedStyle(node).lineHeight)).toBe(original.lineHeight);
-          // The beds a dialog floats over: the page's surfaces and the docs' frame, its frost
-          // over the page look's stops and orb centres. The promoted ink reads on every one; the skin's own
-          // muted ink, which the promotion replaces, fails on at least one.
-          const originals: number[] = [];
-          for (const underlying of [tokens.background, tokens.card, tokens.muted, ...shellBeds(look.name)]) {
+          // The beds a dialog floats over: the page's surfaces and the docs' flat page. The
+          // skin's own ink, muted included, reads on every one, so no glass mode promotes it.
+          for (const underlying of [tokens.background, tokens.card, tokens.muted, ...shellBeds(look)]) {
             // This is a tint-over-scrim model from the source tokens, not native
             // glass luminance. Device pixel acceptance validates the material.
             const background = surface === "glass"
               ? composite(glassOf(look)["glass-tint"], composite(skin.backdrop(tokens).backgroundColor as string, underlying))
               : rgba(skin.card(tokens).backgroundColor as string);
             expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
-            originals.push(textContrast(original.color as string, background));
           }
-          if (light && surface === "glass") expect(Math.min(...originals)).toBeLessThan(4.5);
         }
         expect(hexOf(screen.getByText("Refund payment").style.color)).toBe(skin.title(tokens).color);
         expect(hexOf(screen.getByText("Amount").style.color)).toBe(skin.fieldLabel(tokens).color);
@@ -532,26 +532,21 @@ describe("ActionSheet message contrast", () => {
         const scrim: Rgba = rgba(scrimFill(tokens, skin.scrimOpacity));
         for (const { node, original } of fields) {
           const rendered = node.style.color;
-          const promoted = look.scheme === "light" && surface === "glass" && original.color === tokens["muted-foreground"];
-          const expected = promoted ? tokens["popover-foreground"] : original.color as string;
           // Compare the alpha too: the readable iOS secondary label remains
           // translucent foreground, and stronger titles keep their skin color.
-          expect(rgba(rendered)).toEqual(rgba(expected));
+          expect(rgba(rendered)).toEqual(rgba(original.color as string));
           expect(Number.parseFloat(getComputedStyle(node).fontSize)).toBe(original.fontSize);
           expect(Number.parseFloat(getComputedStyle(node).lineHeight)).toBe(original.lineHeight);
-          // The beds a sheet floats over: the page's surfaces and the docs' frame over the page look. The
-          // promoted ink reads on every one; the muted ink it replaces fails on at least one.
-          const originals: number[] = [];
-          for (const underlying of [tokens.background, tokens.card, tokens.muted, ...shellBeds(look.name)]) {
+          // The beds a sheet floats over: the page's surfaces and the docs' flat page. The
+          // skin's own ink, muted included, reads on every one.
+          for (const underlying of [tokens.background, tokens.card, tokens.muted, ...shellBeds(look)]) {
             // Model the settled source scrim and tint, without claiming that a
             // native blur or Liquid Glass surface has this exact luminance.
             const background = surface === "glass"
               ? composite(glassOf(look)["glass-tint"], composite(scrim, underlying))
               : rgba(skin.actionsCard(tokens).backgroundColor as string);
             expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
-            originals.push(textContrast(original.color as string, background));
           }
-          if (promoted) expect(Math.min(...originals)).toBeLessThan(4.5);
         }
         expect(rgba(screen.getByText("Copy link").style.color)).toEqual(rgba(skin.rowLabel(tokens, false, false).color as string));
         expect(rgba(screen.getByText("Cancel").style.color)).toEqual(rgba(skin.cancelLabel(tokens).color as string));

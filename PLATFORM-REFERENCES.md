@@ -19,8 +19,9 @@ reference, not the design reference. Note for tooling: m3.material.io is a JS ap
 cannot be WebFetched; read them in a browser session, and verify URLs against
 https://m3.material.io/sitemap.xml.
 
-Canvas is **platform-forward**: the brand survives (Dark Factory's palette, with its violet
-`primary` and green `action`, and the Manrope type stay the same on every platform); only the
+Canvas is **platform-forward**: the brand survives (the v4 accent palette, one hue for
+`primary` and `action`, and its neutrals stay the same on every platform; the web sets
+Instrument Sans, iOS and Android their system faces); only the
 native shape, sizing, structure, and interaction feedback change per OS. React Native does not provide these looks for free (its primitives are unstyled and its
 core `<Button>` is unusable), so each control's per-OS appearance is hand-written, EXCEPT the few
 real native widgets RN ships (`Switch`, `ActivityIndicator`), which can be used natively and
@@ -169,7 +170,7 @@ How a kit text field (Input, Textarea, PhoneInput, Autocomplete, InputOTP) says 
 
 What `<ThemeProvider glass>` renders on each platform, and where it renders the complete solid skin instead. One decision (`useMaterialResolution`, `src/style/glass-surface/use-material-theme.ts`) answers it for a surface, its GlassPane and the host that paints around the pane, so a host that keeps its solid skin never has a pane painted inside it.
 
-- **Web**: Dark Factory's plain frost (a 24 px backdrop blur, the layer's tint, a 1 px inset hairline) in every browser that renders a CSS backdrop filter; a browser without one renders the solid skin.
+- **Web**: the v4 frost (a 20 px backdrop blur that saturates by 1.6, the layer's tint, a 1 px rim) in every browser that renders a CSS backdrop filter; a browser without one renders the solid skin.
 - **iOS**: Liquid Glass through `expo-glass-effect` on iOS 26 and later for a surface that is not static (the functional layer, controls, dense overlays); `expo-blur`'s frost for a static surface (the content layer, text-entry wells) and wherever Liquid Glass is unavailable. A surface whose material's peer is not installed renders the solid skin.
 - **Android in the page: solid, by design.** With `expo-blur` 57 or later (its blur target) or Canvas's own Android capture module, Android's frost samples a separate capture plane, and only an overlay in an OverlayProvider outlet or a sheet in a window of its own has one it can sample without capturing itself. A surface in the page itself resolves solid (`missing-target`) and keeps its complete solid skin, so the audit's Android glass column equals solid outside overlays. Frosting in-page surfaces would take a page-level capture plane: separate native work, with a tuning-harness card of its own.
 - **Android overlays**: the frost, over the outlet's or the window's own plane.

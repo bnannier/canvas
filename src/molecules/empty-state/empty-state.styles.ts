@@ -64,7 +64,7 @@ export function discTone(tokens: ColorTokens, tone: Tone): ViewStyle {
 }
 
 export function glyphTone(tokens: ColorTokens, tone: Tone): TextStyle {
-  return tone === "success" ? { color: tokens.success } : { color: tokens["muted-foreground"] };
+  return tone === "success" ? { color: tokens["success-text"] ?? tokens.success } : { color: tokens["muted-foreground"] };
 }
 
 // ---- Shared layout fragments reused across the skins -------------------------

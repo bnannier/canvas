@@ -12,19 +12,22 @@ describe("shadow", () => {
     expect(shadow()).toEqual(shadow("DEFAULT"));
   });
 
-  it("scales the shadow with the level (web boxShadow, Dark Factory's geometry)", () => {
+  it("scales the shadow with the level (web boxShadow, the hand-off's three steps)", () => {
+    const light = (drop: string) => `inset 0px 1px 0px 0px rgba(255, 255, 255, 0), ${drop}, 0px 0px 0px 1px rgba(17, 17, 24, 0.03)`;
     expect(shadow("none")).toEqual({ boxShadow: "none" });
-    expect(shadow("sm").boxShadow).toBe("0px 16px 32px -22px rgba(121, 100, 214, 0.22)");
-    expect(shadow("DEFAULT").boxShadow).toBe("0px 20px 44px -24px rgba(121, 100, 214, 0.22)");
-    expect(shadow("md").boxShadow).toBe("0px 30px 54px -24px rgba(121, 100, 214, 0.22)");
-    expect(shadow("lg").boxShadow).toBe("0px 26px 50px -20px rgba(121, 100, 214, 0.22)");
-    expect(shadow("xl").boxShadow).toBe("0px 50px 100px -30px rgba(0, 0, 0, 0.45)");
+    expect(shadow("sm").boxShadow).toBe(light("0px 1px 2px 0px rgba(17, 17, 24, 0.05)"));
+    expect(shadow("md").boxShadow).toBe(light("0px 12px 32px -10px rgba(17, 17, 24, 0.16)"));
+    expect(shadow("lg").boxShadow).toBe(light("0px 30px 80px -16px rgba(17, 17, 24, 0.25)"));
+    // The legacy levels alias the three: the resting ones are sm, the top layer is lg.
+    for (const level of ["DEFAULT", "row", "empty"] as const) expect(shadow(level)).toEqual(shadow("sm"));
+    expect(shadow("xl")).toEqual(shadow("lg"));
   });
 
-  it("tints by the palette's shade, and defaults to the light palette's", () => {
+  it("colours by the scheme's shade roles, and defaults to the light scheme's", () => {
     expect(shadow("DEFAULT", lightColors)).toEqual(shadow("DEFAULT"));
-    expect(shadow("DEFAULT", darkColors).boxShadow).toBe("0px 20px 44px -24px rgba(0, 0, 0, 0.5)");
-    expect(shadow("xl", darkColors)).toEqual(shadow("xl", lightColors));
+    // The dark scheme lights the top edge and drops black, with no hairline ring.
+    expect(shadow("sm", darkColors).boxShadow).toBe("inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.5), 0px 0px 0px 1px rgba(0, 0, 0, 0)");
+    expect(shadow("lg", darkColors).boxShadow).toBe("inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1), 0px 30px 80px -16px rgba(0, 0, 0, 0.8), 0px 0px 0px 1px rgba(0, 0, 0, 0)");
   });
 
   it("does not emit the deprecated shadow* props on web", () => {

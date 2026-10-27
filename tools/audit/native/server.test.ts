@@ -56,7 +56,7 @@ class FakeDevice implements AuditDevice {
   }
 }
 
-const look = { scheme: "light", surface: "solid", palette: "blush" } as const;
+const look = { scheme: "light", surface: "solid", palette: "violet" } as const;
 const item = (variant: string): QueueItem => ({
   item: { kind: "component", id: `ios/button/${variant}/blush.solid`, route: `/components/button/${variant}`, look, slug: "button", variant, label: variant, settleMs: 0, scrollSettleMs: 0, deadlineMs: 0 },
   a11y: false,
@@ -309,11 +309,11 @@ describe("the native capture host", () => {
     // The retry lands on another route in another look: refused again, and recorded.
     const retry = (await call("GET", `/next?session=${session}`)).data.item as AuditItem;
     expect(retry.id).toBe(first.id);
-    const dark = { scheme: "dark", surface: "glass", palette: "blush", dark: true, reducedTransparency: false, increasedContrast: false } as const;
+    const dark = { scheme: "dark", surface: "glass", palette: "violet", dark: true, reducedTransparency: false, increasedContrast: false } as const;
     const wrongScreen = await call("POST", "/ready", ready(session, retry, 0, card, { start: 0, end: 40 }, true, { pathname: "/components/badge", look: dark }));
     expect(wrongScreen.status).toBe(409);
     expect(cells).toEqual([expect.objectContaining({ id: first.id, status: "failed", attempts: 2 })]);
-    expect(cells[0].reason).toContain("verify: the theme resolved dark glass blush, not light solid blush");
+    expect(cells[0].reason).toContain("verify: the theme resolved dark glass violet, not light solid violet");
     expect(cells[0].reason).toContain("the router is on /components/badge, not /components/button/default");
     const probe = JSON.parse(readFileSync(join(dir, first.id, "probe.json"), "utf8"));
     expect(probe.status).toBe("failed");
@@ -327,10 +327,10 @@ describe("the native capture host", () => {
   test("checks the look, route and example (or page) of every segment", () => {
     const component = item("default").item;
     expect(identityMismatch(component, { look: resolvedFor(component), pathname: component.route, label: "default" })).toBeNull();
-    expect(identityMismatch(component, { look: { ...resolvedFor(component), palette: "mint" }, pathname: component.route, label: "default" })).toContain("light solid mint, not light solid blush");
+    expect(identityMismatch(component, { look: { ...resolvedFor(component), palette: "mint" }, pathname: component.route, label: "default" })).toContain("light solid mint, not light solid violet");
     // A theme whose dark flag disagrees with its scheme is not the look either.
     expect(identityMismatch(component, { look: { ...resolvedFor(component), dark: true }, pathname: component.route, label: "default" })).toContain("(dark true)");
-    const page: AuditItem = { kind: "page", id: "ios-pages/pattern-glass/dark.glass", route: "/patterns/glass", look: { scheme: "dark", surface: "glass", palette: "blush" }, page: "pattern-glass", settleMs: 0, scrollSettleMs: 0, deadlineMs: 0 };
+    const page: AuditItem = { kind: "page", id: "ios-pages/pattern-glass/dark.glass", route: "/patterns/glass", look: { scheme: "dark", surface: "glass", palette: "violet" }, page: "pattern-glass", settleMs: 0, scrollSettleMs: 0, deadlineMs: 0 };
     expect(identityMismatch(page, { look: resolvedFor(page), pathname: "/patterns/glass", label: "Glass Surface" })).toBeNull();
     expect(identityMismatch(page, { look: resolvedFor(page), pathname: "/patterns/glass", label: "" })).toBe("no page registered itself on the screen");
   });

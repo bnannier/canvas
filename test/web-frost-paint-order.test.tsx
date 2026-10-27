@@ -4,7 +4,7 @@ import { Text, View } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { GlassPane, paneStyle } from "../src/style/glass-surface/glass-pane.tsx";
-import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
+import { WEB_FROST, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
 import { lightColors, type GlassTokens } from "../src/style/tokens.ts";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
 import { PANE_HOSTS } from "./fixtures/pane-hosts.tsx";
@@ -87,7 +87,7 @@ describe("the web frost samples nothing of its own surface", () => {
         expectFrostFirst(material, `${look.name} ${id}`);
         // The frost itself: one 24 px blur and no fill of its own, so its fill is the layer above.
         const frost = material.children[0] as HTMLElement;
-        expect(frost.style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+        expect(frost.style.backdropFilter).toBe(webBackdrop(WEB_FROST.blur));
         expect(EMPTY.test(frost.style.backgroundColor)).toBe(true);
       }
       // The fill keeps its colour and the sheer pane its opacity, over the blur now.

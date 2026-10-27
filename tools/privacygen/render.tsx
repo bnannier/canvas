@@ -7,14 +7,21 @@ import { PrivacyContent } from "../../docs/src/ui/privacy-content";
 import { PRIVACY_TITLE, PRIVACY_INTRO } from "../../docs/src/data/privacy-policy";
 
 const ROOT = resolve(import.meta.dir, "../..");
-const FACES = {
-  "400": "Manrope_400Regular", "500": "Manrope_500Medium",
-  "600": "Manrope_600SemiBold", "700": "Manrope_700Bold",
+// The docs' own subset faces (docs/assets/fonts) the policy's text needs: Instrument
+// Sans for the reading text and Bricolage Grotesque for the headings, which ask for the
+// display face. The policy sets no code, so the mono face stays out.
+const FONTS = {
+  sans: {
+    "400": "InstrumentSans_400Regular", "500": "InstrumentSans_500Medium",
+    "600": "InstrumentSans_600SemiBold", "700": "InstrumentSans_700Bold",
+  },
+  display: { "500": "BricolageGrotesque_500Medium", "600": "BricolageGrotesque_600SemiBold" },
 } as const;
+const FACES = [...Object.values(FONTS.sans), ...Object.values(FONTS.display)];
 const esc = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 function Policy({ dark = false }: { dark?: boolean }) {
-  return <ThemeProvider dark={dark} light={!dark} solid ssrScheme={dark ? "dark" : "light"} fonts={{ sans: FACES }}>
+  return <ThemeProvider dark={dark} light={!dark} solid ssrScheme={dark ? "dark" : "light"} fonts={FONTS}>
     <Container xxxl><Column padLoose><PrivacyContent /></Column></Container>
   </ThemeProvider>;
 }
@@ -31,7 +38,7 @@ export function privacyDocument(basePath = "") {
   const { getStyleElement } = AppRegistry.getApplication("CanvasPrivacy");
   const nativeStyles = renderToStaticMarkup(getStyleElement());
   const path = basePath.replace(/\/$/, "");
-  const fonts = Object.values(FACES).map(face => `@font-face{font-family:"${face}";src:url("${path}/privacy/fonts/${face}.ttf") format("truetype");font-display:swap}`).join("\n");
+  const fonts = FACES.map(face => `@font-face{font-family:"${face}";src:url("${path}/privacy/fonts/${face}.ttf") format("truetype");font-display:swap}`).join("\n");
   return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -51,7 +58,7 @@ ${views}
 export function generatePrivacy({ output = resolve(ROOT, "docs/public/privacy/index.html"), check = false, basePath = "" }: { output?: string; check?: boolean; basePath?: string } = {}) {
   const html = privacyDocument(basePath);
   const files = new Map<string, string | Buffer>([[output, html]]);
-  for (const face of Object.values(FACES)) files.set(resolve(dirname(output), "fonts", `${face}.ttf`), readFileSync(resolve(ROOT, "docs/assets/fonts", `${face}.ttf`)));
+  for (const face of FACES) files.set(resolve(dirname(output), "fonts", `${face}.ttf`), readFileSync(resolve(ROOT, "docs/assets/fonts", `${face}.ttf`)));
   for (const [file, content] of files) {
     if (check) {
       if (!existsSync(file) || !readFileSync(file).equals(Buffer.from(content))) throw new Error(`Static privacy output is stale: ${file}. Run bun run privacy:gen.`);

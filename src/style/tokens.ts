@@ -1,3 +1,6 @@
+import { alpha, oklchHex } from "./color.js";
+import { solveHexInk, solveInk, type InkBed, type InkFloor } from "./ink-floor.js";
+
 // Canvas design tokens, as plain JS values. RN-usable: no CSS variables, no
 // document access. Light and dark color sets plus numeric scales for spacing,
 // radius, type, and breakpoints. Components read these (via useTheme for the
@@ -19,6 +22,12 @@ export interface ColorTokens {
   /** Optional informational text ink supplied by a brand. */
   info?: string;
   background: string;
+  /** The sunken well beneath the page: a field's fill, a code block, a preview stage. Omit to use `background`. */
+  "surface-sunken"?: string;
+  /** The raised step above `secondary`: a hovered secondary fill, an off switch track. Omit to use `secondary`. */
+  "surface-raised"?: string;
+  /** The tertiary ink: captions, placeholders, eyebrows, mono metadata. Omit to use `muted-foreground`. */
+  "subtle-foreground"?: string;
   foreground: string;
   card: string;
   "card-foreground": string;
@@ -31,8 +40,7 @@ export interface ColorTokens {
   /**
    * The CALL-TO-ACTION fill: the primary Button and the split button's action. Kept
    * apart from `primary`, which paints what is selected, checked, current, linked or
-   * focused (the Dark Factory design language draws actions green and selection
-   * violet). Omit in legacy maps to paint actions with `primary`; a `tokens` override
+   * focused (the v4 hand-off paints both in its accent). Omit in legacy maps to paint actions with `primary`; a `tokens` override
    * that sets only `primary` repaints the actions too.
    */
   action?: string;
@@ -49,15 +57,19 @@ export interface ColorTokens {
   "destructive-text"?: string;
   "destructive-foreground": string;
   success: string;
+  /** Success text on neutral surfaces and its own wash. Omit in legacy maps to use success. */
+  "success-text"?: string;
   "success-foreground": string;
   warning: string;
+  /** Warning text on neutral surfaces and its own wash. Omit in legacy maps to use warning. */
+  "warning-text"?: string;
   "warning-foreground": string;
   border: string;
   input: string;
   /**
    * The RESTING border of a text field on the web and iOS skins (Input, Textarea,
    * Select, Autocomplete, InputOTP, Stepper, PhoneInput, the Command trigger), and
-   * only there: Dark Factory's field line densified on the card until it stands apart
+   * only there: the hand-off's field line densified on the card until it stands apart
    * from the `border` hairline, which sits BELOW the 3:1 control floor `input` holds (see
    * `fieldBorder` in src/style/field-colors.ts for the disclosed trade-off). Focus
    * and error still paint `ring` and `destructive`, and every non-field control
@@ -66,8 +78,12 @@ export interface ColorTokens {
    */
   "field-border"?: string;
   ring: string;
+  /** The accent's glow: the halo under a raised primary, a slider fill, an active tab line. Translucent. Omit to glow with `ring`. */
+  glow?: string;
+  /** The inset top highlight a lit surface carries (`inset 0 1px 0`). Translucent. Omit for none. */
+  highlight?: string;
   /**
-   * The soft washes (Dark Factory's `*Soft`): a status or selection color at low alpha,
+   * The soft washes (the hand-off's `*Soft`): a status or selection color at low alpha,
    * the fill behind a toned badge, an alert band or a tonal selection. Translucent
    * (`rgba`) by contract: composite one on the surface it sits on before measuring it.
    * Omit in legacy maps; a skin then washes the role's own color itself.
@@ -78,23 +94,34 @@ export interface ColorTokens {
   "success-soft"?: string;
   "warning-soft"?: string;
   "destructive-soft"?: string;
-  /** A text field's own fill (DF's translucent white well). Translucent. Omit to fill with `card`. */
+  /** A text field's own fill (the hand-off's translucent white well). Translucent. Omit to fill with `card`. */
   "field-fill"?: string;
   /**
-   * The hover wash (Dark Factory's `hover`): the brand violet at a low alpha beneath a
+   * The hover wash (the hand-off's `hover`): the brand violet at a low alpha beneath a
    * hovered row or quiet control. Translucent, so it reads on any surface and over glass;
    * `accent` is this wash composited on `card`. Omit to wash with `accent`.
    */
   hover?: string;
-  /** The modal backdrop (DF's tinted dim). Translucent. Omit to dim with black. */
+  /** The modal backdrop (the hand-off's tinted dim). Translucent. Omit to dim with black. */
   scrim?: string;
-  /** The elevation tint (DF's palette-tinted shadow color). Translucent. Omit to shade with the ink. */
+  /** The small elevation's drop colour (a card, a tile). Translucent. Omit to shade with the ink. */
   shade?: string;
+  /** The raised elevation's drop colour (a menu, a popover, a hovered card). Translucent. Omit to use `shade`. */
+  "shade-md"?: string;
+  /** The overlay elevation's drop colour (a dialog, a sheet, the floating chrome). Translucent. Omit to use `shade-md`. */
+  "shade-lg"?: string;
+  /** The hairline ring the light scheme's elevations carry. Translucent. Omit for none. */
+  "shade-ring"?: string;
   /**
-   * The inverse surface (DF's dark toast pill, which the Android snackbar paints in both
+   * The lit top edge the dark scheme's elevations carry (an inset 1px line in `highlight`).
+   * Transparent in the light scheme. Omit for none.
+   */
+  "shade-inset"?: string;
+  /**
+   * The inverse surface (the hand-off's dark toast pill, which the Android snackbar paints in both
    * schemes) and the ink on it. Omit both in legacy maps to invert the scheme: `foreground`
    * as the pill and `background` as its ink. Override the three inverse roles together:
-   * the palette's ink and action were solved for DF's pill, so an `inverse` alone keeps
+   * the palette's ink and action were solved for the hand-off's pill, so an `inverse` alone keeps
    * them.
    */
   inverse?: string;
@@ -125,250 +152,32 @@ export interface ColorTokens {
   "chart-8": string;
 }
 
-// The semantic color values below are the sRGB rendering of the WEB hand-off
-// (styles/tokens/colors.css), which is the single source of truth for what these
-// tokens ARE. RN cannot parse oklch(), so the hand-off's values are carried as the hex
-// they resolve to (and the translucent roles as the same rgba), and
-// scripts/validate-tokens.ts fails the build on any drift. Change a value in the CSS
-// hand-off first, never only here.
+
+// The semantic color values below are the v4 design hand-off's ("Light as material",
+// vendored at tools/v4/handoff; audit/v4-redesign/PLAN.md). The neutrals, status colours
+// and glass are its literal values; the accent ("ion") and the chart series are its
+// `oklch(L C hue)` formulas, converted to sRGB by `oklchHex` (src/style/color.ts), which
+// matches what Chrome paints for the hand-off to within one channel unit
+// (tools/v4/accent-samples.json, test/v4-accent.test.ts). The CSS hand-off
+// (styles/tokens/colors.css) keeps the literal oklch() forms over `--hue`, and
+// scripts/validate-tokens.ts holds the two sides equal for every palette and scheme.
 //
-// The values are Dark Factory's (CLAUDE.md, "Design language: Dark Factory"): its blush
-// palette for the light scheme (and its mint, `mintColors` below, when a ThemeProvider
-// passes `mint`) and its dark palette for the dark scheme, each role a DF value, a
-// formula over DF values, or a DF color whose lightness was moved the least that clears a
-// kit legibility floor. tools/darkfactory/derive-tokens.ts derives them from
-// the vendored DF theme and tools/darkfactory/tokens.json records each role's source;
-// scripts/check-df-parity.ts keeps the hand-off and this file equal to that table.
-/**
- * The light scheme's semantic color tokens in the default blush palette (Dark Factory's).
- * A frozen constant: read the live set from `useTheme().tokens`.
- */
-export const lightColors: ColorTokens = {
-  "featured-start": "#2b2a5e",
-  "featured-middle": "#4b3a8c",
-  "featured-end": "#7a55c8",
-  "featured-stack": "rgba(255, 255, 255, 0.5)",
-  "promo-start": "#8e7cf5",
-  "promo-middle": "#c98be9",
-  "promo-end": "#f3a5c8",
-
-  background: "#f5f2fe",
-  foreground: "#3b3c5c",
-  card: "#ffffff",
-  "card-foreground": "#3b3c5c",
-  popover: "#ffffff",
-  "popover-foreground": "#3b3c5c",
-  primary: "#7262e5",
-  "primary-text": "#5d48c9",
-  "primary-foreground": "#ffffff",
-  "primary-soft": "rgba(123, 108, 240, 0.14)",
-  action: "#21804b",
-  "action-foreground": "#ffffff",
-  secondary: "#f5f2fc",
-  "secondary-foreground": "#3b3c5c",
-  muted: "#f5f2fc",
-  "muted-foreground": "#606183",
-  accent: "#f4f3fe",
-  "accent-foreground": "#3b3c5c",
-  destructive: "#b53a44",
-  "destructive-text": "#9a1f2f",
-  "destructive-foreground": "#ffffff",
-  "destructive-soft": "rgba(181, 58, 68, 0.12)",
-  success: "#0b7440",
-  "success-foreground": "#ffffff",
-  "success-soft": "rgba(33, 128, 75, 0.12)",
-  warning: "#965801",
-  "warning-foreground": "#ffffff",
-  "warning-soft": "rgba(240, 160, 40, 0.18)",
-  border: "#eae8f3",
-  input: "#898ba0",
-  "field-border": "#d6d3e7",
-  "field-fill": "rgba(255, 255, 255, 0.7)",
-  hover: "rgba(123, 108, 240, 0.08)",
-  ring: "#7b6cf0",
-  scrim: "rgba(40, 30, 90, 0.28)",
-  shade: "rgba(121, 100, 214, 0.22)",
-  inverse: "#26264a",
-  "inverse-foreground": "#ffffff",
-  "inverse-primary": "#cecfff",
-  "chart-1": "#7b6cf0",
-  "chart-2": "#03919d",
-  "chart-3": "#d36225",
-  "chart-4": "#d25798",
-  "chart-5": "#4382e3",
-  "chart-6": "#009574",
-  "chart-7": "#b560cf",
-  "chart-8": "#a37e05",
-};
-
-/**
- * The dark scheme's semantic color tokens (Dark Factory's one dark palette). A frozen
- * constant: read the live set from `useTheme().tokens`.
- */
-export const darkColors: ColorTokens = {
-  "featured-start": "#2c2f72",
-  "featured-middle": "#5a3ab0",
-  "featured-end": "#a24fb4",
-  "featured-stack": "rgba(255, 255, 255, 0.14)",
-  "promo-start": "#5b4bd6",
-  "promo-middle": "#9a5cc9",
-  "promo-end": "#d16aa6",
-
-  background: "#272544",
-  foreground: "#ebebf7",
-  card: "#252741",
-  "card-foreground": "#ebebf7",
-  popover: "#252741",
-  "popover-foreground": "#ebebf7",
-  primary: "#a496ff",
-  "primary-text": "#b8b0ff",
-  "primary-foreground": "#221f3a",
-  "primary-soft": "rgba(164, 150, 255, 0.16)",
-  action: "#5fd18a",
-  "action-foreground": "#0d2a17",
-  secondary: "#2d2f4c",
-  "secondary-foreground": "#ebebf7",
-  muted: "#2d2f4c",
-  "muted-foreground": "#a6a8c9",
-  accent: "#323254",
-  "accent-foreground": "#ebebf7",
-  destructive: "#ff8b93",
-  "destructive-text": "#ffadb0",
-  "destructive-foreground": "#38181b",
-  "destructive-soft": "rgba(255, 139, 147, 0.16)",
-  success: "#5fd18a",
-  "success-foreground": "#0d2a17",
-  "success-soft": "rgba(95, 209, 138, 0.16)",
-  warning: "#ffc46b",
-  "warning-foreground": "#311f03",
-  "warning-soft": "rgba(255, 180, 80, 0.16)",
-  border: "#3b3d54",
-  input: "#7c7e93",
-  "field-border": "#44455c",
-  "field-fill": "rgba(255, 255, 255, 0.06)",
-  hover: "rgba(164, 150, 255, 0.1)",
-  ring: "#a496ff",
-  scrim: "rgba(5, 5, 20, 0.55)",
-  shade: "rgba(0, 0, 0, 0.5)",
-  inverse: "#26264a",
-  "inverse-foreground": "#ffffff",
-  "inverse-primary": "#b1a7ff",
-  "chart-1": "#7b6cf0",
-  "chart-2": "#03919d",
-  "chart-3": "#d36225",
-  "chart-4": "#d25798",
-  "chart-5": "#4382e3",
-  "chart-6": "#009574",
-  "chart-7": "#b560cf",
-  "chart-8": "#a37e05",
-};
-
-/** The blush palette's semantic color tokens by scheme: lightColors and darkColors. */
-export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
-  light: lightColors,
-  dark: darkColors,
-};
-
-/**
- * The light-scheme palettes the kit ships: Dark Factory's blush (the default,
- * `lightColors`) and its mint (`mintColors`, `<ThemeProvider mint>`). The dark scheme has
- * one palette, Dark Factory's single dark, whichever light palette is chosen.
- */
-export type Palette = "blush" | "mint";
-
-/**
- * Dark Factory's mint palette for the light scheme: blue selection and focus, a
- * blue-grey ink on a cool pastel page, the same green call to action. Derived by the same
- * rules as the blush set (tools/darkfactory/derive-tokens.ts) and mirrored by the
- * `[data-palette="mint"]` block of styles/tokens/colors.css.
- */
-export const mintColors: ColorTokens = {
-  "featured-start": "#0f2b45",
-  "featured-middle": "#174a6a",
-  "featured-end": "#1e8a72",
-  "featured-stack": "rgba(255, 255, 255, 0.5)",
-  "promo-start": "#3f7fe0",
-  "promo-middle": "#4fb6c9",
-  "promo-end": "#8fe0b8",
-
-  background: "#f0f7fd",
-  foreground: "#2e3d4f",
-  card: "#ffffff",
-  "card-foreground": "#2e3d4f",
-  popover: "#ffffff",
-  "popover-foreground": "#2e3d4f",
-  primary: "#3474d4",
-  "primary-text": "#1a5bb9",
-  "primary-foreground": "#ffffff",
-  "primary-soft": "rgba(63, 127, 224, 0.14)",
-  action: "#1f8049",
-  "action-foreground": "#ffffff",
-  secondary: "#f1f6fb",
-  "secondary-foreground": "#2e3d4f",
-  muted: "#f1f6fb",
-  "muted-foreground": "#5a6b7e",
-  accent: "#f0f5fd",
-  "accent-foreground": "#2e3d4f",
-  destructive: "#b53a44",
-  "destructive-text": "#9a1f2f",
-  "destructive-foreground": "#ffffff",
-  "destructive-soft": "rgba(181, 58, 68, 0.12)",
-  success: "#0b753f",
-  "success-foreground": "#ffffff",
-  "success-soft": "rgba(31, 128, 73, 0.12)",
-  warning: "#8a5200",
-  "warning-foreground": "#ffffff",
-  "warning-soft": "rgba(240, 160, 40, 0.18)",
-  border: "#e4eaf1",
-  input: "#858e9a",
-  "field-border": "#ccd6e5",
-  "field-fill": "rgba(255, 255, 255, 0.75)",
-  hover: "rgba(63, 127, 224, 0.08)",
-  ring: "#3f7fe0",
-  scrim: "rgba(20, 50, 90, 0.28)",
-  shade: "rgba(60, 110, 190, 0.2)",
-  inverse: "#26264a",
-  "inverse-foreground": "#ffffff",
-  "inverse-primary": "#b9d4ff",
-  "chart-1": "#7b6cf0",
-  "chart-2": "#03919d",
-  "chart-3": "#d36225",
-  "chart-4": "#d25798",
-  "chart-5": "#4382e3",
-  "chart-6": "#009574",
-  "chart-7": "#b560cf",
-  "chart-8": "#a37e05",
-};
-
-/**
- * The color tokens a palette paints in a scheme. The dark scheme is Dark Factory's one
- * dark palette for every light palette, so `dark` wins over `mint` exactly as the
- * ThemeProvider resolves `<ThemeProvider dark mint>`.
- */
-export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
-  if (scheme === "dark") return darkColors;
-  return palette === "mint" ? mintColors : lightColors;
-}
-
-/**
- * The beds Dark Factory's frosted shell makes over its page (design-language item 7, the
- * docs' frame): the shell fill over each page gradient stop, and over each orb's centre on
- * the stops it lies between. The second is the page token itself (the shell over the
- * middle stop). Glass fills that carry an ink are solved over all of them, not over the
- * `background` token alone, since the shell lightens and darkens across the page. Derived
- * by `bun run df:tokens` (tools/darkfactory/derive-tokens.ts, `frameBeds`) and held to
- * that table by the Dark Factory parity check.
- */
-export const frameBeds: Record<"blush" | "mint" | "dark", readonly string[]> = {
-  blush: ["#fef2f7", "#f5f2fe", "#edebfe", "#fde7f1", "#f7e7f5", "#e8e4fd", "#e3e0fd"],
-  mint: ["#f1faf7", "#f0f7fd", "#ebf2fd", "#e8f7f1", "#e7f4f5", "#e8f0fc", "#e5edfc"],
-  dark: ["#212438", "#272544", "#2d274e", "#3d355d", "#413564", "#34376a", "#363871"],
-};
-
-/** The frame beds a palette paints in a scheme (the one dark palette wins over mint). */
-export function frameBedsFor(palette: Palette, scheme: ColorScheme): readonly string[] {
-  return scheme === "dark" ? frameBeds.dark : frameBeds[palette];
-}
+// Some roles are deliberately NOT the hand-off's literal value, because the role's job is
+// a legibility floor the prototype's value misses (the review's R1 in the plan, D2):
+// - `input`, the boundary of a non-field control (a checkbox box, a radio ring, a switch
+//   track, an outline button), is the hand-off's tertiary ink family solved to WCAG 1.4.11's
+//   3:1 on every surface it sits on; the prototype draws those with its 16% hairline, which
+//   is about 1.5:1. Fields keep the hairline as `field-border` under the existing field
+//   exception (src/style/field-colors.ts).
+// - the text inks are solved (src/style/ink-floor.ts): `destructive-text`, `success-text`
+//   and `warning-text` from the hand-off's status colours, `primary-text` (and `info`) from
+//   its accent text, and `inverse-primary` from the other scheme's accent text, each walked
+//   in oklch lightness at its own hue and chroma until it reads at 4.5:1 (primary text
+//   4.65:1, the margin the anchor hover and the rounding neighbourhood need) on every bed
+//   it is drawn on: the neutral surfaces, its tone's wash, the tonal selection, the
+//   calendar range band, the inverse pill under glass and its ripple, and iOS's pressed
+//   capsule. A hand-off value that already clears its beds is kept as is. The fills,
+//   washes and dots keep the hand-off's values.
 
 /**
  * The glass material's own tokens, per scheme, one tint per density layer.
@@ -426,10 +235,10 @@ export interface GlassTokens {
  * content, control, dense), as glassByScheme carries them.
  */
 export const lightGlass: GlassTokens = {
-  "glass-tint": "rgba(255, 255, 255, 0.20)",
-  "glass-tint-content": "rgba(255, 255, 255, 0.62)",
-  "glass-tint-control": "rgba(255, 255, 255, 0.70)",
-  "glass-tint-dense": "rgba(255, 255, 255, 0.88)",
+  "glass-tint": "rgba(255, 255, 255, 0.62)",
+  "glass-tint-content": "rgba(255, 255, 255, 0.8)",
+  "glass-tint-control": "rgba(241, 241, 246, 0.72)",
+  "glass-tint-dense": "rgba(255, 255, 255, 0.92)",
 };
 
 /**
@@ -437,15 +246,14 @@ export const lightGlass: GlassTokens = {
  * control, dense), as glassByScheme carries them.
  */
 export const darkGlass: GlassTokens = {
-  // Dark glass: less light behind it to bend, so the tint drops dimmer rather than
-  // brighter, and the rim carries more of the read (see --glass-tint in the .dark
-  // block of styles/tokens/colors.css). The content and dense panes deepen the same
-  // ink; the control puck is the one LIGHT tint, so a field or button lifts off its
-  // dark pane the way a lit glass control does.
-  "glass-tint": "rgba(22, 22, 28, 0.30)",
-  "glass-tint-content": "rgba(22, 22, 28, 0.55)",
-  "glass-tint-control": "rgba(255, 255, 255, 0.12)",
-  "glass-tint-dense": "rgba(22, 22, 28, 0.84)",
+  // The hand-off's `--gl` (its card surface at 62%) is the functional layer; the content and
+  // dense panes deepen the same ink so text keeps its contrast, and the control puck is
+  // the raised step (`secondary`) at the same density, so a field or button lifts off
+  // its pane the way a lit glass control does.
+  "glass-tint": "rgba(18, 18, 26, 0.62)",
+  "glass-tint-content": "rgba(18, 18, 26, 0.8)",
+  "glass-tint-control": "rgba(30, 30, 41, 0.72)",
+  "glass-tint-dense": "rgba(18, 18, 26, 0.92)",
 };
 
 /**
@@ -457,6 +265,345 @@ export const glassByScheme: Record<ColorScheme, GlassTokens> = {
   light: lightGlass,
   dark: darkGlass,
 };
+
+/**
+ * The accent palettes the kit ships, each one hue for the whole accent: violet (285, the
+ * default), cyan (205), mint (165), rose (20) and amber (75). A palette applies in both
+ * schemes. `<ThemeProvider cyan>` selects one; the CSS hand-off reads `data-palette`.
+ */
+export type Palette = "violet" | "cyan" | "mint" | "rose" | "amber";
+
+/** Every palette, the default first. */
+export const PALETTES: readonly Palette[] = ["violet", "cyan", "mint", "rose", "amber"];
+
+/** The oklch hue each palette paints its accent at. */
+export const paletteHue: Record<Palette, number> = { violet: 285, cyan: 205, mint: 165, rose: 20, amber: 75 };
+
+/**
+ * The accent's oklch lightness and chroma per scheme, and its text and soft alphas.
+ * Internal: tools/v4/derive-css.ts writes the CSS hand-off's oklch forms from it; the
+ * package does not re-export it.
+ */
+export const ACCENT = {
+  dark: { fill: [0.74, 0.17], text: [0.8, 0.14], ink: "#0a0a0f", soft: 0.16, glow: 0.5 },
+  light: { fill: [0.5, 0.22], text: [0.47, 0.2], ink: "#ffffff", soft: 0.1, glow: 0.4 },
+} as const;
+
+/**
+ * The hand-off's fixed series 2 to 8 (series 1 is the accent), per scheme, as oklch.
+ * Internal, read by tools/v4/derive-css.ts like ACCENT.
+ */
+export const SERIES: Record<ColorScheme, readonly (readonly [number, number, number])[]> = {
+  dark: [
+    [0.82, 0.13, 205],
+    [0.85, 0.15, 165],
+    [0.82, 0.14, 75],
+    [0.72, 0.17, 20],
+    [0.72, 0.14, 255],
+    [0.74, 0.16, 330],
+    [0.78, 0.1, 125],
+  ],
+  light: [
+    [0.62, 0.13, 205],
+    [0.66, 0.15, 165],
+    [0.64, 0.15, 70],
+    [0.57, 0.19, 20],
+    [0.54, 0.17, 255],
+    [0.55, 0.2, 330],
+    [0.58, 0.12, 125],
+  ],
+};
+
+/** The scheme's neutrals, status colours, glass and shades: everything the hue does not move. */
+const NEUTRALS: Record<ColorScheme, Omit<ColorTokens, AccentRole | ChartRole | InkRole>> = {
+  dark: {
+    background: "#0a0a0f",
+    "surface-sunken": "#0e0e15",
+    foreground: "#f4f4f8",
+    card: "#12121a",
+    "card-foreground": "#f4f4f8",
+    popover: "#171720",
+    "popover-foreground": "#f4f4f8",
+    secondary: "#1e1e29",
+    "secondary-foreground": "#f4f4f8",
+    muted: "#1e1e29",
+    "muted-foreground": "#a4a4b6",
+    "subtle-foreground": "#7f7f93",
+    accent: "#1e1e29",
+    "accent-foreground": "#f4f4f8",
+    "surface-raised": "#282836",
+    destructive: "#ff6b7a",
+    "destructive-foreground": "#2b0009",
+    "destructive-soft": "rgba(255, 107, 122, 0.14)",
+    success: "#3ddc97",
+    "success-foreground": "#04291a",
+    "success-soft": "rgba(61, 220, 151, 0.14)",
+    warning: "#f6b84c",
+    "warning-foreground": "#2a1800",
+    "warning-soft": "rgba(246, 184, 76, 0.14)",
+    border: "rgba(255, 255, 255, 0.08)",
+    "field-border": "rgba(255, 255, 255, 0.16)",
+    input: "#686979",
+    "field-fill": "#0e0e15",
+    hover: "rgba(255, 255, 255, 0.05)",
+    highlight: "rgba(255, 255, 255, 0.1)",
+    scrim: "rgba(5, 5, 10, 0.55)",
+    shade: "rgba(0, 0, 0, 0.5)",
+    "shade-md": "rgba(0, 0, 0, 0.7)",
+    "shade-lg": "rgba(0, 0, 0, 0.8)",
+    "shade-ring": "rgba(0, 0, 0, 0)",
+    "shade-inset": "rgba(255, 255, 255, 0.1)",
+    inverse: "#f4f4f8",
+    "inverse-foreground": "#0a0a0f",
+  },
+  light: {
+    background: "#f2f2f7",
+    "surface-sunken": "#fafafd",
+    foreground: "#111118",
+    card: "#ffffff",
+    "card-foreground": "#111118",
+    popover: "#ffffff",
+    "popover-foreground": "#111118",
+    secondary: "#f1f1f6",
+    "secondary-foreground": "#111118",
+    muted: "#f1f1f6",
+    "muted-foreground": "#5a5a70",
+    "subtle-foreground": "#6c6c82",
+    accent: "#f1f1f6",
+    "accent-foreground": "#111118",
+    "surface-raised": "#e4e4ee",
+    destructive: "#d62a4b",
+    "destructive-foreground": "#ffffff",
+    "destructive-soft": "rgba(214, 42, 75, 0.1)",
+    success: "#0b7a53",
+    "success-foreground": "#ffffff",
+    "success-soft": "rgba(11, 122, 83, 0.1)",
+    warning: "#a55d00",
+    "warning-foreground": "#ffffff",
+    "warning-soft": "rgba(165, 93, 0, 0.1)",
+    border: "rgba(17, 17, 24, 0.08)",
+    "field-border": "rgba(17, 17, 24, 0.16)",
+    input: "#8a8a9b",
+    "field-fill": "#fafafd",
+    hover: "rgba(17, 17, 24, 0.06)",
+    highlight: "rgba(255, 255, 255, 0.8)",
+    scrim: "rgba(17, 17, 24, 0.3)",
+    shade: "rgba(17, 17, 24, 0.05)",
+    "shade-md": "rgba(17, 17, 24, 0.16)",
+    "shade-lg": "rgba(17, 17, 24, 0.25)",
+    "shade-ring": "rgba(17, 17, 24, 0.03)",
+    "shade-inset": "rgba(255, 255, 255, 0)",
+    inverse: "#111118",
+    "inverse-foreground": "#ffffff",
+  },
+};
+
+type AccentRole =
+  | "primary"
+  | "primary-text"
+  | "primary-foreground"
+  | "primary-soft"
+  | "action"
+  | "action-foreground"
+  | "action-soft"
+  | "info"
+  | "info-soft"
+  | "ring"
+  | "glow"
+  | "inverse-primary"
+  | "featured-start"
+  | "featured-middle"
+  | "featured-end"
+  | "featured-stack"
+  | "promo-start"
+  | "promo-middle"
+  | "promo-end";
+type ChartRole = "chart-1" | "chart-2" | "chart-3" | "chart-4" | "chart-5" | "chart-6" | "chart-7" | "chart-8";
+
+type InkRole = "destructive-text" | "success-text" | "warning-text";
+
+/** The way a scheme's inks walk to clear a floor: away from its light page, or from its dark one. */
+const TOWARD: Record<ColorScheme, "dark" | "light"> = { light: "dark", dark: "light" };
+
+/**
+ * The group opacity of iOS's pressed capsules and rows (the Dialog and AlertDialog capsules,
+ * the Dropdown and ActionSheet rows): a red label on its gray capsule is read dimmed with it.
+ * test/text-contrast.test.tsx renders the skins' actual pressed states against the solved ink.
+ */
+const IOS_PRESSED_DIM = 0.8;
+/** iOS's translucent system fill under an ActionSheet row (the foreground at 10%), read dimmed when pressed. */
+const IOS_SYSTEM_FILL = 0.1;
+
+/** The opaque neutral surfaces a scheme draws text on. */
+function surfacesOf(n: (typeof NEUTRALS)[ColorScheme]): string[] {
+  return [n.background, n["surface-sunken"]!, n.card, n.popover, n.muted, n.secondary, n["field-fill"]!];
+}
+
+/**
+ * The status inks a scheme reads on its surfaces and its tone's own wash, solved from the
+ * hand-off's status colours (the ink-floor note above): the error ink also on iOS's pressed
+ * gray capsule.
+ */
+function solveStatusInks(scheme: ColorScheme): Record<InkRole, string> {
+  const n = NEUTRALS[scheme];
+  const surfaces = surfacesOf(n);
+  const beds = (wash: string): InkBed[] => [
+    ...surfaces.map((under) => ({ under })),
+    ...surfaces.map((under) => ({ under, layers: [wash] })),
+  ];
+  return {
+    "destructive-text": solveHexInk(n.destructive, [
+      ...beds(n["destructive-soft"]!),
+      { under: n.popover, layers: [n.secondary], dim: IOS_PRESSED_DIM },
+      { under: n.popover, layers: [alpha(n.foreground, IOS_SYSTEM_FILL)], dim: IOS_PRESSED_DIM },
+    ], TOWARD[scheme]),
+    "success-text": solveHexInk(n.success, beds(n["success-soft"]!), TOWARD[scheme]),
+    "warning-text": solveHexInk(n.warning, beds(n["warning-soft"]!), TOWARD[scheme]),
+  };
+}
+
+const STATUS_INKS: Record<ColorScheme, Record<InkRole, string>> = { light: solveStatusInks("light"), dark: solveStatusInks("dark") };
+
+/** Brand text's floor: 4.65:1 exact, so the anchor's 0.9 hover and channel rounding still clear 4.5. */
+const PRIMARY_TEXT_FLOOR: InkFloor = { exact: 4.65, rounded: 4.5 };
+
+/** The tonal selected fill's alpha (Material 3's secondary container over a track, the Android pill tab). */
+const TONAL_SELECTED = 0.12;
+/** The calendar's range band alpha, and today's own tint on top of it. */
+const RANGE_BAND = 0.15;
+const TODAY_TINT = 0.12;
+/** The anchor's hover opacity (styles/tokens/base.css `a:hover`). */
+const LINK_HOVER = 0.9;
+
+/**
+ * Every bed brand text is read on in a scheme: the neutral surfaces resting and under the
+ * anchor's hover, the tonal selection and the accent's soft wash over each, and today's
+ * label inside a calendar range on a card.
+ */
+function primaryTextBeds(n: (typeof NEUTRALS)[ColorScheme], ion: string, soft: string): InkBed[] {
+  const surfaces = surfacesOf(n);
+  return [
+    ...surfaces.map((under) => ({ under })),
+    ...surfaces.map((under) => ({ under, textOpacity: LINK_HOVER })),
+    ...surfaces.map((under) => ({ under, layers: [alpha(ion, TONAL_SELECTED)] })),
+    ...surfaces.map((under) => ({ under, layers: [soft] })),
+    { under: n.card, layers: [alpha(ion, RANGE_BAND), alpha(ion, TODAY_TINT)] },
+  ];
+}
+
+/**
+ * The dense glass alpha a scheme paints the inverse pill at. The web frost's dense tint
+ * (glass-surface/web-frost.ts) is the native one's density; test/text-contrast.test.tsx reads
+ * the pill under every platform's own tint, so a web density that drifts from it fails there.
+ */
+function denseAlpha(scheme: ColorScheme): number {
+  return Number(/,\s*([\d.]+)\s*\)$/.exec(glassByScheme[scheme]["glass-tint-dense"])?.[1] ?? 1);
+}
+
+/** The inverse pill's action ripple alpha (the Android snackbar's pressed state layer). */
+const INVERSE_RIPPLE = 0.12;
+
+/**
+ * Every bed the inverse pill's action is read on: the pill solid, and under glass at each
+ * dense alpha over the page and a card, each resting and under its pressed ripple.
+ */
+function inversePrimaryBeds(scheme: ColorScheme): InkBed[] {
+  const n = NEUTRALS[scheme];
+  const ripple = alpha(n["inverse-foreground"]!, INVERSE_RIPPLE);
+  const pills: InkBed[] = [
+    { under: n.inverse! },
+    ...[n.background, n.card].map((under) => ({ under, layers: [alpha(n.inverse!, denseAlpha(scheme))] })),
+  ];
+  return pills.flatMap((pill) => [pill, { ...pill, layers: [...(pill.layers ?? []), ripple] }]);
+}
+
+const CACHE = new Map<string, ColorTokens>();
+
+/**
+ * The semantic color tokens a palette paints in a scheme: the scheme's neutrals with the
+ * palette's accent. A frozen value per pair, computed once.
+ */
+export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
+  const key = `${palette}:${scheme}`;
+  const hit = CACHE.get(key);
+  if (hit) return hit;
+  const hue = paletteHue[palette] ?? paletteHue.violet;
+  const a = ACCENT[scheme];
+  const other = ACCENT[scheme === "dark" ? "light" : "dark"];
+  const ion = oklchHex(a.fill[0], a.fill[1], hue);
+  const soft = alpha(ion, a.soft);
+  const ionText = solveInk([a.text[0], a.text[1], hue], primaryTextBeds(NEUTRALS[scheme], ion, soft), TOWARD[scheme], PRIMARY_TEXT_FLOOR);
+  const series = SERIES[scheme].map(([l, c, h]) => oklchHex(l, c, h));
+  const tokens: ColorTokens = Object.freeze({
+    ...NEUTRALS[scheme],
+    ...STATUS_INKS[scheme],
+    primary: ion,
+    "primary-text": ionText,
+    "primary-foreground": a.ink,
+    "primary-soft": soft,
+    // The hand-off draws its calls to action in the accent: there is no second action hue.
+    action: ion,
+    "action-foreground": a.ink,
+    "action-soft": soft,
+    info: ionText,
+    "info-soft": soft,
+    // The focus indicator is the solid accent: the hand-off's band is the accent at 0.28 / 0.35,
+    // about 1.5:1, under WCAG 1.4.11's 3:1 for a focus indicator.
+    ring: ion,
+    glow: alpha(ion, a.glow),
+    // The inverse pill is the other scheme's page, so its brand is the other scheme's
+    // accent text (the hand-off's snackbar action, oklch(.8 .14 hue) on a dark pill),
+    // solved on the pill as every platform paints it.
+    "inverse-primary": solveInk([other.text[0], other.text[1], hue], inversePrimaryBeds(scheme), TOWARD[scheme === "dark" ? "light" : "dark"]),
+    // The brand artwork: the hero's accent-to-cyan-to-mint sweep.
+    "featured-start": ion,
+    "featured-middle": series[0],
+    "featured-end": series[1],
+    "featured-stack": scheme === "dark" ? "rgba(255, 255, 255, 0.14)" : "rgba(255, 255, 255, 0.5)",
+    "promo-start": ion,
+    "promo-middle": series[0],
+    "promo-end": series[1],
+    "chart-1": ion,
+    "chart-2": series[0],
+    "chart-3": series[1],
+    "chart-4": series[2],
+    "chart-5": series[3],
+    "chart-6": series[4],
+    "chart-7": series[5],
+    "chart-8": series[6],
+  });
+  CACHE.set(key, tokens);
+  return tokens;
+}
+
+/**
+ * The light scheme's semantic color tokens in the default violet palette. A frozen
+ * constant: read the live set from `useTheme().tokens`.
+ */
+export const lightColors: ColorTokens = colorsFor("violet", "light");
+
+/**
+ * The dark scheme's semantic color tokens in the default violet palette. A frozen
+ * constant: read the live set from `useTheme().tokens`.
+ */
+export const darkColors: ColorTokens = colorsFor("violet", "dark");
+
+/** The violet palette's semantic color tokens by scheme: lightColors and darkColors. */
+export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
+  light: lightColors,
+  dark: darkColors,
+};
+
+/**
+ * The surfaces a glass pane can sit over in a scheme (the page, the sunken well and the
+ * card), the beds a translucent fill carrying ink is solved against. The v4 page is flat,
+ * so the beds are the scheme's own surfaces, whatever the palette.
+ */
+export function frameBedsFor(_palette: Palette, scheme: ColorScheme): readonly string[] {
+  const n = NEUTRALS[scheme];
+  return [n.background, n["surface-sunken"]!, n.card];
+}
+
 
 /** Fixed, scheme-independent base colors. */
 export const baseColors: Record<string, string> = {
@@ -830,13 +977,15 @@ export interface ShapeTokens {
  * CSS hand-off.
  */
 export const shape: Record<PlatformKey, ShapeTokens> = {
-  // Dark Factory: 8 on rectangular controls (an icon button, a menu row, a nav highlight),
-  // 10 on fields, 12 on menus and tiles, 14 on cards, 18 on dialogs, 22 on sheets and the
-  // shell, a 6 checkbox; every capsule (a chip, a badge, a pill button) reads `pill`.
-  web: { control: 8, field: 10, card: 14, dialog: 18, menu: 12, sheet: 22, checkbox: 6, pill: 9999, tile: 12 },
-  // HIG / iOS 26: capsule buttons, 8 rounded-border fields (the iOS input-field kit), 12 grouped surfaces
-  // with the continuous curve, 28 alerts, 26 menus, the 38 sheet corner, and the edit-mode
-  // selection circle for a checkbox (a full round on its square box at every size).
+  // The v4 hand-off (its `K.PF` platform row and component renderers): 10 on rectangular
+  // controls and fields, 16 on cards and menus, 20 on dialogs, 22 on sheets, a 5 checkbox,
+  // 12 on tiles; every capsule (a chip, a badge, a pill button) reads `pill`.
+  web: { control: 10, field: 10, card: 16, dialog: 20, menu: 16, sheet: 22, checkbox: 5, pill: 9999, tile: 12 },
+  // HIG / iOS 26, the hand-off's native row unchanged (its `K.PF` ios row: capsule
+  // controls, 8 fields, 12 cards): capsule buttons, 8 rounded-border fields (the iOS
+  // input-field kit), 12 grouped surfaces with the continuous curve, 28 alerts, 26 menus,
+  // the 38 sheet corner, and the edit-mode selection circle for a checkbox (a full round on
+  // its square box at every size).
   ios: { control: 9999, field: 8, card: 12, dialog: 28, menu: 26, sheet: 38, checkbox: 9999, pill: 9999, tile: 12 },
   // Material 3: stadium buttons, the 4 filled-field top corner, the 12 medium shape
   // for cards, 28 extra-large dialogs and sheets, 4 extra-small menus, a 2 box.

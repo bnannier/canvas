@@ -1,4 +1,4 @@
-import { Row, Column, ButtonGroup, Button, Card, Checkbox, Switch, ThemeProvider, Typography } from "@nannier/canvas";
+import { Row, Column, ButtonGroup, Button, Card, Checkbox, Grid, Switch, ThemeProvider, Typography, type Palette } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { BulletList, H3, P, Rule, InlineCode } from "../../ui/prose";
@@ -69,8 +69,8 @@ setTheme(mq.matches ? "dark" : "light");
 mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));`;
 const PALETTE = `import { ThemeProvider } from "@nannier/canvas";
 
-// Blush is the light default; mint is the light alternative. Dark Factory
-// has one dark palette, so dark wins: <ThemeProvider dark mint> paints dark.
+// Violet is the default accent; cyan, mint, rose and amber repaint it.
+// A palette applies in both schemes: <ThemeProvider dark mint> is a mint dark.
 export function App() {
   return (
     <ThemeProvider mint>
@@ -80,13 +80,15 @@ export function App() {
 }`;
 const JS_PALETTE = `import { ThemeProvider, getPalette, setPalette } from "@nannier/canvas";
 
-getPalette();          // "blush" | "mint", the persisted choice
+getPalette();          // "violet" | "cyan" | "mint" | "rose" | "amber"
 setPalette("mint");    // persists it, and sets data-palette="mint" on <html>
-setPalette("blush");   // persists it, and removes the attribute
+setPalette("violet");  // persists it, and removes the attribute
 
-// The CSS handoff reads data-palette, and .dark still wins over it. Pass the
-// same choice to ThemeProvider so React Native components follow it.
-<ThemeProvider mint={getPalette() === "mint"}>...</ThemeProvider>`;
+// The CSS handoff reads data-palette in either scheme. Pass the same
+// choice to ThemeProvider so React Native components follow it.
+const palette = getPalette();
+<ThemeProvider cyan={palette === "cyan"} mint={palette === "mint"}
+  rose={palette === "rose"} amber={palette === "amber"}>...</ThemeProvider>`;
 const GLASS = `import { ThemeProvider, getSurface } from "@nannier/canvas";
 
 // Web: the same provider and the same booleans. getSurface() reads the choice
@@ -134,9 +136,17 @@ setDensity("compact");  // updates CSS spacing; also map to component booleans`;
 // palette. Both render in the light scheme, where the palettes differ, and solid, so the
 // palette's own fills show whatever material the page is in. It inherits only the docs'
 // registered faces from the root provider; its tokens are its own palette's, unbranded.
-function PalettePreview({ mint, label }: { mint?: boolean; label: string }) {
+const PALETTE_PREVIEWS: readonly { palette: Palette; label: string }[] = [
+  { palette: "violet", label: "Violet" },
+  { palette: "cyan", label: "Cyan" },
+  { palette: "mint", label: "Mint" },
+  { palette: "rose", label: "Rose" },
+  { palette: "amber", label: "Amber" },
+];
+
+function PalettePreview({ palette, label }: { palette: Palette; label: string }) {
   return (
-    <ThemeProvider light mint={mint} solid>
+    <ThemeProvider light solid cyan={palette === "cyan"} mint={palette === "mint"} rose={palette === "rose"} amber={palette === "amber"}>
       <Card>
         <Column snug>
           <Typography h5>{label}</Typography>
@@ -237,7 +247,7 @@ export default function ThemingScreen() {
           <H3>Clear text fields</H3>
           <P>
             In glass mode, web Input, Textarea, Autocomplete, InputOTP, Stepper, PhoneInput and DataTable editors
-            use a clear material: Dark Factory&apos;s field well, a light tint and a hairline with no blur, so the page reads
+            use a clear material: a sunken field well, a light tint and a hairline with no blur, so the page reads
             through unsoftened. Text, selection and the caret stay sharp.
             The fields stay still when clicked or typed into. Native fields keep their platform material.
             Bare and underlined editors retain their existing shape.
@@ -253,23 +263,24 @@ export default function ThemingScreen() {
 
         <Section title="Palettes">
           <P>
-            The light scheme comes in two Dark Factory palettes: blush, the default, and mint. Pass the{" "}
-            <InlineCode>mint</InlineCode> boolean to <InlineCode>ThemeProvider</InlineCode> for mint and omit it for blush.
-            Dark Factory ships one dark palette, so <InlineCode>dark</InlineCode> wins over <InlineCode>mint</InlineCode>: a dark
-            provider paints the same colors whichever light palette it names. <InlineCode>useTheme()</InlineCode> reports the
-            requested palette as <InlineCode>palette</InlineCode>, and <InlineCode>mintColors</InlineCode> and{" "}
-            <InlineCode>colorsFor(palette, scheme)</InlineCode> expose the token sets.
+            The accent comes in five palettes, each one hue for selection, links, focus and calls to action: violet, the
+            default, then cyan, mint, rose and amber. Pass the hue&apos;s boolean to <InlineCode>ThemeProvider</InlineCode>{" "}
+            (<InlineCode>cyan</InlineCode>, <InlineCode>mint</InlineCode>, <InlineCode>rose</InlineCode>,{" "}
+            <InlineCode>amber</InlineCode>) and omit them all for violet. A palette applies in both schemes; the neutrals and
+            the status colours stay the same. <InlineCode>useTheme()</InlineCode> reports the requested palette as{" "}
+            <InlineCode>palette</InlineCode>, <InlineCode>PALETTES</InlineCode> lists them,{" "}
+            <InlineCode>paletteHue</InlineCode> gives each one&apos;s oklch hue angle, and{" "}
+            <InlineCode>colorsFor(palette, scheme)</InlineCode> exposes any token set.
           </P>
           <CodeBlock code={PALETTE} />
-          <Row stacks>
-            <Column span={6}><PalettePreview label="Blush" /></Column>
-            <Column span={6}><PalettePreview mint label="Mint" /></Column>
-          </Row>
-          <P muted>Both previews render in the light scheme, where the two palettes differ.</P>
+          <Grid minTileWidth={200}>
+            {PALETTE_PREVIEWS.map((p) => <PalettePreview key={p.palette} palette={p.palette} label={p.label} />)}
+          </Grid>
+          <P muted>The previews render in the light scheme.</P>
           <H3>Web helpers</H3>
           <P muted>
             The helpers persist the choice and set <InlineCode>data-palette</InlineCode> on <InlineCode>{"<html>"}</InlineCode>,
-            which the CSS handoff reads; the <InlineCode>dark</InlineCode> class still wins over it. Feed the same choice to
+            which the CSS handoff reads in either scheme. Feed the same choice to
             ThemeProvider so React Native components follow it.
           </P>
           <CodeBlock code={JS_PALETTE} />
