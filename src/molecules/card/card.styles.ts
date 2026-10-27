@@ -195,6 +195,19 @@ export const CARD_BORDER = 1;
 
 export const cardBase: ViewStyle = { borderWidth: CARD_BORDER };
 
+// CardMedia's specimen well (children in place of an image): the hand-off component
+// page's staging wells, Component.dc.html. Centered content over the sunken fill, at
+// least the step's height, growing with its content and clipping what overflows it.
+// Variants stage at 160 / 28 x 20, sizes and states at 130 / 24 x 16 (`compact`), the
+// platform skins at 240 / 32 x 20 (`tall`). The fill is the shell's (an inner fill).
+export type MediaWell = "default" | "compact" | "tall";
+const WELL_BASE: ViewStyle = { alignItems: "center", justifyContent: "center", overflow: "hidden", minWidth: 0 };
+export const mediaWell: Record<MediaWell, ViewStyle> = {
+  default: { ...WELL_BASE, minHeight: 160, paddingVertical: 28, paddingHorizontal: 20 },
+  compact: { ...WELL_BASE, minHeight: 130, paddingVertical: 24, paddingHorizontal: 16 },
+  tall: { ...WELL_BASE, minHeight: 240, paddingVertical: 32, paddingHorizontal: 20 },
+};
+
 // The hand-off's CardHeader: the card inset above and beside, none below (the body
 // below brings its own), the title and description 8px apart, the card's rhythm.
 export const header: ViewStyle = { gap: 8, paddingHorizontal: 20, paddingBottom: 0, paddingTop: 20 };

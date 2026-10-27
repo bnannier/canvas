@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
-import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle, GlassSurface, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle, GlassSurface, isGlass, withInnerFill, GlassPane, paneStyle, paneRipple, useHugStyle } from "../../style/index.js";
+import { useHover, webHover } from "../../style/hover.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { MONO, type Variant } from "./code-block.styles.js";
@@ -35,13 +36,15 @@ import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 //   - numbered: the plain surface with a pinned left gutter of right-aligned
 //     line numbers (offset by `startLine`), one per line.
 //   - inline: a short, single token rendered as an inline pill (rounded bg-muted
-//     chip), for code mentioned mid-sentence.
+//     chip), for code mentioned mid-sentence. With `copy` the pill becomes the
+//     hand-off's import chip: a raised mono pill with a trailing copy glyph, the
+//     whole pill one copy button.
 // - Density (pick one; default is the comfortable ramp): `compact` tightens the
 //   type ramp (13/20) and padding for dense contexts such as docs panes.
 // - Orthogonal booleans that stack: `copy` (clipboard chip), `wrap` (soft-wrap
 //   long lines instead of scrolling), `diff` (+/- line tinting), `collapsible`
 //   (fold long blocks behind an expander), `attached` (square the top edge to
-//   sit flush under an adjoining bar). The inline variant ignores all of them.
+//   sit flush under an adjoining bar). The inline variant honours `copy` alone.
 //
 // Long lines scroll horizontally by default (never truncate); `wrap` trades the
 // scroller for soft-wrapping. Syntax highlighting is driven by `language` via the
@@ -125,6 +128,12 @@ export interface CodeBlockSkin extends TouchTargetSkin {
   inlineBox: (t: ColorTokens) => ViewStyle;
   /** Inline label type (its own smaller size). */
   inlineType: TextStyle;
+  /** The copyable inline pill (`inline copy`): its shape, fill and hairline, at rest or hovered. */
+  inlineCopyBox: (t: ColorTokens, hovered: boolean) => ViewStyle;
+  /** The copyable inline pill's code type and ink, at rest or hovered. */
+  inlineCopyType: (t: ColorTokens, hovered: boolean) => TextStyle;
+  /** The copyable inline pill's trailing glyph size. */
+  inlineCopyIcon: number;
   /** The copy chip shape/fill (`dark` picks the terminal chip; `floating` adds its shadow). */
   copyButton: (t: ColorTokens, dark: boolean, floating: boolean) => ViewStyle;
   /** The copy chip label. */
@@ -171,7 +180,12 @@ export interface CodeBlockProps {
   compact?: boolean;
 
   // Orthogonal modifiers.
-  /** Show a copy affordance (header-hosted when a header/chrome exists, else pinned top-right). */
+  /**
+   * Show a copy affordance (header-hosted when a header/chrome exists, else pinned
+   * top-right). On the `inline` variant the whole pill becomes the copy button: a raised
+   * mono chip with a trailing copy glyph that turns to a check once copied (an import
+   * line a reader takes away).
+   */
   copy?: boolean;
   /** Soft-wrap long lines instead of scrolling them horizontally. An overflowing unwrapped block is a keyboard tab stop; arrow keys use the platform's normal scrolling. */
   wrap?: boolean;
@@ -431,6 +445,57 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     );
   }
 
+  // The copyable inline pill (`inline copy`): the whole pill is one copy button, its code
+  // in one ink with a trailing glyph that flips to a check once copied. A control with a
+  // surface of its own, so under glass it is a control-layer pane; the hovered accent
+  // hairline is a state border that stays over the pane.
+  function InlineCopy({
+    code,
+    copied,
+    onPress,
+    testID,
+    style,
+  }: {
+    code: string;
+    copied: boolean;
+    onPress: (event: GestureResponderEvent) => void;
+    testID?: string;
+    style?: LayoutStyle;
+  }) {
+    const theme = useMaterialTheme({ layer: "control" });
+    const { tokens } = theme;
+    // Hover feedback is the web's alone (src/style/hover.tsx, `webHover`).
+    const { hovered, target: hoverTarget } = useHover(webHover(true) === true);
+    const hug = useHugStyle();
+    const box = skin.inlineCopyBox(tokens, hovered);
+    const type = skin.inlineCopyType(tokens, hovered);
+    const container = paneStyle(theme, box, hovered);
+    // The pill is 34 tall, under both native minimums: its slop is seeded from its own
+    // box so the touch area is in place before the first layout.
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(box, type.lineHeight));
+    return (
+      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} style={[hug, style]} {...hoverTarget}>
+        <Pressable
+          {...target}
+          testID={testID}
+          onPress={onPress}
+          android_ripple={paneRipple(theme, surfaceRipple(tokens))}
+          style={({ pressed }) => [container, pressDim(pressed, skin.copyPressedOpacity)]}
+          accessibilityRole="button"
+          accessibilityLabel={copied ? "Copied" : `Copy ${code}`}
+        >
+          <GlassPane layer="control" shape={box} stateBorder={hovered} />
+          <Text selectable={false} style={[type, MONO]}>{code}</Text>
+          <Icon
+            {...(copied ? { check: true, success: true } : { copy: true, color: type.color as string })}
+            size={skin.inlineCopyIcon}
+            decorative
+          />
+        </Pressable>
+      </RippleClip>
+    );
+  }
+
   // The tab strip hosted by the header bar or the terminal chrome.
   function TabStrip({
     tabs,
@@ -591,7 +656,11 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // Empty lines render an empty Text; the row keeps its height via minHeight.
     const rowMin: ViewStyle = { minHeight: type.lineHeight };
 
-    // Inline: a short token rendered as an inline pill. No header, copy, or wrap.
+    // Inline: a short token rendered as an inline pill. No header or wrap; `copy` turns
+    // the pill into the copy button itself.
+    if (variant === "inline" && copy) {
+      return <InlineCopy code={code} copied={copied} onPress={handleCopy} testID={testID} style={style} />;
+    }
     if (variant === "inline") {
       const inlineSpans = parsed.tokenLines.flatMap((line, i) =>
         i > 0 ? [{ text: "\n", kind: "text" as const }, ...line] : line,

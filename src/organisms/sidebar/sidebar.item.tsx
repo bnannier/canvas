@@ -39,6 +39,9 @@ export interface SidebarItem {
    *  reports a problem rather than a volume (e.g. account lockouts). Ignored when the
    *  row carries no `badge`. */
   badgeError?: boolean;
+  /** Under the Sidebar's `markers`, a resting row that belongs to the reader's current
+   *  place draws the field-hairline marker dot (the active row draws the accent's). */
+  marked?: boolean;
   /** Inert navigation target carried as data (e.g. "/settings"). The Sidebar never
    *  routes; a consumer reads it in `onSelect` (e.g. `router.push(item.href)`). */
   href?: string;
@@ -54,6 +57,12 @@ export interface SidebarSection {
   id?: string | number;
   /** Optional muted heading shown above the group. */
   title?: string;
+  /** A count shown at the end of the heading line (e.g. how many rows the group holds). */
+  count?: string | number;
+  /** The reader's current place (the page this group indexes): its heading takes the
+   *  accent's text ink, its resting rows the stronger foreground ink where the skin has
+   *  one (the web), and under `markers` every row draws the hairline marker. */
+  current?: boolean;
   /** Rows in this group. */
   items: SidebarItem[];
   /** Leading Canvas glyph for the section, shown as its single button in the
@@ -74,10 +83,10 @@ export interface SidebarSection {
  *  its tone within that family) for a count that reports a problem. Lives here once
  *  so the rail row and the narrow drill-down leaf cannot drift apart. `Badge` is the
  *  platform's build, a Sidebar part. */
-export function SidebarItemBadge({ item, Badge, navigationCount }: { item: SidebarItem; Badge: typeof WebBadge; navigationCount?: boolean }) {
+export function SidebarItemBadge({ item, Badge, small }: { item: SidebarItem; Badge: typeof WebBadge; small?: boolean }) {
   if (item.badge == null) return null;
   if (item.badgeError) return <Badge status error>{item.badge}</Badge>;
-  if (navigationCount) return <Badge navigationCount>{item.badge}</Badge>;
+  if (small) return <Badge secondary count>{item.badge}</Badge>;
   return <Badge secondary>{item.badge}</Badge>;
 }
 

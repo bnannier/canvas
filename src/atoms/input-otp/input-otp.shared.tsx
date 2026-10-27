@@ -1,5 +1,6 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   Animated,
@@ -197,7 +198,9 @@ export function createInputOTP(skin: InputOTPSkin) {
     const glass = isGlass(theme);
     // HUG: the cell row keeps its content width inside a stretching Column.
     const hug = useHugStyle();
-    const [focused, setFocused] = useState(false);
+    const [focusedState, setFocused] = useState(false);
+    // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
+    const focused = usePinnedFocus(!disabled) || focusedState;
 
     // Controlled when `value` is provided, self-managed otherwise, so a bare
     // <InputOTP /> accepts typing/paste/autofill out of the box. The uncontrolled

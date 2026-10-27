@@ -26,7 +26,9 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  *   corner as a role of their own: a standalone table's header band (10), the ghost a
  *   drag lifts (12), a conversation's composer surface (20) and its user bubble (18),
  *   tailed at 6 on the top end toward its author, and the pager's cells (8, the v4
- *   hand-off's pagination renderer: its pages, arrows and rows-per-page trigger).
+ *   hand-off's pagination renderer: its pages, arrows and rows-per-page trigger), and the
+ *   sidebar's (the v4 hand-off's rail: a nav row at 9, 8 in the compact docs rail, the
+ *   bordered rail card at 12 and the floating one at 14).
  * - iOS rounds the action sheet at 34 (the iOS 27 kit's Action Sheets symbol), an inset
  *   grouped list or well at 26, a calendar event at 6, and the search field's well at 10
  *   (the v4 hand-off's iOS search field).
@@ -42,7 +44,7 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  * the public table.
  */
 export const platformShape = {
-  web: { insetRow: 10, brandMark: 9, referenceCard: 9, pageCell: 8, key: 6, tooltip: 8, event: 8, bar: 8, mark: 4, cell: 2, candle: 1, tableHeader: 10, dragGhost: 12, composer: 20, bubble: 18, bubbleTail: 6 },
+  web: { insetRow: 10, brandMark: 9, referenceCard: 9, pageCell: 8, key: 6, tooltip: 8, event: 8, bar: 8, mark: 4, cell: 2, candle: 1, tableHeader: 10, dragGhost: 12, composer: 20, bubble: 18, bubbleTail: 6, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14 },
   ios: { actionSheet: 34, groupedList: 26, event: 6, searchField: 10 },
   android: {
     chip: M3.small,

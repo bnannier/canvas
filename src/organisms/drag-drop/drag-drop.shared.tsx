@@ -12,7 +12,8 @@ import {
 } from "react";
 import { Animated, PanResponder, StyleSheet, AccessibilityInfo, type GestureResponderEvent } from "react-native";
 import { View, useTheme, isRTL, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
-import { useFocusRingStyle } from "../../style/pressable.js";
+import { PINNED_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
+import { useInteractionOverride } from "../../style/interaction-override.js";
 import { useSeamLimit } from "../../style/touch-seam.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type DragDropSkin } from "./drag-drop.styles.js";
@@ -661,8 +662,13 @@ export function createDragDrop(skin: DragDropSkin) {
     const drag = useContext(DraggableContext);
     const { tokens } = useTheme();
     const focusRing = useFocusRingStyle();
-    const [pressed, setPressed] = useState(false);
+    const [held, setPressed] = useState(false);
     const disabled = drag?.disabled ?? !api;
+    // An InteractionOverride's pinned focus and press show the grip's ring and its held
+    // dim (src/style/interaction-override.tsx); a disabled grip shows neither.
+    const pinned = useInteractionOverride();
+    const pinnedFocus = !disabled && (pinned?.focused ?? false);
+    const pressed = (!disabled && (pinned?.pressed ?? false)) || held;
     // The grip's touch slop, held on the side that faces a control a kit component sets
     // beside it (the Board's row menu) to its share of the gap (src/style/touch-seam.ts).
     const hitSlop = useSeamLimit(HANDLE_HIT_SLOP) ?? undefined;
@@ -797,6 +803,7 @@ export function createDragDrop(skin: DragDropSkin) {
           // The grip is a focusable View, not a Pressable: it takes the kit's themed
           // keyboard focus ring the same way (it paints no focus state until grabbed).
           focusRing,
+          pinnedFocus ? PINNED_FOCUS_RING : null,
           grabbed ? skin.handleGrabbed(tokens) : null,
           pressed && !grabbed ? { opacity: skin.handlePressedOpacity } : null,
           disabled ? { opacity: 0.4 } : null,

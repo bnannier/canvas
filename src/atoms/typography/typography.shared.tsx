@@ -92,6 +92,15 @@ export interface TypographyProps {
   numberOfLines?: number;
   accessibilityRole?: AccessibilityRole;
   accessibilityLabel?: string;
+  /**
+   * The heading level assistive tech hears, independent of the visual role: a heading
+   * role exposes its own level (display and h1 at 1, h2 to h5 at 2 to 5) unless this
+   * overrides it, so `<Typography h3 level={2}>` draws the h3 size and is announced as
+   * a level-2 heading (a real `<h2>` on the web). On a non-heading role it makes the
+   * text a heading at that level. Semantics only: it never changes the look. `href`
+   * still wins (a link is not a heading).
+   */
+  level?: HeadingLevel;
   displayLeading?: boolean;
   singleLeading?: boolean;
   lockupLeading?: boolean;
@@ -196,11 +205,22 @@ export function textAlignOf(p: TypographyProps) {
   return null;
 }
 
+/** A heading level, 1 (the page title) to 6, as `aria-level` spells it. */
+export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+/**
+ * The heading level a Typography exposes: the explicit `level` when one is passed, else
+ * its heading role's own level, else 6 for a `section` heading, else none (plain text).
+ */
+export function headingLevelOf(p: TypographyProps, role: Role = roleOf(p)): number | undefined {
+  return p.level ?? HEADING_LEVEL[role] ?? (p.section ? 6 : undefined);
+}
+
 // Heading roles and the level they expose to assistive tech. Setting
 // accessibilityRole="header" gives the native heading trait and (via RNW) emits
-// a real <h*> element; passing both aria-level and accessibilityLevel pins the
-// correct level (display + h1 at 1, h2..h5 at 2..5) on web and native rather
-// than RNW defaulting every heading to h1. Non-heading roles are absent here so
+// a real <h*> element; aria-level pins the correct level (display + h1 at 1,
+// h2..h5 at 2..5, or the explicit `level`) rather than RNW defaulting every
+// heading to h1. Non-heading roles are absent here so
 // they stay plain text.
 const HEADING_LEVEL: Partial<Record<Role, number>> = {
   display: 1,
@@ -328,7 +348,8 @@ export function createTypography(skin: TypographySkin) {
     // can navigate heading-by-heading (the H key / rotor); body/helper roles
     // stay plain text. aria-level + accessibilityLevel pin the level on web and
     // native (otherwise RNW emits every header as h1).
-    const level = HEADING_LEVEL[role] ?? (props.section ? 6 : undefined);
+    // An explicit `level` decouples the announced level from the visual role.
+    const level = headingLevelOf(props, role);
 
     // A real browser link on the web (react-native-web renders Text carrying
     // `href` as one); native ignores these and navigates through onPress. RN's

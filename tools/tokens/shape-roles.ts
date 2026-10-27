@@ -36,8 +36,7 @@ const ALL: PlatformKey[] = ["web", "ios", "android"];
 
 export const SHAPE_ROLES: Record<ShapeRole, ShapeMember[]> = {
   control: [
-    { token: "p-nav-link-radius", on: ALL },
-    { token: "p-side-row-radius", on: ["ios", "android"], why: "Argus web rows run full width with square corners and an active edge marker" },
+    { token: "p-side-row-radius", on: ["ios", "android"], why: "the web draws the v4 rail's nav row (platformShape navRow, 9; 8 compact)" },
     { token: "p-cal-chevron-radius", on: ALL },
     { token: "p-btn-radius", on: ALL },
     { token: "p-menu-row-radius", on: ["web"], why: "iOS and Android menu rows run full bleed inside the menu card" },
@@ -80,6 +79,7 @@ export const SHAPE_ROLES: Record<ShapeRole, ShapeMember[]> = {
   ],
   checkbox: [{ token: "p-check-radius", on: ALL }],
   pill: [
+    { token: "p-nav-link-radius", on: ALL },
     { token: "p-badge-radius", on: ALL },
     { token: "p-seg-track-radius", on: ALL },
     { token: "p-tab-pill-track-radius", on: ALL },
@@ -368,9 +368,9 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "organisms/drag-drop": ["control", "card", "dragGhost"],
   "organisms/drawer": ["sheet", "navigationDrawer"],
   "organisms/filter-panel": ["card", "sideSheet"],
-  "organisms/navbars": ["control", "card"],
+  "organisms/navbars": ["control", "card", "pill", "navBar"],
   "organisms/row-menu": ["control", "menu"],
-  "organisms/sidebar": ["control", "card", "navigationDrawer"],
+  "organisms/sidebar": ["control", "card", "navigationDrawer", "navRow", "navRowCompact", "rail", "floatingRail"],
   "organisms/tabs": ["control", "pill", "tabIndicator"],
   "organisms/toast": ["control", "sheet", "pill", "snackbar"],
   "style": ["control", "menu"],

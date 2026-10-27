@@ -20,10 +20,10 @@ Audit checklist for `/components/code-block`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: code-copy (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | recipes: focus on Copy button (web row; desktop), pressed on Copy button (web row; desktop). |
+| Interaction states | recipes: hover on Inline copy (web row; desktop), focus on Copy button (web row; desktop), pressed on Copy button (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `code-block.shared.tsx`: hitSlop, minTarget, styleBox, useSeededMinTargetSlop; `code-block.styles.ts`: minTarget, platformMinTarget |
-| Tests importing it | 11: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/focus-ring.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 16: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/focus-ring.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx`, `test/v4-detail-capabilities.test.tsx`, `test/web-frost-paint-order.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/code-block.md`, written by `bun run audit:turn -- --slug=code-block --phase=before\|after` (the before and after capture runs) |
@@ -41,6 +41,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `terminal` | Terminal | [ ] | [ ] | [ ] |  |
 | `numbered` | Numbered | [ ] | [ ] | [ ] |  |
 | `inline` | Inline | [ ] | [ ] | [ ] |  |
+| `inlinecopy` | Inline copy | [ ] | [ ] | [ ] |  |
 | `compact` | Compact | [ ] | [ ] | [ ] |  |
 | `copybutton` | Copy button | [ ] | [ ] | [ ] |  |
 | `wraplonglines` | Wrap long lines | [ ] | [ ] | [ ] |  |

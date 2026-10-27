@@ -67,16 +67,16 @@ test("the drawer's Palette control picks the accent in either scheme", async ({ 
   const drawer = page.getByRole("dialog");
   await expect(drawer).toBeVisible();
   const scheme = drawer.getByRole("button", { name: "Toggle color scheme", exact: true });
-  const palette = drawer.getByRole("tablist", { name: "Palette", exact: true });
+  const palette = drawer.getByRole("radiogroup", { name: "Palette", exact: true });
   await expect(scheme).toBeVisible();
   await expect(palette).toBeVisible();
-  const violet = palette.getByRole("tab", { name: "Violet", exact: true });
-  const mint = palette.getByRole("tab", { name: "Mint", exact: true });
-  await expect(violet).toHaveAttribute("aria-selected", "true");
+  const violet = palette.getByRole("radio", { name: "Violet", exact: true });
+  const mint = palette.getByRole("radio", { name: "Mint", exact: true });
+  await expect(violet).toHaveAttribute("aria-checked", "true");
 
   // Mint picked while dark: the dark page stays, the choice holds into the light scheme.
   await mint.click();
-  await expect(mint).toHaveAttribute("aria-selected", "true");
+  await expect(mint).toHaveAttribute("aria-checked", "true");
   await expect.poll(() => readAccent(page)).toBe(accentOf("dark", "mint"));
   expect(await readPageLook(page)).toEqual(pageChannels("dark"));
   await scheme.click();
@@ -84,6 +84,6 @@ test("the drawer's Palette control picks the accent in either scheme", async ({ 
   await expect.poll(() => readAccent(page)).toBe(accentOf("light", "mint"));
 
   await violet.click();
-  await expect(violet).toHaveAttribute("aria-selected", "true");
+  await expect(violet).toHaveAttribute("aria-checked", "true");
   await expect.poll(() => readAccent(page)).toBe(accentOf("light", "violet"));
 });

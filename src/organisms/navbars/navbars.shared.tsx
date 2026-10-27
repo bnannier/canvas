@@ -1,12 +1,15 @@
 import { type ComponentType, type ReactNode } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassPane, GlassSurface, paneStyle, paneRipple, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { type GestureResponderEvent } from "react-native";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassPane, GlassSurface, paneStyle, paneRipple, withInnerFill, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { selectionTint } from "../../style/selection-tint.js";
+import { useHover } from "../../style/hover.js";
+import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Dropdown as WebDropdown, type DropdownProps, type DropdownItem } from "../../atoms/dropdown/dropdown.js";
-import { type Surface } from "./navbars.styles.js";
+import { type Surface, type Density } from "./navbars.styles.js";
 
 // Shared Navbar shell. The structure (the left brand + links cluster, the right
 // action + avatar cluster), the surface-axis precedence, the active-link
@@ -40,6 +43,16 @@ import { type Surface } from "./navbars.styles.js";
 // behind it: the scroll-edge appearance of iOS's navigation bar and Material 3's
 // top app bar, which an app passes while nothing has scrolled under the bar and
 // drops once content does, so the bar's own material returns to keep it legible.
+//
+// The density axis (`compact`) tightens the bar: on the web it is the hand-off's docs
+// pill (44px, a 5px inset, 2px between every item), natively a shorter bar with the
+// gutter and the gaps pulled in.
+//
+// Narrow widths: by default the bar measures its own width and, at and below `sm`,
+// folds the links into a menu button. `scrolls` trades that fold for the hand-off
+// pill's own answer: the bar keeps every link and its content row pans sideways inside
+// the bar (a horizontal scroller with no indicator), at every width. `onMenu` still
+// replaces the links; a bar with `scrolls` and `onMenu` scrolls its brand and actions.
 
 // The platform-varying surface. Everything color/shape-bearing the bar needs
 // lives here, built from the active tokens (so each follows light/dark/glass).
@@ -56,23 +69,30 @@ export interface NavbarSkin {
    */
   focusRing?: ViewStyle;
 
-  /** The bar row: height, padding, and flex layout. */
-  bar: (t: ColorTokens) => ViewStyle;
+  /** The bar row: height, padding, gap, and flex layout, per density. */
+  bar: (t: ColorTokens, density: Density) => ViewStyle;
   /** The token-driven background fill (follows the scheme/glass surface). */
   surface: (t: ColorTokens) => ViewStyle;
   /** The surface-axis treatment (hairline / outline / floating card). */
   surfaceContainer: (t: ColorTokens, surface: Surface) => ViewStyle;
 
   /** The left cluster row (brand + links). */
-  leftGroup: (t: ColorTokens) => ViewStyle;
+  leftGroup: (t: ColorTokens, density: Density) => ViewStyle;
+  /** The brand lockup row (`brandContent` beside the `brand` wordmark). */
+  brandGroup: (t: ColorTokens, density: Density) => ViewStyle;
   /** The brand wordmark type. */
-  brand: (t: ColorTokens) => TextStyle;
+  brand: (t: ColorTokens, density: Density) => TextStyle;
   /** The links row. */
-  linksRow: (t: ColorTokens) => ViewStyle;
+  linksRow: (t: ColorTokens, density: Density) => ViewStyle;
   /** A nav link tile (padding + active fill). */
   linkTile: (t: ColorTokens, active: boolean) => ViewStyle;
   /** A nav link label (weight + active/inactive color). */
   linkLabel: (t: ColorTokens, active: boolean) => TextStyle;
+  /**
+   * A resting link's instant hover look (its tile fill and label ink), declared on the
+   * web only (`webHover`); null where there is none.
+   */
+  linkHover: ((t: ColorTokens) => { tile: ViewStyle; label: TextStyle }) | null;
   /**
    * How the active tile's fill renders as glass. `tint` keeps the skin's hue at a
    * translucent ceiling with the ordinary foreground ink (web's accent tile,
@@ -83,7 +103,7 @@ export interface NavbarSkin {
   linkSelection: "tint" | "brand";
 
   /** The right cluster row (action + avatar). */
-  rightGroup: (t: ColorTokens) => ViewStyle;
+  rightGroup: (t: ColorTokens, density: Density) => ViewStyle;
 }
 
 export interface NavbarProps {
@@ -102,6 +122,15 @@ export interface NavbarProps {
    * narrow menu button that stands in for it renders.
    */
   links?: string[];
+  /**
+   * Destinations for `links`, by index (parallel to it). A link with an href renders as
+   * a real anchor on the web (an `<a href>`, so middle-click, modifier-click and
+   * open-in-new-tab work); natively it is ignored. A plain click still selects the link
+   * and calls `onSelect` with the press event, so an app that routes on the client
+   * calls `event.preventDefault()` there; a modifier or middle click is left to the
+   * browser and selects nothing. Omit it (or an entry) for a link without a destination.
+   */
+  hrefs?: string[];
   /** Index of the active link (CONTROLLED; its label reads in the foreground color). Omit for uncontrolled use. */
   active?: number;
   /** Initial active link for uncontrolled use (a bare navbar moves the active link on press). */
@@ -120,8 +149,11 @@ export interface NavbarProps {
   onAction?: () => void;
   /** Optional account initials/name; renders an <Avatar small> on the right. */
   avatar?: string;
-  /** Called when a nav link is pressed, with its index. */
-  onSelect?: (index: number) => void;
+  /**
+   * Called when a nav link is pressed, with its index, and the press event when it came
+   * from the link itself (not from the narrow menu).
+   */
+  onSelect?: (index: number, event?: GestureResponderEvent) => void;
   /**
    * The app's own navigation menu. When set, the bar leads with a menu button at
    * every width and calls this on press, so the app can open navigation of its own
@@ -137,6 +169,15 @@ export interface NavbarProps {
    * nothing has scrolled under the bar (the scroll edge) and drop it once content does.
    */
   bare?: boolean;
+  // Density (pick one; default is the comfortable bar).
+  /** The tight bar: 44px with a 5px inset and 2px between items on the web (the docs pill). */
+  compact?: boolean;
+  /**
+   * Keep every link at every width: the bar's content row scrolls sideways inside the
+   * bar (no scroll indicator) instead of folding the links into the narrow menu button.
+   * Pair it with `floating` and `compact` for the hand-off's docs pill.
+   */
+  scrolls?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -152,6 +193,20 @@ export function surfaceOf(p: NavbarProps): Surface | "bare" {
   return "default";
 }
 
+// Density precedence: `compact` is the axis's one member; omit it for the default bar.
+export function densityOf(p: NavbarProps): Density {
+  if (p.compact) return "compact";
+  return "default";
+}
+
+// A modifier or middle click on an anchor is the browser's (a new tab or window), so
+// the bar neither selects the link nor reports it. Natively the event carries none of
+// these keys, so every press is a plain one.
+function browserOwnsClick(event: GestureResponderEvent): boolean {
+  const native = event.nativeEvent as unknown as { metaKey?: boolean; ctrlKey?: boolean; shiftKey?: boolean; button?: number };
+  return !!(native.metaKey || native.ctrlKey || native.shiftKey || (native.button != null && native.button !== 0));
+}
+
 // The platform-styled parts the bar composes: the Dropdown behind the narrow
 // menu button, the action Button and the account Avatar. Passed by each platform's
 // thin wrapper (the literal `.ios`/`.android` imports there are required for the WEB
@@ -163,45 +218,105 @@ export interface NavbarParts {
   Avatar?: typeof WebAvatar;
 }
 
+// One nav link: its tile, the glass puck under the active one, and the web hover. A
+// component of its own so every link reads its own hover.
+interface NavLinkProps {
+  skin: NavbarSkin;
+  label: string;
+  href?: string;
+  active: boolean;
+  onPress: (event: GestureResponderEvent) => void;
+}
+
+function NavLink({ skin, label, href, active, onPress }: NavLinkProps) {
+  const { tokens, dark } = useTheme();
+  const material = useMaterialTheme({ layer: "control" });
+  const glass = material.surface === "glass";
+  const hoverLook = skin.linkHover;
+  // Only a resting link washes: the active one already wears the look.
+  const { hovered, target: hoverTarget } = useHover(hoverLook != null && !active);
+  const hover = hovered && hoverLook ? hoverLook(tokens) : null;
+  const tile = skin.linkTile(tokens, active);
+  // Under glass the ACTIVE tile is a CONTROL-layer pane: the GlassPane paints the
+  // material behind its label in the tile's own shape (the Pressable keeps its tap,
+  // ripple and dim), the tile drops its own fill (the pane's material carries it), and
+  // the skin's `linkSelection` picks the fill: a brand-tinted puck (iOS's primary
+  // capsule, whose label keeps the skin's primary-foreground ink) or the skin's hue at
+  // selectionTint's translucent ceiling with the label in the ordinary foreground.
+  // Inactive tiles keep the skin's own fill (iOS's neutral capsules; web's and M3's are
+  // bare), and a hovered one its hover wash as an inner fill. Solid mode keeps the
+  // skin's active fill and renders no pane at all.
+  const puck = glass && active;
+  // A real anchor on the web (react-native-web renders a Pressable carrying `href` as an
+  // `<a>`); native ignores it. RN's prop types do not know the web-forwarded prop, hence
+  // the spread object.
+  const anchor = href != null ? { href } : null;
+  return (
+    // The bounded Android ripple on a link tile is masked to a rectangle and cannot clip
+    // itself; this RippleClip parent rounds it to the tile's own corners (Android only;
+    // a transparent layout passthrough on iOS/web). It is also the hover target, which
+    // never moves. Link tiles hug their labels, so there is no outer layout to move.
+    <RippleClip shape={cornerRadii(tile)} {...hoverTarget}>
+      <Pressable
+        {...(anchor ?? undefined)}
+        onPress={onPress}
+        // The active tile's puck is a child of this Pressable: where it renders, the
+        // ripple draws in the foreground, over it (`paneRipple`).
+        android_ripple={paneRipple(puck, skin.ripple ? skin.ripple(tokens) : undefined)}
+        accessibilityRole="link"
+        accessibilityState={{ selected: active }}
+        aria-current={active ? "page" : undefined}
+        style={({ pressed }) => [
+          puck ? paneStyle(material, tile) : tile,
+          hover ? withInnerFill(material, hover.tile) : null,
+          skin.focusRing,
+          skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+        ]}
+      >
+        {puck ? (
+          <GlassPane
+            layer="control"
+            shape={tile}
+            brand={skin.linkSelection === "brand" ? tokens.primary : undefined}
+            tint={skin.linkSelection === "tint" ? selectionTint(tile, dark) : undefined}
+          />
+        ) : null}
+        <Text style={[skin.linkLabel(tokens, active), hover ? hover.label : null, puck && skin.linkSelection === "tint" ? { color: tokens.foreground } : null]}>{label}</Text>
+      </Pressable>
+    </RippleClip>
+  );
+}
+
 /** Build a Navbar component from a platform skin (plus the platform-correct parts it composes; each defaults to the web base when omitted). */
 export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Dropdown = parts.Dropdown ?? WebDropdown;
   const Button = parts.Button ?? WebButton;
   const Avatar = parts.Avatar ?? WebAvatar;
   return function Navbar(props: NavbarProps) {
-    const { brand, brandContent, links: linkProp = [], actions, actionLabel, onAction, avatar, onSelect, onMenu, testID, style } = props;
+    const { brand, brandContent, links: linkProp = [], hrefs, actions, actionLabel, onAction, avatar, onSelect, onMenu, scrolls, testID, style } = props;
     // An app menu (`onMenu`) stands in for the links row and its narrow menu at every width.
     const links = onMenu ? [] : linkProp;
-    const { tokens, dark } = useTheme();
+    const { tokens } = useTheme();
     const surface = surfaceOf(props);
-    const material = useMaterialTheme({ layer: "control" });
-    const glass = material.surface === "glass";
+    const density = densityOf(props);
     // Controlled when `active` is provided, self-managed otherwise, so a bare
     // navbar moves the active link to the pressed one instead of ignoring taps.
     const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0);
     // Narrow collapse (automatic, no prop): the bar measures its OWN width and
     // at/below sm swaps the links row for a menu button opening the platform
-    // Dropdown. The previous narrow rendering was a plain row clipping links
-    // off-screen, so there is no working behavior to preserve; the kit owns the
-    // whole trigger + menu, and `onSelect`/`active` keep their contract.
-    const { value: collapsed, onLayout: onBarLayout } = useContainerBreakpoint(
+    // Dropdown. The kit owns the whole trigger + menu, and `onSelect`/`active` keep
+    // their contract. `scrolls` opts out: the links stay and the content row pans.
+    const { value: narrow, onLayout: onBarLayout } = useContainerBreakpoint(
       { base: false, sm: true },
       { seedViewport: true },
     );
+    const collapsed = narrow && !scrolls;
+    const scrollFocus = useHorizontalScrollFocus();
     // The collapse stands in for the LINKS row, so a bar with no links has nothing
     // to collapse: it renders neither the row nor the menu button, rather than a
     // hamburger opening an empty popover. A trailing `actions` slot is unaffected
     // either way; it is not nav, so it never folds into the menu.
     const hasLinks = links.length > 0;
-    // Under glass the ACTIVE tile is a CONTROL-layer pane: the GlassPane paints the
-    // material behind its label in the tile's own shape (the Pressable keeps its tap,
-    // ripple and dim), the tile drops its own fill (the pane's material carries it),
-    // and the skin's `linkSelection` picks the fill: a brand-tinted puck (iOS's primary
-    // capsule, whose label keeps the skin's primary-foreground ink) or the skin's hue
-    // at selectionTint's translucent ceiling with the label in the ordinary
-    // foreground. Inactive tiles keep the skin's own fill (iOS's neutral capsules;
-    // web's and M3's are bare). Solid mode keeps the skin's active fill and renders
-    // no pane at all.
     const menuItems: DropdownItem[] = links.map((link, index) => ({
       label: link,
       // The active link carries the conventional menu checkmark.
@@ -214,91 +329,108 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     // the skin keeps supplying the solid background only. A bare bar is the row
     // alone, with no surface in either mode.
     const bare = surface === "bare";
-    const container: StyleProp<ViewStyle> = bare ? [skin.bar(tokens), style] : [
-      skin.bar(tokens),
+    const barStyle = skin.bar(tokens, density);
+    // A scrolling bar hands its gutter and gap to the scroller's content row, so the
+    // row pans under the bar's whole inner width, as the hand-off pill's does.
+    const shell: ViewStyle = scrolls ? { ...barStyle, paddingHorizontal: 0, gap: undefined } : barStyle;
+    const container: StyleProp<ViewStyle> = bare ? [shell, style] : [
+      shell,
       skin.surface(tokens),
       skin.surfaceContainer(tokens, surface),
       style,
     ];
     const Host = bare ? View : GlassSurface;
 
-    return (
-      <Host testID={testID} style={container} onLayout={onBarLayout}>
-        <View style={skin.leftGroup(tokens)}>
-          {/* Collapsed, the menu button leads the bar ahead of the brand, as Material 3's
-              top app bar puts its navigation icon and the web's collapsed nav does. */}
-          {onMenu ? (
-            <Button ghost small accessibilityLabel="Navigation menu" iconLeft={<Icon menu size={20} decorative />} onPress={onMenu} />
-          ) : null}
-          {hasLinks && collapsed ? (
-            <Dropdown
-              triggerLabel="Navigation menu"
-              items={menuItems}
-              onSelect={(_item, index) => {
-                setActive(index);
-                onSelect?.(index);
-              }}
-            >
-              <Icon menu size={20} />
-            </Dropdown>
-          ) : null}
-          {brandContent}
-          {brand ? <Text style={skin.brand(tokens)}>{brand}</Text> : null}
-          {!hasLinks || collapsed ? null : (
-          <View style={skin.linksRow(tokens)}>
+    const select = (index: number, event?: GestureResponderEvent) => {
+      setActive(index);
+      onSelect?.(index, event);
+    };
+
+    const left = (
+      <View style={skin.leftGroup(tokens, density)}>
+        {/* Collapsed, the menu button leads the bar ahead of the brand, as Material 3's
+            top app bar puts its navigation icon and the web's collapsed nav does. */}
+        {onMenu ? (
+          <Button ghost small accessibilityLabel="Navigation menu" iconLeft={<Icon menu size={20} decorative />} onPress={onMenu} />
+        ) : null}
+        {hasLinks && collapsed ? (
+          <Dropdown
+            triggerLabel="Navigation menu"
+            items={menuItems}
+            onSelect={(_item, index) => select(index)}
+          >
+            <Icon menu size={20} />
+          </Dropdown>
+        ) : null}
+        {brandContent != null || brand ? (
+          <View style={skin.brandGroup(tokens, density)}>
+            {brandContent}
+            {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
+          </View>
+        ) : null}
+        {!hasLinks || collapsed ? null : (
+          <View style={skin.linksRow(tokens, density)}>
             {links.map((link, index) => {
-              const isActive = index === active;
-              const tile = skin.linkTile(tokens, isActive);
-              const puck = glass && isActive;
+              const href = hrefs?.[index];
               return (
-                // The bounded Android ripple on a link tile is masked to a rectangle and
-                // cannot clip itself; this RippleClip parent rounds it to the tile's own
-                // corners (Android only; a transparent layout passthrough on iOS/web).
-                // Link tiles hug their labels, so there is no outer layout to move.
-                <RippleClip key={`${link}-${index}`} shape={cornerRadii(tile)}>
-                  <Pressable
-                    onPress={() => {
-                      setActive(index);
-                      onSelect?.(index);
-                    }}
-                    // The active tile's puck is a child of this Pressable: where it renders,
-                    // the ripple draws in the foreground, over it (`paneRipple`).
-                    android_ripple={paneRipple(puck, skin.ripple ? skin.ripple(tokens) : undefined)}
-                    accessibilityRole="link"
-                    accessibilityState={{ selected: isActive }}
-                    aria-current={isActive ? "page" : undefined}
-                    style={({ pressed }) => [
-                      puck ? paneStyle(material, tile) : tile,
-                      skin.focusRing,
-                      skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                    ]}
-                  >
-                    {puck ? (
-                      <GlassPane
-                        layer="control"
-                        shape={tile}
-                        brand={skin.linkSelection === "brand" ? tokens.primary : undefined}
-                        tint={skin.linkSelection === "tint" ? selectionTint(tile, dark) : undefined}
-                      />
-                    ) : null}
-                    <Text style={[skin.linkLabel(tokens, isActive), puck && skin.linkSelection === "tint" ? { color: tokens.foreground } : null]}>{link}</Text>
-                  </Pressable>
-                </RippleClip>
+                <NavLink
+                  key={`${link}-${index}`}
+                  skin={skin}
+                  label={link}
+                  href={href}
+                  active={index === active}
+                  onPress={(event) => {
+                    if (href != null && browserOwnsClick(event)) return;
+                    select(index, event);
+                  }}
+                />
               );
             })}
           </View>
-          )}
-        </View>
-        <View style={skin.rightGroup(tokens)}>
-          {actions}
-          {actionLabel ? (
-            <Button primary small onPress={onAction}>
-              {actionLabel}
-            </Button>
-          ) : null}
-          {avatar ? <Avatar small name={avatar} /> : null}
-        </View>
+        )}
+      </View>
+    );
+    const right = (
+      <View style={skin.rightGroup(tokens, density)}>
+        {actions}
+        {actionLabel ? (
+          <Button primary small onPress={onAction}>
+            {actionLabel}
+          </Button>
+        ) : null}
+        {avatar ? <Avatar small name={avatar} /> : null}
+      </View>
+    );
+
+    return (
+      <Host testID={testID} style={container} onLayout={onBarLayout}>
+        {scrolls ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            alwaysBounceHorizontal={false}
+            scrollEnabled={scrollFocus.scrollEnabled}
+            onLayout={scrollFocus.onLayout}
+            onContentSizeChange={scrollFocus.onContentSizeChange}
+            style={SCROLLER}
+            contentContainerStyle={[SCROLL_ROW, { paddingHorizontal: barStyle.paddingHorizontal, gap: barStyle.gap }]}
+          >
+            {left}
+            {right}
+          </ScrollView>
+        ) : (
+          <>
+            {left}
+            {right}
+          </>
+        )}
       </Host>
     );
   };
 }
+
+// The scroller fills the bar's height and whatever width the bar has; its content row
+// is at least as wide as the scroller, so the clusters keep their space-between ends
+// while the row fits and pan once it does not.
+const SCROLLER: ViewStyle = { flexGrow: 1, flexShrink: 1, minWidth: 0, alignSelf: "stretch" };
+const SCROLL_ROW: ViewStyle = { flexGrow: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" };

@@ -11,9 +11,14 @@ it. The value lines are set in mono, and the lockup comes in two more sizes
 (`small`, `large`), as a `circle`, `inline` (the label beside the block), or as
 a `block` (a full-width ramp bar).
 
-Theme-picker samples use `blush`, `mint` or `dark` (precedence dark > mint > blush),
-with `selected` and `onPress`. These are 16px gradient radio swatches with the
-Argus selection ring and an accessible theme name. A plain sample still uses `color`.
+A palette picker takes one of the kit's five accent palettes, `violet`, `cyan`,
+`mint`, `rose` or `amber` (ThemeProvider's precedence: cyan, mint, rose, amber,
+violet), with `selected` and `onPress`. It is a 16px disc of the palette's hue,
+the same in both schemes, and a radio named for its palette ("Violet"). The
+palette in force wears the selection ring, a 2px gap in the card color and then
+a 2px muted-foreground band; the others draw none. On the web a hovered disc
+grows to 1.25 times its size. Put the pickers in a `radiogroup` so the set
+reads as one choice. A plain sample still uses `color`.
 
 ## Usage
 
@@ -61,14 +66,18 @@ Argus selection ring and an accessible theme name. A plain sample still uses `co
 </Swatch>
 ```
 
-### Theme picker
+### Palette picker
 
 ```tsx
-<Row>
-  <Swatch blush selected onPress={() => {}} />
-  <Swatch mint onPress={() => {}} />
-  <Swatch dark onPress={() => {}} />
-</Row>
+<View role="radiogroup" aria-label="Palette">
+  <Row snug alignCenter>
+    <Swatch violet selected onPress={() => {}} />
+    <Swatch cyan onPress={() => {}} />
+    <Swatch mint onPress={() => {}} />
+    <Swatch rose onPress={() => {}} />
+    <Swatch amber onPress={() => {}} />
+  </Row>
+</View>
 ```
 
 ## Do & Don't

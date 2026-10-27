@@ -79,26 +79,28 @@
   --p-tab-v-radius:10px;--p-tab-v-pad-x:12px;--p-tab-v-pad-y:12px;--p-tab-v-font:14px;--p-tab-v-lh:20px;
   --p-tab-v-weight:500;--p-tab-v-selected-weight:500;
   --p-tab-v-selected-fill:var(--accent);--p-tab-v-selected-label:var(--accent-foreground);--p-tab-v-label:var(--muted-foreground);
-  /* Sidebar (sidebar.styles.ts webSkin) */
-  --p-side-w:240px;--p-side-w-collapsed:64px;--p-side-fill:var(--background) /* @kind other */;
-  --p-side-header-h:72px;--p-side-header-pad:16px;--p-side-body-pad:12px;--p-side-body-gap:16px;
-  --p-side-row-radius:0px;--p-side-row-pad-x:30px;--p-side-row-pad-y:9px;--p-side-row-gap:13px;
-  --p-side-label:12.5px;--p-side-label-lh:16.25px;--p-side-icon:16px;
-  --p-side-title:10px;--p-side-title-lh:13px;--p-side-title-weight:700;--p-side-title-transform:uppercase /* @kind other */;--p-side-title-tracking:1.8px;
-  /* Sidebar sections + collapse chrome (sidebar.styles.ts webSkin: group gap 4, 12/4 title inset,
-     11px Radix right caret spinning 0 to 90deg, 4px active dot, 14px chevron-left toggle).
+  /* Sidebar (sidebar.styles.ts webSkin: the v4 rail; compact is 30px rows at 8px, 1px apart,
+     a 600 active label and a 0 10 6 title inset) */
+  --p-side-w:232px;--p-side-w-collapsed:64px;--p-side-fill:var(--surface-sunken) /* @kind other */;
+  --p-side-header-h:56px;--p-side-header-pad:12px;--p-side-body-pad:12px;--p-side-body-gap:16px;
+  --p-side-row-h:36px;--p-side-row-radius:9px;--p-side-row-pad-x:10px;--p-side-row-pad-y:0px;--p-side-row-gap:10px;
+  --p-side-label:13px;--p-side-label-lh:16px;--p-side-icon:16px;--p-side-marker:5px;
+  --p-side-title:11px;--p-side-title-lh:11px;--p-side-title-weight:500;--p-side-title-transform:uppercase /* @kind other */;--p-side-title-tracking:0.88px;
+  /* Sidebar sections + collapse chrome (sidebar.styles.ts webSkin: group gap 4, 8/6 title inset,
+     11px right caret spinning 0 to 90deg, 5px active dot, 14px chevron-left toggle).
      One disclosure glyph (chevron-right) rotated per platform: web/iOS rest at 0deg (the right
      caret) opening to 90deg; Android rest at 90deg (the M3 expand_more, pointing down) opening
      to 270deg, the same 180deg spin. */
-  --p-side-group-gap:0px;--p-side-title-pad-x:26px;--p-side-title-pad-y:0px;
-  --p-side-sechdr-gap:4px;--p-side-sechdr-pad-y:6px;--p-side-chevron:11px;--p-side-dot:4px;
+  --p-side-group-gap:4px;--p-side-title-pad-x:8px;--p-side-title-pad-y:6px;
+  --p-side-sechdr-gap:6px;--p-side-sechdr-pad-y:6px;--p-side-chevron:11px;--p-side-dot:5px;
   --p-side-chevron-rest:0deg /* @kind other */;--p-side-chevron-open:90deg /* @kind other */;
   --p-side-toggle:14px;--p-side-toggle-pad:6px;--p-side-toggle-radius:10px;
-  /* Navbar (navbars.styles.ts webSkin) */
-  --p-nav-h:72px;--p-nav-pad-x:24px;--p-nav-fill:var(--background) /* @kind other */;--p-nav-rule:1px;
-  --p-nav-brand:18px;--p-nav-brand-lh:28px;--p-nav-brand-weight:500;
-  --p-nav-links-gap:4px;--p-nav-link-radius:10px;--p-nav-link-pad-x:14px;--p-nav-link-pad-y:10px;
-  --p-nav-link-font:14px;--p-nav-link-lh:20px;
+  /* Navbar (navbars.styles.ts webSkin: the v4 hand-off's 56px bar, a 600 15px display
+     wordmark and 32px capsule links at 500 13px) */
+  --p-nav-h:56px;--p-nav-pad-x:16px;--p-nav-fill:var(--background) /* @kind other */;--p-nav-rule:1px;
+  --p-nav-brand:15px;--p-nav-brand-lh:20px;--p-nav-brand-weight:600;
+  --p-nav-links-gap:4px;--p-nav-link-radius:9999px;--p-nav-link-pad-x:10px;--p-nav-link-pad-y:7px;
+  --p-nav-link-font:13px;--p-nav-link-lh:18px;
   /* Stats (stats.styles.ts webSkin) */
   --p-stat-radius:16px;--p-stat-pad:24px;--p-stat-shadow:var(--shadow);--p-stat-gap:16px;
   --p-stat-label:16px;--p-stat-label-lh:24px;--p-stat-label-tracking:0px;
@@ -113,12 +115,14 @@
   --p-crumb-tracking:0px;--p-crumb-sep-tracking:0px;--p-crumb-current-weight:500;
   /* EmptyState (empty-state.styles.ts webSkin: 8px bordered card, no tracking) */
   --p-empty-radius:16px;--p-empty-title-tracking:0px;--p-empty-desc-tracking:0px;
-  /* Sidebar row colors (sidebar.styles.ts webSkin: accent fill, muted label + glyph) */
-  --p-side-active-fill:var(--accent);--p-side-active-label:var(--foreground);
-  --p-side-label-color:var(--muted-foreground);--p-side-icon-color:var(--muted-foreground);--p-side-icon-active:currentColor;
-  /* Navbar links (navbars.styles.ts webSkin: rounded-md tile, accent when active) */
+  /* Sidebar row colors (sidebar.styles.ts webSkin: the accent's soft wash and text ink on the
+     active row, the secondary ink at rest, the subtle mono eyebrow) */
+  --p-side-active-fill:var(--primary-soft);--p-side-active-label:var(--primary-text);
+  --p-side-label-color:var(--muted-foreground);--p-side-icon-color:var(--muted-foreground);--p-side-icon-active:var(--primary);
+  --p-side-title-color:var(--subtle-foreground);
+  /* Navbar links (navbars.styles.ts webSkin: a capsule, `secondary` when active) */
   --p-nav-link-fill:transparent;--p-nav-link-label:var(--muted-foreground);
-  --p-nav-link-active-fill:var(--accent);--p-nav-link-active-label:var(--foreground);
+  --p-nav-link-active-fill:var(--secondary);--p-nav-link-active-label:var(--foreground);
   /* ButtonGroup (button-group.styles.ts webSkin: Dark Factory's segmented control, a card2
      pill track with a hairline, 3px inset and 2px gap, the selected segment a white pill) */
   --p-seg-h-small:23px;--p-seg-h-default:27px;--p-seg-h-large:31px;
@@ -405,9 +409,10 @@
   --p-tab-pill-selected-shadow:0px 1px 2px rgba(0,0,0,0.18);--p-tab-pill-label:var(--foreground);--p-tab-pill-selected-weight:600;
   --p-tab-v-radius:10px;--p-tab-v-pad-y:9px;--p-tab-v-font:15px;--p-tab-v-weight:400;--p-tab-v-selected-weight:600;--p-tab-v-label:var(--foreground);
   /* Sidebar — iOS 27: capsule rows, primary-tinted icons, sentence-case headers */
-  --p-side-row-radius:9999px;--p-side-row-gap:10px;--p-side-label:15px;--p-side-label-lh:20px;--p-side-icon:17px;
+  --p-side-row-h:auto;--p-side-row-radius:9999px;--p-side-row-pad-x:12px;--p-side-row-pad-y:8px;--p-side-row-gap:10px;--p-side-label:15px;--p-side-label-lh:20px;--p-side-icon:17px;
   --p-side-title:13px;--p-side-title-lh:18px;--p-side-title-weight:600;--p-side-title-transform:none /* @kind other */;--p-side-title-tracking:0px;
-  --p-side-active-label:var(--accent-foreground);--p-side-label-color:var(--foreground);--p-side-icon-color:var(--primary);--p-side-icon-active:var(--primary);
+  --p-side-active-fill:var(--accent);--p-side-active-label:var(--accent-foreground);--p-side-label-color:var(--foreground);--p-side-icon-color:var(--primary);--p-side-icon-active:var(--primary);
+  --p-side-title-color:var(--muted-foreground);--p-side-marker:6px;
   /* Sidebar sections + collapse chrome (iOS): tight 2pt groups, capsule header at 12/4, 13pt HIG caret, 6pt dot */
   --p-side-group-gap:2px;--p-side-sechdr-gap:6px;--p-side-sechdr-pad-y:4px;
   --p-side-chevron:13px;--p-side-dot:6px;--p-side-toggle:15px;
@@ -630,10 +635,11 @@
   --p-tab-v-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-tab-v-selected-label:var(--primary-text);
   /* Sidebar — M3 navigation drawer: tonal pills, 72dp rail */
   --p-side-w-collapsed:72px;
-  --p-side-row-radius:9999px;--p-side-row-pad-x:16px;--p-side-row-pad-y:16px;--p-side-row-gap:12px;
+  --p-side-row-h:auto;--p-side-row-radius:9999px;--p-side-row-pad-x:16px;--p-side-row-pad-y:16px;--p-side-row-gap:12px;
   --p-side-label:14px;--p-side-label-lh:20px;--p-side-icon:18px;--p-side-body-pad:12px;
   --p-side-title:14px;--p-side-title-lh:20px;--p-side-title-weight:500;--p-side-title-transform:none /* @kind other */;--p-side-title-tracking:0px;
-  --p-side-active-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-side-active-label:var(--primary-text);--p-side-label-color:var(--foreground);--p-side-icon-active:var(--primary);
+  --p-side-active-fill:var(--primary-soft);--p-side-active-label:var(--primary-text);--p-side-label-color:var(--foreground);--p-side-icon-active:var(--primary);
+  --p-side-title-color:var(--muted-foreground);--p-side-marker:6px;
   /* Sidebar (M3): inactive glyphs keep the default foreground tint (androidSkin.iconTint), the M3
      drawer 16/6 section-title inset, 2dp groups, 18dp expand_more (rest 90deg, open 270deg), 6dp dot */
   --p-side-icon-color:var(--foreground);--p-side-group-gap:2px;

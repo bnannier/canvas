@@ -3,11 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Badge, Row } = scope;
+  const { Typography, Column } = scope;
   return (
-<Row center>
-  <Badge>schema</Badge>
-  <Badge>role</Badge>
-</Row>
+<Column chapter>
+  <Typography h3 level={2}>Playground</Typography>
+  <Typography h3 level={2}>Props</Typography>
+  <Typography h3 level={2}>Examples</Typography>
+</Column>
   );
 }

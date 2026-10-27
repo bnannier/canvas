@@ -38,9 +38,11 @@ function declaredCanvasDependency(metadata) {
 
 // The docs modules the smoke app's component screens import (smoke/src/catalog): the
 // generated examples and their static index, their scope type, the example helpers, the
-// components list and the sample photos those examples name.
+// components list (with the hand-off sections it joins on) and the sample photos those
+// examples name.
 const SMOKE_DOCS_INPUTS = ["docs/src/core/docs-index.ts", "docs/src/core/scope.ts", "docs/src/core/live-state.tsx",
-  "docs/src/core/photos.ts", "docs/src/core/data/components.ts", "docs/src/core/data/types.ts", "docs/src/core/examples",
+  "docs/src/core/photos.ts", "docs/src/core/data/components.ts", "docs/src/core/data/types.ts",
+  "docs/src/core/data/detail-sections.ts", "docs/src/core/examples",
   "docs/public/*.jpg", "docs/public/*.mp4"];
 const docsInventory = (output) => fileInventory(path.join(output, "docs"));
 

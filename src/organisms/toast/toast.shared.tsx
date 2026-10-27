@@ -23,11 +23,13 @@ import {
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  type ViewProps,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { inverseFill } from "../../style/inverse.js";
 import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { rowSeam } from "../../style/touch-seam.js";
+import { useEscapeLayer } from "../../style/escape-layer.js";
 
 // Shared Toast shell. Two layers live here once and a platform file supplies only
 // its skin (capsule shape, type, action/dismiss feedback) and calls createToastSystem:
@@ -336,7 +338,8 @@ export function createToastSystem(skin: ToastSkin) {
       // with its content, so screen readers can miss a toast that pops into
       // existence; for reliable announcements render through <ToastProvider>,
       // whose live region is persistent.
-      <View
+      <EscapeDismiss
+        onEscape={content.onDismiss}
         role="status"
         accessibilityLiveRegion="polite"
         aria-live="polite"
@@ -344,7 +347,7 @@ export function createToastSystem(skin: ToastSkin) {
         style={style}
       >
         <ToastCapsule {...content} />
-      </View>
+      </EscapeDismiss>
     );
   }
 
@@ -425,7 +428,7 @@ export function createToastSystem(skin: ToastSkin) {
             aria-live="polite"
           >
             {toasts.map((t) => (
-              <View key={t.id} style={stackStyles.item}>
+              <EscapeDismiss key={t.id} onEscape={() => dismiss(t.id)} style={stackStyles.item}>
                 <ToastCapsule
                   brief={brief}
                   message={t.message}
@@ -438,7 +441,7 @@ export function createToastSystem(skin: ToastSkin) {
                   icon={t.icon}
                   onDismiss={brief ? undefined : () => dismiss(t.id)}
                 />
-              </View>
+              </EscapeDismiss>
             ))}
           </View>
         </Portal>
@@ -455,6 +458,52 @@ export function createToastSystem(skin: ToastSkin) {
   }
 
   return { Toast, ToastProvider, useToast };
+}
+
+// Escape dismisses the FOCUSED toast (the hand-off's keyboard table), never one the
+// user is not in: a toast's escape layer is active only while focus is inside it, so an
+// Escape meant for the page or a Dialog is left alone. The layer is the kit's one Escape
+// owner (src/style/escape-layer.ts); focus enters and leaves through the bubbling focus
+// events. Dismissing unmounts the focused control, so focus returns to where it came
+// from, the element the toast took it from, rather than falling to the page.
+// Natively the wrapper answers the iOS accessibility escape (the VoiceOver scrub, and
+// Escape under Full Keyboard Access), which UIKit sends only to the focused element's
+// ancestors; React Native delivers no other key events to a view, and Android's back is
+// never taken for a toast. A toast with no way to dismiss (a standalone one without
+// `onDismiss`) installs nothing.
+type EscapeDismissProps = Omit<ViewProps, "onFocus" | "onBlur" | "onAccessibilityEscape"> & { onEscape?: () => void };
+type FocusTarget = { focus?: () => void; isConnected?: boolean } | null;
+
+function EscapeDismiss({ onEscape, children, ...rest }: EscapeDismissProps) {
+  const [focused, setFocused] = useState(false);
+  const returnTo = useRef<FocusTarget>(null);
+  const dismiss = () => {
+    const target = returnTo.current;
+    onEscape?.();
+    if (target?.isConnected) target.focus?.();
+  };
+  useEscapeLayer(focused && onEscape != null, dismiss);
+  const focusEvent = (e: { nativeEvent?: unknown }) => (e.nativeEvent as { relatedTarget?: FocusTarget } | undefined)?.relatedTarget ?? null;
+  const inside = useRef<View>(null);
+  const contains = (node: FocusTarget) =>
+    node != null && (inside.current as unknown as { contains?: (n: unknown) => boolean } | null)?.contains?.(node) === true;
+  return (
+    <View
+      {...rest}
+      ref={inside}
+      onFocus={(e) => {
+        const from = focusEvent(e);
+        if (!contains(from)) returnTo.current = from;
+        setFocused(true);
+      }}
+      onBlur={(e) => {
+        if (!contains(focusEvent(e))) setFocused(false);
+      }}
+      onAccessibilityEscape={onEscape ? dismiss : undefined}
+    >
+      {children}
+    </View>
+  );
 }
 
 // The icon sits in a fixed leading slot so the text column aligns whether or not an

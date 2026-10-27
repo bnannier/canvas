@@ -3,17 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable } = scope;
+  const { Stateful, DataTable } = scope;
   return (
-<DataTable
-  stacks
-  sortable
-  columns={["Setting", "Default", "Description"]}
-  rows={[
-    ["Session timeout", "30 minutes", "Signs a member out after this long without activity. Shorter timeouts suit shared devices; longer ones suit a personal laptop."],
-    ["Password length", "12 characters", "The shortest password a member can choose. Longer minimums resist guessing, and a passphrase meets them easily."],
-    ["Recovery codes", "10 codes", "One-time codes a member can use when their authenticator is unavailable. Each code works once."]
-  ]}
-/>
+<Stateful initial={[
+  ["Alice Johnson", "alice@example.com", "Admin"],
+  ["Bob Smith", "bob@example.com", "Editor"],
+  ["Rachel Chen", "rachel@example.com", "Viewer"]
+]}>
+  {(rows, setRows) => (
+    <DataTable
+      columns={["Name", "Email", "Role"]}
+      rows={rows}
+      onRowEdit={() => {}}
+      onRowCommit={(i, cells) => setRows(rows.map((row, r) => (r === i ? cells.map(String) : row)))}
+      onRowDelete={(i) => setRows(rows.filter((_row, r) => r !== i))}
+    />
+  )}
+</Stateful>
   );
 }

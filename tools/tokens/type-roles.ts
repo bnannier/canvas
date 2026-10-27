@@ -74,7 +74,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
 
   // Pills, tags, badges, meta lines and annotations.
   "src/atoms/badge/badge.notification.tsx": { COUNT_LABEL: "tiny", BADGE_LABEL: "tiny" },
-  "src/organisms/sidebar/sidebar.styles.ts": { "webSkin.sectionTitle": "caption" },
+  "src/organisms/sidebar/sidebar.styles.ts": { webEyebrow: "caption" },
   "src/atoms/badge/badge.styles.ts": { "webSkin.sizes": "tiny" },
   "src/molecules/card/card.styles.ts": { eyebrow: "caption" },
   "src/atoms/chip/chip.shared.tsx": { COUNT_TYPE: "tiny" },

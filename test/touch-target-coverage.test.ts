@@ -233,7 +233,7 @@ const SLOP_CLIPS: Record<string, number> = {
   "src/atoms/pagination/pagination.shared.tsx": 3,
   "src/organisms/steps/steps.shared.tsx": 1,
   "src/organisms/row-menu/row-menu.shared.tsx": 1,
-  "src/molecules/code-block/code-block.shared.tsx": 1,
+  "src/molecules/code-block/code-block.shared.tsx": 2,
   "src/atoms/stepper/stepper.shared.tsx": 2,
   "src/atoms/chip/chip.shared.tsx": 1,
   "src/organisms/toast/toast.shared.tsx": 2,

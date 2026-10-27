@@ -1,5 +1,6 @@
 import { Column, Row, Typography, Badge, DataTable } from "@nannier/canvas";
 import type { PropGroup } from "../core/scope";
+import { INHERITED_PROPS } from "../core/examples/inherited-props";
 
 // The generated prop tables for a component page. Data comes from
 // each component's generated docs module (extracted from its `*Props` interface by
@@ -61,6 +62,17 @@ export function PropTables({ groups }: { groups: PropGroup[] }) {
             <Typography h3>{g.name.replace(/Props$/, "")}</Typography>
           ) : null}
           <GroupTable group={g} />
+          {/* A shared interface (MeasureProps, CartesianSeriesProps) is extracted once and
+              named in `inherits`; its rows follow the group's own. */}
+          {g.inherits.map((heritage) => {
+            const inherited = INHERITED_PROPS[heritage.match(/\w+Props/)![0]];
+            return inherited ? (
+              <Column key={heritage} tight>
+                <Typography small subtle>Also takes {heritage}:</Typography>
+                <GroupTable group={inherited} />
+              </Column>
+            ) : null;
+          })}
         </Column>
       ))}
     </Column>

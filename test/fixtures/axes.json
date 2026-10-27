@@ -1638,6 +1638,7 @@
     ],
     "resolver": "src/atoms/layout/layout.shared.tsx#gapOf",
     "order": [
+      "chapter",
       "page",
       "panel",
       "section",
@@ -1661,6 +1662,7 @@
     ],
     "none": "snug",
     "single": {
+      "chapter": "chapter",
       "page": "page",
       "panel": "panel",
       "section": "section",
@@ -1684,6 +1686,7 @@
     },
     "pairs": {
       "airy + balanced": "airy",
+      "airy + chapter": "chapter",
       "airy + close": "airy",
       "airy + comfortable": "airy",
       "airy + compact": "airy",
@@ -1702,6 +1705,7 @@
       "airy + snug": "airy",
       "airy + spacious": "spacious",
       "airy + tight": "airy",
+      "balanced + chapter": "chapter",
       "balanced + close": "balanced",
       "balanced + comfortable": "balanced",
       "balanced + compact": "balanced",
@@ -1720,6 +1724,24 @@
       "balanced + snug": "balanced",
       "balanced + spacious": "spacious",
       "balanced + tight": "balanced",
+      "chapter + close": "chapter",
+      "chapter + comfortable": "chapter",
+      "chapter + compact": "chapter",
+      "chapter + cozy": "chapter",
+      "chapter + dense": "chapter",
+      "chapter + fine": "chapter",
+      "chapter + flush": "chapter",
+      "chapter + generous": "chapter",
+      "chapter + loose": "chapter",
+      "chapter + nested": "chapter",
+      "chapter + page": "chapter",
+      "chapter + panel": "chapter",
+      "chapter + relaxed": "chapter",
+      "chapter + roomy": "chapter",
+      "chapter + section": "chapter",
+      "chapter + snug": "chapter",
+      "chapter + spacious": "chapter",
+      "chapter + tight": "chapter",
       "close + comfortable": "comfortable",
       "close + compact": "close",
       "close + cozy": "cozy",
@@ -3708,20 +3730,31 @@
     ],
     "resolver": "src/atoms/swatch/swatch.shared.tsx#paletteOf",
     "order": [
-      "dark",
+      "cyan",
       "mint",
-      "blush"
+      "rose",
+      "amber",
+      "violet"
     ],
     "none": null,
     "single": {
-      "dark": "dark",
+      "cyan": "cyan",
       "mint": "mint",
-      "blush": "blush"
+      "rose": "rose",
+      "amber": "amber",
+      "violet": "violet"
     },
     "pairs": {
-      "blush + dark": "dark",
-      "blush + mint": "mint",
-      "dark + mint": "dark"
+      "amber + cyan": "cyan",
+      "amber + mint": "mint",
+      "amber + rose": "rose",
+      "amber + violet": "amber",
+      "cyan + mint": "cyan",
+      "cyan + rose": "cyan",
+      "cyan + violet": "cyan",
+      "mint + rose": "mint",
+      "mint + violet": "mint",
+      "rose + violet": "rose"
     }
   },
   "Typography.alignment": {
@@ -4117,6 +4150,28 @@
       "referenceInline + referenceStacked": "referenceStacked",
       "referenceInline + referenceTile": "referenceTile",
       "referenceStacked + referenceTile": "referenceTile"
+    }
+  },
+  "CardMedia.well": {
+    "kind": "axis",
+    "components": [
+      "CardMedia"
+    ],
+    "pages": [
+      "card"
+    ],
+    "resolver": "src/molecules/card/card.shared.tsx#mediaWellOf",
+    "order": [
+      "compact",
+      "tall"
+    ],
+    "none": "default",
+    "single": {
+      "compact": "compact",
+      "tall": "tall"
+    },
+    "pairs": {
+      "compact + tall": "compact"
     }
   },
   "Card.density": {
@@ -4810,6 +4865,24 @@
       "bordered + floating": "bordered"
     }
   },
+  "Navbar.density": {
+    "kind": "toggle",
+    "components": [
+      "Navbar"
+    ],
+    "pages": [
+      "navbars"
+    ],
+    "resolver": "src/organisms/navbars/navbars.shared.tsx#densityOf",
+    "order": [
+      "compact"
+    ],
+    "none": "default",
+    "single": {
+      "compact": "compact"
+    },
+    "pairs": {}
+  },
   "Sidebar.density": {
     "kind": "toggle",
     "components": [
@@ -4838,15 +4911,16 @@
     ],
     "resolver": "src/organisms/sidebar/sidebar.shared.tsx#frameOf",
     "order": [
-      "bordered|floating"
+      "bordered",
+      "floating"
     ],
     "none": "flush",
     "single": {
       "bordered": "bordered",
-      "floating": "bordered"
+      "floating": "floating"
     },
     "pairs": {
-      "bordered + floating": "bordered|floating"
+      "bordered + floating": "bordered"
     }
   },
   "Sidebar.drawer edge": {

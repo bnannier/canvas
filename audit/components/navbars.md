@@ -20,10 +20,10 @@ Audit checklist for `/components/navbars`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: navbar-link-enter (unit-web, test/pressable-link-enter.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
+| Interaction states | recipes: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: links render 50x28; they abut, so the fix is vertical slop |
-| Tests importing it | 14: `test/behavior-smoke-d.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/narrow-modes.test.tsx`, `test/navbar-bare.test.tsx`, `test/pressable-link-enter.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-frost-paint-order.test.tsx` |
+| Tests importing it | 15: `test/behavior-smoke-d.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/narrow-modes.test.tsx`, `test/navbar-bare.test.tsx`, `test/navbar-v4.test.tsx`, `test/pressable-link-enter.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-frost-paint-order.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/navbars.md`, written by `bun run audit:turn -- --slug=navbars --phase=before\|after` (the before and after capture runs) |
@@ -39,6 +39,9 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `bordered` | Bordered | [ ] | [ ] | [ ] |  |
 | `floating` | Floating | [ ] | [ ] | [ ] |  |
+| `compact` | Compact | [ ] | [ ] | [ ] |  |
+| `scrolls` | Scrolls | [ ] | [ ] | [ ] |  |
+| `linkswithdestinations` | Links with destinations | [ ] | [ ] | [ ] |  |
 | `bare` | Bare | [ ] | [ ] | [ ] |  |
 | `appmenu` | App menu | [ ] | [ ] | [ ] |  |
 | `consoletopbar` | Console topbar | [ ] | [ ] | [ ] |  |

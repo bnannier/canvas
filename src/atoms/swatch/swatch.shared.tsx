@@ -1,5 +1,5 @@
-import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
-import { useId, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { type ViewStyle } from "react-native";
 import {
   View,
   Text,
@@ -9,8 +9,14 @@ import {
   useTheme,
   devWarn,
   MONO_FONT,
+  oklchHex,
+  paletteHue,
+  requestedPaletteOf,
+  useReducedMotion,
   type LayoutStyle,
+  type Palette,
 } from "../../style/index.js";
+import { useHover } from "../../style/hover.js";
 import { type SwatchSkin } from "./swatch.styles.js";
 
 // Shared Swatch shell. A color sample: one filled block with the token's name and
@@ -19,10 +25,11 @@ import { type SwatchSkin } from "./swatch.styles.js";
 // detail), so a sheet never hand-composes a bare View plus a Typography column beside
 // it and re-invents the spacing, the type scale, and the tap-free label alignment.
 //
-// Swatch is display-only in v1: it never takes an onPress and has no press feedback,
-// so no skin carries a ripple or a pressed opacity. A sheet that needs a copy-the-hex
-// action wraps the row in a real interactive kit component rather than making the
-// sample itself pressable.
+// A color sample is display-only: it has no press feedback, so no skin carries a ripple
+// or a pressed opacity. A sheet that needs a copy-the-hex action wraps the row in a real
+// interactive kit component rather than making the sample itself pressable. The one
+// pressable form is the palette picker (a palette boolean, with `selected` and
+// `onPress`): a 16 px hue disc that is a radio, rendered by PalettePick below.
 //
 // Swatch is a "Shared" platform treatment: one structure and one set of token colors
 // (here), and no platform ships a color sample, so the iOS and Android skins are the web
@@ -34,11 +41,17 @@ export type SwatchSize = "small" | "default" | "large";
 export interface SwatchProps {
   /** The fill: any React Native color string. Pass a theme token, not a literal. */
   color?: string;
-  /** Theme-picker samples, in precedence order dark > mint > blush. */
-  blush?: boolean;
+  // Palette picker (pick one): the sample becomes the 16 px hue disc of that accent
+  // palette, a radio named for it. Precedence is ThemeProvider's: cyan, mint, rose,
+  // amber, violet.
+  violet?: boolean;
+  cyan?: boolean;
   mint?: boolean;
-  dark?: boolean;
+  rose?: boolean;
+  amber?: boolean;
+  /** Palette picker: this palette is the one in force (draws the selection ring). */
   selected?: boolean;
+  /** Palette picker: pick this palette. */
   onPress?: () => void;
   /** The sample's name (the token name). Swatch owns this label column. */
   children?: ReactNode;
@@ -67,12 +80,26 @@ export interface SwatchProps {
   style?: LayoutStyle;
 }
 
-export function paletteOf(p: SwatchProps) {
-  if (p.dark) return "dark";
-  if (p.mint) return "mint";
-  if (p.blush) return "blush";
-  return null;
+/** The palette a picker sample shows, or null for a plain color sample (no palette prop). */
+export function paletteOf(p: Pick<SwatchProps, Palette>): Palette | null {
+  if (!p.violet && !p.cyan && !p.mint && !p.rose && !p.amber) return null;
+  return requestedPaletteOf(p);
 }
+
+/** A palette's name as a picker announces it ("Violet"). */
+export function paletteName(palette: Palette): string {
+  return palette.charAt(0).toUpperCase() + palette.slice(1);
+}
+
+/**
+ * A palette's disc fill: the hand-off navbar's `oklch(.72 .17 hue)`, the same in both
+ * schemes, since the disc names the hue rather than painting the accent of a scheme.
+ */
+export function paletteDiscColor(palette: Palette): string {
+  return oklchHex(PICKER_DISC.l, PICKER_DISC.c, paletteHue[palette]);
+}
+
+const PICKER_DISC = { l: 0.72, c: 0.17 } as const;
 
 // Size precedence when more than one is passed: first match wins.
 export function sizeOf(p: SwatchProps): SwatchSize {
@@ -120,21 +147,8 @@ export function createSwatch(skin: SwatchSkin) {
     const { tokens } = useTheme();
     const size = sizeOf(props);
     const edge = skin.box[size];
-    const gradientId = useId();
-    const minTarget = platformMinTarget();
     const palette = paletteOf(props);
-    if (palette) {
-      const stops = palette === "dark" ? ["#1d1b3b", "#3a2f7a"] : palette === "mint" ? ["#def4ec", "#cfdffb"] : ["#fde3ee", "#d9d6fc"];
-      return <Pressable hitSlop={minTarget == null ? undefined : (minTarget - 16) / 2} accessibilityRole="radio" accessibilityLabel={accessibilityLabel ?? `${palette} theme`} accessibilityState={{ checked: !!props.selected }} aria-checked={!!props.selected} onPress={props.onPress} testID={testID} style={[{
-        width: 16, height: 16, borderRadius: 9999,
-        boxShadow: props.selected ? `0 0 0 2px ${tokens.card}, 0 0 0 4px ${tokens.primary}` : `0 0 0 1px ${tokens.border}`,
-      }, style]}>
-        <Svg width={16} height={16} viewBox="0 0 16 16" pointerEvents="none">
-          <Defs><LinearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%"><Stop offset="0" stopColor={stops[0]} /><Stop offset="1" stopColor={stops[1]} /></LinearGradient></Defs>
-          <Rect width={16} height={16} rx={9999} fill={`url(#${gradientId})`} />
-        </Svg>
-      </Pressable>;
-    }
+    if (palette) return <PalettePick skin={skin} palette={palette} {...props} />;
 
     // A name node (an Icon row, a formatted element) cannot be read into the
     // accessible name, and role="img" hides it, so the sample would announce only its
@@ -208,4 +222,58 @@ export function createSwatch(skin: SwatchSkin) {
       </View>
     );
   };
+}
+
+/**
+ * The palette picker: the hand-off docs navbar's hue swatch, a 16 px disc of the
+ * palette's hue that is a radio named for the palette. The palette in force wears the
+ * selection ring (a 2 px gap in the card colour, then a 2 px muted-foreground band);
+ * the others draw none. On the web a hovered disc grows by the skin's `pickerHover`
+ * scale; the hover target is the Pressable, which never moves, and the disc inside it
+ * scales, ring included, as the hand-off's button does.
+ */
+function PalettePick({ skin, palette, selected, onPress, accessibilityLabel, testID, style }: SwatchProps & { skin: SwatchSkin; palette: Palette }) {
+  const { tokens } = useTheme();
+  const motion = skin.pickerHover;
+  const { hovered, target } = useHover(motion != null);
+  const reduced = useReducedMotion();
+  const minTarget = platformMinTarget();
+  const edge = skin.picker;
+  const label = accessibilityLabel ?? paletteName(palette);
+  const grow: ViewStyle | null = motion
+    ? ({
+        ...(hovered ? { transform: [{ scale: motion.scale }] } : null),
+        transitionProperty: "transform",
+        transitionDuration: `${reduced ? 0 : motion.duration}ms`,
+        transitionTimingFunction: motion.easing,
+      } as unknown as ViewStyle)
+    : null;
+  return (
+    <Pressable
+      {...target}
+      hitSlop={minTarget == null ? undefined : Math.max(0, (minTarget - edge) / 2)}
+      accessibilityRole="radio"
+      accessibilityLabel={label}
+      aria-label={label}
+      accessibilityState={{ checked: !!selected }}
+      aria-checked={!!selected}
+      onPress={onPress}
+      testID={testID}
+      style={[{ width: edge, height: edge, flexShrink: 0 }, style]}
+    >
+      <View
+        style={[
+          {
+            pointerEvents: "none",
+            width: edge,
+            height: edge,
+            borderRadius: 9999,
+            backgroundColor: paletteDiscColor(palette),
+            boxShadow: selected ? `0 0 0 2px ${tokens.card}, 0 0 0 4px ${tokens["muted-foreground"]}` : undefined,
+          },
+          grow,
+        ]}
+      />
+    </Pressable>
+  );
 }

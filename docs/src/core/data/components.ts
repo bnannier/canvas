@@ -1,9 +1,12 @@
 import type { ComponentDoc } from "./types";
+import { SECTION_OF } from "./detail-sections";
 
 // Every documented component. A component's description is not written here: it is the
 // first paragraph of its page's intro (src/<category>/<dir>/<dir>.md), generated into
-// docs/src/core/descriptions.ts, which the page's lead and the search index read.
-export const COMPONENTS: ComponentDoc[] = [
+// docs/src/core/descriptions.ts, which the page's lead and the search index read. Nor is
+// its section: that is the v4 hand-off's room for it, generated into detail-sections.ts
+// by tools/v4/derive-detail-specs.ts and joined on below.
+const ENTRIES: Omit<ComponentDoc, "section">[] = [
   { slug: "wizard", name: "Wizard", category: "Organisms", stageAlign: "start" },
   // AppFrame fills its parent, so its examples take the stage's full width as that parent.
   { slug: "app-frame", name: "AppFrame", category: "Organisms", stageAlign: "start" },
@@ -710,6 +713,13 @@ export const COMPONENTS: ComponentDoc[] = [
     stageAlign: "start",
   },
 ];
+
+export const COMPONENTS: ComponentDoc[] = ENTRIES.map((entry) => {
+  const section = SECTION_OF[entry.slug];
+  // test/detail-specs.test.ts holds the registry and the hand-off's sections to each other.
+  if (section === undefined) throw new Error(`No v4 hand-off section lists "${entry.slug}": run bun run v4:specs`);
+  return { ...entry, section };
+});
 
 export function getComponent(slug: string): ComponentDoc | undefined {
   return COMPONENTS.find((c) => c.slug === slug);

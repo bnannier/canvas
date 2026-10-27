@@ -3,14 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Typography, Row, Column } = scope;
+  const { Badge, Row } = scope;
   return (
-<Row between alignEnd wrap>
-  <Column tight shrink>
-    <Typography h3>Dashboard</Typography>
-    <Typography small muted>Identity platform overview. Each widget reports its own window.</Typography>
-  </Column>
-  <Button outline small>Export</Button>
+<Row wrap>
+  <Badge>alpha</Badge>
+  <Badge>beta</Badge>
+  <Badge>gamma</Badge>
+  <Badge>delta</Badge>
+  <Badge>epsilon</Badge>
+  <Badge>zeta</Badge>
 </Row>
   );
 }

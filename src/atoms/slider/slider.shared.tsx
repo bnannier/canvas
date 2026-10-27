@@ -10,6 +10,7 @@ import {
 import { View, Text, GlassSurface, useControllableState, useFillStyle, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
+import { useInteractionOverride } from "../../style/interaction-override.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -229,7 +230,10 @@ export function createSlider(skin: SliderSkin) {
     // re-render that paints the fill/thumb at the right spot once measured.
     const [trackWidth, setTrackWidth] = useState(0);
     const widthRef = useRef(0);
-    const [pressed, setPressed] = useState(false);
+    const [dragging, setPressed] = useState(false);
+    // An InteractionOverride's pinned press shows the held thumb (src/style/interaction-override.tsx).
+    const pinnedPress = useInteractionOverride()?.pressed ?? false;
+    const pressed = (pinnedPress && !disabled) || dragging;
 
     // Losing interactivity cancels the engaged decoration without changing the
     // value.
@@ -506,7 +510,8 @@ export function createSlider(skin: SliderSkin) {
           style={[
             thumbShape,
             { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop },
-            frame.ring(),
+            // A disabled slider takes no focus, so a pinned focus leaves its thumb bare.
+            disabled ? null : frame.ring(),
           ]}
         />
       </View>

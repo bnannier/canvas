@@ -3,17 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardFooter, CardSeparator, Typography } = scope;
+  const { Button, Card, CardContent, CardMedia, CardSeparator, Typography } = scope;
   return (
 <Card flush>
-  <CardContent>
-    <Typography small>Rename the workspace. The URL updates everywhere.</Typography>
-  </CardContent>
+  <CardMedia>
+    <Button primary>Save changes</Button>
+  </CardMedia>
   <CardSeparator />
-  <CardFooter>
-    <Button ghost small>Cancel</Button>
-    <Button primary small>Save</Button>
-  </CardFooter>
+  <CardContent>
+    <Typography small medium>Primary</Typography>
+  </CardContent>
 </Card>
   );
 }

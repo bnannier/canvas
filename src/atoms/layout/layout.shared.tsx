@@ -26,7 +26,8 @@ import { type FlexSkin } from "./layout.styles.js";
 // Direction is the component identity (Row vs Column), not a prop. Everything else
 // is a boolean axis with a documented first-match precedence, mirroring Badge's
 // toneOf / Typography's roleOf:
-//   - gap scale     (flush / tight / snug / cozy / relaxed / loose; default snug)
+//   - gap scale     (flush / tight / snug / cozy / relaxed / loose / ... / page / chapter;
+//                    default snug)
 //   - main axis      justify (start / center / end / between / around / evenly)
 //   - cross axis      align   (alignStart / alignCenter / alignEnd / baseline / stretch)
 //   - modifiers       wrap / fill / grow / shrink (orthogonal, stack freely)
@@ -48,7 +49,7 @@ import { type FlexSkin } from "./layout.styles.js";
 // same scale maps. The full per-OS file structure exists to match the kit recipe.
 
 export type Direction = "row" | "column";
-export type Gap = "page" | "panel" | "section" | "loose" | "generous" | "spacious" | "airy" | "relaxed" | "roomy" | "cozy" | "balanced" | "comfortable" | "nested" | "snug" | "close" | "compact" | "dense" | "tight" | "fine" | "flush";
+export type Gap = "chapter" | "page" | "panel" | "section" | "loose" | "generous" | "spacious" | "airy" | "relaxed" | "roomy" | "cozy" | "balanced" | "comfortable" | "nested" | "snug" | "close" | "compact" | "dense" | "tight" | "fine" | "flush";
 export type Justify = "start" | "center" | "end" | "between" | "around" | "evenly";
 export type Align = "alignStart" | "alignCenter" | "alignEnd" | "baseline" | "stretch";
 export type Pad = "padTight" | "pad" | "padLoose";
@@ -85,6 +86,13 @@ export interface FlexProps {
   section?: boolean; // 26
   panel?: boolean; // 28
   page?: boolean; // 30
+  /**
+   * The widest gap step (64): the space between a page's chapters, the major
+   * sections of a long docs page (a component detail page's Playground, Props
+   * and Examples), wider than `page` so each chapter reads as its own block.
+   * Wins over every other gap step.
+   */
+  chapter?: boolean; // 64
 
   // Gap scale (pick one; default `snug`). Maps to the shared spacing tokens.
   flush?: boolean; // 0
@@ -204,6 +212,7 @@ const ALIGN: Record<Align, ViewStyle["alignItems"]> = {
 // (mirrors Typography's roleOf ordering). Default `snug` when none is set.
 // Exported for Grid, which shares the gap axis and its precedence.
 export function gapOf(p: Pick<FlexProps, Gap>): Gap {
+  if (p.chapter) return "chapter";
   if (p.page) return "page";
   if (p.panel) return "panel";
   if (p.section) return "section";

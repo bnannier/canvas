@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, spyOn } from "bun:test";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
 import { Swatch } from "../src/atoms/swatch/swatch.tsx";
+import { paletteOf, paletteDiscColor } from "../src/atoms/swatch/swatch.shared.tsx";
+import { oklchHex } from "../src/style/color.ts";
+import { colorsFor } from "../src/style/tokens.ts";
 
 // Swatch is display-only, so there is no interaction to drive: what has to hold is the
 // anatomy (the block plus the label column it OWNS), the data-carrying accessible name
@@ -166,5 +169,81 @@ describe("Swatch boolean axes", () => {
     expect(rootOf(container).style.alignSelf).toBe("stretch");
     expect(blockOf(container).style.width).toBe("56px");
     expect(blockOf(container).style.alignSelf).not.toBe("stretch");
+  });
+});
+
+describe("Swatch palette picker", () => {
+  // The hand-off docs navbar's hue swatch: a 16 px disc of oklch(.72 .17 hue), a radio
+  // named for its palette, ringed only when it is the palette in force.
+  const radios = (c: HTMLElement) => Array.from(c.querySelectorAll('[role="radio"]')) as HTMLElement[];
+  const discOf = (radio: HTMLElement) => radio.firstElementChild as HTMLElement;
+
+  it("resolves the palette with ThemeProvider's precedence, and null without one", () => {
+    expect(paletteOf({})).toBeNull();
+    expect(paletteOf({ violet: true })).toBe("violet");
+    expect(paletteOf({ violet: true, amber: true })).toBe("amber");
+    expect(paletteOf({ amber: true, rose: true })).toBe("rose");
+    expect(paletteOf({ rose: true, mint: true })).toBe("mint");
+    expect(paletteOf({ mint: true, cyan: true })).toBe("cyan");
+  });
+
+  it("is a radio named for its palette, checked when selected", () => {
+    const { container } = ui(
+      <>
+        <Swatch violet selected onPress={() => {}} />
+        <Swatch cyan onPress={() => {}} />
+      </>,
+    );
+    const [violet, cyan] = radios(container);
+    expect(violet.getAttribute("aria-label")).toBe("Violet");
+    expect(violet.getAttribute("aria-checked")).toBe("true");
+    expect(cyan.getAttribute("aria-label")).toBe("Cyan");
+    expect(cyan.getAttribute("aria-checked")).toBe("false");
+  });
+
+  it("fills a 16 px disc with the palette's hue, the same in both schemes", () => {
+    for (const scheme of [{ dark: true }, { light: true }]) {
+      const { container, unmount } = render(<ThemeProvider {...scheme}><Swatch rose onPress={() => {}} /></ThemeProvider>);
+      const disc = discOf(radios(container)[0]);
+      expect(disc.style.width).toBe("16px");
+      expect(disc.style.height).toBe("16px");
+      const hex = paletteDiscColor("rose");
+      const n = parseInt(hex.slice(1), 16);
+      expect(disc.style.backgroundColor).toBe(`rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, 1.00)`);
+      unmount();
+    }
+    expect(paletteDiscColor("violet")).toBe(oklchHex(0.72, 0.17, 285));
+  });
+
+  it("rings only the palette in force: a card gap, then a muted-foreground band", () => {
+    const { container } = render(
+      <ThemeProvider light>
+        <Swatch mint selected onPress={() => {}} />
+        <Swatch amber onPress={() => {}} />
+      </ThemeProvider>,
+    );
+    const [mint, amber] = radios(container).map(discOf);
+    const t = colorsFor("violet", "light");
+    expect(mint.style.boxShadow).toBe(`0 0 0 2px ${t.card}, 0 0 0 4px ${t["muted-foreground"]}`);
+    expect(amber.style.boxShadow).toBe("");
+  });
+
+  it("picks on press", () => {
+    let picked = 0;
+    const { container } = ui(<Swatch amber onPress={() => { picked += 1; }} />);
+    fireEvent.click(radios(container)[0]);
+    expect(picked).toBe(1);
+  });
+
+  it("grows the disc under a mouse on the web, never under touch", () => {
+    const { container } = ui(<Swatch cyan onPress={() => {}} />);
+    const radio = radios(container)[0];
+    expect(discOf(radio).style.transform).toBe("");
+    fireEvent.pointerEnter(radio, { pointerType: "touch" });
+    expect(discOf(radio).style.transform).toBe("");
+    fireEvent.pointerEnter(radio, { pointerType: "mouse" });
+    expect(discOf(radio).style.transform).toBe("scale(1.25)");
+    fireEvent.pointerLeave(radio, { pointerType: "mouse" });
+    expect(discOf(radio).style.transform).toBe("");
   });
 });

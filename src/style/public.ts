@@ -104,6 +104,10 @@ export {
   type ViewProps,
   type ViewStyle,
 } from "./primitives.js";
+// The docs specimen seams: the pinned interaction states a States row shows, and the
+// part rectangles an Anatomy section numbers.
+export { InteractionOverride, type InteractionOverrideProps } from "./interaction-override.js";
+export { AnatomyProvider, type AnatomyProviderProps, type AnatomyRect, type AnatomyRects } from "./anatomy.js";
 export {
   type OverlayHost,
   OverlayProvider,

@@ -9,6 +9,15 @@ links (the active one checkmarked), so links never clip off a phone screen;
 `active` and `onSelect` keep their contract in both renderings. The menu button
 leads the bar, ahead of the logo and brand, where Material 3's top app bar puts
 its navigation icon.
+Pass `scrolls` to keep every link at every width instead: the bar's content row
+then pans sideways inside the bar, with no scroll indicator, and the links never
+fold into the menu. `onMenu` still replaces the links when both are passed.
+
+On the web the bar is the v4 hand-off's: 56px tall with a 16px gutter, 32px
+capsule links in the interface face, the active one (and a hovered one) on the
+`secondary` fill. `floating` lifts it as a pill on the stronger hairline with the
+md shade. On iOS and Android the bar keeps the platform's own navigation bar and
+top app bar shape.
 
 In glass mode the active link paints a control-layer pane (iOS keeps its
 inactive capsules and carries the brand fill as glass, web and Android carry
@@ -45,6 +54,37 @@ links row nor the menu button that stands in for it.
 
 ```tsx
 <Navbar floating brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
+```
+
+### Compact
+
+`compact` is the density axis's one member: the tight bar, 44px with a 5px inset
+and 2px between every item on the web (a shorter bar with tighter gaps natively).
+
+```tsx
+<Navbar compact floating brand="Canvas" links={["Docs", "Components", "Templates"]} />
+```
+
+### Scrolls
+
+With `scrolls` the links never fold into the narrow menu: the content row scrolls
+sideways inside the bar once it no longer fits. With `floating` and `compact` it is
+the hand-off's docs pill.
+
+```tsx
+<Navbar scrolls floating compact brand="Canvas" links={["Foundations", "Controls", "Inputs", "Navigation", "Overlays", "Data", "Charts", "Layout", "Templates"]} />
+```
+
+### Links with destinations
+
+`hrefs` gives the links their destinations, by index. On the web each becomes a real
+anchor, so middle-click and open-in-new-tab work, while a plain click still selects
+the link and calls `onSelect` with the press event (call `event.preventDefault()`
+there to route on the client). A modifier or middle click is left to the browser.
+Natively `hrefs` is ignored and `onSelect` does the navigating.
+
+```tsx
+<Navbar bordered brand="Canvas" links={["Docs", "Components", "Templates"]} hrefs={["/docs", "/components", "/templates"]} />
 ```
 
 ### Bare

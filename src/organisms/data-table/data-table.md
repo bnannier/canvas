@@ -218,6 +218,56 @@ A table that sits flush inside a frame its parent draws (a `flush` Card, a borde
 />
 ```
 
+### Column weights
+
+A column without a fixed `width` takes an equal share of what the fixed columns leave; `grow` weights that share (`grow: 2` takes twice a `grow: 1` column's) and `minWidth` floors the column's box, as a grid's `minmax(150px, 2fr)` track does. Weights, floors and fixed widths mix freely. Once the declared floors add up to more than the table's width, the table pans horizontally at any width rather than crushing them.
+
+```tsx
+<DataTable
+  columns={[
+    { label: "Prop", minWidth: 150 },
+    { label: "Type", grow: 1.2, minWidth: 150 },
+    { label: "Default", width: 100 },
+    { label: "Description", grow: 2.2, minWidth: 220 }
+  ]}
+  rows={[
+    ["primary", "boolean", "false", "The filled accent button, for the one main action on a surface."],
+    ["small", "boolean", "false", "The 32 px control height."],
+    ["loading", "boolean", "false", "Shows a spinner in place of the label and blocks presses."]
+  ]}
+/>
+```
+
+### Grouped rows
+
+Pass `groups` in place of `rows` to title runs of rows: each group draws a band spanning every column (its `label`, an optional `adornment` node and an optional `count`, on the sunken fill) above its own rows. Sorting reorders rows within their group, paging draws the band of every group a page shows, and row indices count through the groups in order.
+
+```tsx
+<DataTable
+  columns={["Prop", "Type", "Default"]}
+  groups={[
+    {
+      label: "Intent",
+      adornment: <Badge soft small>pick one</Badge>,
+      count: 3,
+      rows: [
+        ["primary", "boolean", "false"],
+        ["destructive", "boolean", "false"],
+        ["ghost", "boolean", "false"]
+      ]
+    },
+    {
+      label: "State",
+      count: 2,
+      rows: [
+        ["loading", "boolean", "false"],
+        ["disabled", "boolean", "false"]
+      ]
+    }
+  ]}
+/>
+```
+
 ### Sparkline trend column
 
 ```tsx

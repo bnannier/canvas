@@ -3,6 +3,7 @@ import { Platform, type PointerEvent, type StyleProp, type ViewStyle } from "rea
 import { HOVER_EASING } from "./motion.js";
 import type { ColorTokens } from "./tokens.js";
 import { View } from "./primitives.js";
+import { useInteractionOverride } from "./interaction-override.js";
 
 // Hover feedback, the timed kind the design language keeps (its item 9): a surface that
 // rises while a pointer hovers it, and a row whose wash fades in. The values live in
@@ -74,9 +75,12 @@ export function webHover<T>(look: T, os: string = Platform.OS): T | null {
  * handlers and masks the state instead (`hovered && !disabled`), so one enabled under a
  * resting pointer shows its hover without waiting for the pointer to move. When
  * `enabled` turns false the handlers come off and the state clears: a leave the handlers
- * never saw must not leave the control hovered when they come back.
+ * never saw must not leave the control hovered when they come back. An
+ * InteractionOverride ancestor that pins `hovered` reports it hovered while `enabled`
+ * (src/style/interaction-override.tsx).
  */
 export function useHover(enabled = true): { hovered: boolean; target: HoverTarget } {
+  const pinned = useInteractionOverride()?.hovered ?? false;
   const [hovered, setHovered] = useState(false);
   if (!enabled && hovered) setHovered(false);
   const onPointerEnter = useCallback((event: PointerEvent) => {
@@ -84,7 +88,7 @@ export function useHover(enabled = true): { hovered: boolean; target: HoverTarge
   }, []);
   const onPointerLeave = useCallback(() => setHovered(false), []);
   const target = useMemo(() => ({ onPointerEnter, onPointerLeave }), [onPointerEnter, onPointerLeave]);
-  return { hovered: enabled && hovered, target: enabled ? target : NO_TARGET };
+  return { hovered: enabled && (hovered || pinned), target: enabled ? target : NO_TARGET };
 }
 
 export type HoverProperty = "transform" | "box-shadow" | "background-color";

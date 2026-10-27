@@ -69,7 +69,7 @@ import { fitOf as videoFit } from "../../src/atoms/video/video.shared.tsx";
 import { toneOf as actionPanelTone, layoutOf as actionPanelLayout } from "../../src/molecules/action-panels/action-panels.shared.tsx";
 import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx";
 import { widthOf as alertDialogWidth } from "../../src/molecules/alert-dialog/alert-dialog.shared.tsx";
-import { elevationOf, densityOf as cardDensity } from "../../src/molecules/card/card.shared.tsx";
+import { elevationOf, densityOf as cardDensity, mediaWellOf } from "../../src/molecules/card/card.shared.tsx";
 import { variantOf as codeBlockVariant } from "../../src/molecules/code-block/code-block.shared.tsx";
 import { layoutOf as descriptionLayout, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
 import { leadOf } from "../../src/molecules/feeds/feeds.shared.tsx";
@@ -83,7 +83,7 @@ import { densityOf as dataTableDensity, columnAlignOf } from "../../src/organism
 import { sizeOf as dialogSize } from "../../src/organisms/dialog/dialog.shared.tsx";
 import { edgeOf } from "../../src/organisms/drawer/drawer.shared.tsx";
 import { densityOf as filterPanelDensity } from "../../src/organisms/filter-panel/filter-panel.shared.tsx";
-import { surfaceOf as navbarSurface } from "../../src/organisms/navbars/navbars.shared.tsx";
+import { surfaceOf as navbarSurface, densityOf as navbarDensity } from "../../src/organisms/navbars/navbars.shared.tsx";
 import { densityOf as sidebarDensity, frameOf, drawerEdgeOf } from "../../src/organisms/sidebar/sidebar.shared.tsx";
 import { layoutOf as stepsLayout } from "../../src/organisms/steps/steps.shared.tsx";
 import { variantOf as tabsVariant, wrapsOf, type TabsProps } from "../../src/organisms/tabs/tabs.shared.tsx";
@@ -323,7 +323,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Row", "Column", "Grid"],
     pages: ["row-column", "grid"],
     resolver: "src/atoms/layout/layout.shared.tsx#gapOf",
-    members: ["page", "panel", "section", "loose", "generous", "spacious", "airy", "relaxed", "roomy", "cozy", "balanced", "comfortable", "nested", "snug", "close", "compact", "dense", "tight", "fine", "flush"],
+    members: ["chapter", "page", "panel", "section", "loose", "generous", "spacious", "airy", "relaxed", "roomy", "cozy", "balanced", "comfortable", "nested", "snug", "close", "compact", "dense", "tight", "fine", "flush"],
     resolve: gapOf,
   }),
   subject({ id: "Layout.justify", components: ["Row", "Column"], pages: ["row-column"], resolver: "src/atoms/layout/layout.shared.tsx#justifyOf", members: ["between", "around", "evenly", "center", "end", "start"], resolve: justifyOf }),
@@ -408,7 +408,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Button.web hover", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webHoverKindOf", members: ["themeChoice", "identityAction", "utility", "inlineLink", "inverse"], resolve: webHoverKindOf }),
   subject({ id: "Button.web emphasis", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webEmphasisOf", members: ["inlineLink", "inverse", "quiet"], resolve: webEmphasisOf }),
   subject({ id: "Icon.stroke weight", components: ["Icon"], pages: ["icon"], resolver: "src/atoms/icon/icon.shared.tsx#strokeWidthOf", members: ["heavyStroke", "boldStroke", "mediumStroke", "regularStroke"], resolve: strokeWidthOf }),
-  subject({ id: "Swatch.palette", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#paletteOf", members: ["dark", "mint", "blush"], resolve: paletteOf }),
+  subject({ id: "Swatch.palette", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#paletteOf", members: ["cyan", "mint", "rose", "amber", "violet"], resolve: paletteOf }),
   subject({ id: "Typography.alignment", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#textAlignOf", members: ["right", "center"], resolve: textAlignOf }),
 
   subject({ id: "Avatar.reference paint", components: ["Avatar"], pages: ["avatar"], resolver: "src/atoms/avatar/avatar.reference.tsx#referencePaintOf", members: ["logo", "orchid"], resolve: referencePaintOf }),
@@ -424,6 +424,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Card.inset panels", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#panelOf", members: ["notePanel", "versionPanel", "gatePanel"], resolve: panelOf }),
   subject({ id: "Card.brand artwork", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.brand.tsx#brandCardModeOf", members: ["featured", "promo"], resolve: brandCardModeOf }),
   subject({ id: "Card.reference", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.reference.tsx#referenceModeOf", members: ["referenceDetail", "referenceTile", "referenceStacked", "referenceInline"], resolve: referenceModeOf }),
+  subject({ id: "CardMedia.well", components: ["CardMedia"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#mediaWellOf", members: ["compact", "tall"], resolve: mediaWellOf }),
   subject({
     id: "Card.density",
     components: ["Card"],
@@ -472,6 +473,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Drawer.edge", components: ["Drawer"], pages: ["drawer"], resolver: "src/organisms/drawer/drawer.shared.tsx#edgeOf", members: ["right", "bottom", "top", "left"], resolve: edgeOf }),
   subject({ id: "FilterPanel.density", components: ["FilterPanel"], pages: ["filter-panel"], resolver: "src/organisms/filter-panel/filter-panel.shared.tsx#densityOf", members: ["compact"], resolve: filterPanelDensity }),
   subject({ id: "Navbar.surface", components: ["Navbar"], pages: ["navbars"], resolver: "src/organisms/navbars/navbars.shared.tsx#surfaceOf", members: ["bordered", "floating", "bare"], resolve: navbarSurface }),
+  subject({ id: "Navbar.density", components: ["Navbar"], pages: ["navbars"], resolver: "src/organisms/navbars/navbars.shared.tsx#densityOf", members: ["compact"], resolve: navbarDensity }),
   subject({ id: "Sidebar.density", components: ["Sidebar"], pages: ["sidebar"], resolver: "src/organisms/sidebar/sidebar.shared.tsx#densityOf", members: ["compact"], resolve: sidebarDensity }),
   subject({ id: "Sidebar.frame", components: ["Sidebar"], pages: ["sidebar"], resolver: "src/organisms/sidebar/sidebar.shared.tsx#frameOf", members: ["bordered", "floating"], resolve: frameOf }),
   subject({

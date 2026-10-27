@@ -8,6 +8,7 @@ import e_atoms_pressable_dont_0_do from "./dont-0-do";
 import e_atoms_pressable_dont_0_dont from "./dont-0-dont";
 import e_atoms_pressable_dont_1_do from "./dont-1-do";
 import e_atoms_pressable_dont_1_dont from "./dont-1-dont";
+import e_atoms_pressable_guidance_0_1 from "./guidance-0-1";
 
 export const docs: ComponentDocs = {
   dir: "pressable",
@@ -25,7 +26,21 @@ export const docs: ComponentDocs = {
     { title: "Press feedback", do: { caption: "Answer the press with a style function: `({ pressed }) => style` changes the surface while the finger is down, so the tap visibly lands.", code: "<Pressable accessibilityRole=\"button\" style={({ pressed }) => ({ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: pressed ? tokens.accent : tokens.card })}>\n  <Typography small>Open the weekly report</Typography>\n</Pressable>", render: e_atoms_pressable_dont_0_do }, dont: { caption: "Give the surface a fixed style; nothing changes under the finger, so a tap feels dropped and a slow response reads as a missed press.", code: "<Pressable accessibilityRole=\"button\" style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card }}>\n  <Typography small>Open the weekly report</Typography>\n</Pressable>", render: e_atoms_pressable_dont_0_dont } },
     { title: "Kit controls first", do: { caption: "Use the kit's control when one fits the job: a Button already carries the brand fill, press feedback, focus ring, role and disabled state on every platform.", code: "<Button primary onPress={() => {}}>Save changes</Button>", render: e_atoms_pressable_dont_1_do }, dont: { caption: "Rebuild a button from Pressable and a style object; it drifts from the brand the moment the kit's Button changes, and it misses every state the kit draws for you.", code: "<Pressable style={({ pressed }) => ({ alignSelf: \"flex-start\", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>\n  <Text style={{ color: tokens[\"primary-foreground\"], fontWeight: \"600\" }}>Save changes</Text>\n</Pressable>", render: e_atoms_pressable_dont_1_dont } },
   ],
+  guidance: [
+    {
+      title: "Pinned states",
+      blocks: [
+        "`InteractionOverride` pins hover, keyboard focus or the pressed state for every kit control inside it, so a docs specimen or a visual test shows that state without a pointer or a key. Pass `hovered`, `focused` or `pressed` (its `InteractionOverrideProps`); they combine, and passing none gives the subtree back its real states. The kit's Pressable draws its focus ring and reports `pressed` to its style and children functions, the hover primitive reports a hover, and a field shows its focused look, so Button, Input, Checkbox, Switch, Pagination and every other kit control honour it without a prop of their own. It pins the look only: no handler fires, assistive technology hears the control as it is, a disabled control stays at rest, and natively a pinned focus draws no ring, as a real one draws none there. Portaled overlay content keeps its real states.",
+        { code: "<Row wrap alignCenter cozy>\n  <Button outline>Rest</Button>\n  <InteractionOverride hovered>\n    <Button outline>Hover</Button>\n  </InteractionOverride>\n  <InteractionOverride focused>\n    <Button outline>Focus</Button>\n  </InteractionOverride>\n  <InteractionOverride pressed>\n    <Button outline>Pressed</Button>\n  </InteractionOverride>\n</Row>", render: e_atoms_pressable_guidance_0_1 },
+      ],
+    },
+  ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
   props: [],
+  // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
+  // assistive tech, the colour roles its skins read, and the components it is used with.
+  semantics: {"roles":[],"states":[],"aria":[],"touchTarget":[]},
+  tokens: [],
+  related: ["text","typography","button","row-column","container","grid","divider","view"],
 };

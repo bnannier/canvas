@@ -77,8 +77,21 @@ export interface DataTableColumn {
   numeric?: boolean;
   /** Center the header and cells (short status/flag columns). */
   centered?: boolean;
-  /** Fixed width in px instead of the equal flex share. */
+  /** Fixed width in px instead of the equal flex share. Wins over `grow` and `minWidth`. */
   width?: number;
+  /**
+   * The column's relative weight in the width the fixed columns leave: a column with
+   * `grow: 2` takes twice the share of one with `grow: 1` (the default every column
+   * has), the way a grid's `2fr` does beside `1fr`. Mixes freely with fixed `width`s.
+   */
+  grow?: number;
+  /**
+   * The narrowest the column's box (its cell padding included) may get, in px, as a
+   * grid's `minmax(min, fr)` floor. Once the declared floors add up to more than the
+   * table's width, the table pans horizontally at any width instead of crushing the
+   * columns (a table without a declared floor pans only below the `sm` width).
+   */
+  minWidth?: number;
   /**
    * Opt this column into header-press sorting. Unnecessary when the table-level
    * `sortable` is set (there it opts back OUT via `sortable: false`).
@@ -92,6 +105,21 @@ export interface DataTableColumn {
    * external data, replace the function, its descriptor, and the columns array.
    */
   sortValue?: (cell: ReactNode, row: ReactNode[], rowIndex: number) => string | number | null | undefined;
+}
+
+/**
+ * A titled group of rows (`groups`): a band spanning every column above the group's
+ * rows, carrying its label, an optional adornment and an optional count.
+ */
+export interface DataTableGroup {
+  /** The band's label. A string takes the band's label type; any other node renders as given. */
+  label: ReactNode;
+  /** A node after the label, such as a `<Badge soft>pick one</Badge>` marking the group's rule. */
+  adornment?: ReactNode;
+  /** A count after the adornment, in the muted monospace meta type. */
+  count?: string | number;
+  /** The group's rows, in the shape `rows` takes. */
+  rows: ReactNode[][];
 }
 
 /** The active sort: which column (by `key`, or label) and which direction. */
@@ -117,7 +145,18 @@ export interface DataTableProps {
    * Treat this data as immutable: replace the outer array and each changed row
    * when data changes, so cached sorting and pagination update correctly.
    */
-  rows: ReactNode[][];
+  rows?: ReactNode[][];
+  /**
+   * Group the rows under titled bands (the props table's "Intent", "Size" and "State"
+   * groups): each group draws a band spanning every column, its label, an optional
+   * adornment and an optional count on the sunken fill, then its own rows. Given
+   * `groups`, the table's rows are the groups' rows in order and `rows` is ignored;
+   * every row index a callback reports (`onRowPress`, `onRowEdit`, `rowKey` and the
+   * rest) counts through them in that order. Sorting reorders rows within their group
+   * and never moves a group; paging pages the rows, and each page draws the band of
+   * every group it shows. A group with no rows draws no band.
+   */
+  groups?: DataTableGroup[];
   /** Tint every other data row for easier horizontal scanning. */
   striped?: boolean;
   /** Wrap the table in a rounded outer border. */
@@ -304,6 +343,27 @@ function normalizeColumns(columns: Array<string | DataTableColumn>): NormalColum
   return columns.map((c) => (typeof c === "string" ? { label: c, key: c } : { ...c, key: c.key ?? c.label }));
 }
 
+// The table's rows and, with `groups`, the group each row belongs to (by position in
+// `groups`) and the groups themselves. Without groups, `groupOf` is null.
+interface TableData {
+  rows: ReactNode[][];
+  groupOf: number[] | null;
+  groups: DataTableGroup[];
+}
+
+function tableData(rows: ReactNode[][] | undefined, groups: DataTableGroup[] | undefined): TableData {
+  if (!groups) return { rows: rows ?? [], groupOf: null, groups: [] };
+  const all: ReactNode[][] = [];
+  const groupOf: number[] = [];
+  groups.forEach((group, g) => {
+    for (const row of group.rows) {
+      all.push(row);
+      groupOf.push(g);
+    }
+  });
+  return { rows: all, groupOf, groups };
+}
+
 // The header cell box: the equal flex share, the label+sort-icon row, and the
 // px-16 horizontal padding (the skins' headerCell is type-only). Alignment and
 // fixed widths are layered on per column.
@@ -316,6 +376,10 @@ const HEADER_CELL_BOX: ViewStyle = {
   gap: 4,
   paddingHorizontal: 16,
 };
+
+// A group band's one cell: the label, adornment and count in a row (the skin's band
+// carries the padding and the fill).
+const GROUP_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 };
 
 // The centered spanning area for the built-in empty message.
 const EMPTY_WRAP: ViewStyle = { alignItems: "center", paddingVertical: 32, paddingHorizontal: 16 };
@@ -332,9 +396,16 @@ const FOOTER_BAR: ViewStyle = {
   paddingVertical: 8,
 };
 
-// Fixed-width column override (replaces the equal flex share).
+// A column's box over the equal flex share: a fixed width replaces the share; a
+// weight (`grow`) scales it and a floor (`minWidth`) holds it, the flex reading of a
+// grid's `minmax(min, Nfr)` track.
 function widthStyle(col: NormalColumn): ViewStyle | null {
-  return col.width != null ? { width: col.width, flexGrow: 0, flexShrink: 0, flexBasis: "auto" } : null;
+  if (col.width != null) return { width: col.width, flexGrow: 0, flexShrink: 0, flexBasis: "auto" };
+  if (col.grow == null && col.minWidth == null) return null;
+  return {
+    ...(col.grow != null ? { flexGrow: Math.max(0, col.grow) } : null),
+    ...(col.minWidth != null ? { minWidth: col.minWidth } : null),
+  };
 }
 
 // The trailing row-actions cell (and its header spacer): a fixed trailing
@@ -444,7 +515,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   }
 
   return function DataTable(props: DataTableProps) {
-    const { columns, rows, striped, bordered, attached, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
+    const { columns, striped, bordered, attached, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, testID, style } = props;
     const density = densityOf(props);
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
@@ -453,6 +524,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const fill = useFillStyle("DataTable");
 
     const cols = useMemo(() => normalizeColumns(columns), [columns]);
+    // The rows, flattened out of `groups` when the table is grouped.
+    const { rows, groupOf, groups } = useMemo(() => tableData(props.rows, props.groups), [props.rows, props.groups]);
 
     // Measure the table's OWN width so the compact-width collapse tracks the
     // container, not the window: the docs 3-up and a real iPhone both render the
@@ -508,12 +581,17 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // the sm width, and once on every phone mount, whose first frame is
     // unmeasured.
     const canPan = !skin.collapsesToPrimaryColumn;
-    const pans = canPan && !stacked && cols.length > 1 && measuredWidth > 0 && measuredWidth < breakpoints.sm;
+    // A column that declares its floor (`minWidth`) is held to it at any width: the
+    // table pans whenever the floors add up to more than it has, not only below sm.
     const hasActions = !!(onRowEdit || onRowDelete);
     const panMinWidth =
-      cols.reduce((w, col) => w + (col.width ?? MIN_COLUMN_WIDTH), 0) +
+      cols.reduce((w, col) => w + (col.width ?? col.minWidth ?? MIN_COLUMN_WIDTH), 0) +
       (selectable ? SELECT_COLUMN_WIDTH : 0) +
       (hasActions ? skin.actionsColWidth : 0);
+    const floored = cols.some((col) => col.width == null && col.minWidth != null);
+    const pans =
+      canPan && !stacked && cols.length > 1 && measuredWidth > 0 &&
+      (measuredWidth < breakpoints.sm || (floored && measuredWidth < panMinWidth));
 
     // ---- sorting -----------------------------------------------------------
     // Self-managed by default (header press cycles asc -> desc -> off);
@@ -550,6 +628,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const viewIndices = useMemo(() => {
       const indices = rows.map((_, i) => i);
       if (!activeCol) return indices;
+      // Grouped, a sort reorders rows within their group and never moves a group.
+      const groupRank = (a: number, b: number) => (groupOf ? groupOf[a]! - groupOf[b]! : 0);
       const ci = cols.indexOf(activeCol);
       const dir = descending ? -1 : 1;
       let sawOpaque = false;
@@ -562,6 +642,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       });
       // Nulls (opaque custom cells without a sortValue) always sort last.
       indices.sort((a, b) => {
+        const rank = groupRank(a, b);
+        if (rank !== 0) return rank;
         const va = values[a];
         const vb = values[b];
         if (va == null && vb == null) return 0;
@@ -574,7 +656,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         `[canvas] <DataTable> column "${activeCol.key}" has custom ReactNode cells and no sortValue; those rows sort last.`,
       );
       return indices;
-    }, [rows, cols, activeCol, descending]);
+    }, [rows, groupOf, cols, activeCol, descending]);
 
     // ---- selection ---------------------------------------------------------
     // Keyed by `rowKey` (original index fallback); compared as strings so a
@@ -774,13 +856,23 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         role="rowgroup"
         style={FOCUS_RESET}
         data={pageIndices}
-        renderItem={({ item }) => renderDataRow(rows[item]!, item)}
+        renderItem={({ item, index }) => (
+          <>
+            {renderBand(index)}
+            {renderDataRow(rows[item]!, item)}
+          </>
+        )}
         keyExtractor={(item) => keyOf(rows[item]!, item)}
         extraData={[selected, sortState, density, striped, editingRow, draft, cellEdit, armedRow, stacked]}
         showsVerticalScrollIndicator={false}
       />
     ) : (
-      pageIndices.map((i) => <Fragment key={keyOf(rows[i]!, i)}>{renderDataRow(rows[i]!, i)}</Fragment>)
+      pageIndices.map((i, pos) => (
+        <Fragment key={keyOf(rows[i]!, i)}>
+          {renderBand(pos)}
+          {renderDataRow(rows[i]!, i)}
+        </Fragment>
+      ))
     );
 
     const table = (
@@ -888,6 +980,29 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         {attached ? panFrame.innerRing(wrap) ?? bodyFrame.innerRing(wrap) : null}
       </GlassSurface>
     );
+
+    // A group's band, drawn above the first row of each group a page shows (`pos` is the
+    // row's position on the page): a row of one cell spanning every column, holding the
+    // group's label, adornment and count on the sunken fill (an ink tint under glass).
+    function renderBand(pos: number) {
+      if (!groupOf) return null;
+      const idx = pageIndices[pos]!;
+      const g = groupOf[idx]!;
+      if (pos > 0 && groupOf[pageIndices[pos - 1]!] === g) return null;
+      const group = groups[g]!;
+      // aria-colspan reaches the web DOM (RNW forwards aria-*), so the band's one cell
+      // spans the row there; natively the band is read as its text.
+      const spanA11y = { "aria-colspan": visibleColumns.length + +!!selectable + +hasActions } as unknown as ViewProps;
+      return (
+        <View style={withInnerFill(theme, skin.groupBand(tokens), "soft")} role="row">
+          <View style={GROUP_CELL} role="cell" {...spanA11y}>
+            {typeof group.label === "string" ? <Text style={skin.groupLabel(tokens)}>{group.label}</Text> : group.label}
+            {group.adornment}
+            {group.count != null ? <Text style={skin.groupCount(tokens)}>{group.count}</Text> : null}
+          </View>
+        </View>
+      );
+    }
 
     // A header cell: a plain labeled box, or (sortable) a pressable label +
     // direction indicator cycling ascending -> descending -> off.

@@ -5,14 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
-<CodeBlock
-  compact
-  language="json"
-  code={`{
-  "theme": "system",
-  "surface": "glass",
-  "primary": "#6366f1"
-}`}
-/>
+<CodeBlock inline copy code={`import { Button } from "@nannier/canvas"`} />
   );
 }

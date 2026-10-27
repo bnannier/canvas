@@ -9,6 +9,7 @@ import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
 import { LISTBOX } from "../../style/listbox-role.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { wrapper, wrapperLifted } from "./autocomplete.styles.js";
 import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
 
@@ -179,7 +180,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     // The field is ACTIVE while it holds focus or its list is open: its border (or the M3
     // indicator) paints the active state, which is the field's keyboard focus indicator,
     // so it stays on after Escape closes the list over a still-focused field.
-    const [focused, setFocused] = useState(false);
+    const [focusedState, setFocused] = useState(false);
+    // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
+    const focused = usePinnedFocus(!disabled) || focusedState;
     const active = open || focused;
     const [activeKey, setActiveKey] = useState<string | null>(null);
     const setOpen = (next: boolean) => {

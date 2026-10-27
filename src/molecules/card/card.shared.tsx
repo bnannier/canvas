@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, type ReactNode } from "react";
-import { View, Pressable, Text, shape as shapeTokens, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, isGlass, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, shape as shapeTokens, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, isGlass, withInnerFill, LayoutAxisProvider, columnAxis, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { selectedCard } from "../../style/selected-card.js";
@@ -11,7 +11,7 @@ import { Badge } from "../../atoms/badge/badge.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
 import * as s from "./card.styles.js";
-import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
+import { type CardSkin, type Elevation, type Density, type MediaWell } from "./card.styles.js";
 
 // Shared Card shell. The structure (a surface giving you border, radius, and
 // shadow, composed from the subcomponents below), the boolean-prop axes, the
@@ -511,14 +511,37 @@ export function CardSeparator({ style }: { style?: StyleProp<ViewStyle> }) {
 export interface CardMediaProps {
   /** The cover image: a URI string (or a docs sample path), or a bundled `require(...)` asset. */
   src?: string | number;
-  /** Height of the media band in px (the image covers it edge to edge). */
+  /** Height of the image band in px (the image covers it edge to edge). The well that hosts `children` grows with its content instead, from the step its booleans pick. */
   height?: number;
   /** Accessible name / alt text announced for the image. */
   alt?: string;
   /** Accessible name for the image, as `alt` gives; when both are set it wins, as on Image. */
   accessibilityLabel?: string;
-  /** E2E hook forwarded to the image. */
+  /**
+   * Live content to stage in place of an image: CardMedia becomes a sunken well (the
+   * page's `surface-sunken` fill, an ink tint under glass) that centers what it holds,
+   * a specimen above a caption. Children win over `src` when both are passed.
+   */
+  children?: ReactNode;
+  // Well size (pick one; children only). The default well is 160 px tall at least,
+  // with a 28 x 20 inset.
+  /** A shorter well: 130 px at least, a 24 x 16 inset (a size or state specimen). */
+  compact?: boolean;
+  /** A taller well: 240 px at least, a 32 x 20 inset (a platform skin specimen). */
+  tall?: boolean;
+  /** E2E hook forwarded to the image, or to the well. */
   testID?: string;
+}
+
+// The layout facts a specimen well publishes: a sized column that centers its children.
+const WELL_AXIS = columnAxis(false, null, true);
+
+// The well's size precedence when more than one is passed: first match wins, the
+// smaller well over the taller one.
+export function mediaWellOf(p: Pick<CardMediaProps, "compact" | "tall">): MediaWell {
+  if (p.compact) return "compact";
+  if (p.tall) return "tall";
+  return "default";
 }
 
 // Media: the full-bleed cover slot at the TOP of a card. Unlike the other anatomy
@@ -531,6 +554,12 @@ export interface CardMediaProps {
 //     <CardMedia src="/kira-tanaka.jpg" height={180} alt="…" />
 //     <CardContent>…</CardContent>
 //   </Card>
+//
+// Given children it is a specimen well instead (the v4 hand-off's component page
+// stages every variant, size, state and platform skin this way): the content centered
+// on the sunken fill, at least the well step's height and growing with its content.
+// The well is a fill INSIDE the card's pane, so under glass it is an ink tint over the
+// material (withInnerFill), never an opaque patch.
 export function createCardMedia(skin: CardSkin) {
   // The nested top radius: the card's corner minus the border it sits inside.
   const radius = Math.max(0, skin.radius - s.CARD_BORDER);
@@ -539,7 +568,18 @@ export function createCardMedia(skin: CardSkin) {
     borderTopRightRadius: radius,
     ...(skin.curve ? { borderCurve: skin.curve } : null),
   };
-  return function CardMedia({ src, height = 180, alt, accessibilityLabel, testID }: CardMediaProps) {
+  return function CardMedia(props: CardMediaProps) {
+    const { src, height = 180, alt, accessibilityLabel, children, testID } = props;
+    const theme = useMaterialTheme({ static: true });
+    if (children != null && children !== false) {
+      return (
+        <View testID={testID} style={[s.mediaWell[mediaWellOf(props)], shape, withInnerFill(theme, { backgroundColor: theme.tokens["surface-sunken"] ?? theme.tokens.muted }, "soft")]}>
+          {/* The well is a bounded column that centers rather than stretches, so a hug
+              child (a Button, a Badge) stays centered and a fill child spans it. */}
+          <LayoutAxisProvider value={WELL_AXIS}>{children}</LayoutAxisProvider>
+        </View>
+      );
+    }
     return (
       <Image
         source={typeof src === "number" ? src : src ? { uri: src } : undefined}

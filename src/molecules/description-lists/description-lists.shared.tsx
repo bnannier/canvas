@@ -1,6 +1,6 @@
-import { type ComponentType, useState } from "react";
+import { type ComponentType, type ReactNode, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
-import { View, Text, TextInput, useTheme, useContainerBreakpoint, containerProbe, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
+import { View, Text, TextInput, devWarn, useTheme, useContainerBreakpoint, containerProbe, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
 import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -79,8 +79,17 @@ export interface DescriptionListAvatar {
 }
 
 export interface DescriptionListItem {
-  term: string;
-  value: string;
+  /**
+   * The label. A string (or number) takes the layout's term type; any other node
+   * renders as given (an icon beside a word, a Kbd), as DataTable takes node cells.
+   */
+  term: ReactNode;
+  /**
+   * The data. A string (or number) takes the value type and the per-item forms below
+   * (`badge`, `status`, `mono`, `copyValue`, `update`); any other node renders as given
+   * in the value cell (a row of Badges, a link), which those forms do not restyle.
+   */
+  value: ReactNode;
   // Render the value as a secondary metadata badge (e.g. a role).
   badge?: boolean;
   // Render the value as a success status badge with a leading dot (live state).
@@ -184,6 +193,14 @@ export function valueFormOf(item: Pick<DescriptionListItem, "status" | "badge" |
   return "plain";
 }
 
+// Whether a term or value is text the list types itself (a string or a number), as
+// opposed to a node the caller rendered.
+const isText = (node: ReactNode): node is string | number => typeof node === "string" || typeof node === "number";
+
+// The plain-text name of a term, for the accessible names of a row's Copy, Update,
+// Save and Cancel buttons; a node term falls back to the row's position.
+const termName = (term: ReactNode, index: number): string => (isText(term) ? String(term) : `row ${index + 1}`);
+
 /**
  * Build a DescriptionList component from a platform skin and the platform-correct
  * composed atoms.
@@ -211,7 +228,7 @@ export function createDescriptionList(
   // (foreground full-weight on web/Android, secondary gray 17pt on iOS; stacked
   // keeps a full-weight foreground value) is resolved by the caller, as is the
   // shown string (the item value, or the row's committed inline edit).
-  function Value({ item, value, align, valueStyle, onCopy }: { item: DescriptionListItem; value: string; align?: boolean; valueStyle: TextStyle; onCopy?: (value: string) => void }) {
+  function Value({ item, value, name, align, valueStyle, onCopy }: { item: DescriptionListItem; value: ReactNode; name: string; align?: boolean; valueStyle: TextStyle; onCopy?: (value: string) => void }) {
     if (item.avatars && item.avatars.length > 0) {
       // The overlap, separator ring, and "+N" overflow chip are AvatarGroup's own
       // anatomy; `total` folds the `overflow` remainder into that chip. The group
@@ -233,15 +250,21 @@ export function createDescriptionList(
       const copyValue = item.copyValue;
       return (
         <View style={s.copyRow}>
-          <Text style={[valueStyle, item.mono ? s.valueMono : null, s.copyValueText]} numberOfLines={1}>
-            {value || copyValue}
-          </Text>
-          <Button ghost small accessibilityLabel={`Copy ${item.term}`} onPress={() => onCopy?.(copyValue)}>
+          {value == null || value === "" || isText(value) ? (
+            <Text style={[valueStyle, item.mono ? s.valueMono : null, s.copyValueText]} numberOfLines={1}>
+              {value === "" || value == null ? copyValue : value}
+            </Text>
+          ) : (
+            value
+          )}
+          <Button ghost small accessibilityLabel={`Copy ${name}`} onPress={() => onCopy?.(copyValue)}>
             Copy
           </Button>
         </View>
       );
     }
+    // A node value is the caller's own rendering: it fills the cell as given.
+    if (!isText(value)) return <>{value}</>;
     const form = valueFormOf(item);
     if (form === "status") return <Badge status success>{value}</Badge>;
     if (form === "badge") return <Badge secondary>{value}</Badge>;
@@ -275,7 +298,11 @@ export function createDescriptionList(
     // onUpdate (like useControllableState's callback) fires in both modes.
     const [editing, setEditing] = useState<number | null>(null);
     const [draft, setDraft] = useState("");
-    const [edits, setEdits] = useState<Record<number, { base: string; value: string }>>({});
+    const [edits, setEdits] = useState<Record<number, { base: ReactNode; value: string }>>({});
+    devWarn(
+      items.some((item) => item.update && !isText(item.value)),
+      "[canvas] <DescriptionList>: `update` needs a text value; a node value shows no Update link.",
+    );
 
     const container: StyleProp<ViewStyle> = [
       card ? s.cardSurface(tokens, skin) : null,
@@ -291,6 +318,9 @@ export function createDescriptionList(
     // per-OS value type (secondary gray on iOS, full-weight foreground otherwise).
     const valueStyle = stacked ? skin.stackedValueType(tokens) : skin.valueType(tokens);
 
+    // The two-column term's label column, text or node.
+    const termColumn = layout === "twoColumn" ? [s.termColumn, narrowTermColumn ? s.termColumnNarrow : null] : null;
+
     const rows = items.map((item, index) => {
       const last = index === items.length - 1;
       // A divided list draws a hairline under each row except the last, and pads
@@ -305,6 +335,9 @@ export function createDescriptionList(
       const edit = edits[index];
       const shown = edit && edit.base === item.value ? edit.value : item.value;
       const isEditing = editing === index;
+      const name = termName(item.term, index);
+      // The inline editor edits text, so only a text value offers it.
+      const editable = !!item.update && isText(shown);
       const commit = () => {
         setEdits((prev) => ({ ...prev, [index]: { base: item.value, value: draft } }));
         setEditing(null);
@@ -312,15 +345,14 @@ export function createDescriptionList(
       };
       const cancel = () => setEditing(null);
       return (
-        <View key={`${item.term}-${index}`} style={row}>
-          <Text
-            style={[
-              stacked ? [s.termStacked(tokens), skin.stackedTermTracking] : skin.termType(tokens),
-              layout === "twoColumn" ? [s.termColumn, narrowTermColumn ? s.termColumnNarrow : null] : null,
-            ]}
-          >
-            {item.term}
-          </Text>
+        <View key={isText(item.term) ? `${item.term}-${index}` : index} style={row}>
+          {isText(item.term) ? (
+            <Text style={[stacked ? [s.termStacked(tokens), skin.stackedTermTracking] : skin.termType(tokens), termColumn]}>{item.term}</Text>
+          ) : (
+            // A node term holds the term's place: the two-column label column keeps its
+            // width so the values still line up.
+            <View style={termColumn}>{item.term}</View>
+          )}
           <View style={layout === "twoColumn" ? s.twoColumnValueCell : layout === "inline" ? (isEditing ? s.editCellGrow : s.inlineValueCell) : null}>
             {isEditing ? (
               // The in-place editor: the draft in the row's own value type over a
@@ -340,26 +372,26 @@ export function createDescriptionList(
                       cancel();
                     }
                   }}
-                  accessibilityLabel={`${item.term} value`}
-                  aria-label={`${item.term} value`}
+                  accessibilityLabel={`${name} value`}
+                  aria-label={`${name} value`}
                   style={[valueStyle, s.editInput(tokens)]}
                 />
-                <Button link small onPress={commit} accessibilityLabel={`Save ${item.term}`}>
+                <Button link small onPress={commit} accessibilityLabel={`Save ${name}`}>
                   Save
                 </Button>
-                <Button link small onPress={cancel} accessibilityLabel={`Cancel updating ${item.term}`}>
+                <Button link small onPress={cancel} accessibilityLabel={`Cancel updating ${name}`}>
                   Cancel
                 </Button>
               </View>
             ) : (
               <>
-                <Value item={item} value={shown} align={layout === "inline"} valueStyle={valueStyle} onCopy={onCopy} />
-                {item.update ? (
+                <Value item={item} value={shown} name={name} align={layout === "inline"} valueStyle={valueStyle} onCopy={onCopy} />
+                {editable ? (
                   <Button
                     link
                     small
-                    onPress={() => { setDraft(shown); setEditing(index); }}
-                    accessibilityLabel={`Update ${item.term}`}
+                    onPress={() => { setDraft(String(shown)); setEditing(index); }}
+                    accessibilityLabel={`Update ${name}`}
                   >
                     Update
                   </Button>

@@ -3,12 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Row } = scope;
+  const { Button, Typography, Row, Column } = scope;
   return (
-<Card flush>
-  <Row pad>
-    <Typography>Padded surround</Typography>
-  </Row>
-</Card>
+<Row between alignEnd wrap>
+  <Column tight shrink>
+    <Typography h3>Dashboard</Typography>
+    <Typography small muted>Identity platform overview. Each widget reports its own window.</Typography>
+  </Column>
+  <Button outline small>Export</Button>
+</Row>
   );
 }

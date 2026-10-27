@@ -14,6 +14,7 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
 import { useHover } from "../../style/hover.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -269,7 +270,9 @@ export function createInput(skin: InputSkin) {
     } = props;
     const isError = !!(props.error || props.invalid);
     const size = sizeOf(props);
-    const [focused, setFocused] = useState(false);
+    const [focusedState, setFocused] = useState(false);
+    // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
+    const focused = usePinnedFocus(!disabled) || focusedState;
     // The password toggle's own state: masked until the eye is pressed.
     const [revealed, setRevealed] = useState(false);
     const { theme, paneProps, stateSurface, inkFill } = useTextEntryMaterial(!!skin.liquid);

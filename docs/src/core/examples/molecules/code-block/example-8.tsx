@@ -6,10 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  terminal
-  filename="deploy.sh"
-  code={`$ ./deploy.sh --stage production
-Build complete in 12s`}
+  wrap
+  language="ts"
+  code={`const message = "This is a very long line that would normally scroll horizontally, but wrap lets it soft-wrap onto the next line instead.";`}
 />
   );
 }

@@ -3,11 +3,27 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Column } = scope;
+  const { Button, Card, CardContent, CardMedia, CardSeparator, Typography, Column } = scope;
   return (
 <Column relaxed>
-  <Card onPress={() => {}} title="Scout" description="Research agent, v2.3" />
-  <Card onPress={() => {}} title="Mint" description="Release agent, v1.8" />
+  <Card flush>
+    <CardMedia compact>
+      <Button small>Small</Button>
+    </CardMedia>
+    <CardSeparator />
+    <CardContent>
+      <Typography small medium>compact</Typography>
+    </CardContent>
+  </Card>
+  <Card flush>
+    <CardMedia tall>
+      <Button large>Large</Button>
+    </CardMedia>
+    <CardSeparator />
+    <CardContent>
+      <Typography small medium>tall</Typography>
+    </CardContent>
+  </Card>
 </Column>
   );
 }

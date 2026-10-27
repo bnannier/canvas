@@ -3,7 +3,8 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import { type ImageSourcePropType, type StyleProp, type ViewStyle } from "react-native";
 import { devWarn } from "../../style/dev-warn.js";
 import { inertProps } from "../../style/inert.js";
-import { INSET_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
+import { INSET_FOCUS_RING, PINNED_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { Pressable, View, radius as radiusScale, useFillStyle, useReducedMotion, useTheme, type LayoutStyle } from "../../style/index.js";
 import { Emblem as WebEmblem } from "../emblem/emblem.js";
 import { Icon as WebIcon } from "../icon/icon.js";
@@ -146,6 +147,9 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
   const { tokens } = useTheme();
   const reducedMotion = useReducedMotion();
   const focusRing = useFocusRingStyle();
+  // An InteractionOverride's pinned focus spells out the ring the browser draws on the
+  // platform-controls surface (src/style/interaction-override.tsx).
+  const pinnedFocus = usePinnedFocus();
   const platformControls = !!controls && nativeControls;
   const kitBar = !!controls && !nativeControls;
   const fit = fitOf(props);
@@ -279,7 +283,7 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
   // <video controls>, a keyboard stop the browser rings: it takes the kit's themed ring,
   // drawn just inside it because the picture clips to its corners. Natively the outline
   // keys draw nothing without a width.
-  const surfaceStyle = platformControls ? [skin.layer, focusRing, INSET_FOCUS_RING] : skin.layer;
+  const surfaceStyle = platformControls ? [skin.layer, focusRing, pinnedFocus ? PINNED_FOCUS_RING : null, INSET_FOCUS_RING] : skin.layer;
 
   return (
     <View style={frame} testID={testID}>

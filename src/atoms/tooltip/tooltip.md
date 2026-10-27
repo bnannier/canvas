@@ -36,6 +36,15 @@ prop is the way to show its tip: drive it from whatever the platform does offer 
 long press the child handles, a selected row, an inline help toggle). Keyboard
 focus, including a hardware keyboard on a tablet, raises the tip on every platform.
 
+Escape hides an open tip and leaves focus where it is (WCAG 1.4.13: hover and focus
+content is dismissable without moving the pointer or focus). It goes through the kit's
+one Escape owner, so a tip inside a Dialog or Popover closes first and the next Escape
+reaches its host; a closed tip takes no Escape at all. A controlled tip reports the
+close through `onOpenChange(false)`. On iOS the same close answers the accessibility
+escape (the VoiceOver two-finger scrub, and Escape on a hardware keyboard under Full
+Keyboard Access). Android delivers no Escape key to a view, and its back gesture is
+never taken for a tip, so there the tip closes with focus or the controlled `open`.
+
 ## Usage
 
 The examples pinned open leave room on the bubble's side, as a page would: the

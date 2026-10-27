@@ -8,6 +8,20 @@ import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
 import { createSidebarDrillDown } from "../src/organisms/sidebar/sidebar.drilldown.tsx";
 import { webSkin } from "../src/organisms/sidebar/sidebar.styles.ts";
 import { resizeViewport } from "./viewport.ts";
+import { colorsFor } from "../src/style/tokens.ts";
+import { Input } from "../src/atoms/input/input.tsx";
+import { Column } from "../src/atoms/layout/layout.tsx";
+import { Typography } from "../src/atoms/typography/typography.tsx";
+
+// A colour's channels and alpha, so "#b5b0ff", "rgb(181, 176, 255)" and "rgba(181, 176, 255, 1.00)" compare equal.
+const paint = (color: string) => {
+  if (color.startsWith("#")) {
+    const n = parseInt(color.slice(1, 7), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255, 1].join(",");
+  }
+  const [r, g, b, a = "1"] = color.replace(/^rgba?\(|\)$/g, "").split(",").map((v) => v.trim());
+  return [r, g, b, String(Number(a))].join(",");
+};
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -86,8 +100,8 @@ const badgeReference = (node: ReactNode) => {
 };
 
 describe("Sidebar item badges", () => {
-  it("renders a plain web count as the solid action navigation badge", () => {
-    const reference = badgeReference(<Badge navigationCount>3</Badge>);
+  it("renders a plain web count as the small quiet count pill", () => {
+    const reference = badgeReference(<Badge secondary count>3</Badge>);
     const { container } = ui(<Sidebar items={[{ id: "inbox", label: "Inbox", badge: "3" }]} />);
     expect(reference).toBeTruthy();
     expect(badgeHtml(container, "3")).toBe(reference);
@@ -263,13 +277,106 @@ describe("Sidebar narrow drill-down (SidebarDrillDown)", () => {
   });
 });
 
-it("embedded navigation inherits the Argus rail bounds and preserves reference dimensions", () => {
-  ui(<Sidebar embedded sections={[{ title: "Factory", items: [{ id: "board", label: "Board", icon: "columns2" }] }]} active="board" />);
+it("embedded navigation inherits the host rail's bounds, with the hand-off rail's spacing", () => {
+  ui(<Sidebar embedded compact sections={[{ title: "Controls", items: [{ id: "button", label: "Button" }] }]} active="button" />);
   const nav = screen.getByRole("navigation");
   expect(nav.style.width).toBe("");
   expect(nav.style.backgroundColor).toBe("");
-  expect(nav.style.gap).toBe("34px");
-  const row = screen.getByRole("button", { name: "Board" });
-  expect(row.style.padding).toBe("9px 22px 9px 30px");
-  expect(screen.getByText("Board").style.lineHeight).toBe("16.25px");
+  expect(nav.style.gap).toBe("16px");
+  const row = screen.getByRole("button", { name: "Button" });
+  expect(row.style.height).toBe("30px");
+  expect(row.style.borderRadius).toBe("8px");
+  expect(row.style.paddingLeft).toBe("10px");
+  expect(row.style.paddingRight).toBe("10px");
+});
+
+describe("Sidebar v4 web rail", () => {
+  const tokens = colorsFor("violet", "dark");
+  const dark = (node: ReactNode) => render(<ThemeProvider dark solid>{node}</ThemeProvider>);
+  const rowOf = (label: string) => screen.getByText(label).closest("[tabindex]") as HTMLElement;
+  // The trailing marker is the row's last child, a 5 px dot.
+  const markerOf = (label: string) => {
+    const last = rowOf(label).lastElementChild as HTMLElement;
+    return last.style.width === "5px" ? last : null;
+  };
+
+  it("draws the default renderer's 36 px row at the 9 px corner, and the compact rail's 30 px row at 8", () => {
+    dark(<Sidebar items={[{ label: "Overview" }]} />);
+    expect(rowOf("Overview").style.height).toBe("36px");
+    expect(rowOf("Overview").style.borderRadius).toBe("9px");
+    cleanup();
+    dark(<Sidebar compact items={[{ label: "Overview" }]} />);
+    expect(rowOf("Overview").style.height).toBe("30px");
+    expect(rowOf("Overview").style.borderRadius).toBe("8px");
+  });
+
+  it("paints the active row on the accent's soft wash in its text ink, with no edge bar", () => {
+    dark(<Sidebar compact defaultActive="Button" items={[{ label: "Button" }, { label: "Switch" }]} />);
+    const row = rowOf("Button");
+    expect(row.style.backgroundColor).toBeTruthy();
+    expect(Array.from(row.children).some((el) => (el as HTMLElement).style.width === "3px")).toBe(false);
+    const label = screen.getByText("Button");
+    expect(label.style.fontWeight).toBe("600");
+    expect(paint(label.style.color)).toBe(paint(tokens["primary-text"]!));
+    expect(paint(screen.getByText("Switch").style.color)).toBe(paint(tokens["muted-foreground"]));
+  });
+
+  it("draws no markers unless the sidebar opts in", () => {
+    dark(<Sidebar defaultActive="Button" items={[{ label: "Button" }, { label: "Switch", marked: true }]} />);
+    expect(markerOf("Button")).toBeNull();
+    expect(markerOf("Switch")).toBeNull();
+  });
+
+  it("marks the active row with the accent dot and a marked row with the hairline dot under `markers`", () => {
+    dark(<Sidebar markers defaultActive="Button" items={[{ label: "Button" }, { label: "Switch", marked: true }, { label: "Radio" }]} />);
+    expect(paint(markerOf("Button")!.style.backgroundColor)).toBe(paint(tokens.primary));
+    expect(paint(markerOf("Switch")!.style.backgroundColor)).toBe(paint(tokens["field-border"]!));
+    expect(markerOf("Radio")).toBeNull();
+  });
+
+  it("lifts a current section: accent-text eyebrow and count, foreground rows, hairline markers", () => {
+    dark(<Sidebar compact markers sections={[{ title: "Controls", count: 2, current: true, items: [{ label: "Button" }, { label: "Switch" }] }]} />);
+    expect(paint(screen.getByText("Controls").style.color)).toBe(paint(tokens["primary-text"]!));
+    expect(paint(screen.getByText("2").style.color)).toBe(paint(tokens["primary-text"]!));
+    expect(screen.getByText("Controls").style.textTransform).toBe("uppercase");
+    expect(paint(screen.getByText("Button").style.color)).toBe(paint(tokens.foreground));
+    expect(markerOf("Button")).toBeTruthy();
+    expect(markerOf("Switch")).toBeTruthy();
+  });
+
+  it("sets a resting section's eyebrow in the subtle ink", () => {
+    dark(<Sidebar sections={[{ title: "Library", items: [{ label: "Overview" }] }]} />);
+    expect(paint(screen.getByText("Library").style.color)).toBe(paint(tokens["subtle-foreground"]!));
+  });
+
+  it("hosts a filter field and a heading row in the header slot, embedded as plain blocks", () => {
+    dark(
+      <Sidebar
+        embedded
+        compact
+        header={
+          <Column tight>
+            <Input small leadingIcon icon="search" placeholder="Filter 11 components" accessibilityLabel="Filter components" />
+            <Typography eyebrow>Controls</Typography>
+          </Column>
+        }
+        items={[{ label: "Button" }]}
+      />,
+    );
+    const field = screen.getByLabelText("Filter components");
+    expect(field).toBeTruthy();
+    const nav = screen.getByRole("navigation");
+    // The header block sits first in the rail column, stretched to it, before the groups.
+    const slot = nav.firstElementChild as HTMLElement;
+    expect(slot.contains(field)).toBe(true);
+    expect(slot.style.alignSelf).toBe("stretch");
+    expect(slot.style.height).toBe("");
+  });
+
+  it("lets a framed sidebar's header grow past its floor for taller content", () => {
+    dark(<Sidebar header={<Text>Brand</Text>} items={[{ label: "Button" }]} />);
+    const header = screen.getByText("Brand").parentElement as HTMLElement;
+    expect(header.style.minHeight).toBe("56px");
+    expect(header.style.height).toBe("");
+  });
 });

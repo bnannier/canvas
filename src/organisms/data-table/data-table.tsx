@@ -9,4 +9,4 @@ import { Skeleton } from "../../atoms/skeleton/skeleton.js";
 // Skeleton) are the web variants.
 /** A sortable, selectable, paginated table with loading and empty states. */
 export const DataTable = createDataTable(webSkin, { Checkbox, Pagination, Skeleton });
-export type { DataTableProps, DataTableColumn, DataTableSort } from "./data-table.shared.js";
+export type { DataTableProps, DataTableColumn, DataTableSort, DataTableGroup } from "./data-table.shared.js";

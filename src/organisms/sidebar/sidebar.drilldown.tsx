@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, ScrollView, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver } from "../../style/index.js";
+import { LayoutAxisProvider, ROW_AXIS } from "../../style/sizing.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import type { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { type Density } from "./sidebar.styles.js";
@@ -118,11 +119,13 @@ export function createSidebarDrillDown(skin: SidebarSkin, Badge: typeof WebBadge
             // navigation row states the current page with `aria-current` instead.
             aria-current={active ? "page" : undefined}
           >
-            {item.icon != null ? <Icon {...{ [item.icon]: true }} {...skin.iconTint(active)} size={skin.iconSize} decorative /> : null}
-            <Text style={skin.label(tokens, active, density)} numberOfLines={1}>
-              {item.label}
-            </Text>
-            <SidebarItemBadge item={item} Badge={Badge} />
+            <LayoutAxisProvider value={ROW_AXIS}>
+              {item.icon != null ? <Icon {...{ [item.icon]: true }} {...skin.iconTint(active)} size={skin.iconSize} decorative /> : null}
+              <Text style={skin.label(tokens, active, density)} numberOfLines={1}>
+                {item.label}
+              </Text>
+              <SidebarItemBadge item={item} Badge={Badge} small={skin.smallCount} />
+            </LayoutAxisProvider>
           </Pressable>
         </SidebarRowFrame>
       );
@@ -186,8 +189,15 @@ export function createSidebarDrillDown(skin: SidebarSkin, Badge: typeof WebBadge
               g.section.collapsible ? (
                 renderDrillRow(g)
               ) : (
-                <View key={g.key} style={skin.group}>
-                  {g.section.title != null ? <Text style={skin.sectionTitle(tokens)}>{g.section.title}</Text> : null}
+                <View key={g.key} style={skin.group(density)}>
+                  {g.section.title != null ? (
+                    <View style={skin.sectionHeading(tokens, density)}>
+                      <Text style={skin.sectionTitle(tokens, density, !!g.section.current)} numberOfLines={1}>
+                        {g.section.title}
+                      </Text>
+                      {g.section.count != null ? <Text style={skin.sectionCount(tokens, !!g.section.current)}>{g.section.count}</Text> : null}
+                    </View>
+                  ) : null}
                   {g.rows.map((r) => renderLeaf(r.item, r.index))}
                 </View>
               ),

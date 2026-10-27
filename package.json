@@ -71,6 +71,8 @@
     "validate-tokens": "bun scripts/validate-tokens.ts",
     "tokens:css": "bun tools/v4/derive-css.ts",
     "tokens:css:check": "bun tools/v4/derive-css.ts --check",
+    "v4:specs": "bun tools/v4/derive-detail-specs.ts",
+    "v4:specs:check": "bun tools/v4/derive-detail-specs.ts --check",
     "tokens:inks": "bun tools/v4/derive-inks.ts",
     "tokens:inks:check": "bun tools/v4/derive-inks.ts --check",
     "check-size": "bun scripts/check-size.ts",

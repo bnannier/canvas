@@ -37,6 +37,7 @@ const gap: Record<Gap, number> = {
   section: spacing["6"] + spacing["0.5"],
   panel: spacing["7"],
   page: spacing["7"] + spacing["0.5"],
+  chapter: spacing["16"],
 
   flush: spacing["0"],
   tight: spacing["1"],

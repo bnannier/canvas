@@ -54,6 +54,8 @@ export interface GridProps {
   section?: boolean; // 26
   panel?: boolean; // 28
   page?: boolean; // 30
+  /** The widest gap step (64), between a page's chapters; wins over every other step. */
+  chapter?: boolean; // 64
 
   children?: ReactNode;
   /** Minimum tile width in px (default 240): the grid fits as many columns of

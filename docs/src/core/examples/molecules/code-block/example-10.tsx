@@ -7,10 +7,11 @@ export default function Example(scope: ExampleScope) {
   return (
 <CodeBlock
   numbered
-  startLine={128}
-  language="ts"
-  code={`function resolveTokens(scheme: Scheme) {
-  return scheme === "dark" ? darkTokens : lightTokens;
+  language="tsx"
+  highlightLines={["2-3"]}
+  code={`export function Cta() {
+  const label = getLabel();
+  return <Button primary large>{label}</Button>;
 }`}
 />
   );

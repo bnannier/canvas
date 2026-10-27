@@ -6,11 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  diff
+  numbered
+  startLine={128}
   language="ts"
-  code={`-const theme = "light";
-+const theme = getTheme();
- setTheme(theme);`}
+  code={`function resolveTokens(scheme: Scheme) {
+  return scheme === "dark" ? darkTokens : lightTokens;
+}`}
 />
   );
 }
