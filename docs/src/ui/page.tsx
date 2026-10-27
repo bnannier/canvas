@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, type RefObject, createContext, useContext, useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { ScrollView, View, Column, Container, OverlayProvider } from "@nannier/canvas";
 import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../shell/topbar";
@@ -22,6 +22,13 @@ import { useScrollEdgeReporter } from "../shell/scroll-edge";
 // placed exactly where this one would put it, so its backdrop spans the window and
 // holds the page still while it is open. Playground stages mount their own nearer
 // host and place their overlays within the stage the same way.
+// The page's scroller, for docs-only scaffolding that scrolls the page itself (the detail
+// page's jump strip bringing a section to the top). Null outside a Page.
+const PageScrollContext = createContext<RefObject<ScrollView | null> | null>(null);
+export function usePageScroller(): RefObject<ScrollView | null> | null {
+  return useContext(PageScrollContext);
+}
+
 export function Page({ children, viewportOverlays = false }: { children: ReactNode; viewportOverlays?: boolean }) {
   // The scroller, published to the native audit driver (docs/src/audit/probe-context.tsx)
   // so it can bring a card taller than the screen into view one segment at a time. The
@@ -73,7 +80,9 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
   );
   return (
     <ScreenFrame>
-      {viewportOverlays ? <OverlayProvider viewport>{content}</OverlayProvider> : content}
+      <PageScrollContext.Provider value={scrollerRef}>
+        {viewportOverlays ? <OverlayProvider viewport>{content}</OverlayProvider> : content}
+      </PageScrollContext.Provider>
       {Sensor ? <Sensor /> : null}
     </ScreenFrame>
   );
