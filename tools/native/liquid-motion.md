@@ -1518,6 +1518,8 @@ seconds per cycle, centered beside the project selector.
 Phase 1 of the v4 redesign (`audit/v4-redesign/PLAN.md`): the tokens, the glass material, the
 shadows and the type move to the hand-off. The docs page look (`page-look.ts`) first mapped the
 five palettes onto the DF looks, then took the hand-off's flat page within the same phase.
+ca43f429 changed `page-look.ts` again with no visual change: `pageColor` takes a structural
+`{ background: string }` in place of the kit's `ColorTokens` type, so the module imports nothing.
 
 | Date | Effect | Runtime and device | Revision | Surface | Values tried | Frame p95 / max | Comparison | Versus reference | Artifacts |
 |---|---|---|---|---|---|---|---|---|---|
