@@ -8,8 +8,8 @@ import { NAV_GROUPS, getActiveSlug, type NavItem } from "../data/nav";
 // tree (NAV_GROUPS) + the active route onto the kit component and wires navigation. All the
 // chrome (the mini icon-rail collapse, the accordion category groups, the header/footer
 // slots, the single active highlight, the internal scroll) lives in the kit now — the docs
-// hand-roll nothing. This is the dogfood: the sidebar on the left of the docs IS the kit
-// `Sidebar`, so `sidebar.md`'s "same component" line is finally true.
+// hand-roll nothing. It is the Android menu drawer's whole site tree (./native-header.tsx);
+// the web shell's room rail is the same kit Sidebar, embedded (./rail.tsx).
 
 // A docs NavItem -> a kit SidebarItem: the slug is its id (so the active route drives the
 // highlight) and the href rides along as data the onSelect handler routes with. The nav

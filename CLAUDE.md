@@ -71,7 +71,13 @@ work now:
    Templates pages). Component routes stay `components/<slug>`. The page is the
    hand-off's flat page, the scheme's `background` in every palette
    (`docs/src/shell/page-look.ts`, since 2026-10-27); Dark Factory's gradient, orbs,
-   frosted shell and wedges are retired.
+   frosted shell and wedges are retired. The web shell (`docs/src/shell/navbar.tsx`) is
+   the kit Navbar `floating compact scrolls` pill at every width (its row scrolls
+   sideways where it does not fit; the phone tab bar, mobile top bar and drawer are
+   gone), the room rail (kit Sidebar `embedded compact markers`) beside a room's pages
+   in a window of 760 px or more, the footer closing every page, and the grain over
+   everything; the rooms are `docs/src/data/rooms.ts`. Native keeps its tab bar and
+   header, with the grain and footer.
 9. **Examples.** A docs example is shown only when an existing kit component fits it;
    never create a kit component to satisfy an example (see "Dogfood the kit").
 10. **Version.** The owner authorized the 4.0.0 major for this redesign ("bump to

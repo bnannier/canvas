@@ -39,8 +39,8 @@ for (const scheme of ["dark", "light"] as const) {
       await gotoDocs(browserPage, page.path, {
         scheme,
         // Phone width in light, desktop in dark: the shell is a different thing at
-        // each (a tab bar and a topbar rather than a sidebar), and contrast is the
-        // one rule whose answer depends on the scheme.
+        // each (the pill scrolling sideways and no rail, rather than the whole pill and
+        // the rail), and contrast is the one rule whose answer depends on the scheme.
         viewport: scheme === "light" ? { width: 375, height: 812 } : { width: 1280, height: 900 },
       });
 

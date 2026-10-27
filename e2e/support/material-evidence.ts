@@ -70,10 +70,11 @@ export async function expectNoMaterialEffects(scope: Locator) {
 
 /** Change the real docs appearance control. This intentionally moves input focus. */
 export async function setDocsSurface(page: Page, surface: Surface) {
-  const control = page.getByRole("tablist", { name: "Surface", exact: true }).first();
-  const tab = control.getByRole("tab", { name: surface === "glass" ? "Glass" : "Solid", exact: true });
-  await tab.click();
-  await expect(tab).toHaveAttribute("aria-selected", "true");
+  // The pill navbar's Glass switch (docs/src/shell/pill-nav.tsx).
+  const control = page.getByRole("banner").getByRole("switch", { name: "Glass", exact: true });
+  const checked = surface === "glass" ? "true" : "false";
+  if ((await control.getAttribute("aria-checked")) !== checked) await control.click();
+  await expect(control).toHaveAttribute("aria-checked", checked);
 }
 
 /** Glass evidence is attached for review, not treated as a portable GPU pixel baseline. */

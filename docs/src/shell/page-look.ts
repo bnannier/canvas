@@ -95,3 +95,14 @@ export const SHELL = {
   frameMax: 1440,
   railMinWidth: 760,
 } as const;
+
+/**
+ * The hand-off's footer (its <footer>, `max-width:1440px;padding:96px 48px 64px`, and the
+ * hairline's `padding-top:32px` above its columns), px.
+ */
+export const FOOTER = {
+  top: 96,
+  side: 48,
+  bottom: 64,
+  ruleGap: 32,
+} as const;

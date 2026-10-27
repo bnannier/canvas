@@ -14,12 +14,12 @@ test("an open dialog and its draft survive narrow and desktop layouts", async ({
   const originalStage = await stage(page).elementHandle();
   const originalDialog = await panel.elementHandle();
 
-  // At 1024 the navigation changes; at 1023 the Playground rail moves. Exercise
+  // Below 760 the shell's room rail goes; at 1023 the Playground rail moves. Exercise
   // both boundaries separately so neither ancestor can silently remount the form.
-  for (const width of [1024, 1023, 768, 1280]) {
+  for (const width of [1024, 1023, 768, 759, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     // The actual shell and rail must reach their new layout before checking state.
-    await expect(page.getByRole("tab", { name: "Components", exact: true })).toHaveCount(width <= 1024 ? 1 : 0);
+    await expect(page.getByRole("textbox", { name: "Filter components", exact: true })).toHaveCount(width >= 760 ? 1 : 0);
     await settledBox(stage(page));
     expect(await originalStage!.evaluate((node) => node.isConnected), "resize remounted the preview stage").toBe(true);
     expect(await originalDialog!.evaluate((node) => node.isConnected), "resize remounted the open dialog").toBe(true);

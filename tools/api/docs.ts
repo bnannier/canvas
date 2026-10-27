@@ -407,7 +407,7 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
     add({ route, sources: [file], ...pageText(source, source, false), headings: jsxHeadings(source) });
   }
 
-  const known = ["components/[slug]", "components/[slug]/[variant]", "patterns/[slug]", "templates/[slug]"];
+  const known = ["components/[slug]", "components/[slug]/[variant]", "patterns/[slug]", "templates/[slug]", "sections/[section]"];
   for (const route of dynamic) if (!known.includes(route)) throw new Error(`Unknown dynamic docs route ${route}: teach tools/api/docs.ts what pages it serves`);
 
   if (dynamic.has("components/[slug]")) {
@@ -439,6 +439,22 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
       if (dynamic.has("components/[slug]/[variant]")) {
         for (const label of examples.slice(1)) add({ ...page, route: `components/${entry.slug}/${variantSlug(label)}` });
       }
+    }
+  }
+
+  // One page per section room (docs/src/data/rooms.ts): the hand-off's section title and
+  // lead over the section's catalog tiles, whose text the component pages already carry.
+  if (dynamic.has("sections/[section]")) {
+    const file = "docs/src/data/rooms.ts";
+    const source = parse(root, file);
+    for (const entry of objectOf(source, "SECTION_COPY").properties) {
+      if (!ts.isPropertyAssignment(entry) || !ts.isObjectLiteralExpression(entry.initializer)) throw new Error(`${file}: a SECTION_COPY entry is not an object literal`);
+      const title = ts.isStringLiteral(entry.name) || ts.isIdentifier(entry.name) ? entry.name.text : undefined;
+      const id = stringProperty(entry.initializer, "id");
+      const lead = stringProperty(entry.initializer, "lead");
+      if (!title || !id || lead === undefined) throw new Error(`${file}: a SECTION_COPY entry has no literal title, id or lead`);
+      const text = `${title}\n${lead}`;
+      add({ route: `sections/${id}`, sources: [file], text, code: "", uses: [], headings: [] });
     }
   }
 

@@ -2,20 +2,19 @@ import { Typography, Row, Icon, Button, ButtonGroup, Swatch, View, liquidGlassAv
 import { useDocsTheme } from "../theme/docs-theme";
 
 // The docs' appearance controls. The scheme + surface toggles show always-visible in the
-// native Android AND iOS top bars (`compact`, placed beside the hamburger) and in the
-// mobile web drill-down sheet's footer (labeled). The compact form always offers the
-// Solid/Glass toggle (both looks are worth switching between even where glass is the OS
-// default); the labeled form only shows it where glass is opt-in. The label names the
-// surface MODE, not the material a given platform happens to paint for it (Liquid Glass,
-// a lens, or a frost).
+// native Android AND iOS top bars (`compact`, placed beside the hamburger); the labeled
+// form is kept for a roomier surface. The compact form always offers the Solid/Glass
+// toggle (both looks are worth switching between even where glass is the OS default);
+// the labeled form only shows it where glass is opt-in. The label names the surface MODE,
+// not the material a given platform happens to paint for it (Liquid Glass, a lens, or a
+// frost).
 //
 // The palette control lists the kit's five accent hues and shows in both schemes, since
-// a palette paints its accent in either: in the labeled form, as the Android menu
-// drawer's footer row (PaletteRow), and as the Palette section of the iOS header menu
-// (paletteMenuSection). The labeled form and the drawer row draw it as the hand-off
-// navbar's hue swatches (HueSwatches: the kit Swatch's palette picker, five radio discs).
-// The desktop web Topbar does not carry it; a tablet-width window shows the narrow shell
-// instead, whose drawer carries the labeled form.
+// a palette paints its accent in either: on the web as the pill navbar's hue swatches
+// (HueSwatches, ./pill-nav.tsx: the kit Swatch's palette picker, five radio discs, beside
+// the pill's own Dark | Light and Glass switches), in the labeled form, as the Android
+// menu drawer's footer row (PaletteRow), and as the Palette section of the iOS header
+// menu (paletteMenuSection).
 
 export type { Palette };
 
@@ -30,15 +29,15 @@ const PALETTE_OPTIONS: readonly { value: Palette; label: string }[] = [
 
 /**
  * The palette control: the hand-off navbar's five hue swatches, one kit Swatch palette
- * picker per palette in a radio group, the palette in force ringed. Row's `snug` gap
- * (8 px) stands in for the hand-off's 6 px: `tight` (4 px) would let the selected disc's
- * 4 px ring touch its neighbour.
+ * picker per palette in a radio group, the palette in force ringed. Row's `compact` gap
+ * is the hand-off's 6 px: the ring is a shadow outside the disc's box, so it clears its
+ * neighbour by 2 px as the hand-off's does.
  */
 export function HueSwatches() {
   const { palette, setPalette } = useDocsTheme();
   return (
     <View role="radiogroup" aria-label="Palette">
-      <Row snug alignCenter>
+      <Row compact alignCenter>
         {PALETTE_OPTIONS.map((p) => (
           <Swatch
             key={p.value}

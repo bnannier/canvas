@@ -67,10 +67,9 @@ for (const scheme of ["light", "dark"] as const) {
     expect(actual.margin).toBe(8);
     expect(actual.box.x).toBeCloseTo(8, 0);
     expect(actual.box.right).toBeCloseTo(390 - 8, 0);
-    // The tab bar is under the scrim, which takes a tap anywhere off the sheet.
-    const tabBar = (await page.getByRole("navigation", { name: "Primary" }).boundingBox())!;
-    expect(tabBar.y + tabBar.height).toBeGreaterThan(actual.box.top);
-    const covered = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('[role="navigation"]') == null, { x: 195, y: tabBar.y + tabBar.height / 2 });
+    // The pill navbar is under the scrim, which takes a tap anywhere off the sheet.
+    const pill = (await page.getByRole("navigation", { name: "Primary" }).boundingBox())!;
+    const covered = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('[role="navigation"]') == null, { x: 195, y: pill.y + pill.height / 2 });
     expect(covered).toBe(true);
     await expect(panel.getByRole("button", { name: "Close details", exact: true })).toBeInViewport({ ratio: 1 });
     const shot = info.outputPath(`wide-popover-sheet-${scheme}.png`);
