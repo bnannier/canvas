@@ -51,8 +51,10 @@ for (const width of [1280, 390]) {
       for (const button of await picker.getByRole("button").all()) {
         const box = await button.boundingBox();
         expect(box).not.toBeNull();
-        expect(box!.width).toBeGreaterThanOrEqual(24);
-        expect(box!.height).toBeGreaterThanOrEqual(24);
+        // 24 CSS px (WCAG 2.5.8), read through float layout: Firefox reports a 24 px box at a
+        // fractional offset as 23.99997, so the floor allows a thousandth of a pixel.
+        expect(box!.width).toBeGreaterThanOrEqual(24 - 0.001);
+        expect(box!.height).toBeGreaterThanOrEqual(24 - 0.001);
         expect(await button.evaluate((element) => {
           const bounds = element.getBoundingClientRect();
           return [0.25, 23.75].every((x) => [0.25, 23.75].every((y) => {

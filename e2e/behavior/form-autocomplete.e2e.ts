@@ -24,7 +24,9 @@ for (const scheme of ["light", "dark"] as const) {
           for (const expanded of [false, true]) {
             if (expanded) await toggle.click();
             await expect(field).toHaveAttribute("aria-expanded", String(expanded));
-            await toggle.scrollIntoViewIfNeeded();
+            // Into the page's padded band, clear of the floating tab bar and the top bar:
+            // `scrollIntoViewIfNeeded` counts a target under that chrome as in view.
+            await toggle.evaluate((button) => button.scrollIntoView({ block: "center" }));
             const hitEdges = await toggle.evaluate((button, { minimum, expanded }) => {
               const box = button.getBoundingClientRect();
               const x = box.x + box.width / 2;
