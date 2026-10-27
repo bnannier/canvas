@@ -1,4 +1,8 @@
-import { PALETTES, type Palette } from "@nannier/canvas";
+// The kit's palettes, spelled out: this module is imported by the unit tests and the
+// preview opener with no kit build, so it imports nothing (test/audit-protocol-palette.test.ts
+// holds the spelling to the kit's PALETTES).
+export const LINK_PALETTES = ["violet", "cyan", "mint", "rose", "amber"] as const;
+type Palette = (typeof LINK_PALETTES)[number];
 
 /** Explicit appearance choices carried by an external docs link. */
 export interface ThemeLinkOverrides {
@@ -31,7 +35,7 @@ export function themeFromParams(params: { scheme?: SearchValue; surface?: Search
 }
 
 function isPalette(value: string | undefined): value is Palette {
-  return (PALETTES as readonly string[]).includes(value ?? "");
+  return (LINK_PALETTES as readonly string[]).includes(value ?? "");
 }
 
 /** Missing or invalid axes leave the current in-app choice alone. */
