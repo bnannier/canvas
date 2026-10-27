@@ -1,6 +1,6 @@
 import { useState, type Ref } from "react";
 import { Platform } from "react-native";
-import { View, ScrollView, Row, Column, Container, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, Switch, Input, Slider, Icon, useContainerBreakpoint, type ColorTokens } from "@nannier/canvas";
+import { View, ScrollView, Row, Column, Container, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, useContainerBreakpoint, type ColorTokens } from "@nannier/canvas";
 import { CodeBlock as KitCodeBlock } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
 import type { DetailSpec, Knob } from "../../core/data/detail-specs";
@@ -56,36 +56,38 @@ function labelOf(knob: Knob): string {
   return knob.prop;
 }
 
+// The chip value of an unset option (the knob's "none"): no option label can collide with it.
+const NONE = "\u0000none";
+
 /** A pick-one set of options as selectable chips, the selected one the accent's soft pill. */
 function OptionChips({ name, options, value, onPick }: { name: string; options: readonly (string | null)[]; value: KnobValue; onPick: (next: string | null) => void }) {
   return (
-    <Row wrap tight>
+    // One tab stop per knob: a pick-one set is a radiogroup, its arrows move the choice.
+    <ChipGroup accessibilityLabel={name} value={typeof value === "string" ? value : NONE} onChange={(next) => onPick(next === NONE ? null : String(next))}>
       {options.map((option) => (
-        <Chip key={option ?? "-"} selectable selected={option === value} onSelectedChange={() => onPick(option)} accessibilityLabel={`${name}: ${optionLabel(option)}`}>
+        <Chip key={option ?? NONE} value={option ?? NONE}>
           {optionLabel(option)}
         </Chip>
       ))}
-    </Row>
+    </ChipGroup>
   );
 }
 
 /** An icon slot's glyphs as icon-only chips ("none" first). */
 function IconChips({ name, value, onPick }: { name: string; value: KnobValue; onPick: (next: string) => void }) {
   return (
-    <Row wrap tight>
+    <ChipGroup accessibilityLabel={name} value={typeof value === "string" ? value : ""} onChange={(next) => onPick(String(next))}>
       {ICONS.map((glyph) => (
         <Chip
           key={glyph || "none"}
-          selectable
-          selected={glyph === value}
-          onSelectedChange={() => onPick(glyph)}
-          accessibilityLabel={`${name}: ${glyph || "none"}`}
+          value={glyph}
+          accessibilityLabel={glyph || "none"}
           icon={glyph ? <Icon {...{ [glyph]: true }} size={14} decorative /> : undefined}
         >
           {glyph ? undefined : "none"}
         </Chip>
       ))}
-    </Row>
+    </ChipGroup>
   );
 }
 
@@ -211,7 +213,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
           )}
         </Card>
       </View>
-      <KitCodeBlock code={code} filename={`JSX · ${spec.propsInterface.replace(/^react-native:/, "")}`} language="tsx" copy />
+      <KitCodeBlock testID="playground-code" code={code} filename={`JSX · ${spec.propsInterface.replace(/^react-native:/, "")}`} language="tsx" copy />
     </DetailSection>
   );
 }

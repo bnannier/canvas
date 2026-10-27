@@ -9,7 +9,7 @@
  * worked, and in a browser the keydown never left the text field.
  */
 import type { Locator, Page } from "@playwright/test";
-import { gotoDocs, platformRow, stage } from "../support/docs";
+import { gotoDocs, platformRow } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 test("a tab set walks with every key the roving-focus pattern promises", async ({ page }) => {
@@ -97,19 +97,21 @@ test("a slider moves its value with the arrows", async ({ page }) => {
 
 test("the code block's copy button is reachable by Tab, not just by a mouse", async ({ page }) => {
   // A control that only responds to a mouse is the most common keyboard defect in a
-  // component kit, and the copy button is the one every component page carries.
+  // component kit, and the copy button is the one every component page carries: on the
+  // detail page, the playground's JSX panel under the knobs.
   // locator.focus() would prove nothing: it calls element.focus() directly, which
   // succeeds even on tabindex="-1". Tabbing to it is the actual claim.
   await gotoDocs(page, "/components/button", { scheme: "dark" });
-  const copy = stage(page).getByRole("button", { name: /Copy/ }).first();
+  const copy = page.getByTestId("playground-code").getByRole("button", { name: /Copy/ }).first();
   await expect(copy).toBeVisible();
   await expect(copy).toHaveAttribute("tabindex", "0");
 
-  // Walk the tab order from the code block's own region until it arrives, rather
-  // than from the top of a page with a whole navigation shell in front of it.
-  await stage(page).getByRole("tab").last().focus();
+  // Walk the tab order from the knob panel's Reset, the playground's first control,
+  // through the knobs to the panel under them, rather than from the top of a page with a
+  // whole navigation shell in front of it.
+  await page.locator("[data-page-scroll]").getByRole("button", { name: "Reset" }).first().focus();
   let reached = false;
-  for (let press = 0; press < 12 && !reached; press++) {
+  for (let press = 0; press < 60 && !reached; press++) {
     await page.keyboard.press("Tab");
     reached = await copy.evaluate((node) => node === document.activeElement);
   }
