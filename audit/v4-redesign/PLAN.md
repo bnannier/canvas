@@ -152,6 +152,25 @@ the disagreement is recorded here and the call taken.
   (rule S8 of the doc structure) as a section after Usage; the title is `Typography display`
   (56 against the hand-off's 64) and Cards keep the 16 px radius (against 14 to 20): both
   recorded differences.
+- **S12 Swatch pitch.** The pill's hue discs keep their 16 px size but sit 8 px apart, not
+  the hand-off's 6: a 22 px pitch fails WCAG 2.5.8's 24 px target spacing (axe
+  `target-size` on every page), and 8 is the smallest gap that passes (D1's rule).
+- **P4 Knob chips are one tab stop per knob.** The playground's pick-one chip sets were a
+  tab stop per chip (60+ stops through the playground); a pick-one set is a radiogroup with
+  roving focus, a real gap, so the kit gains a single-select chip group (Phase 4 Controls).
+
+## Phase 4 decisions (2026-10-27)
+
+- **T1 iOS Tabs is the segmented control.** iOS ships UISegmentedControl for switching
+  closely related subviews in a screen (HIG, Segmented controls), so PLATFORM-REFERENCES
+  names it for the tabs job and iOS Tabs draws the hand-off's `K.PF` ios segmented row
+  (ChatGPT agreed). The tab bar stays the app-level navigation row.
+- **T2 Kept native shapes the hand-off draws generically.** Android Autocomplete keeps the
+  M3 exposed dropdown with its floating label (Material ships the control); iOS FilterPanel
+  keeps the trailing-checkmark list (design-language item 6). Both are recorded differences.
+- **T3 Hand-off motion not added in Phase 4.** Hover and press transitions the hand-off
+  animates are left out until each goes through the tuning harness; the section reports
+  list them as open differences.
 
 ## Phases (each committed and pushed on its own, CI run locally first; screenshot
 baselines and tuning evidence land WITH the visual phase that moves them, never at the end)
