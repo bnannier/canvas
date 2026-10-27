@@ -50,7 +50,31 @@ export function WebScrollbarTheme() {
 // tell a scroll container where its overlaid edges are: every page scroller declares
 // its band, and native scrollIntoView aligns inside it. Native screens inset themselves
 // through their own bars, so this renders nothing off the web.
+//
+// Focus is the one scroll that does not ask: Chromium moves focus "into view if needed"
+// against the raw viewport, so a Tab that lands on a control under the floating tab bar
+// leaves it hidden there (WCAG 2.4.11, focus not obscured). So a focus that lands inside a
+// page scroller with its ring outside the padded band is scrolled to the band's nearest
+// edge, which `scrollIntoView` measures with the scroll padding, and with a scroll margin of
+// the ring's reach (its gap and band, drawn outside the control or the frame around it) so
+// the ring clears the chrome too.
+/** How far a focus ring reaches past what it surrounds: the kit's ring gap and band, and a frame's edge around a flush scroller. */
+const FOCUS_REACH = 8;
+
 export function WebScrollPadding({ top, bottom }: { top: number; bottom: number }) {
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof document === "undefined") return;
+    const onFocus = (event: FocusEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.closest("[data-page-scroll]")) return;
+      const box = target.getBoundingClientRect();
+      if (box.top - FOCUS_REACH < Math.ceil(top) || box.bottom + FOCUS_REACH > window.innerHeight - Math.ceil(bottom)) {
+        target.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    };
+    document.addEventListener("focusin", onFocus);
+    return () => document.removeEventListener("focusin", onFocus);
+  }, [top, bottom]);
   useEffect(() => {
     if (Platform.OS !== "web" || typeof document === "undefined") return;
     let el = document.getElementById("docs-scroll-padding") as HTMLStyleElement | null;
@@ -59,7 +83,7 @@ export function WebScrollPadding({ top, bottom }: { top: number; bottom: number 
       el.id = "docs-scroll-padding";
       document.head.appendChild(el);
     }
-    el.textContent = `[data-page-scroll] { scroll-padding-top: ${Math.ceil(top)}px; scroll-padding-bottom: ${Math.ceil(bottom)}px; }`;
+    el.textContent = `[data-page-scroll] { scroll-padding-top: ${Math.ceil(top)}px; scroll-padding-bottom: ${Math.ceil(bottom)}px; } [data-page-scroll] :focus { scroll-margin: ${FOCUS_REACH}px; }`;
   }, [top, bottom]);
   return null;
 }
