@@ -32,7 +32,6 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/organisms/board/board.styles.ts": { plainLabel: "caption", plainEmptyLabel: "small" },
   "src/molecules/feeds/feeds.styles.ts": { activityTime: "tiny", traceTime: "small", traceKind: "caption" },
   "src/style/field-label.ts": { fieldEyebrow: "caption" },
-  "src/atoms/input/input.styles.ts": { "webSkin.search.placeholder": "tiny" },
   "src/atoms/select/select.styles.ts": { "webSkin.label": "caption" },
   // Dark Factory's sub-12 styles, by the Typography role each one serves.
   "src/style/type-scale.ts": {

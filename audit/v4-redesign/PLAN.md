@@ -102,6 +102,51 @@ ChatGPT (`codex exec -m gpt-6-astra`, read-only) reviewed D1 to D10 and the phas
 and the order; each objection was accepted and folded in above (R1 to R6) and below. No
 fundamental disagreement is left open.
 
+## Phase 3 and detail-page decisions (2026-10-27)
+
+Two read-only planning passes mapped the hand-off's docs shell and its component detail page
+(`Canvas v4.0.0 Component.dc.html`). ChatGPT reviewed the shell decisions; where it disagreed
+the disagreement is recorded here and the call taken.
+
+- **S1 Pill at narrow widths.** The hand-off's pill (1177 px natural width) scrolls sideways
+  below about 1209 px. Adopted (ChatGPT): the kit Navbar gains `scrolls`, a horizontally
+  scrolling content row with no indicator, instead of folding the links into its menu.
+- **S2 Phone bars.** The docs' phone web TabBar and mobile top bar are retired; the pill and a
+  drawer of all rooms replace them. Native keeps NativeTabs (ChatGPT agreed).
+- **S3 Kit skins pulled forward.** Swatch (five palettes), Navbar (hand-off skin, `compact`
+  44 px density, `scrolls`, `hrefs`) and Sidebar (hand-off skin, trailing markers) land with
+  Phase 3, so the shell is built from v4 kit parts (agreed).
+- **S4 Search.** The hand-off pill has no search; a ghost search icon button with the ⌘K
+  shortcut is added. ChatGPT disagreed (an unshown control); kept, because search is a real
+  function and touch users have no other way to reach it.
+- **S5 Rail dots.** Adopted (ChatGPT): the kit Sidebar gains trailing markers rather than
+  omitting the 5 px dots.
+- **S6 Grain.** A texture baked from the hand-off's own `feTurbulence` SVG (react-native-svg
+  renders no `FeTurbulence`), tiled through the kit `Image` on every platform (agreed).
+- **S7 Section routes.** Minimal `sections/<section>` and `skins` routes land with the pill so
+  its links work before Phases 5 and 7 (agreed).
+- **S8 Glass chip.** The hand-off's "Glass" chip is drawn as the kit `Switch small` labelled
+  Glass without the chip frame. ChatGPT disagreed (match the frame); kept, because the
+  repo forbids adding to the kit for the docs frame and a hand-built chip is a look-alike.
+  Recorded as an open difference.
+- **S9 Rail cut.** Adopted (ChatGPT): the rail hides below the hand-off's 760 px window width,
+  not the kit's 640 phone tier; it is window-level chrome.
+- **S10 Toolbar search prompt.** Adopted (ChatGPT): the prompt takes what the hand-off actually
+  renders (its interactive layer's `font: inherit`, 400 at the field's size), not the
+  renderer's 700 10.5 px tracked span.
+- **P1 Detail page.** Built behind a pilot gate on Button, from generated data only (extended
+  `extract-props`, semantics, skin-token and related scans, and `tools/v4/derive-detail-specs.ts`
+  porting the hand-off's knob, size, state, anatomy and keyboard specs, validated against
+  the extracted props), so Phase 6 is "regenerate and flip the gate".
+- **P2 Kit gaps for it.** A 64 px layout gap step, a heading level independent of the visual
+  role, `CodeBlock inline copy`, CardMedia hosting live children on a sunken well,
+  DescriptionList ReactNode values, DataTable group bands and proportional columns,
+  `InteractionOverride` (pinned hover, focus, press) and an anatomy part registry.
+- **P3 Kept from the repo.** Variant routes stay (the audit and deep links); Do & Don't stays
+  (rule S8 of the doc structure) as a section after Usage; the title is `Typography display`
+  (56 against the hand-off's 64) and Cards keep the 16 px radius (against 14 to 20): both
+  recorded differences.
+
 ## Phases (each committed and pushed on its own, CI run locally first; screenshot
 baselines and tuning evidence land WITH the visual phase that moves them, never at the end)
 

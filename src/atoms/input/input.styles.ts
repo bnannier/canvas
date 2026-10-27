@@ -198,12 +198,15 @@ const WEB_ICON_GUTTER = WEB_INSET + WEB_ICON + 8;
 
 export const webSkin: InputSkin = {
   // The hand-off's toolbar search (cv-kit-code2.js): a borderless 36px row, a 15px
-  // magnifier and 10px gap, a 600 13px value and a tracked 700 10.5px uppercase prompt.
+  // magnifier and 10px gap. The type is what the hand-off renders, not its renderer's
+  // span (PLAN S10): its interactive layer (cv-kit-code7.js `toInput`) swaps the span
+  // for an input whose `font: inherit; letter-spacing: inherit` resets the value and the
+  // prompt to the page's 400 16px, untracked, while the prompt keeps the span's uppercase.
   search: {
     container: () => ({ flexDirection: "row", alignItems: "center", gap: 10, height: 36, paddingHorizontal: 4 }),
     icon: { size: 15, bold: true, color: subtleInk },
-    field: (tokens) => ({ paddingVertical: 8, fontSize: 13, fontWeight: "600", color: tokens.foreground, backgroundColor: "transparent", borderWidth: 0 }),
-    placeholder: (tokens) => ({ position: "absolute", left: 0, pointerEvents: "none", fontSize: 10.5, lineHeight: 14, fontWeight: "700", textTransform: "uppercase", letterSpacing: 1.68, color: subtleInk(tokens) }),
+    field: (tokens) => ({ paddingVertical: 8, fontSize: 16, fontWeight: "400", color: tokens.foreground, backgroundColor: "transparent", borderWidth: 0 }),
+    placeholder: (tokens) => ({ position: "absolute", left: 0, pointerEvents: "none", fontSize: 16, lineHeight: 20, fontWeight: "400", textTransform: "uppercase", color: subtleInk(tokens) }),
   },
   liquid: true,
   softFill: (tokens) => tokens["field-fill"] ?? webFill(tokens),
