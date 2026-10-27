@@ -10,7 +10,7 @@ export default function Example(scope: ExampleScope) {
   divided
   items={[
     { term: "Role", value: <Row snug wrap><Badge soft>button</Badge></Row> },
-    { term: "States", value: <Row snug wrap><Badge soft>disabled</Badge><Badge soft>busy</Badge></Row> },
+    { term: "States", value: <Row snug wrap><Badge soft>disabled</Badge><Badge soft>busy</Badge><Badge soft>loading</Badge><Badge soft>pressed</Badge><Badge soft>focused</Badge><Badge soft>hovered</Badge></Row> },
     { term: "Keyboard", value: "Enter and Space activate it" }
   ]}
 />

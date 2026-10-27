@@ -4,6 +4,7 @@ import { type ComponentType, type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
 import { Badge } from "../src/atoms/badge/badge.tsx";
+import { Row } from "../src/atoms/layout/layout.tsx";
 import { DescriptionList, type DescriptionListProps } from "../src/molecules/description-lists/description-lists.tsx";
 import { DescriptionList as IosDescriptionList } from "../src/molecules/description-lists/description-lists.ios.tsx";
 import { DescriptionList as AndroidDescriptionList } from "../src/molecules/description-lists/description-lists.android.tsx";
@@ -71,6 +72,32 @@ for (const [platform, List] of ENTRIES) {
       fireEvent.click(updates[0]!);
       expect(screen.getByLabelText("row 1 value")).toBeTruthy();
       expect(warnSpy.mock.calls.some((call: unknown[]) => String(call[0]).includes("`update` needs a text value"))).toBe(true);
+    });
+
+    // A wrapping Row as a two-column value overflowed its card sideways: React Native
+    // gives every box flexShrink 0, so inside the row-direction value cell the Row kept
+    // its one-line max-content width. The node value now sits in a box that yields to
+    // the cell (flexShrink 1, minWidth 0), which gives the Row a width to wrap at.
+    it("lets a node value shrink to its cell so a wrapping Row wraps instead of overflowing", () => {
+      ui(
+        <List
+          twoColumn
+          items={[
+            { term: "States", value: <Row snug wrap testID="states"><Badge>disabled</Badge><Badge>busy</Badge><Badge>loading</Badge></Row> },
+            { term: "Id", value: <Badge testID="copied">btn</Badge>, copyValue: "btn" },
+          ]}
+        />,
+      );
+      for (const id of ["states", "copied"]) {
+        const box = getComputedStyle(screen.getByTestId(id).parentElement!);
+        expect(box.flexShrink).toBe("1");
+        expect(box.minWidth).toBe("0px");
+        // The yielding box is the value's own, not the cell (whose basis is 0%).
+        expect(box.flexBasis).toBe("auto");
+      }
+      const cell = getComputedStyle(screen.getByTestId("states").parentElement!.parentElement!);
+      expect(cell.flexShrink).toBe("1");
+      expect(cell.minWidth).toBe("0px");
     });
   });
 }

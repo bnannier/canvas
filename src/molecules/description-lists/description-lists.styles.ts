@@ -149,16 +149,27 @@ export function rowDivider(tokens: ColorTokens): ViewStyle {
 }
 
 // The two-column value cell: grows to fill, with the value and trailing
-// affordance pushed to opposite ends.
+// affordance pushed to opposite ends. `minWidth: 0` lets it yield below its
+// content's width (Yoga and react-native-web both default it to 0 on a View, but
+// the cell states it so the FILL contract does not hang on a renderer default).
 export const twoColumnValueCell: ViewStyle = {
   flexGrow: 1,
   flexShrink: 1,
   flexBasis: "0%",
+  minWidth: 0,
   flexDirection: "row",
   alignItems: "baseline",
   justifyContent: "space-between",
   gap: 16,
 };
+
+// A node value (the caller's own rendering, a wrapping Row of Badges for one) sits in
+// this box so it can yield to the cell. React Native gives every box `flexShrink: 0`,
+// so inside the row-direction two-column cell a wrapping Row kept its max-content
+// width (every child on one line) and ran past the card instead of wrapping. Shrinking
+// to the cell gives the Row a definite width to wrap at; a value that fits keeps its
+// own width, and the trailing Copy button still sits beside it.
+export const nodeValue: ViewStyle = { flexShrink: 1, minWidth: 0 };
 
 // --- inline edit -------------------------------------------------------------
 
