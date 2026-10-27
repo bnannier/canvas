@@ -40,6 +40,10 @@ export function Rail({ room, active }: { room: Room; active?: string }) {
               compact
               markers
               active={active ?? -1}
+              // The rail's navigation landmark, named by its room ("Controls components",
+              // "Guides"), apart from the pill's Primary navigation and any Sidebar a page
+              // shows as an example.
+              accessibilityLabel={room.id === "guides" ? room.title : `${room.title} components`}
               header={
                 <Input
                   small

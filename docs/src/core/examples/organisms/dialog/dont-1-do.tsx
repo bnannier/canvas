@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Dialog } = scope;
   return (
-<Dialog open title="Refund payment" description="The refund posts to the original card in 2 to 3 business days." medium confirmLabel="Refund" cancelLabel="Cancel" />
+<Dialog open embedded title="Refund payment" description="The refund posts to the original card in 2 to 3 business days." medium confirmLabel="Refund" cancelLabel="Cancel" />
   );
 }

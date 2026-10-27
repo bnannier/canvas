@@ -38,6 +38,13 @@ conversation scrolls inside its own thread while the header, composer, and dialo
 footer remain visible. The default workspace still fills its available height;
 `compact` has no effect without `form workspace`.
 
+Add `embedded` to show an open dialog in a page as a specimen, the way a catalogue
+or a showcase does: it keeps its look, its dialog role and its labelling, but it is
+not modal. It does not take focus when it opens, trap Tab, return focus, set
+`aria-modal`, or cancel on Escape, native back or a backdrop press, so the page
+around it keeps its scroll position and its keyboard order. `embedded` is ignored
+with `trigger`, which always opens a live modal.
+
 ## Usage
 
 ```tsx
@@ -109,7 +116,7 @@ footer remain visible. The default workspace still fills its available height;
 **Do** — Use the Dialog for a focused task with real content, like a short form.
 
 ```tsx
-<Dialog open large>
+<Dialog open embedded large>
   <Column relaxed>
     <Column tight>
       <Typography lead semibold>Edit profile</Typography>
@@ -130,7 +137,7 @@ footer remain visible. The default workspace still fills its available height;
 **Don't** — A bare yes/no question does not need the roomier Dialog; that is what the Alert Dialog is for.
 
 ```tsx
-<Dialog open title="Delete file?" small destructive confirmLabel="Delete" cancelLabel="Cancel" />
+<Dialog open embedded title="Delete file?" small destructive confirmLabel="Delete" cancelLabel="Cancel" />
 ```
 
 ### Description
@@ -138,13 +145,13 @@ footer remain visible. The default workspace still fills its available height;
 **Do** — Keep the description to one supporting line; link out for the full policy.
 
 ```tsx
-<Dialog open title="Refund payment" description="The refund posts to the original card in 2 to 3 business days." medium confirmLabel="Refund" cancelLabel="Cancel" />
+<Dialog open embedded title="Refund payment" description="The refund posts to the original card in 2 to 3 business days." medium confirmLabel="Refund" cancelLabel="Cancel" />
 ```
 
 **Don't** — A multi-sentence policy dump in the description buries the task under reading.
 
 ```tsx
-<Dialog open title="Refund payment" description="Refunds are processed through the original payment method. Depending on the bank, the amount can take 2 to 3 business days to appear. Partial refunds are supported. Once submitted a refund cannot be cancelled, and the payout for this period will be adjusted on your next statement." medium confirmLabel="Refund" cancelLabel="Cancel" />
+<Dialog open embedded title="Refund payment" description="Refunds are processed through the original payment method. Depending on the bank, the amount can take 2 to 3 business days to appear. Partial refunds are supported. Once submitted a refund cannot be cancelled, and the payout for this period will be adjusted on your next statement." medium confirmLabel="Refund" cancelLabel="Cancel" />
 ```
 
 ### Body form
@@ -152,7 +159,7 @@ footer remain visible. The default workspace still fills its available height;
 **Do** — Keep the body to the few fields the task needs; send long forms to a full page.
 
 ```tsx
-<Dialog open large>
+<Dialog open embedded large>
   <Column relaxed>
     <Typography lead semibold>Create project</Typography>
     <Column relaxed>
@@ -170,7 +177,7 @@ footer remain visible. The default workspace still fills its available height;
 **Don't** — A seven-field form crammed into a small dialog feels like a page stuffed into a popup.
 
 ```tsx
-<Dialog open small>
+<Dialog open embedded small>
   <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Create project</Text>
   <View style={{ marginTop: 20 }}>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>
@@ -200,7 +207,7 @@ footer remain visible. The default workspace still fills its available height;
 **Do** — One primary plus quieter secondaries, right-aligned and labeled with their verb.
 
 ```tsx
-<Dialog open medium>
+<Dialog open embedded medium>
   <Column relaxed>
     <Column tight>
       <Typography lead semibold>Unsaved changes</Typography>
@@ -218,7 +225,7 @@ footer remain visible. The default workspace still fills its available height;
 **Don't** — Three look-alike primary buttons give no signal about the default, safe choice.
 
 ```tsx
-<Dialog open medium>
+<Dialog open embedded medium>
   <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Unsaved changes</Text>
   <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"], marginTop: 8 }}>You have edits that are not saved.</Text>
   <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
@@ -234,13 +241,13 @@ footer remain visible. The default workspace still fills its available height;
 **Do** — Reserve the destructive tone for the irreversible action it names.
 
 ```tsx
-<Dialog open title="Delete workspace" description="This removes all projects and cannot be undone." medium destructive confirmLabel="Delete" cancelLabel="Cancel" />
+<Dialog open embedded title="Delete workspace" description="This removes all projects and cannot be undone." medium destructive confirmLabel="Delete" cancelLabel="Cancel" />
 ```
 
 **Don't** — A red button on a routine Save trains users to ignore the colour that should mean danger.
 
 ```tsx
-<Dialog open title="Save changes" description="Update the profile with your edits." medium destructive confirmLabel="Save" cancelLabel="Cancel" />
+<Dialog open embedded title="Save changes" description="Update the profile with your edits." medium destructive confirmLabel="Save" cancelLabel="Cancel" />
 ```
 
 ### Size
@@ -248,7 +255,7 @@ footer remain visible. The default workspace still fills its available height;
 **Do** — Size the dialog to its content: a single field belongs in xs or sm.
 
 ```tsx
-<Dialog open small>
+<Dialog open embedded small>
   <Column relaxed>
     <Typography lead semibold>Rename</Typography>
     <Input label="Name" defaultValue="Untitled" />
@@ -263,7 +270,7 @@ footer remain visible. The default workspace still fills its available height;
 **Don't** — A 2xl panel around a single field leaves a vast empty expanse beside the input.
 
 ```tsx
-<Dialog open wide>
+<Dialog open embedded wide>
   <Text style={{ fontSize: 16, lineHeight: 24, fontWeight: "600", color: tokens["popover-foreground"] }}>Rename</Text>
   <View style={{ marginTop: 20 }}>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 6 }}>Name</Text>

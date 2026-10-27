@@ -29,22 +29,69 @@ export interface Room {
   title: string;
   /** The hand-off's one-line lead under the title (its 22 px display line). */
   lead: string;
+  /**
+   * The section page's paragraph under the lead (the hand-off's 17 px body), with a code
+   * span in backticks (inline Markdown, docs/src/lib/inline-markdown.ts). Section rooms only.
+   */
+  body?: string;
   /** The room's own page, where it has one. */
   href?: string;
   items: RoomItem[];
 }
 
 // The hand-off's section pages (`Canvas v4.0.0 <Section>.dc.html`): each section's pill
-// label, its title and its lead line, by the hand-off's section title.
-const SECTION_COPY: Record<Section, { id: SectionId; label: string; lead: string }> = {
-  Foundations: { id: "foundations", label: "Foundations", lead: "Tokens that render the same on a phone and in a browser." },
-  Layout: { id: "layout", label: "Layout", lead: "Components never pick a width. The layout hands them one." },
-  Controls: { id: "controls", label: "Controls", lead: "Buttons, toggles and sliders. The things a thumb touches." },
-  Inputs: { id: "inputs", label: "Inputs", lead: "Fields that light up when they're listening." },
-  Navigation: { id: "navigation", label: "Navigation", lead: "Wayfinding that slides instead of snapping." },
-  "Surfaces & data": { id: "data", label: "Data", lead: "Cards, stats, charts and tables on one lit surface." },
-  Charts: { id: "charts", label: "Charts", lead: "27 chart types, one series palette, no charting library." },
-  "Overlays & feedback": { id: "overlays", label: "Overlays", lead: "Glass over the app, never a curtain." },
+// label, its title, its lead line and the paragraph under it, by the hand-off's section
+// title. Foundations' glyph count is the kit's own (test/docs-rooms.test.ts holds it to
+// src/atoms/icon/icon.glyphs.ts), written here so the shell does not load the glyph table.
+const SECTION_COPY: Record<Section, { id: SectionId; label: string; lead: string; body: string }> = {
+  Foundations: {
+    id: "foundations",
+    label: "Foundations",
+    lead: "Tokens that render the same on a phone and in a browser.",
+    body: "Two neutral ramps, one accent, three faces, one spring and 414 glyphs. Every value lives in `src/style/tokens.ts`.",
+  },
+  Layout: {
+    id: "layout",
+    label: "Layout",
+    lead: "Components never pick a width. The layout hands them one.",
+    body: "Every component fills or hugs the bounds its parent provides. Anything that changes shape measures its own container, never the window. Only app chrome reads the viewport.",
+  },
+  Controls: {
+    id: "controls",
+    label: "Controls",
+    lead: "Buttons, toggles and sliders. The things a thumb touches.",
+    body: "Everything here is live. Press, drag and toggle. Every control springs; the primary fill glows only when it moves.",
+  },
+  Inputs: {
+    id: "inputs",
+    label: "Inputs",
+    lead: "Fields that light up when they're listening.",
+    body: "A recessed fill, a hairline, and a 4px ion ring on focus. Labels sit above; helper text below. The component owns all of it.",
+  },
+  Navigation: {
+    id: "navigation",
+    label: "Navigation",
+    lead: "Wayfinding that slides instead of snapping.",
+    body: "Indicators are physical objects: a glass thumb, a glowing underline. They travel to the new position on the spring.",
+  },
+  "Surfaces & data": {
+    id: "data",
+    label: "Data",
+    lead: "Cards, stats, charts and tables on one lit surface.",
+    body: "Content panes take the denser glass tint so text keeps its contrast. Numbers are tabular, marks are the ion, and the chart series never renumber.",
+  },
+  Charts: {
+    id: "charts",
+    label: "Charts",
+    lead: "27 chart types, one series palette, no charting library.",
+    body: "Marks are the ion and its seven fixed neighbours; series never renumber when one is filtered out. Every plot fills its container and inspects on press or scrub.",
+  },
+  "Overlays & feedback": {
+    id: "overlays",
+    label: "Overlays",
+    lead: "Glass over the app, never a curtain.",
+    body: "Dialogs, drawers and toasts sit on the densest tint so the page stays legible underneath. They rise 16px on entry and settle, not fade.",
+  },
 };
 
 const NAME_OF = new Map(COMPONENTS.map((c) => [c.slug, c.name] as const));
@@ -57,6 +104,7 @@ export const SECTION_ROOMS: readonly Room[] = SECTIONS.map(({ title, slugs }) =>
     label: copy.label,
     title,
     lead: copy.lead,
+    body: copy.body,
     href: `/sections/${copy.id}`,
     items: slugs
       .filter((slug) => NAME_OF.has(slug))

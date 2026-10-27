@@ -256,6 +256,14 @@ export interface SidebarProps {
    *  receives the collapsed state so it can show a compact (icon-only) footer in the rail. */
   footer?: ReactNode | ((collapsed: boolean) => ReactNode);
 
+  /**
+   * The name of the sidebar's navigation landmark, a short statement of what it navigates
+   * ("Workspace", "Controls components"). A sidebar is a navigation landmark on every
+   * platform, and a page holding two navigation landmarks needs a distinct name on each, so
+   * a landmark list can tell them apart. In the narrow `responsive` drawer it names the
+   * drawer. Omit it and the landmark stays unnamed, as before.
+   */
+  accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -310,6 +318,12 @@ function rowA11yLabel(item: SidebarItem): string {
   return item.badge != null ? `${item.label}, ${item.badge}` : item.label;
 }
 
+// The landmark's name, as the RN prop and its aria alias (react-native-web forwards neither
+// on its own; Form's precedent). An unnamed sidebar spreads nothing, so its markup is unchanged.
+function landmarkName(label: string | undefined) {
+  return label != null ? { accessibilityLabel: label, "aria-label": label } : null;
+}
+
 // The embedded column and its slots: stretched to the host rail, 16 px between blocks.
 const EMBEDDED_COLUMN: ViewStyle = { gap: 16, alignSelf: "stretch" };
 const EMBEDDED_SLOT: ViewStyle = { alignSelf: "stretch" };
@@ -350,7 +364,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
   const SidebarDrillDown = createSidebarDrillDown(skin, Badge);
 
   return function Sidebar(props: SidebarProps) {
-    const { sections, items, onSelect, header, footer, collapsible, onToggleCollapse, testID, style } = props;
+    const { sections, items, onSelect, header, footer, collapsible, onToggleCollapse, accessibilityLabel, testID, style } = props;
     const density = densityOf(props);
     const frame = frameOf(props);
     const { tokens, dark } = useTheme();
@@ -495,6 +509,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
           width={props.drawerWidth}
+          accessibilityLabel={accessibilityLabel}
           testID={testID}
         >
           {drawerHeader != null ? <View style={skin.header(tokens, false)}>{drawerHeader}</View> : null}
@@ -664,7 +679,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       const headerNode = typeof header === "function" ? header(collapsed) : header;
       const footerNode = typeof footer === "function" ? footer(collapsed) : footer;
       return (
-        <View testID={testID} role="navigation" style={[EMBEDDED_COLUMN, style]}>
+        <View testID={testID} role="navigation" {...landmarkName(accessibilityLabel)} style={[EMBEDDED_COLUMN, style]}>
           {headerNode != null ? <View style={EMBEDDED_SLOT}>{headerNode}</View> : null}
           {sectionsEl}
           {footerNode != null ? <View style={EMBEDDED_SLOT}>{footerNode}</View> : null}
@@ -681,7 +696,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       // users get no way to jump to (or skip) the nav. Additive and backward
       // compatible: consumers using Sidebar for non-nav content can ignore it.
       return (
-        <GlassSurface testID={testID} role="navigation" style={column}>
+        <GlassSurface testID={testID} role="navigation" accessibilityLabel={accessibilityLabel} style={column}>
           {sectionsEl}
         </GlassSurface>
       );
@@ -696,7 +711,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       onToggleCollapse?.();
     };
     return (
-      <GlassSurface testID={testID} role="navigation" style={column}>
+      <GlassSurface testID={testID} role="navigation" accessibilityLabel={accessibilityLabel} style={column}>
         {header != null ? (
           collapsed ? (
             <Pressable

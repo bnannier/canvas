@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Dialog } = scope;
   return (
-<Dialog open title="Save changes" description="Update the profile with your edits." medium destructive confirmLabel="Save" cancelLabel="Cancel" />
+<Dialog open embedded title="Save changes" description="Update the profile with your edits." medium destructive confirmLabel="Save" cancelLabel="Cancel" />
   );
 }

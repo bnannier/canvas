@@ -20,14 +20,27 @@ import { type FormSkin } from "./form.shared.js";
 //     `border`. A disabled form dims to 0.5.
 
 // ---------- shared structural fragments ----------
-// flex-1 vs flex-auto (the two-column item basis, two-up vs stacked), the two-column
-// gap, and the floor that keeps a two-up cell from collapsing under a squeezed row.
-export const flex1: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
-export const flexAuto: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto" };
+// The two-column flow is the hand-off's grid (cv-kit-code2.js `O('form')`:
+// `grid-template-columns: 1fr 1fr; gap: 16px`, a FormSection `grid-column: 1 / -1`), built
+// from flex: a wrapping row of half-width cells, so exactly two sit on a line however wide
+// the form is, and an odd last field keeps its half instead of stretching across. The
+// 16px gutter is the two cells' 8px inner insets (paddingEnd on the start cell,
+// paddingStart on the end cell, so it mirrors under RTL), and the 16px between lines is the
+// row gap. Below the threshold the cells stack in one column at the same 16px rhythm, each
+// stretched to the form's width, so a field FILLs it.
 export const twoColumnGap = 16;
-export const twoColumnItem: ViewStyle = { minWidth: 200 };
-/** A FormSection in the two-column flow takes the whole row (the hand-off's `grid-column: 1 / -1`). */
-export const fullRowItem: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "100%" };
+/** The two-up rows: a wrapping row, 16 between lines; the cells carry the column gutter. */
+export const twoUpRows: ViewStyle = { flexDirection: "row", flexWrap: "wrap", rowGap: twoColumnGap };
+/** The stacked rows below the threshold: one column, 16 apart, every cell the form's width. */
+export const stackedRows: ViewStyle = { flexDirection: "column", gap: twoColumnGap };
+/** A field in the start column of the two-up flow. */
+export const startCell: ViewStyle = { width: "50%", paddingEnd: twoColumnGap / 2 };
+/** A field in the end column of the two-up flow. */
+export const endCell: ViewStyle = { width: "50%", paddingStart: twoColumnGap / 2 };
+/** A FormSection in the two-up flow takes the whole line (the hand-off's `grid-column: 1 / -1`). */
+export const fullRowCell: ViewStyle = { flexBasis: "100%", flexGrow: 1, flexShrink: 1 };
+/** A cell in the stacked flow: stretched to the column (the default), nothing else. */
+export const stackedCell: ViewStyle = {};
 
 /** The hand-off's tx3: the description ink. */
 function subtleInk(t: ColorTokens): string {

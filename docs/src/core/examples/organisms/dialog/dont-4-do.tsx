@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Dialog } = scope;
   return (
-<Dialog open title="Delete workspace" description="This removes all projects and cannot be undone." medium destructive confirmLabel="Delete" cancelLabel="Cancel" />
+<Dialog open embedded title="Delete workspace" description="This removes all projects and cannot be undone." medium destructive confirmLabel="Delete" cancelLabel="Cancel" />
   );
 }

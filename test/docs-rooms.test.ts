@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { GUIDES_ROOM, PILL_LINKS, SECTION_ROOMS, pillIndexFor, roomFor } from "../docs/src/data/rooms.ts";
 import { SECTIONS } from "../docs/src/core/data/detail-sections.ts";
+import { NAMES } from "../src/atoms/icon/icon.glyphs.ts";
 
 // The docs' rooms (docs/src/data/rooms.ts): the v4 hand-off's eight sections and the
 // Guides room, the pill's ten links, and where a path sits among them.
@@ -23,6 +24,22 @@ describe("the rooms", () => {
       expect(page).toContain(`text-wrap:balance">${room.title}</h2>`);
       expect(page).toContain(`text-wrap:balance">${room.lead}</p>`);
     }
+  });
+
+  it("take each section page's own paragraph under the lead", () => {
+    const pages = ["Foundations", "Layout", "Controls", "Inputs", "Navigation", "Data", "Charts", "Overlays"];
+    for (const [index, room] of SECTION_ROOMS.entries()) {
+      const page = readFileSync(join(HANDOFF, `Canvas v4.0.0 ${pages[index]}.dc.html`), "utf8");
+      const paragraph = page.match(/font:400 17px\/1\.55 var\(--ft\);color:var\(--tx2\);text-wrap:pretty">(.*?)<\/p>/);
+      expect(paragraph, pages[index]).not.toBeNull();
+      // Foundations sets its file path in the mono face: the body's code span.
+      expect(room.body?.replace(/`/g, "")).toBe(paragraph![1]!.replace(/<[^>]+>/g, ""));
+    }
+  });
+
+  it("count Foundations' glyphs from the icon set", () => {
+    const glyphs = Number(SECTION_ROOMS[0]!.body?.match(/(\d+) glyphs/)?.[1]);
+    expect(glyphs).toBe(NAMES.length);
   });
 
   it("put the pill's ten links in the hand-off pill's order", () => {

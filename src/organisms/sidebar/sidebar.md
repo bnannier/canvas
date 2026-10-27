@@ -32,6 +32,12 @@ rail's frame, fill, width and scroll, stacks its groups 16px apart, and renders 
 a heading row fits there. A framed sidebar's header grows past its 56px floor when its
 content is taller.
 
+A sidebar is a navigation landmark on every platform. Name it with `accessibilityLabel`,
+a short statement of what it navigates such as "Workspace", so a screen reader's
+landmark list can tell it apart; a page that holds more than one navigation landmark (a
+sidebar beside the app's top navigation, or two sidebars) needs a distinct name on each.
+In the narrow `responsive` drawer the same name labels the drawer.
+
 ## Usage
 
 The one `Sidebar` below is the whole story: on desktop it is the collapsible accordion rail (tap the header chevron to shrink it to icons); narrow the window to a phone and the same component becomes a start-edge drill-down **Liquid Glass menu** opened by the top bar's hamburger, exactly like this page's own left nav. `AppShell` is the docs' live app frame (the top bar and placeholder page); the `Sidebar` wiring is the part you copy.
@@ -123,6 +129,7 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
     compact
     markers
     defaultActive="button"
+    accessibilityLabel="Controls components"
     header={<Input small leadingIcon icon="search" placeholder="Filter 3 components" accessibilityLabel="Filter components" />}
     sections={[
       { title: "Controls", count: 3, items: [

@@ -1133,6 +1133,64 @@ judge before any completion claim.
   `PageGrain` (`docs/src/shell/page-backdrop.tsx`, the kit `Image repeat`), the scrollbars
   by `WebScrollbarTheme` (`docs/src/ui/web-scrollbar.tsx`).
 
+### v4-library-hero
+
+- **What:** the Canvas v4 hand-off's Library hero (`Canvas v4.0.0 Library.dc.html`, its
+  `section[data-screen-label="Hero"]`) at rest: the gradient headline word, the three
+  radial aurora glows and the tilted six-panel collage (Phase 5 decisions P5-G1, P5-G2 and
+  P5-T1: built static and cross-platform as docs brand illustrations, their motion
+  dropped). Recorded 2026-10-27 from the hand-off served at http://127.0.0.1:8977/ in
+  Playwright's Chromium, DPR 1, `reducedMotion: reduce` and animations disabled (the rest
+  frame: no drift offset, no rise, no pulse, no pointer tilt), at 1440 and 390 wide, dark
+  and light, glass and solid. The measured boxes are the folder's `metrics.json`.
+- **Strips:** `tools/native/reference/v4-library-hero/hero-<dark|light>-<glass|solid>-<1440|390>.png`
+  (the hero section's own box).
+- **Section:** full window width, `overflow: hidden`, a 1 px `--ln` hairline at its foot;
+  inner frame capped at 1440 with `padding: 120px 48px 96px`, a two-column grid
+  (`minmax(min(100%, 460px), 1fr)`, gap 48, items centred). 797 px tall at 1440 (eyebrow
+  y 178, h1 y 218, collage box x 744 y 120, 648 x 580); 1369 px at 390, where the columns
+  stack (h1 y 172, collage box x 48 y 692, 294 x 580, its panels running past the window's
+  right edge and clipped there).
+- **G1, the headline:** `Light as <em>material.</em>`, Bricolage Grotesque 500,
+  `clamp(56px, 7.2vw, 112px)` (103.68 px at 1440, 56 at 390), line height .94, tracking
+  -.045em, balanced over two lines ("Light as" / "material."). The em is filled by
+  `linear-gradient(90deg, var(--ion), var(--cyan) 60%, var(--mint))` clipped to the glyphs
+  (`background-clip: text`), across the word's own box: the accent at its left edge, cyan at
+  60 percent of its width, mint at its right. Dark: ion oklch(.74 .17 285), cyan
+  oklch(.82 .13 205), mint oklch(.85 .15 165); light: oklch(.5 .22 285), oklch(.62 .13 205),
+  oklch(.66 .15 165). "Light as" stays `--tx`.
+- **G2, the aurora:** a layer at `inset: -20%` of the section at opacity `--aur` (.55 dark,
+  .4 light), holding three discs, each `border-radius: 50%` with
+  `radial-gradient(circle, <hue> 0%, transparent 60%)` (alpha falls linearly to zero at 60
+  percent of the farthest-corner ray, 0.424 of the disc's size) under a Gaussian
+  `filter: blur()`: the accent, 46vw, at left 0 / top 5 percent of the layer, blur 70; cyan,
+  40vw, right -5 percent / top 15 percent, blur 80; mint, 36vw, left 40 percent / bottom -5
+  percent, blur 80. In the frame: a violet bloom behind the eyebrow and headline at the top
+  left, a cyan bloom off the right edge level with the collage, a mint bloom rising from the
+  hairline under the collage's left half. Clipped by the section box; the hues reach up
+  behind the navbar pill.
+- **T1, the collage:** a 580 px tall box, `perspective: 1600px`, origin 55% 45%; the stack
+  inside it `rotateX(14deg) rotateY(-22deg) rotateZ(3deg)` about its centre with
+  `preserve-3d`; six panels, each `translateZ` off the stack: the revenue card (left 60, top
+  130, 380 wide, z 0: an 11 px mono uppercase "Monthly revenue" eyebrow, a `+18.2%` success
+  pill, a 44 px display "$128,400", twelve 96 px bars in the accent rising in opacity from
+  .35 to .95 with the last a cyan-to-accent gradient with a glow); the Day / Week / Month
+  segmented control (left 300, top 60, 240 wide, z 80, Week selected); the "+12 online"
+  pill of three overlapping photo avatars (left 30, top 36, z 50); the "Glass surface"
+  switch card, "Liquid on iOS 26, frost elsewhere", switch on (left -10, top 410, z 120);
+  the "Saved to workspace" toast with a success check and an accent "Undo" (left 250, top
+  470, 300 wide, z 160); the primary "Ship it ->" button with its glow (left 420, top 390,
+  z 220). The panels are glass (`--gl` over the frost) with a `--ln2` rim and the lg
+  shadow; the revenue card is the surface with a white top sheen. At 1440 the projected
+  boxes are: revenue (833, 249, 351 x 251), segmented (1024, 144, 235 x 63), online (808,
+  166, 129 x 53), glass (699, 511, 251 x 67), toast (908, 571, 322 x 62), ship (1061, 466,
+  129 x 59).
+- **Dropped (motion, recorded, not reproduced):** the glows' 22 to 28 s `drift`, the
+  pointer-follow tilt of the stack, the eyebrow dot's `pulse`, the hero column's `rise`.
+- **Canvas:** the table `docs/src/brand/library-hero-look.ts`, drawn by
+  `docs/src/brand/{gradient-text,glow,hero-collage}.tsx` on the docs home
+  (`docs/src/shell/home.tsx`); harness `/testing/library-hero`.
+
 ### df-hover-lift
 
 - **What:** DF's hover motion on Argus `/roster` at 1280 x 800, blush, recorded
@@ -1610,3 +1668,17 @@ the window), so the rows after the scrollbar row are shipped-surface rows.
 | 2026-10-27 | v4-page rail | Metro dev server, Playwright Chromium headless, 1440 x 900, DPR 2 | f8825301 + uncommitted D2 to D6 | shipped `/sections/controls` (room page) and `/components/button` (detail page), web, dark and light, solid, violet | kit Sidebar `embedded compact markers`, section `current` on a room page, `active` on a detail page; Input small leadingIcon filter; `SHELL` railTop 96, railWidth 200, gutter 24, railGap 28; scroll padding 4 6 32 0 | not measured (static) | Beside `rail-<scheme>-1440.png`: x 24, y 96, 200 wide, content at x 252 (reference the same); the eyebrow heading and count in the accent ink, rows 30 px at a 31 px pitch in the foreground ink with hairline dots; the detail page rests its heading and rows in the quieter inks and lights the active row, as the hand-off's Component page. Read side by side, not blind. | differs: the filter field is 32 px tall with the Input's own fill and rim against 36 px on `--sf2` with a `--ln2` rim; so the heading and rows sit 4 px higher (first row y 166 against 170); hidden below 760 with no narrow in-page toggle (the hand-off detail page's "Components in this section" button belongs to the detail page) | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/shell/cmp-rail-dark.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/shell/cmp-rail-light.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/shell/rail.mjs` |
 | 2026-10-27 | v4-page footer | Metro dev server, Playwright Chromium headless, 1440 and 390 x 900, DPR 1 | f8825301 + uncommitted D2 to D6 | shipped `/sections/controls`, web, dark and light, solid, violet | `FOOTER` 96 / 48 / 64, rule gap 32; Divider; Row `stacks stackBreakpoint="lg"`; brand Typography h5 (level 2), Container md paragraph small subtle; Guides links Row wrap in Container xxs; mono caption subtle lines; Button link external | not measured (static) | Beside `footer-<scheme>-<1440|390>.png` (halved): frame, hairline and its gap, brand line, columns at the frame's ends at 1440, stacked at 390, no horizontal overflow at 1440, 1024, 768 or 390. Read side by side, not blind. | differs: a Guides column (decision L) makes it 357 px tall at 1440 and 707 at 390 against 320.5 and 503; the columns stack at and below a 1024 container (the reference wraps only where they do not fit); the brand line is h5 17 px against 16; the paragraph and mono lines take the solved `subtle-foreground` (lighter than the hand-off's `--tx3`); links are the kit Button link (underlined) against the hand-off's plain `--ion-tx`; the copy is Canvas's own and the version is the live npm release | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/shell/cmp-footer-*.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/shell/foot.mjs` |
 | 2026-10-27 | v4-page grain on the shipped shell | Metro dev server, Playwright Chromium headless, 1440 x 900, DPR 1 and 2 | f8825301 + uncommitted D2 to D6 | shipped `/sections/controls`, web, dark and light, solid, violet | `GRAIN` unchanged; `PageGrain` mounted as the web shell's last child (over the pill and the rail) and in native ScreenFrame after the header | not measured (static) | The grain box is now the window (0, 0, 1440, 900), so the tile's origin is the window's. A 360 CSS px crop from the origin, everything but the grain and the page hidden, against `grain-<scheme>-dpr<n>-authored.png`: DPR 1 mean absolute difference 0.45 (max 1) dark, 0.25 (max 1) light, means 16.92 vs 16.97 and 241.34 vs 241.30, deviation 1.65 vs 1.34 dark and 0.68 vs 0.67 light, exact repeat every 180 px; DPR 2 0.86 (max 5) dark, 0.49 (max 3) light, deviation 0.98 vs 1.34 dark. | differs: at DPR 2 the noise is the 1x tile upsampled (deviation 0.98 against 1.34 dark); at DPR 1 the dark deviation is 1.65 against 1.34; the reference as the hand-off's runtime renders it is a flat veil (open decision S11); native mount not run on a device | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/grain3/canvas-*-dpr*.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/shell/grain-shipped.mjs` |
+
+## Canvas v4 Library landing, from 2026-10-27
+
+Phase 5 WP4: the docs home as the hand-off's Library page, its three brand illustrations
+(decisions P5-G1, P5-G2 and P5-T1) judged against the `v4-library-hero` card. The values
+are `docs/src/brand/library-hero-look.ts`; the harness is `/testing/library-hero`. The
+shipped rows were judged blind by a fresh-context agent given only the card and the strips.
+
+| Date | Effect | Runtime and device | Revision | Surface | Values tried | Frame p95 / max | Comparison | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-27 | v4-library-hero G1, G2, T1 on the harness | Metro dev server, Playwright Chromium headless, 1440 x 900, DPR 1 | 2a17902a + uncommitted WP4 | harness `/testing/library-hero`, web, dark and light, glass, violet | as the shipped rows | not measured (static) | The route renders the hero with no page error; the scheme driver swaps the sweep (#a298ff / #36dcec / #56ecb5 dark, #5f3ed8 / #009bab / #00ae7b light) and the aurora layer opacity (.55 / .4). | differs: harness only, not judged against the reference here | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/wp4/runs/r2/harness-light-1440.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/wp4/harn.mjs` |
+| 2026-10-27 | v4-library-hero G2 aurora | Metro dev server, Playwright Chromium headless, 1440 and 390 x 900, DPR 1, reduced motion | 2a17902a + uncommitted WP4 | shipped `/`, web, dark and light, glass and solid, violet | `AURORA` opacity .55 / .4, inset .2, rampEnd .6, 14 stops; orbs start .46 vw (0, .05) blur 70, middle .40 vw (right -.05, .15) blur 80, end .36 vw (.4, bottom -.05) blur 80; drawn as react-native-svg radial gradients with the blur pre-integrated (`blurredDisc`) | not measured (static) | Blind judge on the eight strips: the violet, cyan and mint blooms agree within 1 to 3 RGB units on the gutter, right-edge and bottom-band samples at 1440; edge samples within 1 unit at 390. | matches at 1440 in all four looks (blind); at 390 matches on the edges, the bottom bloom's anchor sits 64 px lower with the taller section (unverified), and the reference's hard backdrop step at y about 1000 is absent (a viewport-bound backdrop, likely not the aurora) | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/wp4/runs/r2/cmp-*.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/wp4/hero.mjs` |
+| 2026-10-27 | v4-library-hero G1 gradient headline | as above | 2a17902a + uncommitted WP4 | shipped `/`, web, dark and light, glass and solid, violet | `GRADIENT_TEXT` stops 0 / .6 / 1 on featured-start / middle / end, userSpaceOnUse over the word's box; `DISPLAY_TYPE` 56 / 56 / 500 / -2.24 (the kit display role, decision P5-K) | not measured (static) | Blind judge: hues and order match in both schemes (left edge #9c9efd vs #a09dfd dark, #5b46d5 vs #5f49d6 light); at 30 percent of the word the candidate is 10 to 13 units lower in R. | differs: 56 px against the reference's 104 px at 1440 (decision P5-K, the kit display role); tracking looser at both widths ("material." 206 px wide against 190 at the same 56 px size at 390, about 8 percent, so more than the role's -.04em against -.045em, likely the display face's rendering in the kit role); the sweep at 30 percent slightly bluer, possibly from the wider glyph spacing | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/wp4/runs/r2/cmp-*.png` |
+| 2026-10-27 | v4-library-hero T1 collage | as above | 2a17902a + uncommitted WP4 | shipped `/`, web, dark and light, glass and solid, violet | `COLLAGE` height 580, perspective 1600, origin .55 / .45, rotate 14 / -22 / 3; panels revenue (60, 130, z 0, w 380), segmented (300, 60, z 80, w 240), online (30, 36, z 50), glass (-10, 410, z 120, hugs), toast (250, 470, z 160, w 300), ship (420, 390, z 220); depth folded into scale and perspective per panel (`panelTransform`, unit-tested against the hand-off's projection within 1.5 px) | not measured (static) | Blind judge: the dark-glass reference's boxes match the card; the candidate's panels sit 5 to 10 px right of them at 1440 (the hero grid's 64 px gap against the hand-off's 48; the kit has no 48 step) and 64 px lower at 390 (the taller text column). The other three 1440 references and the light 390 references sit in a different pose (ship about 30 px higher, the toast 22 px higher, the glass card and toast tilted 3 to 4 deg more), the hand-off's float drift caught mid-cycle in the capture. | differs: panel x +5 to 10 px at 1440 and y +64 px at 390; revenue panel is the kit Chart compact (thin uniform bars in an inset framed plot with value labels and a month axis) against twelve wide bars with an opacity ramp and a cyan last bar with a glow; the +18.2% Badge carries the status dot; the online Chip is 32 px tall against 45 with bolder text; the segmented control's selected segment is the kit's accent-tinted pane against a neutral fill; the toast check is an outline circle against a filled disc; Ship it is 143 px wide against 128 and, under glass, the kit's brand-tinted translucent fill against the solid accent; references other than dark-glass caught mid-drift; after the judged run (r3, not re-judged) the $128,400 figure is the kit's 32 px `statValue` against the hand-off's 44 px, since the 44 px kit role is a heading and broke the page's heading order | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/wp4/runs/r2/cmp-*.png`, `tools/native/reference/v4-library-hero/metrics.json` |

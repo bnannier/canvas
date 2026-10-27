@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chip, ChipGroup } = scope;
+  const { Row, Chip } = scope;
   return (
-<ChipGroup label="Density" defaultValue="comfortable">
-  <Chip value="compact">Compact</Chip>
-  <Chip value="comfortable">Comfortable</Chip>
-  <Chip value="spacious">Spacious</Chip>
-  <Chip value="custom" disabled>Custom</Chip>
-</ChipGroup>
+<Row>
+  <Chip selectable defaultSelected>Design</Chip>
+  <Chip selectable>Engineering</Chip>
+</Row>
   );
 }

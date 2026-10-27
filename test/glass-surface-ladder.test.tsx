@@ -55,6 +55,24 @@ describe("GlassSurface accessibility landmarks", () => {
   }
 });
 
+describe("GlassSurface landmark name", () => {
+  for (const [platform, Surface] of [["web", GlassSurface], ["ios", IOSGlassSurface]] as const) {
+    for (const surface of ["solid", "glass"] as const) {
+      it(`${platform} names its landmark in ${surface} and leaves an unnamed one bare`, () => {
+        render(
+          <ThemeProvider light solid={surface === "solid"} glass={surface === "glass"}>
+            <Surface role="navigation" accessibilityLabel="Workspace"><Text>Named</Text></Surface>
+            <Surface role="navigation"><Text>Unnamed</Text></Surface>
+          </ThemeProvider>,
+        );
+        expect(screen.getByRole("navigation", { name: "Workspace" }).textContent).toBe("Named");
+        const [, unnamed] = screen.getAllByRole("navigation");
+        expect(unnamed.hasAttribute("aria-label")).toBe(false);
+      });
+    }
+  }
+});
+
 function mockMatchMedia(matching: (query: string) => boolean) {
   const listeners = new Set<(event: { matches: boolean }) => void>();
   const spy = spyOn(window, "matchMedia").mockImplementation(

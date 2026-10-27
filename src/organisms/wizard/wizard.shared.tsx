@@ -33,6 +33,13 @@ export interface WizardProps {
   children?: ReactNode;
   /** Scroll the body (default true). Set false when a child, such as Chat, owns its scroll. */
   scrollBody?: boolean;
+  /**
+   * Show the open wizard as a non-modal specimen, for a catalogue or a showcase: it keeps
+   * its look, its dialog role and its labelling, but does not take focus, trap Tab,
+   * claim `aria-modal`, or close on Escape or native back. It still presents into the
+   * nearest OverlayProvider, so give it a host of the size it should fill.
+   */
+  embedded?: boolean;
   /** Prefix for modal, steps, body-scroll and footer test hooks. */
   testID?: string;
 }
@@ -41,13 +48,13 @@ type WizardParts = { Dialog: typeof WebDialog; Steps: typeof WebSteps; Button: t
 
 /** A wizard delegates modal behavior and platform controls to their existing components. */
 export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = WebSteps, Button = WebButton }: Partial<WizardParts> = {}) {
-  return function Wizard({ open, title, description, steps, current, onOpenChange, panelWidth = 960, previous, actions, status, children, scrollBody = true, testID }: WizardProps) {
+  return function Wizard({ open, title, description, steps, current, onOpenChange, panelWidth = 960, previous, actions, status, children, scrollBody = true, embedded, testID }: WizardProps) {
     const hook = (part: string) => testID ? `${testID}-${part}` : undefined;
     const { width, onLayout } = useContainerWidth();
     const narrowFooter = width <= breakpoints.sm;
     // The hand-off's status: 12px mono meta in the subtle ink.
     const saveStatus = status ? <Typography caption mono subtle>{status}</Typography> : null;
-    return <Dialog form workspace overlay open={open} title={title} description={description}
+    return <Dialog form workspace overlay embedded={embedded} open={open} title={title} description={description}
       panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID}
       workspaceHeader={<Steps stacks steps={steps} current={current} testID={hook("steps")} />}
       footer={<Column comfortable><Divider /><View onLayout={onLayout} testID={hook("footer")} style={skin.footer}>

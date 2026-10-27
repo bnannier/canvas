@@ -86,6 +86,13 @@ export interface GlassSurfaceProps {
    */
   role?: ViewProps["role"];
   /**
+   * The name of the root's landmark (`role`), set on the root as both React Native's
+   * `accessibilityLabel` and its `aria-label` alias, so a page holding two surfaces of
+   * one role (two `"navigation"` shells) can tell them apart in a landmark list. Omit it
+   * and the root stays unnamed, as before.
+   */
+  accessibilityLabel?: string;
+  /**
    * Ask iOS 26's Liquid Glass to answer touch with its own press response (Apple's
    * `isInteractive`, forwarded to the native glass view). The glass answers only a touch
    * delivered to the glass view itself, and it never is one: the material layer passes

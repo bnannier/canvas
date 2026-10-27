@@ -14,6 +14,13 @@ the confirm action; cancellation remains available while confirm is disabled.
 An open child overlay handles dismissal first. A controlled owner can refuse
 closure without passing that request to a parent or calling `onConfirm`.
 
+Add `embedded` to show an open alert dialog in a page as a specimen, the way a
+catalogue or a showcase does: it keeps its look, its alertdialog role and its
+labelling, but it is not modal. It does not take focus when it opens, trap Tab,
+return focus, set `aria-modal`, or cancel on Escape or native back, so the page
+around it keeps its scroll position and its keyboard order. `embedded` is ignored
+with `trigger`, which always opens a live modal.
+
 ## Usage
 
 ```tsx

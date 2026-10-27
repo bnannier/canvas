@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button, Dialog, Input, Typography, Row, Column } = scope;
   return (
-<Dialog open small>
+<Dialog open embedded small>
   <Column relaxed>
     <Typography lead semibold>Rename</Typography>
     <Input label="Name" defaultValue="Untitled" />

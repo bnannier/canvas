@@ -173,4 +173,20 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     file: "docs/src/ui/detail/platform-skins.tsx", owner: "PlatformSkinsSection", tag: "View", attribute: "style", keys: ["alignSelf", "maxWidth", "width"], occurrences: 1,
     reason: "The detail page's comparison stage simulates the selected form factor's width (the same harness the Playground page's preview card runs), centred and never wider than the page.",
   },
+  {
+    file: "docs/src/brand/glow.tsx", owner: "AuroraGlow", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "Brand illustration (decision P5-G2): the Library hero's aurora, an untouchable layer spread over the hero section from the page's top to its hairline and out to the window's edges, painting only its svg radial gradients.",
+  },
+  {
+    file: "docs/src/brand/glow.tsx", owner: "AuroraFrame", tag: "View", attribute: "style", keys: ["paddingBottom", "paddingTop"], occurrences: 1,
+    reason: "Brand illustration (decision P5-G2): the hero section's own room above and below its content (the hand-off's 120 px less the page's 96, and 96), the box the aurora fills; it paints nothing itself.",
+  },
+  {
+    file: "docs/src/brand/gradient-text.tsx", owner: "GradientText", tag: "View", attribute: "style", keys: ["alignSelf", "left", "opacity", "pointerEvents", "position", "top"], occurrences: 3,
+    reason: "Brand illustration (decision P5-G1): the headline's gradient word, a kit Typography held invisible for the line box with the svg text drawn over it at the same place; React Native has no text clip.",
+  },
+  {
+    file: "docs/src/brand/hero-collage.tsx", owner: "HeroCollage", tag: "View", attribute: "style", keys: ["height", "left", "position", "top", "transform", "transformOrigin", "width"], occurrences: 2,
+    reason: "Brand illustration (decision P5-T1): the Library hero's tilted collage, the hand-off's 580 px perspective box with each live kit panel placed at its offset and projected by its own 3D transform.",
+  },
 ];

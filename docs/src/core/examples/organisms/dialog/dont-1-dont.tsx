@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Dialog } = scope;
   return (
-<Dialog open title="Refund payment" description="Refunds are processed through the original payment method. Depending on the bank, the amount can take 2 to 3 business days to appear. Partial refunds are supported. Once submitted a refund cannot be cancelled, and the payout for this period will be adjusted on your next statement." medium confirmLabel="Refund" cancelLabel="Cancel" />
+<Dialog open embedded title="Refund payment" description="Refunds are processed through the original payment method. Depending on the bank, the amount can take 2 to 3 business days to appear. Partial refunds are supported. Once submitted a refund cannot be cancelled, and the payout for this period will be adjusted on your next statement." medium confirmLabel="Refund" cancelLabel="Cancel" />
   );
 }

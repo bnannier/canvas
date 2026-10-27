@@ -70,8 +70,10 @@ export interface FormProps extends MeasureProps {
    */
   children?: ReactNode;
   /**
-   * Two-column: rows flow into a two-up grid that collapses to a single column
-   * on small screens (desktop-first). Omit for the stacked default.
+   * Two-column: rows flow into a grid of exactly two equal columns, 16 apart, where a
+   * FormSection takes the whole line; in a form 512 px wide or narrower (the `lg` width
+   * step, measured on the form itself) the rows stack in one full-width column instead.
+   * Omit for the stacked default.
    */
   twoColumn?: boolean;
   /** Label for the primary submit button. Passing it (or `cancelLabel`) renders the actions row. */
@@ -146,29 +148,41 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     const nameProps = accessibilityLabel != null ? { accessibilityLabel, "aria-label": accessibilityLabel } : null;
     const { tokens } = useTheme();
 
-    // The two-column flow: rows wrap into a two-up grid in wide CONTAINERS and
-    // collapse to a single full-width column in narrow ones (desktop-first). The
-    // form measures its own row wrapper rather than the window (the DataTable
-    // precedent): a form inside a narrow desktop column stacks too, instead of
-    // crushing two-up. The threshold is the `lg` step of the width scale (512),
-    // not a viewport breakpoint: a two-up split narrower than that cannot give
-    // each column a usable field, while a form in an `xl` (576) Container stays
-    // two-up.
+    // The two-column flow: exactly two columns in wide CONTAINERS, one full-width column in
+    // narrow ones (desktop-first). The form measures its own row wrapper rather than the
+    // window (the DataTable precedent): a form inside a narrow desktop column stacks too,
+    // instead of crushing two-up. The threshold is the `lg` step of the width scale (512),
+    // not a viewport breakpoint: a two-up split narrower than that cannot give each column
+    // a usable field, while a form in an `xl` (576) Container stays two-up. The unmeasured
+    // frame is the desktop (two-up) variant.
     // FILL: the form spans the parent it is given; its measure is a Container step.
     const fill = useFillStyle("Form", props);
     const { width: rowsWidth, onLayout: onRowsLayout } = useContainerWidth();
     const twoUp = rowsWidth <= 0 || rowsWidth > widths.lg;
 
+    // Each row sits in a cell. Two-up, a field takes the start or the end column in turn and
+    // a FormSection takes the whole line, after which the next field starts a line again
+    // (the grid's `1 / -1` placement); stacked, every cell is the column's full width. The
+    // cells keep one element type and position in either flow, so crossing the threshold
+    // restyles them without remounting a field.
+    let column = 0;
     const rows = twoColumn ? (
-      <View
-        onLayout={onRowsLayout}
-        style={{ flexDirection: twoUp ? "row" : "column", flexWrap: "wrap", gap: s.twoColumnGap }}
-      >
-        {Children.toArray(children).map((child, i) => (
-          <View key={i} style={isSection(child) ? s.fullRowItem : [twoUp ? s.flex1 : s.flexAuto, s.twoColumnItem]}>
-            {child}
-          </View>
-        ))}
+      <View onLayout={onRowsLayout} style={twoUp ? s.twoUpRows : s.stackedRows}>
+        {Children.toArray(children).map((child, i) => {
+          let cell: ViewStyle = s.stackedCell;
+          if (twoUp && isSection(child)) {
+            cell = s.fullRowCell;
+            column = 0;
+          } else if (twoUp) {
+            cell = column === 0 ? s.startCell : s.endCell;
+            column = 1 - column;
+          }
+          return (
+            <View key={i} style={cell}>
+              {child}
+            </View>
+          );
+        })}
       </View>
     ) : (
       children
