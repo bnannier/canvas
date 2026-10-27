@@ -1070,6 +1070,69 @@ judge before any completion claim.
   (`src/style/glass-surface/ios-tints.ts` drops the GS-8 dark control override, since the
   v4 dark puck is the hand-off's raised surface).
 
+### v4-page
+
+- **What:** the Canvas v4 hand-off's docs shell at rest: the grain over the flat page, the
+  floating navbar pill, the section rail, the footer and the scrollbars (Phase 3, decision
+  S6 and the S rows of `audit/v4-redesign/PLAN.md`). Recorded 2026-10-27 from the vendored
+  hand-off (`tools/v4/handoff`, `Canvas v4.0.0 Controls.dc.html`) by
+  `tools/v4/capture-shell.ts` in Playwright's Chromium; the measured geometry is in the
+  folder's `metrics.json`.
+- **Strips:** `tools/native/reference/v4-page/`: `pill-<dark|light>-<glass|solid>-<1440|1024|768|390>.png`
+  (the window's top 72 px, DPR 2), `grain-<scheme>-dpr<1|2>.png` and
+  `grain-<scheme>-dpr<1|2>-authored.png` (the grain over the page alone, 360 CSS px at the
+  window's origin), `rail-<scheme>-1440.png`, `footer-<scheme>-<1440|390>.png`.
+- **Grain:** one 180 x 180 CSS px tile (`background-size: 180px 180px`) of
+  `feTurbulence type=fractalNoise baseFrequency=.85 numOctaves=2 stitchTiles=stitch`, then
+  `feColorMatrix saturate 0` (grey noise that keeps the turbulence's alpha, about 0.5 on
+  average), on a `position: fixed; inset: 0` layer at `z-index: 100`, `pointer-events:
+  none`, normal blend, opacity 0.07 dark and 0.05 light (`--grain-o`). It repeats every
+  180 CSS px from the window's origin, is drawn at device resolution at every DPR, and lies
+  over the chrome too. Over the page it lifts dark #0a0a0f by about 6.5 levels with a
+  standard deviation of about 1.6 levels, and lowers light #f2f2f7 by about 0.7 with a
+  deviation of about 0.65.
+- **The rendered hand-off draws no noise.** Its runtime's template encoder rewrites
+  camelCase attributes everywhere in the template text, the CSS data URI included, so the
+  live page's SVG reads `sc-camel-base-frequency='.85' sc-camel-num-octaves='2'
+  sc-camel-stitch-tiles='stitch'`: a turbulence at frequency 0, one flat value. The live
+  grain is a uniform veil (dark crops a flat rgb(17,17,21), light a flat rgb(241,241,246)).
+  The `-authored` strips restore the vendored file's own `--grain` and are the noise the
+  design authored; Canvas bakes the authored SVG (S6), so its grain is judged against the
+  `-authored` strips, and the flat veil is an open decision (below).
+- **Pill:** centred, 14 px from the window's top and at least 16 px from its sides; 44 px
+  tall (5 px padding, 32 px items, 2 px gap), radius 999, a 1 px `--ln2` rim (white 0.16
+  dark, ink 0.16 light), the md shadow; glass is `--gl` (rgba(18,18,26,.62) dark, white .62
+  light) over `blur(20px) saturate(1.6)`, solid is `--sf2` (#171720 dark, #ffffff light)
+  with no backdrop. Natural width 1177 px (1181 with its rim), centred at x 129 in a 1440
+  window; below about 1209 px it fills the window less 16 px a side and scrolls sideways
+  with its scrollbar hidden (`nav>div{scrollbar-width:none}`): client 990 of 1177 at 1024,
+  734 at 768, 356 at 390. Brand: a 20 px mark and "Canvas" in Bricolage Grotesque 600 14 px,
+  -0.01em; links Instrument Sans 500 13 px, 0 10 px padding, `--tx2` (#a4a4b6 dark,
+  #5a5a70 light), the current room on `--sf3` in `--tx`; 1 x 18 px `--ln2` separators with
+  4 px margins; five 16 px hue swatches 6 px apart; the Dark | Light segmented switch
+  (32 px, 3 px padding, `--sf3` track with a `--ln` rim, `--sf` thumb with the sm shadow,
+  500 12 px labels); the Glass chip (32 px, `--sf3`, a 26 x 16 track and a 10 px knob, 500 12 px).
+- **Rail (1440):** x 24 (the 24 px gutter), sticky with its top at 96 px, 200 px wide, 28 px
+  before the content (content at x 252), hidden below a 760 px window (S9). A filter field
+  on top, then the room's eyebrow (JetBrains Mono 500 11 px, 0.08em, uppercase, `--ion-tx`)
+  with its count, then the rows: Instrument Sans 500 13 px in `--tx`, 30 px tall at a 31 px
+  pitch, each with a trailing 5 px dot (S5).
+- **Footer:** capped at 1440, padding 96 px 48 px 64 px, a 1 px `--ln` rule (white 0.08
+  dark, ink 0.08 light) with 32 px under it; the brand line (a 22 px mark and Bricolage 600
+  16 px) over a 13 px/1.5 `--tx3` paragraph capped at 52ch, and a JetBrains Mono 400 12 px
+  /1.6 `--tx3` column of face notes ending in the `--ion-tx` repository link; 320.5 px tall
+  at 1440, 503 px at 390 where the two columns stack.
+- **Scrollbars:** `* { scrollbar-width: thin; scrollbar-color: var(--sb) transparent }`;
+  WebKit: a 10 px bar, transparent track and corner, a thumb of `--sb` with radius 10 and a
+  2 px transparent border clipped to the padding box, `--sb-h` on hover. `--sb` is white
+  0.18 dark and rgba(17,17,24,.2) light, `--sb-h` white 0.32 dark and rgba(17,17,24,.36)
+  light. (Chromium honours `scrollbar-width` and ignores the WebKit rules where both apply.)
+- **Canvas:** `GRAIN`, `grainSvg`, `SCROLLBAR` and `SHELL` in `docs/src/shell/page-look.ts`
+  (held to the vendored page by test/docs-page-look.test.ts), the tile baked by
+  `tools/v4/bake-grain.ts` into `docs/assets/images/grain.png`, `@2x`, `@3x`, drawn by
+  `PageGrain` (`docs/src/shell/page-backdrop.tsx`, the kit `Image repeat`), the scrollbars
+  by `WebScrollbarTheme` (`docs/src/ui/web-scrollbar.tsx`).
+
 ### df-hover-lift
 
 - **What:** DF's hover motion on Argus `/roster` at 1280 x 800, blush, recorded
@@ -1528,3 +1591,16 @@ ca43f429 changed `page-look.ts` again with no visual change: `pageColor` takes a
 | 2026-10-27 | docs page look palette mapping | Metro dev server, built-in browser pane | bcac3458 + uncommitted Phase 1 | shipped `/components/card`, web, light, glass, violet | `lookFor`: dark to dark, mint to mint, every other palette to blush | not measured | The page paints the blush look for violet as it did for blush before; no page-look value changed. | differs: the v4 page look itself lands in Phase 3 | same screenshot as the first row |
 | 2026-10-27 | docs page, flat v4 page replacing the DF page look | Metro dev server, built-in browser pane (Chromium), 800 x 600 and 1280 x 800 | bcac3458 + uncommitted Phase 1 | shipped `/components/card` (web, light, glass, violet, 800 x 600) and `/components/button` (web, dark, glass, mint, 1280 x 800) | `pageColor` = the scheme's `background`; the gradient, orbs, frosted shell and wedges deleted | not measured (static) | The backdrop's computed background reads rgb(242, 242, 247) light and rgb(10, 10, 15) dark, the hand-off's `--bg` in both schemes, with no SVG under it; it reports the resolved accent (#5f3ed8 violet light, #00cb90 mint dark). test/docs-page-look.test.ts holds `pageColor` to the hand-off's `--bg` in every palette. | differs: the hand-off's grain is not drawn yet (Phase 3 docs shell); the navbar is not yet the floating pill (Phase 3); text and component skins not yet v4 (Phases 2 and 4) | screenshots `/Users/bnannier/.claude/projects/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/tool-results/mcp-Claude_Browser-blob-1793085931904-vk72lh.jpg`, `.../mcp-Claude_Browser-blob-1793085941212-qyu9o9.jpg` |
 
+## Canvas v4 docs shell, from 2026-10-27
+
+Phase 3 of the v4 redesign, steps D0 and D1: the `v4-page` card, the grain and the
+scrollbar values. `PageGrain` is exported and drawn on the `/testing/page-look` harness
+only; the shell mounts it in a later step, so these rows are harness rows and the
+shipped-surface row for the grain comes with that mount. The scrollbar values are live in
+the shell already (`WebScrollbarTheme` is mounted by docs/src/shell/navbar.tsx).
+
+| Date | Effect | Runtime and device | Revision | Surface | Values tried | Frame p95 / max | Comparison | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-27 | v4-page grain, tile period and pixels at DPR 1 | Metro dev server, Playwright Chromium headless, 1440 x 900, DPR 1 | 64babf90 + uncommitted D0/D1 | harness `/testing/page-look`, web, dark and light, solid, violet | `GRAIN` tile 180, opacity .07 / .05, z 100, baseFrequency .85, numOctaves 2, stitch, saturate 0; baked at DPR 1, 2, 3 | not measured (static) | A 360 CSS px crop from the grain box's origin, everything but the grain and the page hidden, against `grain-<scheme>-dpr1-authored.png`: mean absolute difference 0.48 levels (max 1) dark, 0.32 (max 2) light; mean 16.08 vs 16.51 dark, 240.47 vs 240.31 light; deviation 1.69 vs 1.59 dark, 0.66 vs 0.65 light; the crop repeats exactly every 180 px. Against the rendered strips (the flat veil) it differs by the noise itself (max 6 dark). Computed: opacity 0.07 / 0.05, z-index 100, pointer-events none, `background-size: 180px 180px`, repeat. | differs: harness only (not the shipped shell); the grain box is the route's box (x 232 to 1440, under the docs sidebar's edge), not the window, so it does not cover the sidebar and its tile origin is x 232, not 0; the reference as rendered by the hand-off's runtime is a flat veil, not noise (open decision) | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/grain/canvas-dark-dpr1.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/grain/canvas-light-dpr1.png`; strips `tools/native/reference/v4-page/grain-*-dpr1*.png` |
+| 2026-10-27 | v4-page grain at DPR 2 | Metro dev server, Playwright Chromium headless, 1440 x 900, DPR 2 | 64babf90 + uncommitted D0/D1 | harness `/testing/page-look`, web, dark and light, solid, violet | as above | not measured (static) | The web build loads `grain.png` (the 1x tile, 180 px natural) at DPR 2, not `grain@2x.png`, and tiles it at 180 CSS px: period right (exact repeat every 360 device px), resolution not. Against `grain-<scheme>-dpr2-authored.png`: mean absolute difference 1.10 (max 6) dark, 0.50 (max 3) light; deviation 1.02 vs 1.59 dark, 0.53 vs 0.65 light, the 2x-upsampled tile carrying less fine noise than the hand-off's device-resolution grain. react-native-web's `Image` sizes a `repeat` background by the bitmap's natural pixels (`getBackgroundSize`), so serving the @2x file through it would tile at 360 CSS px. | differs: at DPR 2 the noise is the 1x tile upsampled (coarser, deviation 1.02 against 1.59 dark); harness only; plus the box and origin differences of the row above | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/grain/canvas-dark-dpr2.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/grain/canvas-light-dpr2.png`; strips `tools/native/reference/v4-page/grain-*-dpr2*.png` |
+| 2026-10-27 | v4-page scrollbars | Metro dev server, Playwright Chromium headless, 1440 and 390 x 900, DPR 2 | 64babf90 + uncommitted D0/D1 | harness `/testing/page-look` inside the shipped docs shell (the rule is global), web, dark and light | `SCROLLBAR` size 10, radius 10, inset 2, thumb white .18 / ink .2, hover white .32 / ink .36 | not measured (static) | The docs' style tag now carries the hand-off's rules verbatim with the table's values; the page scroller computes `scrollbar-width: thin` and `scrollbar-color: rgba(255,255,255,.18) transparent` dark, `rgba(17,17,24,.2) transparent` light. Chromium draws its thin overlay bar for `scrollbar-width: thin`, as on the hand-off. Hover not recorded. | differs: hover not recorded; the bar not compared side by side against the hand-off's page | `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/grain/harness-dark-1440.png`, `/private/tmp/claude-501/-Users-bnannier-Workspaces-canvas/c03f51a6-c45d-4a26-a384-cc8870784b8a/scratchpad/grain/harness-light-390.png` |
