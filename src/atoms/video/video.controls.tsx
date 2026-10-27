@@ -9,8 +9,8 @@ import { Typography } from "../typography/typography.js";
 
 // The web's transport bar for <Video controls />, docked under the picture: play or
 // pause, the elapsed time, a seek slider, the length, mute, and full screen, all kit
-// controls in a Row so they take Dark Factory's look from their own web skins. iOS and Android never render it:
-// their entries hand `controls` to the platform's own player controls.
+// controls in a Row so they take the v4 look from their own web skins. iOS and
+// Android never render it: their entries hand `controls` to the platform's own player controls.
 
 /**
  * What the Video shell hands its control bar: the playback state and the handlers that

@@ -1,14 +1,32 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { palette, shadow, alpha, MONO_FONT, platformMinTarget, shape, type ColorTokens } from "../../style/index.js";
+import { MONO_FONT, platformMinTarget, shape, statusColors, darkColors, lightColors, type ColorTokens } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type CodeBlockSkin } from "./code-block.shared.js";
 
 // Co-located CodeBlock skins. Layout-only fragments are static objects; anything
-// that reads a color is a function of the active tokens, so the muted surface
-// follows light/dark. Surfaced CodeBlock variants use static content frost with
-// these opaque fills as their solid fallback. Code ink stays unwarped. The terminal
-// variant is intentionally a fixed dark window built from the Tailwind palette
-// (zinc/emerald/red/amber/green), so it stays dark in every scheme.
+// that reads a color is a function of the active tokens, so the code card follows
+// light/dark. Surfaced CodeBlock variants use static content frost with these opaque
+// fills as their solid fallback. Code ink stays unwarped.
+//
+// The look is the Canvas v4 hand-off's code block (`K.def('code-block')` in
+// tools/v4/handoff/cv-kit-data.js, with its code-driven form, cv-kit-code3.js
+// `O('code-block')`):
+//
+//   The card: the code-card corner on a `border` hairline over the sunken well
+//   (`surface-sunken`, the hand-off's bg2). A header row of at least 36 sits on top,
+//   14 in at the start and 12 at the end, over a `border` hairline: the file name (or
+//   the language) in 12 px mono in the subtle ink, a 12 px mono language detail when
+//   both are set, and the copy chip (a 26 tall, 8 in, `field-border` hairline chip of a
+//   13 px glyph and a 500 12 label in the muted ink). Tabs are 6 by 10, 500 12, the
+//   active one in the foreground over a 2 px accent underline, the rest subtle.
+//   The code: 13 / 1.7 mono (12 compact), 14 above and below (8 compact), each row 16
+//   in (12 compact); line numbers in the subtle ink, 14 before the code. A highlighted
+//   row takes the accent's soft wash, a diff row the success or destructive wash with
+//   its marker in the text-grade ink. A collapsed block closes on a `border` hairline
+//   with a 500 12 "show more" in the accent's text ink, 8 by 16.
+//   The terminal: the dark scheme's page as a fixed dark window in every scheme, its
+//   header the three 9 px status dots and the label, the prompt in the success green,
+//   commands in the dark foreground and output in the dark subtle ink.
 //
 // CodeBlock is a "Shared" platform treatment: neither iOS nor Android ships a code
 // display control, and the web reference is the standard `pre`/`code` HTML pattern,
@@ -24,10 +42,9 @@ export const MONO = { fontFamily: MONO_FONT } as const;
 
 // --- type ramp ---------------------------------------------------------------
 
-// Shared code type: text-sm leading-relaxed, and the compact ramp (13/20) used by
-// dense contexts such as documentation side-by-side panes.
-const codeType: TextStyle = { fontSize: 14, lineHeight: 28 };
-const codeTypeCompact: TextStyle = { fontSize: 13, lineHeight: 20 };
+// The code type: 13 / 1.7, and the compact 12 / 1.7.
+const codeType: TextStyle = { fontSize: 13, lineHeight: 22.1 };
+const codeTypeCompact: TextStyle = { fontSize: 12, lineHeight: 20.4 };
 
 // Code foreground color (text-foreground).
 function codeText(tokens: ColorTokens): TextStyle {
@@ -36,16 +53,11 @@ function codeText(tokens: ColorTokens): TextStyle {
 
 // --- surface -----------------------------------------------------------------
 
-// The shared code surface: a muted, bordered, rounded card. `overflow: "hidden"`
-// clips full-bleed row tints (line highlight, diff) at the rounded corners.
-// The code surface is OPAQUE: it is a content surface, and the hand-off paints it
-// var(--muted) flat. It used to carry a half-transparent muted fill, translated
-// literally from a Tailwind bg-muted/50 in the kit's shadcn-era origins, which meant
-// a code block sitting over any backdrop (a photo, a glass page)
-// showed it straight through the code.
-// The code card's corner, which its header bar and the terminal window share, and its
-// hairline, the inset the expander's corners sit inside.
-const CARD_RADIUS = shape.web.control;
+// The code card: the sunken well on a hairline at the code-card corner. The fill is
+// OPAQUE (a content surface); `overflow: "hidden"` clips full-bleed row tints (line
+// highlight, diff) at the rounded corners. Its header bar and the terminal window
+// share the corner; the hairline is the inset the expander's corners sit inside.
+const CARD_RADIUS = platformShape.web.codeCard;
 const CARD_BORDER = 1;
 
 function surface(tokens: ColorTokens): ViewStyle {
@@ -56,7 +68,7 @@ function surface(tokens: ColorTokens): ViewStyle {
     borderRadius: CARD_RADIUS,
     borderWidth: CARD_BORDER,
     borderColor: tokens.border,
-    backgroundColor: tokens.muted,
+    backgroundColor: tokens["surface-sunken"] ?? tokens.muted,
   };
 }
 
@@ -68,7 +80,7 @@ const attachedTop: ViewStyle = {
   borderTopWidth: 0,
 };
 
-// The padding unit per density: p-4 default, p-3 compact.
+// The vertical padding per density (14, 8 compact) and the row inset (16, 12 compact).
 function padUnit(compact: boolean): number {
   return compact ? 12 : 16;
 }
@@ -76,7 +88,7 @@ function padUnit(compact: boolean): number {
 // Vertical padding of the rows column (horizontal padding lives on each row so
 // line tints run full-bleed to the surface edges).
 function bodyPad(compact: boolean): ViewStyle {
-  return { paddingVertical: padUnit(compact) };
+  return { paddingVertical: compact ? 8 : 14 };
 }
 
 // Horizontal padding of one code row. With a pinned gutter to the left, the row
@@ -91,9 +103,8 @@ function rowPad(compact: boolean, gutter: boolean): ViewStyle {
 
 // --- header bar (filename/language label, tab strip, hosted copy chip) -------
 
-// The header bar above the code surface: a muted, bordered strip whose bottom
-// edge meets the surface's top edge. flex-row items-center justify-between
-// rounded-t-lg border border-b-0 border-border bg-muted px-4 py-2.
+// The header row above the code: the card's own top, on the sunken well, its bottom
+// edge the hairline the code surface's top border draws.
 function headerBar(tokens: ColorTokens): ViewStyle {
   return {
     flexDirection: "row",
@@ -106,32 +117,27 @@ function headerBar(tokens: ColorTokens): ViewStyle {
     borderWidth: 1,
     borderBottomWidth: 0,
     borderColor: tokens.border,
-    backgroundColor: tokens.muted,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    minHeight: 40,
+    backgroundColor: tokens["surface-sunken"] ?? tokens.muted,
+    paddingStart: 14,
+    paddingEnd: 12,
+    paddingVertical: 4,
+    minHeight: 36,
   };
 }
 
 // When the header hosts a tab strip, the tabs carry their own vertical rhythm
 // (and their active underline must sit on the bar's bottom edge).
-const headerBarWithTabs: ViewStyle = { paddingVertical: 0, paddingStart: 8 };
+const headerBarWithTabs: ViewStyle = { paddingTop: 6, paddingBottom: 0, paddingStart: 8 };
 
-// The header label type: text-xs muted-foreground (the file name).
+// The header label: 12 px mono in the subtle ink (the file name).
 function headerLabel(tokens: ColorTokens): TextStyle {
-  return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
+  return { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }
 
-// The trailing language badge shown when both `filename` and `language` are set:
-// same ramp as the label, dimmed a step.
+// The trailing language detail shown when both `filename` and `language` are set:
+// the label's own 12 px mono in the subtle ink.
 function headerBadge(tokens: ColorTokens): TextStyle {
-  return {
-    fontSize: 11,
-    lineHeight: 16,
-    color: alpha(tokens["muted-foreground"], 0.8),
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  };
+  return { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }
 
 // When a header bar sits above the surface, the surface's own top corners must be
@@ -140,101 +146,93 @@ const surfaceUnderHeader: ViewStyle = { borderTopStartRadius: 0, borderTopEndRad
 
 // --- tab strip ---------------------------------------------------------------
 
-// The tab row hosted by the header bar (or the terminal chrome).
+// The tab row hosted by the header bar (or the terminal chrome), 2 apart.
 const tabStrip: ViewStyle = {
   flexDirection: "row",
   alignItems: "stretch",
+  gap: 2,
   flexShrink: 1,
 };
 
-// One tab: comfortable hit area, a 2px underline that lights up when active.
-// The `dark` flag styles the terminal-chrome incarnation (fixed dark window).
+// One tab, 6 by 10, with a 2px accent underline when active. The `dark` flag styles
+// the terminal-chrome incarnation (the fixed dark window).
 function tabItem(tokens: ColorTokens, active: boolean, dark: boolean): ViewStyle {
-  const underline = dark ? palette["emerald-400"] : tokens.primary;
+  const underline = dark ? DARK.primary : tokens.primary;
   return {
     paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingTop: 6,
+    paddingBottom: 4,
     borderBottomWidth: 2,
     borderBottomColor: active ? underline : "transparent",
     justifyContent: "center",
   };
 }
 
+// 500 12: the active tab in the foreground, the rest in the subtle ink.
 function tabLabel(tokens: ColorTokens, active: boolean, dark: boolean): TextStyle {
-  const on = dark ? palette["zinc-100"] : tokens.foreground;
-  const off = dark ? palette["zinc-400"] : tokens["muted-foreground"];
+  const t = dark ? DARK : tokens;
   return {
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: active ? "600" : "400",
-    color: active ? on : off,
+    fontWeight: "500",
+    color: active ? t.foreground : t["subtle-foreground"] ?? t["muted-foreground"],
   };
 }
 
 // --- line emphasis (highlightLines) ------------------------------------------
 
-// A highlighted row: a soft primary wash that reads in both schemes.
-function highlightRow(tokens: ColorTokens, dark: boolean): ViewStyle {
-  return { backgroundColor: alpha(tokens.primary, dark ? 0.18 : 0.08) };
+// A highlighted row: the accent's soft wash.
+function highlightRow(tokens: ColorTokens, _dark: boolean): ViewStyle {
+  return { backgroundColor: tokens["primary-soft"] };
 }
 
 // --- diff mode ---------------------------------------------------------------
 
-// Added/removed rows: soft green/red washes, GitHub-style.
+// Added/removed rows: the scheme's success and destructive washes.
 function diffRow(kind: "add" | "del", dark: boolean): ViewStyle {
-  const hue = kind === "add" ? palette["green-500"] : palette["red-500"];
-  return { backgroundColor: alpha(hue, dark ? 0.16 : 0.1) };
+  const t = dark ? DARK : lightColors;
+  return { backgroundColor: kind === "add" ? t["success-soft"] : t["destructive-soft"] };
 }
 
-// The +/- marker glyph: colored, monospace-aligned, and excluded from selection
-// so a copied block never drags diff markers along.
-function diffMarker(kind: "add" | "del" | "ctx", tokens: ColorTokens, dark: boolean): TextStyle {
-  const color =
-    kind === "add"
-      ? dark
-        ? palette["green-400"]
-        : palette["green-700"]
-      : kind === "del"
-        ? dark
-          ? palette["red-400"]
-          : palette["red-700"]
-        : tokens["muted-foreground"];
+// The +/- marker glyph in the text-grade ink, excluded from selection so a copied
+// block never drags diff markers along.
+function diffMarker(kind: "add" | "del" | "ctx", tokens: ColorTokens, _dark: boolean): TextStyle {
+  const color = kind === "add" ? statusColors(tokens, "success").ink : kind === "del" ? statusColors(tokens, "error").ink : tokens["subtle-foreground"] ?? tokens["muted-foreground"];
   return { color, userSelect: "none" };
 }
 
 // --- numbered gutter ---------------------------------------------------------
 
 // The pinned line-number column: right-aligned digits, start inset matching the
-// surface padding. Sits OUTSIDE the horizontal scroller so numbers never scroll.
+// row inset. Sits OUTSIDE the horizontal scroller so numbers never scroll.
 function gutterCol(compact: boolean): ViewStyle {
   return { alignItems: "stretch", paddingStart: padUnit(compact) };
 }
 
-// One gutter row: right-aligned number with the same end inset as a code row's
-// start gap, so tinted rows read as one continuous band.
-function gutterRow(compact: boolean): ViewStyle {
-  return { alignItems: "flex-end", paddingEnd: padUnit(compact) };
+// One gutter row: a right-aligned number, 14 before the code.
+function gutterRow(_compact: boolean): ViewStyle {
+  return { alignItems: "flex-end", paddingEnd: 14 };
 }
 
-// Dimmed line numbers (text-muted-foreground), sharing the code type.
-// `userSelect: "none"` keeps the line numbers out of a copied selection, so the
-// pasted block is clean, runnable code (cross-platform RN TextStyle prop).
+// Line numbers in the subtle ink, sharing the code type. `userSelect: "none"` keeps
+// them out of a copied selection, so the pasted block is clean, runnable code.
 function gutterText(tokens: ColorTokens): TextStyle {
-  return { color: tokens["muted-foreground"], userSelect: "none" };
+  return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"], userSelect: "none" };
 }
 
 // --- collapsible expander ----------------------------------------------------
 
-// The expander bar under a collapsed block: a bordered, centered control row.
+// The expander under a collapsed block: a row on a `border` hairline, 8 by 16.
 function expanderBar(tokens: ColorTokens): ViewStyle {
   return {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     gap: 6,
     borderTopWidth: 1,
     borderColor: tokens.border,
     paddingVertical: 8,
+    paddingHorizontal: 16,
   };
 }
 
@@ -242,19 +240,23 @@ function expanderBar(tokens: ColorTokens): ViewStyle {
 // press layer follows the card's curve.
 const expanderClip: ViewStyle = { borderBottomStartRadius: CARD_RADIUS - CARD_BORDER, borderBottomEndRadius: CARD_RADIUS - CARD_BORDER };
 
+// 500 12 in the accent's text ink.
 function expanderLabel(tokens: ColorTokens): TextStyle {
   return {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
-    color: tokens["muted-foreground"],
+    color: tokens["primary-text"] ?? tokens.primary,
   };
 }
 
 // --- terminal variant --------------------------------------------------------
 
-// relative w-full self-start overflow-hidden rounded-lg border border-border shadow-sm
-function terminalOuter(tokens: ColorTokens): ViewStyle {
+// The terminal is a fixed dark window: the dark scheme's tokens in every scheme.
+const DARK: ColorTokens = darkColors;
+
+// The window: the code-card corner on the dark hairline, no shade.
+function terminalOuter(_tokens: ColorTokens): ViewStyle {
   return {
     position: "relative",
     width: "100%",
@@ -262,54 +264,56 @@ function terminalOuter(tokens: ColorTokens): ViewStyle {
     overflow: "hidden",
     borderRadius: CARD_RADIUS,
     borderWidth: 1,
-    borderColor: tokens.border,
-    ...shadow("sm", tokens),
+    borderColor: DARK.border,
+    backgroundColor: DARK.background,
   };
 }
 
-// Chrome bar: flex-row items-center gap-1.5 border-b border-zinc-700 bg-zinc-800 px-4 py-2.5
+// The header row: the status dots and the label, 36 tall, over the dark hairline.
 const terminalChrome: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
-  gap: 6,
+  gap: 5,
   borderBottomWidth: 1,
-  borderColor: palette["zinc-700"],
-  backgroundColor: palette["zinc-800"],
-  paddingHorizontal: 16,
-  paddingVertical: 10,
-  minHeight: 40,
+  borderColor: DARK.border,
+  backgroundColor: DARK.background,
+  paddingStart: 14,
+  paddingEnd: 12,
+  paddingVertical: 4,
+  minHeight: 36,
 };
 
 // When the chrome hosts a tab strip, the tabs carry the vertical rhythm.
-const terminalChromeWithTabs: ViewStyle = { paddingVertical: 0 };
+const terminalChromeWithTabs: ViewStyle = { paddingTop: 6, paddingBottom: 0 };
 
-// Traffic-light dot: h-3 w-3 rounded-full bg-<hue>-500.
+// A status dot: 9 px, the dark scheme's destructive, warning and success.
 function trafficDot(hue: "red" | "amber" | "green"): ViewStyle {
-  return { height: 12, width: 12, borderRadius: 9999, backgroundColor: palette[`${hue}-500`] };
+  return { height: 9, width: 9, borderRadius: 9999, backgroundColor: hue === "red" ? DARK.destructive : hue === "amber" ? DARK.warning : DARK.success };
 }
 
-// Chrome label: ml-2 text-xs text-zinc-400.
+// The label: 12 px mono in the dark subtle ink, 8 after the dots.
 const terminalLabel: TextStyle = {
-  marginStart: 8,
+  marginStart: 3,
+  fontFamily: MONO_FONT,
   fontSize: 12,
   lineHeight: 16,
-  color: palette["zinc-400"],
+  color: DARK["subtle-foreground"],
 };
 
-// Terminal body: bg-zinc-900; vertical padding per density (rows carry horizontal).
+// The terminal body: the dark page; vertical padding per density (rows carry horizontal).
 function terminalBody(compact: boolean): ViewStyle {
-  return { backgroundColor: palette["zinc-900"], paddingVertical: padUnit(compact) };
+  return { backgroundColor: DARK.background, ...bodyPad(compact) };
 }
 
-// The non-selectable prompt: text-emerald-400. `userSelect: "none"` keeps the
+// The non-selectable prompt, in the success green. `userSelect: "none"` keeps the
 // shell glyph out of a copied selection (it is a cross-platform RN TextStyle prop).
-const terminalPrompt: TextStyle = { color: palette["emerald-400"], userSelect: "none" };
+const terminalPrompt: TextStyle = { color: DARK.success, userSelect: "none" };
 
-// The command line itself: text-zinc-100.
-const terminalLine: TextStyle = { color: palette["zinc-100"] };
+// The command line itself: the dark foreground.
+const terminalLine: TextStyle = { color: DARK.foreground };
 
-// A transcript output line: dimmed, no prompt.
-const terminalOutput: TextStyle = { color: palette["zinc-400"] };
+// A transcript output line: the dark subtle ink, no prompt.
+const terminalOutput: TextStyle = { color: DARK["subtle-foreground"] };
 
 // --- inline variant ----------------------------------------------------------
 
@@ -369,43 +373,41 @@ const inlineCopyIcon = 13;
 
 // --- copy affordance ---------------------------------------------------------
 
-// The copy chip: flex-row items-center gap-1 rounded-md border px-2.5 py-1.
-// Positioning is NOT part of the chip: a floating chip is placed by an
-// absolutely-positioned wrapper in the shell (which also measures its width so
-// code rows can reserve a matching end inset). `floating` only picks the soft
-// shadow a chip needs when it hovers over code; hosted chips sit flat inside
-// the header/chrome bar. The fill/border follows the dark branch: dark window
-// vs light surface.
+// The copy chip: 26 tall, 8 in, a 13 px glyph 6 from a 500 12 label, on a
+// `field-border` hairline at the key corner. Positioning is NOT part of the chip: a
+// floating chip is placed by an absolutely-positioned wrapper in the shell (which also
+// measures its width so code rows can reserve a matching end inset). A hosted chip sits
+// bare in the header; a floating one, over code, takes the card fill so the code does
+// not read through it. `dark` is the terminal's chip, on the dark window.
 function copyButton(tokens: ColorTokens, dark: boolean, floating: boolean): ViewStyle {
-  const base: ViewStyle = {
+  const t = dark ? DARK : tokens;
+  return {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    gap: 6,
+    minHeight: 26,
     borderRadius: platformShape.web.key,
     borderWidth: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
+    borderColor: t["field-border"] ?? t.border,
+    ...(floating ? { backgroundColor: t.card } : null),
   };
-  // The `dark` flag here is the CopyButton's own (terminal forces it); it picks
-  // the dark zinc chip vs the light background chip.
-  return dark
-    ? { ...base, borderColor: palette["zinc-600"], backgroundColor: palette["zinc-700"] }
-    : { ...base, borderColor: tokens.border, backgroundColor: tokens.background, ...(floating ? shadow("sm", tokens) : null) };
 }
 
-// Copy label: text-xs font-medium, color per dark branch.
+// Copy label: 500 12 in the muted ink.
 function copyText(tokens: ColorTokens, dark: boolean): TextStyle {
   return {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500",
-    color: dark ? palette["zinc-300"] : tokens["muted-foreground"],
+    color: (dark ? DARK : tokens)["muted-foreground"],
   };
 }
 
 // ---------- Web: the code card, the one look every platform shares ----------
-// A muted, bordered, rounded card with the terminal / numbered / inline variants and
-// the copy chip described above. This is the single source of truth for the one
+// The sunken code card with the terminal / numbered / inline variants and the copy chip
+// described above. This is the single source of truth for the one
 // shared look.
 export const webSkin: CodeBlockSkin = {
   // One shared skin across the three platforms (a code surface is

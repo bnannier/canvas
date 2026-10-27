@@ -66,7 +66,7 @@ describe("ActionPanel", () => {
     expect(field.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("inline layout drops children below the pinned copy + action row", () => {
+  it("inline layout hangs children under the copy and closes them with the action", () => {
     ui(
       <ActionPanel title="Workspace profile" description="Shown on every invoice." actionLabel="Save changes" inline>
         <Input label="Workspace name" defaultValue="Northwind" block />
@@ -74,8 +74,8 @@ describe("ActionPanel", () => {
     );
     const save = screen.getByText("Save changes");
     const field = screen.getByText("Workspace name");
-    // The action stays pinned beside the copy, so the field follows the whole row.
-    expect(save.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // With embedded content the action commits it, so it closes the panel after the field.
+    expect(field.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("toggle layout drops children below the switch row", () => {

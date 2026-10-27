@@ -1,6 +1,6 @@
 # ScatterPlot
 
-Numeric x/y point clouds with nice ticks and gridlines on both axes. Multi-series clouds use the series tokens; pressing near a point rings it and flags its coordinates.
+Numeric x/y point clouds with nice ticks on both axes and horizontal gridlines. Multi-series clouds use the series tokens; pressing near a point rings it and flags its coordinates.
 
 ## Usage
 

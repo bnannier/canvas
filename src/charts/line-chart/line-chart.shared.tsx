@@ -3,6 +3,7 @@ import { Circle, Defs, LinearGradient, Line as SvgLine, Path, Stop } from "react
 import { type ChartSkin } from "../shared/types.js";
 import { type CartesianSeriesProps, chartShell, finite, seriesPoints, useSeriesChart } from "../shared/cartesian-series.js";
 import { areaPath, linePath, monotonePath } from "../shared/chart-math.js";
+import { CHART_LOOK } from "../shared/charts.styles.js";
 
 // LineChart: categorical-x series lines through the shared cartesian core
 // (react-native-svg marks, RN Text furniture, token colors). A "Shared"
@@ -58,8 +59,8 @@ export function createLineChart(skin: ChartSkin) {
           <Defs>
             {props.series.map((sr, i) => (
               <LinearGradient key={`g${sr.id ?? i}`} id={`${gradientId}f${i}`} x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor={ctx.colorOf(i)} stopOpacity={0.28} />
-                <Stop offset="1" stopColor={ctx.colorOf(i)} stopOpacity={0.02} />
+                <Stop offset="0" stopColor={ctx.colorOf(i)} stopOpacity={CHART_LOOK.fadeTop} />
+                <Stop offset="1" stopColor={ctx.colorOf(i)} stopOpacity={0} />
               </LinearGradient>
             ))}
           </Defs>
@@ -93,7 +94,7 @@ export function createLineChart(skin: ChartSkin) {
               key={sr.id ?? `s${i}`}
               d={curved ? monotonePath(pts) : linePath(pts)}
               stroke={color}
-              strokeWidth={2}
+              strokeWidth={i === 0 ? CHART_LOOK.leadStroke : CHART_LOOK.stroke}
               fill="none"
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -108,7 +109,7 @@ export function createLineChart(skin: ChartSkin) {
               const pts = seriesPoints(sr, props.labels, layout);
               const color = ctx.colorOf(i);
               return pts.map((p, j) => (
-                <Circle key={`${sr.id ?? `s${i}`}d${j}`} cx={p.x} cy={p.y} r={4} fill={color} stroke={ctx.tokens.card} strokeWidth={1.5} />
+                <Circle key={`${sr.id ?? `s${i}`}d${j}`} cx={p.x} cy={p.y} r={CHART_LOOK.dotRadius} fill={ctx.tokens.card} stroke={color} strokeWidth={CHART_LOOK.dotStroke} />
               ));
             })
           : null}

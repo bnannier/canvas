@@ -285,7 +285,7 @@ describe("DragDrop insertion indicator anchoring", () => {
   const line = (container: HTMLElement) =>
     Array.from(container.querySelectorAll("div")).find((n) => {
       const style = n.getAttribute("style") ?? "";
-      return style.includes("position: absolute") && style.includes("width: 2px");
+      return style.includes("position: absolute") && style.includes("width: 3px");
     });
 
   const lane = (

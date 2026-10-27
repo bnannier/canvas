@@ -68,7 +68,8 @@ export function RadialBarChart(props: RadialBarChartProps) {
 
   const size = compact ? 120 : 160;
   const stroke = compact ? 8 : 10;
-  const gap = 4;
+  // The hand-off's rings sit 16 apart at a 10 stroke: a 6 px gap.
+  const gap = 6;
   const center = size / 2;
   // Rings grow outward from an inner hole; the outermost ring hugs the disc.
   const rOuter = center - stroke / 2;
@@ -98,7 +99,7 @@ export function RadialBarChart(props: RadialBarChartProps) {
   const img = { accessibilityRole: "image", accessibilityLabel: name, "aria-label": name } as const;
 
   return (
-    <View testID={testID} style={style} {...(props.hideLegend ? img : {})}>
+    <View testID={testID} style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 20 }, style]} {...(props.hideLegend ? img : {})}>
       <View {...(props.hideLegend ? {} : img)} style={{ width: size, height: size }}>
         <Svg width={size} height={size} style={{ position: "absolute" }}>
           {data.map((d, i) => {
@@ -140,15 +141,13 @@ export function RadialBarChart(props: RadialBarChartProps) {
         />
       </View>
       {props.hideLegend ? null : (
-        <View style={{ marginTop: 12 }}>
-          <ChartLegend
-            items={data.map((d, i) => ({
-              label: d.label,
-              color: seriesFill(tokens, i),
-              detail: formatValue(clean[i]),
-            }))}
-          />
-        </View>
+        <ChartLegend
+          flush
+          items={data.map((d, i) => ({
+            label: `${d.label} ${formatValue(clean[i])}`,
+            color: seriesFill(tokens, i),
+          }))}
+        />
       )}
     </View>
   );

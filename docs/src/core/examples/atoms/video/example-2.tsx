@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Video } = scope;
   return (
-<Video source={{ uri: "/video-sample.mp4" }} poster={{ uri: "/video-sample.jpg" }} cover aspectRatio={1} radius="lg" accessibilityLabel="Square crop of the sample clip" />
+<Video source={{ uri: "/video-sample.mp4" }} poster={{ uri: "/video-sample.jpg" }} cover aspectRatio={1} accessibilityLabel="Square crop of the sample clip" />
   );
 }

@@ -3,6 +3,10 @@ import { alpha } from "../../style/index.js";
 import { type ChartSkin } from "../shared/types.js";
 import { type CartesianSeriesProps, chartShell, finite, seriesPoints, useSeriesChart } from "../shared/cartesian-series.js";
 import { areaBandPath, areaPath, linePath, monotonePath, stackSeries, type Pt } from "../shared/chart-math.js";
+import { CHART_LOOK } from "../shared/charts.styles.js";
+
+// The hand-off's area fills: the lead series at .28, every other at .3.
+const fillAlpha = (i: number): number => (i === 0 ? CHART_LOOK.areaLead : CHART_LOOK.area);
 
 // AreaChart: categorical-x series fills through the shared cartesian core.
 // Overlapping translucent fills by default; `stacked` accumulates the series
@@ -33,7 +37,7 @@ export function createAreaChart(skin: ChartSkin) {
               const top: Pt[] = bands[i].map(([, y1], j) => ({ x: band.center(j), y: layout.y(y1) }));
               const bottom: Pt[] = bands[i].map(([y0], j) => ({ x: band.center(j), y: layout.y(y0) }));
               return (
-                <Path key={`f${sr.id ?? i}`} d={areaBandPath(top, bottom, curved)} fill={alpha(color, 0.35)} />
+                <Path key={`f${sr.id ?? i}`} d={areaBandPath(top, bottom, curved)} fill={alpha(color, fillAlpha(i))} />
               );
             })}
             {props.series.map((sr, i) => {
@@ -44,7 +48,7 @@ export function createAreaChart(skin: ChartSkin) {
                   key={`e${sr.id ?? i}`}
                   d={curved ? monotonePath(top) : linePath(top)}
                   stroke={color}
-                  strokeWidth={2}
+                  strokeWidth={CHART_LOOK.stroke}
                   fill="none"
                   strokeLinejoin="round"
                   strokeLinecap="round"
@@ -73,7 +77,7 @@ export function createAreaChart(skin: ChartSkin) {
           {props.series.map((sr, i) => {
             const pts = seriesPoints(sr, props.labels, layout);
             const color = ctx.colorOf(i);
-            return <Path key={`f${sr.id ?? i}`} d={areaPath(pts, layout.plotH, curved)} fill={alpha(color, 0.25)} />;
+            return <Path key={`f${sr.id ?? i}`} d={areaPath(pts, layout.plotH, curved)} fill={alpha(color, fillAlpha(i))} />;
           })}
           {props.series.map((sr, i) => {
             const pts = seriesPoints(sr, props.labels, layout);
@@ -83,7 +87,7 @@ export function createAreaChart(skin: ChartSkin) {
                 key={`e${sr.id ?? i}`}
                 d={curved ? monotonePath(pts) : linePath(pts)}
                 stroke={color}
-                strokeWidth={2}
+                strokeWidth={CHART_LOOK.stroke}
                 fill="none"
                 strokeLinejoin="round"
                 strokeLinecap="round"

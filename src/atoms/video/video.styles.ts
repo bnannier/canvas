@@ -1,21 +1,24 @@
 import { type ImageStyle, type ViewStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { TOUCH_TARGET } from "../../style/touch-target.js";
 
-// Per-OS Video skins. The picture is letterboxed on black on every platform and in
-// every theme, the convention of every video surface (a clip's own dark frames would
-// otherwise bleed into a light page). On the web the control bar sits under the
-// picture as a card row with a hairline above it (the owner's call on 2026-09-24, over
-// a pill floating on the picture: the bar never covers the clip); the frame clips both
-// to the corner radius.
+// Per-OS Video skins. The frame is the v4 hand-off's (cv-kit-code3.js `O('video')`, with
+// `K.def('video')` in tools/v4/handoff/cv-kit-data.js): the media corner on a 1 px
+// `border` hairline, unless `radius` names a step of the kit's scale. The picture is
+// letterboxed on black on every platform and in every theme, the convention of every
+// video surface (a clip's own dark frames would otherwise bleed into a light page). On
+// the web the control bar sits under the picture as a card row with a hairline above it
+// (the owner's call on 2026-09-24, over a bar floating on the picture: the bar never
+// covers the clip); the frame clips both to its corner.
 //
 // iOS and Android hand `controls` to the platform's own player controls, so their
-// skins never draw the bar; they share the web frame and differ only in the inline
-// control's minimum tap target.
+// skins never draw the bar; no platform ships a player frame, so they share the web
+// frame and differ only in the inline control's minimum tap target.
 
 export interface VideoSkin {
-  /** The whole player: clips the picture and the bar to the corner radius. */
-  frame: ViewStyle;
+  /** The whole player: its corner and hairline, clipping the picture and the bar to the corner. */
+  frame: (tokens: ColorTokens) => ViewStyle;
   /** The picture area, sized by the clip's aspect ratio and letterboxed on black. */
   picture: ViewStyle;
   /** A layer covering the picture: the video surface and the poster. */
@@ -34,7 +37,13 @@ export interface VideoSkin {
 // corner of the clip.
 const fillPicture: ImageStyle = { position: "absolute", top: 0, left: 0, width: "100%", height: "100%" };
 
-const frame: ViewStyle = { overflow: "hidden" };
+// The 14 media corner on a `border` hairline.
+const frame = (tokens: ColorTokens): ViewStyle => ({
+  overflow: "hidden",
+  borderRadius: platformShape.web.mediaFrame,
+  borderWidth: 1,
+  borderColor: tokens.border,
+});
 
 const picture: ViewStyle = {
   width: "100%",

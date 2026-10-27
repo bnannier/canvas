@@ -1477,7 +1477,7 @@
     ],
     "none": "foreground",
     "single": {
-      "primary": "primary",
+      "primary": "primary-text",
       "primaryForeground": "primary-foreground",
       "destructive": "destructive",
       "success": "success",

@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState } from "react";
-import Svg, { Line, Path } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { View, Text, alpha, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
@@ -64,7 +64,7 @@ const MIN_AXES = 3;
 const MAX_SERIES = 4;
 const LABEL_W = 84;
 // An axis label around the web.
-const AXIS_LABEL_TYPE = { fontSize: 11, lineHeight: 14 };
+// The spoke labels are the hand-off's mono axis labels (s.axisLabel).
 
 export function createRadarChart(skin: ChartSkin) {
   return function RadarChart(props: RadarChartProps) {
@@ -147,27 +147,22 @@ export function createRadarChart(skin: ChartSkin) {
                           key={`r${ti}`}
                           d={polygonPath(axes.map((_, i) => polarPoint(cx, cy, rOf(t), angleOf(i))))}
                           fill="none"
-                          stroke={tokens.border}
+                          stroke={tokens["field-border"] ?? tokens.border}
                           strokeWidth={1}
                         />
                       ))
                   : null}
-                {!props.hideGrid
-                  ? axes.map((_, i) => {
-                      const p = polarPoint(cx, cy, plot.radius, angleOf(i));
-                      return <Line key={`s${i}`} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke={tokens.border} strokeWidth={1} />;
-                    })
-                  : null}
-                {/* One closed polygon per series: ramp stroke, soft wash. */}
+                {/* One closed polygon per series: ramp stroke, soft wash (the
+                    hand-off's lead at .25 under a 2 px edge, the rest .15 under 1.5). */}
                 {series.map((sr, si) => {
                   const pts = axes.map((_, i) => polarPoint(cx, cy, rOf(finite(sr.values[i])), angleOf(i)));
                   return (
                     <Path
                       key={sr.id ?? si}
                       d={polygonPath(pts)}
-                      fill={alpha(colorOf(si), 0.15)}
+                      fill={alpha(colorOf(si), si === 0 ? 0.25 : 0.15)}
                       stroke={colorOf(si)}
-                      strokeWidth={2}
+                      strokeWidth={si === 0 ? 2 : 1.5}
                       strokeLinejoin="round"
                     />
                   );
@@ -181,7 +176,7 @@ export function createRadarChart(skin: ChartSkin) {
                 // sit above, bottom labels below, and side labels beside.
                 const dx = Math.sin(angleOf(i));
                 const dy = -Math.cos(angleOf(i));
-                const w = Math.min(LABEL_W, Math.ceil(estimateTextWidth(axis, 11)) + 12);
+                const w = Math.min(LABEL_W, Math.ceil(estimateTextWidth(axis, s.CHART_LOOK.axisSize)) + 12);
                 return (
                   <Text
                     key={i}
@@ -192,8 +187,7 @@ export function createRadarChart(skin: ChartSkin) {
                       top: p.y - 7 + dy * 8,
                       width: w,
                       textAlign: "center",
-                      ...AXIS_LABEL_TYPE,
-                      color: tokens["muted-foreground"],
+                      ...s.axisLabel(tokens),
                     }}
                   >
                     {axis}

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, spyOn } from "bun:test";
+import { lightColors } from "../src/style/tokens.ts";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { Text } from "react-native";
@@ -115,8 +116,8 @@ describe("Swatch dev warning", () => {
 describe("Swatch boolean axes", () => {
   it("small / default / large set the block edge", () => {
     const sizes = [
-      { props: { small: true }, edge: "40px" },
-      { props: {}, edge: "56px" },
+      { props: { small: true }, edge: "32px" },
+      { props: {}, edge: "48px" },
       { props: { large: true }, edge: "72px" },
     ];
     for (const s of sizes) {
@@ -129,7 +130,7 @@ describe("Swatch boolean axes", () => {
 
   it("size precedence is first-match: small wins over large", () => {
     const { container } = ui(<Swatch color="#4f46e5" small large />);
-    expect(blockOf(container).style.height).toBe("40px");
+    expect(blockOf(container).style.height).toBe("32px");
   });
 
   it("circle rounds the block fully", () => {
@@ -151,14 +152,14 @@ describe("Swatch boolean axes", () => {
     const { container } = ui(<Swatch block color="#4f39f6" value="--primary">primary</Swatch>);
     expect(rootOf(container).style.alignSelf).toBe("stretch");
     expect(blockOf(container).style.alignSelf).toBe("stretch");
-    expect(blockOf(container).style.height).toBe("56px");
+    expect(blockOf(container).style.height).toBe("48px");
     expect(blockOf(container).style.width).toBe("");
   });
 
   it("circle keeps its 1:1 footprint under block (a stretched circle is not a circle)", () => {
     const { container } = ui(<Swatch block circle color="#4f39f6" />);
     expect(rootOf(container).style.alignSelf).toBe("stretch");
-    expect(blockOf(container).style.width).toBe("56px");
+    expect(blockOf(container).style.width).toBe("48px");
   });
 
   it("inline keeps the block's width under block (a stretched row child has none)", () => {
@@ -167,8 +168,45 @@ describe("Swatch boolean axes", () => {
     // widens so the label column gets the space.
     const { container } = ui(<Swatch inline block color="#4f39f6" value="--primary">primary</Swatch>);
     expect(rootOf(container).style.alignSelf).toBe("stretch");
-    expect(blockOf(container).style.width).toBe("56px");
+    expect(blockOf(container).style.width).toBe("48px");
     expect(blockOf(container).style.alignSelf).not.toBe("stretch");
+  });
+});
+
+describe("Swatch look (the hand-off renderer)", () => {
+  it("sets the name 500 13/17 and the value lines 400 11/15 mono in the subtle ink, flush", () => {
+    const { getByText } = ui(<Swatch color="#4f39f6" value="--primary" detail="oklch">primary</Swatch>);
+    const name = (getByText("primary") as HTMLElement).style;
+    expect([name.fontSize, name.lineHeight, name.fontWeight]).toEqual(["13px", "17px", "500"]);
+    for (const t of ["--primary", "oklch"]) {
+      const st = (getByText(t) as HTMLElement).style;
+      expect([st.fontSize, st.lineHeight, st.fontWeight]).toEqual(["11px", "15px", "400"]);
+      expect(st.fontFamily).toContain("monospace");
+    }
+  });
+
+  it("puts the label 8 px under the chip and 10 px beside it inline", () => {
+    const a = ui(<Swatch color="#4f39f6">primary</Swatch>);
+    expect(rootOf(a.container).style.gap).toBe("8px");
+    a.unmount();
+    const b = ui(<Swatch inline color="#4f39f6">primary</Swatch>);
+    expect(rootOf(b.container).style.gap).toBe("10px");
+  });
+
+  it("rounds the chip at the 12 px tile corner at every size", () => {
+    for (const p of [{ small: true }, {}, { large: true }]) {
+      const { container, unmount } = ui(<Swatch color="#4f39f6" {...p} />);
+      expect(blockOf(container).style.borderTopLeftRadius).toBe("12px");
+      unmount();
+    }
+  });
+
+  it("rings a selected sample in the page color then the accent, and says so", () => {
+    const { container } = ui(<Swatch selected color="#4f39f6" value="--primary">primary</Swatch>);
+    expect(blockOf(container).style.boxShadow).toBe(`0 0 0 2px ${lightColors.background}, 0 0 0 4px ${lightColors.primary}`);
+    expect(rootOf(container).getAttribute("aria-label")).toBe("primary, --primary, selected");
+    const plain = ui(<Swatch color="#4f39f6" testID="p" />);
+    expect(blockOf(plain.container).style.boxShadow).toBe("");
   });
 });
 

@@ -96,6 +96,11 @@ export function toneOf(p: ChartProps): Tone {
   return "primary";
 }
 
+// The hand-off's column proportions: a grouped pair (11 + 2 + 11 units) fills 46% of
+// its 52.7-unit month, a stacked or single column (22 units) 42%, centered in its band.
+const CLUSTER_SHARE = "46%";
+const COLUMN_SHARE = "42%";
+
 // Plot length in px (bar travel: chart height for vertical, bar width for
 // horizontal), by density.
 const PLOT_LENGTH = { default: 140, compact: 96 } as const;
@@ -261,11 +266,9 @@ export function createChart(skin: ChartSkin) {
           <View>
             <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot }]}>
               {labels.map((label, i) => {
-                // Stacked: segment heights bottom-up, and the topmost NON-EMPTY
-                // segment carries the column's rounded cap (a zero-height top
-                // series must not square off the column).
+                // Stacked: segment heights bottom-up; every non-empty segment is its
+                // own rounded rect, as the hand-off draws each `rect rx`.
                 const heights = stacked ? stackHeights(i) : null;
-                const cap = heights ? heights.reduce((top, h, j) => (h > 0 ? j : top), -1) : -1;
                 return (
                   // Each category is one accessible item announcing every
                   // series' value ("Mon: Revenue 45, Costs 30"); the scrub
@@ -284,16 +287,16 @@ export function createChart(skin: ChartSkin) {
                       // matching the stacked AreaChart's band order. The
                       // segments abut (no gap), like StackedBar, so the column
                       // reads as one total.
-                      <View style={{ flexDirection: "column-reverse", opacity: dimmed(i) }}>
+                      <View style={{ flexDirection: "column-reverse", opacity: dimmed(i), width: COLUMN_SHARE, alignSelf: "center" }}>
                         {series.map((sr, j) => (
                           <View
                             key={sr.id ?? j}
-                            style={s.verticalBar(s.seriesColor(tokens, sr, j), heights[j], j === cap ? skin.barRadius : 0)}
+                            style={s.verticalBar(s.seriesColor(tokens, sr, j), heights[j], heights[j] > 0 ? skin.barRadius : 0)}
                           />
                         ))}
                       </View>
                     ) : (
-                      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2, opacity: dimmed(i) }}>
+                      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2, opacity: dimmed(i), width: CLUSTER_SHARE, alignSelf: "center" }}>
                         {series.map((sr, j) => (
                           <View
                             key={sr.id ?? j}
@@ -382,7 +385,7 @@ export function createChart(skin: ChartSkin) {
                 >
                   <View style={{ opacity: dimmed(i) }}>
                     <Text style={s.verticalValue(tokens)}>{d.value}</Text>
-                    <View style={s.verticalBar(fill, lengthPx(d.value), skin.barRadius)} />
+                    <View style={[s.verticalBar(fill, lengthPx(d.value), skin.barRadius), { width: COLUMN_SHARE, alignSelf: "center" }]} />
                   </View>
                 </View>
               ))}

@@ -135,7 +135,8 @@ export function createCandlestickChart(skin: ChartSkin) {
 
     const marks = (layout: CartesianLayout) => {
       const band = layout.band!;
-      const bodyW = Math.max(3, Math.min(14, band.step * 0.55));
+      // The hand-off's body: 10 units of a 29.5-unit step (0.34), at least 2 tall.
+      const bodyW = Math.max(3, Math.min(14, band.step * 0.34));
       const volY = linearScale(0, maxVolume, 0, Math.max(0, volumePane - 6));
       return (
         <>
@@ -150,7 +151,7 @@ export function createCandlestickChart(skin: ChartSkin) {
                     y={layout.plotH - h}
                     width={bodyW}
                     height={h}
-                    fill={alpha(candleColor(tokens, candles[i]), 0.35)}
+                    fill={alpha(tokens["subtle-foreground"] ?? tokens["muted-foreground"], 0.35)}
                     opacity={selected != null && selected !== i ? DIM_OPACITY : 1}
                   />
                 );
@@ -165,8 +166,8 @@ export function createCandlestickChart(skin: ChartSkin) {
             const dim = selected != null && selected !== i ? DIM_OPACITY : 1;
             return (
               <G key={`c${i}`} opacity={dim}>
-                <Line x1={cx} y1={layout.y(num(c.high))} x2={cx} y2={layout.y(num(c.low))} stroke={color} strokeWidth={1.5} />
-                <Rect x={cx - bodyW / 2} y={yTop} width={bodyW} height={Math.max(1, yBottom - yTop)} fill={color} rx={platformShape.web.candle} />
+                <Line x1={cx} y1={layout.y(num(c.high))} x2={cx} y2={layout.y(num(c.low))} stroke={color} strokeWidth={1} />
+                <Rect x={cx - bodyW / 2} y={yTop} width={bodyW} height={Math.max(2, yBottom - yTop)} fill={color} rx={platformShape.web.candle} />
               </G>
             );
           })}

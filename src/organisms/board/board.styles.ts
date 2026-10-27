@@ -1,47 +1,53 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, surfaceRipple, shape } from "../../style/index.js";
+import { type ColorTokens, surfaceRipple, shadow } from "../../style/index.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 
-// Co-located Board skins, one per platform. Board is a "Light" treatment: the structure (the
-// horizontal lanes ScrollView, the DropZone columns, the Draggable cards and their anatomy)
-// and every piece of logic live in board.shared.tsx; the skin carries only the per-OS deltas:
-// the lane/column shape and density, the type scale, and the press feedback for a pressable
-// card body. The BRAND survives everywhere (token colors, the primary drop affordances from
-// the composed DnD family); only native shape/sizing/feedback shift per OS.
+// The Board skin, drawn to the Canvas v4 hand-off (`K.def('board')` in
+// tools/v4/handoff/cv-kit-data.js and its code-driven form, cv-kit-code3.js `O('board')`).
+// The structure (the horizontal lanes ScrollView, the DropZone columns, the Draggable cards
+// and their anatomy) and every piece of logic live in board.shared.tsx; this is the look.
 //
-//   Web: columns are `muted` wells at the card corner, 14/500 headers, 14/500 card titles
-//     + 12 muted descriptions; press = the accent surface.
-//   iOS (HIG): columns as inset-grouped wells at the inset grouped list corner, with the
-//     continuous (superellipse) corner curve, over `muted` (fill-differentiated,
-//     borderless, per the iOS grouped conventions); SF type (header subheadline 15/600
-//     -0.24, title 15/600 -0.24, description footnote 13/18 -0.08); press = the accent
-//     surface plus the ~0.8 opacity dim.
-//   Android (Material 3): columns as `muted` surface containers at the lane corner; M3
-//     type with M3 tracking (header title-small 14/20/500/+0.1, title title-small,
-//     description body-small 12/16/+0.4); press = android_ripple (the neutral surface
-//     state layer), no dim.
+// Neither iOS nor Android ships a board control (PLATFORM-REFERENCES.md), so the native
+// skins share the web skin's parts, in the platform's own face; only the press feedback
+// is the platform's (the iOS dim, the Android ripple).
 //
-// Lanes and composed Card surfaces use static content frost in glass mode. The
-// skin keeps their complete opaque treatment for solid and unavailable material.
+//   Lanes: 12 apart. A column is the sunken well (`surface-sunken`, the hand-off's bg2) at
+//     the web row's lane corner on a `border` hairline, 10 in, its header and cards 8
+//     apart (6 compact).
+//   Header: 2 by 4 in, the label 600 12 in the muted ink, the count the 11 px mono caption
+//     in the subtle ink.
+//   Card: the `card` fill at the lane-card corner on a `border` hairline under the
+//     small shade, 12 in (8 compact), its rows 8 apart; the title 500 13 / 1.4 (12.5
+//     compact), the description 400 12 in the subtle ink.
+//   Empty column: a 1.5 px dashed `field-border` slot at the lane-card corner, 18 by 10
+//     in, its message 400 12 in the subtle ink, centered.
+//
+// Lanes and cards use static content frost in glass mode; the skin keeps their complete
+// opaque treatment for solid and unavailable material.
 
 export interface BoardSkin {
   /** The horizontal row of columns (the ScrollView content): direction, alignment, gap. */
   lanes: (compact: boolean) => ViewStyle;
-  /** A column's lane surface (fill, radius, padding, header-to-list gap). */
+  /** A column's lane surface (fill, edge, radius, padding, header-to-list gap). */
   column: (t: ColorTokens, compact: boolean) => ViewStyle;
-  /** The column header row (label + count badge). */
+  /** The column header row (label + count). */
   columnHeader: ViewStyle;
   /** The column header label type. */
   columnLabel: (t: ColorTokens) => TextStyle;
+  /** The column's item count (or its explicit badge text) type. */
+  columnCount: (t: ColorTokens) => TextStyle;
   /** The card stack inside a column (gap; a minHeight keeps an empty column droppable). */
   cardList: (compact: boolean) => ViewStyle;
+  /** A card's surface (fill, edge, corner, shade, padding). */
+  card: (t: ColorTokens, compact: boolean) => ViewStyle;
   /** The row inside a card: the (pressable) body column + the trailing cluster. */
   cardRow: ViewStyle;
   /** The card's text column (title, description, chips slot). */
   bodyColumn: (compact: boolean) => ViewStyle;
   /** The card title type. */
-  cardTitle: (t: ColorTokens) => TextStyle;
-  /** The muted, 2-line-clamped description type. */
+  cardTitle: (t: ColorTokens, compact: boolean) => TextStyle;
+  /** The subtle, 2-line-clamped description type. */
   cardDescription: (t: ColorTokens) => TextStyle;
   /** The consumer `chips` slot row (wraps; spacing only, content is the consumer's). */
   chipsRow: ViewStyle;
@@ -49,7 +55,9 @@ export interface BoardSkin {
   trailingColumn: ViewStyle;
   /** The grip + kebab row within the trailing column. */
   trailingCluster: ViewStyle;
-  /** The muted empty-column message type. */
+  /** The dashed slot an empty column shows. */
+  emptySlot: (t: ColorTokens) => ViewStyle;
+  /** The empty-column message type. */
   emptyLabel: (t: ColorTokens) => TextStyle;
   /** The pressable card body's own shape (radius; Android clips its ripple to it). */
   pressableBody: ViewStyle;
@@ -61,96 +69,82 @@ export interface BoardSkin {
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 }
 
-// Shared layout fragments (identical across platforms).
-const HEADER: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 };
-const CARD_ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
+// The hand-off's measures, shared by every skin.
+const LANE_GAP = 12;
+const HEADER: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, paddingVertical: 2, paddingHorizontal: 4 };
+const CARD_ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 };
 const TRAILING: ViewStyle = { flexDirection: "column", alignItems: "flex-end", gap: 8 };
 const CLUSTER: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 2 };
 const CHIPS: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 };
-// The press layer under a card's body: Dark Factory's control corner on every platform,
-// since no platform ships a board control.
-const PRESSABLE_BODY: ViewStyle = { borderRadius: shape.web.control };
+// The press layer under a card's body: the card's own corner.
+const PRESSABLE_BODY: ViewStyle = { borderRadius: platformShape.web.laneCard };
 
-// ---------- Web: muted wells ----------
+const column = (t: ColorTokens, compact: boolean): ViewStyle => ({
+  backgroundColor: t["surface-sunken"],
+  borderWidth: 1,
+  borderColor: t.border,
+  borderRadius: platformShape.web.lane,
+  padding: 10,
+  gap: compact ? 6 : 8,
+});
+const card = (t: ColorTokens, compact: boolean): ViewStyle => ({
+  backgroundColor: t.card,
+  borderWidth: 1,
+  borderColor: t.border,
+  borderRadius: platformShape.web.laneCard,
+  padding: compact ? 8 : 12,
+  ...shadow("sm", t),
+});
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
+
+/** Web: the hand-off's board. */
 export const webSkin: BoardSkin = {
-  lanes: (compact) => ({ flexDirection: "row", alignItems: "flex-start", gap: compact ? 12 : 16 }),
-  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: shape.web.card, padding: compact ? 8 : 12, gap: compact ? 8 : 10 }),
+  lanes: () => ({ flexDirection: "row", alignItems: "flex-start", gap: LANE_GAP }),
+  column,
   columnHeader: HEADER,
-  columnLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
+  columnLabel: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", color: t["muted-foreground"] }),
+  columnCount: (t) => ({ fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "500", color: subtle(t) }),
   cardList: (compact) => ({ gap: compact ? 6 : 8, minHeight: 48 }),
+  card,
   cardRow: CARD_ROW,
-  bodyColumn: (compact) => ({ gap: compact ? 2 : 4 }),
-  cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["card-foreground"] }),
-  cardDescription: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  bodyColumn: () => ({ gap: 8 }),
+  cardTitle: (t, compact) => (compact ? { fontSize: 12.5, lineHeight: 17.5, fontWeight: "500", color: t["card-foreground"] } : { fontSize: 13, lineHeight: 18.2, fontWeight: "500", color: t["card-foreground"] }),
+  cardDescription: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: subtle(t) }),
   chipsRow: CHIPS,
   trailingColumn: TRAILING,
   trailingCluster: CLUSTER,
-  emptyLabel: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  emptySlot: (t) => ({ borderWidth: 1.5, borderStyle: "dashed", borderColor: t["field-border"], borderRadius: platformShape.web.laneCard, paddingVertical: 18, paddingHorizontal: 10, alignItems: "center", justifyContent: "center" }),
+  emptyLabel: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", textAlign: "center", color: subtle(t) }),
   pressableBody: PRESSABLE_BODY,
   pressedSurface: (t) => ({ backgroundColor: t.accent }),
   pressedOpacity: null,
   ripple: null,
 };
 
-// ---------- iOS (HIG inset-grouped wells, SF type) ----------
-export const iosSkin: BoardSkin = {
-  lanes: (compact) => ({ flexDirection: "row", alignItems: "flex-start", gap: compact ? 12 : 16 }),
-  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: platformShape.ios.groupedList, borderCurve: "continuous", padding: compact ? 10 : 14, gap: compact ? 8 : 12 }),
-  columnHeader: HEADER,
-  columnLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t.foreground }),
-  cardList: (compact) => ({ gap: compact ? 8 : 10, minHeight: 52 }),
-  cardRow: CARD_ROW,
-  bodyColumn: (compact) => ({ gap: compact ? 2 : 4 }),
-  cardTitle: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t["card-foreground"] }),
-  cardDescription: (t) => ({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),
-  chipsRow: CHIPS,
-  trailingColumn: TRAILING,
-  trailingCluster: CLUSTER,
-  emptyLabel: (t) => ({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),
-  pressableBody: { ...PRESSABLE_BODY, borderCurve: "continuous" },
-  pressedSurface: (t) => ({ backgroundColor: t.accent }),
-  pressedOpacity: 0.8,
-  ripple: null,
-};
+/** iOS: no board control; the web skin's parts in SF Pro, the pressed body dimmed. */
+export const iosSkin: BoardSkin = { ...webSkin, pressedOpacity: 0.8 };
 
-// ---------- Android (Material 3 surface-container lanes, M3 type) ----------
+/** Android: no Material 3 board; the web skin's parts in Roboto, the card body ripples. */
 export const androidSkin: BoardSkin = {
-  lanes: (compact) => ({ flexDirection: "row", alignItems: "flex-start", gap: compact ? 12 : 16 }),
-  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: platformShape.android.lane, padding: compact ? 8 : 12, gap: compact ? 8 : 12 }),
-  columnHeader: HEADER,
-  columnLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
-  cardList: (compact) => ({ gap: compact ? 6 : 8, minHeight: 52 }),
-  cardRow: CARD_ROW,
-  bodyColumn: (compact) => ({ gap: compact ? 2 : 4 }),
-  cardTitle: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t["card-foreground"] }),
-  cardDescription: (t) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
-  chipsRow: CHIPS,
-  trailingColumn: TRAILING,
-  trailingCluster: CLUSTER,
-  emptyLabel: (t) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
+  ...webSkin,
   // The bounded Material ripple is clipped to these corners by the shell's RippleClip
   // parent (a node can never clip its own ripple on Android; see src/style/ripple-clip.tsx).
-  pressableBody: PRESSABLE_BODY,
   pressedSurface: () => ({}),
-  pressedOpacity: null,
   ripple: (t) => surfaceRipple(t),
 };
 
-
-// The original Argus work board: no lane well, custom domain cards, and dashed empty slots.
+// The plain work board (the original Argus lanes): no lane well, custom domain cards. The
+// hand-off draws it with the board's own header and dashed empty slot (cv-kit-code3.js
+// `O('board')` with `plain`), so only the lanes' geometry is its own.
 // A horizontal ScrollView has an unbounded content axis. Give its flex lanes a
 // definite row width so a long custom card cannot set every lane's intrinsic width.
-// Below the original 168px lane floor, only this row overflows the scrollport.
+// Below the 168px lane floor, only this row overflows the scrollport.
 export const plainLane = (bleed: number, viewportWidth: number, columns: number): ViewStyle => ({
   flexDirection: "row",
   alignItems: "flex-start",
-  gap: 14,
+  gap: LANE_GAP,
   paddingBottom: 6,
   paddingHorizontal: bleed,
-  width: Math.max(viewportWidth, columns * 168 + Math.max(0, columns - 1) * 14 + bleed * 2),
+  width: Math.max(viewportWidth, columns * 168 + Math.max(0, columns - 1) * LANE_GAP + bleed * 2),
 });
-export const plainColumn: ViewStyle = { flexDirection: "column", gap: 10, flex: 1, minWidth: 168 };
-export const plainHeader: ViewStyle = { flexDirection: "row", gap: 8, alignItems: "center", paddingHorizontal: 4 };
-export const plainLabel = (t: ColorTokens): TextStyle => ({ fontSize: 10, lineHeight: 15, fontWeight: "800", color: t["muted-foreground"], textTransform: "uppercase", letterSpacing: 1.4 });
-export const plainEmpty = (t: ColorTokens): ViewStyle => ({ borderWidth: 1, borderStyle: "dashed", borderColor: t.border, borderRadius: shape.web.tile, minHeight: 56, alignItems: "center", justifyContent: "center" });
-export const plainEmptyLabel = (t: ColorTokens): TextStyle => ({ fontSize: 11, lineHeight: 14.85, fontWeight: "600", color: t["muted-foreground"] });
+export const plainColumn: ViewStyle = { flexDirection: "column", gap: 8, flex: 1, minWidth: 168 };

@@ -13,6 +13,12 @@ terminal chrome stay), so `copy` floats over the code's corner. Long lines scrol
 horizontally instead of truncating, and every run of code, highlighted tokens
 included, is set in the theme's mono face.
 
+The block is the v4 hand-off's code card on every platform: the sunken well on a
+hairline at a 14 px corner, a 36 px header of 12 px mono labels, 13 / 1.7 code, line
+numbers in the subtle ink, and keywords, strings, numbers and tags in the accent,
+mint, amber and cyan (each light-scheme ink held to 4.5:1 on the well). The
+terminal is a fixed dark window in every scheme.
+
 `inline` honours `copy` alone of the orthogonal booleans: `<CodeBlock inline copy>`
 is the import chip, a raised monospace pill (34 tall, the control corner, the
 `popover` fill and `field-border` hairline, 12 px mono in `muted-foreground`)

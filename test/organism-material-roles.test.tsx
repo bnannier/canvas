@@ -109,10 +109,10 @@ describe("organism material roles", () => {
     for (let node: HTMLElement | null = pane; node && node !== previous.parentElement; node = node.parentElement) {
       expect(!node.style.opacity || Number(node.style.opacity) === 1).toBe(true);
     }
-    expect((previous.lastElementChild as HTMLElement).style.opacity).toBe("0.4");
+    expect((previous.lastElementChild as HTMLElement).style.opacity).toBe("0.35");
     result.rerender(mode(children, false));
     expect(screen.getByRole("button", { name: "Previous slide" })).toBe(previous);
-    expect(previous.style.opacity).toBe("0.4");
+    expect(previous.style.opacity).toBe("0.35");
   });
 
   it("retains complete Calendar selection and table stripe recipes when all material is unavailable", () => {

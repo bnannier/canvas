@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
 import Svg, { Line } from "react-native-svg";
 import { View, Text, useTheme, FILL, type ViewStyle } from "../../style/index.js";
+import { CHART_LOOK, axisLabel } from "./charts.styles.js";
 import { ScrubSurface } from "./chart-inspect.js";
 import { bandScale, estimateTextWidth, formatCompact, linearScale, niceTicks, type Band } from "./chart-math.js";
 
@@ -72,9 +73,12 @@ export interface CartesianFrameProps {
 const TOP_PAD = 8;
 // Height of the x-label band under the plot.
 const X_BAND = 20;
-// Tick label typography (the token text-xs step).
-const LABEL_SIZE = 12;
-const LABEL_LINE = 16;
+// Tick label typography: the hand-off's mono axis label at the 10 px floor.
+const LABEL_SIZE = CHART_LOOK.axisSize;
+const LABEL_LINE = CHART_LOOK.axisLine;
+// The hand-off labels every other category on its 12-month axes (a label per ~54 px of
+// its plot); a thinned axis keeps at least this much room per label.
+const MIN_X_SLOT = 44;
 
 export function CartesianFrame(props: CartesianFrameProps) {
   const { yExtent, xLabels, xDomain, plotHeight, compact, hideGrid, hideAxes, children, overlay, onBandScrub, selectedBand } = props;
@@ -89,6 +93,10 @@ export function CartesianFrame(props: CartesianFrameProps) {
   // measurement) plus breathing room, clamped so an extreme label cannot eat
   // the plot. Hidden axes drop the gutter entirely.
   const labels = ticks.map(formatValue);
+  // The hand-off labels every other gridline (0, the middle and the top of its five), so
+  // an axis of five or more ticks names the even ones counted from the bottom.
+  const labelled = (i: number): boolean => ticks.length < 5 || i % 2 === 0;
+  const axisInk = axisLabel(tokens);
   const widest = labels.reduce((m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)), 0);
   const gutter = hideAxes ? 0 : Math.min(64, Math.max(24, Math.ceil(widest) + 8));
 
@@ -111,7 +119,7 @@ export function CartesianFrame(props: CartesianFrameProps) {
   let xLabelStep = 1;
   if (xLabels && band && xLabels.length > 0 && band.step > 0) {
     const widestX = xLabels.reduce((m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)), 0);
-    xLabelStep = Math.max(1, Math.ceil((widestX + 6) / band.step));
+    xLabelStep = Math.max(1, Math.ceil(Math.max(widestX + 6, xLabels.length > 6 ? MIN_X_SLOT : 0) / band.step));
   }
 
   const ready = width > 0 && plotW > 0;
@@ -123,40 +131,36 @@ export function CartesianFrame(props: CartesianFrameProps) {
           <>
             {/* Y tick labels, right-aligned in the gutter, centered on their gridline. */}
             {!hideAxes
-              ? ticks.map((t, i) => (
-                  <Text
-                    key={`yl${i}`}
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      width: gutter - 8,
-                      top: TOP_PAD + y(t) - LABEL_LINE / 2,
-                      textAlign: "right",
-                      fontSize: LABEL_SIZE,
-                      lineHeight: LABEL_LINE,
-                      color: tokens["muted-foreground"],
-                    }}
-                    numberOfLines={1}
-                  >
-                    {labels[i]}
-                  </Text>
-                ))
+              ? ticks.map((t, i) =>
+                  labelled(i) ? (
+                    <Text
+                      key={`yl${i}`}
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        width: gutter - 6,
+                        top: TOP_PAD + y(t) - LABEL_LINE / 2,
+                        textAlign: "right",
+                        ...axisInk,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {labels[i]}
+                    </Text>
+                  ) : null,
+                )
               : null}
 
             {/* The plot: gridlines, baseline, then the mark layer. */}
             <View style={{ position: "absolute", left: gutter, top: TOP_PAD, width: plotW, height: plotH }}>
               <Svg width={plotW} height={plotH}>
+                {/* The hand-off's grid: dotted 2 4 hairlines, the 0 line solid. */}
                 {!hideGrid
                   ? ticks.map((t, i) => (
-                      <Line key={`g${i}`} x1={0} y1={y(t)} x2={plotW} y2={y(t)} stroke={tokens.border} strokeWidth={1} strokeDasharray="4,4" />
+                      <Line key={`g${i}`} x1={0} y1={y(t)} x2={plotW} y2={y(t)} stroke={tokens.border} strokeWidth={1} strokeDasharray={t === 0 ? undefined : CHART_LOOK.gridDash} />
                     ))
                   : null}
-                {/* Vertical gridlines only on a numeric x axis (scatter). */}
-                {!hideGrid && xTicksInfo
-                  ? xTicksInfo.ticks.map((t, i) => (
-                      <Line key={`gv${i}`} x1={x(t)} y1={0} x2={x(t)} y2={plotH} stroke={tokens.border} strokeWidth={1} strokeDasharray="4,4" />
-                    ))
-                  : null}
+                {/* The hand-off draws horizontal gridlines only, on a numeric x axis too. */}
                 {/* Baseline hairline, kept even when the grid is hidden. */}
                 {!hideAxes ? <Line x1={0} y1={plotH - 0.5} x2={plotW} y2={plotH - 0.5} stroke={tokens.border} strokeWidth={1} /> : null}
                 {/* Selection guide through the inspected category. */}
@@ -195,9 +199,7 @@ export function CartesianFrame(props: CartesianFrameProps) {
                         width: slot,
                         top: TOP_PAD + plotH + 4,
                         textAlign: "center",
-                        fontSize: LABEL_SIZE,
-                        lineHeight: LABEL_LINE,
-                        color: tokens["muted-foreground"],
+                        ...axisInk,
                       }}
                       numberOfLines={1}
                     >
@@ -216,9 +218,7 @@ export function CartesianFrame(props: CartesianFrameProps) {
                       width: 60,
                       top: TOP_PAD + plotH + 4,
                       textAlign: "center",
-                      fontSize: LABEL_SIZE,
-                      lineHeight: LABEL_LINE,
-                      color: tokens["muted-foreground"],
+                      ...axisInk,
                     }}
                     numberOfLines={1}
                   >

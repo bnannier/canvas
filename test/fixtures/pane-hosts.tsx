@@ -6,8 +6,8 @@ import { fireEvent, type RenderResult } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import {
-  Alert, Autocomplete, Avatar, AvatarGroup, Badge, BarList, BoxPlot, BulletChart, Button, Calendar, CandlestickChart, Card,
-  Carousel, Chart, Chip, CodeBlock, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, Histogram, Icon, Input,
+  ActionPanel, Alert, Autocomplete, Avatar, AvatarGroup, Badge, BarList, BoxPlot, BulletChart, Button, Calendar, CandlestickChart, Card,
+  Carousel, Chart, Chip, CodeBlock, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, GridList, Histogram, Icon, Input,
   InputOTP, Kbd, LineChart, Listbox, MediaObject, MetricBreakdown, Navbar, Pagination, PhoneInput, Progress, RadarChart, Radio,
   RadioGroup, RangeAreaChart, ScatterPlot, Select, ServiceHealthList, Sidebar, Skeleton, Slider, Stats, Stepper, Steps,
   TabBar, Tabs, Textarea, Tooltip, Treemap, Video, WaterfallChart,
@@ -30,6 +30,7 @@ export interface PaneHost {
 
 const days = Array.from({ length: 45 }, () => ({}));
 export const PANE_HOSTS: PaneHost[] = [
+  { file: "src/molecules/action-panels/action-panels.shared.tsx", name: "ActionPanel", node: <><ActionPanel title="Export data" description="Download a CSV." actionLabel="Export" /><ActionPanel destructive title="Delete project" description="This cannot be undone." actionLabel="Delete" /></> },
   { file: "src/molecules/card/card.reference.tsx", name: "Reference Card", node: <Card referenceDetail referenceKey="CORE-1" title="Reference" description="Ready · Core" referenceSource="Jira" /> },
   { file: "src/atoms/autocomplete/autocomplete.shared.tsx", name: "Autocomplete", node: <Autocomplete label="Assigned to" options={["Ada Lovelace", "Grace Hopper"]} /> },
   { file: "src/atoms/avatar/avatar.shared.tsx", name: "Avatar tile and group overflow", node: <><Avatar /><AvatarGroup max={1}><Avatar name="Ada Lovelace" /><Avatar name="Grace Hopper" /></AvatarGroup></> },
@@ -77,6 +78,7 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/molecules/alert/alert.shared.tsx", name: "Alert", node: <><Alert title="Heads up" description="Maintenance on Sunday." /><Alert success title="Saved" description="All changes stored." /></> },
   { file: "src/molecules/card/card.shared.tsx", name: "Card", node: <><Card onPress={() => {}}><Text>Content</Text></Card><Card selected onPress={() => {}}><Text>Picked</Text></Card></> },
   { file: "src/molecules/media-objects/media-objects.shared.tsx", name: "MediaObject", node: <MediaObject avatar="RC" title="Rachel Chen" description="Lead" body="Reviewed the change." bordered onPress={() => {}} /> },
+  { file: "src/molecules/grid-lists/grid-lists.shared.tsx", name: "GridList gallery tile", node: <GridList gallery onPressItem={() => {}} items={[{ title: "IMG_1000.jpg", subtitle: "2.4 MB", color: "primary" }, { title: "notes.txt" }]} /> },
   { file: "src/molecules/phone-input/phone-input.shared.tsx", name: "PhoneInput", node: <PhoneInput label="Phone number" /> },
   { file: "src/molecules/stats/stats.shared.tsx", name: "Stats", node: <Stats onPressItem={() => {}} items={[{ label: "Active users", value: "71,897" }]} /> },
   { file: "src/organisms/calendar/calendar.shared.tsx", name: "Calendar", node: <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} /> },

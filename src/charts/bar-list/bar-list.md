@@ -1,6 +1,6 @@
 # BarList
 
-Ranked label and value rows, each with a color swatch, a truncating label, a right-aligned value, an optional delta, and a proportional track bar.
+Ranked label and value rows: each row is a proportional tone wash behind a truncating label, with a right-aligned mono value and an optional delta.
 
 Bars size against the largest row by default (the ranking idiom); `share` sizes them against the sum of the rows and appends percent readouts (the composition idiom). Rows become drill-in buttons with `onPressItem`. For comparing magnitudes on a shared axis without deltas or shares, reach for the bar `Chart` and its `horizontal` mode instead.
 
@@ -64,7 +64,7 @@ Bars size against the largest row by default (the ranking idiom); `share` sizes 
 
 ### BarList
 
-**Do** - Let the component own the whole row anatomy: swatch, label, value, delta, and the proportional bar.
+**Do** - Let the component own the whole row anatomy: label, value, delta, and the proportional wash.
 
 ```tsx
 <BarList

@@ -49,7 +49,11 @@ export interface SwatchProps {
   mint?: boolean;
   rose?: boolean;
   amber?: boolean;
-  /** Palette picker: this palette is the one in force (draws the selection ring). */
+  /**
+   * The sample is the chosen one: draws the selection ring (a 2 px gap in the page color,
+   * then a 2 px band). On a plain sample the band is the accent and the name says
+   * "selected"; on a palette picker it is the one in force and the radio is checked.
+   */
   selected?: boolean;
   /** Palette picker: pick this palette. */
   onPress?: () => void;
@@ -59,7 +63,7 @@ export interface SwatchProps {
   value?: string;
   /** Secondary mono line under the value, for a second notation of the same color (an oklch value, a legacy alias). */
   detail?: string;
-  // Size (pick one; default 56). Sets the block's edge, or its height when `block`.
+  // Size (pick one; default 48). Sets the block's edge, or its height when `block`.
   small?: boolean;
   large?: boolean;
   /** Circle instead of the default rounded square. Keeps the 1:1 footprint, so it wins over `block`'s stretch. */
@@ -114,11 +118,10 @@ export function stretchesOf(p: Pick<SwatchProps, "block" | "circle" | "inline">)
   return p.block === true && !p.circle && !p.inline;
 }
 
-// The label column's type scale, from the kit's type scale (small 14/20 for the name,
-// tiny 12/16 for the two mono lines). It does NOT scale with the size axis: a color
-// sheet mixes sample sizes down one page and the captions have to keep one rhythm.
-const NAME_TYPE = { fontSize: 14, lineHeight: 20 };
-const MONO_TYPE = { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16 };
+// The value lines' face. The type itself (size, line box, weight) is the skin's, and it
+// does NOT scale with the size axis: a color sheet mixes sample sizes down one page and
+// the captions have to keep one rhythm.
+const MONO_TYPE = { fontFamily: MONO_FONT };
 
 /** The text of a name node, when it is text at all (so it can be read into the accessible name). */
 function textOf(node: ReactNode): string | null {
@@ -135,15 +138,16 @@ function textOf(node: ReactNode): string | null {
  * `<Swatch color="#4f39f6" />` still announces something instead of shipping an
  * unnamed image (WCAG 1.1.1).
  */
-function dataName(name: string | null, value?: string, detail?: string, color?: string): string {
+function dataName(name: string | null, value?: string, detail?: string, color?: string, selected?: boolean): string {
   const parts = [name, value, detail].filter((p): p is string => p != null && p !== "");
-  return parts.length > 0 ? parts.join(", ") : (color ?? "");
+  const base = parts.length > 0 ? parts.join(", ") : (color ?? "");
+  return selected ? `${base}, selected` : base;
 }
 
 /** Build a Swatch from a platform skin. */
 export function createSwatch(skin: SwatchSkin) {
   return function Swatch(props: SwatchProps) {
-    const { color, children, value, detail, circle, inline, block, accessibilityLabel, testID, style } = props;
+    const { color, children, value, detail, circle, inline, block, selected, accessibilityLabel, testID, style } = props;
     const { tokens } = useTheme();
     const size = sizeOf(props);
     const edge = skin.box[size];
@@ -158,7 +162,7 @@ export function createSwatch(skin: SwatchSkin) {
       children != null && name == null && accessibilityLabel == null,
       "[canvas] <Swatch />: `children` is a node, not text, so the name cannot be read into the accessible name; pass `accessibilityLabel`.",
     );
-    const label = accessibilityLabel ?? dataName(name, value, detail, color);
+    const label = accessibilityLabel ?? dataName(name, value, detail, color, selected);
 
     // `circle` owns the shape, so it keeps the 1:1 footprint even under `block`: a
     // stretched circle is a pill, not a circle. `inline` puts the label BESIDE the
@@ -167,6 +171,8 @@ export function createSwatch(skin: SwatchSkin) {
     // block keeps its square edge and only the ROOT widens, so the label column still
     // gets the full width.
     const stretch = stretchesOf(props);
+    // The value lines' ink: the hand-off's tertiary `--tx3`.
+    const subtle = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
     const hasLabel = children != null || value != null || detail != null;
 
     return (
@@ -180,7 +186,7 @@ export function createSwatch(skin: SwatchSkin) {
             alignSelf: block ? "stretch" : "flex-start",
             flexDirection: inline ? "row" : "column",
             alignItems: inline ? "center" : "flex-start",
-            gap: skin.gap,
+            gap: inline ? skin.inlineGap : skin.gap,
           },
           style,
         ]}
@@ -202,6 +208,9 @@ export function createSwatch(skin: SwatchSkin) {
               // schemes and never competes with the fill.
               borderWidth: StyleSheet.hairlineWidth,
               borderColor: tokens.border,
+              // The hand-off's selection ring: a 2 px gap in the page color, then 2 px of
+              // the accent, drawn outside the chip so the layout never moves.
+              boxShadow: selected ? `0 0 0 2px ${tokens.background}, 0 0 0 4px ${tokens.primary}` : undefined,
             },
             skin.shape,
           ]}
@@ -209,13 +218,13 @@ export function createSwatch(skin: SwatchSkin) {
         {hasLabel ? (
           <View style={{ flexShrink: 1, gap: skin.lineGap }}>
             {children != null ? (
-              <Text style={[skin.name, NAME_TYPE, { color: tokens.foreground }]}>{children}</Text>
+              <Text style={[skin.name, { color: tokens.foreground }]}>{children}</Text>
             ) : null}
             {value != null ? (
-              <Text style={[skin.value, MONO_TYPE, { color: tokens["muted-foreground"] }]}>{value}</Text>
+              <Text style={[skin.value, MONO_TYPE, { color: subtle }]}>{value}</Text>
             ) : null}
             {detail != null ? (
-              <Text style={[skin.detail, MONO_TYPE, { color: tokens["muted-foreground"] }]}>{detail}</Text>
+              <Text style={[skin.detail, MONO_TYPE, { color: subtle }]}>{detail}</Text>
             ) : null}
           </View>
         ) : null}

@@ -1,27 +1,21 @@
 import { type ViewStyle } from "react-native";
-import { shadow, shape } from "../../style/index.js";
+import { shape } from "../../style/index.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type MediaObjectSkin } from "./media-objects.shared.js";
 
-// Per-OS MediaObject skins. MediaObject is a "Light" treatment: identical structure
-// and semantic colors (those live in media-objects.shared.tsx); only corner radius,
-// density/spacing, type tracking, shadow/elevation, and press feedback shift per OS.
+// Per-OS MediaObject skins. MediaObject takes the Canvas v4 hand-off's media object
+// (`K.def('media-objects')` in tools/v4/handoff/cv-kit-data.js, with its code-driven form
+// in cv-kit-code3.js `O('media-objects')` and the icon lead in cv-kit-code8.js). Neither
+// iOS nor Android ships a media-object control (PLATFORM-REFERENCES.md, media-objects
+// row), so every platform draws the hand-off's parts and the native skins differ only in
+// the face, the press feedback and the platform's minimum tap height on a bare row.
 //
-// Reference (PLATFORM-REFERENCES.md, media-objects row):
-// - iOS: no native media-object control; the layout is composed ad hoc as a list row
-//   with a leading image (Apple's named "Lockups" is tvOS only). So the iOS skin keeps
-//   the structure and applies SF/HIG conventions only: the iOS card corner on the
-//   bordered group, no shadow (HIG groups are flat with a hairline), slightly tighter SF type
-//   tracking, and an opacity dim on press (~0.8).
-// - Android: no native media-object control; the closest M3 idiom is a list item with a
-//   leading avatar, icon, or video thumbnail. So the Android skin keeps the structure and
-//   applies Material 3 conventions only: more rounding (the M3 medium container corner on
-//   the bordered card and the icon box), M3 type roles (title-small 14/20/500/+0.1,
-//   body-medium 14/20/400/+0.25, body-small 12/16/400/+0.4), an M3 ELEVATED card
-//   (level-1 elevation, no outline), denser list-row spacing (gap 16), and a native
-//   ripple on press (so the opacity dim is suppressed).
-// - Web: the card corner on the bordered surface, gap 12, no shadow, the web type scale,
-//   an opacity dim on press.
+//   A row 12 apart (10 compact). `bordered` is the tile corner on a 1px `border` hairline
+//   over the `card` fill, 12 by 14 in, no shadow. The lead is a 40px avatar (28 compact)
+//   or a 40px icon box (28 compact) at the emblem corner in the accent's soft wash with
+//   an 18px glyph (13) in the accent ink. The title is 500 14 (13 compact), the
+//   description 400 12 in the subtle ink, the meta 400 12 mono in the subtle ink.
 
 export type Align = "center" | "start";
 export type Direction = "reversed" | "leading";
@@ -39,116 +33,60 @@ export const ALIGN_ITEMS: Record<Align, ViewStyle["alignItems"]> = {
   start: "flex-start",
 };
 
-// The icon box's corner and the compact row's icon box: Dark Factory's. Neither platform
-// ships a media-object control, so the iOS skin draws these parts as the web does (with
-// Apple's continuous curve); Android draws Material 3's icon boxes.
-const ICON_BOX_CORNER: ViewStyle = { borderRadius: shape.web.control };
-const COMPACT_ICON_BOX: ViewStyle = { width: 28, height: 28, borderRadius: platformShape.web.key };
+// The icon box at the emblem corners (the hand-off's 28% of its side: 11 on 40, 8 on 28).
+const ICON_BOX: ViewStyle = { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: platformShape.web.emblem };
+const COMPACT_ICON_BOX: ViewStyle = { width: 28, height: 28, borderRadius: platformShape.web.emblemSmall };
 
-// ── Web (the bordered card and the leading icon box) ───────────────────────────────
+// ── Web ────────────────────────────────────────────────────────────────────────────
 
 export const webSkin: MediaObjectSkin = {
-  // flex-row(-reverse) + gap-3 + items-* (the flexDirection/alignItems are composed on top).
+  // flex-row(-reverse) + the 12 gap + items-* (the flexDirection/alignItems are composed on top).
   containerBase: { gap: 12 },
-  // bordered: the card corner, a border on the card fill, padding 20.
-  borderedSurface: () => ({ borderRadius: shape.web.card, borderWidth: 1, padding: 20 }),
-  // Leading icon box: a 40px centered box at the control corner on a primary/15 tint.
-  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 40, height: 40, ...ICON_BOX_CORNER },
-  // Glyph: text-base font-semibold text-primary.
-  iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600" },
-  // Content column: min-w-0 flex-1 gap-0.5.
-  content: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 2 },
-  // Title: text-sm font-semibold.
-  title: { fontSize: 14, lineHeight: 20, fontWeight: "600" },
-  // Description: text-xs muted.
-  description: { fontSize: 12, lineHeight: 16 },
-  // Body: 14/28.
-  body: { fontSize: 14, lineHeight: 28 },
-  // Meta: shrink-0 text-xs muted.
-  meta: { flexShrink: 0, fontSize: 12, lineHeight: 16 },
+  // bordered: the tile corner, a border on the card fill, 12 by 14 in.
+  borderedSurface: () => ({ borderRadius: shape.web.tile, borderWidth: 1, paddingVertical: 12, paddingHorizontal: 14 }),
+  iconBox: ICON_BOX,
+  // The glyph: 18 (the hand-off's 45% of the box).
+  iconGlyph: { fontSize: 18, lineHeight: 24, fontWeight: "600" },
+  // Content column: min-w-0 flex-1, its lines touching.
+  content: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 0 },
+  title: { fontSize: 14, lineHeight: 20, fontWeight: "500" },
+  description: { fontSize: 12, lineHeight: 16, fontWeight: "400" },
+  // Body: 14/21.
+  body: { fontSize: 14, lineHeight: 21 },
+  // Meta: the 400 12 mono caption.
+  meta: { flexShrink: 0, fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400" },
   // Trailing action wrapper: shrink-0.
   actionBox: { flexShrink: 0 },
   pressedOpacity: 0.9,
   // Web keeps its content-height rows; the tappable target is a mouse pointer, so no
   // minimum tap height is applied (0 = no change to the established web layout).
   minTarget: 0,
-  // Compact (menu-header) density: tighter gap-2 row, a 28px `small` leading avatar,
-  // and the type stepped down one step (title text-[13]/semibold, description text-[11]).
+  // Compact (menu-header) density: a 10 gap, a 28px `small` leading avatar or icon box,
+  // the title 500 13.
   compact: {
-    containerBase: { gap: 8 },
+    containerBase: { gap: 10 },
     iconBox: COMPACT_ICON_BOX,
-    title: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
-    description: { fontSize: 11, lineHeight: 14 },
+    iconGlyph: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
+    title: { fontSize: 13, lineHeight: 18, fontWeight: "500" },
+    description: { fontSize: 12, lineHeight: 16, fontWeight: "400" },
   },
 };
 
-// ── iOS (SF / HIG conventions; flat inset-group surface, tightened SF tracking) ──────
+// ── iOS: the web parts in SF Pro, the HIG press dim and 44pt row ────────────────────
 
 export const iosSkin: MediaObjectSkin = {
-  containerBase: { gap: 12 },
-  // The iOS card corner (a grouped surface) with Apple's continuous (superellipse)
-  // corner curve, flat (no shadow; HIG groups carry a hairline). borderCurve is an
-  // iOS-only RN style prop (device-only visual; a no-op elsewhere and in the web docs
-  // preview). The icon box shares the web's corner (no iOS control draws one).
-  borderedSurface: () => ({ borderRadius: shape.ios.card, borderCurve: "continuous", borderWidth: 1, padding: 16 }),
-  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, ...ICON_BOX_CORNER, borderCurve: "continuous" },
-  // SF Pro Text tracking at 16pt = -0.31 (Apple tracking table).
-  iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.31 },
-  content: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 2 },
-  // SF Pro Text tracking: 14pt = -0.15 (title/body), 12pt = 0 (description/meta).
-  title: { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15 },
-  description: { fontSize: 12, lineHeight: 16, letterSpacing: 0 },
-  body: { fontSize: 14, lineHeight: 28, letterSpacing: -0.15 },
-  meta: { flexShrink: 0, fontSize: 12, lineHeight: 16, letterSpacing: 0 },
-  actionBox: { flexShrink: 0 },
+  ...webSkin,
   // HIG press: opacity dim ~0.8.
   pressedOpacity: 0.8,
   // HIG minimum tappable area 44x44pt (bare row backstop).
   minTarget: 44,
-  // Compact (menu-header) density: tighter gap 8, a 28px `small` leading avatar, and SF
-  // type stepped down one step. SF Pro Text tracking: 13pt = -0.08, 11pt = +0.06. The
-  // compact icon box is the web's (no iOS control draws one).
-  compact: {
-    containerBase: { gap: 8 },
-    iconBox: { ...COMPACT_ICON_BOX, borderCurve: "continuous" },
-    title: { fontSize: 13, lineHeight: 18, fontWeight: "600", letterSpacing: -0.08 },
-    description: { fontSize: 11, lineHeight: 14, letterSpacing: 0.06 },
-  },
 };
 
-// ── Android (Material 3 list-item conventions; more rounding, M3 tracking, elevation) ─
+// ── Android: the web parts in Roboto, the ripple and the 48dp row ───────────────────
 
 export const androidSkin: MediaObjectSkin = {
-  // Denser M3 list-row spacing.
-  containerBase: { gap: 16 },
-  // M3 medium container radius (12) as an M3 ELEVATED card: level-1 elevation (the `sm`
-  // preset = elevation 1) and NO visible outline (M3 never combines an outline with
-  // nonzero elevation, mirroring the kit Card fix). The 1dp border WIDTH is kept but
-  // painted transparent (see borderedBorderColor) so content metrics stay identical.
-  borderedSurface: (t) => ({ borderRadius: shape.android.card, borderWidth: 1, padding: 16, ...shadow("sm", t) }),
-  // Elevation separates the M3 elevated card, so the outline is transparent.
-  borderedBorderColor: () => "transparent",
-  // M3 medium container radius on the leading icon box.
-  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: platformShape.android.iconBox },
-  iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600" },
-  content: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 2 },
-  // M3 title-small: 14/20/500/+0.1 (500 is the role weight; 600 is not an M3 weight).
-  title: { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1 },
-  // M3 body-small: 12/16/400/+0.4 (description/meta); M3 body-medium: 14/20/400/+0.25 (body).
-  description: { fontSize: 12, lineHeight: 16, letterSpacing: 0.4 },
-  body: { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 },
-  meta: { flexShrink: 0, fontSize: 12, lineHeight: 16, letterSpacing: 0.4 },
-  actionBox: { flexShrink: 0 },
-  // The native ripple carries press feedback; pressDim suppresses the opacity dim on Android.
-  pressedOpacity: 0.9,
-  // M3 minimum touch target 48x48dp (bare row backstop).
+  ...webSkin,
+  // M3 minimum touch target 48x48dp (bare row backstop); the native ripple carries the
+  // press feedback (pressDim suppresses the opacity dim on Android).
   minTarget: 48,
-  // Compact (menu-header) density: tighter gap 12, a 28px `small` leading avatar, and M3
-  // type stepped down (title 13/500/+0.1, description M3 label-small 11/16/+0.5).
-  compact: {
-    containerBase: { gap: 12 },
-    iconBox: { width: 28, height: 28, borderRadius: platformShape.android.compactIconBox },
-    title: { fontSize: 13, lineHeight: 18, fontWeight: "500", letterSpacing: 0.1 },
-    description: { fontSize: 11, lineHeight: 16, letterSpacing: 0.5 },
-  },
 };

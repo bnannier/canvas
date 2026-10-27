@@ -3,6 +3,7 @@ import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react
 import { View, useTheme, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 import { ICONS, NAMES, type Shape, type IconGlyphProps, type IconName } from "./icon.glyphs.js";
 import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
+import { primaryText } from "../../style/primary-text.js";
 
 // Shared Icon shell. The whole glyph set, the boolean-prop axes (name + color),
 // the semantic color logic, and the SVG presentation live here once. Icon is a
@@ -120,8 +121,11 @@ export function nameOf(p: IconProps): string {
 
 // First-match color precedence; defaults to foreground. Every tone reads the theme's
 // roles: `success` is the success role, the solid color a success Alert gives its icon.
+// `primary` is the accent's TEXT ink, as the v4 hand-off's Icon renderer paints it
+// (`--ion-tx`, `K.def('icon')` in tools/v4/handoff/cv-kit-controls.js), so a primary glyph
+// matches the primary label beside it and clears the text floor on every bed.
 export function strokeOf(p: IconProps, tokens: ColorTokens): string {
-  if (p.primary) return tokens.primary;
+  if (p.primary) return primaryText(tokens);
   if (p.primaryForeground) return tokens["primary-foreground"];
   if (p.destructive) return tokens.destructive;
   if (p.success) return tokens.success;

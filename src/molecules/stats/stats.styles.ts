@@ -1,37 +1,24 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { statusColors, shadow, alpha, surfaceRipple, tabularNums, shape, type ColorTokens } from "../../style/index.js";
+import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
 import { SPARK_STRIP_HEIGHT } from "../../charts/sparkline/sparkline.styles.js";
 import { type StatsSkin } from "./stats.shared.js";
 
-// Co-located Stats skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so the surfaces follow light/dark). Stats is a
-// content surface: card items use static frost in glass mode and tokens.card
-// for the solid fallback; plain items inherit their host. The delta tone
-// uses the Tailwind palette (a 600 hue in light, a 400 hue in dark), branched on
-// the active scheme; that semantic color logic lives once in stats.shared.tsx, so
-// the skin carries only the per-OS-varying pieces.
+// Co-located Stats skins, one per platform. Stats takes the Canvas v4 hand-off's stat tiles
+// (`K.def('stats')` in tools/v4/handoff/cv-kit-data.js, with its code-driven form in
+// cv-kit-code3.js `O('stats')`). Neither iOS nor Android ships a stat-tile control
+// (PLATFORM-REFERENCES.md), so every platform draws the hand-off's tile and the native skins
+// share the web skin's parts, differing only in the face (the value in the platform's own
+// face rather than the display face) and the press feedback (a dim on iOS, the ripple on
+// Android). The semantic delta tone lives once in stats.shared.tsx.
 //
-// Stats is a "Light" platform treatment: ONE structure (a wrapping row of
-// label/value/delta metric stacks, optionally each in its own surface), with only
-// small per-OS touches: corner radius, density/spacing, type tracking, shadow vs
-// M3 outline, and the press feedback on a tappable item. Neither iOS nor Android
-// ships a stat-tile control, so the native skins keep the structure and apply only
-// platform conventions; they do NOT invent a new shape.
-//   Web: a bordered card surface at the card corner (1px `border`, `card` fill, the
-//     default shadow, padding 24), the plain parent the same, gaps 16/24, a 36/400
-//     tabular value, a 16 muted label, a 12/500 delta. Press = opacity dim (0.9).
-//   iOS (HIG / SF): iOS has no stat-tile control, so this stays a card-like inset
-//     surface following SF conventions: the iOS card corner, continuous
-//     (superellipse), the same hairline border with NO shadow (iOS
-//     inset-grouped surfaces read flat), slightly tighter density, SF tracking
-//     tightened on the value (-0.5), and SF Pro Text table tracking on the rest
-//     (16pt -0.31, 14pt -0.15, 12pt 0). Press = opacity dim (~0.8).
-//   Android (Material 3 card): M3 has no stat component, so this stays an M3
-//     outlined card: the Android card corner, a 1px outline and NO shadow (M3 outlined
-//     cards are flat), M3 type roles (value headline-small 24/32/400/0, title
-//     title-medium 16/24/500/+0.15 or title-small 14/20/500/+0.1, label body-medium
-//     14/20/400/+0.25, delta label-medium 12/16/500/+0.5). Press = android_ripple
-//     via surfaceRipple (neutral surface state layer); no opacity dim.
+//   Tile (the default): the `card` fill on a 1 px `border` hairline at the card corner
+//     under the small shadow, an 18 inset (12 compact), its lines 6 apart; tiles 12 apart.
+//   Plain: one bordered `card` surface at the card corner with no shadow, the tiles set
+//     edge to edge inside it, each after the first behind a 1 px `border` rule.
+//   Label: 500 12 in the subtle ink. Value: 600 28 (20 compact, 36 large), tracked -0.02em,
+//     tabular, in the display face on the web. Delta: 500 12 mono, the success or error
+//     ink, the subtle ink when steady. Title: 500 15, 10 above the tiles.
 
 export type Surface = "card" | "plain";
 
@@ -41,18 +28,18 @@ export const row: ViewStyle = { flexDirection: "row", flexWrap: "wrap" };
 
 // --- semantic / platform-neutral pieces (shared by every skin) --------------
 
-// Per-item minimum width and growth, by surface. Card items hold a wider floor
-// and grow (flex-1 min-w-48); plain stacks pack tighter (min-w-28). Identical
-// on every platform (a layout contract, not a per-OS touch).
+// Per-item minimum width and growth: every tile grows from a 150 floor (the hand-off's
+// `minmax(150px, 1fr)` columns), on either surface. Identical on every platform (a layout
+// contract, not a per-OS touch).
 export const item: Record<Surface, ViewStyle> = {
-  card: { flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 192 },
-  plain: { minWidth: 112 },
+  card: { flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 150 },
+  plain: { flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 150 },
 };
 
 // The trend strip an item renders when it carries `spark` data: it sits below the
 // value/delta and spans the full metric width (so the bars fill the stack rather
 // than a fixed 120px). A layout contract shared by every skin, like `row`/`item`.
-export const sparkStrip: ViewStyle = { marginTop: 12 };
+export const sparkStrip: ViewStyle = { marginTop: 6 };
 
 // The composition strip an item renders when it carries `share`: the same slot,
 // the same full width, and the SAME RESERVED HEIGHT as the trend strip, with the
@@ -71,7 +58,7 @@ export const sparkStrip: ViewStyle = { marginTop: 12 };
 // unfinished component rather than as a deliberate one. Reserving the trend
 // strip's height for the composition strip keeps every card in the row filled to
 // the same line.
-export const shareStrip: ViewStyle = { marginTop: 12, width: "100%", height: SPARK_STRIP_HEIGHT, justifyContent: "flex-end" };
+export const shareStrip: ViewStyle = { marginTop: 6, width: "100%", height: SPARK_STRIP_HEIGHT, justifyContent: "flex-end" };
 
 // The metric's header row, rendered only when the item carries an icon or a
 // control: the label on the left, the glyph and control opposite it. A metric with
@@ -89,165 +76,70 @@ export function deltaTone(tokens: ColorTokens, down: boolean): TextStyle {
   return { color: statusColors(tokens, down ? "error" : "success").ink };
 }
 
-// Dense value-first anatomy shared wherever no platform stat control exists.
-const DENSE = {
-  denseCard: (tokens: ColorTokens, large: boolean): ViewStyle => ({
-    borderRadius: large ? shape.web.card : shape.web.tile, backgroundColor: tokens.card,
-    paddingTop: large ? 16 : 13, paddingRight: large ? 18 : 14,
-    paddingBottom: large ? 14 : 12, paddingLeft: large ? 18 : 14,
-    ...shadow("sm", tokens),
-  }),
-  denseValue: (tokens: ColorTokens, large: boolean): TextStyle => ({
-    fontSize: large ? 24 : 18, lineHeight: large ? 26.4 : 19.8,
-    fontWeight: large ? "700" : "800", letterSpacing: large ? -0.48 : -0.36,
-    color: tokens.foreground,
-  }),
-  denseLabel: (tokens: ColorTokens, large: boolean): TextStyle => ({
-    marginTop: large ? 6 : 4, fontSize: large ? 12 : 10.5,
-    lineHeight: large ? 15.6 : 13.65, fontWeight: large ? "700" : "600",
-    color: large ? tokens.foreground : tokens["muted-foreground"],
-  }),
-  denseDescription: (tokens: ColorTokens): TextStyle => ({ marginTop: 3, fontSize: 11, lineHeight: 14.85, fontWeight: "500", color: tokens["muted-foreground"] }),
-};
+// ---- The hand-off's measures, shared by every skin -----------------------------
 
-// ---------- Web: the bordered stat card ----------
-export const webSkin: StatsSkin = {
-  ...DENSE,
-  // The stat card: the card corner, a soft hairline, the ambient shade, a 24px
-  // inset.
-  cardSurface: (tokens: ColorTokens): ViewStyle => ({
+/** The tile inset, by density. */
+export const TILE_PADDING = { default: 18, compact: 12 } as const;
+/** The space between a tile's lines, and between tiles. */
+export const TILE_RHYTHM = 6;
+export const TILE_GAP = 12;
+/** The headline figure's size, by surface. */
+export const VALUE_SIZE = { default: 28, compact: 20, large: 36 } as const;
+
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
+
+const tile = (tokens: ColorTokens, padding: number): ViewStyle => ({
+  borderRadius: shape.web.card,
+  borderWidth: 1,
+  borderColor: tokens.border,
+  backgroundColor: tokens.card,
+  padding,
+  gap: TILE_RHYTHM,
+  ...shadow("sm", tokens),
+});
+
+// The figure: 600, tracked -0.02em, tabular so a value that updates in place keeps its
+// width. Set solid (line 1) on the web; the native faces keep a little leading so their
+// glyphs do not clip.
+const value = (size: number, fontFamily: string | undefined, tokens: ColorTokens): TextStyle => ({
+  fontSize: size,
+  lineHeight: fontFamily ? size : Math.round(size * 1.2),
+  fontWeight: "600",
+  letterSpacing: -size * 0.02,
+  ...(fontFamily ? { fontFamily } : null),
+  ...tabularNums(),
+  color: tokens.foreground,
+});
+
+const label = (tokens: ColorTokens): TextStyle => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: subtle(tokens) });
+
+const skinAt = (fontFamily: string | undefined, pressedOpacity: number | null, ripple: StatsSkin["ripple"]): StatsSkin => ({
+  cardSurface: (tokens) => tile(tokens, TILE_PADDING.default),
+  // Compact is the tighter tile (12 inset, a 20 figure), large the 36 figure on the default tile.
+  denseCard: (tokens, large) => tile(tokens, large ? TILE_PADDING.default : TILE_PADDING.compact),
+  denseValue: (tokens, large) => value(large ? VALUE_SIZE.large : VALUE_SIZE.compact, fontFamily, tokens),
+  denseLabel: (tokens) => label(tokens),
+  denseDescription: (tokens) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: tokens["muted-foreground"] }),
+  plainContainer: (tokens) => ({
     borderRadius: shape.web.card,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
-    padding: 24,
-    ...shadow("DEFAULT", tokens),
-  }),
-  plainContainer: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: shape.web.card,
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-    padding: 24,
-    ...shadow("DEFAULT", tokens),
-  }),
-  // gap-4 (cards) / gap-6 (plain)
-  rowGap: { card: { gap: 16 }, plain: { gap: 24 } },
-  // Section titles are Title/H6: 20 regular (card) / Label/Medium 16 medium (plain)
-  title: (tokens: ColorTokens, surface: Surface): TextStyle =>
-    surface === "card"
-      ? { fontSize: 20, lineHeight: 30, fontWeight: "400", color: tokens.foreground, marginBottom: 12 }
-      : { fontSize: 16, lineHeight: 24, fontWeight: "500", color: tokens.foreground, marginBottom: 16 },
-  // The stat label is Paragraph/Medium in the muted ink
-  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 16, lineHeight: 24, color: tokens["muted-foreground"] }),
-  // The headline number is Title/H4: 36 at the regular weight, no tracking
-  valueText: (tokens: ColorTokens): TextStyle => ({
-    marginTop: 8,
-    fontSize: 36,
-    lineHeight: 44,
-    fontWeight: "400",
-    // Tabular figures: a headline number that updates in place must not
-    // change width as its digits change, and a column of Stats cards should
-    // line its values up.
-    ...tabularNums(),
-    color: tokens.foreground,
-  }),
-  // mt-2 text-xs font-medium (tone color layered on top by the shell)
-  deltaBase: { marginTop: 8, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums() },
-  pressedOpacity: 0.9,
-  ripple: (tokens) => ({ color: alpha(tokens.foreground, 0.1), borderless: false }),
-};
-
-// ---------- iOS (HIG / SF): inset card-like surface, flat, SF tracking ----------
-export const iosSkin: StatsSkin = {
-  ...DENSE,
-  cardSurface: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: shape.ios.card,
-    // The superellipse corner curve of Apple's inset-grouped surfaces (iOS-only prop).
-    borderCurve: "continuous",
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-    padding: 18,
-    // iOS inset-grouped surfaces read flat (no drop shadow).
-  }),
-  plainContainer: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: shape.ios.card,
-    borderCurve: "continuous",
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-    padding: 22,
-  }),
-  rowGap: { card: { gap: 12 }, plain: { gap: 22 } },
-  // SF Pro Text tracking table: 16pt -0.31, 14pt -0.15, 12pt 0.
-  title: (tokens: ColorTokens, surface: Surface): TextStyle =>
-    surface === "card"
-      ? { fontSize: 14, lineHeight: 20, fontWeight: "600", letterSpacing: -0.15, color: tokens.foreground, marginBottom: 12 }
-      : { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.31, color: tokens.foreground, marginBottom: 16 },
-  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, letterSpacing: -0.15, color: tokens["muted-foreground"] }),
-  valueText: (tokens: ColorTokens): TextStyle => ({
-    marginTop: 4,
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: "600",
-    letterSpacing: -0.5,
-    // Tabular figures: a headline number that updates in place must not
-    // change width as its digits change, and a column of Stats cards should
-    // line its values up.
-    ...tabularNums(),
-    color: tokens.foreground,
-  }),
-  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums(), letterSpacing: 0 },
-  pressedOpacity: 0.8,
-  ripple: null,
-};
-
-// ---------- Android (Material 3): outlined card, flat, M3 tracking, ripple ----------
-export const androidSkin: StatsSkin = {
-  ...DENSE,
-  cardSurface: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: shape.android.card,
-    // Clip the Material ripple to the rounded outline (a tappable card carries a bounded android_ripple).
     overflow: "hidden",
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-    padding: 16,
-    // M3 outlined cards are flat (no elevation).
   }),
-  plainContainer: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: shape.android.card,
-    borderWidth: 1,
-    borderColor: tokens.border,
-    backgroundColor: tokens.card,
-    padding: 24,
-  }),
-  rowGap: { card: { gap: 12 }, plain: { gap: 24 } },
-  // M3 type roles: title-small (card) 14/20/500/+0.1, title-medium (plain) 16/24/500/+0.15.
-  title: (tokens: ColorTokens, surface: Surface): TextStyle =>
-    surface === "card"
-      ? { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: tokens.foreground, marginBottom: 12 }
-      : { fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: tokens.foreground, marginBottom: 16 },
-  // M3 body-medium: 14/20/400/+0.25.
-  labelText: (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.25, color: tokens["muted-foreground"] }),
-  // M3 headline-small: 24/32/400/0.
-  valueText: (tokens: ColorTokens): TextStyle => ({
-    marginTop: 4,
-    fontSize: 24,
-    lineHeight: 32,
-    fontWeight: "400",
-    letterSpacing: 0,
-    // Tabular figures: a headline number that updates in place must not
-    // change width as its digits change, and a column of Stats cards should
-    // line its values up.
-    ...tabularNums(),
-    color: tokens.foreground,
-  }),
-  // M3 label-medium: 12/16/500/+0.5.
-  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums(), letterSpacing: 0.5 },
-  pressedOpacity: null,
-  // Bounded neutral state layer from the shared ripple helper (the cardSurface's
-  // overflow:"hidden" clips it to the rounded outline).
-  ripple: surfaceRipple,
-};
+  plainItem: (tokens, first) => ({ padding: TILE_PADDING.default, gap: TILE_RHYTHM, ...(first ? null : { borderLeftWidth: 1, borderLeftColor: tokens.border }) }),
+  rowGap: { card: { gap: TILE_GAP }, plain: { gap: 0 } },
+  title: (tokens) => ({ fontSize: 15, lineHeight: 20, fontWeight: "500", color: tokens.foreground, marginBottom: 10 }),
+  labelText: label,
+  valueText: (tokens) => value(VALUE_SIZE.default, fontFamily, tokens),
+  deltaBase: { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums() },
+  pressedOpacity,
+  ripple,
+});
+
+/** Web: the hand-off's tile, its figure in the display face; a pressed tile dims. */
+export const webSkin: StatsSkin = skinAt(DISPLAY_FONT, 0.9, (tokens) => ({ color: alpha(tokens.foreground, 0.1), borderless: false }));
+/** iOS: no stat-tile control; the web skin's parts in SF Pro, a pressed tile dims. */
+export const iosSkin: StatsSkin = skinAt(undefined, 0.8, null);
+/** Android: no Material 3 stat component; the web skin's parts in Roboto, the bounded ripple. */
+export const androidSkin: StatsSkin = skinAt(undefined, null, surfaceRipple);

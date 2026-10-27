@@ -53,9 +53,9 @@ rich `content`, marker `color` and `halo`, and optional `kind` on each item.
 
 An item may name a kit glyph (`{ icon }`) for the connector node, which suits an
 audit or automation stream where a glyph reads the kind of event faster than a
-pair of initials. Node content resolves in one order: the glyph, then the actor's
-initials, then a muted dot. The avatar lead ignores `icon` and keeps leading with
-the person.
+dot. Node content resolves in one order: the glyph on its disc, then a dot, the
+first event's in the accent. The avatar lead ignores `icon` and keeps leading
+with the person's 28px avatar on the same connector.
 
 ```tsx
 <Feed

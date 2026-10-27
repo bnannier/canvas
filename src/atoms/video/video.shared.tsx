@@ -38,7 +38,7 @@ try {
 // clip loads. With `controls` each platform shows transport the way it does itself: the
 // iOS and Android entries hand the frame to the platform's own player controls (both
 // ship the real control for this job), and the web draws the kit's control bar
-// (video.controls.tsx) in Dark Factory's look. Which one renders is decided by the
+// (video.controls.tsx) in the v4 look. Which one renders is decided by the
 // platform entry's parts, never by a platform check here.
 //
 // Boolean-prop API:
@@ -343,9 +343,10 @@ export function createVideo(skin: VideoSkin, parts: VideoParts = {}) {
 
   return function Video(props: VideoProps) {
     const fill = useFillStyle("Video");
+    const { tokens } = useTheme();
     const label = props.accessibilityLabel ?? "video";
     const frame: StyleProp<ViewStyle> = [
-      skin.frame,
+      skin.frame(tokens),
       props.radius ? { borderRadius: radiusScale[props.radius] } : null,
       fill,
       props.style,

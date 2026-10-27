@@ -78,7 +78,7 @@ reader rather than behind an unnamed focusable node.
 
 ### Attached
 
-A table that sits flush inside a frame its parent draws (a `flush` Card, a bordered panel that clips to its corners) passes `attached`, so the header band squares its corners to that frame instead of floating as a rounded band; `bordered` implies the same for the table's own outline. An attached table draws its keyboard focus ring just inside its edge, where the parent's clip cannot cut it.
+A standalone table frames itself: a hairline at the table corner over the card fill, its header band on the raised fill under it. `bordered` draws that frame on the firmer field boundary. A table that sits flush inside a frame its parent draws (a `flush` Card, a bordered panel that clips to its corners) passes `attached`, so it draws no frame of its own and the parent's is the only one. An attached table draws its keyboard focus ring just inside its edge, where the parent's clip cannot cut it.
 
 ```tsx
 <Card flat flush style={{ overflow: "hidden" }}>

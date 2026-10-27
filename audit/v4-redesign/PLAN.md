@@ -172,6 +172,25 @@ the disagreement is recorded here and the call taken.
   animates are left out until each goes through the tuning harness; the section reports
   list them as open differences.
 
+## Phase 5 decisions (2026-10-27)
+
+A read-only planning pass mapped every section page card and the Library page to kit
+components; ChatGPT reviewed the open calls and agreed with each.
+
+- **P5-C1 Link chips.** The hand-off's component chips (26 px pills linking to a component)
+  are the kit Chip with a new `href`, following Button's anchor path, rather than an outline
+  small Button, whose geometry differs: a link chip is a real capability.
+- **P5-G1, G2, T1 Built, static.** The Library's gradient headline word, its radial aurora
+  glows (and the glows behind glass specimens) and its tilted six-panel hero collage are
+  built as static docs brand illustrations from react-native-svg and RN transforms, through
+  the tuning harness. Only their motion (drift, pointer-follow tilt, pulse, rise, weight
+  morph) is dropped, under the 2026-09-21 removal; that drop is recorded as a difference.
+- **P5-V Vignettes are static frames.** Each section hero's looping vignette is a still
+  composition of live kit components in the reference image's state.
+- **P5-K Kept from the repo** (recorded differences): the 56 px display role against the
+  hand-off's clamp to 112, Card radius 16 against 20, the 19 px lead against 22, the 15 px
+  section paragraph against 17.
+
 ## Phases (each committed and pushed on its own, CI run locally first; screenshot
 baselines and tuning evidence land WITH the visual phase that moves them, never at the end)
 

@@ -83,15 +83,15 @@ export interface CarouselSkin {
 
   /**
    * Whether the prev/next arrows show when the `showArrows` prop is
-   * unset. Platform-adaptive: on for web (Embla), OFF for iOS (App Store cards
-   * swipe with page-control dots, no overlay chrome) and Android (M3 carousel
-   * anatomy is container + items only, snap-scroll navigation, no arrows). The
+   * unset. Platform-adaptive: on for the web and iOS (the hand-off's carousel), OFF
+   * for Android (M3 carousel anatomy is container + items only, snap-scroll
+   * navigation, no arrows). The
    * `showArrows` prop still opts them back in for pointer/iPad contexts.
    */
   defaultShowArrows: boolean;
   /**
    * Whether the dot indicator strip shows when the `showDots` prop is unset.
-   * Platform-adaptive: on for web + iOS (UIPageControl idiom), OFF for Android
+   * Platform-adaptive: on for web + iOS (the hand-off's dots), OFF for Android
    * (M3 defines no position/dot indicator). The `showDots` prop opts them in.
    */
   defaultShowDots: boolean;
@@ -221,9 +221,9 @@ export function createCarousel(skin: CarouselSkin) {
             <GlassPane layer="control" shape={skin.arrow(tokens)} />
             <View style={liquid ? disabled ? DISABLED_DIM : pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null : null}>
               {side === "prev" ? (
-                <Icon chevronLeft muted decorative size={skin.arrowIconSize} />
+                <Icon chevronLeft decorative size={skin.arrowIconSize} />
               ) : (
-                <Icon chevronRight muted decorative size={skin.arrowIconSize} />
+                <Icon chevronRight decorative size={skin.arrowIconSize} />
               )}
             </View>
           </>}
@@ -522,8 +522,8 @@ const HIDDEN_SLIDE: ViewStyle = { display: "none" };
 // An arrow's cell: hugs the arrow and centers it on the slides beside it.
 const ARROW_CELL: ViewStyle = { justifyContent: "center" };
 
-// opacity-40: the dimmed disabled look applied per end arrow.
-const DISABLED_DIM: ViewStyle = { opacity: 0.4 };
+// The hand-off's closed end: the arrow dims to 0.35.
+const DISABLED_DIM: ViewStyle = { opacity: 0.35 };
 
 const DEFAULT_DOT_TARGET: ViewStyle = {
   minWidth: Platform.OS === "ios" ? 44 : Platform.OS === "android" ? 48 : 24,

@@ -16,6 +16,7 @@ import { gaugeArc, gaugeFill } from "../src/charts/gauge/gauge.shared.tsx";
 import { lightColors, palette } from "../src/style/tokens.ts";
 import { channelsOf } from "../src/style/color.ts";
 import { statusColors } from "../src/style/status.ts";
+import { alpha } from "../src/style/color.ts";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Breadcrumb } from "../src/atoms/breadcrumb/breadcrumb.tsx";
@@ -320,12 +321,35 @@ describe("Emblem", () => {
 
   it("warning tints the surface with the warning wash and paints the monogram in its ink", () => {
     const { container, getByText } = ui(<Emblem warning label="W" testID="warn" />);
-    // The warning tone's soft wash and ink from statusColors (the warning-soft role and
-    // the warning token), not the muted foreground.
-    const { wash, ink } = statusColors(lightColors, "warning");
-    expect(channelsOf(at(container, "warn").style.backgroundColor)).toEqual(channelsOf(wash));
+    // The hand-off's tile: the warning token at 18% for the wash and 35% for the 1px ring,
+    // and the monogram in the warning ink from statusColors, not the muted foreground.
+    const { ink } = statusColors(lightColors, "warning");
+    expect(channelsOf(at(container, "warn").style.backgroundColor)).toEqual(channelsOf(alpha(lightColors.warning, 0.18)));
+    expect(channelsOf(at(container, "warn").style.borderTopColor)).toEqual(channelsOf(alpha(lightColors.warning, 0.35)));
     const [r, g, b] = [1, 3, 5].map((i) => parseInt(ink.slice(i, i + 2), 16));
     expect((getByText("W") as HTMLElement).style.color).toBe(`rgba(${r}, ${g}, ${b}, 1.00)`);
+  });
+
+  it("draws the hand-off's 28, 40 and 56 px tiles at 28% corners with a 36% monogram", () => {
+    const { container, getByText } = ui(
+      <>
+        <Emblem small label="S" testID="s" />
+        <Emblem label="M" testID="m" />
+        <Emblem large label="L" testID="l" />
+      </>,
+    );
+    const geo = (id: string) => {
+      const st = at(container, id).style;
+      return [st.width, st.height, st.borderTopLeftRadius || st.borderRadius, st.borderTopWidth];
+    };
+    expect(geo("s")).toEqual(["28px", "28px", "8px", "1px"]);
+    expect(geo("m")).toEqual(["40px", "40px", "11px", "1px"]);
+    expect(geo("l")).toEqual(["56px", "56px", "16px", "1px"]);
+    expect(["S", "M", "L"].map((t) => [(getByText(t) as HTMLElement).style.fontSize, (getByText(t) as HTMLElement).style.fontWeight])).toEqual([
+      ["10px", "600"],
+      ["14px", "600"],
+      ["20px", "600"],
+    ]);
   });
 
   it("resolves tone conflicts by fixed precedence (destructive outranks warning)", () => {
@@ -388,11 +412,11 @@ describe("Charts — Gauge & Heatmap", () => {
   // the pure geometry export is asserted directly (the gaugeFill precedent).
   it("Gauge draws a 180 degree top semicircle and dashes the value's share of it", () => {
     const { d, dasharray } = gaugeArc(72);
-    // One sweep across the top of the fixed 120-wide graphic: from the left
-    // end (10, 60) over radius 50 to the right end (110, 60).
-    expect(d).toBe("M 10 60 A 50 50 0 0 1 110 60");
+    // One sweep across the top of the hand-off's 200 x 116 viewBox: from the left
+    // end (20, 104) over an 80 arc to the right end (180, 104).
+    expect(d).toBe("M 20 104 A 80 80 0 0 1 180 104");
     // The dash reveals 72% of the semicircle's length against the full track.
-    const semi = Math.PI * 50;
+    const semi = Math.PI * 80;
     expect(dasharray).toBe(`${semi * (72 / 100)} ${semi}`);
     // Both arcs share the path; only the dash varies with the value.
     expect(gaugeArc(0).d).toBe(d);
@@ -405,7 +429,7 @@ describe("Charts — Gauge & Heatmap", () => {
     // The display rounds per the hand-off (72.5 reads as 73%)...
     expect(getByText("73%")).toBeDefined();
     // ...but the dash still carries the exact fractional share of the track.
-    const semi = Math.PI * 50;
+    const semi = Math.PI * 80;
     expect(gaugeArc(72.5).dasharray).toBe(`${semi * (72.5 / 100)} ${semi}`);
   });
 

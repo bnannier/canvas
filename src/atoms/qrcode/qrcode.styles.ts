@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type QRCodeSkin } from "./qrcode.shared.js";
 
 // Per-OS QRCode skins. QRCode is a "Shared" treatment: there is no native QR control on
@@ -8,11 +8,12 @@ import { type QRCodeSkin } from "./qrcode.shared.js";
 // present QR codes on white. So the card shape and the module/field colors are fixed and
 // identical on iOS, Android, and the web; the three skin exports point at the same values.
 
-// A fixed white card with a quiet-zone of padding around the code, regardless of theme.
-// HUG via the shell's `useHugStyle()`, not a static alignSelf.
+// A fixed white card with a quiet-zone of padding around the code, regardless of theme:
+// the v4 hand-off's (`K.def('qrcode')` in tools/v4/handoff/cv-kit-data.js), 12 of white
+// at the 14 media corner. HUG via the shell's `useHugStyle()`, not a static alignSelf.
 const frame: ViewStyle = {
   padding: 12,
-  borderRadius: shape.web.tile,
+  borderRadius: platformShape.web.mediaFrame,
   backgroundColor: "#ffffff",
 };
 

@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { StyleSheet } from "react-native";
-import { Path } from "react-native-svg";
+import { Rect } from "react-native-svg";
 import { View, Text, useControllableState, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
@@ -8,7 +8,8 @@ import { type ChartSkin } from "../shared/types.js";
 import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, ScrubSurface, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
-import { binValues, formatCompact, topRoundedRect } from "../shared/chart-math.js";
+import { binValues, formatCompact } from "../shared/chart-math.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Histogram: an auto-binned frequency distribution on a numeric x axis. Pass
 // raw samples; the chart bins them into nice-edged uniform buckets (Sturges'
@@ -159,9 +160,14 @@ export function createHistogram(skin: ChartSkin) {
                   const y = layout.y(c);
                   const h = Math.max(0, layout.plotH - y);
                   return (
-                    <Path
+                    // The hand-off's bins: a 1-unit gutter each side, the data-cell corner.
+                    <Rect
                       key={i}
-                      d={topRoundedRect(x0 + 0.5, y, Math.max(1, x1 - x0 - 1), h, skin.barRadius)}
+                      x={x0 + 1}
+                      y={y}
+                      width={Math.max(1, x1 - x0 - 2)}
+                      height={h}
+                      rx={Math.min(platformShape.web.cell, h / 2)}
                       fill={fill}
                       opacity={selected != null && selected !== i ? DIM_OPACITY : 1}
                     />

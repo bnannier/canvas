@@ -19,6 +19,7 @@ import {
   GlassSurface,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { useHover } from "../../style/hover.js";
 
 // Shared Accordion shell. The structure (a vertically stacked group of disclosure
 // rows: a header carrying the title and a rotating chevron over a collapsible
@@ -67,9 +68,8 @@ export interface AccordionSkin {
    */
   focusRing?: ViewStyle;
 
-  /** Chevron glyph size, in px. The glyph paints in the `muted-foreground` token
-   *  (the HIG tertiary-gray / M3 on-surface-variant disclosure tint) on every
-   *  platform, via the kit Icon's `muted` color prop. */
+  /** Chevron glyph size, in px. The glyph paints in the `subtle-foreground` token
+   *  (the hand-off's tertiary ink) on every platform. */
   chevronSize: number;
   /** The disclosure chevron glyph at rest: `chevronRight` on iOS/web (the HIG/Radix
    *  tree-disclosure caret, points right and rotates to point down), or `chevronDown`
@@ -100,6 +100,8 @@ export interface AccordionSkin {
   header: (t: ColorTokens) => ViewStyle;
   /** The header title type. */
   title: (t: ColorTokens) => TextStyle;
+  /** The title's look while a pointer rests on its header (web); omit for none. */
+  titleHover?: (t: ColorTokens) => TextStyle;
   /** The muted secondary description line under a row's title (the skin's type
    *  ramp, one step below the title). */
   description: (t: ColorTokens) => TextStyle;
@@ -209,6 +211,8 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
     const disabled = !!item.disabled || !!groupDisabled;
+    const { hovered, target } = useHover(!disabled && skin.titleHover != null);
+    const titleStyle = [skin.title(tokens), hovered && skin.titleHover ? skin.titleHover(tokens) : null];
 
     // Chevron rotation: 0deg collapsed -> skin.chevronSpinTo open. The skin picks
     // the idiom: iOS/web rotate the right caret 0->90deg (points down when open);
@@ -232,12 +236,12 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
       // Inside a surfaced container the ring moves inside the header, which the
       // container's clip would otherwise cut; a bare list keeps it around the header.
       surfaced ? skin.focusRing : null,
-      disabled ? DISABLED_DIM : null,
     ];
 
     return (
-      <View>
+      <View style={disabled ? DISABLED_DIM : null}>
         <Pressable
+          {...target}
           onPress={disabled ? undefined : onToggle}
           disabled={disabled}
           android_ripple={skin.ripple && !disabled ? skin.ripple(tokens) : undefined}
@@ -259,19 +263,19 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
             // texts individually) so the chevron stays trailing and the title's
             // numberOfLines truncation keeps working inside it.
             <View style={LABEL_COLUMN}>
-              <Text style={skin.title(tokens)} numberOfLines={2}>
+              <Text style={titleStyle} numberOfLines={2}>
                 {item.title}
               </Text>
               <Text style={skin.description(tokens)}>{item.description}</Text>
             </View>
           ) : (
-            <Text style={skin.title(tokens)} numberOfLines={2}>
+            <Text style={titleStyle} numberOfLines={2}>
               {item.title}
             </Text>
           )}
           <Animated.View style={{ transform: [{ rotate }] }}>
             {/* Skin picks the disclosure glyph: chevronRight (iOS) or chevronDown (web/M3). */}
-            <Icon {...{ [skin.chevronGlyph]: true }} muted size={skin.chevronSize} />
+            <Icon {...{ [skin.chevronGlyph]: true }} color={tokens["subtle-foreground"]} size={skin.chevronSize} />
           </Animated.View>
         </Pressable>
         {open ? (
@@ -343,8 +347,8 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
   };
 }
 
-// opacity-50: the dimmed disabled look applied per header.
-const DISABLED_DIM: ViewStyle = { opacity: 0.5 };
+// The hand-off's disabled row: the whole row (header and panel) dims to 0.4.
+const DISABLED_DIM: ViewStyle = { opacity: 0.4 };
 
 // The title/description stack in a row's header: a tight list-row column (the
 // line heights carry the rhythm, per the iOS subtitle cell and the M3 two-line

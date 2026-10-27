@@ -41,6 +41,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `circle` | Circle | [ ] | [ ] | [ ] |  |
 | `inline` | Inline | [ ] | [ ] | [ ] |  |
 | `block` | Block | [ ] | [ ] | [ ] |  |
+| `selected` | Selected | [ ] | [ ] | [ ] |  |
 | `detailline` | Detail line | [ ] | [ ] | [ ] |  |
 | `palettepicker` | Palette picker | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->

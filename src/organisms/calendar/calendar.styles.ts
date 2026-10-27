@@ -2,28 +2,30 @@ import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { MONO_FONT } from "../../style/mono.js";
 
-// Co-located Calendar skins, one per platform. The shell resolves the density
-// metrics (compact vs default cell sizing), the leading-blank padding, and the
-// per-day selected/today/highlight state; the skin supplies only the native
-// SHAPE, sizing, weekday-label style, day-cell fill, today treatment, and press
-// feedback. The BRAND survives on every platform (the selected day fills with the
-// `primary` token, never a platform default), so each follows light/dark.
-// The calendar frame uses static content frost in glass mode. The opaque `card`
-// token remains its solid fallback; date labels and selection states stay crisp
-// above the material. Glass swaps no semantic token.
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
+
+// Co-located Calendar skins, one per platform, drawn in the Canvas v4 hand-off's colours
+// (`K.def('calendar')` in tools/v4/handoff/cv-kit-data.js and its code-driven form,
+// cv-kit-code3.js `O('calendar')`). The shell resolves the density metrics, the
+// leading-blank padding and the per-day selected/today/range state; the skin supplies the
+// shape, sizing, type, fills and press feedback. The selected day fills with the
+// `primary` token on every platform. The calendar frame uses static content frost in glass
+// mode, its opaque `card` fill the solid fallback.
 //
-//   iOS (HIG date picker): the SELECTED day is a filled `primary` circle
-//     (radius 9999) with `primary-foreground` text; TODAY is `primary`-colored
-//     text with no fill; weekday headers are ~13pt muted SF-style two-letter
-//     labels; the month label sits between two ghost chevrons. Press = opacity
-//     dim (~0.8).
-//   Android (M3 date picker): the SELECTED day is a filled `primary` circle;
-//     TODAY is an OUTLINED ring (1px `primary`) on a transparent fill; weekday
-//     headers are single-letter; day cells get a circular `android_ripple`
-//     (alpha(primary, 0.12)); slightly larger touch targets.
-//   Web: a date card at the card corner; the selected day is a round `primary` fill
-//     and today a soft primary tint; Su/Mo two-letter weekday labels.
+//   Web: the hand-off's date card: the card corner, a hairline, 14 in; the 600 15 month
+//     label at the start and two 15px chevrons in the muted ink at the end, 10 above the
+//     11px mono weekday row in the subtle ink; 38px days at the control corner, 13px, the
+//     selected one the accent fill in 600, today the accent's text ink in a ring-alpha
+//     hairline; a 4px accent event dot; the range the accent's soft wash. The timelines
+//     take 34px hours under 10px mono labels and events at the event corner in the soft
+//     wash on a ring-alpha hairline.
+//   iOS and Android keep their date pickers' shapes (PLATFORM-REFERENCES.md: the iOS 27
+//     date picker, the Material 3 date picker) in the hand-off's colours: round day cells,
+//     the label at the start with its chevrons at the end, the iOS chevrons in the accent
+//     and today in the accent's ink, the Material 3 today in a 1dp accent ring and a ripple
+//     for press.
 
 export type Density = "compact" | "default";
 
@@ -80,9 +82,13 @@ export interface CalendarSkin {
 
   // --- header (month label + prev/next chevrons) ---
   header: ViewStyle;
+  /** The pair of chevrons, together at the header's end. */
+  chevrons: ViewStyle;
   /** A ghost chevron button box. */
   chevron: ViewStyle;
-  /** The chevron glyph. */
+  /** The chevron glyph's size in px. */
+  chevronIcon: number;
+  /** The chevron glyph's ink (its `color`). */
   chevronText: (t: ColorTokens) => TextStyle;
   /** The month/year label. */
   monthLabel: (t: ColorTokens) => TextStyle;
@@ -146,7 +152,7 @@ export interface CalendarSkin {
 
 // --- shared weekday strings ------------------------------------------------
 
-const WEEKDAYS_TWO = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const WEEKDAYS_THREE = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const WEEKDAYS_ONE = ["S", "M", "T", "W", "T", "F", "S"];
 // iOS reference uses UPPERCASE short weekday symbols (SUN/MON shortened to two
 // letters here to stay distinct from Android's single-letter row); mixed-case
@@ -168,95 +174,98 @@ export const webSkin: CalendarSkin = {
     compact: {
       cell: { width: 32, height: 32 },
       gridWidth: 224,
-      head: { width: 32, height: 28 },
+      head: { width: 32, height: 18 },
       label: { fontSize: 12, lineHeight: 16 },
     },
     default: {
-      cell: { width: 36, height: 36 },
-      gridWidth: 252,
-      head: { width: 36, height: 32 },
-      label: { fontSize: 14, lineHeight: 20 },
+      cell: { width: 38, height: 38 },
+      gridWidth: 266,
+      head: { width: 38, height: 18 },
+      label: { fontSize: 13, lineHeight: 18 },
     },
   },
 
   pressedOpacity: 0.9,
   ripple: null,
 
-  // The date card: the card corner, a hairline, a 16px inset.
+  // The date card: the card corner, a hairline, a 14px inset.
   containerBase: {
     alignSelf: "flex-start",
     borderRadius: shape.web.card,
     borderWidth: 1,
-    padding: 16,
+    padding: 14,
   },
   containerSurface: (t) => ({ borderColor: t.border, backgroundColor: t.card }),
 
-  // `mb-2 flex-row items-center justify-between`.
+  // The month label at the start, the two chevrons together at the end, 10 above the grid.
   header: {
-    marginBottom: 8,
+    marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 12,
   },
-  // A 32px month-step tile with the control corner.
+  chevrons: { flexDirection: "row", alignItems: "center", gap: 6 },
+  // A bare 15px chevron on a 24px press tile at the control corner.
   chevron: {
-    height: 32,
-    width: 32,
+    height: 24,
+    width: 24,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: shape.web.control,
     backgroundColor: "transparent",
   },
-  chevronText: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
-  monthLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
+  chevronIcon: 15,
+  chevronText: (t) => ({ color: t["muted-foreground"] }),
+  monthLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", color: t.foreground }),
 
   grid: { flexDirection: "row", flexWrap: "wrap" },
   headCell: { alignItems: "center", justifyContent: "center" },
-  weekdayLabel: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] }),
-  weekdays: WEEKDAYS_TWO,
+  weekdayLabel: (t) => ({ fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "400", color: subtle(t) }),
+  weekdays: WEEKDAYS_THREE,
 
-  // `items-center justify-center rounded-full`.
-  dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999 },
-  // ONLY the selected day fills `bg-primary`; today (unselected) is a soft
-  // primary tint. Filling both made an unselected today indistinguishable from a
-  // selection — two adjacent filled circles read as a two-day range.
+  // A rounded square at the control corner.
+  dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: shape.web.control },
+  // ONLY the selected day fills with the accent; today (unselected) takes a hairline ring
+  // in the accent's ring alpha around its accent ink, so it never reads as a second selection.
   dayCellState: (t, st) => {
     if (st.selected) return { backgroundColor: t.primary };
-    if (st.today) return { backgroundColor: alpha(t.primary, 0.12) };
+    // A transparent fill: today's bed is the range band or the card under it.
+    if (st.today) return { backgroundColor: "rgba(0, 0, 0, 0)", borderWidth: 1, borderColor: alpha(t.primary, 0.35) };
     return {};
   },
-  // Selected -> `text-primary-foreground`; today (unselected) -> `primary` text.
+  // Selected -> 600 in `primary-foreground`; today (unselected) -> the accent's text ink.
   dayLabel: (t, st) => {
-    if (st.selected) return { fontWeight: "500", color: t["primary-foreground"] };
-    if (st.today) return { fontWeight: "500", color: primaryText(t) };
-    return { color: t.foreground };
+    if (st.selected) return { fontWeight: "600", color: t["primary-foreground"] };
+    if (st.today) return { fontWeight: "400", color: primaryText(t) };
+    return { fontWeight: "400", color: t.foreground };
   },
 
   // A 4px dot seated just above the cell's bottom edge marks a day with events.
   eventDot: { position: "absolute", bottom: 4, width: 4, height: 4, borderRadius: 9999 },
-  // On the filled (selected/today) cell the dot inverts to stay visible on `primary`.
-  eventDotColor: (t, st) =>
-    st.selected || st.today ? { backgroundColor: t["primary-foreground"] } : { backgroundColor: t.primary },
+  // On the selected fill the dot inverts to stay visible on `primary`.
+  eventDotColor: (t, st) => (st.selected ? { backgroundColor: t["primary-foreground"] } : { backgroundColor: t.primary }),
 
   timeline: {
-    compact: { hourHeight: 40, axisWidth: 40, peekWidth: 272 },
-    default: { hourHeight: 48, axisWidth: 44, peekWidth: 300 },
+    compact: { hourHeight: 30, axisWidth: 40, peekWidth: 272 },
+    default: { hourHeight: 34, axisWidth: 44, peekWidth: 300 },
   },
-  hourLabel: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
+  hourLabel: (t) => ({ fontFamily: MONO_FONT, fontSize: 10, lineHeight: 14, color: subtle(t) }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
   colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
+  // A timed event: the accent's soft wash at the event corner on a ring-alpha hairline.
   eventBlock: {
     borderRadius: platformShape.web.event,
-    borderLeftWidth: 3,
+    borderWidth: 1,
     paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingVertical: 4,
     overflow: "hidden",
   },
-  eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
-  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: primaryText(t) }),
-  eventTime: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
+  eventBlockSurface: (t) => ({ backgroundColor: t["primary-soft"], borderColor: alpha(t.primary, 0.35) }),
+  eventTitle: (t) => ({ fontSize: 11, lineHeight: 14.3, fontWeight: "500", color: primaryText(t) }),
+  eventTime: (t) => ({ fontFamily: MONO_FONT, fontSize: 10, lineHeight: 13, color: primaryText(t) }),
 
-  // Mirrors the web Popover card (the menu corner, hairline border, lg shadow)
+  // Mirrors the web Popover card (the menu corner, hairline border, md shadow)
   // with the tighter padding a timeline slice wants.
   peekCard: (t) => ({
     borderRadius: shape.web.menu,
@@ -264,13 +273,13 @@ export const webSkin: CalendarSkin = {
     borderColor: t.border,
     backgroundColor: t.popover,
     padding: 12,
-    ...shadow("lg", t),
+    ...shadow("md", t),
   }),
   peekTitle: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t["popover-foreground"] }),
   peekBody: (t) => ({ fontSize: 12, lineHeight: 16, color: t["popover-foreground"] }),
 
-  // A soft primary wash between the range endpoints, inset from the cell edges.
-  rangeBand: (t) => ({ position: "absolute", top: 4, bottom: 4, backgroundColor: alpha(t.primary, 0.15) }),
+  // The accent's soft wash across the range, the full height of the cells.
+  rangeBand: (t) => ({ position: "absolute", top: 0, bottom: 0, backgroundColor: t["primary-soft"] }),
 };
 
 // =============================================================================
@@ -314,6 +323,7 @@ export const iosSkin: CalendarSkin = {
     alignItems: "center",
     justifyContent: "space-between",
   },
+  chevrons: { flexDirection: "row", alignItems: "center", gap: 12 },
   chevron: {
     height: 30,
     width: 30,
@@ -322,15 +332,16 @@ export const iosSkin: CalendarSkin = {
     borderRadius: shape.ios.control,
     backgroundColor: "transparent",
   },
-  // HIG: the chevrons carry the brand `primary` (system-accent style), heavier glyph.
-  chevronText: (t) => ({ fontSize: 22, lineHeight: 24, fontWeight: "500", color: t.primary }),
+  // HIG: the chevrons carry the brand `primary` (system-accent style).
+  chevronIcon: 20,
+  chevronText: (t) => ({ color: t.primary }),
   // HIG: a bold ~17pt month/year title.
   monthLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", color: t.foreground }),
 
   grid: { flexDirection: "row", flexWrap: "wrap" },
   headCell: { alignItems: "center", justifyContent: "center" },
   // ~13pt muted SF-style weekday header.
-  weekdayLabel: (t) => ({ fontSize: 13, lineHeight: 16, fontWeight: "600", color: t["muted-foreground"] }),
+  weekdayLabel: (t) => ({ fontSize: 13, lineHeight: 16, fontWeight: "600", color: subtle(t) }),
   // iOS reference: uppercase two-letter weekday symbols.
   weekdays: WEEKDAYS_TWO_UPPER,
 
@@ -358,7 +369,7 @@ export const iosSkin: CalendarSkin = {
     compact: { hourHeight: 44, axisWidth: 44, peekWidth: 288 },
     default: { hourHeight: 50, axisWidth: 48, peekWidth: 320 },
   },
-  hourLabel: (t) => ({ fontSize: 11, lineHeight: 13, fontWeight: "500", color: t["muted-foreground"] }),
+  hourLabel: (t) => ({ fontSize: 11, lineHeight: 13, fontWeight: "500", color: subtle(t) }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
   colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
   // iOS event blocks: tinted rounded rectangle with a leading accent bar.
@@ -429,6 +440,7 @@ export const androidSkin: CalendarSkin = {
     alignItems: "center",
     justifyContent: "space-between",
   },
+  chevrons: { flexDirection: "row", alignItems: "center", gap: 0 },
   chevron: {
     height: 40,
     width: 40,
@@ -437,14 +449,15 @@ export const androidSkin: CalendarSkin = {
     borderRadius: shape.android.control,
     backgroundColor: "transparent",
   },
-  chevronText: (t) => ({ fontSize: 22, lineHeight: 24, color: t["muted-foreground"] }),
+  chevronIcon: 24,
+  chevronText: (t) => ({ color: t["muted-foreground"] }),
   // M3 labelLarge-ish month label.
   monthLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
 
   grid: { flexDirection: "row", flexWrap: "wrap" },
   headCell: { alignItems: "center", justifyContent: "center" },
   // M3 single-letter weekday headers, muted.
-  weekdayLabel: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] }),
+  weekdayLabel: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: subtle(t) }),
   weekdays: WEEKDAYS_ONE,
 
   // overflow:"hidden" clips the Material ripple to the rounded outline (the bounded
@@ -476,7 +489,7 @@ export const androidSkin: CalendarSkin = {
     compact: { hourHeight: 44, axisWidth: 44, peekWidth: 272 },
     default: { hourHeight: 52, axisWidth: 48, peekWidth: 304 },
   },
-  hourLabel: (t) => ({ fontSize: 11, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] }),
+  hourLabel: (t) => ({ fontSize: 11, lineHeight: 16, fontWeight: "500", color: subtle(t) }),
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
   colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
   // M3 event chips: larger radius, tonal `primary` container with an accent bar.

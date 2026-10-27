@@ -18,7 +18,7 @@ import {
   isGlass,
   FOCUS_RESET,
 } from "../../style/index.js";
-import { GESTURE_SURFACE, useWheel } from "../../style/index.js";
+import { GESTURE_SURFACE, useWheel, alpha } from "../../style/index.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import * as s from "../shared/charts.styles.js";
@@ -133,6 +133,9 @@ export interface GeoMapProps {
   style?: LayoutStyle;
 }
 
+
+// The point's halo: the accent's soft wash (the hand-off's ion-soft, .16 in dark).
+const HALO_ALPHA = 0.16;
 
 /** Width / height of the generated viewBox, and so of the rendered map. */
 export const GEO_MAP_ASPECT = WORLD_VIEW_BOX.width / WORLD_VIEW_BOX.height;
@@ -456,7 +459,8 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
     // before or after the viewBox scale is exactly the ambiguity that would ship a
     // 4x-too-thick coastline on whichever platform disagreed.
     // Pulled out so the dependency array can be statically checked.
-    const landFill = tokens.muted;
+    // The hand-off's land is the raised surface (sf4) at .9 over the chart surface.
+    const landFill = alpha(tokens["surface-raised"] ?? tokens.muted, 0.9);
     const coastInk = tokens["muted-foreground"];
     const world = useMemo(
       () => (
@@ -554,21 +558,17 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
                     by geoMapPlace and drawn outside this group, so their radii are
                     never scaled by the zoom and the area encoding is safe. */}
                 <G transform={geoMapMatrix(camera)}>{world}</G>
-                {clusters.map((c, i) => (
-                  <Circle
-                    key={points[c.lead]?.id ?? c.lead}
-                    cx={placed[i].x}
-                    cy={placed[i].y}
-                    r={placed[i].r}
-                    fill={tokens.primary}
-                    fillOpacity={selectedCluster != null && selectedCluster !== i ? DIM_OPACITY : 0.85}
-                    // A surface-colored ring keeps overlapping bubbles
-                    // separable (the ScatterPlot precedent) and lifts a bubble
-                    // off the land it sits on.
-                    stroke={tokens.card}
-                    strokeWidth={BUBBLE_RING_WIDTH}
-                  />
-                ))}
+                {clusters.map((c, i) => {
+                  const dim = selectedCluster != null && selectedCluster !== i ? DIM_OPACITY : 1;
+                  return (
+                    // The hand-off's point: the accent disc in a 4 px halo of its
+                    // soft wash (.16), which also keeps overlapping bubbles separable.
+                    <G key={points[c.lead]?.id ?? c.lead} opacity={dim}>
+                      <Circle cx={placed[i].x} cy={placed[i].y} r={placed[i].r + BUBBLE_RING_WIDTH} fill={alpha(tokens.primary, HALO_ALPHA)} />
+                      <Circle cx={placed[i].x} cy={placed[i].y} r={placed[i].r} fill={tokens.primary} />
+                    </G>
+                  );
+                })}
                 {/* Selection ring, drawn over the bubbles. */}
                 {selectedCluster != null && placed[selectedCluster] ? (
                   <Circle

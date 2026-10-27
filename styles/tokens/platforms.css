@@ -104,15 +104,15 @@
   --p-nav-brand:15px;--p-nav-brand-lh:20px;--p-nav-brand-weight:600;
   --p-nav-links-gap:4px;--p-nav-link-radius:9999px;--p-nav-link-pad-x:10px;--p-nav-link-pad-y:7px;
   --p-nav-link-font:13px;--p-nav-link-lh:18px;
-  /* Stats (stats.styles.ts webSkin) */
-  --p-stat-radius:16px;--p-stat-pad:24px;--p-stat-shadow:var(--shadow);--p-stat-gap:16px;
-  --p-stat-label:16px;--p-stat-label-lh:24px;--p-stat-label-tracking:0px;
-  --p-stat-value:36px;--p-stat-value-lh:44px;--p-stat-value-weight:400;--p-stat-value-tracking:0px;
+  /* Stats (stats.styles.ts webSkin: the v4 hand-off's tile, an 18px inset, a 28px figure) */
+  --p-stat-radius:16px;--p-stat-pad:18px;--p-stat-shadow:var(--shadow-sm);--p-stat-gap:12px;
+  --p-stat-label:12px;--p-stat-label-lh:16px;--p-stat-label-tracking:0px;
+  --p-stat-value:28px;--p-stat-value-lh:28px;--p-stat-value-weight:600;--p-stat-value-tracking:-0.56px;
   --p-stat-delta-tracking:0px;
-  /* DataTable (data-table.styles.ts webSkin) */
-  --p-table-radius:16px;
-  --p-table-head-font:14px;--p-table-head-lh:20px;--p-table-head-weight:500;--p-table-head-transform:none /* @kind other */;--p-table-head-tracking:0px;--p-table-head-pad-y:12px;
-  --p-table-cell-font:14px;--p-table-cell-lh:20px;--p-table-cell-tracking:0px;--p-table-cell-pad-x:16px;--p-table-cell-pad-y:18px;--p-table-cell-pad-y-compact:10px;
+  /* DataTable (data-table.styles.ts webSkin: the v4 hand-off's framed table, a 500 12px band, 13px rows) */
+  --p-table-radius:14px;
+  --p-table-head-font:12px;--p-table-head-lh:16px;--p-table-head-weight:500;--p-table-head-transform:none /* @kind other */;--p-table-head-tracking:0px;--p-table-head-pad-y:10px;
+  --p-table-cell-font:13px;--p-table-cell-lh:18px;--p-table-cell-tracking:0px;--p-table-cell-pad-x:16px;--p-table-cell-pad-y:12px;--p-table-cell-pad-y-compact:8px;
   --p-min-target:0px;
   /* Breadcrumb (breadcrumb.styles.ts webSkin: no tracking, font-medium current page) */
   --p-crumb-tracking:0px;--p-crumb-sep-tracking:0px;--p-crumb-current-weight:500;
@@ -139,30 +139,30 @@
   --p-seg-selected-label:var(--foreground);--p-seg-selected-weight:500;--p-seg-selected-shadow:var(--shadow-sm);
   --p-seg-check-display:none /* @kind other */;
   /* Calendar (calendar.styles.ts webSkin) */
-  --p-cal-radius:16px;--p-cal-cell-default:36px;--p-cal-cell-compact:32px;--p-cal-head-h:32px;
-  --p-cal-label-default:14px;--p-cal-label-compact:12px;
-  --p-cal-chevron:32px;--p-cal-chevron-radius:10px;--p-cal-chevron-font:14px;--p-cal-chevron-weight:400;--p-cal-chevron-color:var(--foreground);
-  --p-cal-month-font:14px;--p-cal-month-lh:20px;--p-cal-month-weight:500;
-  --p-cal-weekdays:"two" /* @kind other */;--p-cal-weekday-font:12px;--p-cal-weekday-weight:500;
-  --p-cal-today-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-cal-today-ring:0px;--p-cal-day-weight:500;
+  --p-cal-radius:16px;--p-cal-cell-default:38px;--p-cal-cell-compact:32px;--p-cal-head-h:18px;
+  --p-cal-label-default:13px;--p-cal-label-compact:12px;
+  --p-cal-chevron:24px;--p-cal-chevron-radius:10px;--p-cal-chevron-font:15px;--p-cal-chevron-weight:400;--p-cal-chevron-color:var(--muted-foreground);
+  --p-cal-month-font:15px;--p-cal-month-lh:20px;--p-cal-month-weight:600;
+  --p-cal-weekdays:"three" /* @kind other */;--p-cal-weekday-font:11px;--p-cal-weekday-weight:400;
+  --p-cal-today-fill:transparent;--p-cal-today-ring:1px;--p-cal-day-weight:400;
   --p-cal-dot:4px;--p-cal-dot-bottom:4px;
-  /* Collapsible (collapsible.styles.ts webSkin: the Radix caret, 0→90°) */
-  --p-collapse-glyph:"chevron-right" /* @kind other */;--p-collapse-spin:90deg /* @kind other */;
+  /* Collapsible (collapsible.styles.ts webSkin: the v4 trailing chevron, 0 to 180 deg; Android too) */
+  --p-collapse-glyph:"chevron-down" /* @kind other */;--p-collapse-spin:180deg /* @kind other */;
   /* Progress (progress.styles.ts webSkin: Dark Factory's 6px capsule meter on its line-colored track) */
   --p-progress-h-small:4px;--p-progress-h-base:6px;--p-progress-h-large:8px;
   --p-progress-track:var(--border);
   --p-progress-gap:0px;--p-progress-stop:0px;--p-progress-stop-opacity:0 /* @kind other */;
-  /* Emblem (emblem.styles.ts webSkin: the Catalyst rounded square) */
-  --p-emblem-box-small:32px;--p-emblem-box-default:40px;--p-emblem-box-large:48px;
-  --p-emblem-icon-small:16px;--p-emblem-icon-default:20px;--p-emblem-icon-large:24px;
-  --p-emblem-radius-small:12px;--p-emblem-radius-default:12px;--p-emblem-radius-large:12px;
-  --p-emblem-monogram-weight:700;--p-emblem-monogram-tracking:0px;
-  /* StackedList (stacked-lists.styles.ts webSkin) */
-  --p-list-radius:16px;--p-list-border:1px;--p-list-shadow:var(--shadow);
-  --p-list-row-pad-x:20px;--p-list-row-pad-y:12px;--p-list-row-gap:12px;--p-list-row-min-h:0px;--p-list-divider-inset:0px;
+  /* Emblem (emblem.styles.ts webSkin: the v4 hand-off's tile, 28% corners) */
+  --p-emblem-box-small:28px;--p-emblem-box-default:40px;--p-emblem-box-large:56px;
+  --p-emblem-icon-small:14px;--p-emblem-icon-default:20px;--p-emblem-icon-large:28px;
+  --p-emblem-radius-small:8px;--p-emblem-radius-default:11px;--p-emblem-radius-large:16px;
+  --p-emblem-monogram-weight:600;--p-emblem-monogram-tracking:0px;
+  /* StackedList (stacked-lists.styles.ts webSkin: the v4 hand-off's framed list at 14, 16/12 rows) */
+  --p-list-radius:14px;--p-list-border:1px;--p-list-shadow:var(--shadow-sm);
+  --p-list-row-pad-x:16px;--p-list-row-pad-y:12px;--p-list-row-gap:12px;--p-list-row-min-h:0px;--p-list-divider-inset:0px;
   --p-list-name:14px;--p-list-name-lh:20px;--p-list-name-weight:500;--p-list-name-tracking:0px;
   --p-list-sub:12px;--p-list-sub-lh:16px;--p-list-sub-tracking:0px;
-  --p-list-header-pad-x:20px;--p-list-header-title:16px;--p-list-header-title-lh:24px;--p-list-header-title-weight:500;--p-list-header-title-tracking:0px;
+  --p-list-header-pad-x:16px;--p-list-header-title:15px;--p-list-header-title-lh:20px;--p-list-header-title-weight:500;--p-list-header-title-tracking:0px;
   /* Toast (toast.styles.ts webSkin, iOS too: Dark Factory's toast pill, `inverse` in every
      scheme, a pill for one line and the sheet corner once a description wraps, 12.5/700
      message, the description in the pill's ink at 0.7) */
@@ -272,14 +272,14 @@
   /* Command palette (command.styles.ts webSkin: the v4 palette, a 48 search row, 38 rows) */
   --p-cmd-radius:18px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:0px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:48px;--p-cmd-glyph:17px;
   --p-cmd-row-pad-x:10px;--p-cmd-row-pad-y:0px;--p-cmd-row-min-h:38px;--p-cmd-row-font:14px;--p-cmd-row-lh:18px;--p-cmd-row-tracking:0px;
-  /* Accordion (accordion.styles.ts webSkin — Radix/shadcn) */
+  /* Accordion (accordion.styles.ts webSkin: the v4 hand-off's rows, 14 in, the card 18 in; Android too) */
   --p-acc-container-radius:0px;--p-acc-container-border:0px;--p-acc-container-fill:transparent;
-  --p-acc-card-radius:16px;--p-acc-card-inset:20px;--p-acc-sep-inset:0px;
-  --p-acc-header-pad-x:0px;--p-acc-header-pad-y:16px;--p-acc-header-gap:16px;
+  --p-acc-card-radius:16px;--p-acc-card-inset:18px;--p-acc-sep-inset:0px;
+  --p-acc-header-pad-x:0px;--p-acc-header-pad-y:14px;--p-acc-header-gap:12px;
   --p-acc-title:14px;--p-acc-title-lh:20px;--p-acc-title-weight:500;--p-acc-title-tracking:0px;
   --p-acc-desc:12px;--p-acc-desc-lh:16px;--p-acc-desc-tracking:0px;
   --p-acc-chevron:16px;--p-acc-chevron-glyph:"chevron-down" /* @kind other */;--p-acc-chevron-spin:180deg /* @kind other */;
-  --p-acc-content:14px;--p-acc-content-lh:22px;--p-acc-content-tracking:0px;--p-acc-content-pad-top:0px;--p-acc-content-pad-bottom:16px;
+  --p-acc-content:14px;--p-acc-content-lh:21.7px;--p-acc-content-tracking:0px;--p-acc-content-pad-top:0px;--p-acc-content-pad-bottom:14px;
   /* Steps (steps.styles.ts, every platform: the v4 hand-off's 28px markers, 2px square connectors,
      the 6px surface-raised progress track and 500-weight caption) */
   --p-steps-current-fill:transparent;--p-steps-connector-radius:0px;--p-steps-desc:12px;--p-steps-desc-lh:16px;
@@ -321,54 +321,54 @@
   --p-otp-active-ring:0 0 0 4px color-mix(in oklab, var(--glow) 70%, transparent) /* @kind other */;
   --p-otp-digit-small:16px;--p-otp-digit-base:20px;--p-otp-digit-large:23px;--p-otp-digit-weight:500;--p-otp-digit-tracking:0px;
   --p-otp-caret:var(--ring);--p-otp-caret-blink:none /* @kind other */;
-  /* DescriptionList (description-lists.styles.ts webSkin) */
-  --p-dl-radius:16px;--p-dl-shadow:var(--shadow-sm);--p-dl-pad:24px;--p-dl-row-gap:12px;
-  --p-dl-row-align:baseline /* @kind other */;--p-dl-row-min-h:0px;--p-dl-divided-pad:12px;
-  --p-dl-term-font:14px;--p-dl-term-lh:20px;--p-dl-term-weight:400;--p-dl-term-tracking:0px;--p-dl-term-color:var(--muted-foreground);
-  --p-dl-value-font:14px;--p-dl-value-lh:20px;--p-dl-value-weight:500;--p-dl-value-tracking:0px;--p-dl-value-color:var(--foreground);
-  --p-dl-stacked-tracking:0.4px;--p-dl-header-weight:600;--p-dl-header-tracking:0px;
-  /* MediaObject (media-objects.styles.ts webSkin) */
-  --p-media-gap:12px;--p-media-gap-compact:8px;--p-media-radius:16px;--p-media-border-color:var(--border) /* @kind other */;--p-media-shadow:none;
-  --p-media-icon-radius:10px;--p-media-glyph-tracking:0px;
-  --p-media-title-font:14px;--p-media-title-lh:20px;--p-media-title-weight:600;--p-media-title-tracking:0px;
-  --p-media-desc-tracking:0px;--p-media-body-lh:28px;--p-media-body-tracking:0px;
-  /* GridList (grid-lists.styles.ts webSkin) */
-  --p-grid-gap:14px;--p-grid-gap-compact:8px;--p-grid-tile-pad:20px;--p-grid-tile-pad-compact:16px;
-  --p-grid-gallery-radius:10px;--p-grid-gallery-title-tracking:0px;--p-grid-subtitle-tracking:0px;
-  --p-grid-card-title-weight:600;--p-grid-card-title-tracking:0px;
-  /* Feed (feeds.styles.ts webSkin) */
-  --p-feed-radius:16px;--p-feed-pad:24px;--p-feed-pad-compact:20px;--p-feed-row-gap:24px;--p-feed-row-gap-compact:16px;
-  --p-feed-avatar-pad-y:16px;--p-feed-avatar-pad-y-compact:12px;
-  --p-feed-line-font:14px;--p-feed-line-lh:20px;--p-feed-actor-weight:500;--p-feed-actor-tracking:0px;--p-feed-action-tracking:0px;
+  /* DescriptionList (description-lists.styles.ts webSkin: the v4 inset card, 16 by 20 in, rows 12 above and below; Android too) */
+  --p-dl-radius:16px;--p-dl-shadow:var(--shadow-sm);--p-dl-pad:20px;--p-dl-row-gap:0px;
+  --p-dl-row-align:center /* @kind other */;--p-dl-row-min-h:0px;--p-dl-divided-pad:12px;
+  --p-dl-term-font:13px;--p-dl-term-lh:18px;--p-dl-term-weight:500;--p-dl-term-tracking:0px;--p-dl-term-color:var(--muted-foreground);
+  --p-dl-value-font:14px;--p-dl-value-lh:20px;--p-dl-value-weight:400;--p-dl-value-tracking:0px;--p-dl-value-color:var(--foreground);
+  --p-dl-stacked-tracking:0px;--p-dl-header-weight:500;--p-dl-header-tracking:0px;
+  /* MediaObject (media-objects.styles.ts webSkin: the v4 hand-off's row, a 12px bordered tile, an 11px icon box) */
+  --p-media-gap:12px;--p-media-gap-compact:10px;--p-media-radius:12px;--p-media-border-color:var(--border) /* @kind other */;--p-media-shadow:none;
+  --p-media-icon-radius:11px;--p-media-glyph-tracking:0px;
+  --p-media-title-font:14px;--p-media-title-lh:20px;--p-media-title-weight:500;--p-media-title-tracking:0px;
+  --p-media-desc-tracking:0px;--p-media-body-lh:21px;--p-media-body-tracking:0px;
+  /* GridList (grid-lists.styles.ts webSkin: the v4 hand-off's framed tile at 14, 12 apart) */
+  --p-grid-gap:12px;--p-grid-gap-compact:8px;--p-grid-tile-pad:16px;--p-grid-tile-pad-compact:12px;
+  --p-grid-gallery-radius:14px;--p-grid-gallery-title-tracking:0px;--p-grid-subtitle-tracking:0px;
+  --p-grid-card-title-weight:500;--p-grid-card-title-tracking:0px;
+  /* Feed (feeds.styles.ts webSkin: the v4 feed in its card, 400 13/19 lines; every platform) */
+  --p-feed-radius:16px;--p-feed-pad:24px;--p-feed-pad-compact:20px;--p-feed-row-gap:16px;--p-feed-row-gap-compact:10px;
+  --p-feed-avatar-pad-y:12px;--p-feed-avatar-pad-y-compact:10px;
+  --p-feed-line-font:13px;--p-feed-line-lh:19px;--p-feed-actor-weight:600;--p-feed-actor-tracking:0px;--p-feed-action-tracking:0px;
   --p-feed-time-font:12px;--p-feed-time-tracking:0px;--p-feed-initials-weight:500;--p-feed-initials-tracking:0px;
-  /* ActionPanel (action-panels.styles.ts webSkin) */
+  /* ActionPanel (action-panels.styles.ts webSkin: the v4 panel, 18 in, 600 15 over 13; every platform) */
   --p-panel-title-weight:600;--p-panel-title-tracking:0px;--p-panel-desc-tracking:0px;
-  --p-panel-inline-gap:24px;--p-panel-inline-align:flex-start /* @kind other */;
-  /* Carousel (carousel.styles.ts webSkin — Embla/shadcn) */
+  --p-panel-inline-gap:16px;--p-panel-inline-align:center /* @kind other */;
+  /* Carousel (carousel.styles.ts webSkin: the v4 hand-off's slide, 32 arrows, 6 px dots; iOS too) */
   --p-carousel-slide-radius:16px;--p-carousel-arrows:1 /* @kind other */;--p-carousel-dots:1 /* @kind other */;
-  --p-carousel-arrow-size:40px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:var(--shadow-sm);
-  --p-carousel-dot:8px;--p-carousel-dot-active-w:18px;--p-carousel-dot-gap:6px;--p-carousel-dot-alpha:40%;
-  --p-carousel-text-font:16px;--p-carousel-text-lh:24px;--p-carousel-text-weight:500;--p-carousel-text-tracking:0px;
+  --p-carousel-arrow-size:32px;--p-carousel-arrow-border:1px;--p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:none;
+  --p-carousel-dot:6px;--p-carousel-dot-active-w:18px;--p-carousel-dot-gap:6px;--p-carousel-dot-alpha:100%;
+  --p-carousel-text-font:22px;--p-carousel-text-lh:28px;--p-carousel-text-weight:500;--p-carousel-text-tracking:0px;
   /* Stats (stats.styles.ts webSkin) */
   /* DataTable (data-table.styles.ts webSkin) */
 
   /* Board (board.styles.ts webSkin) */
-  --p-board-lane-gap:16px;--p-board-lane-gap-compact:12px;
-  --p-board-col-radius:16px;--p-board-col-pad:12px;--p-board-col-pad-compact:8px;
-  --p-board-col-gap:10px;--p-board-col-gap-compact:8px;
-  --p-board-col-label-font:14px;--p-board-col-label-lh:20px;--p-board-col-label-weight:500;--p-board-col-label-tracking:0px;
+  --p-board-lane-gap:12px;--p-board-lane-gap-compact:12px;
+  --p-board-col-radius:14px;--p-board-col-pad:10px;--p-board-col-pad-compact:10px;
+  --p-board-col-gap:8px;--p-board-col-gap-compact:6px;
+  --p-board-col-label-font:12px;--p-board-col-label-lh:16px;--p-board-col-label-weight:600;--p-board-col-label-tracking:0px;
   --p-board-cardlist-gap:8px;--p-board-cardlist-gap-compact:6px;--p-board-cardlist-min-h:48px;
   --p-board-card-radius:10px;
-  --p-board-card-title-font:14px;--p-board-card-title-lh:20px;--p-board-card-title-weight:500;
+  --p-board-card-title-font:13px;--p-board-card-title-lh:18.2px;--p-board-card-title-weight:500;
   --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
 
-  /* DragHandle (drag-drop.styles.ts webSkin: compact 28px grip, 16px gripVertical glyph) */
-  --p-drag-handle-size:32px;--p-drag-handle-radius:10px;--p-drag-handle-icon:16px;
+  /* DragHandle (drag-drop.styles.ts webSkin: compact 32px grip, 15px gripVertical glyph) */
+  --p-drag-handle-size:32px;--p-drag-handle-radius:10px;--p-drag-handle-icon:15px;
 
   /* Swatch (swatch.styles.ts webSkin) */
-  --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
+  --p-swatch-box-small:32px;--p-swatch-box-default:48px;--p-swatch-box-large:72px;
   --p-swatch-radius-small:12px;--p-swatch-radius-default:12px;--p-swatch-radius-large:12px;
-  --p-swatch-name-tracking:0px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:500;
+  --p-swatch-name-tracking:0px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:400;
 }
 
 /* iOS 26 / HIG: capsules, semibold SF-scale labels, flat grouped surfaces,
@@ -395,9 +395,8 @@
   /* Switch (switch.styles.ts IOS_OFF_TRACK): systemGray3 off track, never the washed-out input token; the white capsule knob keeps its soft shadow in both states */
   --p-switch-off-track:#c7c7cc;--p-switch-thumb-off-w:28px;--p-switch-thumb-off-h:24px;--p-switch-thumb-off-fill:#ffffff;
   --p-switch-thumb-shadow:0px 1px 2px rgba(0,0,0,0.2);
-  /* Stats (stats.styles.ts iosSkin: flat 12pt inset surface, 18pt inset, SF tracking) */
-  --p-stat-radius:12px;--p-stat-pad:18px;--p-stat-shadow:none;--p-stat-gap:12px;
-  --p-stat-label:14px;--p-stat-label-lh:20px;--p-stat-label-tracking:-0.15px;--p-stat-value:24px;--p-stat-value-lh:30px;--p-stat-value-weight:600;--p-stat-value-tracking:-0.5px;
+  /* Stats (stats.styles.ts iosSkin: the web skin's tile in SF Pro, the figure with a little leading) */
+  --p-stat-value-lh:34px;
   /* Breadcrumb (breadcrumb.styles.ts iosSkin: SF tracking at 14pt, semibold current page) */
   --p-crumb-tracking:-0.15px;--p-crumb-sep-tracking:-0.15px;--p-crumb-current-weight:600;
   /* EmptyState (empty-state.styles.ts iosSkin: the web skin's parts, in SF Pro) */
@@ -449,31 +448,19 @@
   /* Calendar — HIG date picker: airier cells, UPPERCASE symbols, today as TEXT */
   --p-cal-radius:12px;--p-cal-cell-default:38px;--p-cal-cell-compact:34px;--p-cal-head-h:30px;
   --p-cal-label-default:17px;--p-cal-label-compact:15px;
-  --p-cal-chevron:30px;--p-cal-chevron-radius:9999px;--p-cal-chevron-font:22px;--p-cal-chevron-weight:500;--p-cal-chevron-color:var(--primary);
+  --p-cal-chevron:30px;--p-cal-chevron-radius:9999px;--p-cal-chevron-font:20px;--p-cal-chevron-weight:500;--p-cal-chevron-color:var(--primary);
   --p-cal-month-font:17px;--p-cal-month-lh:22px;--p-cal-month-weight:600;
   --p-cal-weekdays:"upper" /* @kind other */;--p-cal-weekday-font:13px;--p-cal-weekday-weight:600;
-  --p-cal-today-fill:transparent;--p-cal-day-weight:600;--p-cal-dot:5px;--p-cal-dot-bottom:3px;
-  /* Feed — iOS: 12pt continuous card, roomier rows, SF-tracked 15/20 copy */
-  --p-feed-radius:12px;--p-feed-pad:26px;--p-feed-pad-compact:22px;--p-feed-row-gap:26px;--p-feed-row-gap-compact:18px;
-  --p-feed-avatar-pad-y:17px;--p-feed-avatar-pad-y-compact:13px;
-  --p-feed-line-font:15px;--p-feed-actor-weight:600;--p-feed-actor-tracking:-0.24px;--p-feed-action-tracking:-0.24px;
-  --p-feed-time-font:13px;--p-feed-time-tracking:-0.08px;--p-feed-initials-weight:600;
-  /* ActionPanel — iOS Settings rows: SF tracking, roomier gap, centre-aligned action */
-  --p-panel-title-tracking:-0.15px;--p-panel-desc-tracking:-0.16px;--p-panel-inline-gap:28px;--p-panel-inline-align:center /* @kind other */;
-  /* Carousel — iOS App Store paged cards: no arrows, UIPageControl dots */
-  --p-carousel-slide-radius:12px;--p-carousel-arrows:0 /* @kind other */;--p-carousel-dots:1 /* @kind other */;
-  --p-carousel-arrow-size:30px;--p-carousel-arrow-border:0px;--p-carousel-arrow-fill:color-mix(in oklab, var(--card) 70%, transparent);--p-carousel-arrow-shadow:none;
-  --p-carousel-dot:7px;--p-carousel-dot-active-w:7px;--p-carousel-dot-gap:9px;--p-carousel-dot-alpha:35%;
-  --p-carousel-text-font:17px;--p-carousel-text-lh:22px;--p-carousel-text-weight:600;--p-carousel-text-tracking:-0.43px;
+  --p-cal-today-fill:transparent;--p-cal-today-ring:0px;--p-cal-day-weight:600;--p-cal-dot:5px;--p-cal-dot-bottom:3px;
+  /* Collapsible: the HIG disclosure caret, 0 to 90 deg */
+  --p-collapse-glyph:"chevron-right" /* @kind other */;--p-collapse-spin:90deg /* @kind other */;
   /* DescriptionList — iOS 27 Lists value rows: flat 26pt card, INVERTED emphasis */
   --p-dl-radius:26px;--p-dl-shadow:none;--p-dl-pad:16px;--p-dl-row-align:center /* @kind other */;--p-dl-row-min-h:52px;--p-dl-divided-pad:0px;
   --p-dl-term-font:17px;--p-dl-term-lh:22px;--p-dl-term-tracking:-0.43px;--p-dl-term-color:var(--foreground);
   --p-dl-value-font:17px;--p-dl-value-lh:22px;--p-dl-value-weight:400;--p-dl-value-tracking:-0.43px;--p-dl-value-color:var(--muted-foreground);
   --p-dl-stacked-tracking:0.06px;--p-dl-header-tracking:-0.2px;
-  /* MediaObject (media-objects.styles.ts iosSkin: the 12pt continuous card, the web's 8pt icon box, SF tracking) */
-  --p-media-radius:12px;--p-media-icon-radius:10px;--p-media-glyph-tracking:-0.31px;--p-media-title-tracking:-0.15px;--p-media-body-tracking:-0.15px;
-  /* GridList (grid-lists.styles.ts iosSkin: the 12pt continuous tile thumbnail, SF-tracked card title) */
-  --p-grid-gallery-radius:12px;--p-grid-card-title-tracking:-0.15px;
+  /* GridList (grid-lists.styles.ts iosSkin: the 12pt continuous thumbnail on its own) */
+  --p-grid-gallery-radius:12px;
   /* Slider (slider.styles.ts iosSkin: a 6pt capsule rail and a 37x24pt white capsule knob, the iOS 27 kit's) */
   --p-slider-track-h-small:5px;--p-slider-track-h-base:6px;--p-slider-track-h-large:7px;
   --p-slider-row-min-h:44px;
@@ -578,18 +565,18 @@
   --p-list-sub:15px;--p-list-sub-lh:18px;--p-list-sub-tracking:-0.24px;
   --p-list-header-pad-x:16px;--p-list-header-title:15px;--p-list-header-title-lh:20px;--p-list-header-title-tracking:-0.24px;
 
-  /* Board (board.styles.ts iosSkin: 26pt continuous muted wells, SF type) */
-  --p-board-lane-gap:16px;--p-board-lane-gap-compact:12px;
-  --p-board-col-radius:26px;--p-board-col-pad:14px;--p-board-col-pad-compact:10px;
-  --p-board-col-gap:12px;--p-board-col-gap-compact:8px;
-  --p-board-col-label-font:15px;--p-board-col-label-lh:20px;--p-board-col-label-weight:600;--p-board-col-label-tracking:-0.24px;
-  --p-board-cardlist-gap:10px;--p-board-cardlist-gap-compact:8px;--p-board-cardlist-min-h:52px;
+  /* Board (board.styles.ts iosSkin: the web skin's parts, SF type) */
+  --p-board-lane-gap:12px;--p-board-lane-gap-compact:12px;
+  --p-board-col-radius:14px;--p-board-col-pad:10px;--p-board-col-pad-compact:10px;
+  --p-board-col-gap:8px;--p-board-col-gap-compact:6px;
+  --p-board-col-label-font:12px;--p-board-col-label-lh:16px;--p-board-col-label-weight:600;--p-board-col-label-tracking:0px;
+  --p-board-cardlist-gap:8px;--p-board-cardlist-gap-compact:6px;--p-board-cardlist-min-h:48px;
   --p-board-card-radius:10px;
-  --p-board-card-title-font:15px;--p-board-card-title-lh:20px;--p-board-card-title-weight:600;
-  --p-board-card-desc-font:13px;--p-board-card-desc-lh:18px;
+  --p-board-card-title-font:13px;--p-board-card-title-lh:18.2px;--p-board-card-title-weight:500;
+  --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
 
-  /* DragHandle (drag-drop.styles.ts iosSkin: 32pt grip, visually compact inside the 44pt row target; 18px glyph) */
-  --p-drag-handle-size:32px;--p-drag-handle-radius:10px;--p-drag-handle-icon:18px;
+  /* DragHandle (drag-drop.styles.ts iosSkin: 32pt grip, visually compact inside the 44pt row target; 15px glyph) */
+  --p-drag-handle-size:32px;--p-drag-handle-radius:10px;--p-drag-handle-icon:15px;
 
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
   --p-sheet-card-radius-top:34px;--p-side-toggle-radius:0px;
@@ -654,12 +641,8 @@
   /* Navbar — M3 small top app bar: 64dp, 22sp leading title, no hairline */
   --p-nav-h:64px;--p-nav-rule:0px;--p-nav-brand:22px;--p-nav-brand-lh:28px;--p-nav-brand-weight:500;
   --p-nav-link-radius:9999px;--p-nav-link-pad-x:16px;--p-nav-link-pad-y:6px;
-  /* Stats — M3 outlined card, flat, headline-small value */
-  --p-stat-radius:12px;--p-stat-pad:16px;--p-stat-shadow:none;--p-stat-gap:12px;
-  --p-stat-label:14px;--p-stat-label-lh:20px;--p-stat-label-tracking:0.25px;--p-stat-value:24px;--p-stat-value-lh:32px;--p-stat-value-weight:400;--p-stat-value-tracking:0px;--p-stat-delta-tracking:0.5px;
-  /* DataTable — M3 list rhythm: normal-case label-medium header, 16sp body */
-  --p-table-head-transform:none /* @kind other */;--p-table-head-tracking:0.5px;--p-table-head-pad-y:10px;
-  --p-table-cell-font:16px;--p-table-cell-lh:24px;--p-table-cell-tracking:0.5px;--p-table-cell-pad-y:14px;--p-table-cell-pad-y-compact:10px;
+  /* Stats (stats.styles.ts androidSkin: the web skin's tile in Roboto, the figure with a little leading) */
+  --p-stat-value-lh:34px;
   /* ButtonGroup — M3 SegmentedButton: an outlined stadium group, tonal selected fill + check */
   --p-seg-track-radius:9999px;--p-seg-track-border:1px;--p-seg-track-fill:transparent;
   --p-seg-border:0px;--p-seg-divider:1px;--p-seg-overlap:0px;--p-seg-radius:0px;--p-seg-inner-radius:0px;
@@ -668,30 +651,13 @@
   --p-seg-check-display:inline /* @kind other */;
   /* Calendar — M3 date picker: 40dp cells, single-letter labels, today as a RING */
   --p-cal-radius:12px;--p-cal-cell-default:40px;--p-cal-cell-compact:36px;
-  --p-cal-chevron:40px;--p-cal-chevron-radius:9999px;--p-cal-chevron-font:22px;--p-cal-chevron-color:var(--muted-foreground);
+  --p-cal-chevron:40px;--p-cal-chevron-radius:9999px;--p-cal-chevron-font:24px;--p-cal-chevron-color:var(--muted-foreground);
   --p-cal-weekdays:"one" /* @kind other */;--p-cal-today-fill:transparent;--p-cal-today-ring:1px;
-  /* Collapsible — M3 expand_more, 0→180° */
-  --p-collapse-glyph:"chevron-down" /* @kind other */;--p-collapse-spin:180deg /* @kind other */;
-  /* Feed — M3: 12dp flat card, title-small actor over body-medium action */
-  --p-feed-radius:12px;--p-feed-actor-tracking:0.1px;--p-feed-action-tracking:0.25px;--p-feed-time-tracking:0.4px;--p-feed-initials-tracking:0.1px;
-  /* ActionPanel — M3 list/card: title-small over body-medium, centre-aligned action */
-  --p-panel-title-weight:500;--p-panel-title-tracking:0.1px;--p-panel-desc-tracking:0.25px;--p-panel-inline-align:center /* @kind other */;
   /* Carousel — M3 anatomy is container + items ONLY: no arrows, no position indicator */
   --p-carousel-slide-radius:28px;--p-carousel-arrows:0 /* @kind other */;--p-carousel-dots:0 /* @kind other */;
   --p-carousel-arrow-fill:var(--card);--p-carousel-arrow-shadow:none;
-  --p-carousel-dot-active-w:20px;
-  --p-carousel-text-tracking:0.15px;
-  /* DescriptionList — M3: flat 12dp outlined card, 14px row gap, M3 tracking */
-  --p-dl-radius:12px;--p-dl-shadow:none;--p-dl-pad:16px;--p-dl-row-gap:14px;
-  --p-dl-term-tracking:0.1px;--p-dl-value-tracking:0.1px;--p-dl-stacked-tracking:0.5px;
-  --p-dl-header-weight:500;--p-dl-header-tracking:0.15px;
-  /* MediaObject — M3: 16dp gap, ELEVATED 12dp card (transparent outline), M3 roles */
-  --p-media-gap:16px;--p-media-gap-compact:12px;--p-media-radius:12px;--p-media-border-color:transparent /* @kind other */;--p-media-shadow:var(--shadow-sm);
-  --p-media-icon-radius:12px;--p-media-title-weight:500;--p-media-title-tracking:0.1px;
-  --p-media-desc-tracking:0.4px;--p-media-body-lh:20px;--p-media-body-tracking:0.25px;
-  /* GridList — M3: 12dp thumbnail, roomier gap, M3 type roles */
-  --p-grid-gap:16px;--p-grid-gallery-radius:12px;--p-grid-gallery-title-tracking:0.5px;--p-grid-subtitle-tracking:0.4px;
-  --p-grid-card-title-weight:500;--p-grid-card-title-tracking:0.1px;
+  --p-carousel-dot:8px;--p-carousel-dot-active-w:20px;
+  --p-carousel-text-font:16px;--p-carousel-text-lh:24px;--p-carousel-text-tracking:0.15px;
   /* Slider — M3 Expressive: a 16dp split track, a 4x44dp bar handle, a 6dp gap, a stop dot */
   --p-slider-track-h-small:16px;--p-slider-track-h-base:16px;--p-slider-track-h-large:24px;
   --p-slider-track-radius:8px;--p-slider-inner-radius:2px;--p-slider-gap:6px;--p-slider-row-min-h:48px;
@@ -708,12 +674,6 @@
   /* InputOTP: Material 3 has no pin input, so the web cells at the 4dp M3 field corner; the caret blinks */
   --p-otp-radius:4px;--p-otp-inner-radius:4px;
   --p-otp-caret-blink:canvas-caret 1s steps(2,start) infinite /* @kind other */;
-  /* Accordion — M3 expandable list rows: flush 56dp rows, full-bleed dividers */
-  --p-acc-header-pad-x:16px;--p-acc-header-pad-y:16px;
-  --p-acc-title:16px;--p-acc-title-lh:24px;--p-acc-title-weight:500;--p-acc-title-tracking:0.15px;
-  --p-acc-desc:14px;--p-acc-desc-lh:20px;--p-acc-desc-tracking:0.25px;
-  --p-acc-chevron:24px;
-  --p-acc-content:14px;--p-acc-content-lh:20px;--p-acc-content-tracking:0.25px;--p-acc-content-pad-bottom:16px;
   /* ActionSheet — M3 modal bottom sheet: one 28dp sheet, drag handle, Cancel as the last row */
   --p-sheet-scrim:rgba(0,0,0,0.32);--p-sheet-stack-pad:0px;--p-sheet-stack-gap:0px;
   --p-sheet-card-radius:0px;--p-sheet-card-radius-top:28px;--p-sheet-card-pad:10px 8px 16px;--p-sheet-shadow:none;
@@ -813,21 +773,21 @@
   --p-empty-radius:18px;--p-empty-title-weight:500;--p-empty-title-tracking:-0.19px;--p-empty-desc-tracking:0px;
   --p-min-target:48px;
 
-  /* Board (board.styles.ts androidSkin: 16dp surface-container wells, M3 type) */
-  --p-board-lane-gap:16px;--p-board-lane-gap-compact:12px;
-  --p-board-col-radius:16px;--p-board-col-pad:12px;--p-board-col-pad-compact:8px;
-  --p-board-col-gap:12px;--p-board-col-gap-compact:8px;
-  --p-board-col-label-font:14px;--p-board-col-label-lh:20px;--p-board-col-label-weight:500;--p-board-col-label-tracking:0.1px;
-  --p-board-cardlist-gap:8px;--p-board-cardlist-gap-compact:6px;--p-board-cardlist-min-h:52px;
+  /* Board (board.styles.ts androidSkin: the web skin's parts, Roboto) */
+  --p-board-lane-gap:12px;--p-board-lane-gap-compact:12px;
+  --p-board-col-radius:14px;--p-board-col-pad:10px;--p-board-col-pad-compact:10px;
+  --p-board-col-gap:8px;--p-board-col-gap-compact:6px;
+  --p-board-col-label-font:12px;--p-board-col-label-lh:16px;--p-board-col-label-weight:600;--p-board-col-label-tracking:0px;
+  --p-board-cardlist-gap:8px;--p-board-cardlist-gap-compact:6px;--p-board-cardlist-min-h:48px;
   --p-board-card-radius:10px;
-  --p-board-card-title-font:14px;--p-board-card-title-lh:20px;--p-board-card-title-weight:500;
+  --p-board-card-title-font:13px;--p-board-card-title-lh:18.2px;--p-board-card-title-weight:500;
   --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
 
-  /* DragHandle (drag-drop.styles.ts androidSkin: 40dp circular grip, the M3 min touch target; 20px glyph) */
-  --p-drag-handle-size:40px;--p-drag-handle-radius:9999px;--p-drag-handle-icon:20px;
+  /* DragHandle (drag-drop.styles.ts androidSkin: 40dp circular grip, the M3 min touch target; 15px glyph) */
+  --p-drag-handle-size:40px;--p-drag-handle-radius:9999px;--p-drag-handle-icon:15px;
 
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
-  --p-acc-card-radius:12px;--p-cmd-radius:18px;--p-table-radius:12px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
+  --p-cmd-radius:18px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
 }
 
 /* iOS skin values that resolve PER SCHEME upstream: the drawer scrim

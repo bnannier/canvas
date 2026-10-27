@@ -4,10 +4,11 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 
 Under the value each tile can draw one strip: its trend (`spark`) or its composition (`share`). Both reserve the same height, so a row that mixes them keeps one card height and no tile is left half empty. `framed` puts every strip on a muted track, which is what makes a ROW of them scan evenly.
 
-`compact` renders value-first rail tiles with 18px extra-bold values and compact
-labels. `large` renders 24px dashboard headlines; compact wins if both are set.
-Each item may include a muted `description`. These densities retain the Argus
-borderless tile surface, exact insets, tracking and text rhythm.
+Each metric is a tile: the card fill on a hairline at the card corner, an 18px inset,
+a 12px label, a 28px figure and a 12px mono delta. `plain` sets the metrics edge to edge
+inside one bordered surface, a hairline between each. `compact` renders value-first rail
+tiles with a 12px inset and 20px figures; `large` renders 36px dashboard headlines;
+compact wins if both are set. Each item may include a muted `description`.
 
 ## Usage
 

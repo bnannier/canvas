@@ -1,6 +1,8 @@
 # ActionPanel
 
-Section card with headline, body text, and a primary action. Used to surface a single decision or call-to-action.
+Section panel with headline, body text, and one action. Used to surface a single decision or call-to-action.
+
+The panel is the v4 hand-off's on every platform (no platform ships an action panel): an 18 px inset at the card corner on a hairline over the card fill, a 600 15 title over a 13 px muted description. The action is an outline Button; `destructive` washes the panel in the danger tint, edges it in the destructive colour and makes the action destructive; `inline` pins the action beside the copy, wrapping it underneath when the panel is narrow. Embedded `children` sit under the copy, and the Button then closes the panel on the right as the primary action that commits them.
 
 ## Usage
 

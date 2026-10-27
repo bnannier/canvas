@@ -1,6 +1,7 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { MONO_FONT } from "../../style/mono.js";
 
 // Co-located StackedList skins, one per platform. StackedList is a "Light"
 // treatment: identical structure and semantic colors (those live in
@@ -9,10 +10,12 @@ import { platformShape } from "../../style/platform-shape.js";
 // survives on every platform (the primary token and the type stay the same);
 // only the native shape/sizing/feedback change.
 //
-//   Web: a bordered card at the card corner with the default shadow; rows 20/12
-//     padded; a full-width 1px hairline between ruled rows; a 14/500 name + 12 muted
-//     detail; a 16/500 header title; the overflow menu at the control corner. Press =
-//     the accent surface (no opacity dim, no ripple).
+//   Web: the v4 hand-off's list (cv-kit-code3.js `O('stacked-lists')`): a frame at the
+//     list corner on a `border` hairline over the `card` fill under the small shadow;
+//     rows 16/12 padded, 12 between the lead and the text; a full-width 1px hairline
+//     between ruled rows; a 500 14 name over a 400 12 detail in the subtle ink, the
+//     trailing meta 400 12 mono; a 500 15 header title 14/16 padded; the overflow menu at
+//     the control corner. Press = the `secondary` wash (the hand-off's sf3 row hover).
 //   iOS (SF / HIG inset-grouped list, iOS 27 kit Lists/Rows/Large): a card at the
 //     inset grouped list corner with the continuous (superellipse) corner curve, FLAT and BORDERLESS
 //     (the iOS 27 grouped Table View is fill-differentiated, not outlined, and
@@ -114,36 +117,35 @@ const MENU: ViewStyle = {
   backgroundColor: "transparent",
 };
 
-// ---------- Web: the bordered card ----------
-// the card corner, a border on the card fill, the default shadow; rows 20/12 padded; a
-// full-width 1px hairline; 14/500 name + 12 muted detail; 16/500 header; overflow menu
-// at the control corner. Press = the accent surface.
+// ---------- Web: the hand-off's framed list ----------
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
 export const webSkin: StackedListSkin = {
   cardSurface: (t) => ({
-    borderRadius: shape.web.card,
+    borderRadius: platformShape.web.listFrame,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.card,
     overflow: "hidden",
-    ...shadow("DEFAULT", t),
+    ...shadow("sm", t),
   }),
-  rowBase: { ...ROW, gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
+  rowBase: { ...ROW, gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   rowDivider: (t) => ({ position: "absolute", left: 0, right: 0, bottom: 0, height: 1, backgroundColor: t.border }),
-  pressedSurface: (t) => ({ backgroundColor: t.accent }),
+  pressedSurface: (t) => ({ backgroundColor: t.secondary }),
   nameLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
-  mutedLabel: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
-  metaLabel: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  mutedLabel: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: subtle(t) }),
+  metaLabel: (t) => ({ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400", color: subtle(t) }),
   header: (t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 12,
     borderBottomWidth: 1,
     borderColor: t.border,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   }),
-  headerTitle: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", color: t.foreground }),
-  chevronGlyph: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
+  headerTitle: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "500", color: t.foreground }),
+  chevronGlyph: (t) => ({ fontSize: 14, lineHeight: 18, color: subtle(t) }),
   chevronIcon: null,
   menuButton: { ...MENU, borderRadius: shape.web.control },
   menuHitSlop: 0,

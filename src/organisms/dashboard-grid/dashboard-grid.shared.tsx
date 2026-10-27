@@ -11,7 +11,6 @@ import {
   type Responsive,
   type StyleProp,
   type ViewStyle,
-  withInnerFill,
 } from "../../style/index.js";
 // KIT-INTERNAL, so it comes in by path rather than through the style barrel (the
 // `useDragActive` precedent): it gates a client-only read out of the hydration render.
@@ -275,7 +274,7 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
               style={cell}
             >
               <Draggable id={widget.id} data={widget} label={widget.title} style={FILL}>
-                <View style={[withInnerFill(theme, skin.editCell(tokens), "soft"), FILL]}>
+                <View style={[skin.editCell(tokens, theme.dark), FILL]}>
                   <View style={skin.gripRow}>
                     <DragHandle label={`Reorder ${widget.title}`} />
                   </View>

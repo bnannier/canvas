@@ -16,7 +16,7 @@ The reading direction is respected throughout. In a right-to-left locale a `hori
 ]}>
   {(cards, setCards) => (
     <DragDropProvider>
-      <DropZone id="list" label="Tasks" onDrop={(e) => setCards(applyDrop(cards, e))}>
+      <DropZone bordered id="list" label="Tasks" onDrop={(e) => setCards(applyDrop(cards, e))}>
         <Column snug>
           {cards.map((c) => (
             <Draggable key={c.id} id={c.id} data={c} label={c.title}>
@@ -37,6 +37,29 @@ The reading direction is respected throughout. In a right-to-left locale a `hori
 
 ## Variants
 
+### Bordered zone
+
+Pass `bordered` to a `DropZone` to draw it as a visible drop well: a dashed, sunken surface
+with the zone's `label` as an eyebrow over its items. While a drag is over it, its edge and
+fill take the accent. Without `bordered` the zone is only a drop target around its children
+(a Board lane or a StackedList draws its own surface), and a drag over it lays the same
+accent edge and wash across it.
+
+```tsx
+<DragDropProvider>
+  <DropZone bordered id="queue" label="Queue">
+    <Draggable id="tokens" data={{ id: "tokens", zone: "queue" }} label="Tokens">
+      <Card compact>
+        <Row between alignCenter>
+          <Typography small>Tokens</Typography>
+          <DragHandle label="Reorder Tokens" />
+        </Row>
+      </Card>
+    </Draggable>
+  </DropZone>
+</DragDropProvider>
+```
+
 ### Locked item
 
 Pass `disabled` to a `Draggable` to pin it in place: its grip dims and becomes inert while the
@@ -44,7 +67,7 @@ rest of the list stays draggable.
 
 ```tsx
 <DragDropProvider>
-  <DropZone id="list" label="Tasks">
+  <DropZone bordered id="list" label="Tasks">
     <Column snug>
       <Draggable id="a" data={{ id: "a", zone: "list" }} label="Design review">
         <Card>
@@ -83,7 +106,7 @@ shared list is a flat array with a `zone` field, and `applyDrop` re-homes the ca
     <DragDropProvider>
       <Grid columns={2} relaxed>
         {["todo", "doing"].map((zone) => (
-          <DropZone key={zone} id={zone} label={zone === "todo" ? "To do" : "Doing"} onDrop={(e) => setCards(applyDrop(cards, e))}>
+          <DropZone bordered key={zone} id={zone} label={zone === "todo" ? "To do" : "Doing"} onDrop={(e) => setCards(applyDrop(cards, e))}>
             <Column snug>
               {cards.filter((c) => c.zone === zone).map((c) => (
                 <Draggable key={c.id} id={c.id} data={c} label={c.title}>

@@ -129,11 +129,11 @@ describe("DashboardGrid layout", () => {
   it("sizes each cell from its span once the grid has measured its own width", () => {
     const { container } = ui(<DashboardGrid items={items} />);
     fireGridLayout(container, 1200);
-    // 12 columns and 11 x 16 gaps in 1200px: a 6-span cell is 592, and two of them plus the
+    // 12 columns and 11 x 12 gaps in 1200px: a 6-span cell is 594, and two of them plus the
     // gap between them fill the row exactly.
-    expect(cellWidthOf(container, "a")).toBe(592);
-    expect(cellWidthOf(container, "b")).toBe(592);
-    expect(cellWidthOf(container, "c")).toBe(dashboardCellWidth(1200, 4, 16));
+    expect(cellWidthOf(container, "a")).toBe(594);
+    expect(cellWidthOf(container, "b")).toBe(594);
+    expect(cellWidthOf(container, "c")).toBe(dashboardCellWidth(1200, 4, 12));
   });
 
   it("reflows to the narrow tier at or below the lg breakpoint, and stacks on a phone", () => {
@@ -142,7 +142,7 @@ describe("DashboardGrid layout", () => {
     // narrow: a 6-span widget declares no narrowSpan, and a span of 5 or more is a primary
     // tile, so it takes the full 12 columns; the 4-span pairs up at half the board.
     expect(cellWidthOf(narrow.container, "a")).toBe(800);
-    expect(cellWidthOf(narrow.container, "c")).toBe(dashboardCellWidth(800, 6, 16));
+    expect(cellWidthOf(narrow.container, "c")).toBe(dashboardCellWidth(800, 6, 12));
     cleanup();
 
     const phone = ui(<DashboardGrid items={items} />);
@@ -158,7 +158,7 @@ describe("DashboardGrid layout", () => {
     ];
     const { container } = ui(<DashboardGrid items={wide} />);
     fireGridLayout(container, 800);
-    expect(cellWidthOf(container, "a")).toBe(dashboardCellWidth(800, 6, 16));
+    expect(cellWidthOf(container, "a")).toBe(dashboardCellWidth(800, 6, 12));
   });
 
   it("tightens the gap on the density axis", () => {
@@ -421,6 +421,23 @@ describe("DashboardGrid storageKey", () => {
       expect(messages.some((m) => m.includes("<DashboardGrid />") && m.includes("`storageKey` is ignored"))).toBe(true);
     } finally {
       warnSpy.mockRestore();
+    }
+  });
+});
+
+// The v4 hand-off's board (`K.def('dashboard-grid')`): cells 12 px apart, 8 compact, and an
+// unlocked widget edged in a dashed 1px accent ring (`--ion-ring`: the accent at 35% dark,
+// 28% light) with no fill of its own.
+describe("DashboardGrid look (the hand-off renderer)", () => {
+  it("spaces cells 12 px, 8 px compact, and rings an unlocked widget in the dashed accent", async () => {
+    const { webSkin } = await import("../src/organisms/dashboard-grid/dashboard-grid.styles.ts");
+    const { darkColors, lightColors } = await import("../src/style/tokens.ts");
+    const { alpha } = await import("../src/style/color.ts");
+    expect([webSkin.gap(false), webSkin.gap(true)]).toEqual([12, 8]);
+    for (const [dark, t, a] of [[true, darkColors, 0.35], [false, lightColors, 0.28]] as const) {
+      const cell = webSkin.editCell(t, dark);
+      expect(cell).toMatchObject({ borderWidth: 1, borderStyle: "dashed", borderColor: alpha(t.primary, a) });
+      expect(cell.backgroundColor).toBeUndefined();
     }
   });
 });

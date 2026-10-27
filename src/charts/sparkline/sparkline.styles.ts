@@ -8,6 +8,8 @@ import { platformShape } from "../../style/platform-shape.js";
 export interface SparklineSkin {
   /** Corner radius of each bar's data end (the top; the baseline stays square), in px. */
   barRadius: number;
+  /** Corner radius of the `track` band, in px (the hand-off's `rect rx` 6). */
+  trackRadius: number;
   /** Gap between bars, in px. */
   gap: number;
   /** Strip height per size, in px (the tallest bar reaches this). */
@@ -27,6 +29,7 @@ export const SPARK_STRIP_HEIGHT = 24;
 export const webSkin: SparklineSkin = {
   // A bar is a compact chart mark: the web's mark corner.
   barRadius: platformShape.web.mark,
+  trackRadius: platformShape.web.sparkTrack,
   gap: 2,
   height: { compact: 16, default: SPARK_STRIP_HEIGHT, tall: 32 },
 };

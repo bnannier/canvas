@@ -1,4 +1,4 @@
-import { type ColorTokens, palette } from "../../style/index.js";
+import { type ColorTokens, darkColors, oklchHex } from "../../style/index.js";
 
 // Dependency-free syntax tokenizer for CodeBlock. Line-based output: each source
 // line becomes an array of { text, kind } spans, rendered as nested <Text> nodes,
@@ -262,31 +262,39 @@ export function tokenize(code: string, language?: string): CodeToken[][] {
   return toLines(flat);
 }
 
+// The light scheme's code inks: the hand-off's cyan, mint and amber series (chart 2 to 4,
+// oklch .62 .13 205, .66 .15 165 and .64 .15 70) sit near 3:1 on the light code well, so
+// each is walked down in oklch lightness at its own hue and chroma until it clears 4.5:1
+// on the well and on every palette's highlighted row (test/code-block-look.test.ts). The
+// dark scheme's series clear it as drawn.
+const LIGHT_INK = {
+  tag: oklchHex(0.485, 0.13, 205),
+  string: oklchHex(0.48, 0.15, 165),
+  number: oklchHex(0.52, 0.15, 70),
+} as const;
+
 /**
- * The theme-aware color for a token kind. Colors approximate the familiar
- * GitHub light/dark ramps, drawn from the Tailwind palette so both schemes stay
- * legible on the muted code surface; the terminal variant passes `dark: true`
- * unconditionally because its window is fixed dark in every scheme.
+ * The theme-aware color for a token kind: the hand-off's code inks (cv-kit-code3.js
+ * `hl`). Keywords in the accent's text ink, strings in mint, numbers in amber, tags and
+ * attributes in cyan, comments in the subtle ink. `dark` says the code sits on a dark
+ * bed: the dark scheme's own tokens, or the terminal's fixed dark window in any scheme,
+ * which takes the dark scheme's inks.
  */
 export function syntaxColor(kind: TokenKind, tokens: ColorTokens, dark: boolean): string {
+  const t = dark && tokens.background !== darkColors.background ? darkColors : tokens;
   switch (kind) {
     case "comment":
-      return tokens["muted-foreground"];
+      return t["subtle-foreground"] ?? t["muted-foreground"];
     case "string":
-      return dark ? palette["green-400"] : palette["green-700"];
+      return dark ? t["chart-3"] : LIGHT_INK.string;
     case "keyword":
-      return dark ? palette["violet-400"] : palette["violet-700"];
+      return t["primary-text"] ?? t.primary;
     case "number":
-      return dark ? palette["amber-400"] : palette["amber-600"];
+      return dark ? t["chart-4"] : LIGHT_INK.number;
     case "tag":
-      return dark ? palette["sky-400"] : palette["sky-700"];
     case "attr":
-      return dark ? palette["cyan-400"] : palette["cyan-700"];
-    case "fn":
-      return dark ? palette["blue-400"] : palette["blue-700"];
-    case "var":
-      return dark ? palette["rose-400"] : palette["rose-700"];
+      return dark ? t["chart-2"] : LIGHT_INK.tag;
     default:
-      return tokens.foreground;
+      return t.foreground;
   }
 }

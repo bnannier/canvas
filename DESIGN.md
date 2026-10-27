@@ -299,11 +299,11 @@ fontWeights:
 components:
   stats:
     stat-radius: "16px"
-    stat-pad: "24px"
-    stat-gap: "16px"
-    stat-shadow: "var(--shadow)"
-    stat-value-lh: "44px"
-    stat-value-tracking: "0px"
+    stat-pad: "18px"
+    stat-gap: "12px"
+    stat-shadow: "var(--shadow-sm)"
+    stat-value-lh: "28px"
+    stat-value-tracking: "-0.56px"
     stat-label-tracking: "0px"
   emptystate:
     empty-radius: "18px"
@@ -333,9 +333,9 @@ components:
     menu-radius: "16px"
     menu-row-radius: "8px"
   emblem:
-    emblem-radius-small: "12px"
-    emblem-radius-default: "12px"
-    emblem-radius-large: "12px"
+    emblem-radius-small: "8px"
+    emblem-radius-default: "11px"
+    emblem-radius-large: "16px"
   input:
     field-radius: "10px"
     field-radius-bottom: "10px"
@@ -373,21 +373,21 @@ components:
   feed:
     feed-radius: "16px"
   gridlist:
-    grid-gallery-radius: "10px"
+    grid-gallery-radius: "14px"
   mediaobject:
-    media-radius: "16px"
+    media-radius: "12px"
     media-shadow: none
-    media-icon-radius: "10px"
+    media-icon-radius: "11px"
   stackedlist:
-    list-shadow: "var(--shadow)"
-    list-radius: "16px"
+    list-shadow: "var(--shadow-sm)"
+    list-radius: "14px"
   actionsheet:
     sheet-card-radius-top: "16px"
     sheet-card-radius: "16px"
     sheet-row-radius: "0px"
     sheet-cancel-radius: "16px"
   board:
-    board-col-radius: "16px"
+    board-col-radius: "14px"
     board-card-radius: "10px"
   calendar:
     cal-radius: "16px"
@@ -429,11 +429,11 @@ components:
   command:
     cmd-radius: "18px"
   datatable:
-    table-radius: "16px"
+    table-radius: "14px"
   draghandle:
     drag-handle-size: "32px"
     drag-handle-radius: "10px"
-    drag-handle-icon: "16px"
+    drag-handle-icon: "15px"
   tabbar:
     tabbar-radius: "9999px"
     tabbar-item-radius: "9999px"
@@ -446,13 +446,7 @@ components:
 platformSkins:
   ios:
     stats:
-      stat-radius: "12px"
-      stat-pad: "18px"
-      stat-gap: "12px"
-      stat-shadow: none
-      stat-value-lh: "30px"
-      stat-value-tracking: "-0.5px"
-      stat-label-tracking: "-0.15px"
+      stat-value-lh: "34px"
     emptystate:
       empty-radius: "18px"
     card:
@@ -501,13 +495,8 @@ platformSkins:
     descriptionlist:
       dl-shadow: none
       dl-radius: "26px"
-    feed:
-      feed-radius: "12px"
     gridlist:
       grid-gallery-radius: "12px"
-    mediaobject:
-      media-radius: "12px"
-      media-icon-radius: "10px"
     stackedlist:
       list-shadow: none
       list-radius: "26px"
@@ -517,13 +506,11 @@ platformSkins:
       sheet-row-radius: "9999px"
       sheet-cancel-radius: "9999px"
     board:
-      board-col-radius: "26px"
+      board-col-radius: "14px"
       board-card-radius: "10px"
     calendar:
       cal-radius: "12px"
       cal-chevron-radius: "9999px"
-    carousel:
-      carousel-slide-radius: "12px"
     dialog:
       dialog-shadow: "var(--shadow-lg)"
       dialog-radius: "28px"
@@ -548,7 +535,7 @@ platformSkins:
     draghandle:
       drag-handle-size: "32px"
       drag-handle-radius: "10px"
-      drag-handle-icon: "18px"
+      drag-handle-icon: "15px"
     tabbar:
       tabbar-radius: "9999px"
       tabbar-item-radius: "9999px"
@@ -560,13 +547,7 @@ platformSkins:
       tab-v-radius: "10px"
   android:
     stats:
-      stat-radius: "12px"
-      stat-pad: "16px"
-      stat-gap: "12px"
-      stat-shadow: none
-      stat-value-lh: "32px"
-      stat-value-tracking: "0px"
-      stat-label-tracking: "0.25px"
+      stat-value-lh: "34px"
     emptystate:
       empty-radius: "18px"
     card:
@@ -611,22 +592,9 @@ platformSkins:
     textarea:
       field-radius: "4px"
       field-radius-bottom: "0px"
-    accordion:
-      acc-card-radius: "12px"
     alertdialog:
       ad-radius: "28px"
       ad-btn-radius: "9999px"
-    descriptionlist:
-      dl-shadow: none
-      dl-radius: "12px"
-    feed:
-      feed-radius: "12px"
-    gridlist:
-      grid-gallery-radius: "12px"
-    mediaobject:
-      media-radius: "12px"
-      media-shadow: "var(--shadow-sm)"
-      media-icon-radius: "12px"
     stackedlist:
       list-shadow: none
       list-radius: "12px"
@@ -635,7 +603,7 @@ platformSkins:
       sheet-card-radius: "0px"
       sheet-cancel-radius: "0px"
     board:
-      board-col-radius: "16px"
+      board-col-radius: "14px"
       board-card-radius: "10px"
     calendar:
       cal-radius: "12px"
@@ -665,12 +633,10 @@ platformSkins:
       tip-shadow: none
     command:
       cmd-radius: "18px"
-    datatable:
-      table-radius: "12px"
     draghandle:
       drag-handle-size: "40px"
       drag-handle-radius: "9999px"
-      drag-handle-icon: "20px"
+      drag-handle-icon: "15px"
     tabbar:
       tabbar-radius: "0px"
       tabbar-item-radius: "0px"
@@ -933,11 +899,17 @@ kit's own Android parts at a step of the same scale.
 | Platform | Role | Corner |
 | --- | --- | --- |
 | web | `insetRow` | 10px |
+| web | `disclosureCard` | 14px |
+| web | `codeCard` | 14px |
+| web | `mediaFrame` | 14px |
 | web | `brandMark` | 9px |
 | web | `avatarSquareTiny` | 6px |
 | web | `avatarSquareSmall` | 8px |
 | web | `avatarSquare` | 11px |
 | web | `avatarSquareLarge` | 16px |
+| web | `emblemSmall` | 8px |
+| web | `emblem` | 11px |
+| web | `emblemLarge` | 16px |
 | web | `referenceCard` | 9px |
 | web | `pageCell` | 8px |
 | web | `menuRow` | 8px |
@@ -948,21 +920,31 @@ kit's own Android parts at a step of the same scale.
 | web | `emptyState` | 18px |
 | web | `key` | 6px |
 | web | `tooltip` | 8px |
-| web | `event` | 8px |
-| web | `bar` | 8px |
+| web | `event` | 6px |
+| web | `bar` | 3px |
 | web | `mark` | 4px |
 | web | `cell` | 2px |
-| web | `candle` | 1px |
-| web | `tableHeader` | 10px |
+| web | `candle` | 1.5px |
+| web | `chartTile` | 8px |
+| web | `heatCell` | 2.5px |
+| web | `sparkTrack` | 6px |
+| web | `funnelBar` | 6px |
+| web | `listBar` | 8px |
+| web | `stripBar` | 1px |
+| web | `tableFrame` | 14px |
+| web | `listFrame` | 14px |
+| web | `gridTile` | 14px |
 | web | `dragGhost` | 12px |
-| web | `composer` | 20px |
-| web | `bubble` | 18px |
-| web | `bubbleTail` | 6px |
+| web | `composer` | 16px |
+| web | `bubble` | 16px |
+| web | `bubbleTail` | 4px |
 | web | `navRow` | 9px |
 | web | `navRowCompact` | 8px |
 | web | `rail` | 12px |
 | web | `floatingRail` | 14px |
 | web | `navBar` | 14px |
+| web | `lane` | 14px |
+| web | `laneCard` | 10px |
 | ios | `actionSheet` | 34px |
 | ios | `groupedList` | 26px |
 | ios | `event` | 6px |
@@ -975,10 +957,7 @@ kit's own Android parts at a step of the same scale.
 | android | `tooltip` | 4px |
 | android | `snackbar` | 4px |
 | android | `navigationDrawer` | 16px |
-| android | `lane` | 16px |
 | android | `carouselItem` | 28px |
-| android | `iconBox` | 12px |
-| android | `compactIconBox` | 8px |
 | android | `tabIndicator` | 3px |
 | android | `sliderTrackInner` | 2px |
 <!-- @/generated -->
@@ -1001,21 +980,27 @@ drawn by those entries' platforms.
 <!-- @generated:shape-roles -->
 | Role | Drawn by |
 | --- | --- |
-| `control` | `atoms/button`, `atoms/button-group`, `atoms/skeleton`, `atoms/stepper`, `atoms/tooltip`, `molecules/alert`, `molecules/card`, `molecules/code-block`, `molecules/grid-lists`, `molecules/media-objects`, `molecules/stacked-lists`, `organisms/board`, `organisms/calendar`, `organisms/data-table`, `organisms/dialog`, `organisms/drag-drop`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/toast` |
+| `control` | `atoms/button`, `atoms/button-group`, `atoms/skeleton`, `atoms/stepper`, `atoms/tooltip`, `molecules/alert`, `molecules/card`, `molecules/code-block`, `molecules/stacked-lists`, `organisms/calendar`, `organisms/data-table`, `organisms/dialog`, `organisms/drag-drop`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/toast` |
 | `field` | `atoms/autocomplete`, `atoms/input`, `atoms/input-otp`, `atoms/select`, `atoms/textarea`, `organisms/command`, `organisms/data-table` |
-| `card` | `atoms/autocomplete`, `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/card`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/media-objects`, `molecules/stacked-lists`, `molecules/stats`, `organisms/board`, `organisms/calendar`, `organisms/carousel`, `organisms/data-table`, `organisms/drag-drop`, `organisms/navbars`, `organisms/sidebar`, `organisms/toast` |
+| `card` | `atoms/autocomplete`, `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/action-panels`, `molecules/card`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/stacked-lists`, `molecules/stats`, `organisms/calendar`, `organisms/carousel`, `organisms/chat`, `organisms/data-table`, `organisms/navbars`, `organisms/sidebar`, `organisms/toast` |
 | `dialog` | `molecules/alert-dialog`, `organisms/dialog` |
 | `menu` | `atoms/autocomplete`, `atoms/button-group`, `atoms/dropdown`, `atoms/popover`, `atoms/select`, `charts/shared`, `organisms/action-sheet`, `organisms/calendar`, `organisms/row-menu`, `style` |
 | `sheet` | `atoms/popover`, `organisms/action-sheet`, `organisms/drawer` |
 | `checkbox` | `atoms/checkbox` |
 | `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/input`, `organisms/navbars`, `organisms/tabs` |
-| `tile` | `atoms/emblem`, `atoms/listbox`, `atoms/qrcode`, `atoms/radio`, `atoms/swatch`, `molecules/card`, `molecules/grid-lists`, `molecules/stats`, `organisms/board`, `organisms/dashboard-grid`, `organisms/tabs` |
-| `insetRow` | `molecules/card` |
+| `tile` | `atoms/listbox`, `atoms/radio`, `atoms/swatch`, `molecules/card`, `molecules/grid-lists`, `molecules/media-objects`, `organisms/dashboard-grid`, `organisms/tabs` |
+| `insetRow` | `molecules/card`, `molecules/collapsible` |
+| `disclosureCard` | `molecules/collapsible` |
+| `codeCard` | `molecules/code-block` |
+| `mediaFrame` | `atoms/qrcode`, `atoms/video` |
 | `brandMark` | `atoms/avatar` |
 | `avatarSquareTiny` | `atoms/avatar` |
 | `avatarSquareSmall` | `atoms/avatar` |
 | `avatarSquare` | `atoms/avatar` |
 | `avatarSquareLarge` | `atoms/avatar` |
+| `emblemSmall` | `atoms/emblem`, `molecules/media-objects` |
+| `emblem` | `atoms/emblem`, `molecules/media-objects` |
+| `emblemLarge` | `atoms/emblem` |
 | `referenceCard` | `molecules/card` |
 | `pageCell` | `atoms/pagination` |
 | `menuRow` | `atoms/autocomplete`, `atoms/select`, `organisms/row-menu`, `style` |
@@ -1024,14 +1009,22 @@ drawn by those entries' platforms.
 | `callout` | `molecules/alert` |
 | `alertDialog` | `molecules/alert-dialog` |
 | `emptyState` | `molecules/empty-state` |
-| `key` | `atoms/badge`, `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `charts/heatmap`, `molecules/code-block`, `molecules/media-objects`, `molecules/phone-input` |
+| `key` | `atoms/badge`, `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `charts/heatmap`, `molecules/code-block`, `molecules/phone-input` |
 | `tooltip` | `atoms/tooltip` |
 | `event` | `organisms/calendar` |
 | `bar` | `charts/shared` |
-| `mark` | `charts/sparkline`, `charts/stacked-bar`, `charts/treemap`, `charts/waterfall-chart` |
-| `cell` | `charts/bullet-chart`, `charts/heatmap`, `charts/shared` |
+| `mark` | `charts/box-plot`, `charts/bullet-chart`, `charts/sparkline`, `charts/stacked-bar`, `charts/waterfall-chart` |
+| `cell` | `charts/histogram`, `charts/shared` |
 | `candle` | `charts/candlestick-chart` |
-| `tableHeader` | `organisms/data-table` |
+| `chartTile` | `charts/treemap` |
+| `heatCell` | `charts/heatmap` |
+| `sparkTrack` | `charts/sparkline` |
+| `funnelBar` | `charts/funnel-chart` |
+| `listBar` | `charts/shared` |
+| `stripBar` | `charts/service-health-list` |
+| `tableFrame` | `organisms/data-table` |
+| `listFrame` | `molecules/stacked-lists` |
+| `gridTile` | `molecules/grid-lists` |
 | `dragGhost` | `organisms/drag-drop` |
 | `composer` | `organisms/chat` |
 | `bubble` | `organisms/chat` |
@@ -1041,17 +1034,16 @@ drawn by those entries' platforms.
 | `rail` | `organisms/sidebar` |
 | `floatingRail` | `organisms/filter-panel`, `organisms/sidebar` |
 | `navBar` | `organisms/navbars` |
+| `lane` | `organisms/board`, `organisms/drag-drop` |
+| `laneCard` | `organisms/board` |
 | `actionSheet` | `organisms/action-sheet` |
-| `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists`, `organisms/board` |
+| `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists` |
 | `searchField` | `atoms/input` |
 | `chip` | `atoms/chip` |
 | `sliderTrack` | `atoms/slider` |
 | `snackbar` | `organisms/toast` |
 | `navigationDrawer` | `organisms/drawer`, `organisms/sidebar` |
-| `lane` | `organisms/board` |
 | `carouselItem` | `organisms/carousel` |
-| `iconBox` | `molecules/media-objects` |
-| `compactIconBox` | `molecules/media-objects` |
 | `tabIndicator` | `organisms/tabs` |
 | `sliderTrackInner` | `atoms/slider` |
 <!-- @/generated -->

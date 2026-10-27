@@ -1,6 +1,7 @@
 import { Fragment, type ComponentType } from "react";
 import { FlatList, StyleSheet, type DimensionValue, type LayoutChangeEvent, type ViewProps } from "react-native";
-import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, FOCUS_RESET, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, alpha } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, FOCUS_RESET, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, paneRipple, withInnerFill, alpha } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -50,8 +51,16 @@ import { type Columns } from "./grid-lists.styles.js";
 // tile, and the gallery tile; the skin maps the active platform's thumbnail
 // radius, density, type tracking, and press feedback onto each piece.
 export interface GridListSkin {
-  /** Gallery thumbnail block corner radius (6 web, 10 iOS, 12 M3). */
+  /** Gallery thumbnail block corner radius, when the thumbnail stands on its own (iOS). */
   galleryRadius: number;
+  /**
+   * The gallery tile's frame (its corner, hairline and fill): the thumbnail sits square
+   * at its top, clipped by the frame, over a padded caption. Null where the thumbnail
+   * stands on its own with the caption under it (iOS Collections).
+   */
+  galleryTile: ((t: ColorTokens) => ViewStyle) | null;
+  /** The framed gallery tile's caption inset. */
+  galleryCaption: ViewStyle;
   /** iOS continuous (superellipse) corner curve for the gallery thumbnail; omitted (no-op) elsewhere. */
   galleryCurve?: ViewStyle["borderCurve"];
   /** Inter-tile grid gap per density (default vs compact). */
@@ -175,7 +184,10 @@ export function createGridList(
   // below. The parent GridList resolves the responsive width ONCE and passes it
   // down, so an N-tile grid carries one viewport subscription, not N.
   function GalleryTile({ item, width, listItem, onPress }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void }) {
-    const { tokens } = useTheme();
+    const theme = useMaterialTheme({ static: true });
+    const { tokens } = theme;
+    const frame = skin.galleryTile ? skin.galleryTile(tokens) : null;
+    if (frame) return <FramedGalleryTile item={item} width={width} listItem={listItem} onPress={onPress} frame={frame} />;
     const inner = (
       <>
         {/* Square color block. A single translucent tint stands in for the legacy
@@ -216,6 +228,48 @@ export function createGridList(
       );
     }
     return <View {...listItem} style={[s.tileGrow, { width }]}>{inner}</View>;
+  }
+
+  // The framed gallery tile (the v4 hand-off's): the thumbnail square at the top of a
+  // content pane, clipped by its corner, over the padded caption. Pressable, the pane
+  // rides inside the Pressable so the tap, ripple and dim stay on it.
+  function FramedGalleryTile({ item, width, listItem, onPress, frame }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void; frame: ViewStyle }) {
+    const theme = useMaterialTheme({ static: true });
+    const { tokens } = theme;
+    // A coloured thumbnail keeps its translucent hue under glass; the neutral one is a
+    // fill inside the pane, an ink tint under glass.
+    const fill = s.galleryBlockFill(tokens, item.color);
+    const block = <View style={[s.galleryThumb, item.color != null ? fill : withInnerFill(theme, fill, "soft")]} />;
+    const inner = (
+      <>
+        {block}
+        <View style={skin.galleryCaption}>
+          <Text style={skin.galleryTitle(tokens)} numberOfLines={1}>{item.title}</Text>
+          {item.subtitle != null ? <Text style={skin.gallerySubtitle(tokens)}>{item.subtitle}</Text> : null}
+        </View>
+      </>
+    );
+    if (onPress) {
+      const ripple = paneRipple(theme, skin.ripple ? skin.ripple(tokens) : undefined);
+      return (
+        <View {...listItem} style={[s.tileGrow, { width }]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onPress}
+            android_ripple={ripple}
+            style={({ pressed }) => [paneStyle(theme, frame), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+          >
+            <GlassPane layer="content" shape={frame} />
+            {inner}
+          </Pressable>
+        </View>
+      );
+    }
+    return (
+      <View {...listItem} style={[s.tileGrow, { width }]}>
+        <GlassSurface layer="content" style={frame}>{inner}</GlassSurface>
+      </View>
+    );
   }
 
   // A bordered people card tile: a leading avatar, a title, supporting text, an

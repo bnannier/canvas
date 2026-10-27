@@ -8,9 +8,9 @@ import { formatCompact } from "../shared/chart-math.js";
 import { BreakdownRows, hasSlot, type BreakdownRow } from "../shared/breakdown-rows.js";
 
 // Shared BarList shell. The ranked label/value list (top pages, referrers,
-// sources): one row per category with a color swatch, a truncating label, a
-// right-aligned value, an optional Stats-style delta, and a proportional track
-// bar. Bars size against the largest row by default (the ranking idiom);
+// sources): one row per category, a proportional tone wash (the v4 hand-off's
+// bar list) behind a truncating label, a right-aligned mono value and an optional
+// Stats-style delta. Bars size against the largest row by default (the ranking idiom);
 // `share` sizes them against the sum and appends percent readouts (the
 // composition idiom). Rows become drill-in buttons with `onPressItem`.
 //
@@ -105,10 +105,13 @@ export function createBarList(skin: ChartSkin) {
           rows={items}
           share={!!props.share}
           percent={!!props.share}
-          tone={tone}
+          // The hand-off paints every bar in the accent (chart-1) unless a tone or a
+          // row's own slot says otherwise.
+          tone={tone ?? "primary"}
           compact={compact}
           formatValue={formatValue}
           onPressRow={props.onPressItem}
+          bars
         />
       </View>
     );

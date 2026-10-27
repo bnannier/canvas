@@ -3,28 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Draggable, DragDropProvider, DragHandle, DropZone, Typography, Row, Column } = scope;
+  const { Card, Draggable, DragDropProvider, DragHandle, DropZone, Typography, Row } = scope;
   return (
 <DragDropProvider>
-  <DropZone id="list" label="Tasks">
-    <Column snug>
-      <Draggable id="a" data={{ id: "a", zone: "list" }} label="Design review">
-        <Card>
-          <Row between alignCenter>
-            <Typography>Design review</Typography>
-            <DragHandle label="Reorder Design review" />
-          </Row>
-        </Card>
-      </Draggable>
-      <Draggable id="b" data={{ id: "b", zone: "list" }} disabled label="Locked task">
-        <Card>
-          <Row between alignCenter>
-            <Typography>Locked task</Typography>
-            <DragHandle label="Locked task" />
-          </Row>
-        </Card>
-      </Draggable>
-    </Column>
+  <DropZone bordered id="queue" label="Queue">
+    <Draggable id="tokens" data={{ id: "tokens", zone: "queue" }} label="Tokens">
+      <Card compact>
+        <Row between alignCenter>
+          <Typography small>Tokens</Typography>
+          <DragHandle label="Reorder Tokens" />
+        </Row>
+      </Card>
+    </Draggable>
   </DropZone>
 </DragDropProvider>
   );

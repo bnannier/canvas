@@ -301,21 +301,24 @@ describe("the CodeBlock's copy chips sit in no clipping kit view", () => {
     }
   }
 
-  it("records the one window that cuts it: the terminal's, over a chrome that hosts tabs", async () => {
+  it("records the one window that cuts it: the terminal's, at the hand-off's 36 px header", async () => {
     // The terminal window clips at its rounded edge (it rounds the chrome and the body), and
-    // its chrome centres the chip. Without tabs the chrome's padding holds the whole slop; with
-    // tabs the 40pt chrome centres the 26pt chip 7.5 from the window's edge, and the window cuts
-    // the part of the slop above it. Recorded for the owner, not fixed: moving the rounding off
-    // the window changes how its shadow renders on iOS.
+    // its chrome centres the chip. The v4 hand-off draws that header 36 tall, so the 26 chip
+    // sits 5.5 from the window's edge (8.5 when the header hosts tabs, whose 28 strip sets
+    // the row), and the window cuts the part of the slop above it. Recorded for the owner,
+    // not fixed: holding the slop would take a header taller than the hand-off's, or moving
+    // the rounding off the window, which changes how it clips the code's row tints.
     const chip = styleBox(StyleSheet.flatten(codeBlock.copyButton(t, true, false)) as ViewStyle, codeBlock.copyText(t, true).lineHeight).height!;
     const border = codeBlock.terminalOuter(t).borderWidth as number;
     const chrome = codeBlock.terminalChrome;
-    const tab = 2 * (codeBlock.tabItem(t, true, true).paddingVertical as number) + (codeBlock.tabLabel(t, true, true).lineHeight as number) + (codeBlock.tabItem(t, true, true).borderBottomWidth as number);
-    const plain = border + (chrome.paddingVertical as number);
-    const content = Math.max((chrome.minHeight as number) - (chrome.borderBottomWidth as number), tab, chip);
-    const tabbed = border + (codeBlock.terminalChromeWithTabs.paddingVertical as number) + (content - chip) / 2;
-    const cut = (min: number) => Math.max(0, seedSlop(min, { height: chip })!.top! - tabbed);
-    expect(seedSlop(TOUCH_TARGET.android, { height: chip })!.top!).toBeLessThanOrEqual(plain);
-    expect({ tabbed, android: cut(TOUCH_TARGET.android), ios: cut(TOUCH_TARGET.ios) }).toEqual({ tabbed: 7.5, android: 3.5, ios: 1.5 });
+    const item = codeBlock.tabItem(t, true, true);
+    const tab = (item.paddingTop as number) + (item.paddingBottom as number) + (codeBlock.tabLabel(t, true, true).lineHeight as number) + (item.borderBottomWidth as number);
+    const rule = chrome.borderBottomWidth as number;
+    const at = (top: number, bottom: number, rows: number) => border + top + (Math.max((chrome.minHeight as number) - top - bottom - rule, rows, chip) - chip) / 2;
+    const plain = at(chrome.paddingVertical as number, chrome.paddingVertical as number, chip);
+    const tabbed = at(codeBlock.terminalChromeWithTabs.paddingTop as number, codeBlock.terminalChromeWithTabs.paddingBottom as number, tab);
+    const cut = (edge: number, min: number) => Math.max(0, seedSlop(min, { height: chip })!.top! - edge);
+    expect({ plain, android: cut(plain, TOUCH_TARGET.android), ios: cut(plain, TOUCH_TARGET.ios) }).toEqual({ plain: 5.5, android: 5.5, ios: 3.5 });
+    expect({ tabbed, android: cut(tabbed, TOUCH_TARGET.android), ios: cut(tabbed, TOUCH_TARGET.ios) }).toEqual({ tabbed: 8.5, android: 2.5, ios: 0.5 });
   });
 });

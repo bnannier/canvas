@@ -16,7 +16,8 @@ export interface MarkdownProps {
 }
 export interface MarkdownParts { Checkbox: ComponentType<CheckboxProps>; DataTable: ComponentType<DataTableProps>; Divider: ComponentType<DividerProps> }
 function Inline({ value }: { value: string }) {
-  return <>{markdownRuns(value).map((run, index) => <Text key={index} style={[run.strong ? s.strong : null, run.emphasis ? s.emphasis : null, run.code ? s.code : null]}>{run.text}</Text>)}</>;
+  const { tokens } = useTheme();
+  return <>{markdownRuns(value).map((run, index) => <Text key={index} style={[run.strong ? s.strong : null, run.emphasis ? s.emphasis : null, run.code ? s.code(tokens) : null]}>{run.text}</Text>)}</>;
 }
 /** Shared with ChatMessage; its existing skin keeps conversation typography intact. */
 export function createMarkdown(skin: s.MarkdownSkin, { Checkbox = WebCheckbox, DataTable = WebDataTable, Divider = WebDivider }: Partial<MarkdownParts> = {}, fillRoot = true) {
@@ -24,7 +25,7 @@ export function createMarkdown(skin: s.MarkdownSkin, { Checkbox = WebCheckbox, D
     const { tokens } = useTheme();
     const blocks = useMemo(() => markdownBlocks(children), [children]);
     const body = skin.body(tokens, compact);
-    return <View testID={testID} accessibilityLabel={accessibilityLabel} style={[fillRoot ? FILL : null, s.root]}>
+    return <View testID={testID} accessibilityLabel={accessibilityLabel} style={[fillRoot ? FILL : null, s.root(compact)]}>
       {blocks.map((block, index) => {
         if (block.kind === "rule") return <Divider key={index} />;
         if (block.kind === "table") {
@@ -34,8 +35,8 @@ export function createMarkdown(skin: s.MarkdownSkin, { Checkbox = WebCheckbox, D
         }
         if (block.kind === "list" && block.checked !== undefined) return <View key={index} style={[s.list, s.indent(block.indent)]}><Checkbox selection small disabled checked={block.checked} accessibilityLabel={markdownRuns(block.text).map(run => run.text).join("")} /><Text selectable style={[body, s.listText]}><Inline value={block.text} /></Text></View>;
         const text = <Text selectable accessibilityRole={block.kind === "heading" ? "header" : undefined} aria-level={block.level}
-          style={[body, block.kind === "heading" ? skin.heading(tokens, block.level ?? 1, compact) : null, block.kind === "code" ? s.code : null, block.kind === "list" ? s.listText : null]}>{block.kind === "code" ? block.text : <Inline value={block.text} />}</Text>;
-        if (block.kind === "list") return <View key={index} style={[s.list, s.indent(block.indent)]}><Text style={body}>{block.marker}</Text>{text}</View>;
+          style={[body, block.kind === "heading" ? skin.heading(tokens, block.level ?? 1, compact) : null, block.kind === "code" ? s.code(tokens) : null, block.kind === "list" ? s.listText : null]}>{block.kind === "code" ? block.text : <Inline value={block.text} />}</Text>;
+        if (block.kind === "list") return <View key={index} style={[s.list, s.indent(block.indent)]}><Text style={[body, s.marker(tokens)]}>{block.marker}</Text>{text}</View>;
         return <View key={index} style={block.kind === "quote" ? s.quote(tokens) : undefined}>{text}</View>;
       })}
     </View>;

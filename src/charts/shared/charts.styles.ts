@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, statusColors, shadow, shape } from "../../style/index.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type ChartSeries, type ChartSkin } from "./types.js";
 
@@ -29,20 +30,70 @@ export function surface(tokens: ColorTokens, radius: number): ViewStyle {
   };
 }
 
-// Surface padding by density: p-4 (compact) vs p-5 (default).
-export const surfacePadCompact: ViewStyle = { padding: 16 };
-export const surfacePadDefault: ViewStyle = { padding: 20 };
+// --- the hand-off's chart numbers ----------------------------------------------
+
+/**
+ * The v4 hand-off's chart frame and furniture (`fr`, `grid`, `axes`, `leg` and the
+ * marks in tools/v4/handoff/cv-kit-charts.js), in one table so the skins and the tests
+ * read the same numbers. The hand-off draws its plots in a 360-wide viewBox scaled to the
+ * frame's content box (about 388 px), so its 9-unit axis text paints at about 9.7 px:
+ * the kit sets it at the 10 px source floor.
+ */
+export const CHART_LOOK = {
+  /** The frame's inset and the gap between its title, plot and legend: 16 / 12, compact 12 / 8. */
+  pad: { default: 16, compact: 12 },
+  gap: { default: 12, compact: 8 },
+  /** The title: 500 14 px in the interface face. */
+  titleSize: 14,
+  titleLine: 20,
+  /** Axis labels: the mono face at the 10 px floor, in the subtle ink. */
+  axisSize: 10,
+  axisLine: 14,
+  /** Gridlines: a dotted `2 4` hairline, the baseline (the 0 line) solid. */
+  gridDash: "2,4",
+  /** The first series' line is 2.2 wide, every other 2. */
+  leadStroke: 2.2,
+  stroke: 2,
+  /** A marker dot: r 3, a 2 px ring of the series over the card fill. */
+  dotRadius: 3,
+  dotStroke: 2,
+  /** Area fills: the lead band at .28, the others at .3; the line fade from .35 to 0. */
+  areaLead: 0.28,
+  area: 0.3,
+  fadeTop: 0.35,
+  /** Legend: 8 px squares at the data-cell corner, a 6 px swatch gap, 6 / 14 px row / column gaps, 12 px label. */
+  swatch: 8,
+  swatchGap: 6,
+  legendRowGap: 6,
+  legendColumnGap: 14,
+  legendSize: 12,
+  legendLine: 16,
+} as const;
+
+// Surface padding by density (the hand-off's frame: 12 compact, 16 default).
+export const surfacePadCompact: ViewStyle = { padding: CHART_LOOK.pad.compact };
+export const surfacePadDefault: ViewStyle = { padding: CHART_LOOK.pad.default };
 
 // --- title ------------------------------------------------------------------
 
-// Heading: font-semibold text-card-foreground; size/inset switch by density.
+// Heading: the hand-off's 500 14 px title in the card ink.
 export function title(tokens: ColorTokens): TextStyle {
-  return { fontWeight: "600", color: tokens["card-foreground"] };
+  return { fontWeight: "500", color: tokens["card-foreground"] };
 }
 
-// mb-3 text-sm (compact) vs mb-4 text-base (default).
-export const titleCompact: TextStyle = { marginBottom: 12, fontSize: 14, lineHeight: 20 };
-export const titleDefault: TextStyle = { marginBottom: 16, fontSize: 16, lineHeight: 24 };
+// The title sits one frame gap above the plot (8 compact, 12 default).
+export const titleCompact: TextStyle = { marginBottom: CHART_LOOK.gap.compact, fontSize: CHART_LOOK.titleSize, lineHeight: CHART_LOOK.titleLine };
+export const titleDefault: TextStyle = { marginBottom: CHART_LOOK.gap.default, fontSize: CHART_LOOK.titleSize, lineHeight: CHART_LOOK.titleLine };
+
+/** An axis or category label: the mono face at the 10 px floor, in the subtle ink (the hand-off's tx3). */
+export function axisLabel(tokens: ColorTokens): TextStyle {
+  return {
+    fontFamily: MONO_FONT,
+    fontSize: CHART_LOOK.axisSize,
+    lineHeight: CHART_LOOK.axisLine,
+    color: tokens["subtle-foreground"] ?? tokens["muted-foreground"],
+  };
+}
 
 // --- bar fill ---------------------------------------------------------------
 
@@ -112,9 +163,10 @@ export const horizontalStack: ViewStyle = { flexDirection: "column" };
 // (flex-row items-center gap-2).
 export const horizontalRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
 
-// The row's leading label (w-16 text-xs text-muted-foreground).
+// The row's leading label: the hand-off's mono axis label (its horizontal bars put the
+// month at x 0 in a 40-unit gutter).
 export function horizontalLabel(tokens: ColorTokens): TextStyle {
-  return { width: 64, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
+  return { width: 40, ...axisLabel(tokens) };
 }
 
 // The track that holds a horizontal bar (flex-1 flex-row items-center).
@@ -126,22 +178,20 @@ export const horizontalTrack: ViewStyle = {
   alignItems: "center",
 };
 
-// A horizontal bar: h-3 rounded-r plus its fill and width (set by the
-// component). The right corners are rounded (radius from the skin); the left edge
-// sits on the track.
+// A horizontal bar: the hand-off's 9-unit bar (about 10 px painted) at the bar corner,
+// rounded all round as its `rect rx` draws it; its fill and width are set by the component.
 export function horizontalBar(fill: string, width: number, radius: number): ViewStyle {
   return {
-    height: 12,
-    borderTopEndRadius: radius,
-    borderBottomEndRadius: radius,
+    height: 10,
+    borderRadius: radius,
     backgroundColor: fill,
     width,
   };
 }
 
-// The trailing value (text-xs font-medium text-card-foreground).
+// The trailing value: the hand-off's 500 12 px mono value in the card ink.
 export function horizontalValue(tokens: ColorTokens): TextStyle {
-  return { fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"] };
+  return { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"] };
 }
 
 // --- vertical layout --------------------------------------------------------
@@ -168,25 +218,21 @@ export function verticalValue(tokens: ColorTokens): TextStyle {
   return {
     marginBottom: 4,
     textAlign: "center",
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    color: tokens["card-foreground"],
+    ...axisLabel(tokens),
   };
 }
 
-// A vertical bar: rounded-t plus its fill and height (set by the component). The top
-// corners are rounded (radius from the skin); the foot sits on the baseline.
+// A vertical bar: the hand-off's `rect rx` at the bar corner, rounded all round, plus its
+// fill and height (set by the component); the foot sits on the baseline.
 export function verticalBar(fill: string, height: number, radius: number): ViewStyle {
   return {
-    borderTopStartRadius: radius,
-    borderTopEndRadius: radius,
+    borderRadius: Math.min(radius, height / 2),
     backgroundColor: fill,
     height,
   };
 }
 
-// The hairline baseline under the bars (h-px w-full bg-border).
+// The hairline baseline under the bars (the hand-off's solid 0 gridline).
 export function baseline(tokens: ColorTokens): ViewStyle {
   return { height: 1, width: "100%", backgroundColor: tokens.border };
 }
@@ -195,16 +241,14 @@ export function baseline(tokens: ColorTokens): ViewStyle {
 // component.
 export const verticalLabelsRow: ViewStyle = { marginTop: 8, flexDirection: "row" };
 
-// One column's label (flex-1 text-center text-xs text-muted-foreground).
+// One column's label: the hand-off's mono axis label, centered under its column.
 export function verticalLabel(tokens: ColorTokens): TextStyle {
   return {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
     textAlign: "center",
-    fontSize: 12,
-    lineHeight: 16,
-    color: tokens["muted-foreground"],
+    ...axisLabel(tokens),
   };
 }
 

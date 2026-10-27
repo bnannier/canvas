@@ -144,16 +144,12 @@ export interface FeedSkin {
   connectorPad: (compact: boolean) => ViewStyle;
   /** Inter-row vertical rhythm by density for the connector lead (dropped on last). */
   connectorRowGap: (compact: boolean) => ViewStyle;
-  /** Avatar row padding by density (compact vs default). */
-  avatarRowPad: (compact: boolean) => ViewStyle;
-  /** The hairline rule between avatar rows; omitted on the last row. */
-  avatarDivider: (t: ColorTokens) => ViewStyle;
-  /** The leading connector node (a small bordered circle). */
+  /** The leading connector node that carries an item's glyph (a disc). */
   node: (t: ColorTokens) => ViewStyle;
+  /** The node of an event with no glyph: a dot, the first one in the accent. */
+  dot: (t: ColorTokens, first: boolean) => ViewStyle;
   /** The vertical connector line under the node center. */
   connectorLine: (t: ColorTokens) => ViewStyle;
-  /** The node's initials type. */
-  nodeInitials: (t: ColorTokens) => TextStyle;
   /** The outer wrapping line (sizing only). */
   lineText: TextStyle;
   /** The actor name (bold, foreground). */
@@ -292,62 +288,10 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
       return <View testID={testID} style={[fill, style, bodyFrame.ring()]}>{body}</View>;
     }
 
-    if (lead === "avatar") {
-      // Avatar lead: each row leads with the actor's avatar; rows are ruled by a
-      // hairline between items (the last row keeps no rule). Keyless so it can be
-      // used both by the eager `.map` (which supplies the key via Fragment) and by
-      // FlatList's renderItem (which keys via keyExtractor).
-      const renderRow = (item: FeedItem, index: number, listItem: ViewProps) => {
-        const divider = index < lastIndex ? skin.avatarDivider(tokens) : null;
-        const rowStyle: StyleProp<ViewStyle> = [s.avatarRow, skin.avatarRowPad(compact), divider];
-        const inner: ReactNode = (
-          <>
-            <Avatar src={item.avatar} name={item.actor}>
-              {item.actor ? initialsFrom(item.actor) : ""}
-            </Avatar>
-            {renderContent(item)}
-          </>
-        );
-        if (onItemPress) {
-          // A pressable event is a button in its list item: a `listitem` is not a
-          // control, so the item wraps the button rather than replacing its role.
-          return (
-            <View {...listItem}>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => onItemPress(index)}
-                android_ripple={ripple}
-                style={({ pressed }) => [
-                  rowStyle,
-                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
-                ]}
-              >
-                {inner}
-              </Pressable>
-            </View>
-          );
-        }
-        return <View {...listItem} style={rowStyle}>{inner}</View>;
-      };
-
-      const body = windowed ? (
-        <FlatList
-          {...bodyProps}
-          data={items}
-          renderItem={({ item, index }) => renderRow(item, index, windowedListItem(index, items.length))}
-          keyExtractor={keyOf}
-          showsVerticalScrollIndicator={false}
-        />
-      ) : (
-        <View {...list}>
-          {items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index, LIST_ITEM)}</Fragment>)}
-        </View>
-      );
-      return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), fill, style, bodyFrame.ring()]}>{body}</GlassSurface>;
-    }
-
-    // Connector lead: a bordered node per row with a vertical line linking each
-    // event to the next. The line is dropped on the final item. Keyless so it can be
+    // Connector and avatar leads (the v4 hand-off's feed): a node per row with a
+    // vertical line linking each event to the next: the actor's 28px avatar on the
+    // avatar lead, otherwise the item's glyph on a disc, or a dot (the first in the
+    // accent) for an event with no glyph. The line is dropped on the final item. Keyless so it can be
     // used both by the eager `.map` (which supplies the key via Fragment) and by
     // FlatList's renderItem (which keys via keyExtractor). The connector line is
     // drawn per-row off the index, so it keeps terminating on the last item under a
@@ -363,19 +307,20 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
             // horizontal center; dropped on the final item.
             <View style={skin.connectorLine(tokens)} />
           ) : null}
-          <View style={skin.node(tokens)}>
-            {/* Node content, first match wins: the item's kit glyph, then the
-                actor's initials, then a muted dot for an actor-less event. The
-                glyph is decorative because the actor/action line beside it
-                already says what happened. */}
-            {item.icon ? (
+          {/* The node, first match wins: the actor's avatar on the avatar lead, the
+              item's kit glyph on its disc, then the dot. The glyph is decorative
+              because the actor/action line beside it already says what happened. */}
+          {lead === "avatar" ? (
+            <Avatar small src={item.avatar} name={item.actor}>
+              {item.actor ? initialsFrom(item.actor) : ""}
+            </Avatar>
+          ) : item.icon ? (
+            <View style={skin.node(tokens)}>
               <Icon {...{ [item.icon]: true }} muted size={NODE_ICON_SIZE} decorative />
-            ) : item.actor ? (
-              <Text style={skin.nodeInitials(tokens)}>{initialsFrom(item.actor)}</Text>
-            ) : (
-              <View style={s.nodeDot(tokens)} />
-            )}
-          </View>
+            </View>
+          ) : (
+            <View style={skin.dot(tokens, index === 0)} />
+          )}
           <View style={s.connectorContentColumn}>{renderContent(item)}</View>
         </>
       );

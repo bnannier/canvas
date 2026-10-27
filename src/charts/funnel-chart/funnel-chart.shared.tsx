@@ -1,27 +1,26 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useState } from "react";
 import { StyleSheet } from "react-native";
-import Svg, { Path } from "react-native-svg";
 import { View, Text, Pressable, useControllableState, devWarn, tabularNums, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { type StackedSegment } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
-import { estimateTextWidth, formatCompact, funnelLayout, polygonPath } from "../shared/chart-math.js";
+import { formatCompact } from "../shared/chart-math.js";
+import { platformShape } from "../../style/platform-shape.js";
+import { MONO_FONT } from "../../style/mono.js";
 
-// Shared FunnelChart shell. Stage-by-stage conversion: a column of centered
-// trapezoids, each stage's top width proportional to its value, tapering to
-// the next stage's width (the last stage is rectangular), ramp-colored, with
-// the stage's label, value, and conversion percent as real text centered on
-// the stage. Pressing a stage selects it (the others dim).
+// Shared FunnelChart shell. Stage-by-stage conversion: a row per stage of its label,
+// a centered ramp-colored bar whose width is the stage's share of the first, and its
+// value (the hand-off's funnel). The conversion from the previous stage leads the
+// accessible name. Pressing a stage selects it (the others dim).
 //
 // FunnelChart is a "Shared" platform treatment (data visualization is
 // platform-neutral): the skin carries the same values on every OS.
 //
 // Boolean-prop axes:
-// - Basis: `share` shows each stage as a share of the FIRST stage instead of
-//   the conversion from the previous stage.
+// - Readout: `share` shows each stage as a share of the FIRST stage instead of
+//   its count (the accessible name then names that share).
 // - Density: `compact` shortens the funnel.
 
 export interface FunnelChartProps {
@@ -48,14 +47,15 @@ export interface FunnelChartProps {
   style?: LayoutStyle;
 }
 
-const FUNNEL_HEIGHT = { default: 220, compact: 150 } as const;
-const STAGE_GAP = 3;
-// A stage's detail line under its label: a value annotation.
-const STAGE_DETAIL_TYPE = { fontSize: 11, lineHeight: 14 };
-
-// pointerEvents must come from StyleSheet.create: react-native-web silently
-// drops it from inline style objects (the ChartValueFlag rule).
-const styles = StyleSheet.create({ passthrough: { pointerEvents: "none" } });
+// The v4 hand-off's funnel (`K.def('funnel-chart')`): one row per stage, 6 px apart, of
+// a 110 px label in the muted ink, a centered bar whose width is the stage's share of the
+// first (26 px tall, 18 compact, at the funnel-bar corner, in its series colour) and a
+// 56 px mono value: the count, or the share of the first stage with `share`.
+const BAR_HEIGHT = { default: 26, compact: 18 } as const;
+const ROW_GAP = 6;
+const COLUMN_GAP = 10;
+const LABEL_WIDTH = 110;
+const VALUE_WIDTH = 56;
 
 export function createFunnelChart(skin: ChartSkin) {
   return function FunnelChart(props: FunnelChartProps) {
@@ -74,8 +74,8 @@ export function createFunnelChart(skin: ChartSkin) {
     );
 
     const clean = stages.map((st) => (Number.isFinite(st.value) && st.value > 0 ? st.value : 0));
-    const height = compact ? FUNNEL_HEIGHT.compact : FUNNEL_HEIGHT.default;
-    const stageH = stages.length > 0 ? Math.max(0, (height - STAGE_GAP * (stages.length - 1)) / stages.length) : 0;
+    const barH = compact ? BAR_HEIGHT.compact : BAR_HEIGHT.default;
+    const peak = Math.max(...clean, 0);
 
     // Conversion readout per stage: of the previous stage (default), or of
     // the first stage (`share`). The first stage reads 100%.
@@ -98,11 +98,6 @@ export function createFunnelChart(skin: ChartSkin) {
     };
     const toggle = (i: number) => setSelected(selected === i ? null : i);
 
-    // The funnel needs a measured pixel width (the trapezoids are real
-    // coordinates, not stretch), the sparkline pattern.
-    const [width, setWidth] = useState(0);
-    const polys = width > 0 ? funnelLayout(clean, width, height, STAGE_GAP) : [];
-
     return (
       <View
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
@@ -118,79 +113,33 @@ export function createFunnelChart(skin: ChartSkin) {
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}
-        <View
-          accessible
-          accessibilityRole="image"
-          role="img"
-          accessibilityLabel={name}
-          aria-label={name}
-          onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-          style={{ height }}
-        >
-          {width > 0 ? (
-            <Svg width={width} height={height} style={{ position: "absolute" }}>
-              {polys.map((poly, i) => (
-                <Path
-                  key={i}
-                  d={polygonPath(poly)}
-                  fill={s.seriesFill(tokens, i)}
-                  opacity={selected != null && selected !== i ? DIM_OPACITY : 1}
-                />
-              ))}
-            </Svg>
-          ) : null}
-          {/* Stage annotations: real text centered on the stage when it
-              fits (the card token contrasts with every chart fill; the
-              palette gates 3:1 against both card surfaces), or beside the
-              stage in the foreground color when the trapezoid is too
-              narrow. The accessible name carries the data regardless. */}
-          {width > 0
-            ? stages.map((st, i) => {
-                const peak = Math.max(...clean, 1);
-                // The stage's width at its vertical middle: the mean of its
-                // top width and the next stage's top (its bottom).
-                const topW = (clean[i] / peak) * width;
-                const bottomW = ((i < clean.length - 1 ? clean[i + 1] : clean[i]) / peak) * width;
-                const midW = (topW + bottomW) / 2;
-                const detail = `${formatValue(clean[i])} · ${pctOf(i)}%`;
-                const needed = Math.max(estimateTextWidth(st.label, 12), estimateTextWidth(detail, 11)) + 12;
-                const inside = needed <= midW;
-                return (
-                  <View
-                    key={i}
-                    style={[styles.passthrough, {
-                      position: "absolute",
-                      left: inside ? 0 : width / 2 + midW / 2 + 8,
-                      right: inside ? 0 : 0,
-                      top: i * (stageH + STAGE_GAP),
-                      height: stageH,
-                      alignItems: inside ? "center" : "flex-start",
-                      justifyContent: "center",
-                      opacity: selected != null && selected !== i ? DIM_OPACITY : 1,
-                    }]}
-                  >
-                    <Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 16, fontWeight: "600", color: inside ? tokens.card : tokens["card-foreground"] }}>
-                      {st.label}
-                    </Text>
-                    {stageH >= 34 ? (
-                      <Text
-                        numberOfLines={1}
-                        style={{ ...STAGE_DETAIL_TYPE, color: inside ? tokens.card : tokens["muted-foreground"], opacity: inside ? 0.85 : 1, ...tabularNums() }}
-                      >
-                        {detail}
-                      </Text>
-                    ) : null}
-                  </View>
-                );
-              })
-            : null}
+        <View accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name} style={{ gap: ROW_GAP }}>
+          {stages.map((st, i) => {
+            const share = peak > 0 ? (clean[i] / peak) * 100 : 0;
+            return (
+              <View
+                key={i}
+                style={[{ flexDirection: "row", alignItems: "center", gap: COLUMN_GAP, height: barH, opacity: selected != null && selected !== i ? DIM_OPACITY : 1 }]}
+              >
+                <Text numberOfLines={1} style={{ width: LABEL_WIDTH, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>
+                  {st.label}
+                </Text>
+                <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", alignItems: "center" }}>
+                  <View style={{ height: barH, width: `${share}%`, borderRadius: platformShape.web.funnelBar, backgroundColor: s.seriesFill(tokens, i) }} />
+                </View>
+                <Text numberOfLines={1} style={{ width: VALUE_WIDTH, textAlign: "right", fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"], ...tabularNums() }}>
+                  {props.share ? `${Math.round(share)}%` : formatValue(clean[i])}
+                </Text>
+              </View>
+            );
+          })}
           {/* Empty hit layer: stage index by press y (uniform stage bands). */}
           <Pressable
             accessible={false}
             onPress={(e) => {
               const point = pressPoint(e);
-              if (!point || stageH <= 0) return;
-              const i = Math.floor(point.y / (stageH + STAGE_GAP));
+              if (!point) return;
+              const i = Math.floor(point.y / (barH + ROW_GAP));
               if (i >= 0 && i < stages.length) toggle(i);
             }}
             style={StyleSheet.absoluteFill}

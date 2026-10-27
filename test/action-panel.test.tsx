@@ -15,12 +15,11 @@ import type { ActionPanelProps } from "../src/molecules/action-panels/action-pan
 import type { ButtonProps } from "../src/atoms/button/button.shared.tsx";
 import type { SwitchProps } from "../src/atoms/switch/switch.shared.tsx";
 
-// ActionPanel on every entry. Each platform injects its own Button, Switch and Card
-// (parts injection, so the docs' three-up is truthful), so the action has to BE that
-// platform's control: the tests compare it with the same control rendered alone. Two
-// defects stay open for Phase 4 (audit/components/action-panels.md): the toggle is a
-// bare Switch beside sibling copy rather than the Switch's own label anatomy, and an
-// inline panel never stacks at phone width.
+// ActionPanel on every entry. Each platform injects its own Button and Switch (parts
+// injection, so the docs' three-up is truthful), so the action has to BE that
+// platform's control: the tests compare it with the same control rendered alone. One
+// defect stays open (audit/components/action-panels.md): the toggle is a bare Switch
+// beside sibling copy rather than the Switch's own label anatomy.
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider solid>{n}</ThemeProvider>);
@@ -41,8 +40,8 @@ function aloneStyle(node: ReactNode, role: string): string | null {
 
 for (const [platform, ActionPanel, Button, Switch] of SKINS) {
   describe(`ActionPanel on ${platform}`, () => {
-    it(`acts through ${platform}'s own primary Button, and fires onAction`, () => {
-      const expected = aloneStyle(<Button small primary>Export</Button>, "button");
+    it(`acts through ${platform}'s own outline Button, and fires onAction`, () => {
+      const expected = aloneStyle(<Button outline>Export</Button>, "button");
       let fired = 0;
       ui(<ActionPanel title="Export your data" description="Download a ZIP." actionLabel="Export" onAction={() => fired++} />);
       const action = screen.getByRole("button", { name: "Export" });
@@ -52,7 +51,7 @@ for (const [platform, ActionPanel, Button, Switch] of SKINS) {
     });
 
     it("turns the action into a destructive Button and the title into the error ink under destructive", () => {
-      const expected = aloneStyle(<Button small destructive>Delete</Button>, "button");
+      const expected = aloneStyle(<Button destructive>Delete</Button>, "button");
       ui(<ActionPanel destructive title="Delete this project" actionLabel="Delete" />);
       expect(screen.getByRole("button", { name: "Delete" }).getAttribute("style")).toBe(expected);
       cleanup();
@@ -115,12 +114,13 @@ for (const [platform, ActionPanel, Button, Switch] of SKINS) {
       cleanup();
       ui(<ActionPanel title="Weekly digest" description="Sent every Monday." actionLabel="Subscribe" />);
       const column = screen.getByText("Weekly digest").parentElement!.parentElement as HTMLElement;
-      expect(column.style.flexDirection).toBe("");
+      expect(column.style.flexDirection).not.toBe("row");
       const copy = screen.getByText("Weekly digest").parentElement as HTMLElement;
       expect(copy.compareDocumentPosition(screen.getByRole("button", { name: "Subscribe" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
-    it("hangs embedded fields below an inline row", () => {
+    it("closes embedded fields with the primary Button that commits them", () => {
+      const expected = aloneStyle(<Button primary>Save</Button>, "button");
       ui(
         <ActionPanel inline title="Workspace profile" actionLabel="Save">
           <Switch>Public</Switch>
@@ -128,7 +128,14 @@ for (const [platform, ActionPanel, Button, Switch] of SKINS) {
       );
       const save = screen.getByRole("button", { name: "Save" });
       const field = screen.getByRole("switch", { name: "Public" });
-      expect(save.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(field.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(save.getAttribute("style")).toBe(expected);
+    });
+
+    it("wraps an inline row so the action drops under the copy when narrow", () => {
+      ui(<ActionPanel inline title="Weekly digest" actionLabel="Subscribe" />);
+      const row = screen.getByText("Weekly digest").parentElement!.parentElement as HTMLElement;
+      expect(row.style.flexWrap).toBe("wrap");
     });
   });
 }

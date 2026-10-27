@@ -13,23 +13,23 @@ import { type DescriptionListSkin } from "./description-lists.shared.js";
 //
 // DescriptionList keeps one structure and one set of semantic colors on every
 // platform, but the per-OS TYPE ROLES differ:
-//   Web: the Catalyst term-value list: a card at the card corner, a 1px `border`,
-//          the `card` fill, a soft shadow("sm"), 24 padding, gap 12 between rows;
-//          a 14/20 muted term beside a 14/20/500
-//          foreground value; the stacked term is 12pt/500 uppercase with 0.4
-//          letter-spacing.
-//   iOS  — the iOS 27 kit Lists value row: the term is the PRIMARY SF Pro 17/22
+//   Web: the Canvas v4 hand-off's term-value list (cv-kit-code3.js
+//          `O('description-lists')`, over `K.def('description-lists')` in
+//          cv-kit-data.js): a card at the card corner, a 1px `border`, the `card` fill,
+//          the small shadow, inset 16 down and 20 across; each row 12 above and below
+//          its text, a divided list ruled by `border` hairlines; a 500 13/18 muted term
+//          beside a 400 14/20 foreground value, centered on each other; a stacked term
+//          is the same 500 13 label in the subtle ink over its value, 4 apart. The
+//          header is a 500 16/24 title over a 400 13/18 subtle subtitle, 12 above a
+//          hairline inside the card's inset.
+//   iOS: the iOS 27 kit Lists value row: the term is the PRIMARY SF Pro 17/22
 //          Regular label (Labels/1) LEFT and the value is the SECONDARY gray
 //          17/22 detail (Labels/2), the OPPOSITE emphasis and 3pt larger than the
 //          web idiom; ~52pt center-aligned rows, 16 inset, inside a FLAT
 //          inset-grouped card at the inset grouped list corner, with the continuous
 //          (superellipse) corner curve.
-//   Android — Material 3 has no description-list control; key-value content is a
-//          plain list/text layout, so the surface follows the M3 outlined card:
-//          an outlined surface at the card corner kept FLAT (no shadow, elevation 0), 16dp
-//          inset, a slightly more breathable 14 row gap, and M3 type roles (term
-//          body-medium 14/20/+0.1, value title-small 14/20/500/+0.1, stacked
-//          label-medium 12/16/500/+0.5, header title-medium 16/24/500/+0.15).
+//   Android: Material 3 has no description-list control (PLATFORM-REFERENCES.md), so
+//          it draws the web skin's list in Roboto.
 
 export type Layout = "inline" | "twoColumn" | "stacked";
 
@@ -220,26 +220,38 @@ export function headerBand(tokens: ColorTokens, skin: DescriptionListSkin): View
   };
 }
 
+// The inset card's header: its rule runs inside the card's own inset, the title block
+// `padBottom` above it.
+export function insetHeaderBand(tokens: ColorTokens, padBottom: number): ViewStyle {
+  return { borderBottomWidth: 1, borderColor: tokens.border, paddingBottom: padBottom, gap: 2 };
+}
+
 export function headerSubtitle(tokens: ColorTokens): TextStyle {
   return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
 }
 
 // --- per-OS skins -----------------------------------------------------------
 
-// Web: the Catalyst term-value card.
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
+
+// Web: the v4 hand-off's inset term-value card.
 export const webSkin: DescriptionListSkin = {
   cardRadius: shape.web.card,
   cardCurve: "circular",
   cardShadow: (t) => shadow("sm", t),
-  rowGap: 12,
-  cardPadding: 24,
-  rowAlign: "baseline",
+  // Rows carry their own 12 above and below (`inset.rowPadY`), so they sit flush.
+  rowGap: 0,
+  cardPadding: 20,
+  rowAlign: "center",
   dividedPadBottom: 12,
-  termType: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
-  valueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
-  stackedTermTracking: { letterSpacing: 0.4 },
-  stackedValueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground }),
-  headerTitleType: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "600", color: t.foreground }),
+  termType: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "500", color: t["muted-foreground"] }),
+  valueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: t.foreground }),
+  stackedTermTracking: { letterSpacing: 0 },
+  stackedTermType: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "500", color: subtle(t) }),
+  stackedValueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: t.foreground }),
+  headerTitleType: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", color: t.foreground }),
+  headerSubtitleType: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "400", color: subtle(t) }),
+  inset: { cardPadY: 16, rowPadY: 12, headerPadBottom: 12 },
 };
 
 // iOS (iOS 27 kit Lists value rows in a flat inset-grouped card): the term is the
@@ -263,19 +275,5 @@ export const iosSkin: DescriptionListSkin = {
   headerTitleType: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.2, color: t.foreground }),
 };
 
-// Android (Material 3 outlined surface): a rounder, FLAT outlined card (no
-// shadow), 16dp inset, slightly more breathing room, and M3 type roles/tracking.
-export const androidSkin: DescriptionListSkin = {
-  cardRadius: shape.android.card,
-  cardCurve: "circular",
-  cardShadow: () => shadow("none"),
-  rowGap: 14,
-  cardPadding: 16,
-  rowAlign: "baseline",
-  dividedPadBottom: 12,
-  termType: (t) => ({ fontSize: 14, lineHeight: 20, letterSpacing: 0.1, color: t["muted-foreground"] }),
-  valueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
-  stackedTermTracking: { letterSpacing: 0.5 },
-  stackedValueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
-  headerTitleType: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", letterSpacing: 0.15, color: t.foreground }),
-};
+// Android: Material 3 has no description list, so the web skin's list in Roboto.
+export const androidSkin: DescriptionListSkin = { ...webSkin };

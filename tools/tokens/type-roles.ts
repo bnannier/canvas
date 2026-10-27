@@ -29,8 +29,11 @@ export type ReadingRole = keyof typeof READING_FLOOR;
 
 export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/avatar/avatar-menu.shared.tsx": { ACCOUNT_SECONDARY: "tiny" },
-  "src/organisms/board/board.styles.ts": { plainLabel: "caption", plainEmptyLabel: "small" },
-  "src/molecules/feeds/feeds.styles.ts": { activityTime: "tiny", traceTime: "small", traceKind: "caption" },
+  // A lane's count (the hand-off's 11px mono numerals).
+  "src/organisms/board/board.styles.ts": { "webSkin.columnCount": "tiny" },
+  // A drop zone's mono eyebrow (the hand-off's 11px uppercase zone label).
+  "src/organisms/drag-drop/drag-drop.styles.ts": { zoneLabel: "caption" },
+  "src/molecules/feeds/feeds.styles.ts": { traceKind: "caption" },
   "src/style/field-label.ts": { fieldEyebrow: "caption" },
   "src/atoms/select/select.styles.ts": { "webSkin.reference.label": "caption" },
   // Dark Factory's sub-12 styles, by the Typography role each one serves.
@@ -59,11 +62,6 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/button-group/button-group.styles.ts": { WEB_CELL_TYPE: "small" },
   "src/atoms/radio/radio.styles.ts": { "NATIVE_DESCRIPTION.small": "small" },
   "src/organisms/command/command.styles.ts": { groupHeading: "caption", footerText: "tiny", "webSkin.shortcut": "tiny" },
-  "src/molecules/media-objects/media-objects.styles.ts": {
-    "webSkin.compact.description": "small",
-    "iosSkin.compact.description": "small",
-    "androidSkin.compact.description": "small",
-  },
   "src/organisms/data-table/data-table.styles.ts": { "webSkin.stackedLabel": "small", "iosSkin.stackedLabel": "small" },
   // A message's author line, and the provider, notice and failure lines beside and under it.
   "src/organisms/chat/chat.styles.ts": { "webSkin.label": "small", "webSkin.muted": "small" },
@@ -74,25 +72,30 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/badge/badge.styles.ts": { "webSkin.sizes": "tiny" },
   "src/molecules/card/card.styles.ts": { eyebrow: "caption" },
   "src/atoms/chip/chip.styles.ts": { "webSkin.countType": "tiny" },
-  "src/molecules/stats/stats.styles.ts": { "DENSE.denseLabel": "caption", "DENSE.denseDescription": "tiny" },
   "src/atoms/avatar/avatar.reference.tsx": { "REFERENCE_TYPE.annotation": "annotation" },
   "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", "webMenuSkin.menuPillSecondary": "tiny" },
-  "src/molecules/code-block/code-block.styles.ts": { headerBadge: "tiny" },
   "src/molecules/stacked-lists/stacked-lists.styles.ts": { "androidSkin.metaLabel": "tiny" },
-  "src/charts/funnel-chart/funnel-chart.shared.tsx": { STAGE_DETAIL_TYPE: "tiny" },
-  "src/charts/metric-breakdown/metric-breakdown.shared.tsx": { captionStyle: "tiny", SPARK_TAG_TYPE: "tiny" },
+  "src/charts/metric-breakdown/metric-breakdown.shared.tsx": { SPARK_TAG_TYPE: "tiny" },
   "src/charts/shared/breakdown-rows.tsx": { SHARE_TYPE: "tiny", DELTA_TYPE: "tiny" },
   "src/charts/treemap/treemap.shared.tsx": { TILE_VALUE_TYPE: "tiny" },
 
   // Eyebrows, axis and hour labels, tab-bar labels, keycaps.
   "src/atoms/divider/divider.styles.ts": { "webSkin.labelType": "caption" },
+  // An emblem's monogram is initials, as an avatar's are; a swatch's value lines are mono metadata.
+  "src/atoms/emblem/emblem.styles.ts": { "monogramSize.small": "caption" },
+  "src/atoms/swatch/swatch.styles.ts": { "webSkin.value": "tiny", "webSkin.detail": "tiny" },
   "src/atoms/kbd/kbd.styles.ts": { SEPARATOR_TYPE: "small" },
-  "src/charts/heatmap/heatmap.shared.tsx": { CAL_MONTH_TYPE: "caption", CAL_WEEKDAY_TYPE: "caption", FLAG_DETAIL_TYPE: "tiny" },
-  "src/charts/radar-chart/radar-chart.shared.tsx": { AXIS_LABEL_TYPE: "caption" },
+  "src/charts/heatmap/heatmap.shared.tsx": { CAL_MONTH_TYPE: "caption", CAL_WEEKDAY_TYPE: "caption", FLAG_DETAIL_TYPE: "tiny", legendText: "caption" },
+  // The v4 hand-off's chart axis labels (9 units, set at the 10 px source floor) and the donut center's caption.
+  "src/charts/shared/charts.styles.ts": { "CHART_LOOK.axisSize": "caption" },
+  "src/charts/pie-chart/pie-chart.shared.tsx": { CENTER_LABEL_TYPE: "caption" },
   "src/charts/uptime-bar/uptime-bar.shared.tsx": { EDGE_CAPTION_TYPE: "caption" },
   "src/organisms/calendar/calendar.styles.ts": {
     "webSkin.hourLabel": "caption",
     "webSkin.eventTime": "caption",
+    // The hand-off's 11px mono weekday row, and a week or day view's event title.
+    "webSkin.weekdayLabel": "caption",
+    "webSkin.eventTitle": "tiny",
     "iosSkin.hourLabel": "caption",
     "iosSkin.eventTime": "caption",
     "androidSkin.hourLabel": "caption",

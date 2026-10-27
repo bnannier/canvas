@@ -62,7 +62,6 @@ const ONE_JOB: Record<string, Partial<Record<Platform, string>>> = {
 const TRANSITIONAL: Record<string, { item: "K8b" | "K8c"; turn: string; on: readonly Platform[] }> = {
   breadcrumb: { item: "K8b", turn: "Breadcrumb", on: BOTH },
   "input-otp": { item: "K8b", turn: "InputOTP", on: BOTH },
-  "action-panels": { item: "K8b", turn: "ActionPanel", on: BOTH },
   "empty-state": { item: "K8b", turn: "EmptyState", on: BOTH },
   feeds: { item: "K8b", turn: "Feed", on: BOTH },
   "media-objects": { item: "K8b", turn: "MediaObject", on: BOTH },

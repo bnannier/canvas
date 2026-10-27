@@ -1,7 +1,12 @@
-import { useId, useState } from "react";
-import Svg, { Circle, Defs, LinearGradient, Path, Stop } from "react-native-svg";
+import { useState } from "react";
+import Svg, { Circle, Path } from "react-native-svg";
 import { View, useTheme, alpha, statusColors, devWarn, FILL, type ColorTokens, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { type SparklineSkin } from "./sparkline.styles.js";
+import { monotonePath } from "../shared/chart-math.js";
+
+// The v4 hand-off's line (`K.def('sparkline')`): a smooth 2 px stroke in the tone over a
+// flat .18 wash of it, closed to the strip's foot, and an r 3 end marker.
+const LINE_WASH = 0.18;
 
 // Shared Sparkline shell. A compact trend strip that plots a series of values,
 // so no call site hand-composes a row of `flexGrow` + `height` +
@@ -12,8 +17,8 @@ import { type SparklineSkin } from "./sparkline.styles.js";
 // The look follows the standard sparkline anatomy: the series renders in a
 // soft de-emphasis wash of the tone while the latest period carries the full
 // accent (the last bar, or the line's end marker), bars round at the data end
-// and stay square at the baseline, and the line variant grounds itself with a
-// gradient area wash that fades toward the baseline.
+// and stay square at the baseline, and the line variant (the v4 hand-off's) is a
+// smooth stroke over a flat wash of the tone closed to the baseline.
 //
 // Sparkline is a "Shared" platform treatment: a token-colored trend strip is
 // identical on iOS, Android, and the web, so the three skins carry the same
@@ -120,11 +125,10 @@ export function createSparkline(skin: SparklineSkin) {
     // takes the bounds its parent provides (a Stats item, a Container step).
     const root: ViewStyle = { flexDirection: "row", alignItems: "flex-end", gap: skin.gap, height: plot, ...FILL };
     // The frame sits on the root, so it holds the band in both variants and the
-    // marks draw over it. Same radius as a bar's data end, so the band and what
-    // it holds read as one shape.
+    // marks draw over it, at the hand-off's track corner.
     if (props.track) {
       root.backgroundColor = tokens.muted;
-      root.borderRadius = skin.barRadius;
+      root.borderRadius = skin.trackRadius;
     }
 
     // The accent marks the latest real period: the last FINITE value, so a
@@ -138,12 +142,10 @@ export function createSparkline(skin: SparklineSkin) {
       }
     }
 
-    // The line variant plots one continuous 2px trend line over a gradient
+    // The line variant plots one continuous 2px trend line over a flat
     // area wash, with an accent dot marking the latest point; it needs a
-    // measured pixel width (the bar strip flexes instead). SVG gradient ids
-    // resolve document-wide on the web, so each instance mints its own.
+    // measured pixel width (the bar strip flexes instead).
     const [lineWidth, setLineWidth] = useState(0);
-    const gradientId = `canvas-sparkline-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
     if (props.line) {
       const dotR = 3;
       const pad = dotR + 1; // room for the end marker and half the stroke, so nothing clips
@@ -157,7 +159,7 @@ export function createSparkline(skin: SparklineSkin) {
         const y = span > 0 ? plot - pad - ((value - min) / span) * (plot - pad * 2) : plot / 2;
         return { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 };
       });
-      const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+      const linePath = points.length > 1 ? monotonePath(points) : points.map((p) => `M${p.x},${p.y}`).join(" ");
       // The wash: the line's silhouette closed down to the strip's bottom edge.
       // Guarded so an empty series renders the named empty strip, never throws.
       const areaPath =
@@ -174,13 +176,7 @@ export function createSparkline(skin: SparklineSkin) {
         >
           {lineWidth > 0 && values.length > 0 ? (
             <Svg width={lineWidth} height={plot}>
-              <Defs>
-                <LinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor={base} stopOpacity={0.28} />
-                  <Stop offset="1" stopColor={base} stopOpacity={0.02} />
-                </LinearGradient>
-              </Defs>
-              {values.length > 1 ? <Path d={areaPath} fill={`url(#${gradientId})`} /> : null}
+              {values.length > 1 ? <Path d={areaPath} fill={base} fillOpacity={LINE_WASH} /> : null}
               <Path d={linePath} stroke={accent} strokeWidth={2} fill="none" strokeLinejoin="round" strokeLinecap="round" />
               {marker ? <Circle cx={marker.x} cy={marker.y} r={dotR} fill={accent} /> : null}
             </Svg>

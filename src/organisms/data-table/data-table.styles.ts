@@ -16,13 +16,17 @@ import { typeScale } from "../../style/type-scale.js";
 // tokens carry every color; no platform default color leaks in); only the native
 // row rhythm, header type/tracking, hairline, stripe fill, outer radius, and
 // press feedback change per OS:
-//   Web: a bordered table takes the card corner; the header band on `muted` is
-//     soft-cornered (the table header corner) when the table stands alone, with
-//     py-12 (py-8 compact) and 14/20 medium sentence-case muted-foreground labels;
-//     data cells px-16/py-18 (py-10 compact) with 14/20 foreground text; a DASHED 1px
-//     `border` hairline under each row; stripe = muted @ 30%; press = `accent` fill.
-//     Header and data cells both carry per-cell horizontal padding (shadcn th/td
-//     px-2 class) so labels never jam, and the wrap holds a 320 width floor.
+//   Web: the v4 hand-off's table (cv-kit-code3.js `O('data-table')`, the code-driven
+//     form of `K.def('data-table')`): a standalone table is framed, a 1px `border`
+//     hairline (`field-border` when `bordered`) at the table-frame corner over the
+//     `card` fill, square inside a parent that frames it (`attached`). The header band
+//     sits on `popover` (the hand-off's sf2) over a `border` rule, padded 10 (8 compact),
+//     with 500 12/16 sentence-case labels in the muted ink and a 12px sort mark (the
+//     active column's arrow in the accent). Rows are 12 tall above and below (8 compact,
+//     16 comfortable) at 16 in, 400 13/18 foreground text, a solid `border` rule under
+//     each; a stripe is the sunken fill (bg2), a selected or pressed row the accent's soft
+//     wash. Header and data cells both carry per-cell horizontal padding so labels never
+//     jam, and the wrap holds a 320 width floor.
 //   iOS (SwiftUI Table / grouped-list rhythm): a CONTINUOUS outer corner at the
 //     iOS card corner; the header reads as regular-case secondary labels (13/18,
 //     weight 400, -0.08 tracking: HIG title-style column headings, NOT the
@@ -31,13 +35,9 @@ import { typeScale } from "../../style/type-scale.js";
 //     16pt to the content leading edge; stripe = muted @ 24%; press = `secondary`
 //     system fill. Below the compact (sm) width the table collapses to its
 //     PRIMARY (first) column, matching SwiftUI Table on iPhone.
-//   Android (Material 3 list rhythm; M3 has no data table, so the M3 LIST
-//     conventions apply): a flat wrap at the Android card corner (M3 surfaces are
-//     flat, no shadow); the header is an M3 label-medium band (12/16, weight 500, +0.5
-//     tracking, NOT uppercased — M3 labels are sentence/normal case); ~52dp
-//     rows (py-14, py-10 compact) with 16/24/+0.5 body-large text; 1px
-//     outline-variant hairlines; stripe = surface-variant (muted) @ 20%; press
-//     = an android_ripple carrying the M3 on-surface state layer (surfaceRipple).
+//   Android: Material 3 has no data table (PLATFORM-REFERENCES.md), so it draws the web
+//     table in Roboto, with Material's 48dp touch targets on a pressable row and its row
+//     actions and the ripple as press feedback.
 
 export type Density = "compact" | "regular" | "comfortable";
 
@@ -52,6 +52,17 @@ export interface DataTableSkin {
   wrap: ViewStyle;
   /** The `bordered` rounded outline around the whole table. */
   borderedOutline: (t: ColorTokens) => ViewStyle;
+  /**
+   * The frame a standalone table draws without `bordered` (its corner, hairline and fill);
+   * dropped when `attached` puts the table inside a frame its parent draws. Absent where a
+   * standalone table draws no frame (iOS).
+   */
+  frame?: (t: ColorTokens) => ViewStyle;
+  /**
+   * Mark the sorted column with an arrow in the accent (the hand-off's sort mark) rather
+   * than a muted chevron (SwiftUI Table's).
+   */
+  sortArrows?: boolean;
   /** The header band (a flex row on the muted surface). */
   headerRow: (t: ColorTokens) => ViewStyle;
   /**
@@ -185,42 +196,49 @@ const groupCount = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, font
 // iOS table control draws a row's icon button.
 const ACTION_BUTTON_CORNER: ViewStyle = { borderRadius: shape.web.control };
 
-// ---------- Web: a soft header band over dashed rows ----------
-// The header is a soft band with sentence-case medium labels, rows are 56px tall at
-// the regular density and separated by DASHED hairlines, status reads as pills, the
-// row kebab is a 36px square with the control corner, and a bordered table takes the
-// card corner. The band's own corners belong to the STANDALONE table; framed by an
-// outline or an `attached` parent it squares up, so the frame's corners are the only
-// rounded ones and no fill peeks out under the band's bottom corners.
+// ---------- Web: the hand-off's framed table ----------
+// A standalone table is framed at the table-frame corner over the card fill; the header
+// band on `popover` squares to the frame, its labels 500 12 in the muted ink; rows are
+// 13/18 foreground text over a solid hairline, 12 above and below.
+const frameAt = (t: ColorTokens, edge: string): ViewStyle => ({
+  borderRadius: platformShape.web.tableFrame,
+  borderWidth: 1,
+  borderColor: edge,
+  backgroundColor: t.card,
+});
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
+
 export const webSkin: DataTableSkin = {
   liquidTextEntry: true,
   wrap: WRAP,
-  borderedOutline: (t) => ({ borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border }),
-  // The soft band, at the web's own table-header corner (10px).
-  headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted, borderRadius: platformShape.web.tableHeader }),
-  headerRowAttached: { borderRadius: 0 },
+  borderedOutline: (t) => frameAt(t, t["field-border"] ?? t.border),
+  frame: (t) => frameAt(t, t.border),
+  sortArrows: true,
+  // The band on popover (the hand-off's sf2) over a border rule; the frame clips its corners.
+  headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.popover, borderBottomWidth: 1, borderColor: t.border }),
+  headerRowAttached: null,
   headerPad: {
     compact: { paddingVertical: 8 },
-    regular: { paddingVertical: 12 },
-    comfortable: { paddingVertical: 14 },
+    regular: { paddingVertical: 10 },
+    comfortable: { paddingVertical: 10 },
   },
   // Type only; the shell's header cell box carries the flex share and the px-16
-  // horizontal padding so headings sit over their columns. Sentence case, Label/Small.
+  // horizontal padding so headings sit over their columns. Sentence case, 500 12.
   headerCell: (t) => ({
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 12,
+    lineHeight: 16,
     fontWeight: "500",
     color: t["muted-foreground"],
   }),
-  sortIconSize: 14,
-  captionText: (t) => ({ fontSize: 13, lineHeight: 18, color: t["muted-foreground"] }),
+  sortIconSize: 12,
+  // The empty message and the selection count: 400 13 in the subtle ink.
+  captionText: (t) => ({ fontSize: 13, lineHeight: 18, color: subtle(t) }),
   selectCol: SELECT_COL,
   selectCell: { ...SELECT_COL },
   dataRow: (t) => ({
     flexDirection: "row",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderStyle: "dashed",
     borderColor: t.border,
   }),
   // The hand-off's props-table band (Component.dc.html, Props): 12 / 16 / 8 padding on
@@ -228,15 +246,17 @@ export const webSkin: DataTableSkin = {
   groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
   groupLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t.foreground }),
   groupCount,
-  stripeTint: (t) => ({ backgroundColor: alpha(t.muted, 0.3) }),
-  pressTint: (t) => ({ backgroundColor: t.accent }),
+  // A stripe is the sunken fill (the hand-off's bg2).
+  stripeTint: (t) => ({ backgroundColor: t["surface-sunken"] ?? t.muted }),
+  // A selected (or pressed) row takes the accent's soft wash.
+  pressTint: (t) => ({ backgroundColor: t["primary-soft"] }),
   cellPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 10 },
-    regular: { paddingHorizontal: 16, paddingVertical: 18 },
-    comfortable: { paddingHorizontal: 16, paddingVertical: 22 },
+    compact: { paddingHorizontal: 16, paddingVertical: 8 },
+    regular: { paddingHorizontal: 16, paddingVertical: 12 },
+    comfortable: { paddingHorizontal: 16, paddingVertical: 16 },
   },
   dataCell: DATA_CELL,
-  cellText: (t) => ({ fontSize: 14, lineHeight: 20, color: t.foreground }),
+  cellText: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "400", color: t.foreground }),
   // Dark Factory's caption role.
   stackedLabel: (t) => ({ ...typeScale.caption, color: t["muted-foreground"] }),
   separator: null,
@@ -245,10 +265,10 @@ export const webSkin: DataTableSkin = {
   actionsColWidth: 108,
   actionButton: { width: 36, height: 36, ...ACTION_BUTTON_CORNER, alignItems: "center", justifyContent: "center" },
   actionIconSize: 16,
-  // The inline editor: the 14/20 cell type inside a primary-ringed 36px field.
+  // The inline editor: the 13/18 cell type inside a primary-ringed 32px field.
   editInput: (t) => ({
     alignSelf: "stretch",
-    height: 36,
+    height: 32,
     borderRadius: shape.web.field,
     borderWidth: 1,
     borderColor: t.primary,
@@ -256,8 +276,8 @@ export const webSkin: DataTableSkin = {
     color: t.foreground,
     paddingHorizontal: 10,
     paddingVertical: 0,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
   }),
   editTint: (t) => ({ backgroundColor: alpha(t.primary, 0.06) }),
   ripple: null,
@@ -350,87 +370,19 @@ export const iosSkin: DataTableSkin = {
   ripple: null,
 };
 
-// ---------- Android (Material 3 list rhythm) ----------
-// M3 has no data table; the M3 LIST conventions apply. The header is an M3
-// label-medium band (NOT uppercased — M3 labels are normal case), rows sit on the
-// M3 list rhythm with 16sp body-large text (+0.5 tracking) and 1px outline-variant
-// hairlines, the wrap is flat (M3 surfaces carry no shadow), and press = an
-// android_ripple carrying the M3 on-surface state layer (surfaceRipple: the
-// foreground token at low alpha, NOT the primary tint).
+// ---------- Android: the web table in Roboto ----------
+// Material 3 has no data table, so the hand-off's web table is drawn here too, with
+// Material's touch targets: a pressable row clears 48dp, the row actions are 48dp state
+// layers (the shell ripples them with controlRipple), and a pressed row or header ripples
+// with the on-surface state layer (surfaceRipple) instead of a tint.
 export const androidSkin: DataTableSkin = {
-  wrap: WRAP,
-  borderedOutline: (t) => ({ borderRadius: shape.android.card, borderWidth: 1, borderColor: t.border }),
-  headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
-  headerRowAttached: null,
-  headerPad: {
-    compact: { paddingVertical: 8 },
-    regular: { paddingVertical: 10 },
-    comfortable: { paddingVertical: 12 },
-  },
-  headerCell: (t) => ({
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "500",
-    letterSpacing: 0.5,
-    color: t["muted-foreground"],
-  }),
-  // M3 data tables pair the header label with a 16dp sorting arrow.
-  sortIconSize: 16,
-  // M3 body-small caption.
-  captionText: (t) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
-  selectCol: SELECT_COL,
-  selectCell: { ...SELECT_COL },
-  dataRow: (t) => ({
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderColor: t.border,
-  }),
-  // Material 3 has no data table, so the band is the web's, with M3's title-small label
-  // (14/20/500/+0.1) and the 1 dp outline-variant hairline its rows draw.
-  groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
-  groupLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
-  groupCount,
-  stripeTint: (t) => ({ backgroundColor: alpha(t.muted, 0.2) }),
-  // Press feedback comes from the ripple on Android; this fill is the SELECTED
-  // row tint (the M3 primary state layer at 12%).
-  pressTint: (t) => ({ backgroundColor: alpha(t.primary, 0.12) }),
-  cellPad: {
-    compact: { paddingHorizontal: 16, paddingVertical: 10 },
-    regular: { paddingHorizontal: 16, paddingVertical: 14 },
-    comfortable: { paddingHorizontal: 16, paddingVertical: 18 },
-  },
-  dataCell: DATA_CELL,
-  // M3 body-large: 16/24/400 with +0.5 tracking.
-  cellText: (t) => ({ fontSize: 16, lineHeight: 24, letterSpacing: 0.5, color: t.foreground }),
-  // Material 3 has no data table (PLATFORM-REFERENCES.md), so this part takes
-  // Dark Factory's look, the web's caption label, rather than an M3 role.
-  stackedLabel: webSkin.stackedLabel,
-  separator: null,
-  // Row actions: 48dp M3 touch targets on a circular state layer (the shell
-  // ripples them with controlRipple); two plus the gap and px-12 padding.
+  ...webSkin,
+  liquidTextEntry: undefined,
+  // Row actions: 48dp M3 touch targets on a circular state layer; two plus the gap and
+  // px-12 padding.
   actionsColWidth: 124,
   actionButton: { width: 48, height: 48, borderRadius: shape.android.control, alignItems: "center", justifyContent: "center" },
   actionIconSize: 18,
-  // The inline editor: the 16/24 body-large cell type in a primary-ringed 36dp field.
-  editInput: (t) => ({
-    alignSelf: "stretch",
-    height: 36,
-    borderRadius: shape.android.field,
-    borderWidth: 1,
-    borderColor: t.primary,
-    backgroundColor: t.background,
-    color: t.foreground,
-    paddingHorizontal: 8,
-    paddingVertical: 0,
-    fontSize: 16,
-    lineHeight: 24,
-    letterSpacing: 0.5,
-  }),
-  // The M3 primary state layer as the row-in-edit wash.
-  editTint: (t) => ({ backgroundColor: alpha(t.primary, 0.08) }),
   pressableMinHeight: 48,
-  // M3 list-row state layer: on-surface (foreground) ink at ~10% alpha, routed
-  // through the shared ripple helper (the wrap's overflow:"hidden" clips it).
   ripple: (t) => surfaceRipple(t),
 };

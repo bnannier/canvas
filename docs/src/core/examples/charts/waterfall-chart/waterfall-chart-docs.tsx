@@ -11,7 +11,7 @@ export const docs: ComponentDocs = {
   dir: "waterfall-chart",
   category: "charts",
   overview: [
-    "The coloring is fixed semantics rather than a prop: rises green, falls red, totals the brand primary, so every bridge reads the same way. Hairline connectors link each bar's end to the next bar's start, and scrubbing a step flags its change and running total.",
+    "The coloring is fixed semantics rather than a prop: rises green, falls red, totals the brand primary, so every bridge reads the same way. Scrubbing a step flags its change and running total.",
   ],
   examples: [
     { label: "Default", code: "<WaterfallChart\n  title=\"Q3 revenue bridge\"\n  steps={[\n    { label: \"Q2\", value: 4200, total: true },\n    { label: \"New\", value: 980 },\n    { label: \"Expansion\", value: 460 },\n    { label: \"Churn\", value: -540 },\n    { label: \"FX\", value: -120 },\n    { label: \"Q3\", total: true },\n  ]}\n/>", render: e_charts_waterfall_chart_example_0 },
@@ -27,6 +27,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["group","image","img"],"states":[],"aria":["aria-label"],"touchTarget":[]},
-  tokens: ["border","primary"],
+  tokens: ["primary"],
   related: ["chart","line-chart","area-chart","range-area-chart","composed-chart","sparkline","histogram","box-plot"],
 };

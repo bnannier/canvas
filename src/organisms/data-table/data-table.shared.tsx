@@ -159,14 +159,14 @@ export interface DataTableProps {
   groups?: DataTableGroup[];
   /** Tint every other data row for easier horizontal scanning. */
   striped?: boolean;
-  /** Wrap the table in a rounded outer border. */
+  /** Draw the table's frame on the firmer field boundary rather than the hairline. */
   bordered?: boolean;
   /**
    * The table sits flush inside a frame its parent draws (a `flush` Card, a
-   * bordered panel that clips to its corners), so the header band squares its
-   * corners to that frame instead of floating as a rounded band; `bordered`
-   * does the same for the table's own outline. Without a frame the band keeps
-   * its rounded corners, which is the standalone look.
+   * bordered panel that clips to its corners), so it draws no frame of its own.
+   * Without it a standalone table frames itself (on the web and Android, a
+   * hairline at the table corner over the card fill), which is the standalone
+   * look.
    */
   attached?: boolean;
   /**
@@ -797,8 +797,9 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // floored table measures its (narrow) container, the floor drops, and the
       // remeasure at true container width stays below sm.
       stacked || (measuredWidth > 0 && measuredWidth < breakpoints.sm) ? { minWidth: 0 } : null,
-      // RN has no ring; a rounded 1px border is the bordered outline.
-      bordered ? skin.borderedOutline(tokens) : null,
+      // RN has no ring; a rounded 1px border is the bordered outline. Without it a
+      // standalone table draws the skin's own frame, which a parent's frame replaces.
+      bordered ? skin.borderedOutline(tokens) : !attached && skin.frame ? skin.frame(tokens) : null,
       style,
     ];
 
@@ -1060,7 +1061,13 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         >
           {label}
           {active ? (
-            descending ? (
+            skin.sortArrows ? (
+              descending ? (
+                <Icon arrowDown primary size={skin.sortIconSize} decorative />
+              ) : (
+                <Icon arrowUp primary size={skin.sortIconSize} decorative />
+              )
+            ) : descending ? (
               <Icon chevronDown muted size={skin.sortIconSize} decorative />
             ) : (
               <Icon chevronUp muted size={skin.sortIconSize} decorative />
