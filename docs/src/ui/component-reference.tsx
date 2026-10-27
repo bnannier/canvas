@@ -15,6 +15,8 @@ import { Guidance } from "./guidance";
 import { PageNav } from "./page-nav";
 import { variantSlug } from "../lib/variant";
 import { DocsHead } from "./docs-head";
+import { isDetailV4 } from "./detail/gate";
+import { DetailPage } from "./detail/detail-page";
 
 // The generic component reference page, shared by the default route
 // (components/[slug]/index) and the deep-linked variant route
@@ -33,6 +35,19 @@ export function ComponentReference() {
 
   const comp = slug ? getComponent(slug) : undefined;
   if (!comp) return <Redirect href="/components" />;
+
+  // The v4 detail page, piloted on the components in ./detail/gate.ts (PLAN decision P1):
+  // its own header, sections and comparison stage, in place of everything below.
+  if (isDetailV4(comp.slug)) {
+    return (
+      <Page>
+        <DocsHead title={comp.name} />
+        <Suspense fallback={<Skeleton card large animate accessibilityLabel="Loading the component" />}>
+          <DetailPage comp={comp} variant={variant} />
+        </Suspense>
+      </Page>
+    );
+  }
 
   return (
     <Page>

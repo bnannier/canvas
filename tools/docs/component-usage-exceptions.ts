@@ -66,23 +66,27 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The page scroll host fills the native screen; it paints nothing, so the page look behind it shows through.",
   },
   {
-    file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "contentContainerStyle", keys: ["paddingBottom", "paddingTop", "width"], occurrences: 1,
-    reason: "Page scroll content clears the overlaid app bars and supplies definite width to the semantic Container inside.",
+    file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "contentContainerStyle", keys: ["alignItems", "paddingTop", "width"], occurrences: 1,
+    reason: "Page scroll content clears the floating pill navbar, supplies definite width to the page frame inside and centres it.",
   },
   {
-    file: "docs/src/ui/page.tsx", owner: "content", tag: "ContentHost", attribute: "style", keys: ["flexBasis", "flexGrow", "flexShrink"], occurrences: 1,
-    reason: "The overlay host wraps scroll content rather than using its app-root flex default, which would collapse the scroll child.",
+    file: "docs/src/ui/page.tsx", owner: "content", tag: "ContentHost", attribute: "style", keys: ["flexBasis", "flexGrow", "flexShrink", "maxWidth", "width"], occurrences: 1,
+    reason: "The overlay host wraps scroll content rather than using its app-root flex default, which would collapse the scroll child, and is the v4 hand-off's page frame: full width, capped at its 1440 px (off the kit's widths scale, design-language item 8).",
+  },
+  {
+    file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["paddingLeft"], occurrences: 1,
+    reason: "The page content clears the web shell's room rail at the frame's start edge (the rail and its 28 px gap, decision S9); docs scaffolding, zero where no rail stands.",
   },
   {
     file: "docs/src/audit/driver.native.tsx", owner: "BandSensor", tag: "View", attribute: "style", keys: ["bottom", "left", "position", "right", "top"], occurrences: 1,
     reason: "The component audit's band sensor, built only into the native audit app: an empty, untouchable view laid over the page frame so the capture driver can measure the screen's frame; it draws nothing.",
   },
   {
-    file: "docs/src/ui/playground.tsx", owner: "PlatformRow", tag: "View", attribute: "style", keys: ["left", "position", "top"], occurrences: 1,
+    file: "docs/src/ui/stage.tsx", owner: "PlatformRow", tag: "View", attribute: "style", keys: ["left", "position", "top"], occurrences: 1,
     reason: "The noninteractive platform caption is overlaid on the comparison stage without changing the measured component bounds.",
   },
   {
-    file: "docs/src/ui/playground.tsx", owner: "stage", tag: "OverlayProvider", attribute: "style", keys: ["flex", "minWidth"], occurrences: 1,
+    file: "docs/src/ui/stage.tsx", owner: "StageHost", tag: "OverlayProvider", attribute: "style", keys: ["flex", "minWidth"], occurrences: 1,
     reason: "The shared comparison-stage overlay host must fill and shrink with its measured preview container.",
   },
   {
@@ -110,8 +114,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The app's safe-area host fills the viewport, with the page look as its first child.",
   },
   {
-    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "minWidth", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 4,
-    reason: "Stable route/landmark hosts size the viewport and position measured top/bottom app bars above the page scroller.",
+    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["flex"], occurrences: 1,
+    reason: "The main landmark host fills the window under the floating chrome, so the page scroller inside has a definite height.",
   },
   {
     file: "docs/src/app/(search)/search.tsx", owner: "NativeSearch", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,
@@ -124,5 +128,49 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   {
     file: "docs/src/shell/page-backdrop.tsx", owner: "PageGrain", tag: "View", attribute: "style", keys: ["bottom", "left", "opacity", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 1,
     reason: "The v4 hand-off's grain, docs-only scaffolding under design-language item 8 and decision S6: an untouchable layer over the whole window at the scheme's grain opacity, holding the kit Image that tiles the baked noise.",
+  },
+  {
+    file: "docs/src/shell/pill-nav.tsx", owner: "PillNav", tag: "View", attribute: "style", keys: ["alignItems", "left", "paddingHorizontal", "paddingTop", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 1,
+    reason: "The banner row floats the v4 hand-off's pill over the page: centred, 14 px under the window's top and 16 px from its sides (SHELL in page-look.ts), untouchable outside the pill; docs scaffolding, it paints nothing.",
+  },
+  {
+    file: "docs/src/shell/pill-nav.tsx", owner: "PillNav", tag: "View", attribute: "style", keys: ["maxWidth"], occurrences: 1,
+    reason: "The Primary navigation landmark around the kit Navbar hugs the pill and caps it at the window less its sides, so the pill's row scrolls sideways where it does not fit (decision S1).",
+  },
+  {
+    file: "docs/src/shell/rail.tsx", owner: "Rail", tag: "View", attribute: "style", keys: ["alignItems", "bottom", "flex", "left", "maxWidth", "paddingHorizontal", "pointerEvents", "position", "right", "top", "width", "zIndex"], occurrences: 3,
+    reason: "The rail's layer floats over the page from the hand-off's 96 px down to the window's foot (untouchable outside the rail, painting nothing), centring the hand-off's page frame (full width, capped at 1440 px with its 24 px gutter) so the rail's 200 px column (decision S9) stands at the frame's start edge, holding its scroller to the window's height.",
+  },
+  {
+    file: "docs/src/shell/rail.tsx", owner: "Rail", tag: "ScrollView", attribute: "contentContainerStyle", keys: ["paddingBottom", "paddingRight", "paddingTop"], occurrences: 1,
+    reason: "The hand-off rail's own scroll padding (`padding:4px 6px 32px 0` on its aside), around the kit Sidebar it scrolls.",
+  },
+  {
+    file: "docs/src/shell/footer.tsx", owner: "Footer", tag: "View", attribute: "style", keys: ["gap", "paddingBottom", "paddingHorizontal", "paddingTop"], occurrences: 1,
+    reason: "The v4 hand-off's footer frame (FOOTER in page-look.ts: 96 px over, 48 px beside, 64 px under, 32 px under its hairline); everything inside it is a kit component.",
+  },
+  {
+    file: "docs/src/ui/detail/frame.tsx", owner: "DotGrid", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "The v4 detail page's dotted staging ground (the hand-off's 16 px dot grid behind a live specimen): an untouchable layer spread over the well it sits in, painting only the svg pattern; docs scaffolding under design-language item 8.",
+  },
+  {
+    file: "docs/src/ui/detail/frame.tsx", owner: "renderComponent", tag: "component", attribute: "spread", keys: ["<computed prop>"], occurrences: 1,
+    reason: "The detail page's Playground, Sizes, States and Anatomy render the documented component by name from the preview scope with the props its knobs set (the hand-off's `K.props`), so the props object is built at run time from the generated knob spec and never carries a style.",
+  },
+  {
+    file: "docs/src/ui/detail/playground.tsx", owner: "KnobPanel", tag: "ScrollView", attribute: "style", keys: ["maxHeight"], occurrences: 1,
+    reason: "The hand-off's knob panel scrolls inside the playground frame past 560 px (its `max-height` on the panel) so a component with many knobs keeps the stage and its JSX in view.",
+  },
+  {
+    file: "docs/src/ui/detail/anatomy.tsx", owner: "Marks", tag: "Svg", attribute: "style", keys: ["left", "position", "top"], occurrences: 1,
+    reason: "The anatomy figure's leader lines are drawn over the specimen at the part rectangles AnatomyProvider measured (the hand-off's `_measure`), so the svg sits at the figure's origin.",
+  },
+  {
+    file: "docs/src/ui/detail/anatomy.tsx", owner: "Marks", tag: "View", attribute: "style", keys: ["alignItems", "height", "justifyContent", "left", "pointerEvents", "position", "top", "width"], occurrences: 1,
+    reason: "Each numbered anatomy marker (a kit Badge) is centred on the point placed beside its measured part, untouchable so the specimen under it stays live.",
+  },
+  {
+    file: "docs/src/ui/detail/platform-skins.tsx", owner: "PlatformSkinsSection", tag: "View", attribute: "style", keys: ["alignSelf", "maxWidth", "width"], occurrences: 1,
+    reason: "The detail page's comparison stage simulates the selected form factor's width (the same harness the Playground page's preview card runs), centred and never wider than the page.",
   },
 ];

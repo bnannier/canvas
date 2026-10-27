@@ -11,6 +11,7 @@ export function CodeBlock({
   code,
   wrap,
   language = "tsx",
+  headerless,
 }: {
   code: string;
   /** Soft-wrap long lines instead of scrolling them (the kit CodeBlock's `wrap`).
@@ -18,6 +19,9 @@ export function CodeBlock({
    *  defeats the point on a phone. */
   wrap?: boolean;
   language?: string;
+  /** The v4 detail page's snippet: highlighted with no header bar and no copy chip, as
+   *  the hand-off draws its section snippets (a floating chip would sit over long lines). */
+  headerless?: boolean;
 }) {
-  return <KitCodeBlock code={code} language={language} compact copy wrap={wrap} />;
+  return <KitCodeBlock code={code} language={language} compact copy={!headerless} headerless={headerless} wrap={wrap} />;
 }

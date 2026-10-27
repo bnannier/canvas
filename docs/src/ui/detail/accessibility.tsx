@@ -1,0 +1,77 @@
+import type { Ref } from "react";
+import { View, Grid, Card, Column, Row, Typography, Badge, Kbd, DescriptionList, Icon } from "@nannier/canvas";
+import { KEYBOARD_PATTERNS, type KeyboardPatternKey } from "../../core/data/detail-specs";
+import type { DocProse, DocSemantics } from "../../core/scope";
+import { Prose } from "../prose";
+import { DetailSection } from "./frame";
+
+// The detail page's Accessibility and keyboard (Component.dc.html `#cv-a11y`): the keys
+// the component's pattern answers, what its shell tells assistive tech (the roles, states
+// and ARIA scanned from source), the touch-target note for a control, and the .md's own
+// Accessibility section under them.
+
+/** The patterns a pressable control follows, whose touch area grows to the platform minimum. */
+const TOUCH_PATTERNS: ReadonlySet<KeyboardPatternKey> = new Set(["button", "toggle", "radio", "slider", "spin", "tabs", "menu", "link", "listbox", "combobox", "carousel"]);
+
+/** "ArrowDown · ArrowRight" as one keycap per alternative. */
+function Keys({ keys }: { keys: string }) {
+  return (
+    <Row wrap tight alignCenter>
+      {keys.split(" · ").map((key) => <Kbd key={key}>{key}</Kbd>)}
+    </Row>
+  );
+}
+
+function Values({ values }: { values: readonly string[] }) {
+  return (
+    <Row wrap compact>
+      {values.map((v) => <Badge key={v} mono small>{v}</Badge>)}
+    </Row>
+  );
+}
+
+export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }: {
+  keyboard: KeyboardPatternKey;
+  semantics: DocSemantics;
+  /** The .md's own Accessibility section, shown as "From the docs". */
+  notes?: DocProse[];
+  sectionRef?: Ref<View>;
+}) {
+  const keys = KEYBOARD_PATTERNS[keyboard];
+  const sem = ([["Roles", semantics.roles], ["States", semantics.states], ["ARIA on web", semantics.aria]] as const).filter(([, v]) => v.length > 0);
+  return (
+    <DetailSection title="Accessibility and keyboard" sectionRef={sectionRef}>
+      <Grid minTileWidth={320} columns={2} roomy>
+        <Card eyebrow="Keyboard">
+          {keys.length ? (
+            <DescriptionList twoColumn divided items={keys.map(([k, effect]) => ({ term: <Keys keys={k} />, value: effect }))} />
+          ) : (
+            <Typography small subtle>Not focusable. It has no interaction of its own and takes the semantics of what it wraps.</Typography>
+          )}
+        </Card>
+        <Card eyebrow="Semantics">
+          <Column cozy>
+            {sem.length ? (
+              <DescriptionList twoColumn divided items={sem.map(([label, values]) => ({ term: label, value: <Values values={values} /> }))} />
+            ) : (
+              <Typography small subtle>No role of its own in source; it reads as the content it renders.</Typography>
+            )}
+            {TOUCH_PATTERNS.has(keyboard) ? (
+              <Row snug alignStart>
+                <Icon smartphone primary size={15} decorative />
+                <Column fill>
+                  <Typography small subtle>Below the platform minimum, the touch area grows to 44 pt on iOS and 48 dp on Android without moving the layout.</Typography>
+                </Column>
+              </Row>
+            ) : null}
+          </Column>
+        </Card>
+      </Grid>
+      {notes?.length ? (
+        <Card eyebrow="From the docs">
+          <Prose blocks={notes} small subtle />
+        </Card>
+      ) : null}
+    </DetailSection>
+  );
+}

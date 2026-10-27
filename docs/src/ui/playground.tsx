@@ -1,131 +1,23 @@
-import { Component, Fragment, type ReactNode, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Typography, Card, Alert, Divider, Container, Row, Column, Tabs, Input, ButtonGroup, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey, useContainerBreakpoint } from "@nannier/canvas";
+import { ScrollView, View, Card, Container, Row, Column, Tabs, Input, useMeasuredWidth, useTheme, useContainerBreakpoint } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
-import { useAuditProbe } from "../audit/probe-context";
-import type { DocExample, DocProse, ExampleScope } from "../core/scope";
+import type { DocExample, DocProse } from "../core/scope";
 import { CodeBlock } from "./code-block";
 import { Prose } from "./prose";
+import { FULL_WIDTH, FormFactorSwitcher, PlatformRow, StageHost, formFactorAt, useAuditCard } from "./stage";
+
+// The stage's shared pieces moved to ./stage.tsx, where the v4 detail page's Platform
+// skins section uses them too; the Do & Don't and guidance cards import the boundary from
+// here.
+export { ExampleErrorBoundary } from "./stage";
 
 // Docs-only: example helpers whose fence renders a searchable catalog. When the selected
 // example's code uses one, the Playground draws a SINGLE search field above the 3-up stage and
 // publishes its text through IconSearchContext, so that one control filters every platform column
 // at once (see IconGallery) instead of a separate box per column. The value is the placeholder.
 const SEARCHABLE_EXAMPLES: Record<string, string> = { IconGallery: "Search icons" };
-
-// The form-factor simulator behind the icon switcher in the stage header (WEB
-// docs only: on a device you ARE the form factor, so the native app never
-// renders it). Selecting a tier does two things at once, so the container- and
-// viewport-driven halves of the kit's responsive system tell the same story:
-//   - constrains the preview card to the tier's width, which the
-//     container-measured components (DataTable, Grid, Row stacks, Navbar,
-//     DescriptionList) re-fit to, and
-//   - pins the kit's viewport bucket via BreakpointOverride, which the
-//     useBreakpoint / useResponsive / useFormFactor consumers (the Sidebar and
-//     FilterPanel drawers, AnchoredOverlay's phone sheet) resolve as the
-//     simulated tier, and which the container-measured components' first,
-//     unmeasured frame follows. The override wraps the stage's OverlayProvider,
-//     so portaled overlay content (menus, dialogs, the calendar peek) resolves
-//     the simulated tier too; a sheet or drawer still lays out against the real
-//     window, which BreakpointOverride does not simulate (it pins the tier, not
-//     the geometry).
-// The tiers walk the kit's own breakpoint scale (src/style/tokens.ts
-// `breakpoints`: sm 640, md 768, lg 1024, xl 1280), one preview per bucket a
-// component can switch on, plus a phone that sits well inside `sm`. Full width
-// is the resting state: no width constraint, no override. In a stage narrower
-// than the tier (a laptop tier in a mid-width window) the card clamps to the
-// stage and the readout shows the MEASURED width, so it never overstates.
-const FORM_FACTORS: readonly { label: string; icon: IconName; width: number | null; bucket: BreakpointKey | "base" | null }[] = [
-  { label: "Phone width (375px)", icon: "smartphone", width: 375, bucket: "sm" },
-  { label: "Large phone width (640px)", icon: "phone", width: 640, bucket: "sm" },
-  { label: "Tablet width (768px)", icon: "tablet", width: 768, bucket: "md" },
-  { label: "Laptop width (1024px)", icon: "laptop", width: 1024, bucket: "lg" },
-  { label: "Desktop width (1280px)", icon: "monitor", width: 1280, bucket: "xl" },
-  { label: "Full width", icon: "maximize", width: null, bucket: null },
-];
-
-export class ExampleErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
-  state = { error: null as string | null };
-  static getDerivedStateFromError(e: unknown) {
-    return { error: e instanceof Error ? e.message : String(e) };
-  }
-  render() {
-    if (this.state.error) return <ErrorNote message={this.state.error} />;
-    return this.props.children;
-  }
-}
-
-function ErrorNote({ message }: { message: string }) {
-  return <Alert destructive title="Example failed to render" description={message} />;
-}
-
-// Holds a preview sized to the stage. The stage is a DEFINITE-width box that centers
-// its children (`width:"100%"` + `alignItems:"center"`), which is the layout the kit's
-// sizing natures (src/style/sizing.ts) are built for:
-//   - a FILL example (a field, a card, a table, a chart) resolves `width:"100%"` against
-//     the stage's real width, so it fills the stage and keeps resizing with it;
-//   - a HUG example (a bare `<Button>`, a badge) is content-sized under `alignItems:
-//     "center"` and stays centered, never stretched to full width;
-//   - a wide example (a flex-wrap row of chips, the icon gallery) is shrink-to-fit
-//     against the stage width, so it wraps onto more lines instead of running off the
-//     edge.
-// It used to be a content-sized `maxWidth` box instead. In a content-sized parent a
-// `width:"100%"` child resolves to its own content (the `field-width.ts` post-mortem: a
-// text field then re-sized on every keystroke), which is why every fill component once
-// carried a fixed pixel width. The definite stage removes that root cause. The component
-// is untouched: it renders within the width it is given and never learns the stage exists.
-// No horizontal scroller, so the Carousel's horizontal FlatList is never nested in a
-// same-orientation scroller. `align` (default "center") keeps the centering above;
-// "start" pins the example to the leading edge and stretches it (a block-level,
-// leading-aligned component such as Breadcrumb spans the row and reads from the left).
-export function FitStage({ children, align = "center" }: { children: ReactNode; align?: "center" | "start" }) {
-  return <Container><Column flush center alignCenter={align === "center"}>{children}</Column></Container>;
-}
-
-// One platform row in the stage: the centered live render, tagged with a small platform
-// watermark in the cell's top-left corner (only on the web 3-up, where three platforms stack
-// and need telling apart). The tag floats over the render and is non-interactive, so it never
-// intercepts a press, and it costs no layout width: dropping the old 96px label column hands
-// that space back to the preview. On a device there is a single preview and you ARE the
-// platform, so the tag is dropped and the render spans the full width.
-function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAlign }: {
-  label: string;
-  scope: ExampleScope;
-  render: (s: ExampleScope) => ReactNode;
-  resetKey: string;
-  first: boolean;
-  showLabel: boolean;
-  stageAlign?: "center" | "start";
-}) {
-  return (
-    <View
-      // Marks the row with its platform for tooling (element crops, row-level
-      // assertions). Web-only attribute; a no-op on native, where a single
-      // unlabeled preview renders. Same dataSet pattern as previewStage below.
-      {...(Platform.OS === "web" ? ({ dataSet: { platformRow: label.toLowerCase() } } as object) : null)}
-    >
-      {/* The live render cell. The overlay host is ONE per stage (see Playground),
-          not per cell: a per-cell host traps its outlet inside the cell's stacking
-          context, so an open menu on an upper row is clipped by the cell and painted
-          under lower rows. A single stage-level outlet floats overlays above every
-          row instead. */}
-      {first ? null : <Divider />}
-      <Column flush center alignCenter padLoose>
-        <ExampleErrorBoundary key={resetKey}>
-          <FitStage align={stageAlign}>{render(scope)}</FitStage>
-        </ExampleErrorBoundary>
-      </Column>
-      {showLabel ? (
-        <View pointerEvents="none" style={{ position: "absolute", top: 8, left: 12 }}>
-          <Typography caption subtle>
-            {label}
-          </Typography>
-        </View>
-      ) : null}
-    </View>
-  );
-}
 
 // The component playground: the stacked iOS/Android/Web stage (one device row on
 // native), a gap, then the source, with the example rail to the right on wide viewports.
@@ -158,9 +50,8 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
   // The simulated form factor (see FORM_FACTORS). Full width (the last entry) is
   // the resting state; the choice survives example switches on purpose, so a
   // breakpoint sweep can walk every variant at one tier.
-  const [factorIndex, setFactorIndex] = useState(FORM_FACTORS.length - 1);
-  const simulated = FORM_FACTORS[factorIndex] ?? FORM_FACTORS[FORM_FACTORS.length - 1];
-  const simulating = Platform.OS === "web" && simulated.width != null;
+  const [factorIndex, setFactorIndex] = useState(FULL_WIDTH);
+  const { factor: simulated, simulating } = formFactorAt(factorIndex);
   // The simulated card's REAL width: in a stage narrower than the tier the
   // card clamps (maxWidth 100%), and the readout follows this measurement so
   // it never overstates the frame.
@@ -170,10 +61,8 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
   // (docs/src/audit/probe-context.tsx): it waits for this label before photographing
   // the card, so a route that landed on another example is caught, not captured. The
   // probe is null outside the audit build, where this registers nothing.
-  const probe = useAuditProbe();
   const cardRef = useRef<View>(null);
-  const label = ex?.label;
-  useEffect(() => (probe && label !== undefined ? probe.card({ ref: cardRef, label }) : undefined), [probe, label]);
+  useAuditCard(cardRef, ex?.label);
   if (!ex) return null;
 
   const allPreviews = buildScopes(tokens);
@@ -188,12 +77,9 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
   const searchPlaceholder = Object.entries(SEARCHABLE_EXAMPLES).find(([tag]) => ex.code.includes(tag))?.[1];
 
   const stage = (
-    // The form-factor override wraps the WHOLE stage, OverlayProvider included:
-    // the kit Portal renders overlay children at the provider's outlet (a React
-    // sibling of the provider's children), so an override mounted below the
-    // provider would never reach portaled overlay content. Above it, an open
-    // menu / dialog / peek simulates the same tier as the inline preview.
-    <BreakpointOverride value={simulating ? simulated.bucket : null}>
+    // The form-factor override around the stage's one overlay outlet (see StageHost):
+    // an open menu / dialog / peek simulates the same tier as the inline preview.
+    <StageHost bucket={simulating ? simulated.bucket : null}>
     {/* ONE overlay host per stage (not per cell). A portaled overlay (an open
         Dropdown / Select / Autocomplete / Popover / Row-menu menu) is placed by this
         stage-level outlet and paints above ALL device rows AND the code block, so it
@@ -204,7 +90,6 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
         demo pinned open paints here. Because overlays no longer render inside the stage
         card, the card never has to contain them (and it does not clip at all; see the
         card below). */}
-    <OverlayProvider style={{ flex: 1, minWidth: 0 }}>
       <IconSearchContext.Provider value={query}>
       <View
         // Marks the preview stage so web-scrollbar.tsx can hide the browser scrollbar that
@@ -236,24 +121,7 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
           ) : null}
           {/* The form-factor switcher (web only; see FORM_FACTORS): icon segments
               depicting each tier, the simulated width read out beside them. */}
-          {Platform.OS === "web" ? (
-            <Row tight end alignCenter>
-              {simulating ? (
-                <Typography tiny>
-                  {`${cardWidth || simulated.width}px`}
-                </Typography>
-              ) : null}
-              <ButtonGroup
-                segmented
-                small
-                iconsOnly
-                accessibilityLabel="Preview form factor"
-                items={FORM_FACTORS.map(({ label, icon }) => ({ label, icon }))}
-                active={factorIndex}
-                onSelect={setFactorIndex}
-              />
-            </Row>
-          ) : null}
+          <FormFactorSwitcher index={factorIndex} onSelect={setFactorIndex} measuredWidth={cardWidth} />
           {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
               (Card routes through the kit GlassSurface), so the preview never reads as a
               clear hole. The cells below inherit it. The card is a fully-rounded, fully-bordered
@@ -290,8 +158,7 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
         </Column>
       </View>
       </IconSearchContext.Provider>
-    </OverlayProvider>
-    </BreakpointOverride>
+    </StageHost>
   );
 
   // The selected example's notes, set small and muted beside the rail's labels.

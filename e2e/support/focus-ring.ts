@@ -112,7 +112,10 @@ export async function ringlessStops(page: Page, color: string): Promise<{ stops:
       return (outline ? 1 : 0) | (border ? 2 : 0);
     };
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    const rest = new WeakMap([...scroller.querySelectorAll("*")].map((node) => [node, cue(node)]));
+    // Only a border is subtracted at rest: a checked control's border is the ring colour
+    // with nothing focused, while an outline in it at rest is a pinned focus specimen
+    // (InteractionOverride focused), whose ring is exactly the cue the sweep looks for.
+    const rest = new WeakMap([...scroller.querySelectorAll("*")].map((node) => [node, cue(node) & 2]));
     // Each stop's number, so the walk knows when focus has come back round.
     const ids = new WeakMap<Element, number>();
     let next = 0;
