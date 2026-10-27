@@ -137,3 +137,34 @@ describe("Navbar hrefs", () => {
     expect(container.querySelectorAll("a")).toHaveLength(1);
   });
 });
+
+// `brandDivider`: the hand-off pill's separator between the brand and the first link, the
+// kit `Divider vertical inset strong`, present only while the links row is on the bar.
+describe("Navbar brandDivider", () => {
+  it("draws one inset strong separator between the brand and the links", () => {
+    const { container } = ui(<Navbar brandDivider compact floating scrolls brand="Canvas" links={LINKS} />);
+    const separators = screen.getAllByRole("separator");
+    expect(separators).toHaveLength(1);
+    const rule = separators[0];
+    expect(rule.style.height).toBe("18px");
+    expect(rule.style.backgroundColor.replace(/\s/g, "")).toBe(darkColors["field-border"]!.replace(/\s/g, ""));
+    // Document order: the wordmark, then the separator, then the first link.
+    const text = container.textContent ?? "";
+    expect(text.indexOf("Canvas")).toBeLessThan(text.indexOf("Docs"));
+    const brand = screen.getByText("Canvas");
+    const link = screen.getByText("Docs");
+    expect(brand.compareDocumentPosition(rule) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(rule.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("draws nothing without the prop, without links, or without a brand", () => {
+    ui(
+      <>
+        <Navbar compact brand="Canvas" links={LINKS} />
+        <Navbar brandDivider compact brand="Canvas" />
+        <Navbar brandDivider compact links={LINKS} />
+      </>,
+    );
+    expect(screen.queryAllByRole("separator")).toHaveLength(0);
+  });
+});

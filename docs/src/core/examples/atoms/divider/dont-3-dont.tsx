@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <View style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
   <Text style={{ fontSize: 14, lineHeight: 20 }}>Edit</Text>
-  <Divider vertical style={{ height: 16 }} />
+  <Divider vertical inset />
   <Text style={{ fontSize: 14, lineHeight: 20 }}>Delete</Text>
 </View>
   );

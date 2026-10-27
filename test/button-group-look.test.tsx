@@ -7,10 +7,12 @@ import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { webSkin } from "../src/atoms/button-group/button-group.styles.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
 import { brandTint } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { webShadow } from "../src/style/shadow.ts";
 
-// The web ButtonGroup is Dark Factory's segmented control (SKN-4b): the row sits in a
-// card2 pill track with a hairline, a 3px inset and a 2px gap; each segment is a pill and
-// the selected one DF's white card thumb on its segment shadow, with 700 labels in
+// The web ButtonGroup is the v4 hand-off's segmented control (`K.def('button-group')`,
+// tools/v4/handoff/cv-kit-controls.js): the row sits in a `secondary` track with the
+// `border` hairline, a 3px inset and a 2px gap on the 10px control corner; each segment
+// rounds 7px, the selected one a flat `card` thumb on the sm shadow, with 500 labels in
 // foreground or muted. The split, stepper and spaced kinds are the web Button's pills.
 
 afterEach(cleanup);
@@ -19,20 +21,23 @@ const t = lightColors;
 const rgba = (hex: string) => alpha(hex, 1).replace(/\s/g, "").replace(/,1\)$/, ",1.00)");
 const flat = (value: string) => value.replace(/\s/g, "");
 
-describe("the web ButtonGroup is Dark Factory's segmented control", () => {
-  it("draws the track, the pill segments and the white thumb", () => {
-    expect(webSkin.segmentedWrap(t)).toMatchObject({ padding: 3, gap: 2, borderRadius: 9999, borderWidth: 1, borderColor: t.border, backgroundColor: t.secondary });
-    expect(webSkin.joinCorners(0, 3)).toEqual({ borderRadius: 9999 });
-    expect(webSkin.joinCorners(1, 3)).toEqual({ borderRadius: 9999 });
-    expect(webSkin.segmentSurface(t, true)).toEqual({ backgroundColor: t.card, boxShadow: `0px 4px 12px -6px ${t.shade}` });
+describe("the web ButtonGroup is the hand-off's segmented control", () => {
+  it("draws the track, the rounded segments and the flat card thumb", () => {
+    expect(webSkin.segmentedWrap(t)).toMatchObject({ padding: 3, gap: 2, borderRadius: 10, borderWidth: 1, borderColor: t.border, backgroundColor: t.secondary });
+    expect(webSkin.joinCorners(0, 3)).toEqual({ borderRadius: 7 });
+    expect(webSkin.joinCorners(1, 3)).toEqual({ borderRadius: 7 });
+    expect(webSkin.segmentSurface(t, true)).toEqual({ backgroundColor: t.card, boxShadow: webShadow("sm", t) });
     expect(webSkin.segmentSurface(t, false)).toEqual({ backgroundColor: "transparent" });
-    expect(webSkin.segmentLabel(t, true)).toEqual({ fontWeight: "700", color: t.foreground });
-    expect(webSkin.segmentLabel(t, false)).toEqual({ fontWeight: "700", color: t["muted-foreground"] });
+    expect(webSkin.segmentLabel(t, true)).toEqual({ fontWeight: "500", color: t.foreground });
+    expect(webSkin.segmentLabel(t, false)).toEqual({ fontWeight: "500", color: t["muted-foreground"] });
   });
 
-  it("keeps the exact Argus segment and track metrics at default density", () => {
-    const track = (size: "small" | "default" | "large") => ((webSkin.segmentSize![size].height as number | undefined) ?? Number(webSkin.segmentType![size].lineHeight) + 2 * Number(webSkin.segmentSize![size].paddingVertical ?? 0)) + 2 * 3 + 2;
-    expect([track("small"), track("default"), track("large")]).toEqual([31, 34.95, 39]);
+  it("is the renderer's 30 / 36 / 44 control, segments 8px shorter, 14px a side, 12 / 13 / 13 labels", () => {
+    const track = (size: "small" | "default" | "large") => (webSkin.segmentSize![size].height as number) + 2 * 3 + 2;
+    expect([track("small"), track("default"), track("large")]).toEqual([30, 36, 44]);
+    expect([webSkin.segmentSize!.small.paddingHorizontal, webSkin.segmentSize!.default.paddingHorizontal, webSkin.segmentSize!.large.paddingHorizontal]).toEqual([14, 14, 14]);
+    expect([webSkin.segmentType!.small.fontSize, webSkin.segmentType!.default.fontSize, webSkin.segmentType!.large.fontSize]).toEqual([12, 13, 13]);
+    expect(webSkin.segmentIconOnlyPadding).toBe(8);
   });
 
   it("renders the selected segment on the thumb and the rest bare, inside the track", () => {
@@ -41,8 +46,13 @@ describe("the web ButtonGroup is Dark Factory's segmented control", () => {
     expect(flat(track.style.backgroundColor)).toBe(rgba(t.secondary));
     const [day, week] = screen.getAllByRole("tab");
     expect(flat(day.style.backgroundColor)).toBe(rgba(t.card));
-    expect(day.style.boxShadow).toContain("-6px");
+    expect(day.style.boxShadow).toContain("1px 2px");
     expect(week.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+  });
+
+  it("pads a segment that shows its icon alone 8px a side, as the renderer's iconsOnly", () => {
+    render(<ThemeProvider light solid><ButtonGroup iconsOnly items={[{ label: "List", icon: "list" }, { label: "Grid", icon: "grid" }]} accessibilityLabel="View" /></ThemeProvider>);
+    for (const tab of screen.getAllByRole("tab")) expect([tab.style.paddingLeft, tab.style.paddingRight]).toEqual(["8px", "8px"]);
   });
 
   it("gives the split, stepper and spaced cells the Button's pill heights", () => {

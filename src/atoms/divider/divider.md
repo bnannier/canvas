@@ -26,6 +26,33 @@ A divider spans the width of its parent, so give it a bounded container.
 </Row>
 ```
 
+### Inset
+
+A vertical rule of its own short length, centred in its row with a little space on each
+side: the separator between groups in a toolbar or a floating bar, where a rule the row's
+full height would read as a wall.
+
+```tsx
+<Row alignCenter flush>
+  <Button ghost small>Bold</Button>
+  <Button ghost small>Italic</Button>
+  <Divider vertical inset />
+  <Button ghost small>Link</Button>
+</Row>
+```
+
+### Emphasis
+
+The hairline by default; `strong` for a firmer line, `soft` for a quieter one.
+
+```tsx
+<Column snug>
+  <Divider soft />
+  <Divider />
+  <Divider strong />
+</Column>
+```
+
 ### Label
 
 ```tsx
@@ -126,9 +153,9 @@ A divider spans the width of its parent, so give it a bounded container.
 ```tsx
 <Row alignCenter cozy>
   <Typography small>Edit</Typography>
-  <Divider vertical style={{ height: 16 }} />
+  <Divider vertical inset />
   <Typography small>Delete</Typography>
-  <Divider vertical style={{ height: 16 }} />
+  <Divider vertical inset />
   <Typography small>Share</Typography>
 </Row>
 ```
@@ -138,7 +165,7 @@ A divider spans the width of its parent, so give it a bounded container.
 ```tsx
 <View style={{ flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
   <Text style={{ fontSize: 14, lineHeight: 20 }}>Edit</Text>
-  <Divider vertical style={{ height: 16 }} />
+  <Divider vertical inset />
   <Text style={{ fontSize: 14, lineHeight: 20 }}>Delete</Text>
 </View>
 ```

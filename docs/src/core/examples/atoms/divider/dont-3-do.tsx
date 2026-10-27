@@ -7,9 +7,9 @@ export default function Example(scope: ExampleScope) {
   return (
 <Row alignCenter cozy>
   <Typography small>Edit</Typography>
-  <Divider vertical style={{ height: 16 }} />
+  <Divider vertical inset />
   <Typography small>Delete</Typography>
-  <Divider vertical style={{ height: 16 }} />
+  <Divider vertical inset />
   <Typography small>Share</Typography>
 </Row>
   );

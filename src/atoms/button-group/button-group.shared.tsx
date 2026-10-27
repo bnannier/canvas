@@ -24,7 +24,7 @@ import { paneRipple, paneStyle } from "../../style/glass-surface/glass-pane.js";
 //     reads selected via `active`. Use for mutually exclusive views (Day / Week /
 //     Month). The native shape differs per OS: iOS draws a gray track with a
 //     raised white pill on the selected segment; Android a stadium-outlined group
-//     with a tonal selected fill; web the joined-buttons look with a solid fill.
+//     with a tonal selected fill; web the hand-off's rounded track with a flat card thumb.
 //   - `split`: a primary action attached to a chevron trigger, divided by a
 //     hairline; the chevron opens a dropdown of related actions (`menu`). Use
 //     for one primary action with a few related variants.
@@ -115,6 +115,8 @@ export interface ButtonGroupSkin {
   segmentSize?: Record<Size, ViewStyle>;
   /** Label type of a segment inside the segmented row. */
   segmentType?: Record<Size, TextStyle>;
+  /** A segment's horizontal padding when it shows its icon alone (`iconsOnly`); omit to keep the size's. */
+  segmentIconOnlyPadding?: number;
   /** Height and padding of the split, stepper and spaced cells (the web's match its Button). */
   cellSize?: Record<Size, ViewStyle>;
   /** Label type of the split, stepper and spaced cells. */
@@ -244,7 +246,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
   }
 
   function Segment({ label, icon, iconOnly, selected, steadyPress, selectable, corners, leading, standalone, block, size, disabled, onPress, onPressIn, onPressOut, onLayout }: SegmentProps) {
-    const theme = useMaterialTheme({ layer: "functional" });
+    const theme = useMaterialTheme({ layer: "control" });
     const { tokens, surface } = theme;
     const glass = surface === "glass";
     const iconColor = glass ? (selected && selectable ? "primary" : "foreground") : skin.segmentIconColor(selected && selectable);
@@ -264,6 +266,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       s.segmentBase,
       { borderWidth: skin.segmentBorderWidth },
       cellSize ?? s.sizeContainer[size],
+      iconOnly && icon != null && !standalone && skin.segmentIconOnlyPadding != null ? { paddingHorizontal: skin.segmentIconOnlyPadding } : null,
       corners,
       leading && skin.segmentDivider ? skin.segmentDivider(tokens) : null,
       glass ? s.glassSurfaceGeometry(solidSurface) : solidSurface,
@@ -346,7 +349,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     testID?: string;
     style?: LayoutStyle;
   }) {
-    const theme = useMaterialTheme({ layer: "functional" });
+    const theme = useMaterialTheme({ layer: "control" });
     const { tokens, surface } = theme;
     const glass = surface === "glass";
     const hug = useHugStyle();
@@ -491,7 +494,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     testID?: string;
     style?: LayoutStyle;
   }) {
-    const theme = useMaterialTheme({ layer: "functional" });
+    const theme = useMaterialTheme({ layer: "control" });
     const { tokens, surface } = theme;
     const glass = surface === "glass";
     const hug = useHugStyle();
@@ -553,7 +556,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
 
   return function ButtonGroup(props: ButtonGroupProps) {
     const { items = DEFAULT_ITEMS, onSelect, disabled, testID, style } = props;
-    const theme = useMaterialTheme({ layer: "functional" });
+    const theme = useMaterialTheme({ layer: "control" });
     const { tokens, surface } = theme;
     const glass = surface === "glass";
     const [segmentLayouts, setSegmentLayouts] = useState<Record<number, LayoutRectangle>>({});
@@ -691,12 +694,16 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // `tablist` grouping its `tab` segments (matching the Tabs precedent). The
     // sizing nature (HUG, or FILL under `block`) lands AFTER the skin wrap.
     const selectionLayout = segmentLayouts[disabled ? active : pressedSegment ?? active];
+    // The puck takes the segment's own corners where the skin rounds its segments (the
+    // web's 3px inside the track's corner); a skin with square segments keeps the capsule.
+    const segmentCorners = cornerRadii(skin.joinCorners(pressedSegment ?? active, count));
+    const selectionCorners = Object.keys(segmentCorners).length > 0 ? segmentCorners : undefined;
     return (
       <View collapsable={false} accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[paneStyle(theme, wrap ?? s.segmentedContainer), sizing, props.start ? { alignSelf: "flex-start" } : null, style]} testID={testID}>
         {/* The track's material fills its whole footprint on the track's own corners (GP-1). */}
         {glass ? <GroupGlass corners={wrap ? cornerRadii(wrap) : undefined} testID={testID ? `${testID}-glass` : undefined} /> : null}
         {glass && active >= 0 && active < count && selectionLayout ? (
-          <GlassSelection layout={selectionLayout} pressed={pressedSegment !== null} disabled={disabled} testID={testID ? `${testID}-selection` : undefined} />
+          <GlassSelection layout={selectionLayout} corners={selectionCorners} pressed={pressedSegment !== null} disabled={disabled} testID={testID ? `${testID}-selection` : undefined} />
         ) : null}
         {row}
       </View>

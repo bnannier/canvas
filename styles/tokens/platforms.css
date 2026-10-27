@@ -123,16 +123,17 @@
   /* Navbar links (navbars.styles.ts webSkin: a capsule, `secondary` when active) */
   --p-nav-link-fill:transparent;--p-nav-link-label:var(--muted-foreground);
   --p-nav-link-active-fill:var(--secondary);--p-nav-link-active-label:var(--foreground);
-  /* ButtonGroup (button-group.styles.ts webSkin: Dark Factory's segmented control, a card2
-     pill track with a hairline, 3px inset and 2px gap, the selected segment a white pill) */
-  --p-seg-h-small:23px;--p-seg-h-default:27px;--p-seg-h-large:31px;
-  --p-seg-pad-small:12px;--p-seg-pad-default:16px;--p-seg-pad-large:18px;
-  --p-seg-font-small:11px;--p-seg-font-default:11.5px;--p-seg-font-large:12.5px;
-  --p-seg-lh-small:15px;--p-seg-lh-default:15px;--p-seg-lh-large:17px;
-  --p-seg-track-pad:3px;--p-seg-track-radius:9999px;--p-seg-track-border:1px;--p-seg-track-fill:var(--secondary) /* @kind other */;
-  --p-seg-border:0px;--p-seg-divider:0px /* @kind other */;--p-seg-overlap:0px;--p-seg-radius:9999px;--p-seg-inner-radius:9999px;
+  /* ButtonGroup (button-group.styles.ts webSkin: the v4 hand-off's segmented control, a
+     `secondary` track on the control corner with a hairline, 3px inset and 2px gap, the
+     selected segment a flat card thumb on the sm shadow, 7px inside the track's corner) */
+  --p-seg-h-small:22px;--p-seg-h-default:28px;--p-seg-h-large:36px;
+  --p-seg-pad-small:14px;--p-seg-pad-default:14px;--p-seg-pad-large:14px;
+  --p-seg-font-small:12px;--p-seg-font-default:13px;--p-seg-font-large:13px;
+  --p-seg-lh-small:16px;--p-seg-lh-default:18px;--p-seg-lh-large:18px;
+  --p-seg-track-pad:3px;--p-seg-track-radius:10px;--p-seg-track-border:1px;--p-seg-track-fill:var(--secondary) /* @kind other */;
+  --p-seg-border:0px;--p-seg-divider:0px /* @kind other */;--p-seg-overlap:0px;--p-seg-radius:7px;--p-seg-inner-radius:7px;
   --p-seg-rest-fill:transparent;--p-seg-selected-fill:var(--card);--p-seg-selected-border:transparent;
-  --p-seg-selected-label:var(--foreground);--p-seg-selected-weight:700;--p-seg-selected-shadow:0px 4px 12px -6px var(--shade);
+  --p-seg-selected-label:var(--foreground);--p-seg-selected-weight:500;--p-seg-selected-shadow:var(--shadow-sm);
   --p-seg-check-display:none /* @kind other */;
   /* Calendar (calendar.styles.ts webSkin) */
   --p-cal-radius:16px;--p-cal-cell-default:36px;--p-cal-cell-compact:32px;--p-cal-head-h:32px;

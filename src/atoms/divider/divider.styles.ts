@@ -13,6 +13,9 @@ export const webSkin: DividerSkin = {
   ruleThickness: 1,
   labelGap: 12,
   labelType: typeScale.eyebrowLg,
+  // The hand-off docs navbar's separators (Controls.dc.html): 1 x 18 px with 0 4px margins.
+  insetLength: 18,
+  insetMargin: 4,
 };
 
 // Shared treatment: no per-OS divergence, so the native skins are the web skin.

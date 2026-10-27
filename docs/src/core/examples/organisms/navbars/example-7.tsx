@@ -3,21 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, View, Button, Drawer, Navbar, Typography, Column } = scope;
+  const { Navbar } = scope;
   return (
-<Stateful initial={false}>
-  {(open, setOpen) => (
-    <View>
-      <Navbar bordered brand="Catalog" onMenu={() => setOpen(true)} />
-      <Drawer open={open} onOpenChange={setOpen} accessibilityLabel="Catalog menu">
-        <Column padLoose loose>
-          <Typography h3>Components</Typography>
-          <Button ghost onPress={() => setOpen(false)}>Button</Button>
-          <Button ghost onPress={() => setOpen(false)}>Card</Button>
-        </Column>
-      </Drawer>
-    </View>
-  )}
-</Stateful>
+<Navbar bare brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
   );
 }

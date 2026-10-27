@@ -3,6 +3,8 @@ import {
   View,
   Text,
   useTheme,
+  devWarn,
+  channelsOf,
   type ColorTokens,
   type ViewStyle,
   type TextStyle,
@@ -21,7 +23,7 @@ import {
 // the per-OS files exist only so the architecture is uniform across the kit.
 
 export type Orientation = "horizontal" | "vertical";
-export type Emphasis = "soft" | "strong";
+export type Emphasis = "soft" | "default" | "strong";
 
 export interface DividerSkin {
   /** Rule thickness in px (height of a horizontal/flank rule, width of a vertical rule). */
@@ -30,6 +32,10 @@ export interface DividerSkin {
   labelGap: number;
   /** The centered label type (size / line-height / weight / tracking). */
   labelType: TextStyle;
+  /** An `inset` vertical rule's own length in px, centred in its row instead of stretching to it. */
+  insetLength: number;
+  /** The space an `inset` vertical rule keeps on each side, in px. */
+  insetMargin: number;
 }
 
 export interface DividerProps {
@@ -43,9 +49,17 @@ export interface DividerProps {
   // Orientation (pick one; default is horizontal).
   horizontal?: boolean;
   vertical?: boolean;
-  // Emphasis (pick one; default tracks the border token).
+  // Emphasis (pick one; default is the hairline `border`).
+  /** A quieter rule: the hairline at 60% of its strength. */
   soft?: boolean;
+  /** A firmer rule: the `field-border` line, twice the hairline's strength. */
   strong?: boolean;
+  /**
+   * Vertical only: a short rule (18 px) centred in its row with 4 px kept on each side,
+   * instead of a rule that stretches to the row's height. The separator between groups
+   * in a toolbar or a floating bar. A horizontal divider ignores it.
+   */
+  inset?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
@@ -61,14 +75,25 @@ export function orientationOf(p: DividerProps): Orientation {
 // First match wins when more than one emphasis flag is passed.
 export function emphasisOf(p: DividerProps): Emphasis {
   if (p.soft) return "soft";
-  return "strong";
+  if (p.strong) return "strong";
+  return "default";
 }
 
-// The hairline fill color, token-backed (platform-neutral): `strong` tracks the standard
-// border token, `soft` steps down to the muted token for a quieter rule. Reads the active
-// tokens so it follows light/dark and the glass surface.
+// The rule's colour, the hand-off's Divider renderer (`K.def('divider')`): the hairline
+// `border` (its `--ln`) by default, `field-border` (`--ln2`) when strong, and the hairline
+// at 60% when soft (its `color-mix(in oklch, var(--ln) 60%, transparent)`, which keeps the
+// colour and scales the alpha). Reads the active tokens so it follows the scheme.
+function ruleColor(tokens: ColorTokens, emphasis: Emphasis): string {
+  if (emphasis === "strong") return tokens["field-border"] ?? tokens.input;
+  if (emphasis === "soft") {
+    const c = channelsOf(tokens.border);
+    return c ? `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${+(c[3] * 0.6).toFixed(3)})` : tokens.border;
+  }
+  return tokens.border;
+}
+
 function ruleFill(tokens: ColorTokens, emphasis: Emphasis): ViewStyle {
-  return { backgroundColor: emphasis === "strong" ? tokens.border : tokens.muted };
+  return { backgroundColor: ruleColor(tokens, emphasis) };
 }
 
 // The centered label text color: muted foreground.
@@ -86,8 +111,17 @@ export function createDivider(skin: DividerSkin) {
     // The label's id, for the separator that names itself after it (below).
     const labelId = useId();
 
+    devWarn(
+      !!props.inset && orientation === "horizontal",
+      "[canvas] <Divider inset />: `inset` shortens a vertical rule; a horizontal divider ignores it.",
+    );
+
     if (orientation === "vertical") {
-      // A thin vertical rule that adapts to the row height it sits in.
+      // A thin vertical rule that adapts to the row height it sits in, or under `inset` a
+      // short rule of its own length, centred in the row with its side margins.
+      const length: ViewStyle = props.inset
+        ? { height: skin.insetLength, alignSelf: "center", marginHorizontal: skin.insetMargin, flexShrink: 0 }
+        : { alignSelf: "stretch" };
       return (
         <View
           // `separator` announces the structural break to screen readers. We use
@@ -99,7 +133,7 @@ export function createDivider(skin: DividerSkin) {
           // has to: without it the web announced a vertical rule as horizontal.
           aria-orientation="vertical"
           testID={testID}
-          style={[{ width: skin.ruleThickness, alignSelf: "stretch" }, fill, style]}
+          style={[{ width: skin.ruleThickness }, length, fill, style]}
         />
       );
     }

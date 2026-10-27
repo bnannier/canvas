@@ -1390,7 +1390,7 @@
       "soft",
       "strong"
     ],
-    "none": "strong",
+    "none": "default",
     "single": {
       "soft": "soft",
       "strong": "strong"
