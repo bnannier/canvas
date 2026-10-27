@@ -25,6 +25,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { colorsFor } from "../../src/style/tokens.ts";
 import { pageColor } from "../../docs/src/shell/page-look.ts";
+import { isDetailV4 } from "../../docs/src/ui/detail/gate.ts";
 
 export type Scheme = "dark" | "light";
 export type Surface = "solid" | "glass";
@@ -254,6 +255,41 @@ export function platformRow(page: Page, platform: "ios" | "android" | "web"): Lo
   return page.locator(`[data-platform-row="${platform}"]`);
 }
 
+/**
+ * Whether a docs path is a component page on the v4 detail page (docs/src/ui/detail,
+ * piloted behind `DETAIL_V4`). That page has no example rail: its comparison stage is the
+ * Platform skins section, whose preview card names the example it shows in
+ * `data-example`, and a "Platform example" picker moves between the examples.
+ */
+export function isDetailPath(path: string): boolean {
+  const slug = /^\/components\/([^/?#]+)/.exec(path.replace(BASE_PATH, ""))?.[1];
+  return slug != null && isDetailV4(slug);
+}
+
+/** The preview card showing one example, by its label (the v4 detail page). */
+export function exampleCard(page: Page, label: string): Locator {
+  return page.locator(`[data-preview-card][data-example="${label.replace(/"/g, '\\"')}"]`);
+}
+
+/**
+ * Show one example on the page's comparison stage: the rail tab on the Playground page,
+ * the "Platform example" picker on the v4 detail page. Either rewrites the address to the
+ * example's variant route.
+ */
+export async function selectExample(page: Page, label: string): Promise<void> {
+  if (isDetailPath(new URL(page.url()).pathname)) {
+    await page.getByRole("button", { name: "Platform example", exact: true }).click();
+    // The selected option's name carries the Select's checkmark glyph ("✓ Default").
+    const name = new RegExp(`^(✓ )?${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+    await page.getByRole("option", { name }).click();
+    await expect(exampleCard(page, label)).toHaveCount(1);
+    return;
+  }
+  const tab = page.getByTestId("playground-examples").getByRole("tab", { name: label, exact: true });
+  await tab.click();
+  await expect(tab).toHaveAttribute("aria-selected", "true");
+}
+
 const FORM_FACTOR_LABEL: Record<FormFactor, string> = {
   phone: "Phone width (375px)",
   largePhone: "Large phone width (640px)",
@@ -387,10 +423,10 @@ export async function fitElementForScreenshot(page: Page, frame: Locator): Promi
   const banner = await bannerLocator.count() ? await bannerLocator.boundingBox() : null;
   const scrollLocator = page.locator("[data-page-scroll]").first();
   const scrollport = await scrollLocator.count() ? await scrollLocator.boundingBox() : null;
-  // The phone bottom navigation floats OVER the scrollport (the iOS 26 capsule) and can
-  // be taller than the overlaid banner, so measure it directly; the docked case, where
-  // the scrollport stops above the bar, still counts through the height difference.
-  // Account for both rather than assuming symmetry.
+  // The pill navbar (the Primary navigation) floats OVER the scrollport inside the
+  // banner; measure it directly too, and the docked case, where the scrollport stops
+  // short of the window, through the height difference. Account for both rather than
+  // assuming symmetry.
   const navigationLocator = page.getByRole("navigation", { name: "Primary", exact: true }).first();
   const navigation = await navigationLocator.count() ? await navigationLocator.boundingBox() : null;
   const chrome = Math.max(scrollport ? viewport.height - scrollport.height : 0, navigation?.height ?? 0);

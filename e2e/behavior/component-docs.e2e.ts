@@ -7,20 +7,29 @@
  * holds every page to a model that places every line (rule S8 in
  * tools/docgen/parse-md.ts); this asserts the page really renders that model, in the
  * browser, on the bytes that ship: the lead is the .md intro's first paragraph, the rest
- * of the intro shows under it, the selected example's note sits under the Playground
- * rail, captions read whole in the mono face for their code, a list has list semantics,
+ * of the intro shows under it, an example's note sits with its example, captions read whole in the mono face for their code, a list has list semantics,
  * and the guidance sections after Do & Don't render with their live examples.
  */
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
-test("Button's guidance sections render after Do & Don't, with a real link in the live example", async ({ page }) => {
+// Button is on the v4 detail page (docs/src/ui/detail, DETAIL_V4): its guidance sections
+// are cards in Usage, each titled by a level-3 heading, and Do & Don't follows Usage (PLAN
+// decision P3).
+test("Button's guidance sections render as Usage cards before Do & Don't, with a real link in the live example", async ({ page }) => {
   await gotoDocs(page, "/components/button");
   const main = page.getByRole("main");
-  const headings = await main.getByRole("heading", { level: 2 }).allTextContents();
-  const dontsAt = headings.indexOf("Do & Don’t");
-  expect(dontsAt, "the Do & Don't section").toBeGreaterThan(-1);
-  expect(headings.slice(dontsAt + 1)).toEqual(["Real links (href)", "Workflow actions", "Touch area"]);
+  // The outline is read once, so wait for the last section to be on the page first.
+  await expect(main.getByRole("heading", { level: 2, name: "Do & Don’t", exact: true })).toBeVisible();
+  const outline = await main.getByRole("heading").evaluateAll((nodes) =>
+    nodes.map((node) => ({ level: Number(node.getAttribute("aria-level") ?? node.tagName.slice(1)), text: (node.textContent ?? "").trim() })));
+  const usageAt = outline.findIndex((h) => h.level === 2 && h.text === "Usage");
+  const dontsAt = outline.findIndex((h) => h.level === 2 && h.text === "Do & Don’t");
+  expect(usageAt, "the Usage section").toBeGreaterThan(-1);
+  expect(dontsAt, "Do & Don't follows Usage").toBeGreaterThan(usageAt);
+  const cards = outline.slice(usageAt + 1, dontsAt);
+  expect(cards.every((h) => h.level === 3), "every Usage card title is a level-3 heading").toBe(true);
+  expect(cards.map((h) => h.text)).toEqual(expect.arrayContaining(["Real links (href)", "Workflow actions", "Touch area"]));
   await expect(main.getByText("A button that NAVIGATES should be a real link", { exact: false })).toBeVisible();
   await expect(main.getByText("keeps its size and extends only its touch area to the minimum", { exact: false })).toBeVisible();
   // The href example is live: its Button is a genuine browser link to the destination.
@@ -38,15 +47,15 @@ test("the lead is the .md intro's first paragraph, and the overview follows it",
   await expect(main.getByText("Pass ref to access the interactive Pressable", { exact: false })).toBeVisible();
 });
 
-test("the selected example's note sits under the rail and follows the selection", async ({ page }) => {
+// The v4 detail page shows every example at once in its Variants grid, so every note is
+// on the page: the note shared by every variant under the section, each example's own in
+// its card, and the Usage example's in Usage.
+test("every example's note is shown with its example", async ({ page }) => {
   await gotoDocs(page, "/components/button");
   const main = page.getByRole("main");
-  // The note on every variant, then Default's own.
   await expect(main.getByText("The variant only changes how a button looks", { exact: false })).toBeVisible();
   await expect(main.getByText("A button's whole job is to fire onPress", { exact: false })).toBeVisible();
-  await page.getByTestId("playground-examples").getByRole("tab", { name: "Disabled" }).click();
   await expect(main.getByText("A disabled button ignores presses", { exact: false })).toBeVisible();
-  await expect(main.getByText("A button's whole job is to fire onPress", { exact: false })).toHaveCount(0);
 });
 
 test("a deep-linked variant carries its own note", async ({ page }) => {

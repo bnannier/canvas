@@ -1,4 +1,4 @@
-import { gotoDocs } from "../support/docs";
+import { gotoDocs, isDetailPath } from "../support/docs";
 import { attach, describe as describeViolations, scanStructure, STRUCTURAL_RULES } from "../support/axe";
 import { expect, test } from "../support/fixtures";
 
@@ -37,8 +37,18 @@ for (const width of [1280, 390]) {
           // Each card's Do or Don't is a Badge label, never a heading of its own.
           await expect(main.getByRole("heading", { name: /^(Do|Don’t)$/ })).toHaveCount(0);
         }
+        if (isDetailPath(entry.path)) {
+          // The v4 detail page (docs/src/ui/detail): every section an h2 under the title,
+          // Props and Do & Don't among them, and the guidance in Usage as h3 cards.
+          for (const section of ["Playground", "Variants", "Props", "Usage", DO_DONT_HEADING]) {
+            await expect(main.getByRole("heading", { level: 2, name: section, exact: true }), section).toHaveCount(1);
+          }
+          await expect(main.getByRole("heading", { level: 3, name: "Touch area", exact: true })).toHaveCount(1);
+          await expect(main.getByRole("heading", { name: /^(Do|Don’t)$/ })).toHaveCount(0);
+        }
         await expect(page.getByRole("banner")).toHaveCount(1);
-        if (width < 1024) await expect(page.getByRole("navigation", { name: "Primary", exact: true })).toBeVisible();
+        // The pill navbar is the Primary navigation at every width (docs/src/shell/pill-nav.tsx).
+        await expect(page.getByRole("banner").getByRole("navigation", { name: "Primary", exact: true })).toBeVisible();
         // Axe derives the previous heading from its whole virtual tree, including
         // excluded nodes. Typography deliberately teaches broken h1-to-h4 jumps,
         // so even .exclude(previewStage) incorrectly flags the next docs h3.
@@ -91,7 +101,11 @@ for (const width of [1280, 390]) {
       ])).toEqual([transparency, contrast]);
       await expect(page.getByRole("banner")).toHaveCount(1);
       await expect(page.getByRole("main")).toHaveCount(1);
-      await expect(page.getByRole("navigation")).toHaveCount(1);
+      // The pill is the one Primary navigation; a room's page adds the rail's navigation
+      // beside it in a window of 760 px or more (docs/src/shell/rail.tsx), and
+      // /tokens/colors is a page of the Guides room.
+      await expect(page.getByRole("navigation", { name: "Primary", exact: true })).toHaveCount(1);
+      await expect(page.getByRole("navigation")).toHaveCount(width >= 760 ? 2 : 1);
       const findings = await scanStructure(page);
       await attach(testInfo, "glass-structure", findings);
       expect(findings, describeViolations(findings)).toEqual([]);
@@ -99,27 +113,22 @@ for (const width of [1280, 390]) {
   }
 }
 
-test("mobile drawer and search preserve named landmarks when opened and dismissed", async ({ page }, testInfo) => {
+test("phone search preserves named landmarks when opened and dismissed", async ({ page }, testInfo) => {
+  // The phone shell is the pill navbar alone (no drawer, no tab bar): its search opener
+  // sits in the pill's sideways-scrolling row.
   await gotoDocs(page, "/tokens/colors", { viewport: { width: 390, height: 900 } });
-  const menu = page.getByRole("button", { name: "Menu", exact: true });
-  await menu.click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  // The responsive Sidebar renders a dialog, not a second navigation landmark.
-  // Its modal hides the underlying Primary tabs from the accessibility tree.
-  let findings = await scanStructure(page, "body", ["landmark-unique", "region"]);
-  await attach(testInfo, "drawer-structure", findings);
-  expect(findings, describeViolations(findings)).toEqual([]);
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(menu).toBeFocused();
-  await expect(page.getByRole("navigation", { name: "Primary", exact: true })).toBeVisible();
-  await page.getByRole("tab", { name: "Search", exact: true }).click();
+  const primary = page.getByRole("navigation", { name: "Primary", exact: true });
+  await expect(primary).toBeVisible();
+  await expect(page.getByRole("navigation")).toHaveCount(1);
+  const opener = page.getByRole("banner").getByRole("button", { name: "Search components", exact: true });
+  await opener.click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Search components", exact: true })).toBeFocused();
-  findings = await scanStructure(page, "body", ["landmark-unique", "region"]);
+  const findings = await scanStructure(page, "body", ["landmark-unique", "region"]);
   await attach(testInfo, "search-structure", findings);
   expect(findings, describeViolations(findings)).toEqual([]);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(page.getByRole("tab", { name: "Search", exact: true })).toBeFocused();
+  await expect(opener).toBeFocused();
+  await expect(primary).toBeVisible();
 });

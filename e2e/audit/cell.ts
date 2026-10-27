@@ -29,7 +29,7 @@ import { appendFileSync, mkdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, type BrowserContext, type Page } from "@playwright/test";
 import { scan } from "../support/axe";
-import { BASE_PATH, FIXED_TIME, LOOKS, fitElementForScreenshot, gotoDocs, platformRow, previewCard } from "../support/docs";
+import { BASE_PATH, FIXED_TIME, LOOKS, exampleCard, fitElementForScreenshot, gotoDocs, isDetailPath, platformRow, previewCard } from "../support/docs";
 import { describeProblems, stubRegistry, watchForProblems, type PageProblems } from "../support/fixtures";
 import { readMaterialEffects } from "../support/material-evidence";
 import { probePageOverflow, probeRow } from "../support/audit-probes";
@@ -167,6 +167,18 @@ export async function verifyStructure(page: Page, cell: Pick<WebCell, "path" | "
     throw new Error(`opened ${expected} but the page is at ${new URL(page.url()).pathname}: a redirect, so this is not the example the cell names`);
   }
   if (examples <= 1) return { path: expected, selected: null };
+  if (isDetailPath(cell.path)) {
+    // The v4 detail page has no rail: its comparison stage's preview card names the
+    // example it shows in data-example (docs/src/ui/detail/platform-skins.tsx).
+    const card = exampleCard(page, cell.label);
+    try {
+      await card.waitFor({ state: "visible", timeout: 10_000 });
+    } catch {
+      const shown = await page.locator("[data-preview-card]").evaluateAll((cards) => cards.map((c) => c.getAttribute("data-example") ?? ""));
+      throw new Error(`the comparison stage shows ${shown.length ? shown.map((s) => `"${s}"`).join(", ") : "no example"} where "${cell.label}" was opened`);
+    }
+    return { path: expected, selected: cell.label };
+  }
   const rail = page.getByTestId("playground-examples");
   try {
     await rail.waitFor({ state: "visible", timeout: 10_000 });

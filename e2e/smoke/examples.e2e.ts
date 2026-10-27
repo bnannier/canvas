@@ -15,7 +15,7 @@
  * them, and the URL component-reference.tsx replaces into the address bar.
  */
 import { componentExamples } from "../support/routes";
-import { gotoDocs, stage, BASE_PATH } from "../support/docs";
+import { gotoDocs, isDetailPath, selectExample, stage, BASE_PATH } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 const FAILURE = "Example failed to render";
@@ -26,16 +26,15 @@ for (const { route, examples } of componentExamples()) {
     await expect(stage(page)).toBeVisible();
     await expect(page.getByText(FAILURE)).toHaveCount(0);
 
-    // One example means no switcher rail: the page is already showing it.
+    // One example means no switcher: the page is already showing it.
     if (examples.length === 1) return;
 
-    const rail = page.locator('[data-testid="playground-examples"]');
-    await expect(rail).toBeVisible();
+    // The Playground page switches examples on its rail; the v4 detail page renders every
+    // example in its Variants grid and switches its comparison stage with a picker.
+    if (!isDetailPath(route.path)) await expect(page.locator('[data-testid="playground-examples"]')).toBeVisible();
 
     for (const example of examples) {
-      const tab = rail.getByRole("tab", { name: example.label, exact: true });
-      await tab.click();
-      await expect(tab).toHaveAttribute("aria-selected", "true");
+      await selectExample(page, example.label);
       // Each example has exactly one canonical address, and selecting it puts the
       // page there (replace, not push, so the back button still leaves the page).
       // toHaveURL, not a bare read of page.url(): the address is rewritten by a
