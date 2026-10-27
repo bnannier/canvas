@@ -281,10 +281,13 @@ export function createGridList(
     const { tokens } = useTheme();
     const pad = compact ? skin.tilePad.compact : skin.tilePad.default;
     // The tile cell owns the measured width (a layout cell) and is the list item; the
-    // Card fills it.
+    // Card fills it. A tile with action buttons is a clickable container rather than a
+    // button, so its actions are not buttons nested in a button.
+    const actions = item.actions ?? [];
+    const hasActions = actions.length > 0;
     return (
       <View {...listItem} style={{ width, flexGrow: 1 }}>
-        <Card onPress={onPress} style={{ alignItems: "center", padding: pad }}>
+        <Card onPress={onPress} interactiveContents={hasActions} style={{ alignItems: "center", padding: pad }}>
         <View style={s.cardInner}>
           <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
             {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
@@ -296,9 +299,9 @@ export function createGridList(
               <Badge secondary>{item.badge}</Badge>
             </View>
           ) : null}
-          {item.actions != null && item.actions.length > 0 ? (
+          {hasActions ? (
             <View style={s.actions}>
-              {item.actions.map((action, i) => (
+              {actions.map((action, i) => (
                 <Button key={`${action.label}-${i}`} small outline={action.outline} ghost={action.ghost} onPress={action.onPress}>
                   {action.label}
                 </Button>
