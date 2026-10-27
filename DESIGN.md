@@ -22,7 +22,6 @@ colors:
   accent-foreground: "#111118"
   surface-raised: "#e4e4ee"
   destructive: "#d62a4b"
-  destructive-text: "#c22543"
   destructive-foreground: "#ffffff"
   destructive-soft: "rgba(214, 42, 75, 0.1)"
   success: "#0b7a53"
@@ -45,6 +44,9 @@ colors:
   shade-inset: "rgba(255, 255, 255, 0)"
   inverse: "#111118"
   inverse-foreground: "#ffffff"
+  destructive-text: "#b00032"
+  success-text: "#00724b"
+  warning-text: "#975300"
   primary: "#5f3ed8"
   primary-text: "#573bc3"
   primary-foreground: "#ffffff"
@@ -54,7 +56,7 @@ colors:
   action-soft: "rgba(95, 62, 216, 0.1)"
   info: "#573bc3"
   info-soft: "rgba(95, 62, 216, 0.1)"
-  ring: "rgba(95, 62, 216, 0.28)"
+  ring: "#5f3ed8"
   glow: "rgba(95, 62, 216, 0.4)"
   inverse-primary: "#b5b0ff"
   featured-start: "#5f3ed8"
@@ -87,7 +89,6 @@ colorsDark:
   accent-foreground: "#f4f4f8"
   surface-raised: "#282836"
   destructive: "#ff6b7a"
-  destructive-text: "#ff6b7a"
   destructive-foreground: "#2b0009"
   destructive-soft: "rgba(255, 107, 122, 0.14)"
   success: "#3ddc97"
@@ -110,6 +111,9 @@ colorsDark:
   shade-inset: "rgba(255, 255, 255, 0.1)"
   inverse: "#f4f4f8"
   inverse-foreground: "#0a0a0f"
+  destructive-text: "#ff9298"
+  success-text: "#3ddc97"
+  warning-text: "#f6b84c"
   primary: "#a298ff"
   primary-text: "#b5b0ff"
   primary-foreground: "#0a0a0f"
@@ -119,9 +123,9 @@ colorsDark:
   action-soft: "rgba(162, 152, 255, 0.16)"
   info: "#b5b0ff"
   info-soft: "rgba(162, 152, 255, 0.16)"
-  ring: "rgba(162, 152, 255, 0.35)"
+  ring: "#a298ff"
   glow: "rgba(162, 152, 255, 0.5)"
-  inverse-primary: "#573bc3"
+  inverse-primary: "#5437c0"
   featured-start: "#a298ff"
   featured-middle: "#36dcec"
   featured-end: "#56ecb5"
@@ -790,7 +794,6 @@ theme that omits any of these keeps the older fallbacks.
 | `accent-foreground` | `#111118` | `#f4f4f8` |
 | `surface-raised` | `#e4e4ee` | `#282836` |
 | `destructive` | `#d62a4b` | `#ff6b7a` |
-| `destructive-text` | `#c22543` | `#ff6b7a` |
 | `destructive-foreground` | `#ffffff` | `#2b0009` |
 | `destructive-soft` | `rgba(214, 42, 75, 0.1)` | `rgba(255, 107, 122, 0.14)` |
 | `success` | `#0b7a53` | `#3ddc97` |
@@ -813,6 +816,9 @@ theme that omits any of these keeps the older fallbacks.
 | `shade-inset` | `rgba(255, 255, 255, 0)` | `rgba(255, 255, 255, 0.1)` |
 | `inverse` | `#111118` | `#f4f4f8` |
 | `inverse-foreground` | `#ffffff` | `#0a0a0f` |
+| `destructive-text` | `#b00032` | `#ff9298` |
+| `success-text` | `#00724b` | `#3ddc97` |
+| `warning-text` | `#975300` | `#f6b84c` |
 | `primary` | `#5f3ed8` | `#a298ff` |
 | `primary-text` | `#573bc3` | `#b5b0ff` |
 | `primary-foreground` | `#ffffff` | `#0a0a0f` |
@@ -822,9 +828,9 @@ theme that omits any of these keeps the older fallbacks.
 | `action-soft` | `rgba(95, 62, 216, 0.1)` | `rgba(162, 152, 255, 0.16)` |
 | `info` | `#573bc3` | `#b5b0ff` |
 | `info-soft` | `rgba(95, 62, 216, 0.1)` | `rgba(162, 152, 255, 0.16)` |
-| `ring` | `rgba(95, 62, 216, 0.28)` | `rgba(162, 152, 255, 0.35)` |
+| `ring` | `#5f3ed8` | `#a298ff` |
 | `glow` | `rgba(95, 62, 216, 0.4)` | `rgba(162, 152, 255, 0.5)` |
-| `inverse-primary` | `#b5b0ff` | `#573bc3` |
+| `inverse-primary` | `#b5b0ff` | `#5437c0` |
 | `featured-start` | `#5f3ed8` | `#a298ff` |
 | `featured-middle` | `#009bab` | `#36dcec` |
 | `featured-end` | `#00ae7b` | `#56ecb5` |
