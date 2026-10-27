@@ -144,7 +144,7 @@
   --glass-tint-dense:rgba(18, 18, 26, 0.92);
   --glass-edge:rgba(255, 255, 255, 0.16);
 }
-/* The palettes: one hue each, with the text inks solved for it (tokens.ts, ink-floor.ts),
+/* The palettes: one hue each, with the text inks solved for it (tokens.ts, tools/v4/derive-inks.ts),
    light on the palette element and dark inside a .dark context. */
 [data-palette="violet"]{
   --hue:285;
