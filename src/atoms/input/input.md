@@ -51,7 +51,7 @@ a read-only field drops its fill under a dashed frame with a subtle underline.
 `accessibilityLabel` takes precedence over the visible label’s accessible name.
 
 Pass `search` for the toolbar search: a magnifier, a borderless editor, and a
-tracked uppercase prompt while empty on web. The prompt names the editor unless
+uppercase prompt while empty on web. The prompt names the editor unless
 `accessibilityLabel` or `label` supplies its purpose. iOS draws its search field
 (a 36-point muted well) and Android the Material 3 search bar (a 56-dp muted
 stadium). `systemFocus` preserves the system
