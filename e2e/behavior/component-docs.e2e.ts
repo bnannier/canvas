@@ -34,7 +34,7 @@ test("the lead is the .md intro's first paragraph, and the overview follows it",
   const main = page.getByRole("main");
   await expect(main.getByText("Six intents × three sizes (plus the icon square)", { exact: false })).toBeVisible();
   // The second intro paragraph (the overview) and the third (the ref guidance).
-  await expect(main.getByText("the call to action is the green action pill", { exact: false })).toBeVisible();
+  await expect(main.getByText("The call to action fills with the accent", { exact: false })).toBeVisible();
   await expect(main.getByText("Pass ref to access the interactive Pressable", { exact: false })).toBeVisible();
 });
 

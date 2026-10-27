@@ -1,7 +1,9 @@
+import { useState, type ReactNode } from "react";
+import { type LayoutChangeEvent } from "react-native";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useHover } from "../../style/hover.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, useHugStyle, useMeasuredWidth, containerProbe, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass, withInnerFill } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
@@ -158,11 +160,13 @@ export function createPagination(skin: PaginationSkin) {
     abutting: boolean;
     /** Carry the "Prev" / "Next" label beside the chevron. */
     labelled: boolean;
+    /** Reports the arrow's frame in its row (the next arrow ends the numbered row). */
+    onLayout?: (event: LayoutChangeEvent) => void;
     onPress: () => void;
   }
 
   // A Previous/Next arrow: a chevron, and beside the numbers its label, in a hairline cell.
-  function Arrow({ direction, size, disabled, dim, abutting, labelled, onPress }: ArrowProps) {
+  function Arrow({ direction, size, disabled, dim, abutting, labelled, onLayout, onPress }: ArrowProps) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const box = skin.controlBox(tokens);
@@ -178,7 +182,7 @@ export function createPagination(skin: PaginationSkin) {
       // The rounded cell's bounded Android ripple is clipped to its corners by this RippleClip
       // parent (no-op on iOS/web), which is also the hover target: it never moves. A same-node
       // overflow:"hidden" cannot clip a node's own ripple. See src/style/ripple-clip.
-      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>
+      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} onLayout={onLayout} {...hoverTarget}>
         <Pressable
           style={({ pressed }) => [
             box,
@@ -328,19 +332,36 @@ export function createPagination(skin: PaginationSkin) {
     };
 
     const abutting = variant !== "compact";
-    const labelled = abutting && s.arrowLabelled(size);
+    // The labelled arrows fall back to the chevron alone when the labelled row is wider
+    // than its container (a phone, a narrow panel). The row cannot learn either width from
+    // its own frame (it hugs its content in a Column and is squeezed in a narrow one), so
+    // an out-of-flow containerProbe sibling measures the container, and the row's content
+    // width is where its last child ends (the next arrow, or the with-size arrow pair).
+    // It is recorded only while labelled, so the unlabelled row never measures itself back
+    // into labels it has no room for.
+    const container = useMeasuredWidth();
+    const [labelledWidth, setLabelledWidth] = useState(0);
+    const wantsLabels = abutting && s.arrowLabelled(size);
+    const labelled = wantsLabels && !(container.measured && labelledWidth > container.width);
+    const measureEnd = labelled ? (e: LayoutChangeEvent) => {
+      const { x, width } = e.nativeEvent.layout;
+      const next = Math.round(x + width);
+      setLabelledWidth((prev) => (prev === next ? prev : next));
+    } : undefined;
+    const hug = useHugStyle();
+    const withProbe = (root: ReactNode) => wantsLabels ? <><View style={containerProbe} onLayout={container.onLayout} />{root}</> : root;
     // A disabled pager dims as one; in an enabled one an arrow at either end dims on its own.
     const dimmed = disabled ? { opacity: skin.disabledOpacity } : null;
     const prev = <Arrow direction="previous" size={size} disabled={disabled || atStart} dim={!disabled && atStart} abutting={abutting} labelled={labelled} onPress={() => go(current - 1)} />;
-    const next = <Arrow direction="next" size={size} disabled={disabled || atEnd} dim={!disabled && atEnd} abutting={abutting} labelled={labelled} onPress={() => go(current + 1)} />;
+    const nextArrow = (onLayout?: (event: LayoutChangeEvent) => void) => <Arrow direction="next" size={size} disabled={disabled || atEnd} dim={!disabled && atEnd} abutting={abutting} labelled={labelled} onLayout={onLayout} onPress={() => go(current + 1)} />;
 
     // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
     if (variant === "compact") {
       return (
-        <View testID={testID} style={[s.compactRow, dimmed, style]}>
+        <View testID={testID} style={[s.compactRow, hug, dimmed, style]}>
           {prev}
           <Text style={muted}>{indicatorLabel}</Text>
-          {next}
+          {nextArrow()}
         </View>
       );
     }
@@ -361,16 +382,16 @@ export function createPagination(skin: PaginationSkin) {
           go(1);
         }
       };
-      return (
-        <View testID={testID} style={[s.withSizeRow, dimmed, style]}>
+      return withProbe(
+        <View testID={testID} style={[s.withSizeRow, hug, dimmed, style]}>
           <View style={s.selectorCluster}>
             <Text style={muted}>Rows per page</Text>
             <Selector value={pageSize} size={size} disabled={disabled} onPress={cycleSize} />
           </View>
           <Text style={muted}>{indicatorLabel}</Text>
-          <View style={s.controlPair}>
+          <View style={s.controlPair} onLayout={measureEnd}>
             {prev}
-            {next}
+            {nextArrow()}
           </View>
         </View>
       );
@@ -379,8 +400,8 @@ export function createPagination(skin: PaginationSkin) {
     // Numbered (default): a windowed row of page buttons with ellipsis gaps.
     const window = pageWindow(current, total);
 
-    return (
-      <View testID={testID} style={[s.numberedRow, dimmed, style]}>
+    return withProbe(
+      <View testID={testID} style={[s.numberedRow, hug, dimmed, style]}>
         {prev}
         {window.map((p, i) =>
           p === GAP ? (
@@ -391,7 +412,7 @@ export function createPagination(skin: PaginationSkin) {
             <Page key={`page-${p}`} page={p} selected={p === current} size={size} disabled={disabled} onPress={() => go(p)} />
           ),
         )}
-        {next}
+        {nextArrow(measureEnd)}
       </View>
     );
   };

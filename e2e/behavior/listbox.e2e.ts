@@ -61,18 +61,19 @@ test("multi-select Tab skips decorative indicators and keeps one roving row", as
 
 test("Listbox multi previews mark a choice the way each platform does", async ({ page }, testInfo) => {
   await gotoDocs(page, "/components/listbox/multi");
-  for (const [platform, width] of [["android", 18], ["web", 20]] as const) {
+  for (const [platform, width, corner] of [["android", 18, 2], ["web", 18, 5]] as const) {
     const group = platformRow(page, platform).getByRole("group", { name: "Teams" });
     const row = group.getByRole("checkbox", { name: "Backend", exact: true });
     await expect(row).toHaveAttribute("aria-checked", "true");
     // Match the platform's selection Checkbox, border included: the Android M3 box
-    // (18), the web box (20). A bare nested import in the shared shell would make
-    // both the same size.
+    // (18, a 2 dp corner) and the web box (18, a 5 px corner). A bare nested import in
+    // the shared shell would give both the same corner.
     // The first match is the box; the box hides its own glyph as well, so the glyph's
     // text node also sits under a hidden node two levels down.
     const box = row.locator('[aria-hidden="true"] > div > div').first();
     await expect(box).toHaveCSS("width", `${width}px`);
     await expect(box).toHaveCSS("height", `${width}px`);
+    await expect(box).toHaveCSS("border-top-left-radius", `${corner}px`);
   }
   // An iOS list marks a chosen row with a trailing check and composes no Checkbox.
   const iosRow = platformRow(page, "ios").getByRole("group", { name: "Teams" }).getByRole("checkbox", { name: "Backend", exact: true });
