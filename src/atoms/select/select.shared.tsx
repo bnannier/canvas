@@ -294,7 +294,12 @@ export function createSelect(skin: SelectSkin) {
     const keyFocused = !!skin.focusHalo && focusFrame.focused && !disabled;
     const softLook = props.soft ? (skin.soft ? skin.soft(tokens) : { backgroundColor: tokens["field-fill"] ?? tokens.card }) : null;
     const triggerShape = { ...(dense ? skin.reference!.trigger(tokens, open, hover.hovered, keyFocused) : skin.trigger(tokens, size, open, hover.hovered, keyFocused)), ...softLook };
-    const halo = keyFocused ? skin.focusHalo!(tokens) : null;
+    // Keyboard focus turns the edge to the ring and adds the halo. While the list is open
+    // the edge is the ring already, so focus could not change it and the faint halo alone
+    // would be the cue: then the trigger wears the kit's keyboard ring outside its box in
+    // place of the halo, as an errored Input does when its red edge holds the border.
+    const halo = keyFocused && !open ? skin.focusHalo!(tokens) : null;
+    const openRing = keyFocused && open ? focusFrame.ring(triggerShape) : null;
     const panelShape = skin.panel(tokens);
     // The trigger's height: its floor where it grows with the text size (Android), else its height.
     const triggerHeight = asNum(triggerShape.minHeight ?? triggerShape.height, 56);
@@ -348,6 +353,7 @@ export function createSelect(skin: SelectSkin) {
             glassTrigger,
             skin.focusHalo ? FOCUS_RESET : null,
             halo,
+            openRing,
             !glass && disabled ? { opacity: skin.disabledOpacity } : null,
             !props.steadyPress && !glass && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}

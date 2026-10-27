@@ -98,6 +98,21 @@ function hpad(s: ViewStyle | TextStyle, edge: "start" | "end"): number {
   return v != null ? num(v) : ph;
 }
 
+// A grouped value is a flex cell that must be able to shrink to its share of the box. A
+// browser sizes an <input> to 20 characters of its face and a flex item will not shrink
+// below that unless its minimum width is 0, so without it a narrow field overflows its
+// box and resizes when its face changes on a keystroke (PhoneInput's number turns mono).
+describe("a grouped value shrinks to its share of the box", () => {
+  for (const [plat, skin] of [["web", inputWeb], ["ios", inputIos], ["android", inputAndroid]] as const) {
+    it(`Input ${plat}: groupField declares minWidth 0 in every affix case`, () => {
+      for (const hasPrefix of [false, true]) for (const hasSuffix of [false, true]) {
+        const style = skin.groupField(t, { leadingIcon: false, trailingIcon: false, hasPrefix, hasSuffix }) as Record<string, unknown>;
+        expect(style.minWidth).toBe(0);
+      }
+    });
+  }
+});
+
 describe("grouped affix hugs the value on the inline-affix skins", () => {
   const prefixField = (skin: typeof inputAndroid) =>
     skin.groupField(t, { leadingIcon: false, trailingIcon: false, hasPrefix: true, hasSuffix: false });

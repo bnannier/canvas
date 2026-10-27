@@ -154,8 +154,10 @@ describe("the fields are FILL", () => {
     cleanup();
     const grouped = ui(<Input prefix="$" placeholder="0.00" />);
     const inner = grouped.container.querySelector("input") as HTMLElement;
-    // The group container, not the inner field, is the FILL node.
-    expect(inner.style.minWidth).not.toBe("0px");
+    // The group container, not the inner field, is the FILL node. The inner field is a
+    // flex cell of the group (minWidth 0 so it shrinks to its share), never 100% wide.
+    expect(inner.style.width).not.toBe("100%");
+    expect(inner.style.minWidth).toBe("0px");
     expectFill(fillAncestor(inner.parentElement));
   });
 
