@@ -196,6 +196,16 @@ describe("Sidebar responsive rail (wide)", () => {
     expect(screen.queryByText("Page One")).toBeNull();
   });
 
+  it("`drawer` is the drawer at desktop width too (no inline rail, opened by `open`)", () => {
+    const { unmount } = ui(<Sidebar drawer sections={RESP} />);
+    expect(screen.queryByText("Home")).toBeNull();
+    unmount();
+    ui(<Sidebar drawer responsive open sections={RESP} accessibilityLabel="Site" />);
+    expect(screen.getByRole("dialog", { name: "Site" })).toBeTruthy();
+    expect(screen.getByText("Category")).toBeTruthy();
+    expect(screen.queryByText("Page One")).toBeNull();
+  });
+
   it("returns to the inline rail when the viewport widens back", () => {
     ui(<Sidebar responsive sections={RESP} />);
     resizeViewport(375);

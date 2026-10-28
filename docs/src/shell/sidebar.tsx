@@ -22,6 +22,7 @@ export function Sidebar({
   collapsible = false,
   onToggleCollapse,
   responsive = false,
+  drawer = false,
   open,
   onOpenChange,
   drawerContentInsetBottom,
@@ -36,6 +37,8 @@ export function Sidebar({
   onToggleCollapse?: () => void;
   /** Below the lg breakpoint, render as a start-edge drill-down drawer (opened by `open`). */
   responsive?: boolean;
+  /** The drill-down drawer at every width (the Android shell, whose hamburger is the only entry). */
+  drawer?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** Bottom clearance for the drawer content (e.g. the native tab bar on Android). */
@@ -73,6 +76,7 @@ export function Sidebar({
       collapsible={collapsible}
       onToggleCollapse={onToggleCollapse}
       responsive={responsive}
+      drawer={drawer}
       open={open}
       onOpenChange={onOpenChange}
       drawerContentInsetBottom={drawerContentInsetBottom}
