@@ -147,6 +147,10 @@ export interface TypographyProps {
   pageLead?: boolean;
   /** A section's introductory paragraph: 400 17/1.55 in the secondary ink. */
   sectionLead?: boolean;
+  /** A feature card's description: 400 14/1.55 in the secondary ink. */
+  cardBody?: boolean;
+  /** The note under a page section's heading: 400 14/1.5 in the secondary ink. */
+  sectionNote?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -283,6 +287,8 @@ export function roleOf(p: TypographyProps): Role {
   if (p.tagline) return "tagline";
   if (p.pageLead) return "pageLead";
   if (p.sectionLead) return "sectionLead";
+  if (p.cardBody) return "cardBody";
+  if (p.sectionNote) return "sectionNote";
   if (p.display) return "display";
   if (p.h1) return "h1";
   if (p.h2) return "h2";

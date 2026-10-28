@@ -38,8 +38,9 @@ The page roles are the hand-off pages' own titles and leads, outside its type ta
 `sectionTitle` (a page section's heading, display 500 28/1.1), `cardTitle` (a feature
 card's title, display 500 22/1.15), `panelTitle` (a panel's title, display 500 20/1.2),
 `tagline` (the line under a section's title, display 400 22/1.3), `pageLead` (a page's
-summary, 18/1.55) and `sectionLead` (a section's introduction, 17/1.55), the two leads in
-the secondary ink.
+summary, 18/1.55), `sectionLead` (a section's introduction, 17/1.55), `cardBody` (a feature
+card's description, 14/1.55) and `sectionNote` (the note under a section's heading,
+14/1.5), the last four in the secondary ink.
 
 ## Usage
 
@@ -95,6 +96,18 @@ the secondary ink.
 
 ```tsx
 <Typography sectionLead>Everything here is live. Press, drag and toggle.</Typography>
+```
+
+### Card body
+
+```tsx
+<Typography cardBody>Surfaces are lit glass.</Typography>
+```
+
+### Section note
+
+```tsx
+<Typography sectionNote>Every control sets a real prop.</Typography>
 ```
 
 ### Display

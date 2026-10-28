@@ -36,7 +36,8 @@ export const typeRoles = {
 // The hand-off pages' own text styles outside its Typography table: the page summary
 // under a component page's title (Component.dc.html), a section page's tagline and lead
 // (Controls.dc.html and its siblings), a component page's section heading, the Library's
-// principle-card title and the Inputs page's panel title. Converted as `typeRoles` is;
+// principle-card title, body and the Inputs page's panel title, and a component page
+// section's note. Converted as `typeRoles` is;
 // test/v4-type-scale.test.ts reads each from the page that sets it. Internal, not
 // re-exported.
 export const pageRoles = {
@@ -46,6 +47,8 @@ export const pageRoles = {
   sectionTitle: { fontSize: 28, lineHeight: 30.8, fontWeight: "500", letterSpacing: -0.56 },
   cardTitle: { fontSize: 22, lineHeight: 25.3, fontWeight: "500", letterSpacing: -0.44 },
   panelTitle: { fontSize: 20, lineHeight: 24, fontWeight: "500", letterSpacing: -0.4 },
+  cardBody: { fontSize: 14, lineHeight: 21.7, fontWeight: "400" },
+  sectionNote: { fontSize: 14, lineHeight: 21, fontWeight: "400" },
 } as const satisfies Record<string, TextStyle>;
 
 /**

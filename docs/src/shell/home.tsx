@@ -175,9 +175,9 @@ function Principles() {
     <Grid minTileWidth={260} spacious>
       {PRINCIPLES.map((principle) => (
         <Card key={principle.num} cozy>
-          <Typography caption mono primary>{principle.num}</Typography>
-          <Typography h4 level={2}>{principle.title}</Typography>
-          <Typography small subtle>{principle.body}</Typography>
+          <Typography caption mono primary medium singleLeading>{principle.num}</Typography>
+          <Typography cardTitle level={2}>{principle.title}</Typography>
+          <Typography cardBody>{principle.body}</Typography>
         </Card>
       ))}
     </Grid>
