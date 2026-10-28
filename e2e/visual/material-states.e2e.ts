@@ -1,5 +1,5 @@
 import { gotoDocs, platformRow } from "../support/docs";
-import { expectNoMaterialEffects, readMaterialEffects, setDocsSurface } from "../support/material-evidence";
+import { expectNoMaterialEffects, setDocsSurface } from "../support/material-evidence";
 import { expect, test } from "../support/fixtures";
 
 for (const scheme of ["light", "dark"] as const) {
@@ -15,9 +15,9 @@ for (const scheme of ["light", "dark"] as const) {
         await setDocsSurface(page, surface);
         await expect(input).toHaveValue("Material changes preserve this draft");
         expect(await originalInput!.evaluate((node) => node.isConnected), "changing material must not remount the input").toBe(true);
-        // Under glass the field is Dark Factory's clear well: a material of its own with no blur.
-        if (surface === "solid") await expectNoMaterialEffects(row);
-        else await expect.poll(async () => (await readMaterialEffects(row)).clearMaterials).toBeGreaterThan(0);
+        // On the web only floating surfaces take glass (the owner's 2026-10-28 pixel-exact
+        // rule, PLAN D13): a field keeps its complete solid skin in both modes.
+        await expectNoMaterialEffects(row);
       }
       await originalInput!.dispose();
     });
@@ -31,8 +31,8 @@ for (const scheme of ["light", "dark"] as const) {
       for (const surface of initialSurface === "solid" ? ["glass", "solid"] as const : ["solid", "glass"] as const) {
         await setDocsSurface(page, surface);
         await expect(week).toHaveAttribute("aria-selected", "true");
-        if (surface === "solid") await expectNoMaterialEffects(row);
-        else await expect.poll(async () => (await readMaterialEffects(row)).activeBackdropEffects).toBeGreaterThan(0);
+        // A segmented control is no floating surface: it keeps its solid skin under glass too.
+        await expectNoMaterialEffects(row);
       }
     });
   }

@@ -6,7 +6,7 @@
 import { MATERIAL_ROUTES } from "../support/material-routes";
 import { MATERIAL_OVERLAYS, TOAST } from "../support/overlays";
 import { FIXED_TIME, gotoDocs, platformRow, previewCard, stage } from "../support/docs";
-import { attachMaterialEvidence, expectNoMaterialEffects, readMaterialEffects } from "../support/material-evidence";
+import { attachMaterialEvidence, expectNoMaterialEffects } from "../support/material-evidence";
 import { expect, test } from "../support/fixtures";
 
 const VIEWPORTS = {
@@ -14,15 +14,12 @@ const VIEWPORTS = {
   phone: { width: 390, height: 844 },
 } as const;
 
-// These actual default examples own a surface. Other families can be bare at
-// rest or delegate their surface to a child; their captures record the effect
-// count without pretending every declared material is visible in every variant.
-// A Checkbox and a Switch are solid marks in every mode (GS-5), so their defaults own none.
-const SURFACED_DEFAULTS = new Set(["button", "button-group", "card", "input", "badge", "data-table"]);
-// A text field under glass is Dark Factory's clear well: its own tint and hairline over
-// an unblurred backdrop (web-frost.ts `clearBlur`), so it owns a clear material rather
-// than a frosted one.
-const CLEAR_DEFAULTS = new Set(["input"]);
+// These default examples own a surface of their own, a content or control surface. On
+// the web only what floats over the page takes glass (the owner's 2026-10-28 pixel-exact
+// rule, PLAN D13: resolveMaterial's "design" fallback), so under glass their web row keeps
+// its complete solid skin and does no backdrop work; the floating overlays below are the
+// web's glass, and native material evidence comes from the native Lookout targets.
+const SOLID_ON_WEB_DEFAULTS = new Set(["button", "button-group", "card", "input", "badge", "data-table"]);
 
 for (const scheme of ["dark", "light"] as const) {
   for (const [formFactor, viewport] of Object.entries(VIEWPORTS)) {
@@ -33,15 +30,7 @@ for (const scheme of ["dark", "light"] as const) {
         const card = previewCard(page).first();
         const row = platformRow(page, "web").first();
         await expect(row).toBeVisible();
-        if (SURFACED_DEFAULTS.has(route.slug)) {
-          const clear = CLEAR_DEFAULTS.has(route.slug);
-          await expect.poll(async () => {
-            const effects = await readMaterialEffects(row);
-            return clear ? effects.clearMaterials : effects.activeBackdropEffects;
-          }, {
-            message: `${route.slug} must paint its own material, not only the surrounding docs card`,
-          }).toBeGreaterThan(0);
-        }
+        if (SOLID_ON_WEB_DEFAULTS.has(route.slug)) await expectNoMaterialEffects(row);
         const metadata = { route: route.path, roles: route.roles, scheme, formFactor, surface: "glass", reducedMotion: true };
         await attachMaterialEvidence(page, testInfo, "glass-rest", card, metadata);
 

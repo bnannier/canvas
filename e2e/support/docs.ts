@@ -415,7 +415,7 @@ export async function settledBox(locator: Locator): Promise<{ width: number; hei
  * Document-root Modal screenshots keep their configured viewport instead.
  */
 export async function fitElementForScreenshot(page: Page, frame: Locator): Promise<void> {
-  const box = await settledBox(frame);
+  let box = await settledBox(frame);
   const viewport = page.viewportSize();
   if (!viewport) throw new Error("An element screenshot requires a configured viewport");
   const bannerLocator = page.getByRole("banner").first();
@@ -430,20 +430,30 @@ export async function fitElementForScreenshot(page: Page, frame: Locator): Promi
   const navigation = await navigationLocator.count() ? await navigationLocator.boundingBox() : null;
   const chrome = Math.max(scrollport ? viewport.height - scrollport.height : 0, navigation?.height ?? 0);
   const inset = Math.ceil(Math.max(banner?.height ?? 0, chrome));
-  const height = Math.max(viewport.height, box.height + 2 * inset);
-  if (height !== viewport.height) await page.setViewportSize({ ...viewport, height });
-  // A preceding element capture may leave the card just beneath a fixed banner.
-  // Center explicitly, since scrollIntoViewIfNeeded ignores that occluding bar.
-  await frame.evaluate((node) => node.scrollIntoView({ block: "center", inline: "nearest" }));
-  if (scrollport && banner) {
-    // Centering is relative to the nested scrollport, whose top can sit behind
-    // the banner. Align against the measured exposed edge of that scrollport.
-    await frame.evaluate((node, top) => {
-      const scroller = node.closest<HTMLElement>("[data-page-scroll]");
-      if (scroller) scroller.scrollTop += node.getBoundingClientRect().top - top;
-    }, Math.max(scrollport.y, banner.y + banner.height));
+  // A measured component lays out in stages (a container measures, then the components it
+  // sizes measure themselves: a DashboardGrid's cells, then each chart frame inside them), so
+  // the element can still grow after the first settled sample. Fit again from the grown box
+  // until the viewport holds it.
+  let height = viewport.height;
+  let fitted = box;
+  for (let round = 0; round < 3; round++) {
+    height = Math.max(height, box.height + 2 * inset);
+    if (height !== page.viewportSize()?.height) await page.setViewportSize({ ...viewport, height });
+    // A preceding element capture may leave the card just beneath a fixed banner.
+    // Center explicitly, since scrollIntoViewIfNeeded ignores that occluding bar.
+    await frame.evaluate((node) => node.scrollIntoView({ block: "center", inline: "nearest" }));
+    if (scrollport && banner) {
+      // Centering is relative to the nested scrollport, whose top can sit behind
+      // the banner. Align against the measured exposed edge of that scrollport.
+      await frame.evaluate((node, top) => {
+        const scroller = node.closest<HTMLElement>("[data-page-scroll]");
+        if (scroller) scroller.scrollTop += node.getBoundingClientRect().top - top;
+      }, Math.max(scrollport.y, banner.y + banner.height));
+    }
+    fitted = await settledBox(frame);
+    if (fitted.height + 2 * inset <= height) break;
+    box = fitted;
   }
-  const fitted = await settledBox(frame);
   expect(fitted.width, "the element exceeds the screenshot viewport width").toBeLessThanOrEqual(viewport.width);
   expect(fitted.height, "the element exceeds the screenshot viewport height").toBeLessThanOrEqual(height);
 }
