@@ -1,7 +1,7 @@
 import type { ReactNode, Ref } from "react";
 import { Platform } from "react-native";
 import { useRouter } from "expo-router";
-import { View, Grid, Card, Column, Row, Typography, Chip, Swatch, Divider, Icon, Container, type ColorTokens } from "@nannier/canvas";
+import { View, Grid, Card, Column, Row, Typography, Chip, Swatch, Divider, Icon, type ColorTokens } from "@nannier/canvas";
 import type { DocDontPair, DocGuidance, DocGuidanceBlock, DocProse, ExampleScope } from "../../core/scope";
 import { getComponent } from "../../core/data/components";
 import { SECTIONS } from "../../core/data/detail-sections";
@@ -71,9 +71,9 @@ export function UsageSection({ note, code, overview, guidance, scope, sectionRef
   if (!note?.length && !code && !overview?.length && guidance.length === 0) return null;
   return (
     <DetailSection title="Usage" sectionRef={sectionRef}>
-      {note?.length ? <Container xxl start><Prose blocks={note} subtle /></Container> : null}
+      {note?.length ? <Prose blocks={note} pageBody relaxed /> : null}
       {code ? <CodeBlock headerless code={code} /> : null}
-      {overview?.length ? <Container xxl start><Prose blocks={overview} small subtle /></Container> : null}
+      {overview?.length ? <Prose blocks={overview} pageNote relaxed /> : null}
       {guidance.length ? (
         <Grid minTileWidth={420} roomy>
           {guidance.map((section) => <GuidanceCard key={section.title} section={section} scope={scope} />)}

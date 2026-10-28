@@ -39,8 +39,9 @@ The page roles are the hand-off pages' own titles and leads, outside its type ta
 card's title, display 500 22/1.15), `panelTitle` (a panel's title, display 500 20/1.2),
 `tagline` (the line under a section's title, display 400 22/1.3), `pageLead` (a page's
 summary, 18/1.55, held to the hand-off's 72ch measure), `sectionLead` (a section's introduction, 17/1.55), `cardBody` (a feature
-card's description, 14/1.55) and `sectionNote` (the note under a section's heading,
-14/1.5), the last four in the secondary ink.
+card's description, 14/1.55), `sectionNote` (the note under a section's heading,
+14/1.5), `pageBody` (a page's body paragraph, 15/1.6) and `pageNote` (a page's note paragraph,
+14/1.6), the last six in the secondary ink and the last two held to an 80ch measure.
 
 ## Usage
 

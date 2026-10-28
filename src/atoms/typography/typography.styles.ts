@@ -43,6 +43,8 @@ export type Role =
   | "sectionLead"
   | "cardBody"
   | "sectionNote"
+  | "pageBody"
+  | "pageNote"
   | "display"
   | "h1"
   | "h2"
@@ -98,6 +100,10 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     sectionLead: pageRoles.sectionLead,
     cardBody: pageRoles.cardBody,
     sectionNote: pageRoles.sectionNote,
+    // A component page's prose, `max-width: 80ch` in the hand-off: 80 of the 0.666 em "0"
+    // is 799px at 15px and 746px at 14px.
+    pageBody: { ...pageRoles.pageBody, maxWidth: 799 },
+    pageNote: { ...pageRoles.pageNote, maxWidth: 746 },
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -138,6 +144,8 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "sectionLead":
     case "cardBody":
     case "sectionNote":
+    case "pageBody":
+    case "pageNote":
       return { color: tokens["muted-foreground"] };
     case "eyebrow":
     case "eyebrowLg":
