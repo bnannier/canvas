@@ -70,7 +70,7 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
       </Grid>
       {notes?.length ? (
         <Card eyebrow="From the docs">
-          <Prose blocks={notes} small subtle />
+          <Prose blocks={notes} pageNote />
         </Card>
       ) : null}
     </DetailSection>

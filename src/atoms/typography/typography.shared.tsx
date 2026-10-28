@@ -158,6 +158,10 @@ export interface TypographyProps {
   cardBody?: boolean;
   /** The note under a page section's heading: 400 14/1.5 in the secondary ink. */
   sectionNote?: boolean;
+  /** A page's body paragraph (a component page's usage line): 400 15/1.6 in the secondary ink, held to an 80ch measure. */
+  pageBody?: boolean;
+  /** A page's note paragraph (a component page's overview and docs notes): 400 14/1.6 in the secondary ink, held to an 80ch measure. */
+  pageNote?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -296,6 +300,8 @@ export function roleOf(p: TypographyProps): Role {
   if (p.sectionLead) return "sectionLead";
   if (p.cardBody) return "cardBody";
   if (p.sectionNote) return "sectionNote";
+  if (p.pageBody) return "pageBody";
+  if (p.pageNote) return "pageNote";
   if (p.display) return "display";
   if (p.h1) return "h1";
   if (p.h2) return "h2";

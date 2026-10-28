@@ -387,7 +387,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Typography"],
     pages: ["typography"],
     resolver: "src/atoms/typography/typography.shared.tsx#roleOf",
-    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "pageLead", "sectionLead", "cardBody", "sectionNote", "display", "h1", "h2", "h3", "h4", "h5", "lead", "code", "mono", "caption", "small", "tiny", "body", "muted"],
+    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "display", "h1", "h2", "h3", "h4", "h5", "lead", "code", "mono", "caption", "small", "tiny", "body", "muted"],
     resolve: roleOf,
     notes: ["`muted` is both a role and a tone."],
   }),
