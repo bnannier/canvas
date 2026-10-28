@@ -138,9 +138,10 @@ export function NativeHeader() {
 
   // Android: a Material top app bar carrying the appearance controls (Solid/Glass + light/dark)
   // always-visible in the trailing slot, matching the web's top-right controls, followed by the
-  // section-menu hamburger. The hamburger opens the responsive Sidebar as an M3 start-edge
-  // navigation drawer (the same kit Sidebar the desktop web shows as a rail, drilled down for the
-  // phone). The surface and scheme live in the bar; the drawer's footer adds the palette
+  // section-menu hamburger. The hamburger opens the Sidebar as an M3 start-edge
+  // navigation drawer at every width (`drawer`: the shell has no rail, so a landscape
+  // tablet past 1024 dp gets the drawer too); it is the same kit Sidebar the desktop web
+  // shows as a rail. The surface and scheme live in the bar; the drawer's footer adds the palette
   // row. (iOS hosts the menu and the palette in the native header UIMenu; see the branch
   // above.)
   return (
@@ -160,7 +161,7 @@ export function NativeHeader() {
         }}
       />
       <Sidebar
-        responsive
+        drawer
         open={menuOpen}
         onOpenChange={setMenuOpen}
         onNavigate={() => setMenuOpen(false)}

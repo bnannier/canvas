@@ -225,6 +225,12 @@ export interface SidebarProps {
   /** Opt in to the responsive rail->drawer behavior. Off by default: a bare sidebar is the
    *  inline rail at every width, byte-identical to before. */
   responsive?: boolean;
+  /**
+   * Always the drill-down drawer, at every width, never the inline rail: for an app shell
+   * whose only entry to the site tree is its own hamburger (a top app bar). Takes
+   * the same `open` / `onOpenChange` wiring as `responsive`, and wins over it.
+   */
+  drawer?: boolean;
   /** The narrow drawer's open state (CONTROLLED). The consumer wires its hamburger to this. */
   open?: boolean;
   /** Initial open state for the uncontrolled narrow drawer (default closed). */
@@ -393,12 +399,13 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
     const [drawerOpen, setDrawerOpen] = useControllableState<boolean>(props.open, props.defaultOpen ?? false, props.onOpenChange);
     const bucket = useBreakpoint();
     const asDrawer =
-      !!props.responsive && bucket !== "base" && breakpoints[bucket] <= breakpoints[props.drawerBreakpoint ?? "lg"];
+      !!props.drawer ||
+      (!!props.responsive && bucket !== "base" && breakpoints[bucket] <= breakpoints[props.drawerBreakpoint ?? "lg"]);
     // The inline rail is unusable chrome on a phone; `responsive` is opt-in only
     // because the drawer needs a consumer-owned hamburger (open/onOpenChange), so
     // surface the gap in DEV instead of silently rendering a 240px column.
     devWarn(
-      !props.responsive && bucket === "sm",
+      !props.responsive && !props.drawer && bucket === "sm",
       "[canvas] <Sidebar>: rendering the inline rail at a phone-width viewport. Pass `responsive` (with `open`/`onOpenChange` wired to your hamburger) to switch to the drill-down drawer below the `drawerBreakpoint`.",
     );
 
