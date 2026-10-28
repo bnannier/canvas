@@ -8,8 +8,8 @@ Audit checklist for `/templates/billing`. The facts block and the variants table
 | Route | `/templates/billing` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/billing.tsx` |
-| Sections | 1. Plan and usage; 2. Payment method; 3. Invoices |
-| Kit names its entry uses | AlertDialog, Badge, Button, Card, Column, DataTable, DescriptionList, Divider, Emblem, Grid, Icon, Progress, Row, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-billing.md`, written by `bun run audit:turn -- --slug=template-billing --phase=before\|after` (the before and after capture runs) |
@@ -23,9 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `planandusage` | Plan and usage | [ ] | [ ] | [ ] |  |
-| `paymentmethod` | Payment method | [ ] | [ ] | [ ] |  |
-| `invoices` | Invoices | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

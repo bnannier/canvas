@@ -8,8 +8,8 @@ Audit checklist for `/templates/inbox`. The facts block and the variants table a
 | Route | `/templates/inbox` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/inbox.tsx` |
-| Sections | 1. List and thread |
-| Kit names its entry uses | Avatar, Badge, Button, Card, Column, Divider, Icon, Input, Row, StackedList, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-inbox.md`, written by `bun run audit:turn -- --slug=template-inbox --phase=before\|after` (the before and after capture runs) |
@@ -23,7 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `listandthread` | List and thread | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

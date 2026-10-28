@@ -8,8 +8,8 @@ Audit checklist for `/templates/chat`. The facts block and the variants table ar
 | Route | `/templates/chat` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/chat.tsx` |
-| Sections | 1. Conversation; 2. Empty thread |
-| Kit names its entry uses | Chat, Chip, EmptyState, Icon, Row |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-chat.md`, written by `bun run audit:turn -- --slug=template-chat --phase=before\|after` (the before and after capture runs) |
@@ -23,8 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `conversation` | Conversation | [ ] | [ ] | [ ] |  |
-| `emptythread` | Empty thread | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

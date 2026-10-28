@@ -8,8 +8,8 @@ Audit checklist for `/templates/signin`. The facts block and the variants table 
 | Route | `/templates/signin` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/signin.tsx` |
-| Sections | 1. Centered card; 2. Split-screen; 3. Magic link |
-| Kit names its entry uses | Button, Card, Checkbox, Column, Container, Divider, Emblem, EmptyState, Icon, Input, Row, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 2: `e2e/behavior/hydration-ids.e2e.ts`, `e2e/responsive/template-state.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-signin.md`, written by `bun run audit:turn -- --slug=template-signin --phase=before\|after` (the before and after capture runs) |
@@ -23,9 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `centeredcard` | Centered card | [ ] | [ ] | [ ] |  |
-| `splitscreen` | Split-screen | [ ] | [ ] | [ ] |  |
-| `magiclink` | Magic link | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

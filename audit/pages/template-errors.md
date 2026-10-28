@@ -8,8 +8,8 @@ Audit checklist for `/templates/errors`. The facts block and the variants table 
 | Route | `/templates/errors` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/errors.tsx` |
-| Sections | 1. Not found (404); 2. Something went wrong (500); 3. Maintenance; 4. First run |
-| Kit names its entry uses | Alert, Badge, Button, Card, Column, Container, Emblem, EmptyState, Icon, Row, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-errors.md`, written by `bun run audit:turn -- --slug=template-errors --phase=before\|after` (the before and after capture runs) |
@@ -23,10 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `notfound404` | Not found (404) | [ ] | [ ] | [ ] |  |
-| `somethingwentwrong500` | Something went wrong (500) | [ ] | [ ] | [ ] |  |
-| `maintenance` | Maintenance | [ ] | [ ] | [ ] |  |
-| `firstrun` | First run | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

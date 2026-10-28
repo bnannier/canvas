@@ -8,8 +8,8 @@ Audit checklist for `/templates/activity`. The facts block and the variants tabl
 | Route | `/templates/activity` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/activity.tsx` |
-| Sections | 1. Audit log |
-| Kit names its entry uses | Button, Card, Chip, Column, EmptyState, Feed, Icon, Input, Row, Select, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 2: `e2e/a11y/shell.e2e.ts`, `e2e/a11y/structure.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-activity.md`, written by `bun run audit:turn -- --slug=template-activity --phase=before\|after` (the before and after capture runs) |
@@ -23,7 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `auditlog` | Audit log | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

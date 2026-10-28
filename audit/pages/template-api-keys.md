@@ -8,8 +8,8 @@ Audit checklist for `/templates/api-keys`. The facts block and the variants tabl
 | Route | `/templates/api-keys` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/api-keys.tsx` |
-| Sections | 1. Create a key; 2. Active keys; 3. Danger zone |
-| Kit names its entry uses | Alert, AlertDialog, Badge, Button, Card, Column, DataTable, Divider, EmptyState, Icon, Input, Row, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-api-keys.md`, written by `bun run audit:turn -- --slug=template-api-keys --phase=before\|after` (the before and after capture runs) |
@@ -23,9 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `createakey` | Create a key | [ ] | [ ] | [ ] |  |
-| `activekeys` | Active keys | [ ] | [ ] | [ ] |  |
-| `dangerzone` | Danger zone | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

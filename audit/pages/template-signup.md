@@ -8,8 +8,8 @@ Audit checklist for `/templates/signup`. The facts block and the variants table 
 | Route | `/templates/signup` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/signup.tsx` |
-| Sections | 1. Registration card; 2. Confirm email |
-| Kit names its entry uses | Button, Card, Checkbox, Column, Container, Divider, Emblem, EmptyState, Icon, Input, Progress, Row, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-signup.md`, written by `bun run audit:turn -- --slug=template-signup --phase=before\|after` (the before and after capture runs) |
@@ -23,8 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `registrationcard` | Registration card | [ ] | [ ] | [ ] |  |
-| `confirmemail` | Confirm email | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

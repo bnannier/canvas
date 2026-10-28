@@ -8,8 +8,8 @@ Audit checklist for `/templates/profile`. The facts block and the variants table
 | Route | `/templates/profile` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/profile.tsx` |
-| Sections | 1. Identity header; 2. Record facets; 3. Layout principles |
-| Kit names its entry uses | Avatar, Badge, Breadcrumb, Button, Card, Column, DataTable, DescriptionList, Divider, Grid, Icon, Row, Stats, Switch, Tabs, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-profile.md`, written by `bun run audit:turn -- --slug=template-profile --phase=before\|after` (the before and after capture runs) |
@@ -23,9 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `identityheader` | Identity header | [ ] | [ ] | [ ] |  |
-| `recordfacets` | Record facets | [ ] | [ ] | [ ] |  |
-| `layoutprinciples` | Layout principles | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric
