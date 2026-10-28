@@ -73,9 +73,9 @@ for (const recipe of [...fields, ...additional]) for (const width of [1280, 390]
     }
     const selection = await field.evaluate(node => ({ start: (node as HTMLInputElement).selectionStart, end: (node as HTMLInputElement).selectionEnd }));
     if (!recipe.otp) expect(selection.end! - selection.start!).toBe(recipe.role === "spinbutton" || recipe.slug === "data-table" ? recipe.value.length : 2);
-    // Under glass the field is Dark Factory's clear well: its own tint and hairline over an
-    // unblurred backdrop (web-frost.ts `clearBlur`), so a material with no blur of its own.
-    await expect.poll(async () => (await readMaterialEffects(row)).clearMaterials).toBeGreaterThan(0);
+    // On the web only floating surfaces take glass (the owner's 2026-10-28 pixel-exact rule,
+    // PLAN D13): in glass mode a text field keeps its complete solid skin, with no material.
+    await expectNoMaterialEffects(row);
     const screenshot = info.outputPath("clear-field.png");
     await row.screenshot({ path: screenshot });
     await info.attach("clear field", { path: screenshot, contentType: "image/png" });
