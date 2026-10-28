@@ -910,7 +910,8 @@ kit's own Android parts at a step of the same scale.
 | web | `emblemSmall` | 8px |
 | web | `emblem` | 11px |
 | web | `emblemLarge` | 16px |
-| web | `referenceCard` | 9px |
+| web | `referenceCard` | 14px |
+| web | `referenceSource` | 6px |
 | web | `pageCell` | 8px |
 | web | `menuRow` | 8px |
 | web | `commandPanel` | 18px |
@@ -1002,6 +1003,7 @@ drawn by those entries' platforms.
 | `emblem` | `atoms/emblem`, `molecules/media-objects` |
 | `emblemLarge` | `atoms/emblem` |
 | `referenceCard` | `molecules/card` |
+| `referenceSource` | `molecules/card` |
 | `pageCell` | `atoms/pagination` |
 | `menuRow` | `atoms/autocomplete`, `atoms/select`, `organisms/row-menu`, `style` |
 | `commandPanel` | `organisms/command` |
