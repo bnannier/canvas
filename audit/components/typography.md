@@ -45,6 +45,8 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `tagline` | Tagline | [ ] | [ ] | [ ] |  |
 | `pagelead` | Page lead | [ ] | [ ] | [ ] |  |
 | `sectionlead` | Section lead | [ ] | [ ] | [ ] |  |
+| `cardbody` | Card body | [ ] | [ ] | [ ] |  |
+| `sectionnote` | Section note | [ ] | [ ] | [ ] |  |
 | `display` | Display | [ ] | [ ] | [ ] |  |
 | `h1` | H1 | [ ] | [ ] | [ ] |  |
 | `h2` | H2 | [ ] | [ ] | [ ] |  |

@@ -24,8 +24,8 @@ export function SectionHero({ room, vignette }: { room: Pick<Room, "title" | "le
           <Column cozy>
             <DocsHead title={room.title} />
             <Typography h1>{room.title}</Typography>
-            <Typography lead>{room.lead}</Typography>
-            {room.body ? <Typography subtle><InlineMarkdown text={room.body} subtle /></Typography> : null}
+            <Typography tagline>{room.lead}</Typography>
+            {room.body ? <Typography sectionLead><InlineMarkdown text={room.body} sectionLead /></Typography> : null}
           </Column>
         </Container>
       </Column>

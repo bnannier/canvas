@@ -114,6 +114,8 @@ const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string 
   sectionTitle: { page: "Component", text: ">Playground<" },
   cardTitle: { page: "Library", text: ">Light is the material<" },
   panelTitle: { page: "Inputs", text: ">Workspace<" },
+  cardBody: { page: "Library", text: ">Surfaces are lit glass" },
+  sectionNote: { page: "Component", text: ">Every control sets a real prop" },
 };
 
 describe("v4 page roles", () => {

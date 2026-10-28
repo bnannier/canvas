@@ -41,6 +41,8 @@ export type Role =
   | "tagline"
   | "pageLead"
   | "sectionLead"
+  | "cardBody"
+  | "sectionNote"
   | "display"
   | "h1"
   | "h2"
@@ -92,6 +94,8 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     tagline: d(pageRoles.tagline),
     pageLead: pageRoles.pageLead,
     sectionLead: pageRoles.sectionLead,
+    cardBody: pageRoles.cardBody,
+    sectionNote: pageRoles.sectionNote,
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -130,6 +134,8 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "label":
     case "pageLead":
     case "sectionLead":
+    case "cardBody":
+    case "sectionNote":
       return { color: tokens["muted-foreground"] };
     case "eyebrow":
     case "eyebrowLg":
