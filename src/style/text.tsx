@@ -76,7 +76,7 @@ export function fontStyle(style: StyleProp<TextStyle>, fonts: ThemeFonts, inheri
   // A span inside a run of the caller's own family inherits that family untouched.
   if (role === "own") return style;
   const faces = role === "sans" ? fonts.sans : role === "mono" ? fonts.mono : (fonts.display ?? fonts.sans);
-  const face = resolveFontFace(faces, flat?.fontWeight);
+  const face = resolveFontFace(faces, flat?.fontWeight, flat?.fontSize);
   if (!face) return style;
   if (!face.dropWeight) return [style, { fontFamily: face.fontFamily }];
   // The face carries its weight: rebuild the flat style without fontWeight, since a

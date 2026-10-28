@@ -1,4 +1,5 @@
-import { Linking } from "react-native";
+import { useRef } from "react";
+import { Linking, type View as NativeView } from "react-native";
 import {
   Avatar,
   AvatarGroup,
@@ -125,6 +126,7 @@ function CollagePanels() {
 export function LibraryHero() {
   const router = useRouter();
   const { headline, primary, secondary } = LIBRARY_HERO;
+  const headlineBox = useRef<NativeView>(null);
   return (
     <AuroraFrame testID="library-hero">
       <Grid minTileWidth={HERO_GRID.minTileWidth} columns={2} broad>
@@ -135,10 +137,12 @@ export function LibraryHero() {
             </View>
             <Typography eyebrowLg subtle>{LIBRARY_HERO.eyebrow(VERSION)}</Typography>
           </Row>
-          <Typography hero accessibilityLabel={LIBRARY_HEADLINE}>
-            {`${headline.plain} `}
-            <GradientText testID="library-headline-accent">{headline.accent}</GradientText>
-          </Typography>
+          <View ref={headlineBox}>
+            <Typography hero accessibilityLabel={LIBRARY_HEADLINE}>
+              {`${headline.plain} `}
+              <GradientText anchor={headlineBox} testID="library-headline-accent">{headline.accent}</GradientText>
+            </Typography>
+          </View>
           <Container xxl start>
             <Typography lead subtle>{LIBRARY_HERO.body}</Typography>
           </Container>

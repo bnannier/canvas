@@ -236,6 +236,7 @@
   "NativeSyntheticEvent": "type",
   "Navbar": "value",
   "NavbarProps": "type",
+  "OpticalFaces": "type",
   "OverlayHost": "type",
   "OverlayProvider": "value",
   "OverlayProviderProps": "type",

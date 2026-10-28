@@ -377,6 +377,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   // src/style/fonts.ts
   FontFaces: { kind: "type" },
   FontWeightKey: { kind: "type" },
+  OpticalFaces: { kind: "type" },
   ThemeFonts: { kind: "type" },
   typeface: { kind: "token" },
 
@@ -628,6 +629,7 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   // K12-7: the typeface and its font types.
   FontFaces: "tokens/typography",
   FontWeightKey: "tokens/typography",
+  OpticalFaces: "tokens/typography",
   ThemeFonts: "tokens/typography",
   typeface: "tokens/typography",
 
