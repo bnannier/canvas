@@ -39,6 +39,12 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `hero` | Hero | [ ] | [ ] | [ ] |  |
 | `pagetitle` | Page title | [ ] | [ ] | [ ] |  |
+| `sectiontitle` | Section title | [ ] | [ ] | [ ] |  |
+| `cardtitle` | Card title | [ ] | [ ] | [ ] |  |
+| `paneltitle` | Panel title | [ ] | [ ] | [ ] |  |
+| `tagline` | Tagline | [ ] | [ ] | [ ] |  |
+| `pagelead` | Page lead | [ ] | [ ] | [ ] |  |
+| `sectionlead` | Section lead | [ ] | [ ] | [ ] |  |
 | `display` | Display | [ ] | [ ] | [ ] |  |
 | `h1` | H1 | [ ] | [ ] | [ ] |  |
 | `h2` | H2 | [ ] | [ ] | [ ] |  |

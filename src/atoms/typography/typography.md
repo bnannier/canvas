@@ -21,7 +21,7 @@ They wrap along a shared baseline, preserving dense section anatomy. Pair it wit
 metadata metrics. Actions move to the far edge and wrap below on narrow surfaces.
 
 `level={1..6}` sets the heading level assistive tech hears without changing the
-look. A heading role exposes its own level (`hero`, `pageTitle`, `display` and `h1` at 1, `h2` to `h5` at
+look. A heading role exposes its own level (`hero`, `pageTitle`, `display` and `h1` at 1, `sectionTitle` at 2, `cardTitle` at 3, `h2` to `h5` at
 2 to 5, a `section` heading 6), so `<Typography h3 level={2}>` draws the h3 size
 and is announced as a level-2 heading: a real `<h2>` on the web, the header trait
 natively. On a non-heading role `level` makes the text a heading at that level.
@@ -33,6 +33,13 @@ stays on the boolean role axis.
 fixed step: `hero` is the landing headline (56 to 112 px at 7.2 percent of the window,
 a .94 line, tracked -.045em) and `pageTitle` a page's own title (40 to 64 px at 5
 percent, a 1.0 line, tracked -.04em). Both are medium-weight display face.
+
+The page roles are the hand-off pages' own titles and leads, outside its type table:
+`sectionTitle` (a page section's heading, display 500 28/1.1), `cardTitle` (a feature
+card's title, display 500 22/1.15), `panelTitle` (a panel's title, display 500 20/1.2),
+`tagline` (the line under a section's title, display 400 22/1.3), `pageLead` (a page's
+summary, 18/1.55) and `sectionLead` (a section's introduction, 17/1.55), the two leads in
+the secondary ink.
 
 ## Usage
 
@@ -52,6 +59,42 @@ percent, a 1.0 line, tracked -.04em). Both are medium-weight display face.
 
 ```tsx
 <Typography pageTitle>Button</Typography>
+```
+
+### Section title
+
+```tsx
+<Typography sectionTitle>Playground</Typography>
+```
+
+### Card title
+
+```tsx
+<Typography cardTitle>One charged accent</Typography>
+```
+
+### Panel title
+
+```tsx
+<Typography panelTitle>Workspace</Typography>
+```
+
+### Tagline
+
+```tsx
+<Typography tagline>Buttons, toggles and sliders.</Typography>
+```
+
+### Page lead
+
+```tsx
+<Typography pageLead>Six intents, three sizes and every state.</Typography>
+```
+
+### Section lead
+
+```tsx
+<Typography sectionLead>Everything here is live. Press, drag and toggle.</Typography>
 ```
 
 ### Display

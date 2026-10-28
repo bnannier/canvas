@@ -135,6 +135,18 @@ export interface TypographyProps {
    * window, `clamp(40px, 5vw, 64px)` at a 1.0 line and -.04em tracking. A level-1 heading.
    */
   pageTitle?: boolean;
+  /** A page section's heading (a component page's Playground, Variants...): the display face, 500 28/1.1, -.02em. A level-2 heading. */
+  sectionTitle?: boolean;
+  /** A feature card's title: the display face, 500 22/1.15, -.02em. A level-3 heading. */
+  cardTitle?: boolean;
+  /** A panel's or dialog's title: the display face, 500 20/1.2, -.02em. */
+  panelTitle?: boolean;
+  /** The one-line tagline under a section's title: the display face, 400 22/1.3, -.015em, in the foreground ink. */
+  tagline?: boolean;
+  /** A page's summary under its title: 400 18/1.55 in the secondary ink. */
+  pageLead?: boolean;
+  /** A section's introductory paragraph: 400 17/1.55 in the secondary ink. */
+  sectionLead?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -238,6 +250,8 @@ export function headingLevelOf(p: TypographyProps, role: Role = roleOf(p)): numb
 const HEADING_LEVEL: Partial<Record<Role, number>> = {
   hero: 1,
   pageTitle: 1,
+  sectionTitle: 2,
+  cardTitle: 3,
   display: 1,
   h1: 1,
   h2: 2,
@@ -263,6 +277,12 @@ export function roleOf(p: TypographyProps): Role {
 
   if (p.hero) return "hero";
   if (p.pageTitle) return "pageTitle";
+  if (p.sectionTitle) return "sectionTitle";
+  if (p.cardTitle) return "cardTitle";
+  if (p.panelTitle) return "panelTitle";
+  if (p.tagline) return "tagline";
+  if (p.pageLead) return "pageLead";
+  if (p.sectionLead) return "sectionLead";
   if (p.display) return "display";
   if (p.h1) return "h1";
   if (p.h2) return "h2";
