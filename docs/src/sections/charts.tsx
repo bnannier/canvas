@@ -119,13 +119,13 @@ export function Cards() {
       <ShowcaseGrid minTileWidth={300}>
         <GridItem full><ChartCard /></GridItem>
         <ShowcaseCard id="c-area-chart" caption="<AreaChart stacked> · running-sum bands, overlap by default">
-          <AreaChart plain stacked labels={PLATFORM_AREA.labels} series={PLATFORM_AREA.series} />
+          <AreaChart plain stacked hideAxes labels={PLATFORM_AREA.labels} series={PLATFORM_AREA.series} />
         </ShowcaseCard>
         <ShowcaseCard id="c-range-area-chart" caption="<RangeAreaChart> · y hugs the data, never anchored at zero">
           <RangeAreaChart plain label="High · mid · low" labels={TEMPERATURE.labels} data={TEMPERATURE.data} formatValue={(v) => `${v}°`} />
         </ShowcaseCard>
         <ShowcaseCard id="c-composed-chart" caption="series pick a mark with line or area · bars by default">
-          <ComposedChart plain labels={REVENUE_COMPOSED.labels} series={REVENUE_COMPOSED.series} />
+          <ComposedChart plain hideAxes labels={REVENUE_COMPOSED.labels} series={REVENUE_COMPOSED.series} />
         </ShowcaseCard>
         <ShowcaseCard id="c-sparkline" caption="<Sparkline values={…} success /> · tone booleans, no hand-built bar rows">
           {SPARKS.map((spark) => (
