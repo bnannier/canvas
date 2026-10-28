@@ -4,7 +4,7 @@ import Svg, { Line } from "react-native-svg";
 import { View, Text, useTheme, FILL, type ViewStyle } from "../../style/index.js";
 import { CHART_LOOK, axisLabel } from "./charts.styles.js";
 import { ScrubSurface } from "./chart-inspect.js";
-import { bandScale, estimateTextWidth, formatAxis, linearScale, niceTicks, quarterTicks, type Band } from "./chart-math.js";
+import { bandScale, estimateTextWidth, formatAxis, linearScale, niceTicks, pointScale, quarterTicks, type Band } from "./chart-math.js";
 
 // The shared cartesian plot frame for the Chart family's SVG types (line,
 // area, scatter): it measures its width, sizes a y-axis gutter from the tick
@@ -52,6 +52,8 @@ export interface CartesianFrameProps {
   aspect?: boolean;
   /** Inset the categorical bands this many hand-off units from each plot edge (the bar Chart's 6). */
   bandInset?: number;
+  /** Place the categories as points from the y axis to the plot's right edge (the hand-off's line x) instead of band centres. */
+  xPoints?: boolean;
   /**
    * Reserve this many px at the bottom of the plot for a docked companion
    * pane (e.g. candlestick volume): the y scale and its gridlines compress to
@@ -90,8 +92,9 @@ const LABEL_LINE = CHART_LOOK.axisLine;
 // The hand-off's chart viewBox (cv-kit-charts.js): 360 wide, 170 tall.
 const VIEW_W = 360;
 const VIEW_H = 170;
-// The hand-off's y gutter (`PL`), in its units.
+// The hand-off's y gutter (`PL`) and the margin right of its grid (`W - 8`), in its units.
 const VIEW_GUTTER = 28;
+const VIEW_RIGHT = 8;
 // The hand-off labels every other category on an axis of more than 8 (its 12-month axes,
 // a label per ~54 px of its plot); a thinned axis keeps at least this much room per label.
 const MIN_X_SLOT = 44;
@@ -120,7 +123,10 @@ export function CartesianFrame(props: CartesianFrameProps) {
   const scale = props.aspect ? (plotH + TOP_PAD + (hideAxes ? 0 : X_BAND)) / VIEW_H : 1;
   const gutter = hideAxes ? 0 : Math.min(64, Math.max(props.aspect ? VIEW_GUTTER * scale : 24, Math.ceil(widest) + 8));
 
-  const plotW = Math.max(0, width - gutter);
+  // The grid stops short of the frame's right edge, as the hand-off's does; the marks may
+  // reach into that margin (a band centred near the edge).
+  const rightPad = props.aspect ? VIEW_RIGHT * scale : 0;
+  const plotW = Math.max(0, width - gutter - rightPad);
   const insetBottom = Math.max(0, Math.min(props.plotInsetBottom ?? 0, plotH - 24));
 
   const y = linearScale(niceMin, niceMax, plotH - insetBottom, 0);
@@ -128,7 +134,11 @@ export function CartesianFrame(props: CartesianFrameProps) {
   // X axis: categorical equal bands (labels centered under each band) or a
   // niced numeric domain (scatter).
   const inset = (props.bandInset ?? 0) * scale;
-  const band: Band | null = xLabels ? bandScale(xLabels.length, inset, Math.max(inset, plotW - inset), 0, 0) : null;
+  const band: Band | null = !xLabels
+    ? null
+    : props.xPoints
+      ? pointScale(xLabels.length, 0, plotW)
+      : bandScale(xLabels.length, inset, Math.max(inset, plotW + rightPad - inset), 0, 0);
   const xTicksInfo = xDomain ? niceTicks(xDomain[0], xDomain[1], compact ? 3 : 5) : null;
   const x = xTicksInfo ? linearScale(xTicksInfo.niceMin, xTicksInfo.niceMax, 0, plotW) : (v: number) => v;
 
@@ -172,8 +182,8 @@ export function CartesianFrame(props: CartesianFrameProps) {
               : null}
 
             {/* The plot: gridlines, baseline, then the mark layer. */}
-            <View style={{ position: "absolute", left: gutter, top: TOP_PAD, width: plotW, height: plotH }}>
-              <Svg width={plotW} height={plotH}>
+            <View style={{ position: "absolute", left: gutter, top: TOP_PAD, width: plotW + rightPad, height: plotH }}>
+              <Svg width={plotW + rightPad} height={plotH}>
                 {/* The hand-off's grid: dotted 2 4 hairlines, the bottom line solid. */}
                 {!hideGrid
                   ? ticks.map((t, i) => (
@@ -184,8 +194,9 @@ export function CartesianFrame(props: CartesianFrameProps) {
                 {/* Baseline hairline, kept even when the grid is hidden. */}
                 {!hideAxes ? <Line x1={0} y1={plotH - 0.5} x2={plotW} y2={plotH - 0.5} stroke={tokens.border} strokeWidth={1} /> : null}
                 {/* Selection guide through the inspected category. */}
+                {/* The hand-off's guide: a dashed 2 3 line in the muted ink. */}
                 {selectedBand != null && band ? (
-                  <Line x1={band.center(selectedBand)} y1={0} x2={band.center(selectedBand)} y2={plotH} stroke={tokens.border} strokeWidth={1} />
+                  <Line x1={band.center(selectedBand)} y1={0} x2={band.center(selectedBand)} y2={plotH} stroke={tokens["muted-foreground"]} strokeWidth={1} strokeDasharray={CHART_LOOK.guideDash} />
                 ) : null}
                 {children(layout)}
               </Svg>
@@ -193,7 +204,9 @@ export function CartesianFrame(props: CartesianFrameProps) {
                   accessible name already carries the data). */}
               {onBandScrub && band && xLabels && xLabels.length > 0 && band.step > 0 ? (
                 <ScrubSurface
-                  indexAt={(x) => Math.max(0, Math.min(xLabels.length - 1, Math.floor((x - inset) / band.step)))}
+                  indexAt={(x) =>
+                    Math.max(0, Math.min(xLabels.length - 1, props.xPoints ? Math.round(x / band.step) : Math.floor((x - inset) / band.step)))
+                  }
                   selected={selectedBand ?? null}
                   onScrub={onBandScrub}
                   style={StyleSheet.absoluteFill}

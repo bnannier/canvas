@@ -56,6 +56,18 @@ export function bandScale(count: number, r0: number, r1: number, paddingInner = 
   };
 }
 
+/**
+ * Place `count` points evenly from `r0` to `r1`, the first on `r0` and the last on `r1`
+ * (the hand-off's line x, cv-kit-code4.js `XS`), as a Band whose step is the distance
+ * between neighbours; a lone point sits in the middle.
+ */
+export function pointScale(count: number, r0: number, r1: number): Band {
+  const n = Math.max(1, count);
+  const step = n > 1 ? (r1 - r0) / (n - 1) : r1 - r0;
+  const center = (i: number) => (n > 1 ? r0 + step * i : (r0 + r1) / 2);
+  return { position: (i: number) => center(i) - step / 2, center, bandWidth: step, step };
+}
+
 // --- ticks --------------------------------------------------------------------
 
 export interface Ticks {

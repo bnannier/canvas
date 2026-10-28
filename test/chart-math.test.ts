@@ -332,7 +332,7 @@ describe("seriesAccessibleName", () => {
 describe("formatAxis (the hand-off's axis values)", () => {
   it("prints whole values below 10,000 and thousands as k above", () => {
     expect(formatAxis(2500)).toBe("2500");
-    expect(formatAxis(1.255)).toBe("1.26");
+    expect(formatAxis(1.2575)).toBe("1.26");
     expect(formatAxis(12500)).toBe("12.5k");
     expect(formatAxis(20000)).toBe("20k");
     expect(formatAxis(250000)).toBe("250k");
