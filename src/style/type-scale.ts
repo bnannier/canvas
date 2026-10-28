@@ -7,30 +7,67 @@ import type { TextStyle } from "react-native";
 //
 // Two conversions from the source, as for the legacy table below. Tracking goes from em to
 // px at the style's size, and every line height is the size times the hand-off's ratio
-// rounded UP to a whole pixel, because Android ceils a line height to whole pixels. The
+// to a hundredth of a pixel, the browser's own value. Android needs no rounding here: its
+// line-height span ceils the height in physical pixels itself (CustomLineHeightSpan). The
 // face is the skin's choice (the web sets the titles in the display face), so no entry
 // names a family; `mono`, `eyebrow` and `tag` are set in the mono face by the caller.
 // test/v4-type-scale.test.ts derives this table from the hand-off and fails on a hand edit.
 export const typeRoles = {
   display: { fontSize: 56, lineHeight: 56, fontWeight: "500", letterSpacing: -2.24 },
-  h1: { fontSize: 44, lineHeight: 47, fontWeight: "500", letterSpacing: -1.32 },
-  h2: { fontSize: 34, lineHeight: 38, fontWeight: "500", letterSpacing: -0.85 },
-  h3: { fontSize: 26, lineHeight: 30, fontWeight: "500", letterSpacing: -0.52 },
-  h4: { fontSize: 21, lineHeight: 26, fontWeight: "500", letterSpacing: -0.31 },
-  h5: { fontSize: 17, lineHeight: 23, fontWeight: "600" },
-  subheading: { fontSize: 17, lineHeight: 23, fontWeight: "500" },
-  lead: { fontSize: 19, lineHeight: 29, fontWeight: "400" },
-  body: { fontSize: 15, lineHeight: 24, fontWeight: "400" },
-  label: { fontSize: 13, lineHeight: 17, fontWeight: "500" },
-  small: { fontSize: 13, lineHeight: 20, fontWeight: "400" },
-  caption: { fontSize: 12, lineHeight: 18, fontWeight: "400" },
-  tiny: { fontSize: 11, lineHeight: 16, fontWeight: "400" },
-  mono: { fontSize: 13, lineHeight: 20, fontWeight: "400" },
+  h1: { fontSize: 44, lineHeight: 46.2, fontWeight: "500", letterSpacing: -1.32 },
+  h2: { fontSize: 34, lineHeight: 37.4, fontWeight: "500", letterSpacing: -0.85 },
+  h3: { fontSize: 26, lineHeight: 29.9, fontWeight: "500", letterSpacing: -0.52 },
+  h4: { fontSize: 21, lineHeight: 25.2, fontWeight: "500", letterSpacing: -0.31 },
+  h5: { fontSize: 17, lineHeight: 22.1, fontWeight: "600" },
+  subheading: { fontSize: 17, lineHeight: 22.1, fontWeight: "500" },
+  lead: { fontSize: 19, lineHeight: 28.5, fontWeight: "400" },
+  body: { fontSize: 15, lineHeight: 23.25, fontWeight: "400" },
+  label: { fontSize: 13, lineHeight: 16.9, fontWeight: "500" },
+  small: { fontSize: 13, lineHeight: 19.5, fontWeight: "400" },
+  caption: { fontSize: 12, lineHeight: 17.4, fontWeight: "400" },
+  tiny: { fontSize: 11, lineHeight: 15.95, fontWeight: "400" },
+  mono: { fontSize: 13, lineHeight: 19.5, fontWeight: "400" },
   eyebrow: { fontSize: 11, lineHeight: 11, fontWeight: "500", letterSpacing: 1.1, textTransform: "uppercase" },
   tag: { fontSize: 10, lineHeight: 10, fontWeight: "600" },
   statValue: { fontSize: 32, lineHeight: 32, fontWeight: "600", letterSpacing: -0.64 },
 } as const satisfies Record<string, TextStyle>;
 
+
+/**
+ * The hand-off's fluid headlines, which its pages set as `font: 500 clamp(min, N vw, max)/ratio`
+ * with an em tracking: the Library and Specimen hero (`clamp(56px, 7.2vw, 112px)/.94`,
+ * -.045em) and the component page title (`clamp(40px, 5vw, 64px)/1`, -.04em). `vw` is the
+ * share of the window width. Internal, not re-exported; test/v4-type-scale.test.ts reads
+ * each from the hand-off's pages.
+ */
+export interface FluidType {
+  min: number;
+  vw: number;
+  max: number;
+  ratio: number;
+  trackingEm: number;
+  fontWeight: "500";
+}
+export const fluidRoles = {
+  hero: { min: 56, vw: 0.072, max: 112, ratio: 0.94, trackingEm: -0.045, fontWeight: "500" },
+  pageTitle: { min: 40, vw: 0.05, max: 64, ratio: 1, trackingEm: -0.04, fontWeight: "500" },
+} as const satisfies Record<string, FluidType>;
+
+/**
+ * A fluid role's type at a window `width` (0 for an unknown window, which gives the
+ * minimum). The size is the clamp to a hundredth of a pixel; the line height is
+ * the size times the ratio to a hundredth of a pixel (Android ceils it in physical pixels) and the
+ * tracking the em value at the size.
+ */
+export function fluidType(spec: FluidType, width: number): TextStyle {
+  const fontSize = Math.max(spec.min, Math.min(spec.max, Math.round(spec.vw * width * 100) / 100));
+  return {
+    fontSize,
+    lineHeight: Math.round(fontSize * spec.ratio * 100) / 100,
+    fontWeight: spec.fontWeight,
+    letterSpacing: Math.round(spec.trackingEm * fontSize * 100) / 100,
+  };
+}
 
 // LEGACY: Dark Factory's named text styles, the table the surfaces not yet reskinned to
 // the v4 hand-off still read (audit/v4-redesign/PLAN.md, phase 4). Each surface moves to

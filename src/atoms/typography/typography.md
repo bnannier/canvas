@@ -21,13 +21,18 @@ They wrap along a shared baseline, preserving dense section anatomy. Pair it wit
 metadata metrics. Actions move to the far edge and wrap below on narrow surfaces.
 
 `level={1..6}` sets the heading level assistive tech hears without changing the
-look. A heading role exposes its own level (`display` and `h1` at 1, `h2` to `h5` at
+look. A heading role exposes its own level (`hero`, `pageTitle`, `display` and `h1` at 1, `h2` to `h5` at
 2 to 5, a `section` heading 6), so `<Typography h3 level={2}>` draws the h3 size
 and is announced as a level-2 heading: a real `<h2>` on the web, the header trait
 natively. On a non-heading role `level` makes the text a heading at that level.
 `href` still wins: a link is never a heading. The level is a number because it is
 the document outline, not a style (the same reason Row's `span` is one); the look
 stays on the boolean role axis.
+
+`hero` and `pageTitle` are the two fluid headlines, sized by the window rather than a
+fixed step: `hero` is the landing headline (56 to 112 px at 7.2 percent of the window,
+a .94 line, tracked -.045em) and `pageTitle` a page's own title (40 to 64 px at 5
+percent, a 1.0 line, tracked -.04em). Both are medium-weight display face.
 
 ## Usage
 
@@ -36,6 +41,18 @@ stays on the boolean role axis.
 ```
 
 ## Variants
+
+### Hero
+
+```tsx
+<Typography hero>Made of light.</Typography>
+```
+
+### Page title
+
+```tsx
+<Typography pageTitle>Button</Typography>
+```
 
 ### Display
 

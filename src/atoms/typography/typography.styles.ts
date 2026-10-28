@@ -1,8 +1,8 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type TextStyle } from "react-native";
-import { alpha, type ColorTokens } from "../../style/index.js";
-import { typeRoles } from "../../style/type-scale.js";
+import { type ColorTokens } from "../../style/index.js";
+import { fluidRoles, fluidType, typeRoles } from "../../style/type-scale.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type TypographySkin } from "./typography.shared.js";
@@ -33,6 +33,8 @@ export type Role =
   | "metricValue"
   | "formValue"
 
+  | "hero"
+  | "pageTitle"
   | "display"
   | "h1"
   | "h2"
@@ -65,12 +67,18 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     micro: { ...typeRoles.tiny, fontWeight: "500" },
     tag: typeRoles.tag,
     eyebrow: typeRoles.eyebrow,
-    eyebrowLg: typeRoles.eyebrow,
+    // The hand-off's hero eyebrow (its Library page): the eyebrow a step up, 500 12px/1 mono
+    // tracked .1em.
+    eyebrowLg: { ...typeRoles.eyebrow, fontSize: 12, lineHeight: 12, letterSpacing: 1.2 },
     stageLabel: typeRoles.eyebrow,
     statValue: d(typeRoles.statValue),
     metricValue: d(typeRoles.h4),
     formValue: { ...typeRoles.body, fontWeight: "500" },
 
+    // The fluid headlines at their minimum; the shell sizes them by the window
+    // (fluidRoles in src/style/type-scale.ts).
+    hero: d(fluidType(fluidRoles.hero, 0)),
+    pageTitle: d(fluidType(fluidRoles.pageTitle, 0)),
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -145,10 +153,13 @@ export type Tone = "muted" | "subtle" | "primary" | "destructive" | "success" | 
 
 export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
   switch (tone) {
+    // The hand-off's Typography has one dimmed tone, `muted`, in its third ink (`--tx3`);
+    // `subtle` is the second ink (`--tx2`) its pages give secondary copy (a hero's lead and
+    // eyebrow).
     case "muted":
-      return { color: tokens["muted-foreground"] };
+      return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
     case "subtle":
-      return { color: alpha(tokens.foreground, 0.6) };
+      return { color: tokens["muted-foreground"] };
     case "primary":
       return { color: primaryText(tokens) };
     case "destructive":

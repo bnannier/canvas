@@ -213,8 +213,8 @@ const ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyCont
 
 // --- the hand-off's metrics ---------------------------------------------------------
 
-// A size's height, side padding and label type. The height is the border box: two 1px
-// borders, the label line, and the vertical padding that centres it.
+// A size's height, side padding and label type. The height is the border box, its two 1px
+// borders included, with the label centred in it.
 interface Metrics { height: number; padX: number; type: TextStyle }
 
 const FS = (fontSize: number, lineHeight: number): TextStyle => ({ fontSize, lineHeight });
@@ -237,7 +237,6 @@ const IOS_CONTROL: Record<Size, Metrics> = {
 };
 
 const BORDER = 1;
-const padY = (m: Metrics) => (m.height - 2 * BORDER - (m.type.lineHeight as number)) / 2;
 
 // The utility icon boxes (`compactIcon`, `mediumIcon`, `largeIcon`).
 const UTILITY_BOX = { compact: 28, medium: 32, large: 34 } as const;
@@ -333,7 +332,10 @@ function controlContainer(t: ColorTokens, intent: Intent, size: Size, o: ButtonS
     ...(o.icon
       ? sq(metrics.height)
       : intent === "link" ? { paddingHorizontal: 2, paddingVertical: 0 }
-      : { paddingVertical: padY(metrics), paddingHorizontal: metrics.padX }),
+      // The hand-off's fixed height (`K.btn`, `height: 48px`), the border box: an icon taller
+      // than the label line (a 24 px arrow beside a 22 px line) centres in it rather than
+      // growing the button.
+      : { height: metrics.height, paddingVertical: 0, paddingHorizontal: metrics.padX }),
     backgroundColor: look.fill,
     borderWidth: intent === "link" ? 0 : BORDER,
     borderColor: look.border,

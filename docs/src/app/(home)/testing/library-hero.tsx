@@ -3,7 +3,7 @@ import { ButtonGroup, Column, Row, Typography, useTheme } from "@nannier/canvas"
 import { Page } from "../../../ui/page";
 import { useDocsTheme } from "../../../theme/docs-theme";
 import { LibraryHero } from "../../../shell/home";
-import { AURORA, COLLAGE, DISPLAY_TYPE, baselineOffset } from "../../../brand/library-hero-look";
+import { AURORA, COLLAGE, baselineOffset, heroType } from "../../../brand/library-hero-look";
 
 // The Library hero's harness (the tuning-harness inner loop for the `v4-library-hero` card):
 // the shipped hero itself (`LibraryHero`, the docs home's), under drivers for the scheme,
@@ -26,7 +26,7 @@ export default function LibraryHeroFixture() {
           <ButtonGroup segmented small accessibilityLabel="Palette" items={PALETTES.map((p) => p[0]!.toUpperCase() + p.slice(1))} active={PALETTES.indexOf(palette)} onSelect={(i) => setPalette(PALETTES[i]!)} testID="library-hero-palette" />
         </Row>
         <Typography small testID="library-hero-readout">
-          Window {width}; {scheme}, {surface}, {palette}. Sweep {tokens["featured-start"]} / {tokens["featured-middle"]} / {tokens["featured-end"]}; aurora layer {dark ? AURORA.opacity.dark : AURORA.opacity.light}; headline {DISPLAY_TYPE.fontSize} px, baseline {baselineOffset(DISPLAY_TYPE.fontSize, DISPLAY_TYPE.lineHeight).toFixed(2)}; collage {COLLAGE.height} px, perspective {COLLAGE.perspective}, rotate {COLLAGE.rotate.join(" / ")}
+          Window {width}; {scheme}, {surface}, {palette}. Sweep {tokens["featured-start"]} / {tokens["featured-middle"]} / {tokens["featured-end"]}; aurora layer {dark ? AURORA.opacity.dark : AURORA.opacity.light}; headline {heroType(width).fontSize} px, baseline {baselineOffset(heroType(width).fontSize, heroType(width).lineHeight).toFixed(2)}; collage {COLLAGE.height} px, perspective {COLLAGE.perspective}, rotate {COLLAGE.rotate.join(" / ")}
         </Typography>
       </Column>
       <LibraryHero />

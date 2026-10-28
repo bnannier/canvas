@@ -127,16 +127,16 @@ export function LibraryHero() {
   const { headline, primary, secondary } = LIBRARY_HERO;
   return (
     <AuroraFrame testID="library-hero">
-      <Grid minTileWidth={HERO_GRID.minTileWidth} columns={2} chapter>
+      <Grid minTileWidth={HERO_GRID.minTileWidth} columns={2} broad>
         <Column panel center fill>
           <Row snug alignCenter>
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               <Badge signal info />
             </View>
-            <Typography eyebrow subtle>{LIBRARY_HERO.eyebrow(VERSION)}</Typography>
+            <Typography eyebrowLg subtle>{LIBRARY_HERO.eyebrow(VERSION)}</Typography>
           </Row>
-          <Typography display accessibilityLabel={LIBRARY_HEADLINE}>
-            {`${headline.plain}\n`}
+          <Typography hero accessibilityLabel={LIBRARY_HEADLINE}>
+            {`${headline.plain} `}
             <GradientText testID="library-headline-accent">{headline.accent}</GradientText>
           </Typography>
           <Container xxl start>
@@ -160,8 +160,8 @@ export function LibraryHero() {
               {secondary.label}
             </Button>
           </Row>
-          <Row loose wrap rowsComfortable>
-            {heroStats(COMPONENTS.length).map((stat) => <Typography key={stat} caption mono subtle>{stat}</Typography>)}
+          <Row loose wrap rowsSnug>
+            {heroStats(COMPONENTS.length).map((stat) => <Typography key={stat} caption mono muted singleLeading>{stat}</Typography>)}
           </Row>
         </Column>
         <HeroCollage testID="library-collage" panels={CollagePanels()} />

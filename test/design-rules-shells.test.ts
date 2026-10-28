@@ -137,8 +137,9 @@ describe("viewport reads", () => {
     "src/organisms/sidebar/sidebar.shared.tsx": "the Sidebar becomes a drawer over the WINDOW at its drawer breakpoint",
     "src/organisms/filter-panel/filter-panel.shared.tsx": "the FilterPanel becomes a drawer over the WINDOW at its drawer breakpoint",
     "src/organisms/dialog/dialog.shared.tsx": "a workspace dialog sizes its window-level chrome to the safe-area-bounded viewport",
+    "src/atoms/typography/typography.shared.tsx": "the hand-off's fluid headlines (`hero`, `pageTitle`) are sized in vw, a share of the window, as its pages' `clamp(min, N vw, max)` sets them",
   };
-  const VIEWPORT = /\b(useBreakpoint|useResponsive|useFormFactor|useWindowDimensions)\s*\(|\bDimensions\.(get|addEventListener)\b/;
+  const VIEWPORT = /\b(useBreakpoint|useResponsive|useFormFactor|useViewportWidth|useWindowDimensions)\s*\(|\bDimensions\.(get|addEventListener)\b/;
 
   it("happen only in the modules listed here", () => {
     const found = new Set<string>();
@@ -146,7 +147,7 @@ describe("viewport reads", () => {
     for (const file of walk(SRC).filter((f) => /\.tsx?$/.test(f))) {
       const rel = relative(ROOT, file);
       for (const { line, n } of codeLines(readFileSync(file, "utf8"))) {
-        if (!VIEWPORT.test(line) || /\bfunction (useBreakpoint|useResponsive|useFormFactor)\b/.test(line)) continue;
+        if (!VIEWPORT.test(line) || /\bfunction (useBreakpoint|useResponsive|useFormFactor|useViewportWidth)\b/.test(line)) continue;
         found.add(rel);
         if (!(rel in WINDOW_READERS)) offenders.push(`${rel}:${n} ${line.trim()}`);
       }

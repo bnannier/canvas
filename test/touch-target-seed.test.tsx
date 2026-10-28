@@ -96,14 +96,18 @@ describe("the seed each control takes from its skin", () => {
     const spy = spyOn(PixelRatio, "getFontScale").mockReturnValue(0.85);
     try {
       expect(leastLine(20)).toBeCloseTo(17);
-      // A small Android text Button with its label at 85%: 10dp of padding and border around
-      // a 17dp line renders 27dp tall and measures 10.5dp of slop, which the seed must reach.
+      // A padded box around a label line at 85%: 10dp of padding and border around a 17dp
+      // line renders 27dp tall, and the seed reaches the slop that measures.
+      const padded = { paddingVertical: 4, borderTopWidth: 1, borderBottomWidth: 1 };
+      const box = styleBox(padded, 20);
+      expect(box.height).toBeCloseTo(27);
+      expect(seedSlop(ANDROID, box)!.top!).toBeGreaterThanOrEqual(minTargetSlop(ANDROID, 60, 27)!.top!);
+      // A small Android text Button has the hand-off's fixed 32dp height, so its label's
+      // scale does not move its box.
       const container = buttonAndroid.container(t, "primary", "small", opts);
       const line = buttonAndroid.label(t, "primary", "small", opts).lineHeight!;
-      const box = styleBox(container, line);
-      const rendered = styleBox(container).height! + line * 0.85;
-      expect(box.height).toBeCloseTo(rendered);
-      expect(seedSlop(ANDROID, box)!.top!).toBeGreaterThanOrEqual(minTargetSlop(ANDROID, 60, rendered)!.top!);
+      expect(styleBox(container, line).height).toBe(32);
+      expect(seedSlop(ANDROID, styleBox(container, line))!.top!).toBeGreaterThanOrEqual(minTargetSlop(ANDROID, 60, 32)!.top!);
     } finally {
       spy.mockRestore();
     }
@@ -216,12 +220,12 @@ describe("the kit's controls carry their slop before the first layout", () => {
     ["a tappable Android Chip", "../src/atoms/chip/chip.android.tsx", "Chip", { onPress: noop, children: "Tag" }, null],
     ["a tappable, removable Android Chip", "../src/atoms/chip/chip.android.tsx", "Chip", { onPress: noop, onRemove: noop, children: "Tag" }, null],
   ];
-  it("a Button with no label seeds from its padding alone: a lone 16dp glyph is shorter than a label line", async () => {
+  it("a Button with no label seeds from its fixed height: a lone 16dp glyph does not shrink it", async () => {
     const Button = await load("../src/atoms/button/button.android.tsx", "Button");
     renderAndLayout(<Button small onPress={noop} accessibilityLabel="Add" iconLeft={<Glyph />} />, null, null);
     const button = [...records.values()].find((r) => r.kind === "pressable" && r.props.accessibilityLabel === "Add");
-    // 6dp of padding above and below a 16dp glyph is 28dp, which measures 10dp of slop a side.
-    const measured = minTargetSlop(ANDROID, 60, 28)!;
+    // The small button's fixed 32dp height holds a lone 16dp glyph, and measures 8dp of slop a side.
+    const measured = minTargetSlop(ANDROID, 60, 32)!;
     expect((button?.props.hitSlop as Insets | undefined)?.top ?? 0).toBeGreaterThanOrEqual(measured.top!);
   });
 

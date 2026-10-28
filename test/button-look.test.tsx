@@ -27,6 +27,7 @@ const look = (intent: Intent, size: Size = "base", disabled = false) => ({
 });
 const height = (skin: typeof webSkin, intent: Intent, size: Size) => {
   const box = skin.container(t, intent, size, opts());
+  if (typeof box.height === "number") return box.height;
   const label = skin.label(t, intent, size, opts());
   return 2 * (box.paddingVertical as number) + (label.lineHeight as number) + 2 * (box.borderWidth as number);
 };
