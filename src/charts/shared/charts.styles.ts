@@ -51,6 +51,8 @@ export const CHART_LOOK = {
   axisLine: 14,
   /** Gridlines: a dotted `2 4` hairline, the baseline (the 0 line) solid. */
   gridDash: "2,4",
+  /** The selection guide: a dashed `2 3` line in the muted ink. */
+  guideDash: "2,3",
   /** The first series' line is 2.2 wide, every other 2. */
   leadStroke: 2.2,
   stroke: 2,

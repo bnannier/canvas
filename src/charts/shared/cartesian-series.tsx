@@ -176,6 +176,7 @@ export function chartShell(
           // The hand-off's chart proportion at every density (its compact only tightens the frame).
           plotHeight={PLOT_HEIGHT.default}
           aspect
+          xPoints
           compact={compact}
           hideGrid={props.hideGrid}
           hideAxes={props.hideAxes}
