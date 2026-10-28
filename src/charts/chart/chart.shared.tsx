@@ -75,6 +75,8 @@ export interface ChartProps {
   horizontal?: boolean;
   // Density (default is the standard plot size).
   compact?: boolean;
+  /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
+  plain?: boolean;
   /** Hide the series legend (grouped mode shows one by default). */
   hideLegend?: boolean;
   /** Press-to-inspect: the selected category index (controlled). Pass null for none. Vertical charts only. */
@@ -246,13 +248,13 @@ export function createChart(skin: ChartSkin) {
         aria-label={chartName}
         testID={testID}
         style={[
-          paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass ? <GlassPane layer="content" shape={surfaceShape} /> : null}
+        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

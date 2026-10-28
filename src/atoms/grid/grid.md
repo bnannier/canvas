@@ -23,7 +23,7 @@ banner and lifted-card shadows above adjacent cells. `rowsCozy` and `rowsSection
 set the vertical rhythm to 12 or 26 independently of the horizontal gap.
 
 The shared gap scale also includes `comfortable` (10), `roomy` (14), `generous`
-(22) and `panel` (28), preserving the original application layout measurements,
+(22), `panel` (28) and `apart` (32), preserving the original application layout measurements,
 and Row and Column's widest step, `chapter` (64), which wins over every other step.
 
 ## Usage

@@ -54,6 +54,8 @@ export interface GridProps {
   section?: boolean; // 26
   panel?: boolean; // 28
   page?: boolean; // 30
+  /** The step between side-by-side panels of one composition (32). */
+  apart?: boolean; // 32
   /** The widest gap step (64), between a page's chapters; wins over every other step. */
   chapter?: boolean; // 64
 
