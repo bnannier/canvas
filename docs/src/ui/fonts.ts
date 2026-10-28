@@ -1,22 +1,24 @@
 import { Platform } from "react-native";
 import { FontDisplay, useFonts } from "expo-font";
 import type { ThemeFonts } from "@nannier/canvas";
+import { DISPLAY, DISPLAY_FILES } from "./display-faces";
 
 // The nine faces, cut down to the glyphs the docs can show by scripts/subset-fonts.mjs
 // from the full files the @expo-google-fonts packages carry (those packages are dev
-// dependencies now, the subsetter's input). Every face is on the first paint's
-// critical path, since each pre-rendered page preloads them all, and the full files
-// held Greek, Cyrillic and Vietnamese the docs never render: the subsets are about
-// 297 KB over the wire for all nine against 405 KB. The v4 type scale needs nine where
-// Manrope and Geist Mono took seven (166 KB): Instrument Sans at 400 to 700 (the 700 is
-// the `bold` weight prop's), Bricolage Grotesque at the display roles' 500 and 600, and
-// JetBrains Mono at 400, 500 (the eyebrow) and 600.
+// dependencies now, the subsetter's input), and the display face from Google Fonts'
+// variable Bricolage Grotesque. Every face is on the first paint's critical path, since
+// each pre-rendered page preloads them all, and the full files held Greek, Cyrillic and
+// Vietnamese the docs never render: the subsets are about 350 KB over the wire for all
+// nine, 132 KB of it the two display files, which keep the optical-size axis the
+// hand-off's titles are drawn with. The v4 type scale needs nine where Manrope and Geist
+// Mono took seven (166 KB): Instrument Sans at 400 to 700 (the 700 is the `bold` weight
+// prop's), Bricolage Grotesque at the display roles' 500 and 600 (./display-faces.ts, as
+// pinned optical cuts on iOS and Android), and JetBrains Mono at 400, 500 (the eyebrow)
+// and 600.
 const InstrumentSans_400Regular = require("../../assets/fonts/InstrumentSans_400Regular.ttf");
 const InstrumentSans_500Medium = require("../../assets/fonts/InstrumentSans_500Medium.ttf");
 const InstrumentSans_600SemiBold = require("../../assets/fonts/InstrumentSans_600SemiBold.ttf");
 const InstrumentSans_700Bold = require("../../assets/fonts/InstrumentSans_700Bold.ttf");
-const BricolageGrotesque_500Medium = require("../../assets/fonts/BricolageGrotesque_500Medium.ttf");
-const BricolageGrotesque_600SemiBold = require("../../assets/fonts/BricolageGrotesque_600SemiBold.ttf");
 const JetBrainsMono_400Regular = require("../../assets/fonts/JetBrainsMono_400Regular.ttf");
 const JetBrainsMono_500Medium = require("../../assets/fonts/JetBrainsMono_500Medium.ttf");
 const JetBrainsMono_600SemiBold = require("../../assets/fonts/JetBrainsMono_600SemiBold.ttf");
@@ -68,8 +70,7 @@ export function useDocsFonts(): [boolean, Error | null] {
     InstrumentSans_500Medium: swap(InstrumentSans_500Medium),
     InstrumentSans_600SemiBold: swap(InstrumentSans_600SemiBold),
     InstrumentSans_700Bold: swap(InstrumentSans_700Bold),
-    BricolageGrotesque_500Medium: swap(BricolageGrotesque_500Medium),
-    BricolageGrotesque_600SemiBold: swap(BricolageGrotesque_600SemiBold),
+    ...Object.fromEntries(Object.entries(DISPLAY_FILES).map(([name, file]) => [name, swap(file)])),
     JetBrainsMono_400Regular: swap(JetBrainsMono_400Regular),
     JetBrainsMono_500Medium: swap(JetBrainsMono_500Medium),
     JetBrainsMono_600SemiBold: swap(JetBrainsMono_600SemiBold),
@@ -78,7 +79,6 @@ export function useDocsFonts(): [boolean, Error | null] {
 }
 
 export type SansWeight = "400" | "500" | "600" | "700";
-export type DisplayWeight = "500" | "600";
 export type MonoWeight = "400" | "500" | "600";
 
 const SANS: Record<SansWeight, string> = {
@@ -86,10 +86,6 @@ const SANS: Record<SansWeight, string> = {
   "500": "InstrumentSans_500Medium",
   "600": "InstrumentSans_600SemiBold",
   "700": "InstrumentSans_700Bold",
-};
-const DISPLAY: Record<DisplayWeight, string> = {
-  "500": "BricolageGrotesque_500Medium",
-  "600": "BricolageGrotesque_600SemiBold",
 };
 const MONO: Record<MonoWeight, string> = {
   "400": "JetBrainsMono_400Regular",

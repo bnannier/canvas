@@ -18,12 +18,23 @@
 //   already encodes the weight, so the resolver picks the nearest registered face
 //   and DROPS `fontWeight`: on iOS a weight on a single-weight family falls back
 //   to the system face, and on the web the browser would synthesize a fake bold.
+//   A weight may map to optical cuts instead of one face (`OpticalFaces`); the resolver
+//   then takes the cut whose optical size is nearest the style's fontSize.
 
 /** The RN string weights a style can carry. */
 export type FontWeightKey = "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900";
 
-/** A registered typeface: one family for every weight, or a face per weight. */
-export type FontFaces = string | Partial<Record<FontWeightKey, string>>;
+/**
+ * A weight cut at fixed optical sizes: each `opsz` value (in px, as the font's axis counts
+ * it) to the family registered for that cut. For a display face with an optical-size axis
+ * on a platform that cannot set the axis by size: the browser does (`font-optical-sizing:
+ * auto`), iOS and Android draw a variable font at its default size, so an app registers
+ * pinned cuts there and the kit picks the one nearest the text's size.
+ */
+export type OpticalFaces = Partial<Record<number, string>>;
+
+/** A registered typeface: one family for every weight, or a face (or optical cuts) per weight. */
+export type FontFaces = string | Partial<Record<FontWeightKey, string | OpticalFaces>>;
 
 /** The families an app hands to the ThemeProvider. All optional: a missing face keeps the system default. */
 export interface ThemeFonts {
@@ -74,20 +85,45 @@ export interface ResolvedFace {
  * semibold request on a {400, 500, 700} registration reads as emphasis, not body).
  * Returns null when nothing was registered, so callers leave the style untouched.
  */
-export function resolveFontFace(faces: FontFaces | undefined, weight: string | number | undefined): ResolvedFace | null {
+export function resolveFontFace(
+  faces: FontFaces | undefined,
+  weight: string | number | undefined,
+  fontSize?: number,
+): ResolvedFace | null {
   if (!faces) return null;
   if (typeof faces === "string") return { fontFamily: faces, dropWeight: false };
   const target = parseInt(weightKey(weight), 10);
-  let fontFamily: string | undefined;
+  let face: string | OpticalFaces | undefined;
   let bestDistance = Infinity;
   for (const [key, family] of Object.entries(faces)) {
     const w = parseInt(key, 10);
     const distance = Math.abs(w - target);
     // On a tie the heavier face wins (keys iterate ascending, so it comes second).
     if (family && (distance < bestDistance || (distance === bestDistance && w > target))) {
+      face = family;
+      bestDistance = distance;
+    }
+  }
+  const fontFamily = typeof face === "string" ? face : face ? opticalCut(face, fontSize ?? DEFAULT_FONT_SIZE) : undefined;
+  return fontFamily ? { fontFamily, dropWeight: true } : null;
+}
+
+/** React Native's text size when a style names none. */
+const DEFAULT_FONT_SIZE = 14;
+
+/**
+ * The optical cut for a font size: the registered optical size nearest it, as the browser's
+ * automatic optical sizing sets the axis to the size in px (on a tie the larger cut wins).
+ */
+function opticalCut(cuts: OpticalFaces, fontSize: number): string | undefined {
+  let fontFamily: string | undefined;
+  let bestDistance = Infinity;
+  for (const [key, family] of Object.entries(cuts)) {
+    const distance = Math.abs(Number(key) - fontSize);
+    if (family && (distance < bestDistance || (distance === bestDistance && Number(key) > fontSize))) {
       fontFamily = family;
       bestDistance = distance;
     }
   }
-  return fontFamily ? { fontFamily, dropWeight: true } : null;
+  return fontFamily;
 }

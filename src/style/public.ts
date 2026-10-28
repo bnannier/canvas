@@ -67,6 +67,7 @@ export { alpha, channelsOf, composite, contrastRatio, inkOn, mixOklab, relativeL
 export {
   type FontFaces,
   type FontWeightKey,
+  type OpticalFaces,
   type ThemeFonts,
   typeface,
 } from "./fonts.js";

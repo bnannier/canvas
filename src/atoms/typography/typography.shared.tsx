@@ -4,7 +4,7 @@ import { identityTextInk } from "../../style/identity-text.js";
 import { useViewportWidth } from "../../style/responsive.js";
 import { fluidRoles, fluidType } from "../../style/type-scale.js";
 import { type ReactNode } from "react";
-import { type AccessibilityRole, type GestureResponderEvent } from "react-native";
+import { type AccessibilityRole, type GestureResponderEvent, type TextLayoutEventData, type NativeSyntheticEvent } from "react-native";
 import { View, Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill, tabularNums } from "../../style/index.js";
 import {
   type Role,
@@ -92,6 +92,13 @@ export interface TypographyProps {
   right?: boolean;
   center?: boolean;
   numberOfLines?: number;
+  /**
+   * The text's laid-out lines, as React Native reports them (each line's `y`, `height`,
+   * `ascender` and `descender`, so its baseline is `y + height - descender`): for drawing
+   * something on the text's own lines, such as an illustration over a word. Fired by the
+   * native platforms; the web does not report it.
+   */
+  onTextLayout?: (event: NativeSyntheticEvent<TextLayoutEventData>) => void;
   accessibilityRole?: AccessibilityRole;
   accessibilityLabel?: string;
   /**
@@ -412,6 +419,7 @@ export function createTypography(skin: TypographySkin) {
         testID={testID}
         onPress={props.onPress}
         numberOfLines={props.numberOfLines}
+        onTextLayout={props.onTextLayout}
         ellipsizeMode="tail"
         accessibilityLabel={props.accessibilityLabel}
         accessibilityRole={anchor ? "link" : props.accessibilityRole ?? (level ? "header" : undefined)}

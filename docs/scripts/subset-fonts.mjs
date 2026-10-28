@@ -25,18 +25,40 @@ const require = createRequire(import.meta.url);
 const DOCS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(DOCS, "assets", "fonts");
 
-// The faces docs/src/ui/fonts.ts registers, and the package file each comes from.
+// The display face is cut from Google Fonts' variable Bricolage Grotesque (committed under
+// assets/fonts/source with its OFL licence), not from the @expo-google-fonts statics: those
+// are frozen at one optical size, and the hand-off loads the variable font, whose `opsz`
+// axis the browser sets from the font size (`font-optical-sizing: auto`), so a 64 px title
+// draws its narrower display cut. Each weight is pinned (with the full width) and `opsz`
+// stays variable, so one file per weight keeps the optical sizes.
+const BRICOLAGE = path.join(DOCS, "assets", "fonts", "source", "BricolageGrotesque[opsz,wdth,wght].ttf");
+
+// The faces docs/src/ui/fonts.ts registers, the file each comes from (a package path, or
+// a committed source file), and the variation axes pinned in it.
 const FACES = [
   ["InstrumentSans_400Regular", "@expo-google-fonts/instrument-sans/400Regular/InstrumentSans_400Regular.ttf"],
   ["InstrumentSans_500Medium", "@expo-google-fonts/instrument-sans/500Medium/InstrumentSans_500Medium.ttf"],
   ["InstrumentSans_600SemiBold", "@expo-google-fonts/instrument-sans/600SemiBold/InstrumentSans_600SemiBold.ttf"],
   ["InstrumentSans_700Bold", "@expo-google-fonts/instrument-sans/700Bold/InstrumentSans_700Bold.ttf"],
-  ["BricolageGrotesque_500Medium", "@expo-google-fonts/bricolage-grotesque/500Medium/BricolageGrotesque_500Medium.ttf"],
-  ["BricolageGrotesque_600SemiBold", "@expo-google-fonts/bricolage-grotesque/600SemiBold/BricolageGrotesque_600SemiBold.ttf"],
+  ["BricolageGrotesque_500Medium", BRICOLAGE, { wght: 500, wdth: 100 }],
+  ["BricolageGrotesque_600SemiBold", BRICOLAGE, { wght: 600, wdth: 100 }],
   ["JetBrainsMono_400Regular", "@expo-google-fonts/jetbrains-mono/400Regular/JetBrainsMono_400Regular.ttf"],
   ["JetBrainsMono_500Medium", "@expo-google-fonts/jetbrains-mono/500Medium/JetBrainsMono_500Medium.ttf"],
   ["JetBrainsMono_600SemiBold", "@expo-google-fonts/jetbrains-mono/600SemiBold/JetBrainsMono_600SemiBold.ttf"],
 ];
+
+// The native display cuts docs/src/ui/display-faces.native.ts registers. iOS and Android draw
+// a variable font at its default optical size (96), never at the text's size, so each weight
+// is also cut with `opsz` pinned at the sizes the display roles set (h5 17, the card title
+// 22, the section title 28, h2 34, h1 44, display 56, the larger hero and title sizes 72,
+// and the 96 the axis ends at); the kit's font resolver picks the cut nearest the text's
+// size. The web never loads these.
+export const OPTICAL_SIZES = [17, 22, 28, 34, 44, 56, 72, 96];
+for (const [weight, name] of [[500, "500Medium"], [600, "600SemiBold"]]) {
+  for (const opsz of OPTICAL_SIZES) {
+    FACES.push([`BricolageGrotesque_${name}_opsz${opsz}`, BRICOLAGE, { wght: weight, wdth: 100, opsz }]);
+  }
+}
 
 // What the docs can show: Latin with the Western European accents and the extended
 // set (Latin Extended-A covers the Central European and Turkish letters), the general
@@ -79,11 +101,68 @@ const text = RANGES.map(([from, to]) => {
   return out;
 }).join("");
 
+// The name records that identify a face (family, subfamily, unique id, full name, PostScript
+// name, the typographic family and subfamily, the variation prefixes) and are rewritten per
+// cut; the copyright, licence and the variation instance names stay.
+const IDENTITY = new Set([1, 2, 3, 4, 6, 16, 17, 21, 22, 25]);
+
+// Give a cut its registered name as its own family and PostScript name. Every face cut from
+// the variable Bricolage file keeps that file's default-instance names
+// ("BricolageGrotesque-96ptExtraBold"), and iOS registers a font by its PostScript name, so
+// a second face with the same name is refused and its alias draws the first one. The new
+// `name` table is appended (tables may sit in any order) and the directory entry and the
+// `head` checksum adjustment are rewritten. The licence has no reserved font name.
+function renameFace(font, family) {
+  const tableCount = font.readUInt16BE(4);
+  const entry = (tag) => {
+    for (let i = 0; i < tableCount; i++) if (font.toString("latin1", 12 + i * 16, 16 + i * 16) === tag) return 12 + i * 16;
+    throw new Error(`no ${tag} table`);
+  };
+  const nameAt = font.readUInt32BE(entry("name") + 8);
+  const strings = nameAt + font.readUInt16BE(nameAt + 4);
+  const records = [];
+  for (let i = 0; i < font.readUInt16BE(nameAt + 2); i++) {
+    const at = nameAt + 6 + i * 12;
+    const [platform, encoding, language, id, length, offset] = [0, 2, 4, 6, 8, 10].map((k) => font.readUInt16BE(at + k));
+    if (!IDENTITY.has(id)) records.push({ platform, encoding, language, id, bytes: font.subarray(strings + offset, strings + offset + length) });
+  }
+  for (const [id, value] of [[1, family], [2, "Regular"], [3, family], [4, family], [6, family]]) {
+    records.push({ platform: 3, encoding: 1, language: 0x409, id, bytes: Buffer.from(value, "utf16le").swap16() });
+  }
+  records.sort((a, b) => a.platform - b.platform || a.encoding - b.encoding || a.language - b.language || a.id - b.id);
+  const header = 6 + records.length * 12;
+  const table = Buffer.alloc(header + records.reduce((sum, r) => sum + r.bytes.length, 0));
+  table.writeUInt16BE(records.length, 2);
+  table.writeUInt16BE(header, 4);
+  let offset = 0;
+  records.forEach((r, i) => {
+    const at = 6 + i * 12;
+    [r.platform, r.encoding, r.language, r.id, r.bytes.length, offset].forEach((v, k) => table.writeUInt16BE(v, at + k * 2));
+    r.bytes.copy(table, header + offset);
+    offset += r.bytes.length;
+  });
+  const out = Buffer.concat([font, Buffer.alloc((4 - (font.length % 4)) % 4), table, Buffer.alloc((4 - (table.length % 4)) % 4)]);
+  const checksum = (buf, from, length) => {
+    let sum = 0;
+    for (let i = from; i < from + length; i += 4) sum = (sum + (i + 4 <= buf.length ? buf.readUInt32BE(i) : 0)) >>> 0;
+    return sum;
+  };
+  const name = entry("name");
+  const tableAt = out.length - table.length - ((4 - (table.length % 4)) % 4);
+  out.writeUInt32BE(checksum(out, tableAt, Math.ceil(table.length / 4) * 4), name + 4);
+  out.writeUInt32BE(tableAt, name + 8);
+  out.writeUInt32BE(table.length, name + 12);
+  const head = out.readUInt32BE(entry("head") + 8);
+  out.writeUInt32BE(0, head + 8);
+  out.writeUInt32BE((0xb1b0afba - checksum(out, 0, out.length)) >>> 0, head + 8);
+  return out;
+}
+
 fs.mkdirSync(OUT, { recursive: true });
-for (const [name, file] of FACES) {
-  const source = fs.readFileSync(require.resolve(file));
-  const subset = await subsetFont(source, text, { targetFormat: "truetype" });
+for (const [name, file, variationAxes] of FACES) {
+  const source = fs.readFileSync(path.isAbsolute(file) ? file : require.resolve(file));
+  const subset = await subsetFont(source, text, { targetFormat: "truetype", ...(variationAxes ? { variationAxes } : {}) });
   const target = path.join(OUT, `${name}.ttf`);
-  fs.writeFileSync(target, subset);
+  fs.writeFileSync(target, file === BRICOLAGE ? renameFace(Buffer.from(subset), name) : subset);
   console.log(`${name}: ${source.length} -> ${subset.length} bytes`);
 }

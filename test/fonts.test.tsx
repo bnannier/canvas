@@ -70,6 +70,19 @@ describe("resolveFontFace", () => {
     // 900 has only lighter neighbours.
     expect(resolveFontFace(FACES.sans, "900")?.fontFamily).toBe("InstrumentSans_800ExtraBold");
   });
+
+  it("takes the optical cut nearest the text's size, larger on a tie", () => {
+    const optical = { "500": { 17: "Display_17", 28: "Display_28", 96: "Display_96" }, "600": "Display_600" };
+    expect(resolveFontFace(optical, "500", 22)?.fontFamily).toBe("Display_17");
+    expect(resolveFontFace(optical, "500", 26)?.fontFamily).toBe("Display_28");
+    expect(resolveFontFace(optical, "500", 112)?.fontFamily).toBe("Display_96");
+    // 22.5 sits halfway between 17 and 28: the larger cut wins, as with weights.
+    expect(resolveFontFace(optical, "500", 22.5)?.fontFamily).toBe("Display_28");
+    // No size on the style is React Native's 14.
+    expect(resolveFontFace(optical, "500")?.fontFamily).toBe("Display_17");
+    // The weight is still resolved first; a plain face beside the map is unaffected.
+    expect(resolveFontFace(optical, "700", 40)).toEqual({ fontFamily: "Display_600", dropWeight: true });
+  });
 });
 
 describe("fontStyle", () => {
