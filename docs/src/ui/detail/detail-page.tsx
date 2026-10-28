@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { Redirect } from "expo-router";
+import { HeaderHeightContext } from "expo-router/react-navigation";
 import { View, Column, Alert, useTheme, ICON_NAMES } from "@nannier/canvas";
 import { DETAIL_SPECS } from "../../core/data/detail-specs";
 import type { ComponentDoc } from "../../core/data/types";
@@ -40,8 +41,11 @@ import { withIconTones, type SpecimenBase } from "./frame";
 /** Icon's glyph names, the props its glyph knob drives. */
 const GLYPHS = ICON_NAMES.map((name) => name.key);
 
-/** The scroll margin the jump strip leaves above a section (the hand-off's `scroll-margin-top`). */
+/** The scroll margin the jump strip leaves above a section (the hand-off's `scroll-margin-top`),
+ *  which clears the web's floating navbar. */
 const JUMP_MARGIN = 80;
+/** The room a native jump leaves between the stack header and the section. */
+const NATIVE_JUMP_MARGIN = 16;
 
 type SectionId = "playground" | "variants" | "sizes" | "states" | "anatomy" | "props" | "a11y" | "platforms" | "usage" | "tokens";
 
@@ -50,6 +54,7 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   const spec = DETAIL_SPECS[comp.slug];
   const { tokens } = useTheme();
   const scroller = usePageScroller();
+  const headerHeight = useContext(HeaderHeightContext);
   const examples = entry?.examples ?? [];
   const variantIdx = variant ? examples.findIndex((e) => variantSlug(e.label) === variant) : 0;
   const [selected, setSelected] = useState(() => (variantIdx < 0 ? 0 : variantIdx));
@@ -72,13 +77,24 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
     if (Platform.OS === "web") window.history.replaceState(window.history.state, "", hrefFor(i));
   };
 
-  // Brings a section to the top of the page scroller, below the floating navbar.
+  // Brings a section to the top of the page scroller, below the floating navbar (web) or
+  // the stack header (native). The native header's height comes from the navigator; the
+  // part of it that lies over the scroller (all of it on iOS, where the header is drawn
+  // over the content, none on Android, which lays the screen out below it) is the
+  // scroller's own top in the window subtracted from it, as the audit driver reads it.
   const jumpTo = (id: SectionId) => {
     const node = sections.current[id];
     const scroll = scroller?.current;
-    const content = scroll?.getInnerViewNode?.();
+    // The content view's instance, not its node handle: Fabric's measureLayout takes a
+    // ref to a native component, and react-native-web returns the same view. React
+    // Native's TypeScript declarations omit the method its ScrollView implements.
+    const content = (scroll as (typeof scroll & { getInnerViewRef?: () => View | null }) | undefined)?.getInnerViewRef?.();
     if (!node || !scroll || !content) return;
-    node.measureLayout(content as never, (_x, y) => scroll.scrollTo({ y: Math.max(0, y - JUMP_MARGIN), animated: true }), () => {});
+    node.measureLayout(content as never, (_x, y) => {
+      const go = (above: number) => scroll.scrollTo({ y: y - above, animated: true });
+      if (headerHeight === undefined) return go(JUMP_MARGIN);
+      scroll.getNativeScrollRef()?.measureInWindow((_fx, frameTop) => go(Math.max(0, headerHeight - frameTop) + NATIVE_JUMP_MARGIN));
+    }, () => {});
   };
 
   const name = componentName(spec, knobs);

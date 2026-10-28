@@ -28,6 +28,7 @@ import { Tabs as IOSTabs } from "../src/organisms/tabs/tabs.ios.tsx";
 import { DragDropProvider, DropZone, Draggable, DragHandle } from "../src/organisms/drag-drop/drag-drop.tsx";
 import { CodeBlock } from "../src/molecules/code-block/code-block.tsx";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
+import { mockInPageFrost } from "./fixtures/material-platform.ts";
 
 // The keyboard focus ring. The kit's Pressable hands the browser the palette's `ring`
 // colour and a 2 px offset, and the browser draws the ring on keyboard focus only. A
@@ -262,6 +263,9 @@ describe("the themed focus ring", () => {
   for (const glass of [false, true]) {
     it(`rings the Slider's knob on keyboard focus only${glass ? ", over the glass knob" : ""}`, () => {
       const restore = backdropFilter(true);
+      // The knob is in-page material, which the web keeps solid under glass (the v4
+      // hand-off): the glass knob is read where in-page surfaces frost.
+      const frost = glass ? mockInPageFrost() : null;
       try {
         render(<ThemeProvider light glass={glass} solid={!glass}><Slider testID="volume" accessibilityLabel="Volume" defaultValue={40} /></ThemeProvider>);
         const root = screen.getByTestId("volume");
@@ -282,7 +286,7 @@ describe("the themed focus ring", () => {
         expect(outline(knob, "width")).toBe("");
         // The root drops the browser's own outline, so the two never stack.
         expect(suppressed(root)).toBe(true);
-      } finally { restore(); }
+      } finally { restore(); frost?.mockRestore(); }
     });
   }
 

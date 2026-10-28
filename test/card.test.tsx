@@ -18,6 +18,7 @@ import {
 import * as cardStyles from "../src/molecules/card/card.styles.ts";
 import { shape, lightColors } from "../src/style/tokens.ts";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
+import { mockInPageFrost } from "./fixtures/material-platform.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -201,17 +202,26 @@ describe("CardMedia well", () => {
     expect(step({ tall: true, compact: true })).toEqual(["130px", "24px", "16px"]);
   });
 
-  it("is an ink tint, not an opaque patch, under glass", () => {
-    const { getByTestId } = render(
+  // The well is in-page: the web keeps its solid sunken fill under glass (the v4 hand-off),
+  // and a platform whose in-page surfaces frost lays it as an ink tint on the material.
+  it("is an ink tint, not an opaque patch, under glass where the card frosts", () => {
+    const well = () => (
       <ThemeProvider glass>
         <CardMedia testID="well">
           <Text>x</Text>
         </CardMedia>
-      </ThemeProvider>,
+      </ThemeProvider>
     );
-    const fill = getByTestId("well").style.backgroundColor;
-    expect(fill).toMatch(/^rgba\(/);
-    expect(fill.replace(/\s/g, "")).not.toBe(hexRgb(lightColors["surface-sunken"]!));
+    const web = render(well());
+    expect(web.getByTestId("well").style.backgroundColor.replace(/\s/g, "")).toBe(hexRgb(lightColors["surface-sunken"]!));
+    cleanup();
+    const frost = mockInPageFrost();
+    try {
+      const { getByTestId } = render(well());
+      const fill = getByTestId("well").style.backgroundColor;
+      expect(fill).toMatch(/^rgba\(/);
+      expect(fill.replace(/\s/g, "")).not.toBe(hexRgb(lightColors["surface-sunken"]!));
+    } finally { frost.mockRestore(); }
   });
 
   it("centers a hug child rather than pinning it to the start edge", () => {

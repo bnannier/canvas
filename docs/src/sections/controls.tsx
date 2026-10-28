@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PLATFORM_COPY } from "../data/platform-copy";
 import {
   Avatar,
   AvatarGroup,
@@ -211,7 +212,7 @@ function Identity() {
       <Column snug>
         <Row wrap snug>
           <Chip selectable defaultSelected>iOS</Chip>
-          <Chip selectable>Android</Chip>
+          <Chip selectable>{PLATFORM_COPY.samplePlatform}</Chip>
           <Chip selectable defaultSelected>Web</Chip>
         </Row>
         <Chip icon={<Avatar tiny src={photo("/noor-park.jpg")} name="Noor Park" />} onRemove={() => {}}>Noor Park</Chip>
@@ -248,7 +249,7 @@ function Identity() {
       <Row wrap cozy alignCenter>
         <BadgeGroup>
           <Badge secondary>iOS</Badge>
-          <Badge secondary>Android</Badge>
+          <Badge secondary>{PLATFORM_COPY.samplePlatform}</Badge>
           <Badge secondary>Web</Badge>
         </BadgeGroup>
         <Typography caption mono subtle>BadgeGroup</Typography>

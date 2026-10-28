@@ -1,4 +1,6 @@
 import { Column } from "@nannier/canvas";
+import { ShownOn, shownItems } from "../../ui/shown-on";
+import { shows } from "../../core/platforms-shown";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, InlineCode, Rule, BulletList } from "../../ui/prose";
@@ -254,9 +256,11 @@ export default function IntegrationScreen() {
             iOS 26+. Without it, shared rendering uses available frost or the complete opaque solid skin.
           </P>
           <P muted>
-            <InlineCode>expo-blur</InlineCode>: static frost on iOS, including content below iOS 26 Liquid Glass, and
-            supported legacy Android frost. The browser frost is built in and does not need this peer.
+            <InlineCode>expo-blur</InlineCode>: static frost on iOS, including content below iOS 26 Liquid Glass
+            {shows("android") ? ", and supported legacy Android frost" : ""}. The browser frost is built in and does not
+            need this peer.
           </P>
+          <ShownOn platform="android">
           <P muted>
             Android capture module: Canvas ships it in <InlineCode>@nannier/canvas</InlineCode> itself, Android 12+
             capture and frost for Expo SDK 57 native builds, sampling a safe live backdrop: the page behind an overlay
@@ -267,6 +271,7 @@ export default function IntegrationScreen() {
             package.json. Capture runs only while needed. Missing or unsafe material restores the complete opaque solid
             skin.
           </P>
+          </ShownOn>
           <P muted>
             <InlineCode>react-native-safe-area-context</InlineCode>: safe-area insets for the overlays that use them
             (Drawer, sheets); without it, they fall back to fixed insets.
@@ -283,7 +288,7 @@ export default function IntegrationScreen() {
         <Section title="Quick start">
           <P muted>
             Wrap the app once in <InlineCode>ThemeProvider</InlineCode> and use the components. This is the whole usage
-            API, and it is the same code on iOS, Android, and the web, the component props never change per platform. On
+            API, and it is the same code on every platform Canvas supports, the component props never change per platform. On
             native (Expo or React Native CLI) it is all you need beyond your normal RN bundler; the web adds two setup
             steps, the <InlineCode>react-native-web</InlineCode> alias and <InlineCode>canvas.css</InlineCode>, shown
             below.
@@ -298,9 +303,10 @@ export default function IntegrationScreen() {
             Mount one <InlineCode>OverlayProvider</InlineCode> inside <InlineCode>ThemeProvider</InlineCode> at the
             app's root, outside any scroller. It fills the window by default, and menus, selects, popovers and other
             floating content render above the whole page in its outlet, placed against the window. Without one, they
-            render inline where they are declared. On Android, with Canvas's capture module linked, the
-            root provider's page content is also the capture plane that glass overlays and native modals sample for
-            their frost; a provider that does not fill its window has none, and glass there keeps its solid skin.
+            render inline where they are declared.
+            {shows("android")
+              ? " On Android, with Canvas's capture module linked, the root provider's page content is also the capture plane that glass overlays and native modals sample for their frost; a provider that does not fill its window has none, and glass there keeps its solid skin."
+              : ""}
             <InlineCode>AppFrame</InlineCode> mounts this host for you, inside the safe-area context and around its
             padded frame, so an app built on it needs no provider of its own.
           </P>
@@ -311,6 +317,9 @@ export default function IntegrationScreen() {
             measures its outlet in window coordinates and the visible part of the window, and reports when its layout
             changes.
           </P>
+          {/* The modal bridge and the blur planes exist for Android's capture module alone; iOS
+              and the web need neither, so a build that does not show Android leaves them out. */}
+          <ShownOn platform="android">
           <H3>Native modals</H3>
           <P muted>
             A React Native <InlineCode>Modal</InlineCode> is a native window of its own on Android, outside the root
@@ -350,6 +359,7 @@ export default function IntegrationScreen() {
               "A surface placed inside its own plane can never sample it: the capture module refuses that plane and the surface keeps its solid skin",
             ]}
           />
+          </ShownOn>
           <H3>App frames</H3>
           <P muted>
             Every kit surface paints its own material, so an app needs glass of its own only for the frame it draws
@@ -363,17 +373,17 @@ export default function IntegrationScreen() {
           <CodeBlock code={APP_FRAME} />
           <BulletList
             subtle
-            items={[
+            items={shownItems([
               "Pass the frame's whole solid box as its style: under glass the fill gives way to the material and a resting border becomes padding of the same width, so the frame keeps its size; in solid mode, and under Reduce Transparency or Increase Contrast, the box renders as it is",
               "Use it for the frame only: a card, list, dialog or field inside it is a kit component, which already takes the material of its own layer",
-              "On Android a frame in the page has no plane of its own and keeps its solid box, unless its backdrop is made a blur plane (above)",
-            ]}
+              { on: "android", item: "On Android a frame in the page has no plane of its own and keeps its solid box, unless its backdrop is made a blur plane (above)" },
+            ])}
           />
           <H3>Accessibility</H3>
           <P muted>
-            The bridge adds nothing to the accessibility tree: the Modal's content reaches VoiceOver, TalkBack and
-            the keyboard exactly as without it. The Modal's own semantics stay yours to give: its{" "}
-            <InlineCode>onRequestClose</InlineCode> for Android's Back and the Escape key, and{" "}
+            {shows("android") ? "The bridge adds nothing to the accessibility tree: the Modal's content reaches screen readers and the keyboard exactly as without it. " : ""}
+            A Modal's own semantics stay yours to give: its{" "}
+            <InlineCode>onRequestClose</InlineCode> for the system back action and the Escape key, and{" "}
             <InlineCode>accessibilityViewIsModal</InlineCode> so VoiceOver ignores the page behind it, as Drawer and
             ActionSheet set them. Reduce Transparency and Increase Contrast give every surface inside the Modal its
             opaque skin, as they do in the page.

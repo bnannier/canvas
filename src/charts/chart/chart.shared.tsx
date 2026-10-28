@@ -367,7 +367,7 @@ export function createChart(skin: ChartSkin) {
           // Vertical: a baseline-aligned row of columns, each a value over a bar,
           // with the category label beneath the baseline.
           <View>
-            <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot }]}>
+            <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot + s.VERTICAL_VALUE_ROOM }]}>
               {data.map((d, i) => (
                 // Each column is one accessible item announcing "label: value".
                 // The value is also rendered as visible Text above the bar so the

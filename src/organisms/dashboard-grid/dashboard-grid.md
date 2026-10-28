@@ -10,6 +10,7 @@ The board takes its widgets through `items`, the collection prop every other col
 
 ## Usage
 
+<!-- only: web -->
 ```tsx
 <DashboardGrid
   items={[
@@ -19,6 +20,18 @@ The board takes its widgets through `items`, the collection prop every other col
   ]}
 />
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<DashboardGrid
+  items={[
+    { id: "revenue", span: 8, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }, { label: "Wed", value: 15 }, { label: "Thu", value: 22 }]} /> },
+    { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "App", value: 64 }]} /> },
+    { id: "endpoints", span: 12, title: "Slowest endpoints", content: <BarList title="Slowest endpoints" items={[{ label: "/api/search", value: 240 }, { label: "/api/feed", value: 180 }]} /> },
+  ]}
+/>
+```
+<!-- /only -->
 
 ## Variants
 
@@ -26,6 +39,7 @@ The board takes its widgets through `items`, the collection prop every other col
 
 `unlocked` is the app's switch, never the grid's: turning it on paints the cell affordance, shows a grip on every widget, and makes the board reorderable. The grips stay visible for as long as the mode lasts, because React Native has no portable hover event and an edit mode already announces itself. `defaultOrder` hands the order to the grid, which applies each drop itself and reports the result through `onOrderChange`, so a bare board is interactive out of the box.
 
+<!-- only: web -->
 ```tsx
 <DashboardGrid
   unlocked
@@ -35,11 +49,24 @@ The board takes its widgets through `items`, the collection prop every other col
   ]}
 />
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<DashboardGrid
+  unlocked
+  items={[
+    { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
+    { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "App", value: 64 }]} /> },
+  ]}
+/>
+```
+<!-- /only -->
 
 ### Controlled order
 
 The primary path: the app owns the id array and persists it through its own API, applying every `onOrderChange`. Ids the widget list no longer holds are ignored and widgets missing from the order are appended, so a layout saved before a release keeps working.
 
+<!-- only: web -->
 ```tsx
 <Stateful initial={["signups", "revenue"]}>
   {(order, setOrder) => (
@@ -55,6 +82,24 @@ The primary path: the app owns the id array and persists it through its own API,
   )}
 </Stateful>
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<Stateful initial={["signups", "revenue"]}>
+  {(order, setOrder) => (
+    <DashboardGrid
+      unlocked
+      order={order}
+      onOrderChange={setOrder}
+      items={[
+        { id: "revenue", span: 6, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }]} /> },
+        { id: "signups", span: 6, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "App", value: 64 }]} /> },
+      ]}
+    />
+  )}
+</Stateful>
+```
+<!-- /only -->
 
 ### Narrow spans
 

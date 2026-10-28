@@ -1,6 +1,13 @@
 # View
 
-The layout primitive: a flex container that runs identically on iOS, Android, and the web. A View is a column by default.
+The layout primitive: a flex container that
+<!-- only: web -->
+runs identically on iOS, Android, and the web.
+<!-- /only -->
+<!-- only: ios android -->
+runs identically on every platform Canvas supports.
+<!-- /only -->
+A View is a column by default.
 
 Reach for it directly only when no semantic primitive covers what you need: arrangement (direction, gap, alignment, padding) belongs to `Row` and `Column`, which are Views with that axis exposed as boolean props, and a bordered filled surface belongs to `Card`. Numbers are density-independent pixels.
 

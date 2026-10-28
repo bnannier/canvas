@@ -4,7 +4,16 @@ A custom select whose options stay on screen: single or multi-select, an optiona
 
 The list fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
-Neither iOS nor Material 3 ships a listbox, so every platform draws the Canvas v4 list, in its own face: a chosen row sits on the accent's soft wash with a 16px check at its end in the accent ink, in single and multi select alike, and the check's slot is kept on every row so a choice never reflows a label.
+<!-- only: web -->
+Neither iOS nor Material 3 ships a listbox, so every platform draws the Canvas v4 list, in its own face:
+<!-- /only -->
+<!-- only: ios -->
+iOS ships no listbox, so it draws the Canvas v4 list, in its own face:
+<!-- /only -->
+<!-- only: android -->
+Material 3 ships no listbox, so Android draws the Canvas v4 list, in its own face:
+<!-- /only -->
+a chosen row sits on the accent's soft wash with a 16px check at its end in the accent ink, in single and multi select alike, and the check's slot is kept on every row so a choice never reflows a label.
 
 The rows are 10px in with a 500 14px label (13px small) over a 400 12px detail in the subtle ink, rounded concentric inside a bordered list, which is the `popover` fill behind the `field-border` hairline at the tile corner with a 4px inset. A pressed row takes the `muted` wash, and on the web a row under the pointer takes the hover wash at once.
 

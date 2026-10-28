@@ -4,6 +4,7 @@ Concentric arc rings, one per category, innermost first: each pairs a muted full
 
 ## Usage
 
+<!-- only: web -->
 ```tsx
 <RadialBarChart
   label="Platform activation"
@@ -15,6 +16,20 @@ Concentric arc rings, one per category, innermost first: each pairs a muted full
   ]}
 />
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<RadialBarChart
+  label="Platform activation"
+  max={100}
+  data={[
+    { label: "Phone", value: 64 },
+    { label: "Tablet", value: 48 },
+    { label: "Web", value: 82 }
+  ]}
+/>
+```
+<!-- /only -->
 
 ## Variants
 
@@ -50,6 +65,7 @@ Concentric arc rings, one per category, innermost first: each pairs a muted full
 
 **Do** - Compare attainment on rings that share one sweep maximum, with the values in the legend.
 
+<!-- only: web -->
 ```tsx
 <Card padded>
   <RadialBarChart
@@ -62,6 +78,21 @@ Concentric arc rings, one per category, innermost first: each pairs a muted full
   />
 </Card>
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<Card padded>
+  <RadialBarChart
+    label="Platform activation"
+    data={[
+      { label: "Phone", value: 64 },
+      { label: "Web", value: 82 },
+    ]}
+    max={100}
+  />
+</Card>
+```
+<!-- /only -->
 
 **Don't** - Rings encoding shares of a whole belong on PieChart; nested rings without a shared maximum cannot be compared by eye.
 

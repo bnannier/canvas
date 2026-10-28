@@ -1,4 +1,4 @@
-<!-- rubricVersion: 2 -->
+<!-- rubricVersion: 3 -->
 # Canvas project rubric
 
 Canvas is a universal React Native UI kit: one component API, three platform
@@ -37,13 +37,24 @@ class matches; cite them as "M3 <value> (canvas rubric)":
   anatomy inherits its host. Solid appearance and accessibility fallbacks stay
   fully opaque. A browser skin preview does not establish native fidelity.
 
-## Platform reference: Web rows
+## Platform reference: Web rows, and every docs page (the v4 hand-off)
 
-- The established Canvas look: Dark Factory's corners (8px controls, 10px fields, 14px
-  cards, pill buttons and chips), Dark Factory's
-  dense type (bold titles, 12.5 medium body), Dark Factory's colors (a green call to action
-  and a violet selection color on white cards over a lavender page),
-  visible focus treatment on keyboard focus, hover affordances.
+- The binding look is the Canvas v4 design hand-off, "Light as material"
+  (tools/v4/handoff, photographed into .v4-reference). The owner's rule
+  (2026-10-28): the docs and the kit match it pixel for pixel, dimensions and
+  responsiveness included. When a route carries a design image, every visible
+  divergence from it is a design-parity finding: a size, a radius, a fill, a
+  border, a weight, a spacing, a position, an element present in one and absent
+  in the other. The build "improving on" the hand-off is still a divergence.
+- Its look, for routes without an image: Bricolage Grotesque display, Instrument
+  Sans UI, JetBrains Mono meta and code; web controls and fields 10 px radius,
+  cards 16, dialogs 20, menus 16; one oklch accent (violet 285 by default) on a
+  flat near-black page in dark, with a fine grain over everything.
+- Glass on the web frosts only what floats over the page: the navbar pill, the
+  tab bar, dialogs, alert dialogs, sheets, drawers, popovers, the command
+  palette, toasts, carousel arrows, video controls. Every other surface (cards,
+  buttons, fields, chips, tables, menus, tooltips, the rail) is drawn opaque in
+  glass mode too; a frosted in-page surface is a divergence.
 - No minimum touch target; pointer targets are visual-sized.
 
 ## Cross-row comparison
@@ -72,10 +83,10 @@ control a few pixels tall, are still states/anatomy findings.)
 ## Glass pass (target "glass")
 
 Glass shots exist to catch glass-specific defects only: unreadable text over
-the material, missing overlay scrims, content-layer surfaces (cards, tables)
-wrongly rendered as glass. The material's translucency, blur radius, and
-frost texture are by design; solid-pass findings must not be re-filed from
-glass shots.
+the material, missing overlay scrims, in-page surfaces (cards, tables, controls)
+wrongly rendered as glass on the web. The floating material's translucency, blur
+radius, and frost texture are the hand-off's; solid-pass findings must not be
+re-filed from glass shots.
 
 ## Craft (added in v2)
 
@@ -149,14 +160,13 @@ a missing state from an example that is not about one.
 
 ## Do not file (extends the touch-target rule above)
 
-- The design language itself: the violet primary and the green action colour, the
-  chart series hues, colour saturation, the Manrope typeface, the tinted light page and white
-  cards, soft hairline card borders, the corner-radius scale, information density.
-  Those are decisions, and the config's `neverFile` list records the ones that
-  keep being re-litigated.
-- Landing-page and marketing critique: hero size, section rhythm, three-column
-  grids, "this needs more motion". This is a component library; its pages are
-  specimens, not a funnel.
+- The design language itself, as taste: the accent hues, the chart series, the
+  typefaces, the radius scale, information density. Those are the hand-off's
+  decisions. A DIVERGENCE from the hand-off in any of them is still a
+  design-parity finding; only re-litigating the hand-off's own choice is barred.
+- Landing-page and marketing critique judged against your own taste: hero size,
+  section rhythm, three-column grids. Where the hand-off draws a hero, its size
+  and rhythm are the reference, and divergence from it is a finding.
 - Icon-set taste. The glyphs are Lucide-derived by choice.
 - Sample content, unless it is literally placeholder text.
 - Touch targets, still: they are enforced in code with minTarget plus hitSlop,

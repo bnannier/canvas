@@ -164,8 +164,12 @@ export interface DataTableProps {
   /**
    * The table sits flush inside a frame its parent draws (a `flush` Card, a
    * bordered panel that clips to its corners), so it draws no frame of its own.
-   * Without it a standalone table frames itself (on the web and Android, a
-   * hairline at the table corner over the card fill), which is the standalone
+   * Without it a standalone table frames itself
+   * <!-- only: web android -->
+   * (on the web and Android, a
+   * hairline at the table corner over the card fill),
+   * <!-- /only -->
+   * which is the standalone
    * look.
    */
   attached?: boolean;
@@ -178,8 +182,12 @@ export interface DataTableProps {
    * header row is drawn only while it holds a control (a sortable column, or
    * the box that selects every row), as a band of its labels that wraps; the
    * selection box and the row actions stay at the row's leading and trailing
-   * edges. A stacked table never pans, and on iOS it stacks instead of
-   * collapsing to its first column. Container-measured with a viewport seed for
+   * edges. A stacked table never pans,
+   * <!-- only: web ios -->
+   * and on iOS it stacks instead of
+   * collapsing to its first column.
+   * <!-- /only -->
+   * Container-measured with a viewport seed for
    * the first frame, like Row `stacks`; crossing the breakpoint changes the
    * layout only.
    */

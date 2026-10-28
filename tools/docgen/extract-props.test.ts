@@ -1,7 +1,8 @@
 import { beforeAll, expect, test } from "bun:test";
 import * as path from "node:path";
 import * as ts from "typescript";
-import { extractInherited, extractProps, parseAxis } from "./extract-props.ts";
+import { docBlockProblems, extractInherited, extractProps, parseAxis, program } from "./extract-props.ts";
+import { FOREIGN_DOCS } from "./foreign-docs.ts";
 
 const root = path.resolve(import.meta.dir, "../..");
 const read = (dir: string) => extractProps([{ dir, file: path.join(root, `src/atoms/${dir}/${dir}.shared.tsx`) }])[dir];
@@ -150,4 +151,44 @@ test("a header above a documented member opens its axis (Input's overlaid glyph 
   const titles = input.groups.map((group) => group.title);
   expect(titles).toContain("Overlaid glyph mode");
   expect(input.groups[input.props.find((prop) => prop.name === "leadingIcon")!.group!].title).toBe("Overlaid glyph mode");
+});
+
+test("a platform block in a prop comment gives each build its own text, and the declaration emit keeps it verbatim", () => {
+  const file = path.join(import.meta.dir, "fixtures/platform-blocks.tsx");
+  const prog = ts.createProgram([file], { strict: true, skipLibCheck: true, jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext, declaration: true, emitDeclarationOnly: true });
+  const rows = (platform: "web" | "ios" | "android") =>
+    Object.fromEntries(extractProps([{ dir: "fixtures", file }], prog, platform).fixtures[0].props.map((prop) => [prop.name, prop.description]));
+  expect(rows("web").label).toBe("The field's label. Its placement is platform-adaptive: iOS and web render it above the field; Android floats it. The label names the field.");
+  expect(rows("ios").label).toBe("The field's label. Its placement is platform-adaptive: iOS renders it above the field. The label names the field.");
+  expect(rows("android").label).toBe("The field's label. Its placement is platform-adaptive: Android floats it. The label names the field.");
+  expect(rows("web").small).toBe("Size (pick one). The web track scales; iOS draws one size.");
+  expect(rows("android").small).toBe("Size (pick one). The web track scales;");
+  expect(docBlockProblems().some((problem) => problem.includes("fixtures/platform-blocks.tsx"))).toBe(true);
+
+  // The published `.d.ts` carries the comment, markers included, so an editor hover
+  // (which renders JSDoc as Markdown and hides HTML comments) reads every build's text.
+  let dts = "";
+  prog.emit(undefined, (name, text) => { if (name.endsWith(".d.ts")) dts = text; }, undefined, true);
+  expect(dts).toContain("     * <!-- only: android -->\n     * Android floats it.\n     * <!-- /only -->");
+});
+
+test("every FOREIGN_DOCS key names a React Native member and overrides only a native build", () => {
+  const members = new Set<string>();
+  for (const source of program().getSourceFiles()) {
+    if (!source.fileName.includes(`${path.sep}node_modules${path.sep}react-native${path.sep}`)) continue;
+    const visit = (node: ts.Node) => {
+      if (ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
+        const body = ts.isInterfaceDeclaration(node) ? node.members : ts.isTypeLiteralNode(node.type) ? node.type.members : undefined;
+        for (const member of body ?? []) {
+          if (member.name && (ts.isIdentifier(member.name) || ts.isStringLiteral(member.name))) members.add(`${node.name.text}.${member.name.text}`);
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+  }
+  for (const [key, docs] of Object.entries(FOREIGN_DOCS)) {
+    expect(members.has(key) ? key : `missing ${key}`).toBe(key);
+    expect(Object.keys(docs).every((build) => build === "ios" || build === "android")).toBe(true);
+  }
 });

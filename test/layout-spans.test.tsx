@@ -85,7 +85,7 @@ describe("Row spans", () => {
     expect(at("plain").style.flexWrap).not.toBe("wrap");
   });
 
-  it("stacks ignores spans once stacked: every cell drops its width and the Row is a column", () => {
+  it("stacks ignores spans once stacked: every cell takes the whole line and the Row is a column", () => {
     resizeViewport(375);
     ui(
       <Row snug stacks testID="r">
@@ -102,8 +102,24 @@ describe("Row spans", () => {
     for (const id of ["l", "rr"]) {
       const cell = at(id).parentElement as HTMLElement;
       expect(cell.parentElement).toBe(at("r"));
-      expect(cell.style.width).toBe("");
+      expect(cell.style.width).toBe("100%");
     }
+  });
+
+  it("keeps a stacked span cell the whole line under a non-stretch alignment", () => {
+    resizeViewport(375);
+    ui(
+      <Row snug stacks alignStart testID="r">
+        <Column span={8} testID="l">
+          <Badge>a</Badge>
+        </Column>
+        <Column span={4} testID="rr">
+          <Badge>b</Badge>
+        </Column>
+      </Row>,
+    );
+    expect(at("r").style.alignItems).toBe("flex-start");
+    for (const id of ["l", "rr"]) expect((at(id).parentElement as HTMLElement).style.width).toBe("100%");
   });
 
   it("keeps every child mounted when a spanning Row stacks and unstacks", () => {
@@ -135,7 +151,7 @@ describe("Row spans", () => {
 
     resizeViewport(375);
     expect(at("r").style.flexDirection).toBe("column");
-    expect((at("a").parentElement?.parentElement as HTMLElement).style.width).toBe("");
+    expect((at("a").parentElement?.parentElement as HTMLElement).style.width).toBe("100%");
     resizeViewport(1280);
     expect(at("r").style.flexDirection).toBe("row");
 

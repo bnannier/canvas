@@ -82,9 +82,15 @@ export interface PhoneInputProps extends PhoneEntryProps, MeasureProps {
   label?: string;
   /**
    * Marks the field as required: a destructive "*" after the label (decorative, never in
-   * the accessible name), and the number field announced as required, through
+   * the accessible name), and the number field announced as required,
+   * <!-- only: web -->
+   * through
    * aria-required on the web and with the word in its name ("Phone number, required") on
    * iOS and Android.
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * with the word in its name ("Phone number, required").
+   * <!-- /only -->
    */
   required?: boolean;
   // State (orthogonal). `error` (alias `invalid`) flags a validation problem.

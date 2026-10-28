@@ -11,8 +11,17 @@ With no `OverlayProvider` mounted it still floats, on an absolute anchor beside 
 trigger, but an ancestor that clips its content can then cut it off.
 
 The bubble inverts against the page (dark in the light scheme, light in the dark one)
-and sets its text in Dark Factory's label type; iOS, which has no tooltip, shows the
+and sets its text in Dark Factory's label type;
+<!-- only: web -->
+iOS, which has no tooltip, shows the
 same bubble, and Android keeps the Material 3 plain tooltip.
+<!-- /only -->
+<!-- only: ios -->
+iOS, which has no tooltip, shows the same bubble.
+<!-- /only -->
+<!-- only: android -->
+Android keeps the Material 3 plain tooltip.
+<!-- /only -->
 
 The trigger is a boolean axis of its own, resolved first match wins:
 
@@ -27,7 +36,14 @@ The trigger is a boolean axis of its own, resolved first match wins:
 - Otherwise the default: the `trigger` string as an outline Button.
 
 Hover and focus are pointer-and-keyboard affordances. Touch pointers are
-skipped, and iOS and Android never fire hover at all. On touch the built-in
+skipped,
+<!-- only: web -->
+and iOS and Android never fire hover at all.
+<!-- /only -->
+<!-- only: ios android -->
+and the native apps never fire hover at all.
+<!-- /only -->
+On touch the built-in
 triggers toggle the tip on tap (tap again to close it; a tip is never modal, so a
 tap elsewhere goes to the page). A long press is not taken: it belongs to the
 platform and to the control. An element trigger has no tap toggle either, because
@@ -40,10 +56,16 @@ Escape hides an open tip and leaves focus where it is (WCAG 1.4.13: hover and fo
 content is dismissable without moving the pointer or focus). It goes through the kit's
 one Escape owner, so a tip inside a Dialog or Popover closes first and the next Escape
 reaches its host; a closed tip takes no Escape at all. A controlled tip reports the
-close through `onOpenChange(false)`. On iOS the same close answers the accessibility
+close through `onOpenChange(false)`.
+<!-- only: web ios -->
+On iOS the same close answers the accessibility
 escape (the VoiceOver two-finger scrub, and Escape on a hardware keyboard under Full
-Keyboard Access). Android delivers no Escape key to a view, and its back gesture is
+Keyboard Access).
+<!-- /only -->
+<!-- only: web android -->
+Android delivers no Escape key to a view, and its back gesture is
 never taken for a tip, so there the tip closes with focus or the controlled `open`.
+<!-- /only -->
 
 ## Usage
 

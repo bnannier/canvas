@@ -2,7 +2,14 @@
 
 A data-driven kanban board: columns scroll horizontally, each column is a drop zone in a sunken well headed by its label and item count, and every card carries a drag grip, an optional trailing badge, a two-line description, a free-form chips slot, and an optional kebab menu.
 
-Dragging is the kit's own drag-and-drop family, so it runs on iOS, Android, and the web from one code path and stays keyboard- and screen-reader-operable: press Space on a grip to grab, the arrow keys to move between positions and columns, Space to drop, Escape to cancel. The list stays controlled: a drop reports a `BoardMove` (source, target, insertion index, and the new neighbor ids) through `onMove`, and `applyBoardMove` is the standard reducer to apply it. Pass `defaultItems` instead of `items` for uncontrolled use, where the board applies each move itself.
+Dragging is the kit's own drag-and-drop family,
+<!-- only: web -->
+so it runs on iOS, Android, and the web from one code path
+<!-- /only -->
+<!-- only: ios android -->
+so it runs on every platform Canvas supports from one code path
+<!-- /only -->
+and stays keyboard- and screen-reader-operable: press Space on a grip to grab, the arrow keys to move between positions and columns, Space to drop, Escape to cancel. The list stays controlled: a drop reports a `BoardMove` (source, target, insertion index, and the new neighbor ids) through `onMove`, and `applyBoardMove` is the standard reducer to apply it. Pass `defaultItems` instead of `items` for uncontrolled use, where the board applies each move itself.
 
 For an action-driven work board, `plain` drops the lane wells and keeps the lane
 headers and dashed empty slots. `renderItem` supplies the domain card with its

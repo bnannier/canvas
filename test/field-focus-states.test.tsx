@@ -20,13 +20,18 @@ import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
 import { PhoneInput as AndroidPhoneInput } from "../src/molecules/phone-input/phone-input.android.tsx";
 import { Autocomplete as AndroidAutocomplete } from "../src/atoms/autocomplete/autocomplete.android.tsx";
 import { InputOTP as AndroidInputOTP } from "../src/atoms/input-otp/input-otp.android.tsx";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // A field suppresses the browser's focus ring only because it paints a focus state of
 // its own; these hold that every such field really paints one, and that Increase
 // Contrast keeps a state border (focus, error, an open list) instead of overwriting it
 // with the contrasting hairline, which would leave a keyboard user no focus cue.
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 const t = lightColors;
 const channels = (color: string) => {

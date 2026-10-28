@@ -153,11 +153,29 @@ export interface CarouselProps {
   onIndexChange?: (index: number) => void;
   /** Wrap from the last slide to the first (and first to last) on arrow nav. */
   loop?: boolean;
-  /** Show the prev/next chevron buttons beside the slides. Default is platform-adaptive:
-   *  on for web, off for iOS + Android (swipe idioms); pass `true` to opt in. */
+  /**
+   * Show the prev/next chevron buttons beside the slides. Default is platform-adaptive:
+   * <!-- only: web -->
+   * on for web, off for iOS + Android (swipe idioms);
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * on for web, off in the app (a swipe idiom);
+   * <!-- /only -->
+   * pass `true` to opt in.
+   */
   showArrows?: boolean;
-  /** Show the centered dot indicators below the slides. Default is
-   *  platform-adaptive: on for web + iOS (UIPageControl), off for Android M3. */
+  /**
+   * Show the centered dot indicators below the slides. Default is
+   * <!-- only: web -->
+   * platform-adaptive: on for web + iOS (UIPageControl), off for Android M3.
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * platform-adaptive: on for web + iOS (UIPageControl).
+   * <!-- /only -->
+   * <!-- only: android -->
+   * platform-adaptive: on for web, off for Android.
+   * <!-- /only -->
+   */
   showDots?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -195,7 +213,7 @@ export function createCarousel(skin: CarouselSkin) {
     disabled: boolean;
     onPress: () => void;
   }) {
-    const theme = useMaterialTheme({ layer: "control" });
+    const theme = useMaterialTheme({ layer: "control", floating: true });
     const { tokens } = theme;
     const liquid = theme.surface === "glass";
     return (
@@ -218,7 +236,7 @@ export function createCarousel(skin: CarouselSkin) {
           ]}
         >
           {({ pressed }) => <>
-            <GlassPane layer="control" shape={skin.arrow(tokens)} />
+            <GlassPane layer="control" floating shape={skin.arrow(tokens)} />
             <View style={liquid ? disabled ? DISABLED_DIM : pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null : null}>
               {side === "prev" ? (
                 <Icon chevronLeft decorative size={skin.arrowIconSize} />

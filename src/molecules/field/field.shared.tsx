@@ -43,7 +43,11 @@ export interface FieldProps extends MeasureProps {
   /**
    * Marks the label with a destructive asterisk (decorative, never in an accessible name). A
    * delegated control takes `required` and announces itself as required; over any other
-   * control, the label says it in its own name on iOS and Android ("Notifications, required").
+   * control, the label says it in its own name
+   * <!-- only: web -->
+   * on iOS and Android
+   * <!-- /only -->
+   * ("Notifications, required").
    */
   required?: boolean;
   /** The control. */

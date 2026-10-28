@@ -2,7 +2,14 @@
 
 A reusable drag-and-drop context: wrap a surface in a `DragDropProvider`, mark droppable regions with `DropZone`, and make items draggable with `Draggable` plus a `DragHandle` grip.
 
-Items lift into a floating ghost and reorder within or across zones, position-aware. It runs on iOS, Android, and the web from one PanResponder + Animated code path, and the grip is keyboard- and screen-reader-operable: press Space to grab, the arrow keys to move, Space to drop, Escape to cancel.
+Items lift into a floating ghost and reorder within or across zones, position-aware.
+<!-- only: web -->
+It runs on iOS, Android, and the web from one PanResponder + Animated code path,
+<!-- /only -->
+<!-- only: ios android -->
+It runs on every platform Canvas supports from one PanResponder + Animated code path,
+<!-- /only -->
+and the grip is keyboard- and screen-reader-operable: press Space to grab, the arrow keys to move, Space to drop, Escape to cancel.
 
 The reading direction is respected throughout. In a right-to-left locale a `horizontal` zone lays its items out right to left, so the first position is the rightmost one, the drop indicator meets the row's right edge, and the two horizontal arrows swap roles (Left Arrow moves forward, Right Arrow back, per the WAI-ARIA practices). Vertical lists and the up/down arrows read the same way in both directions.
 

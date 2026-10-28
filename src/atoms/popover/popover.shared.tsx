@@ -160,7 +160,7 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
   const Button = parts.Button ?? WebButton;
   return function Popover(props: PopoverProps) {
     const { trigger, title, description, children, actionLabel, inline, onOpenChange, testID, style } = props;
-    const { tokens, surface } = useMaterialTheme({ layer: "functional" });
+    const { tokens, surface } = useMaterialTheme({ layer: "functional", floating: true });
     const [internalOpen, setInternalOpen] = useState(false);
     // In static (inline) mode the card is always shown; otherwise it is
     // uncontrolled (the trigger toggles it) unless a controlled `open` is passed.
@@ -235,7 +235,7 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
       return (
         <View testID={testID}>
           <View style={style}>
-            <GlassSurface style={skin.card(tokens)}>{panelBody}</GlassSurface>
+            <GlassSurface floating style={skin.card(tokens)}>{panelBody}</GlassSurface>
           </View>
         </View>
       );

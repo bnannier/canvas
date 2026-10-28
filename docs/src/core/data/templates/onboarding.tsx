@@ -1,130 +1,72 @@
 import { useState } from "react";
-import { Container, Row, Column, Card, Typography, Button, Input, Select, InputOTP, Steps, EmptyState, Icon, useToast } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Onboarding wizard built from real Canvas components: a controlled Steps
-// indicator (plus its progress-bar layout tracking the same step), one content
-// Card per step (account Inputs, workspace Input + Select, InputOTP verify,
-// success EmptyState), and Back/Continue navigation.
+// The hand-off's Onboarding (`Canvas v4.0.0 Templates.dc.html`, `t.onboarding`): four
+// pressable steps (about you, workspace, code verification, done) over one card holding
+// the current step, with Back and the step's call to action at its foot. It opens on the
+// workspace step, as the hand-off does. Every part is a kit component from the frame's
+// scope.
 
-const STEPS = [
-  { label: "Account" },
-  { label: "Workspace" },
-  { label: "Verify" },
-  { label: "Done" },
-];
+const STEPS = ["About you", "Workspace", "Verify", "Done"];
 
-const TIMEZONES = [
-  "America/Los_Angeles (UTC-7)",
-  "America/New_York (UTC-4)",
-  "Europe/London (UTC+1)",
-];
-
-function WizardLive() {
+function OnboardingScreen({ K, go }: TemplateScreenProps) {
+  const { Row, Column, Container, Card, Typography, Button, Input, Select, InputOTP, Steps, Grid, Divider, Emblem, Icon, useToast } = K;
   const { toast } = useToast();
-  const [step, setStep] = useState(0);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [wsName, setWsName] = useState("Acme Corp");
-  const [wsUrl, setWsUrl] = useState("acme-corp");
-  const [timezone, setTimezone] = useState(TIMEZONES[0]);
-  const [otp, setOtp] = useState("");
-  const last = STEPS.length - 1;
-  const inbox = email.trim() || "your inbox";
-
-  const reset = () => {
-    setStep(0);
-    setName("");
-    setEmail("");
-    setWsName("Acme Corp");
-    setWsUrl("acme-corp");
-    setTimezone(TIMEZONES[0]);
-    setOtp("");
-  };
-
+  const [step, setStep] = useState(1);
   const next = () => {
-    if (step < last) {
-      setStep(step + 1);
-      return;
+    if (step < 3) setStep(step + 1);
+    else {
+      toast({ message: "Welcome to Riskora" });
+      go("dashboard");
     }
-    toast({
-      success: true,
-      message: "Workspace ready",
-      description: `${wsName.trim() || "Your workspace"} is live at app.canvas.dev/${wsUrl.trim() || "your-team"}.`,
-    });
   };
 
   return (
     <Row center>
-      <Container xl><Column relaxed>
-        <Steps steps={STEPS} current={step} onStepPress={setStep} />
-        <Steps progress steps={[]} label="Setup progress" value={Math.round((step / last) * 100)} />
-        <Card>
-          <Column cozy>
-            {step === 0 && (
-              <Column cozy>
-                <Column tight>
-                  <Typography h4>Tell us about yourself</Typography>
-                  <Typography small>Your name and work email create your account.</Typography>
+      <Container xl>
+        <Column spacious>
+          <Steps steps={STEPS.map((label) => ({ label }))} current={step} onStepPress={setStep} />
+          <Card>
+            <Column relaxed>
+              {step === 0 ? (
+                <Column roomy>
+                  <Typography h4 level={2}>Tell us about you</Typography>
+                  <Grid minTileWidth={200} cozy>
+                    <Input label="Name" placeholder="Ada Lovelace" />
+                    <Select label="Role" defaultValue="Design engineer" options={["Design engineer", "Product designer", "Engineer", "Product manager"]} />
+                  </Grid>
                 </Column>
-                <Input label="Full name" placeholder="Rachel Chen" value={name} onChangeText={setName} />
-                <Input label="Work email" placeholder="you@company.com" value={email} onChangeText={setEmail} />
-              </Column>
-            )}
-            {step === 1 && (
-              <Column cozy>
-                <Column tight>
-                  <Typography h4>Set up your workspace</Typography>
-                  <Typography small>Configure the basics for your team's environment.</Typography>
+              ) : step === 1 ? (
+                <Column roomy>
+                  <Typography h4 level={2}>Name your workspace</Typography>
+                  <Input label="Workspace" placeholder="Riskora" />
+                  <Input prefix="riskora.app/" defaultValue="team" accessibilityLabel="Workspace address" />
+                  <Select accessibilityLabel="Time zone" defaultValue="Europe/Berlin · UTC+1" options={["Europe/Berlin · UTC+1", "Europe/London · UTC", "America/New_York · UTC−5", "Asia/Tokyo · UTC+9"]} />
                 </Column>
-                <Input label="Workspace name" value={wsName} onChangeText={setWsName} />
-                <Input label="Workspace URL" prefix="app.canvas.dev/" value={wsUrl} onChangeText={setWsUrl} />
-                <Select label="Default timezone" value={timezone} onSelect={setTimezone} options={TIMEZONES} />
-              </Column>
-            )}
-            {step === 2 && (
-              <Column cozy>
-                <Column tight>
-                  <Typography h4>Verify your email</Typography>
-                  <Typography small>{`Enter the 6-digit code we sent to ${inbox}.`}</Typography>
+              ) : step === 2 ? (
+                <Column roomy>
+                  <Typography h4 level={2}>Enter the code we sent</Typography>
+                  <Typography small subtle>Six digits, sent to ada@company.com.</Typography>
+                  <InputOTP length={6} defaultValue="481" />
                 </Column>
-                <Column snug alignCenter>
-                  <InputOTP
-                    length={6}
-                    value={otp}
-                    onChangeText={setOtp}
-                    onComplete={() => toast({ success: true, message: "Code verified" })}
-                  />
-                  <Row tight alignCenter>
-                    <Typography small>Didn't get it?</Typography>
-                    <Button link small onPress={() => toast({ message: "Code resent", description: `A new code is on its way to ${inbox}.` })}>
-                      Resend code
-                    </Button>
-                  </Row>
+              ) : (
+                <Column cozy alignCenter>
+                  <Emblem success large><Icon circleCheck decorative /></Emblem>
+                  <Typography h4 level={2} center>You're all set</Typography>
+                  <Typography small subtle center>Riskora is ready. Invite your team whenever you like.</Typography>
                 </Column>
-              </Column>
-            )}
-            {step === 3 && (
-              <EmptyState
-                success
-                icon={<Icon circleCheck />}
-                title="You're all set"
-                description={`${wsName.trim() || "Your workspace"} is ready at app.canvas.dev/${wsUrl.trim() || "your-team"}. Invite your team from the dashboard.`}
-                actionLabel="Start over"
-                onAction={reset}
-              />
-            )}
-            <Row between>
-              <Button ghost disabled={step === 0} onPress={() => setStep(step - 1)}>
-                Back
-              </Button>
-              <Button primary onPress={next}>
-                {step === last ? "Go to dashboard" : step === 2 ? "Verify" : "Continue"}
-              </Button>
-            </Row>
-          </Column>
-        </Card>
-      </Column></Container>
+              )}
+              <Divider />
+              <Row between alignCenter>
+                <Button ghost disabled={step === 0} onPress={() => setStep(Math.max(0, step - 1))}>Back</Button>
+                <Button primary raised iconRight={<Icon arrowRight decorative />} onPress={next}>
+                  {step < 2 ? "Continue" : step === 2 ? "Verify" : "Open Riskora"}
+                </Button>
+              </Row>
+            </Column>
+          </Card>
+        </Column>
+      </Container>
     </Row>
   );
 }
@@ -132,12 +74,10 @@ function WizardLive() {
 export const ONBOARDING_TEMPLATE: TemplateDoc = {
   slug: "onboarding",
   name: "Onboarding",
-  description: "Multi-step setup wizard: a live step indicator with tracking progress, per-step form cards, code verification, and a completion state. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Setup wizard",
-      anatomy: "Controlled Steps (pressable circles) + a progress-bar Steps tracking the same step + one Card per step: account Inputs, workspace Input/URL prefix/timezone Select, 6-digit InputOTP, success EmptyState. Back/Continue move through; the final CTA toasts.",
-      render: () => <WizardLive />,
-    },
-  ],
+  group: "Auth",
+  icon: "rocket",
+  description: "Four steps: about you, workspace, code verification and done. Steps are pressable.",
+  path: "onboarding",
+  app: false,
+  Screen: OnboardingScreen,
 };

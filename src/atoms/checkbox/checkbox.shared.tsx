@@ -44,10 +44,21 @@ export interface CheckboxProps {
   indeterminate?: boolean;
   /**
    * A checkbox that selects an item in a list or a bulk selection (a table's rows, a
-   * list in edit mode, a select-all), rather than one on/off setting. The web draws
+   * list in edit mode, a select-all), rather than one on/off setting.
+   * <!-- only: web -->
+   * The web draws
    * the checkbox, iOS the edit-mode selection circle, Android the Material 3 checkbox.
    * Without it a Checkbox is one setting, which iOS and Android render as their
    * switch (role `switch`), so a settings row reads the way each platform writes it.
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * iOS draws the edit-mode selection circle. Without it a Checkbox is one setting,
+   * which iOS renders as its switch (role `switch`), so a settings row reads the way the platform writes it.
+   * <!-- /only -->
+   * <!-- only: android -->
+   * Android draws the Material 3 checkbox. Without it a Checkbox is one setting,
+   * which Android renders as its switch (role `switch`), so a settings row reads the way the platform writes it.
+   * <!-- /only -->
    */
   selection?: boolean;
   /** Fired with the next checked value when the row is pressed (both modes). Web keyboard activation supports Space on release and Enter. */

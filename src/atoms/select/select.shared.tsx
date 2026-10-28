@@ -71,10 +71,21 @@ export interface SelectProps extends MeasureProps {
    */
   options?: Array<string | SelectOption>;
   /**
-   * The field's persistent label. Its placement is platform-adaptive: iOS and web
+   * The field's persistent label. Its placement is platform-adaptive:
+   * <!-- only: web -->
+   * iOS and web
    * render it ABOVE the trigger; Android renders the Material 3 in-container
    * FLOATING label (centered like a placeholder at rest, floating to the top once
-   * the menu opens or a value is selected). The label names the field for a11y.
+   * the menu opens or a value is selected).
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * iOS renders it ABOVE the trigger.
+   * <!-- /only -->
+   * <!-- only: android -->
+   * Android renders the Material 3 in-container FLOATING label (centered like a
+   * placeholder at rest, floating to the top once the menu opens or a value is selected).
+   * <!-- /only -->
+   * The label names the field for a11y.
    */
   label?: string;
   /** Accessible purpose for the trigger and option list. Overrides the visible

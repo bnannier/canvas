@@ -4,9 +4,18 @@ Underline, pill, vertical, with badges.
 
 On the web the underline look marks the active tab with a glowing accent bar on
 the row's hairline, pills sit on a rounded track with a raised thumb, and the
-vertical rail washes its active row in the accent. iOS draws its segmented
+vertical rail washes its active row in the accent.
+<!-- only: web -->
+iOS draws its segmented
 control (UISegmentedControl): underline and pills are a capsule track with a
 raised thumb, and vertical is a grouped rail. Android draws Material 3's tabs.
+<!-- /only -->
+<!-- only: ios -->
+iOS draws its segmented control (UISegmentedControl): underline and pills are a capsule track with a raised thumb, and vertical is a grouped rail.
+<!-- /only -->
+<!-- only: android -->
+Android draws Material 3's tabs.
+<!-- /only -->
 In glass mode a filled selection is a
 control-layer pane behind the selected label, in the platform skin's selected
 tint with readable foreground ink. Solid mode keeps the complete platform
@@ -64,11 +73,21 @@ starving the panel beside it.
 ### Scrollable overflow
 
 A row longer than its container pans horizontally instead of clipping, at any
-container width and with no prop: the scroller is inert while the row fits,
+container width and with no prop: the scroller is inert while the row
+<!-- only: web -->
+fits,
 and on Android it then takes no sideways drag either, so a tap that drifts
 sideways still selects its tab and a swipe that starts across the row scrolls
 the page (while TalkBack explores by touch the scroller stays enabled, so the
-exploring finger reaches every tab). Selecting a tab (press or arrow key)
+exploring finger reaches every tab).
+<!-- /only -->
+<!-- only: ios -->
+fits.
+<!-- /only -->
+<!-- only: android -->
+fits, and it then takes no sideways drag either, so a tap that drifts sideways still selects its tab and a swipe that starts across the row scrolls the page (while TalkBack explores by touch the scroller stays enabled, so the exploring finger reaches every tab).
+<!-- /only -->
+Selecting a tab (press or arrow key)
 scrolls it fully into view with a sliver of its neighbor left showing. `block` shares the row equally and never
 overflows; a vertical rail stacks instead.
 

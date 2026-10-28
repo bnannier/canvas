@@ -29,6 +29,13 @@ export interface GlassSurfaceProps {
   layer?: GlassLayer;
   /** Stable frost independent of density. Content defaults to static material. */
   static?: boolean;
+  /**
+   * The surface floats over the page: a bar, a dialog, a sheet, a popover, a toast. On the
+   * web only a floating surface takes the material, as the v4 hand-off draws its glass;
+   * every surface in the page keeps its complete solid skin in glass mode there. Native
+   * platforms keep their material either way. Defaults to false.
+   */
+  floating?: boolean;
   /** Clear refractive material with restrained tint and minimal frost. */
   clear?: boolean;
   /**

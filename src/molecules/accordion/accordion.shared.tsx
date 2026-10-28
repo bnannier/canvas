@@ -146,9 +146,18 @@ export interface AccordionProps {
   /** Allow more than one panel open at once (default: single-open). */
   multiple?: boolean;
   /**
-   * Card surface: wraps the group in an outlined card container with inset
+   * Card surface:
+   * <!-- only: web -->
+   * wraps the group in an outlined card container with inset
    * headers and content (web/Android). On iOS the default Accordion already
    * renders as the inset-grouped card, so `card` is a no-op there.
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * on iOS the default Accordion already renders as the inset-grouped card, so `card` is a no-op there.
+   * <!-- /only -->
+   * <!-- only: android -->
+   * wraps the group in an outlined card container with inset headers and content.
+   * <!-- /only -->
    */
   card?: boolean;
   /** Disable the whole group (every row stops toggling and dims). */

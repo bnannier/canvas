@@ -6,23 +6,52 @@ icons (`leadingIcon` / `trailingIcon` with any Canvas glyph as `icon`), a
 `passwordToggle` eye for a `secureTextEntry` value, and a `clearable` clear
 button. Input is single-line; for multi-line entry use the dedicated Textarea.
 
-Pass `label` (and `required`) to name the field: iOS and web render the label
+Pass `label` (and `required`) to name the field:
+<!-- only: web -->
+iOS and web render the label
 above the control, while Android floats the Material 3 in-container label. On
 Android the field grows with the user's text size so the floated label never
 meets the value, and a label longer than the field truncates on one line inside
-it while the field's accessible name stays the whole label. The required star is
-decorative: a screen reader hears the field as required, from `aria-required` on
-the web and from its name ("Full name, required") on iOS and Android. A field fills the parent it is given; a step of its own (`xs`, `lg`, …, with
+it while the field's accessible name stays the whole label.
+<!-- /only -->
+<!-- only: ios -->
+iOS renders the label above the control.
+<!-- /only -->
+<!-- only: android -->
+Android floats the Material 3 in-container label. The field grows with the user's text size so the floated label never meets the value, and a label longer than the field truncates on one line inside it while the field's accessible name stays the whole label.
+<!-- /only -->
+The required star is
+decorative: a screen reader hears the field as required,
+<!-- only: web -->
+from `aria-required` on
+the web and from its name ("Full name, required") on iOS and Android.
+<!-- /only -->
+<!-- only: ios android -->
+from its name ("Full name, required").
+<!-- /only -->
+A field fills the parent it is given; a step of its own (`xs`, `lg`, …, with
 `start` to pin it to the leading edge) or a Container step sets its measure.
 Select and the search field share its look, and Field and Form compose that
-label with helper and error text. On iOS the field is the native text field in
+label with helper and error text.
+<!-- only: web ios -->
+On iOS the field is the native text field in
 Canvas's colors: a card-colored box with a hairline, a muted title above, a glyph
 that tints with focus and error, and in solid mode an error wash. Under glass a
 wash would cost the field's ink its contrast over the material, so the iOS field
 takes none (the web's field a trace in dark only), and the error border, the tinted
-glyph and a Field's message carry the state. A prefix or suffix addon's fill is held to
+glyph and a Field's message carry the state.
+<!-- /only -->
+A prefix or suffix addon's fill is held to
 the same bar: under glass it is only as dense as keeps its text at 4.5:1 over the field,
+<!-- only: web -->
 so in the browser's light palettes and on the iOS field in dark it is a faint trace.
+<!-- /only -->
+<!-- only: ios -->
+so on the iOS field in dark it is a faint trace.
+<!-- /only -->
+<!-- only: android -->
+so in a light palette it is a faint trace.
+<!-- /only -->
 
 Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
@@ -37,11 +66,15 @@ disabled one dims. A prefix sits in a muted box behind a divider, a passive
 suffix is inline monospace text before the clear button (a small raised disc with
 an x), and an action suffix is a button box at the end.
 
+<!-- only: web ios -->
 On iOS the clear button is the system's gray disc with an x, inside the boxed
 suffix segment, and the action suffix's label is a semibold 15-point brand label.
+<!-- /only -->
+<!-- only: web android -->
 On Android the suffix is inline text before the circled-x clear glyph, an errored
 field shows a red alert glyph at its end (in place of a clear or eye button), and
 a read-only field drops its fill under a dashed frame with a subtle underline.
+<!-- /only -->
 
 `eyebrow` uses the original dense uppercase web field label, preserving its
 9.5/12.35 metrics and tracking. Other platform label treatments retain their skin.
@@ -52,9 +85,19 @@ a read-only field drops its fill under a dashed frame with a subtle underline.
 
 Pass `search` for the toolbar search: a magnifier, a borderless editor, and a
 uppercase prompt while empty on web. The prompt names the editor unless
-`accessibilityLabel` or `label` supplies its purpose. iOS draws its search field
+`accessibilityLabel` or `label` supplies its purpose.
+<!-- only: web -->
+iOS draws its search field
 (a 36-point muted well) and Android the Material 3 search bar (a 56-dp muted
-stadium). `systemFocus` preserves the system
+stadium).
+<!-- /only -->
+<!-- only: ios -->
+iOS draws its search field (a 36-point muted well).
+<!-- /only -->
+<!-- only: android -->
+Android draws the Material 3 search bar (a 56-dp muted stadium).
+<!-- /only -->
+`systemFocus` preserves the system
 focus outline for the borderless editor.
 
 ## Usage
@@ -204,7 +247,16 @@ focus outline for the borderless editor.
 
 ### Read only or disabled
 
-**Do**: Pass `readOnly` for a value people still need to reach. On the web it stays in the tab order and its text stays selectable. On iOS and Android, React Native maps a read-only field to a disabled native view, so VoiceOver and TalkBack announce it as dimmed and Android cannot select its text.
+**Do**: Pass `readOnly` for a value people still need to reach. On the web it stays in the tab order and its text stays selectable.
+<!-- only: web -->
+On iOS and Android, React Native maps a read-only field to a disabled native view, so VoiceOver and TalkBack announce it as dimmed and Android cannot select its text.
+<!-- /only -->
+<!-- only: ios -->
+On iOS, React Native maps a read-only field to a disabled native view, so VoiceOver announces it as dimmed.
+<!-- /only -->
+<!-- only: android -->
+On Android, React Native maps a read-only field to a disabled native view, so TalkBack announces it as dimmed and its text cannot be selected.
+<!-- /only -->
 
 ```tsx
 <Input label="Workspace ID" readOnly defaultValue="ws_8f2k1" />

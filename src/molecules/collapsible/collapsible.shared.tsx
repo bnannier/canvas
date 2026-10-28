@@ -120,9 +120,18 @@ export interface CollapsibleProps {
    */
   trigger?: ReactNode;
   /**
-   * Card surface: wraps the disclosure in an outlined card container with inset
+   * Card surface:
+   * <!-- only: web -->
+   * wraps the disclosure in an outlined card container with inset
    * header and content (web/Android). On iOS the default Collapsible already
    * renders as the inset-grouped card, so `card` is a no-op there.
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * on iOS the default Collapsible already renders as the inset-grouped card, so `card` is a no-op there.
+   * <!-- /only -->
+   * <!-- only: android -->
+   * wraps the disclosure in an outlined card container with inset header and content.
+   * <!-- /only -->
    */
   card?: boolean;
   /** The collapsible content. A string renders in the skin's content type; a

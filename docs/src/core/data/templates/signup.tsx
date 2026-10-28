@@ -1,105 +1,80 @@
 import { useState } from "react";
-import { Container, Row, Column, Card, Typography, Button, Input, Checkbox, Progress, Divider, Emblem, EmptyState, Icon, useToast } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Live sign-up flow built from real Canvas components: a registration card with
-// a password-strength meter that responds as you type, and the post-submit
-// "check your inbox" confirmation state.
+// The hand-off's Sign up (`Canvas v4.0.0 Templates.dc.html`, `t.signup`): one registration
+// card with a live password strength meter and the terms consent, which swaps to the
+// check-your-inbox state once the account is created. Every part is a kit component from
+// the frame's scope.
 
-function passwordStrength(pw: string): number {
-  if (!pw) return 0;
+/** The hand-off's strength score: length 6 and 10, mixed case, a digit or symbol. */
+function strength(pw: string): number {
   let score = 0;
-  if (pw.length >= 8) score += 1;
-  if (pw.length >= 12) score += 1;
-  if (/[0-9]/.test(pw)) score += 1;
-  if (/[^A-Za-z0-9]/.test(pw)) score += 1;
-  return Math.min(1, score / 4 || 0.15);
+  if (pw.length >= 6) score++;
+  if (pw.length >= 10) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[\d\W]/.test(pw)) score++;
+  return score;
 }
 
-function SignupLive() {
+const LABELS = ["Use 10+ characters with a number", "Weak", "Fair", "Good", "Strong"];
+
+function SignupScreen({ K, go }: TemplateScreenProps) {
+  const { Row, Column, Container, Card, Typography, Button, Input, Checkbox, Progress, Emblem, Avatar, Icon, useToast } = K;
   const { toast } = useToast();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const strength = passwordStrength(password);
-  const createAccount = () => {
-    if (!email.trim() || !password) {
-      toast({ destructive: true, message: "Missing details", description: "Enter your work email and a password to create an account." });
-      return;
-    }
-    toast({ success: true, message: "Account created", description: `We sent a confirmation link to ${email.trim()}.` });
-  };
+  const [pw, setPw] = useState("");
+  const [terms, setTerms] = useState(false);
+  const [done, setDone] = useState(false);
+  const score = strength(pw);
+
   return (
-    <Row center>
-      <Container sm><Column cozy>
+    <Row center alignCenter grow>
+      <Container sm>
         <Card>
-          <Column cozy>
-            <Column tight alignCenter>
-              {/* Branded to the fictional demo company, never to Canvas itself. See the
-                  note in signin.tsx: an unbranded account form inside an app named
-                  Canvas reads as the app's own signup, which is what App Review
-                  objected to. */}
-              <Emblem primary label="A" />
-              <Typography h3>Create your Acme Corp account</Typography>
-              <Typography small>Demo form. Enter anything to see the result.</Typography>
+          {done ? (
+            <Column cozy alignCenter>
+              <Emblem primary large><Icon mailOpen decorative /></Emblem>
+              <Typography h4 level={2} center>Check your inbox</Typography>
+              <Typography small subtle center>We sent a confirmation link to ada@company.com. It expires in 24 hours.</Typography>
+              <Button outline onPress={() => toast({ message: "Confirmation email resent" })}>Resend email</Button>
+              <Button link small onPress={() => setDone(false)}>Use a different email</Button>
             </Column>
-            <Input label="Full name" placeholder="Rachel Chen" value={name} onChangeText={setName} />
-            <Input label="Work email" placeholder="you@company.com" value={email} onChangeText={setEmail} />
-            <Input label="Password" placeholder="8+ characters" secureTextEntry value={password} onChangeText={setPassword} />
-            <Column tight>
-              <Progress value={strength} accessibilityLabel="Password strength" />
-              <Typography tiny>Use 8 or more characters with a number and a symbol.</Typography>
+          ) : (
+            <Column relaxed>
+              <Row>
+                <Avatar logo initials="Rk" accessibilityLabel="Riskora" />
+              </Row>
+              <Column tight>
+                <Typography h4 level={2}>Create your account</Typography>
+                <Typography small subtle>Free for three workspaces. No card needed.</Typography>
+              </Column>
+              <Input label="Full name" placeholder="Ada Lovelace" />
+              <Input label="Work email" placeholder="ada@company.com" keyboardType="email-address" autoCapitalize="none" />
+              <Column snug>
+                <Input label="Password" placeholder="At least 10 characters" secureTextEntry value={pw} onChangeText={setPw} />
+                <Progress small segments={4} value={score / 4} danger={score === 1} warning={score === 2} accessibilityLabel="Password strength" />
+                <Typography caption medium destructive={score === 1} warning={score === 2} success={score >= 3} subtle={score === 0}>{LABELS[score]}</Typography>
+              </Column>
+              <Checkbox checked={terms} onChange={setTerms}>I agree to the Terms and the Data Processing Addendum.</Checkbox>
+              <Button primary raised block onPress={() => (terms ? setDone(true) : toast({ message: "Accept the terms to continue" }))}>Create account</Button>
+              <Row center alignCenter wrap tight>
+                <Typography small subtle>Already have one?</Typography>
+                <Button link small onPress={() => go("signin")}>Sign in</Button>
+              </Row>
             </Column>
-            <Checkbox>I agree to the Terms of Service and the Privacy Policy.</Checkbox>
-            <Button block primary onPress={createAccount}>Create account</Button>
-            <Divider>or continue with</Divider>
-            <Row snug>
-              <Column fill>
-                <Button block outline onPress={() => toast({ message: "Continue with Google", description: "This would hand off to Google's sign-in flow." })}>Google</Button>
-              </Column>
-              <Column fill>
-                <Button block outline onPress={() => toast({ message: "Continue with GitHub", description: "This would hand off to GitHub's sign-in flow." })}>GitHub</Button>
-              </Column>
-            </Row>
-            <Row center tight alignCenter>
-              <Typography small>Already have an account?</Typography>
-              <Button link small onPress={() => toast({ message: "Sign in", description: "This would open the sign-in page." })}>Sign in</Button>
-            </Row>
-          </Column>
+          )}
         </Card>
-      </Column></Container>
+      </Container>
     </Row>
-  );
-}
-
-function ConfirmEmailLive() {
-  const { toast } = useToast();
-  return (
-    <EmptyState
-      bordered
-      icon={<Icon mail />}
-      title="Check your inbox"
-      description="We sent a confirmation link to you@company.com. The link expires in 24 hours."
-      actionLabel="Resend email"
-      onAction={() => toast({ success: true, message: "Email resent", description: "A fresh confirmation link is on its way to you@company.com." })}
-    />
   );
 }
 
 export const SIGNUP_TEMPLATE: TemplateDoc = {
   slug: "signup",
-  name: "Sign-up",
-  description: "Registration card with a live password-strength meter, terms consent, OAuth alternatives, and the check-your-inbox confirmation state. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Registration card",
-      anatomy: "Logo Emblem + name/email/password Inputs + strength Progress (fills as you type) + terms Checkbox + primary CTA + OAuth Divider row. A centered sm Container caps the form and stays fluid on narrow screens.",
-      render: () => <SignupLive />,
-    },
-    {
-      title: "Confirm email",
-      anatomy: "Post-submit state: an EmptyState with a mail icon, what happened, and a resend action.",
-      render: () => <ConfirmEmailLive />,
-    },
-  ],
+  name: "Sign up",
+  group: "Auth",
+  icon: "userPlus",
+  description: "Registration card with a live strength meter, terms consent and the check-your-inbox state.",
+  path: "signup",
+  app: false,
+  Screen: SignupScreen,
 };

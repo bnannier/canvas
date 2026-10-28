@@ -1,152 +1,77 @@
-import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Input, Select, Chip, Feed, EmptyState, Icon, useToast } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import { Fragment, useState } from "react";
+import type { IconName } from "@nannier/canvas";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Audit log built from real Canvas components: a filter toolbar whose search
-// Input and actor Select live-filter the day-grouped activity Feeds below,
-// removable filter Chips, and a load-more footer that appends an older day.
+// The hand-off's Activity (`Canvas v4.0.0 Templates.dc.html`, `t.activity`): the Audit
+// log heading with Export CSV, the filter chips and the date range, then the day-grouped
+// timeline, each event on a toned glyph tile. Every part is a kit component from the
+// frame's scope.
 
-interface DayEvent {
-  id: string;
-  actor: string;
-  action: string;
-  time: string;
-}
+type Kind = "security" | "members" | "billing";
+type Tone = "success" | "primary" | "warning" | "muted";
 
-interface DayGroup {
-  label: string;
-  items: DayEvent[];
-}
-
-const BASE_GROUPS: DayGroup[] = [
-  {
-    label: "TODAY",
-    items: [
-      { id: "t1", actor: "Rachel Chen", action: "revoked API key cnv_live_c41d", time: "2 min ago" },
-      { id: "t2", actor: "Ada Lovelace", action: "invited sofia@acme.com as Viewer", time: "1 hour ago" },
-      { id: "t3", actor: "System", action: "rotated the webhook signing secret", time: "4 hours ago" },
-    ],
-  },
-  {
-    label: "YESTERDAY",
-    items: [
-      { id: "y1", actor: "Kevin Turner", action: "enabled two-factor authentication", time: "18 hours ago" },
-      { id: "y2", actor: "Rachel Chen", action: "changed the workspace name to Acme Corp", time: "22 hours ago" },
-      { id: "y3", actor: "System", action: "completed the nightly backup", time: "1 day ago" },
-    ],
-  },
+const EVENTS: { day: string; kind: Kind; icon: IconName; tone: Tone; who: string; what: string; at: string }[] = [
+  { day: "Today", kind: "security", icon: "shieldCheck", tone: "success", who: "Ada Lovelace", what: "enabled two-factor authentication", at: "09:41" },
+  { day: "Today", kind: "members", icon: "userPlus", tone: "primary", who: "Grace Hopper", what: "invited noor@ionize.io as Editor", at: "09:12" },
+  { day: "Today", kind: "billing", icon: "creditCard", tone: "muted", who: "System", what: "charged $48.00 for the Team plan", at: "08:00" },
+  { day: "Yesterday", kind: "security", icon: "shieldAlert", tone: "warning", who: "System", what: "blocked 3 sign-ins from 10.0.4.2", at: "22:18" },
+  { day: "Yesterday", kind: "members", icon: "userCog", tone: "primary", who: "Kira Tanaka", what: "made Liang Bao an Admin", at: "16:40" },
+  { day: "Yesterday", kind: "billing", icon: "receipt", tone: "muted", who: "Bobby Nannier", what: "downloaded invoice INV-0041", at: "11:05" },
 ];
 
-const OLDER_GROUP: DayGroup = {
-  label: "EARLIER THIS WEEK",
-  items: [
-    { id: "e1", actor: "Ada Lovelace", action: "created API key cnv_live_9f2e", time: "3 days ago" },
-    { id: "e2", actor: "Kevin Turner", action: "exported the June audit log", time: "4 days ago" },
-    { id: "e3", actor: "System", action: "applied platform update 2.14", time: "5 days ago" },
-  ],
-};
-
-const ACTORS = ["Anyone", "Rachel Chen", "Ada Lovelace", "Kevin Turner", "System"];
-
-interface FilterChip {
-  id: string;
-  label: string;
-  info?: boolean;
-}
-
-const INITIAL_CHIPS: FilterChip[] = [
-  { id: "event", label: "event: session", info: true },
-  { id: "range", label: "last 7 days" },
+const FILTERS: { key: "all" | Kind; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "security", label: "Security" },
+  { key: "members", label: "Members" },
+  { key: "billing", label: "Billing" },
 ];
 
-function ActivityLive() {
+function ActivityScreen({ K, phone }: TemplateScreenProps) {
+  const { Row, Column, Card, Typography, Button, Chip, Icon, Emblem, Divider, useToast } = K;
   const { toast } = useToast();
-  const [query, setQuery] = useState("");
-  const [actor, setActor] = useState("Anyone");
-  const [chips, setChips] = useState<FilterChip[]>(INITIAL_CHIPS);
-  const [olderLoaded, setOlderLoaded] = useState(false);
-
-  const groups = olderLoaded ? [...BASE_GROUPS, OLDER_GROUP] : BASE_GROUPS;
-  const q = query.trim().toLowerCase();
-  const visible = groups
-    .map((group) => ({
-      ...group,
-      items: group.items.filter(
-        (event) =>
-          (actor === "Anyone" || event.actor === actor) &&
-          (q === "" || `${event.actor} ${event.action}`.toLowerCase().includes(q)),
-      ),
-    }))
-    .filter((group) => group.items.length > 0);
-
-  const removeChip = (chip: FilterChip) => {
-    setChips((prev) => prev.filter((c) => c.id !== chip.id));
-    toast({ message: "Filter removed", description: `"${chip.label}" no longer narrows this log.` });
-  };
-
+  const [filter, setFilter] = useState<"all" | Kind>("all");
+  const shown = EVENTS.filter((e) => filter === "all" || e.kind === filter);
+  const days = [...new Set(shown.map((e) => e.day))];
   return (
-    <Column relaxed>
-      <Card>
-        <Column snug>
-          <Row snug stacks alignEnd>
-            <Column fill>
-              <Input
-                leadingIcon
-                icon="search"
-                placeholder="Search events"
-                value={query}
-                onChangeText={setQuery}
-              />
-            </Column>
-            {/* The toolbar cell (`.col-auto`): the Select hugs its value, so the search
-                field keeps the remainder of the row. A bare Select fills the row and
-                leaves the field's fill column nothing. */}
-            <Column>
-              <Select label="Actor" defaultValue="Anyone" options={ACTORS} onSelect={setActor} />
-            </Column>
-            <Button
-              outline
-              onPress={() =>
-                toast({
-                  success: true,
-                  message: "Export started",
-                  description: "The filtered audit log is being prepared as a CSV.",
-                })
-              }
-            >
-              Export
-            </Button>
-          </Row>
-          {chips.length > 0 && (
-            <Row tight wrap>
-              {chips.map((chip) => (
-                <Chip key={chip.id} info={chip.info} onRemove={() => removeChip(chip)}>
-                  {chip.label}
-                </Chip>
-              ))}
-            </Row>
-          )}
-        </Column>
-      </Card>
-      {visible.length === 0 ? (
-        <EmptyState
-          icon={<Icon search />}
-          title="No matching events"
-          description="No events match the current filters. Clear the search or pick another actor."
-        />
-      ) : (
-        visible.map((group) => (
-          <Column snug key={group.label}>
-            <Typography tiny semibold>{group.label}</Typography>
-            <Feed connector items={group.items} />
+    <Column airy>
+      <Row between alignEnd wrap cozy>
+        {phone ? null : (
+          <Column tight>
+            <Typography h3 level={2}>Audit log</Typography>
+            <Typography small subtle>Every change in Riskora, newest first.</Typography>
           </Column>
-        ))
-      )}
-      <Row center>
-        <Button outline small disabled={olderLoaded} onPress={() => setOlderLoaded(true)}>
-          Load older events
-        </Button>
+        )}
+        <Button outline iconLeft={<Icon download decorative />} onPress={() => toast({ message: "Export started · CSV" })}>Export CSV</Button>
       </Row>
+      <Row between alignCenter wrap snug>
+        <Row snug wrap>
+          {FILTERS.map((f) => (
+            <Chip key={f.key} selectable selected={filter === f.key} onSelectedChange={() => setFilter(f.key)}>{f.label}</Chip>
+          ))}
+        </Row>
+        <Chip icon={<Icon calendar decorative />} onPress={() => toast({ message: "Range: last 7 days" })}>Last 7 days</Chip>
+      </Row>
+      {days.map((day) => (
+        <Column key={day} cozy>
+          <Typography eyebrow subtle>{day}</Typography>
+          <Card>
+            <Column cozy>
+              {shown.filter((e) => e.day === day).map((e, i) => (
+                <Fragment key={`${e.who}-${e.at}`}>
+                  {i > 0 ? <Divider /> : null}
+                  <Row cozy alignStart>
+                    <Emblem {...{ [e.tone]: true }}><Icon {...{ [e.icon]: true }} decorative /></Emblem>
+                    <Column fill>
+                      <Typography subtle><Typography semibold foreground>{e.who}</Typography>{` ${e.what}`}</Typography>
+                    </Column>
+                    <Typography caption mono subtle>{e.at}</Typography>
+                  </Row>
+                </Fragment>
+              ))}
+            </Column>
+          </Card>
+        </Column>
+      ))}
     </Column>
   );
 }
@@ -154,13 +79,10 @@ function ActivityLive() {
 export const ACTIVITY_TEMPLATE: TemplateDoc = {
   slug: "activity",
   name: "Activity",
-  description: "Audit log with a filter toolbar and a day-grouped activity timeline. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Audit log",
-      anatomy:
-        "Filter toolbar (search Input + actor Select live-filter the timeline; removable filter Chips; Export toasts) above one Feed per day group under a muted date heading; a day group with no matches disappears, and the footer Button appends an older day group once, then disables.",
-      render: () => <ActivityLive />,
-    },
-  ],
+  group: "App",
+  icon: "activity",
+  description: "Audit log with a filter toolbar and a day-grouped activity timeline.",
+  path: "activity",
+  app: true,
+  Screen: ActivityScreen,
 };

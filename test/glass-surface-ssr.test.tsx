@@ -50,9 +50,11 @@ function HydrationProbe() {
   return <Text>{useHydrated() ? "client" : "server"}</Text>;
 }
 
+// A floating surface (a bar, a dialog): on the web only what floats over the page takes the
+// material (the v4 hand-off), so it is the one a server ships frosted.
 const ui = (
   <ThemeProvider glass>
-    <GlassSurface layer="functional" style={{ borderRadius: 12 }}>
+    <GlassSurface layer="functional" floating style={{ borderRadius: 12 }}>
       <Text>Glass body</Text>
     </GlassSurface>
     <HydrationProbe />

@@ -1,4 +1,5 @@
 import { Alert, Card, CodeBlock, Column, Grid, Typography } from "@nannier/canvas";
+import { shows } from "../../../core/platforms-shown";
 import { Page, PageHeader } from "../../../ui/page";
 import { Section } from "../../../ui/section";
 import { H3 } from "../../../ui/prose";
@@ -14,7 +15,7 @@ export default function BoilerplateScreen() {
   return (
     <Page>
       <Column loose>
-        <PageHeader title="Boilerplate" description="A runnable Expo starter for web, iOS, and Android, built with the published Canvas package." />
+        <PageHeader title="Boilerplate" description={`A runnable Expo starter for ${shows("android") ? "web, iOS, and Android" : "web and iOS"}, built with the published Canvas package.`} />
         <Alert info title="An independent consumer" description="The starter has its own package.json and lockfile. Expo resolves the installed Canvas package normally, without docs aliases or a source overlay." />
 
         <Section title="Clone and run">
@@ -26,8 +27,8 @@ export default function BoilerplateScreen() {
             "bun run web",
           ].join("\n")} />
           <Typography muted>The terminal prints the web development URL. For a native app, install the matching platform toolchain and boot a simulator or emulator, then run the appropriate command.</Typography>
-          <CodeBlock copy language="sh" code={["bun run ios", "# or", "bun run android"].join("\n")} />
-          <Typography muted>Native builds require compatible Xcode and CocoaPods on macOS, or the Android SDK and a supported JDK. The starter README contains setup and verification details.</Typography>
+          <CodeBlock copy language="sh" code={(shows("android") ? ["bun run ios", "# or", "bun run android"] : ["bun run ios"]).join("\n")} />
+          <Typography muted>{`Native builds require compatible Xcode and CocoaPods on macOS${shows("android") ? ", or the Android SDK and a supported JDK" : ""}. The starter README contains setup and verification details.`}</Typography>
         </Section>
 
         <Section title="Included flows">

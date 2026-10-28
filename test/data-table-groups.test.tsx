@@ -8,6 +8,7 @@ import { DataTable, type DataTableProps, type DataTableGroup } from "../src/orga
 import { DataTable as AndroidDataTable } from "../src/organisms/data-table/data-table.android.tsx";
 import { DataTable as IosDataTable } from "../src/organisms/data-table/data-table.ios.tsx";
 import { Badge } from "../src/atoms/badge/badge.tsx";
+import { mockInPageFrost } from "./fixtures/material-platform.ts";
 
 // DataTable `groups` (titled bands spanning every column above each group's rows) and
 // the column weights (`grow`, `minWidth`) the v4 props table is laid out with:
@@ -73,15 +74,22 @@ for (const [platform, Table] of ENTRIES) {
       expect(band.getAttribute("aria-colspan")).toBe("3");
     });
 
-    it("paints the band on the sunken fill, an ink tint under glass", () => {
+    // The table is in-page material: the web keeps its complete solid skin under glass (the
+    // v4 hand-off), and a platform whose in-page surfaces frost paints the band as an ink tint.
+    it("paints the band on the sunken fill, kept on the web under glass, an ink tint where the table frosts", () => {
+      const band = () => (screen.getByText("Intent").closest('[role="row"]') as HTMLElement).style.backgroundColor.replace(/\s/g, "");
       ui(<Table testID="table" columns={["Prop", "Key"]} groups={GROUPS} />);
-      const solid = (screen.getByText("Intent").closest('[role="row"]') as HTMLElement).style.backgroundColor;
       const [r, g, b] = [1, 3, 5].map((i) => parseInt(lightColors["surface-sunken"]!.slice(i, i + 2), 16));
-      expect(solid.replace(/\s/g, "")).toBe(`rgba(${r},${g},${b},1.00)`);
+      expect(band()).toBe(`rgba(${r},${g},${b},1.00)`);
       cleanup();
       ui(<Table testID="table" columns={["Prop", "Key"]} groups={GROUPS} />, true);
-      const glass = (screen.getByText("Intent").closest('[role="row"]') as HTMLElement).style.backgroundColor;
-      expect(glass.replace(/\s/g, "")).not.toBe(`rgba(${r},${g},${b},1.00)`);
+      expect(band()).toBe(`rgba(${r},${g},${b},1.00)`);
+      cleanup();
+      const frost = mockInPageFrost();
+      try {
+        ui(<Table testID="table" columns={["Prop", "Key"]} groups={GROUPS} />, true);
+        expect(band()).not.toBe(`rgba(${r},${g},${b},1.00)`);
+      } finally { frost.mockRestore(); }
     });
 
     it("sorts rows within their group and never moves a group", () => {

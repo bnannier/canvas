@@ -11,7 +11,7 @@ import { DotGrid } from "../detail/frame";
 // a still frame (decision P5-V): the hand-off's `<cv-hero>` loops are motion the owner
 // removed, so it shows live kit components in the reference image's state.
 
-export function SectionHero({ room, vignette }: { room: Room; vignette: ReactNode }) {
+export function SectionHero({ room, vignette }: { room: Pick<Room, "title" | "lead" | "body">; vignette: ReactNode }) {
   return (
     // No cross-axis alignment: a stacked Row keeps its alignment, and a centred column would
     // hug the vignette instead of giving it the full width, so side by side the text sits

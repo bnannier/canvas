@@ -83,7 +83,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
       {"kind":"boolean","prop":"tabular","value":false},
       {"kind":"boolean","prop":"uppercase","value":false},
       {"kind":"boolean","prop":"center","value":false},
-      {"kind":"text","prop":"children","value":"Light as material"},
+      {"kind":"text","prop":"children","value":"Made of light"},
     ],
     section: "Foundations",
     propsInterface: "TypographyProps",

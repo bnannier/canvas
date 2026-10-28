@@ -240,14 +240,14 @@ export default function ColorsScreen() {
         <Column cozy>
           <TokenH1>Colors & Theme</TokenH1>
           <TokenLede>
-            Canvas uses a semantic token system. Every color is a named token (primary, muted-foreground, border, …) that ships as a plain value per scheme. Components read the active set through useTheme() and build their React Native styles from it, so the same code themes correctly on iOS, Android, and the web, with no per-platform fork. You never touch the values directly: you pick a component's look with semantic boolean props.
+            Canvas uses a semantic token system. Every color is a named token (primary, muted-foreground, border, …) that ships as a plain value per scheme. Components read the active set through useTheme() and build their React Native styles from it, so the same code themes correctly on every platform, with no per-platform fork. You never touch the values directly: you pick a component's look with semantic boolean props.
           </TokenLede>
           <Callout label="Try this.">Toggle the theme. Every sample below reads the active scheme live, so the values change with it.</Callout>
         </Column>
 
         <TokenSection
           title="Brand"
-          description="Two brand colors with different jobs. primary is the selection color: checked, selected and current states, links and focus. action is the call to action: primary buttons, meters and count badges. Each has a partner for the label on its fill, and primary-text colors links, text actions and focused Android field labels on neutral surfaces."
+          description="Two brand colors with different jobs. primary is the selection color: checked, selected and current states, links and focus. action is the call to action: primary buttons, meters and count badges. Each has a partner for the label on its fill, and primary-text colors links, text actions and focused floating field labels on neutral surfaces."
           anatomy="ring is Dark Factory's violet as drawn, so the focus outline holds 3:1 on the page, the card and the muted surfaces. primary is the same hue solved until its label clears 4.5:1, which puts it a step darker than the ring in light."
         >
           <Grid minTileWidth={150} cozy>
@@ -325,7 +325,7 @@ export default function ColorsScreen() {
         <TokenSection
           title="Glass"
           description="Glass is a theming-level surface mode, not a per-component prop: pass glass on the ThemeProvider and every surface takes the material together, layered, or solid to force the flat look; neither means the platform default."
-          anatomy={`Glass publishes its OWN fills instead of rewriting a semantic one, one per layer of the model, and each platform has its own set. Here, in the active scheme: the functional shells paint glass-tint (${glass["glass-tint"]}), the content panes the denser glass-tint-content (${glass["glass-tint-content"]}), the controls the glass-tint-control puck (${glass["glass-tint-control"]}), and the read-and-act surfaces (menus, alert dialogs, toasts, tooltips) the densest glass-tint-dense (${glass["glass-tint-dense"]}). The web's are Dark Factory's frost tints; Android keeps the native set (glassByScheme), and iOS the same set but for a sheerer dark control puck. popover and card keep their opaque values in BOTH schemes, so solid mode is untouched and the fills stay independent; every surface takes its tint UNDER the real material.`}
+          anatomy={`Glass publishes its OWN fills instead of rewriting a semantic one, one per layer of the model, and each platform has its own set. Here, in the active scheme: the functional shells paint glass-tint (${glass["glass-tint"]}), the content panes the denser glass-tint-content (${glass["glass-tint-content"]}), the controls the glass-tint-control puck (${glass["glass-tint-control"]}), and the read-and-act surfaces (menus, alert dialogs, toasts, tooltips) the densest glass-tint-dense (${glass["glass-tint-dense"]}). The web's are the hand-off's frost tints; native keeps its own set (glassByScheme), with a sheerer dark control puck on iOS. popover and card keep their opaque values in BOTH schemes, so solid mode is untouched and the fills stay independent; every surface takes its tint UNDER the real material.`}
         >
           <Column cozy>
             <Grid minTileWidth={300} columns={2} relaxed>

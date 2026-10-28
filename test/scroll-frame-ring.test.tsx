@@ -25,6 +25,7 @@ import { GridList } from "../src/molecules/grid-lists/grid-lists.tsx";
 import { GridList as IOSGridList } from "../src/molecules/grid-lists/grid-lists.ios.tsx";
 import { GridList as AndroidGridList } from "../src/molecules/grid-lists/grid-lists.android.tsx";
 import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
+import { mockInPageFrost } from "./fixtures/material-platform.ts";
 
 // A CodeBlock, DataTable or Carousel scroller that overflows is a keyboard stop sitting
 // flush inside a clipping card. Its own ring cannot show there: one drawn outside it is
@@ -677,12 +678,17 @@ describe("frame ring follows keyboard focus only", () => {
     expect(frame.style.getPropertyValue("border-bottom-left-radius")).toBe(`${platformShape.web.codeCard}px`);
   });
 
+  // The block is in-page material: the web keeps its solid skin under glass, where the ring
+  // is the solid one above, so the glass root is read where in-page surfaces frost.
   it("rings the root under glass, which already carries the card's corners", () => {
-    ui(<CodeBlock testID="subject" code={LONG} />, { glass: true });
-    const { scroller, frame } = codeBlock("", null).stop();
-    const radius = frame.style.getPropertyValue("border-top-left-radius");
-    fireEvent.keyUp(scroller, { key: "Tab" });
-    expectRing(frame, blush);
-    expect(frame.style.getPropertyValue("border-top-left-radius")).toBe(radius);
+    const frost = mockInPageFrost();
+    try {
+      ui(<CodeBlock testID="subject" code={LONG} />, { glass: true });
+      const { scroller, frame } = codeBlock("", null).stop();
+      const radius = frame.style.getPropertyValue("border-top-left-radius");
+      fireEvent.keyUp(scroller, { key: "Tab" });
+      expectRing(frame, blush);
+      expect(frame.style.getPropertyValue("border-top-left-radius")).toBe(radius);
+    } finally { frost.mockRestore(); }
   });
 });

@@ -1,7 +1,17 @@
 # TabBar
 
-Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (the iOS 26 floating tab bar / Material 3 navigation bar), rendered through the glass functional layer.
+Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active.
+<!-- only: web -->
+The mobile idiom (the iOS 26 floating tab bar / Material 3 navigation bar), rendered through the glass functional layer.
+<!-- /only -->
+<!-- only: ios -->
+The mobile idiom (the iOS 26 floating tab bar), rendered through the glass functional layer.
+<!-- /only -->
+<!-- only: android -->
+The mobile idiom (the Material 3 navigation bar), rendered through the glass functional layer.
+<!-- /only -->
 
+<!-- only: web -->
 iOS and web share the iOS 26 anatomy: a 62 px capsule that floats above the
 content (which scrolls beneath it), inset from the sides, with the safe-area
 inset kept under the capsule, and the selected destination washed in the accent
@@ -10,6 +20,13 @@ full-bleed, 80 tall under a hairline, with its 64 by 32 icon pill. In glass mode
 the selection is a control-layer pane on the active destination: the cell
 capsule on iOS and web, the icon pill on Android. Solid mode retains the
 ordinary platform surface.
+<!-- /only -->
+<!-- only: ios -->
+iOS and web share the iOS 26 anatomy: a 62 px capsule that floats above the content (which scrolls beneath it), inset from the sides, with the safe-area inset kept under the capsule, and the selected destination washed in the accent as a capsule covering its whole cell. In glass mode the selection is a control-layer pane on the active destination's cell capsule. Solid mode retains the ordinary platform surface.
+<!-- /only -->
+<!-- only: android -->
+Android docks the Material 3 bar full-bleed, 80 tall under a hairline, with its 64 by 32 icon pill. In glass mode the selection is a control-layer pane on the active destination's icon pill. Solid mode retains the ordinary platform surface.
+<!-- /only -->
 
 ## Usage
 
@@ -47,7 +64,17 @@ ordinary platform surface.
 
 ### Tab Bar
 
-**Do** — Exactly one destination carries the primary tint on both its icon and label, over the raised cell capsule on iOS and web or Material 3's active-indicator pill on Android; the rest stay muted, so the current tab is always singular and unmistakable. On web the capsule is what lets a bar and a `Sidebar` in the same app shell mark the current destination the same way across the breakpoint that swaps them.
+**Do** — Exactly one destination carries the primary tint on both its icon and label,
+<!-- only: web -->
+over the raised cell capsule on iOS and web or Material 3's active-indicator pill on Android;
+<!-- /only -->
+<!-- only: ios -->
+over the raised cell capsule;
+<!-- /only -->
+<!-- only: android -->
+over Material 3's active-indicator pill;
+<!-- /only -->
+the rest stay muted, so the current tab is always singular and unmistakable. On web the capsule is what lets a bar and a `Sidebar` in the same app shell mark the current destination the same way across the breakpoint that swaps them.
 
 ```tsx
 <TabBar

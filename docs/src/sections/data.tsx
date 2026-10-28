@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { PLATFORM_COPY } from "../data/platform-copy";
 import {
   Accordion,
   ActionPanel,
@@ -119,7 +120,7 @@ function CardRaised() {
         <Typography statValue tabular>{String(COMPONENTS.length)}</Typography>
         <Typography small muted>components</Typography>
       </Row>
-      <Typography small muted>MIT licensed. Web, iOS and Android from one tree.</Typography>
+      <Typography small muted>{PLATFORM_COPY.statFoot}</Typography>
     </Card>
   );
 }
@@ -187,7 +188,7 @@ function CardAnatomy() {
             <CardMedia src={photo("/noor-park.jpg")} alt="Noor Park" />
             <CardHeader>
               <CardTitle>Mobile release 6.3</CardTitle>
-              <CardDescription>Tab bar spacing and the Android blur rebuild.</CardDescription>
+              <CardDescription>{`Tab bar spacing and the ${PLATFORM_COPY.samplePlatform} blur rebuild.`}</CardDescription>
             </CardHeader>
             <CardSeparator />
             <CardContent>
@@ -256,7 +257,7 @@ function StatsCard() {
         <ProgressRing value={91} compact />
         <Column tight>
           <Typography eyebrow subtle>Platforms</Typography>
-          <Typography small muted>iOS 64% · Android 18% · Web 9%</Typography>
+          <Typography small muted>{`iOS 64% · ${PLATFORM_COPY.samplePlatform} 18% · Web 9%`}</Typography>
         </Column>
       </Row>
     </ShowcaseCard>
@@ -362,8 +363,8 @@ function MediaObjectCard() {
       />
       <MediaObject
         src={photo("/liang-bao.jpg")}
-        title="Designing for three skins"
-        description="One tree becomes an iOS capsule, a Material stadium and a lit web control."
+        title={PLATFORM_COPY.articleSkins.title}
+        description={PLATFORM_COPY.articleSkins.description}
         meta="8 min read"
       />
     </ShowcaseCard>
@@ -440,12 +441,12 @@ function Slide({ eyebrow, title, promo }: { eyebrow: string; title: string; prom
 
 function CarouselCard() {
   return (
-    <ShowcaseCard id="c-carousel" caption="<Carousel> one slide per page · slides take the card radius, 28 on Android">
+    <ShowcaseCard id="c-carousel" caption={PLATFORM_COPY.carouselCaption}>
       <Carousel
         showArrows
         showDots
         items={[
-          { key: "material", content: <Slide eyebrow="01 · Material" title="Light is the material" /> },
+          { key: "material", content: <Slide eyebrow={PLATFORM_COPY.slideEyebrow} title="Light is the material" /> },
           { key: "accent", content: <Slide promo eyebrow="02 · Accent" title="One charged hue does every job" /> },
           { key: "motion", content: <Slide eyebrow="03 · Motion" title="Every press runs on one spring" /> },
           {

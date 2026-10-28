@@ -2,7 +2,19 @@
 
 Single-pick selection: stacked, inline, card-style.
 
-One job, a platform's own control: iOS has no radio button, so there a single choice is a checkmark list, the inline picker of a grouped form. Each option's label leads and the chosen option carries a trailing check, and a RadioGroup's options form one inset-grouped section with a hairline between two rows. The web and Android keep the ring, and the role is `radio` on every platform: on the web an 18 px ring (16 `small`, 22 `large`) whose edge thickens in the accent around a hollow center when chosen, on Android Material 3's 20dp ring around an accent dot. In glass mode the ring keeps its solid look on every platform: a ring is a small mark inside content, not a surface, so it draws with no pane and no rim. A `card` option is a content-layer pane, as a selectable Card is. On iOS the list stays vertical when the group asks for a `row` (a list has no row form), and `card` options stay tiles that mark the choice with the same trailing check.
+<!-- only: web -->
+One job, a platform's own control: iOS has no radio button, so there a single choice is a checkmark list, the inline picker of a grouped form. Each option's label leads and the chosen option carries a trailing check, and a RadioGroup's options form one inset-grouped section with a hairline between two rows. The web and Android keep the ring, and the role is `radio` on every platform: on the web an 18 px ring (16 `small`, 22 `large`) whose edge thickens in the accent around a hollow center when chosen, on Android Material 3's 20dp ring around an accent dot.
+<!-- /only -->
+<!-- only: ios -->
+One job, a platform's own control: iOS has no radio button, so there a single choice is a checkmark list, the inline picker of a grouped form. Each option's label leads and the chosen option carries a trailing check, and a RadioGroup's options form one inset-grouped section with a hairline between two rows. The role is `radio` on every platform.
+<!-- /only -->
+<!-- only: android -->
+One job, a platform's own control: Android keeps the ring, Material 3's 20dp ring around an accent dot, and the role is `radio` on every platform.
+<!-- /only -->
+In glass mode the ring keeps its solid look on every platform: a ring is a small mark inside content, not a surface, so it draws with no pane and no rim. A `card` option is a content-layer pane, as a selectable Card is.
+<!-- only: web ios -->
+On iOS the list stays vertical when the group asks for a `row` (a list has no row form), and `card` options stay tiles that mark the choice with the same trailing check.
+<!-- /only -->
 
 Pass `ref` to access the interactive radio row, preserving group navigation. Use `useRef<ComponentRef<typeof Radio>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
@@ -79,7 +91,16 @@ On the web, Space activates the focused control on key release, and Enter also a
 
 ### Stacked
 
-**Do**: Pass a `description` and the control stacks the title over its secondary line for you, the mark aligned to the title (the ring to its first line on the web and Android, the check centered on the row on iOS).
+**Do**: Pass a `description` and the control stacks the title over its secondary line for you, the mark aligned to the title
+<!-- only: web -->
+(the ring to its first line on the web and Android, the check centered on the row on iOS).
+<!-- /only -->
+<!-- only: ios -->
+(the check centered on the row).
+<!-- /only -->
+<!-- only: android -->
+(the ring to its first line).
+<!-- /only -->
 
 ```tsx
 <Radio checked description="For growing teams that need more control.">Pro</Radio>

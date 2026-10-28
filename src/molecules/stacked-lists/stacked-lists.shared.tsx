@@ -120,8 +120,15 @@ export interface StackedListProps {
   /**
    * The list's accessible name when it has no `title` (a `title` names the list, and
    * wins when both are set). A screen reader announces it with the list. A `title` that
-   * is not a string names the list on the web only, and `label` then names it on iOS
-   * and Android. A `virtualized` list needs a name: on the web its scroller is a
+   * is not a string names the list on the web only, and `label` then names it
+   * <!-- only: web -->
+   * on iOS
+   * and Android.
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * in the app.
+   * <!-- /only -->
+   * A `virtualized` list needs a name: on the web its scroller is a
    * keyboard stop while the rows overflow, and Chromium names an unnamed stop from the
    * text of every row it has rendered.
    */

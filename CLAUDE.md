@@ -63,8 +63,14 @@ work now:
    (`tools/skins/divergence.ts`).
 7. **Glass.** The web's glass is the hand-off's material: the layer's tint over a
    `blur(20px) saturate(1.6)` backdrop with a 1 px hairline rim
-   (`glass-surface/web-frost.ts`). iOS Liquid Glass and the Android blur keep their own
-   material, with the hand-off's tints. Solid keeps each skin's complete opaque look.
+   (`glass-surface/web-frost.ts`), and on the web only what floats over the page takes it
+   (the hand-off's `--gl` surfaces: the navbar, tab bar, dialogs, alert dialogs, sheets,
+   drawers, popovers, the command palette, toasts, carousel arrows, video controls, marked
+   `floating`); every other web surface keeps its complete solid skin in glass mode
+   (`resolveMaterial`'s "design" fallback, the owner's 2026-10-28 pixel-exact rule, PLAN
+   D13), which narrows the four-layer model below to the floating surfaces on the web. iOS
+   Liquid Glass and the Android blur keep their own material on every layer, with the
+   hand-off's tints. Solid keeps each skin's complete opaque look.
 8. **Docs.** The docs take the hand-off's information architecture and chrome (the
    floating pill navbar with hue swatches and the scheme and glass switches, the grain,
    one page per section with its rail, a detail page per component, the Skins and
@@ -78,9 +84,18 @@ work now:
    in a window of 760 px or more, the footer closing every page, and the grain over
    everything; the rooms are `docs/src/data/rooms.ts`. Native keeps its tab bar and
    header, with the grain and footer.
-9. **Examples.** A docs example is shown only when an existing kit component fits it;
+9. **Native docs show their own platform only.** The docs app ships to the stores, and
+   App Store guideline 2.3.10 rejects an app that shows another mobile platform's name or
+   imagery (the owner's 2026-10-28 decision). So the iOS build of the docs shows only each
+   component's iOS look and never names Material, Android or Google; the Android build
+   shows only its own look; the web keeps the three platforms side by side. The choice is
+   made per build by Metro's platform extensions (`docs/src/core/platforms-shown.ts`,
+   `docs/src/data/platform-copy.ts`, the `<!-- only: ... -->` blocks the docs generator
+   reads), never by a `Platform.OS` check in shared code, and
+   `test/docs-platform-content.test.ts` scans the native copy for the banned words.
+10. **Examples.** A docs example is shown only when an existing kit component fits it;
    never create a kit component to satisfy an example (see "Dogfood the kit").
-10. **Version.** The owner authorized the 4.0.0 major for this redesign ("bump to
+11. **Version.** The owner authorized the 4.0.0 major for this redesign ("bump to
     4.0.0", 2026-10-27). A push never bumps a major: the release is the Deploy workflow
     dispatched with `major=true` and `major_version=4.0.0` once the last phase lands.
 

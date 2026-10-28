@@ -19,13 +19,28 @@
 // Function` against a live scope), which cannot run under React Native's Hermes engine
 // (no runtime eval). The generated modules are ordinary TSX: Metro bundles them natively
 // and `tsc` type-checks every fence against the real Canvas component types.
+//
+// A page that scopes lines to some builds (`<!-- only: web android -->` ...
+// `<!-- /only -->`, the platform blocks in parse-md.ts's header comment) is read
+// once per build. The web build's modules are written exactly as for a page with no
+// block. A native build whose view differs gets its own docs module beside the web one,
+// `<dir>-docs.ios.tsx` or `<dir>-docs.android.tsx`, which Metro resolves in place of
+// `<dir>-docs.tsx` in that build (a static import of `./<dir>-docs` picks the platform
+// file; docs-index.ts needs no change). Its fences reuse the web build's example modules
+// where the code is the same, and a fence only the native builds show gets an
+// `alt-<hash>.tsx` module. require.context does not resolve platform extensions, so the
+// registry gets a sibling per native build (registry.ios.ts, registry.android.ts) whose
+// context and keys pick that build's docs module, and the descriptions and previews get a
+// sibling only when a native build's text differs. No file carries a Platform.OS check:
+// each build bundles only what it shows.
 
+import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseDoc, scopeNamesFromLiveScope, fenceReferences, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type ParsedDoc, type Prose } from "./parse-md.ts";
+import { parseDoc, bannedWords, DOC_PLATFORMS, type DocPlatform, type NativePlatform, scopeNamesFromLiveScope, fenceReferences, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type ParsedDoc, type Prose } from "./parse-md.ts";
 import { componentPages, pageStructureViolations, registeredComponents, type Category } from "./pages.ts";
-import { extractInherited, extractProps, isPropSource, program, type PropGroup } from "./extract-props.ts";
+import { docBlockProblems, extractInherited, extractProps, isPropSource, program, PROP_SOURCES, type PropGroup } from "./extract-props.ts";
 import { exportedTags, relatedSlugs, scanSemantics, scanTokens, type Semantics } from "./scan-detail.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import { SECTIONS } from "../../docs/src/core/data/detail-sections.ts";
@@ -40,6 +55,10 @@ const CHUNKS_FILE = path.join(REPO, "docs", "src", "core", "docs-chunks.json");
 const PREVIEWS_FILE = path.join(REPO, "docs", "src", "core", "previews.ts");
 const DESCRIPTIONS_FILE = path.join(REPO, "docs", "src", "core", "descriptions.ts");
 const INHERITED_FILE = path.join(EXAMPLES_DIR, "inherited-props.ts");
+// A native build's sibling of one of the files above (registry.ios.ts), which Metro resolves
+// in that build in place of the web file.
+const forBuild = (file: string, platform: NativePlatform) => file.replace(/\.ts$/, `.${platform}.ts`);
+const NATIVE_PLATFORMS = DOC_PLATFORMS.filter((p): p is NativePlatform => p !== "web");
 
 // `--check` (the pre-push gate) answers "is the generated output in sync with the
 // component markdown?" without touching the working tree: every would-be write and
@@ -157,6 +176,15 @@ function writeFileIfChanged(file: string, content: string): void {
   fs.writeFileSync(file, content);
 }
 
+// A file only some runs need (a native build's sibling): written when there is content,
+// removed when there is none (recorded as drift under --check).
+function writeOrRemove(file: string, content: string | null): void {
+  if (content !== null) return writeFileIfChanged(file, content);
+  if (!fs.existsSync(file)) return;
+  if (CHECK) drift.push(`${rel(file)} (no build needs it any more)`);
+  else fs.rmSync(file);
+}
+
 // Remove any file under `root` this run did not (re)generate, then drop directories
 // left empty by the removal. Replaces the old up-front rmSync of EXAMPLES_DIR: a
 // deleted fence still loses its orphan module, but surviving modules keep their
@@ -244,11 +272,35 @@ function writeModule(category: Category, dir: string, name: string, code: string
   };
 }
 
-function buildEntry(category: Category, dir: string, doc: ParsedDoc): Entry {
-  const { examples, donts, guidance } = doc;
+// Every fence module an entry imports, by its code: what a native build's entry reuses.
+function modulesByCode(e: Entry): Map<string, ModuleRef> {
+  const out = new Map<string, ModuleRef>();
+  const add = (m: ModuleRef) => { if (!out.has(m.code)) out.set(m.code, { code: m.code, importName: m.importName, file: m.file }); };
+  e.examples.forEach(add);
+  for (const d of e.donts) { add(d.do); add(d.dont); }
+  for (const g of e.guidance) for (const b of g.blocks) if (b.kind === "example") add(b);
+  return out;
+}
+
+// The entry of one build's view of a page. The web build (no `base`) names its modules by
+// position, as it always has. A native build (`base`, the web entry's modules by code)
+// reuses a web module wherever its fence's code is the same, and names a fence of its own
+// by its content (`alt-<hash>`), so the builds that share one share its module; only
+// those fences are held to the guardrails again.
+function buildEntry(category: Category, dir: string, doc: ParsedDoc, base?: Map<string, ModuleRef>): Entry {
+  const { donts, guidance } = doc;
   const source = `src/${category}/${dir}/${dir}.md`;
+  const fresh = (code: string) => !base?.has(code);
+  const examples = doc.examples.filter((ex) => fresh(ex.code));
+  const module = (name: string, code: string): ModuleRef => {
+    const hit = base?.get(code);
+    if (hit) return hit;
+    const alt = base ? `alt-${crypto.createHash("sha1").update(code).digest("hex").slice(0, 10)}` : name;
+    return { code, ...writeModule(category, dir, alt, code, source) };
+  };
   for (const ex of examples) { recordFenceTags(ex.code, source); recordFenceStyle(ex.code, source, "example", dir); recordFenceBareWidth(ex.code, source, "example"); }
   for (const d of donts) {
+    if (!fresh(d.do.code) && !fresh(d.dont.code)) continue;
     recordFenceTags(d.do.code, source);
     recordFenceTags(d.dont.code, source);
     // Only the "Do" side is held to the no-escape-hatches rule; the "Don't" side
@@ -262,19 +314,19 @@ function buildEntry(category: Category, dir: string, doc: ParsedDoc): Entry {
   // A guidance section's fence is a live example like a variant's, held to the same rules.
   for (const g of guidance) {
     for (const b of g.blocks) {
-      if (b.kind !== "example") continue;
+      if (b.kind !== "example" || !fresh(b.code)) continue;
       recordFenceTags(b.code, source);
       recordFenceStyle(b.code, source, "example", dir);
       recordFenceBareWidth(b.code, source, "example");
     }
   }
-  const exampleRefs: ExampleRef[] = examples.map((ex, i) => {
-    const m = writeModule(category, dir, `example-${i}`, ex.code, source);
+  const exampleRefs: ExampleRef[] = doc.examples.map((ex, i) => {
+    const m = module(`example-${i}`, ex.code);
     return { label: ex.label, code: ex.code, note: ex.note, importName: m.importName, file: m.file };
   });
   const dontRefs: DontRef[] = donts.map((d, i) => {
-    const doMod = writeModule(category, dir, `dont-${i}-do`, d.do.code, source);
-    const dontMod = writeModule(category, dir, `dont-${i}-dont`, d.dont.code, source);
+    const doMod = module(`dont-${i}-do`, d.do.code);
+    const dontMod = module(`dont-${i}-dont`, d.dont.code);
     return {
       title: d.title,
       do: { caption: d.do.caption, code: d.do.code, importName: doMod.importName, file: doMod.file },
@@ -285,7 +337,7 @@ function buildEntry(category: Category, dir: string, doc: ParsedDoc): Entry {
     title: g.title,
     blocks: g.blocks.map((b, j) => {
       if (b.kind !== "example") return b;
-      const m = writeModule(category, dir, `guidance-${i}-${j}`, b.code, source);
+      const m = module(`guidance-${i}-${j}`, b.code);
       return { kind: "example", code: b.code, importName: m.importName, file: m.file };
     }),
   }));
@@ -293,7 +345,7 @@ function buildEntry(category: Category, dir: string, doc: ParsedDoc): Entry {
   // here has its description.
   if (doc.description === null) throw new Error(`${source}: no description; its intro must open with a paragraph (S2)`);
   const fences = [
-    ...examples.map((ex) => ex.code),
+    ...doc.examples.map((ex) => ex.code),
     ...donts.map((d) => d.do.code),
     ...guidance.flatMap((g) => g.blocks.flatMap((b) => (b.kind === "example" ? [b.code] : []))),
   ];
@@ -313,9 +365,12 @@ const proseArray = (blocks: Prose[]) => `[${blocks.map(proseLiteral).join(", ")}
 // Named `<dir>-docs`, one token with no dot: Metro names a split chunk after the part of
 // the module basename before its first dot, and `<dir>` alone collides with the routes
 // that share a component's name (carousel, tabs, listbox, layout, typography).
-const docsModuleFile = (category: Category, dir: string) => path.join(EXAMPLES_DIR, category, dir, `${dir}-docs.tsx`);
+// A native build's own module, when its view of the page differs, is `<dir>-docs.<platform>.tsx`
+// beside it, which Metro resolves in that build in place of the web one.
+const docsModuleFile = (category: Category, dir: string, platform: DocPlatform = "web") =>
+  path.join(EXAMPLES_DIR, category, dir, platform === "web" ? `${dir}-docs.tsx` : `${dir}-docs.${platform}.tsx`);
 
-function renderDocsModule(e: Entry, props: PropGroup[], detail: Detail): string {
+function renderDocsModule(e: Entry, props: PropGroup[], detail: Detail, platform: DocPlatform = "web"): string {
   const imports: string[] = [];
   const local = (file: string) => `./${path.basename(file)}`;
   for (const ex of e.examples) imports.push(`import ${ex.importName} from "${local(ex.file)}";`);
@@ -347,10 +402,13 @@ function renderDocsModule(e: Entry, props: PropGroup[], detail: Detail): string 
   const overview = e.overview.length ? `\n  overview: [\n${e.overview.map((p) => `    ${proseLiteral(p)},`).join("\n")}\n  ],` : "";
   const variantsNote = e.variantsNote.length ? `\n  variantsNote: ${proseArray(e.variantsNote)},` : "";
   const guidanceField = e.guidance.length ? `\n  guidance: [\n${guidance}\n  ],` : "";
+  const view = platform === "web" ? "" : `\n// The ${platform} build's view of the page (its platform blocks resolved); Metro resolves this\n// module in place of ${e.dir}-docs.tsx in that build.`;
+  // A native build's entry reuses one web module wherever its fences repeat a code, so it
+  // imports each module once.
   return `${GENERATED_HEADER}
-// Source: src/${e.category}/${e.dir}/${e.dir}.md
+// Source: src/${e.category}/${e.dir}/${e.dir}.md${view}
 import type { ComponentDocs } from "../../../scope";
-${imports.join("\n")}
+${[...new Set(imports)].join("\n")}
 
 export const docs: ComponentDocs = {
   dir: ${JSON.stringify(e.dir)},
@@ -484,13 +542,30 @@ export function componentDescription(component: Pick<ComponentDoc, "slug" | "dir
 // mode is a literal on purpose: Expo inlines EXPO_ROUTER_IMPORT_MODE as "sync" for
 // every file outside expo-router itself, so following the router's constant would
 // never split.)
-function renderRegistry(entries: Entry[]): string {
+//
+// A native build's registry (registry.<platform>.ts, `platform` and the dirs whose page that
+// build reads differently, `own`) keys those dirs to their `<dir>-docs.<platform>.tsx`, and
+// its context takes those modules and every other dir's web module, never the web module a
+// platform module replaces: a require.context matches files, not resolved imports, so it is
+// the context's own pattern that keeps the web text out of the native bundle.
+function renderRegistry(entries: Entry[], platform: DocPlatform = "web", own: ReadonlySet<string> = new Set()): string {
+  const file = (e: Entry) => (own.has(e.dir) ? `${e.dir}-docs.${platform}.tsx` : `${e.dir}-docs.tsx`);
   const keys = entries
-    .map((e) => `  ${JSON.stringify(e.dir)}: ${JSON.stringify(`./${e.category}/${e.dir}/${e.dir}-docs.tsx`)},`)
+    .map((e) => `  ${JSON.stringify(e.dir)}: ${JSON.stringify(`./${e.category}/${e.dir}/${file(e)}`)},`)
     .join("\n");
+  const dirs = [...own].sort().map((d) => d.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")).join("|");
+  const pattern = own.size ? `/\\/(?:(?:${dirs})-docs\\.${platform}\\.tsx|(?!(?:${dirs})-docs\\.tsx$)[^/]+-docs\\.tsx)$/` : `/\\/[^/]+-docs\\.tsx$/`;
+  const view =
+    platform === "web"
+      ? ""
+      : `
+// The ${platform} build's registry: Metro resolves it in place of ./registry.ts there. The dirs
+// whose page this build reads differently load their \`<dir>-docs.${platform}.tsx\`, and the
+// context's pattern leaves out the web module each of them replaces.
+`;
   return `${GENERATED_HEADER}
 import type { ComponentDocs } from "./scope";
-
+${view}
 // The context key of every documented component's docs module, by its source directory
 // (the \`.md\` stem). The consuming page maps a URL slug to its dir via the components
 // data, then loads that module (see loadComponentDocs and use-component-docs.ts).
@@ -500,7 +575,7 @@ ${keys}
 
 // Lazy on purpose (a split web export gets one chunk per module); the promise carries
 // \`_result\`, the module itself, wherever the module is already registered.
-const context = require.context("./examples", true, /\\/[^/]+-docs\\.tsx$/, "lazy");
+const context = require.context("./examples", true, ${pattern}, "lazy");
 
 export type LoadedComponentDocs = { docs: ComponentDocs };
 export type ComponentDocsRequest = Promise<LoadedComponentDocs> & { _result?: LoadedComponentDocs | Promise<LoadedComponentDocs> };
@@ -557,6 +632,8 @@ function main() {
   fs.mkdirSync(EXAMPLES_DIR, { recursive: true });
 
   const entries: Entry[] = [];
+  // Each native build's entry for a page it reads differently from the web, by dir.
+  const nativeEntries: Record<NativePlatform, Map<string, Entry>> = { ios: new Map(), android: new Map() };
   const propSources: { dir: string; file: string }[] = [];
   let exampleCount = 0;
   let dontCount = 0;
@@ -567,7 +644,14 @@ function main() {
     recordProse(content, source);
     const doc = parseDoc(content);
     const { examples, donts } = doc;
-    entries.push(buildEntry(category, dir, doc));
+    const entry = buildEntry(category, dir, doc);
+    entries.push(entry);
+    // A native build whose view of the page differs gets an entry of its own.
+    const model = (d: ParsedDoc) => JSON.stringify({ ...d, unconsumed: [] });
+    for (const platform of NATIVE_PLATFORMS) {
+      const view = parseDoc(content, platform);
+      if (model(view) !== model(doc)) nativeEntries[platform].set(dir, buildEntry(category, dir, view, modulesByCode(entry)));
+    }
     // Collect this dir's Props-bearing source files for the prop tables.
     const srcDir = path.join(REPO, "src", category, dir);
     for (const f of fs.readdirSync(srcDir).sort()) {
@@ -645,15 +729,71 @@ function main() {
     console.warn(`\n⚠ docs:gen — ${header}\n${lines.join("\n")}\n  (warning only; set DOCGEN_STYLE_STRICT=1 to fail.)\n`);
   }
 
-  const props = extractProps(propSources);
+  const prog = program();
+  const props = extractProps(propSources, prog);
+  const inherited = extractInherited(prog);
+  // Each native build's prop tables, from the kit's comments read through their platform
+  // blocks (extract-props.ts), and the dirs whose tables read differently there: such a
+  // dir gets that build's own docs module even when its page reads the same.
+  const nativeProps = {} as Record<NativePlatform, Record<string, PropGroup[]>>;
+  const nativeInherited = {} as Record<NativePlatform, Record<string, PropGroup>>;
+  for (const platform of NATIVE_PLATFORMS) {
+    nativeProps[platform] = extractProps(propSources, prog, platform);
+    nativeInherited[platform] = extractInherited(prog, platform);
+    for (const e of entries) {
+      if (!nativeEntries[platform].has(e.dir) && JSON.stringify(nativeProps[platform][e.dir] ?? []) !== JSON.stringify(props[e.dir] ?? [])) {
+        nativeEntries[platform].set(e.dir, e);
+      }
+    }
+  }
+  // S12 over the prop tables: no row a native build shows names another mobile platform,
+  // and S11 over the comments' platform blocks.
+  const propWords: string[] = docBlockProblems().map((p) => `    ${p} S11`);
+  for (const platform of NATIVE_PLATFORMS) {
+    const tables = [...Object.values(nativeProps[platform]).flat(), ...Object.values(nativeInherited[platform])];
+    for (const g of tables) {
+      for (const row of g.props) {
+        const words = bannedWords(row.description, platform);
+        if (words.length) propWords.push(`    ${PROP_SOURCES.get(row) ?? g.name} ${g.name}.${row.name}: ${words.map((w) => `"${w}"`).join(", ")} in the ${platform} app`);
+      }
+      for (const axis of g.groups) {
+        const words = bannedWords(`${axis.title} ${axis.note ?? ""}`, platform);
+        if (words.length) propWords.push(`    ${g.name} axis "${axis.title}": ${words.map((w) => `"${w}"`).join(", ")} in the ${platform} app`);
+      }
+    }
+  }
+  if (propWords.length) {
+    throw new Error(
+      `docs:gen: ${propWords.length} prop description(s) would name another mobile platform in a native app (rule S12, App Store guideline 2.3.10). ` +
+        `Scope the clause in the kit's comment with "<!-- only: web android -->" ... "<!-- /only -->" lines (tools/docgen/extract-props.ts), ` +
+        `or, for a prop React Native declares, add that build's text to tools/docgen/foreign-docs.ts:\n${[...new Set(propWords)].join("\n")}`,
+    );
+  }
   const details = detailScans(entries, propSources);
   for (const e of entries) {
     const file = docsModuleFile(e.category, e.dir);
     writeFileIfChanged(file, renderDocsModule(e, props[e.dir] ?? [], details.get(e.dir)!));
     writtenExampleFiles.add(file);
   }
-  writeFileIfChanged(INHERITED_FILE, renderInherited(extractInherited()));
+  // A native build's docs module carries that build's prop tables and the web module's detail
+  // scans (read from the component's source, not its page).
+  for (const platform of NATIVE_PLATFORMS) {
+    for (const e of nativeEntries[platform].values()) {
+      const file = docsModuleFile(e.category, e.dir, platform);
+      writeFileIfChanged(file, renderDocsModule(e, nativeProps[platform][e.dir] ?? [], details.get(e.dir)!, platform));
+      writtenExampleFiles.add(file);
+    }
+  }
+  writeFileIfChanged(INHERITED_FILE, renderInherited(inherited));
   writtenExampleFiles.add(INHERITED_FILE);
+  // A native build's shared tables get a sibling only when they read differently there.
+  for (const platform of NATIVE_PLATFORMS) {
+    const native = renderInherited(nativeInherited[platform]);
+    if (native === renderInherited(inherited)) continue;
+    const file = forBuild(INHERITED_FILE, platform);
+    writeFileIfChanged(file, native);
+    writtenExampleFiles.add(file);
+  }
 
   // Drop modules from fences that no longer exist before writing the registry that
   // reaches them, so a stale orphan can't satisfy a key that should have failed.
@@ -663,6 +803,16 @@ function main() {
   writeFileIfChanged(DOCS_INDEX_FILE, renderDocsIndex(entries));
   writeFileIfChanged(PREVIEWS_FILE, renderPreviews(entries));
   writeFileIfChanged(DESCRIPTIONS_FILE, renderDescriptions(entries));
+  // Each native build's siblings: a registry whenever a page reads differently there, and
+  // the descriptions and previews only when their text differs from the web's.
+  for (const platform of NATIVE_PLATFORMS) {
+    const own = nativeEntries[platform];
+    const built = entries.map((e) => own.get(e.dir) ?? e);
+    const sibling = (web: string, native: string) => (native === web ? null : native);
+    writeOrRemove(forBuild(REGISTRY_FILE, platform), own.size ? renderRegistry(entries, platform, new Set(own.keys())) : null);
+    writeOrRemove(forBuild(PREVIEWS_FILE, platform), sibling(renderPreviews(entries), renderPreviews(built)));
+    writeOrRemove(forBuild(DESCRIPTIONS_FILE, platform), sibling(renderDescriptions(entries), renderDescriptions(built)));
+  }
   // Which chunk carries each page's docs, for the export's post-processing: a page's
   // URL slug maps to a docs module basename, which Metro names the chunk after.
   const chunks: Record<string, string> = {};

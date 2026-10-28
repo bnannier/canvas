@@ -73,13 +73,13 @@ describe("the Library index", () => {
 
   it("counts from the registries", () => {
     expect(heroStats()[0]).toBe(`${COMPONENTS.length} components`);
-    expect(INDEX_COPY.lead()).toBe(`All ${COMPONENTS.length} components, filed by the job they do.`);
+    expect(INDEX_COPY.title()).toBe(`${COMPONENTS.length} components`);
   });
 });
 
 describe("the Library copy", () => {
   it("takes the hand-off's headline, eyebrow and calls", () => {
-    expect(LIBRARY_HEADLINE).toBe("Light as material.");
+    expect(LIBRARY_HEADLINE).toBe("Made of light.");
     expect(LIBRARY).toContain(`Light as <em style=`);
     expect(LIBRARY).toContain(`">material.</em></h1>`);
     expect(LIBRARY).toContain(`${LIBRARY_HERO.eyebrow("4.0.0")}</div>`);

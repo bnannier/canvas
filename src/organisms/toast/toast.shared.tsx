@@ -245,7 +245,7 @@ export function createToastSystem(skin: ToastSkin) {
   // which assistive tech misses).
   function ToastCapsule(props: Omit<ToastProps, "testID" | "style">) {
     const { message, description, action, icon, onDismiss } = props;
-    const theme = useMaterialTheme({ layer: "dense" });
+    const theme = useMaterialTheme({ layer: "dense", floating: true });
     const { tokens } = theme;
     const intent = intentOf(props);
 
@@ -329,7 +329,7 @@ export function createToastSystem(skin: ToastSkin) {
     const fill = inverseFill(tokens);
     const inverse = (StyleSheet.flatten(containerStyle) as ViewStyle).backgroundColor === fill;
     return (
-      <GlassSurface layer="dense" tint={inverse ? inverseDenseTint(theme, fill) : undefined} style={containerStyle}>
+      <GlassSurface layer="dense" floating tint={inverse ? inverseDenseTint(theme, fill) : undefined} style={containerStyle}>
         {content}
       </GlassSurface>
     );

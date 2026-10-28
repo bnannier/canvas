@@ -127,7 +127,12 @@ export interface ChipProps {
   onRemove?: () => void;
   /**
    * Turns the chip into a filter toggle that owns its own selected state: pressing
+   * <!-- only: web ios -->
    * it lights up (to the accent's soft wash, inside an accent edge on the web and iOS)
+   * <!-- /only -->
+   * <!-- only: android -->
+   * it lights up (to the accent's soft wash)
+   * <!-- /only -->
    * and back. Selection is controlled via `selected`, uncontrolled via `defaultSelected`.
    */
   selectable?: boolean;
@@ -172,8 +177,17 @@ export interface ChipProps {
   rose?: boolean;
   gray?: boolean;
   // Emphasis (orthogonal to color). `outline` is border-only; `primary` is the solid
-  // accent. `secondary` is the raised neutral fill (the default on the web and iOS; on
+  // accent. `secondary` is the raised neutral fill
+  // <!-- only: web -->
+  // (the default on the web and iOS; on
   // Android it fills the otherwise bare outlined chip).
+  // <!-- /only -->
+  // <!-- only: ios -->
+  // (the default on iOS).
+  // <!-- /only -->
+  // <!-- only: android -->
+  // (on Android it fills the otherwise bare outlined chip).
+  // <!-- /only -->
   secondary?: boolean;
   primary?: boolean;
   outline?: boolean;

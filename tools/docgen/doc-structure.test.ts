@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { checklistSignOffs, componentPages, pageStructureViolations, registeredComponents, registrySlugLines, REGISTRY_SOURCE, type ComponentPage } from "./pages.ts";
-import { ACCESSIBILITY_SECTION, docStructureViolations, parseDoc, splitDoc } from "./parse-md.ts";
+import { ACCESSIBILITY_SECTION, DOC_PLATFORMS, docStructureViolations, parseDoc, platformView, splitDoc } from "./parse-md.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 
 // The structure gate over the real pages. docs:gen and docs:gen:check run the same
@@ -60,7 +60,7 @@ describe("component pages", () => {
     expect(pages.map((p) => p.dir).sort()).toEqual(COMPONENTS.map((c) => c.dir ?? c.slug).sort());
   });
 
-  it("every page has the shape docgen expects (rules S1 to S10)", () => {
+  it("every page has the shape docgen expects (rules S1 to S12)", () => {
     expect(pageStructureViolations(pages, registry)).toEqual([]);
   });
 
@@ -81,16 +81,20 @@ describe("component pages", () => {
   // The gate and the generator read a page through one model; this holds them to each
   // other from outside it. Every example and pair a passing page declares reaches the
   // generated docs, and every caption is read whole (no wrapped line left behind).
+  // In every build: a page's platform blocks give each build its own view (parse-md.ts,
+  // "Platform blocks"), and what that view declares is what the build renders.
   it("the generator renders every example and pair each page declares, captions whole", () => {
     for (const page of pages) {
-      const { examples, donts } = splitDoc(page.content);
-      const want = declared(page.content);
-      const got = {
-        examples,
-        titles: donts.map((d) => d.title),
-        captions: donts.flatMap((d) => [`Do: ${d.do.caption}`, `Don't: ${d.dont.caption}`]).sort(),
-      };
-      expect({ page: page.source, ...got }).toEqual({ page: page.source, ...want, captions: [...want.captions].sort() });
+      for (const platform of DOC_PLATFORMS) {
+        const { examples, donts } = splitDoc(page.content, platform);
+        const want = declared(platformView(page.content, platform).text);
+        const got = {
+          examples,
+          titles: donts.map((d) => d.title),
+          captions: donts.flatMap((d) => [`Do: ${d.do.caption}`, `Don't: ${d.dont.caption}`]).sort(),
+        };
+        expect({ page: page.source, platform, ...got }).toEqual({ page: page.source, platform, ...want, captions: [...want.captions].sort() });
+      }
     }
   });
 

@@ -64,7 +64,7 @@ export function Vignette() {
 function TabsCard() {
   return (
     <ShowcaseCard id="c-tabs" caption="<Tabs> · <ButtonGroup segmented> · <Breadcrumb> · <Pagination page={1} total={12}>">
-      <Tabs underline defaultActive={1} tabs={["Overview", "Components", "Tokens", "Changelog"]} />
+      <Tabs underline block defaultActive={1} tabs={["Overview", "Components", "Tokens", "Changelog"]} />
       <ButtonGroup segmented block defaultActive={1} accessibilityLabel="Range" items={["Day", "Week", "Month"]} />
       <Breadcrumb chevron items={["Workspaces", "Riskora", "Tokens"]} />
       <Pagination defaultPage={1} total={12} />

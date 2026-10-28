@@ -2,8 +2,17 @@
 
 Page-of-N navigation for tables and lists.
 
+<!-- only: web -->
 Neither iOS nor Android has a numbered pagination control, so every platform shows the
-same pager: rounded hairline cells at 28, 34 or 40 (small, default, large), the page
+same pager:
+<!-- /only -->
+<!-- only: ios -->
+iOS has no numbered pagination control, so every platform shows the same pager:
+<!-- /only -->
+<!-- only: android -->
+Android has no numbered pagination control, so every platform shows the same pager:
+<!-- /only -->
+rounded hairline cells at 28, 34 or 40 (small, default, large), the page
 numbers in 13px mono numerals, and the current page in the accent fill with a soft glow
 beneath it. Previous and Next carry a chevron and a "Prev" / "Next" label beside the
 numbers (the chevron alone at the small size and in the compact row), the truncation gap

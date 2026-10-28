@@ -8,9 +8,18 @@ with no pane and no rim, a checked track in its solid brand fill. The track, the
 label, the description and the hit target never move, and the checked state flips
 at once. A disabled switch is inert.
 
-`small` and `large` scale the track on the web. On iOS and Android the switch is the
+`small` and `large` scale the track on the web.
+<!-- only: web -->
+On iOS and Android the switch is the
 platform's own control, which comes in one size (51x31 on iOS, 52x32 on Android), so
 the size props leave it unchanged there.
+<!-- /only -->
+<!-- only: ios -->
+On iOS the switch is the platform's own control, which comes in one size (51x31), so the size props leave it unchanged there.
+<!-- /only -->
+<!-- only: android -->
+On Android the switch is the platform's own control, which comes in one size (52x32), so the size props leave it unchanged there.
+<!-- /only -->
 
 Pass `ref` to access the interactive switch row, including its label. Use `useRef<ComponentRef<typeof Switch>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 

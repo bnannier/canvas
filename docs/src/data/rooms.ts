@@ -1,4 +1,5 @@
 import { COMPONENTS } from "../core/data/components";
+import { PLATFORM_COPY } from "./platform-copy";
 import { SECTIONS, type Section } from "../core/data/detail-sections";
 import { routeItem } from "./nav";
 
@@ -134,11 +135,12 @@ export function getSectionRoom(id: string): Room | undefined {
   return SECTION_ROOMS.find((room) => room.id === id);
 }
 
-/** The hand-off's Skins page: the pill's ninth link (a stub until Phase 7). */
+/** The hand-off's Skins page: the pill's ninth link (docs/src/sections/skins.tsx). */
 export const SKINS_PAGE = {
   href: "/skins",
   title: "Platform skins",
-  lead: "One tree. iOS capsule, Material stadium, Canvas web.",
+  lead: PLATFORM_COPY.skinsLead,
+  body: "The same <Button primary>, <Input label>, <Switch>, <ButtonGroup segmented> and <Card> rendered through each skin. The ion token and the neutrals are shared; shape, type and touch minimums are the platform's own.",
 } as const;
 
 /** The Templates index: the pill's tenth link. */

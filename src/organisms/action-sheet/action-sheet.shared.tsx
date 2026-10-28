@@ -78,8 +78,19 @@ export interface ActionSheetProps {
    * and opens itself on press (uncontrolled). Omit when you drive `open` yourself.
    */
   trigger?: string;
-  /** Optional header title (a left-aligned primary-label heading on iOS, a short
-   *  centered heading on web, left-aligned on Android). */
+  /**
+   * Optional header title
+   * <!-- only: web -->
+   * (a left-aligned primary-label heading on iOS, a short
+   * centered heading on web, left-aligned on Android).
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * (a left-aligned primary-label heading).
+   * <!-- /only -->
+   * <!-- only: android -->
+   * (a left-aligned heading).
+   * <!-- /only -->
+   */
   title?: string;
   /** Optional header message under the title. */
   message?: string;
@@ -111,7 +122,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
   const Button = parts.Button ?? WebButton;
   return function ActionSheet(props: ActionSheetProps) {
     const { open: openProp, onOpenChange, trigger, title, message, actions, cancelLabel = "Cancel", testID, style } = props;
-    const theme = useMaterialTheme({ layer: "functional" });
+    const theme = useMaterialTheme({ layer: "functional", floating: true });
     const { tokens } = theme;
     // Under glass on the web the scrim also blurs what it dims (GS-6); null everywhere else.
     const scrimFrost = useScrimFrost();
@@ -303,7 +314,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
                 >
                   <SafeAreaView edges={["bottom", "left", "right"]}>
                     <View style={[skin.stack, style]}>
-                      <GlassSurface style={skin.actionsCard(tokens)}>
+                      <GlassSurface floating style={skin.actionsCard(tokens)}>
                         {/* The handle (Android) sits above the header inside the sheet. */}
                         {skin.handle ? <View style={skin.handle(tokens)} /> : null}
                         {headerNode}
@@ -333,7 +344,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
                       </GlassSurface>
                       {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
                       {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
-                        <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
+                        <GlassSurface floating style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
                       ) : null}
                     </View>
                   </SafeAreaView>

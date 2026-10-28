@@ -1,271 +1,92 @@
 import { useState } from "react";
-import {
-  Container,
-  Row,
-  Column,
-  Card,
-  Typography,
-  Button,
-  Input,
-  Checkbox,
-  Divider,
-  Emblem,
-  EmptyState,
-  Icon,
-  useToast,
-  type ToastHandle,
-} from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Live sign-in flows built from real Canvas components: the centered credential
-// card with OAuth alternatives, a split-screen with a brand feature panel, and a
-// passwordless magic-link card that swaps to its sent state.
+// The hand-off's Sign in (`Canvas v4.0.0 Templates.dc.html`, `t.signin`): on the web a
+// split screen, the customer quote over the brand panel beside the form; on a phone the
+// form alone. The form switches between a password and a magic link, then offers passkey
+// and SSO. Every part is a kit component from the frame's scope. The company is the
+// fictional Riskora, never Canvas itself, so the screen never reads as this app's own
+// sign-in wall.
 
-// Shared submit: validate the typed credentials and toast the outcome. Both the
-// centered card and the split-screen form funnel through here.
-function submitCredentials(toast: ToastHandle["toast"], email: string, password: string): void {
-  const address = email.trim();
-  if (!address) {
-    toast({ destructive: true, message: "Email is required", description: "Enter the email address you signed up with." });
-    return;
-  }
-  if (!password) {
-    toast({ destructive: true, message: "Password is required", description: "Enter your password to continue." });
-    return;
-  }
-  toast({ success: true, message: "Signed in", description: `Welcome back, ${address}.` });
-}
+const MODES = ["Password", "Magic link"];
 
-function CenteredCardLive() {
+function SigninScreen({ K, phone, go }: TemplateScreenProps) {
+  const { Row, Column, Container, Card, Typography, Button, ButtonGroup, Input, Divider, Grid, Avatar, Icon, useToast } = K;
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
-  return (
-    <Row center>
-      <Container sm><Column cozy>
-        <Card>
-          <Column cozy>
-            <Column tight alignCenter>
-              {/*
-                Branded to the docs' fictional demo company, NOT to Canvas itself.
-                Naming the host app here is what got the first App Store submission
-                rejected: on a phone the page heading scrolls away, leaving a reviewer
-                looking at "Sign in to Canvas" above an email/password form inside an
-                app called Canvas. That is indistinguishable from a real login wall,
-                and the listing declares that no sign-in is required. Keep every auth
-                mockup pointed at Acme Corp so it can never read as this app's own gate.
-              */}
-              <Emblem primary label="A" />
-              <Typography h3>Sign in to Acme Corp</Typography>
-              <Typography small>Demo form. Enter anything to see the result.</Typography>
-            </Column>
-            <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} />
-            <Input
-              label="Password"
-              placeholder="••••••••"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-            <Row between alignCenter>
-              <Checkbox checked={remember} onChange={setRemember}>
-                Remember me
-              </Checkbox>
-              <Button
-                link
-                small
-                onPress={() =>
-                  toast({
-                    message: "Reset link sent",
-                    description: "Check your inbox for instructions to reset your password.",
-                  })
-                }
-              >
-                Forgot password?
-              </Button>
-            </Row>
-            <Button block primary onPress={() => submitCredentials(toast, email, password)}>
-              Sign in
-            </Button>
-            <Divider>or</Divider>
-            <Row snug>
-              <Column fill>
-                <Button
-                  block
-                  outline
-                  onPress={() =>
-                    toast({ message: "Redirecting to Google", description: "Continuing with your Google account." })
-                  }
-                >
-                  Google
-                </Button>
-              </Column>
-              <Column fill>
-                <Button
-                  block
-                  outline
-                  onPress={() =>
-                    toast({ message: "Redirecting to GitHub", description: "Continuing with your GitHub account." })
-                  }
-                >
-                  GitHub
-                </Button>
-              </Column>
-            </Row>
-          </Column>
-        </Card>
-      </Column></Container>
-    </Row>
-  );
-}
+  const [mode, setMode] = useState(0);
+  const password = mode === 0;
 
-const BRAND_FEATURES = ["Multi-factor authentication", "OAuth2 and OIDC support", "Audit logging and compliance"];
-
-function SplitScreenLive() {
-  const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const brand = (
-    <Card selected grow>
-      <Column cozy>
-        <Column tight>
-          <Typography h3>Welcome back</Typography>
-          <Typography small>Manage identities, sessions, and access policies from one dashboard.</Typography>
-        </Column>
-        <Column snug>
-          {BRAND_FEATURES.map((feature) => (
-            <Row key={feature} snug alignCenter>
-              <Icon check primary size={16} />
-              <Typography small>{feature}</Typography>
-            </Row>
-          ))}
-        </Column>
-      </Column>
-    </Card>
-  );
   const form = (
-    <Card grow>
-      <Column cozy>
-        <Column tight>
-          <Typography h3>Sign in to Acme Corp</Typography>
-          <Typography small>Demo form. Enter anything to see the result.</Typography>
-        </Column>
-        <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} />
-        <Input
-          label="Password"
-          placeholder="••••••••"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <Button block primary onPress={() => submitCredentials(toast, email, password)}>
-          Sign in
-        </Button>
-      </Column>
-    </Card>
-  );
-  // Two equal halves that stack, brand over form, once the section is phone
-  // width. One element tree at every width: the Row measures its own container
-  // and only its layout changes, so the form keeps its text and focus across a
-  // resize and through the switch from the server's desktop layout. `grow`
-  // lets each Card reach the taller pane's height while side by side.
-  return (
-    <Row stacks relaxed>
-      <Column span={6} grow>
-        {brand}
-      </Column>
-      <Column span={6} grow>
-        {form}
-      </Column>
-    </Row>
-  );
-}
-
-function MagicLinkLive() {
-  const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const send = () => {
-    if (!email.trim()) {
-      toast({ destructive: true, message: "Email is required", description: "Enter the address to send the magic link to." });
-      return;
-    }
-    setSent(true);
-  };
-  return (
-    <Row center>
-      <Container sm><Column cozy>
-        <Card>
-          {sent ? (
-            <Column cozy alignCenter>
-              <EmptyState
-                icon={<Icon mail />}
-                title="Check your inbox"
-                description={`We sent a magic link to ${email.trim()}. It signs you in with one tap and expires in 15 minutes.`}
-                actionLabel="Resend link"
-                onAction={() =>
-                  toast({ success: true, message: "Magic link re-sent", description: `A fresh link is on its way to ${email.trim()}.` })
-                }
-              />
-              <Button
-                link
-                small
-                onPress={() => {
-                  setSent(false);
-                  setEmail("");
-                }}
-              >
-                Use a different email
-              </Button>
-            </Column>
-          ) : (
-            <Column cozy>
-              <Column tight alignCenter>
-                <Emblem primary circle>
-                  <Icon mail />
-                </Emblem>
-                <Typography h3>Sign in to Acme Corp</Typography>
-                <Typography small>Demo form. No email is actually sent.</Typography>
-              </Column>
-              <Input label="Email address" placeholder="you@example.com" value={email} onChangeText={setEmail} />
-              <Button block primary onPress={send}>
-                Send magic link
-              </Button>
-              <Row center>
-                <Typography tiny>By continuing, you agree to our Terms of Service.</Typography>
+    <Row center alignCenter grow>
+      <Container sm>
+        <Column relaxed>
+          <Row>
+            <Avatar logo initials="Rk" accessibilityLabel="Riskora" />
+          </Row>
+          <Column tight>
+            <Typography h3 level={2}>Welcome back</Typography>
+            <Typography small subtle>Sign in to Riskora with your work email.</Typography>
+          </Column>
+          <ButtonGroup block accessibilityLabel="Sign-in method" active={mode} onSelect={setMode} items={MODES} />
+          <Input label="Work email" placeholder="you@company.com" keyboardType="email-address" autoCapitalize="none" />
+          {password ? (
+            <Column tight>
+              <Input label="Password" placeholder="••••••••" secureTextEntry />
+              <Row end>
+                <Button link small onPress={() => toast({ message: "Reset link sent to your inbox" })}>Forgot?</Button>
               </Row>
             </Column>
-          )}
+          ) : null}
+          <Button primary raised block onPress={() => toast({ message: password ? "Signed in. Redirecting…" : "Magic link sent" })}>
+            {password ? "Sign in" : "Email me a link"}
+          </Button>
+          <Divider>or</Divider>
+          <Grid minTileWidth={150} snug>
+            <Button outline block iconLeft={<Icon keyRound decorative />} onPress={() => toast({ message: "Passkey prompt opened" })}>Passkey</Button>
+            <Button outline block iconLeft={<Icon shieldCheck decorative />} onPress={() => toast({ message: "Redirecting to your identity provider" })}>SSO</Button>
+          </Grid>
+          <Row center alignCenter wrap tight>
+            <Typography small subtle>New to Riskora?</Typography>
+            <Button link small onPress={() => go("signup")}>Create an account</Button>
+          </Row>
+        </Column>
+      </Container>
+    </Row>
+  );
+
+  if (phone) return form;
+  return (
+    <Row stacks loose grow>
+      <Column span={6}>
+        <Card featured artwork grow>
+          <Column end grow>
+            <Card>
+              <Column cozy>
+                <Typography lead medium>“We shipped three native apps and a web app from one tree. Nobody can tell which one we built first.”</Typography>
+                <Row snug alignCenter>
+                  <Avatar small src="/grace-hopper.jpg" name="Grace Hopper" />
+                  <Column>
+                    <Typography small medium>Grace Hopper</Typography>
+                    <Typography caption subtle>Head of Platform, Riskora</Typography>
+                  </Column>
+                </Row>
+              </Column>
+            </Card>
+          </Column>
         </Card>
-      </Column></Container>
+      </Column>
+      <Column span={6}>{form}</Column>
     </Row>
   );
 }
 
 export const SIGNIN_TEMPLATE: TemplateDoc = {
   slug: "signin",
-  name: "Sign-in",
-  description:
-    "Authentication screens: centered card, split-screen with marketing, and passwordless magic link. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Centered card",
-      anatomy:
-        "Emblem logo + email/password Inputs + remember-me Checkbox + forgot-password link + primary CTA + OAuth Divider row. A centered sm Container caps the form and stays fluid on narrow screens.",
-      render: () => <CenteredCardLive />,
-    },
-    {
-      title: "Split-screen",
-      anatomy:
-        "Brand panel (primary-tinted Card: headline + Icon-check feature bullets) beside the sign-in form: a Row stacks of two span-6 halves, side by side on desktop and stacked once the section is sm wide or narrower. The form stays mounted across the switch, so typed text and focus survive a resize.",
-      render: () => <SplitScreenLive />,
-    },
-    {
-      title: "Magic link",
-      anatomy:
-        "Single email Input + submit, no password. Sending swaps the card to an EmptyState confirmation quoting the typed address, with resend and use-a-different-email actions.",
-      render: () => <MagicLinkLive />,
-    },
-  ],
+  name: "Sign in",
+  group: "Auth",
+  icon: "logIn",
+  description: "Split screen on web, a single card on phones. Password or magic link, then passkey and SSO.",
+  path: "signin",
+  app: false,
+  Screen: SigninScreen,
 };

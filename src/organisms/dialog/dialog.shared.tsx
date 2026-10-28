@@ -13,6 +13,7 @@ import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { scrimFill } from "../../style/scrim.js";
 import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
+import { useHydrated } from "../../style/use-hydrated.js";
 
 // Shared Dialog shell. The structure (an optional trigger plus a modal panel
 // centered over a dimmed backdrop, a title, an optional description, an optional
@@ -166,7 +167,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
       testID,
       style,
     } = props;
-    const theme = useMaterialTheme({ layer: "functional" });
+    const theme = useMaterialTheme({ layer: "functional", floating: true });
     const { tokens } = theme;
 
     // Stable, per-instance ids so the panel's title/description can be wired as
@@ -198,6 +199,9 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     const workspaceContent = compactWorkspace ? s.compactWorkspaceContent : s.workspaceContent;
     const window = useWindowDimensions();
     const workspaceHeight = s.workspaceHeight(window.height, insets?.top ?? 0, insets?.bottom ?? 0);
+    // The window height is a client-only fact: the server renders the workspace uncapped
+    // and the hydration render matches it, then the measured cap lands one commit later.
+    const hydrated = useHydrated();
     const accessibilityLabel = props.accessibilityLabel;
     // An embedded dialog is a specimen, not a live modal; a trigger always opens a live one.
     const modal = !(props.embedded === true && trigger == null);
@@ -350,8 +354,8 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
               <Pressable accessible={false} focusable={false} tabIndex={-1}
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
             ) : null}
-            <View style={[s.cardSizing, workspace ? s.workspaceSizing(workspaceHeight, compactWorkspace) : null, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
-            <GlassSurface style={[s.cardLayout, workspace ? compactWorkspace ? s.compactWorkspaceContent : s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null]}>
+            <View style={[s.cardSizing, workspace && hydrated ? s.workspaceSizing(workspaceHeight, compactWorkspace) : null, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
+            <GlassSurface floating style={[s.cardLayout, workspace ? compactWorkspace ? s.compactWorkspaceContent : s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null]}>
               {/* The panel content region wraps the content in a
                   KeyboardAvoidingView so the iOS keyboard never
                   covers a form field (padding behavior on iOS; a plain passthrough

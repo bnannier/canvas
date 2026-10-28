@@ -5,8 +5,17 @@ Floating menus triggered by a button: actions, options, navigation.
 On the web the menu is the v4 panel: a card with a hairline and a soft shadow, 36-pixel
 rows with quiet icons that take a raised wash under the pointer at once, a mono uppercase
 eyebrow over a section, mono shortcuts in their own column, destructive rows in the
-destructive ink, and a disabled row in the muted ink rather than faded. iOS and Android keep their platform
+destructive ink, and a disabled row in the muted ink rather than faded.
+<!-- only: web -->
+iOS and Android keep their platform
 menus (the iOS pull-down menu, the Material 3 menu) in the theme's colours.
+<!-- /only -->
+<!-- only: ios -->
+iOS keeps its platform menu (the iOS pull-down menu) in the theme's colours.
+<!-- /only -->
+<!-- only: android -->
+Android keeps its platform menu (the Material 3 menu) in the theme's colours.
+<!-- /only -->
 
 In glass mode the menu is a dense-layer glass card under its trigger (or above it
 when it fits there); the trigger keeps its place, its press and its accessible

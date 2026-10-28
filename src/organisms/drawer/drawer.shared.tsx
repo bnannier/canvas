@@ -231,7 +231,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     </> : children;
     const panel = (
       <View style={[s.panelPos[edge], sheetCap]} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
-        <GlassSurface style={[panelShape, style]}>
+        <GlassSurface floating style={[panelShape, style]}>
           <SafeAreaView
             edges={isVertical ? [edge as "top" | "bottom", "left", "right"] : ["top", "bottom", physicalRight ? "right" : "left"]}
             style={PANEL_CONTENT}

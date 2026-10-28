@@ -1,146 +1,108 @@
 import { useEffect, useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Alert, Emblem, EmptyState, Icon, useToast, Container } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Error and empty states built from real Canvas components: the honest 404 and
-// 500 pages, a maintenance banner, and the first-run empty state that turns a
-// dead end into the next step.
+// The hand-off's Errors & empty (`Canvas v4.0.0 Templates.dc.html`, `t.errors`): a switch
+// between four states, each pointing at the next step: the 404, the server error with its
+// retry, the maintenance notice over the read-only page, and the first-run empty state
+// that turns into the new project. Every part is a kit component from the frame's scope.
 
-function NotFoundLive() {
+const STATES = ["Not found", "Server error", "Maintenance", "First run"];
+
+function ErrorsScreen({ K, go }: TemplateScreenProps) {
+  const { Row, Column, Container, Card, Typography, Button, ButtonGroup, Alert, Skeleton, Grid, EmptyState, Emblem, Icon, useToast } = K;
   const { toast } = useToast();
-  return (
-    <Column cozy alignCenter>
-      <Typography mono muted>404</Typography>
-      <EmptyState
-        icon={<Icon search />}
-        title="Page not found"
-        description="The page may have moved, or the link is out of date."
-        actionLabel="Back to home"
-        onAction={() => toast({ message: "Back to home", description: "In a real app this returns to the dashboard." })}
-      />
-    </Column>
-  );
-}
-
-function ServerErrorLive() {
-  const { toast } = useToast();
+  const [tab, setTab] = useState(0);
   const [retrying, setRetrying] = useState(false);
+  const [project, setProject] = useState(false);
+
   useEffect(() => {
     if (!retrying) return;
     const timer = setTimeout(() => {
       setRetrying(false);
-      toast({ success: true, message: "Back online", description: "The request went through on the retry." });
-    }, 800);
+      toast({ message: "Back online" });
+    }, 1400);
     return () => clearTimeout(timer);
   }, [retrying, toast]);
+
   return (
-    <Column cozy alignCenter>
-      <EmptyState
-        bordered
-        icon={<Icon alertTriangle />}
-        title="Something went wrong"
-        description="The request failed on our side. Your data is safe; trying again usually works."
-      />
-      <Row center snug alignCenter>
-        <Button primary loading={retrying} onPress={() => setRetrying(true)}>Try again</Button>
-        <Button
-          link
-          small
-          onPress={() => toast({ message: "Contact support", description: "In a real app this opens a ticket with the error attached." })}
-        >
-          Contact support
-        </Button>
+    <Column spacious grow>
+      <Row>
+        <ButtonGroup small accessibilityLabel="State" active={tab} onSelect={setTab} items={STATES} />
+      </Row>
+      <Row center alignCenter grow>
+        {tab === 0 ? (
+          <Container md>
+            <Column roomy alignCenter>
+              <Typography caption mono subtle>404</Typography>
+              <Emblem muted large><Icon fileSearch decorative /></Emblem>
+              <Typography h4 level={2} center>We can't find that page</Typography>
+              <Typography small subtle center>The link may be old, or the board was moved. Search for it, or head back to your overview.</Typography>
+              <Row center wrap snug>
+                <Button primary onPress={() => go("dashboard")}>Go to overview</Button>
+                <Button outline onPress={() => toast({ message: "Search opened" })}>Search</Button>
+              </Row>
+            </Column>
+          </Container>
+        ) : tab === 1 ? (
+          <Container md>
+            <Column roomy alignCenter>
+              <Typography caption mono subtle>500</Typography>
+              <Emblem warning large><Icon alertTriangle decorative /></Emblem>
+              <Typography h4 level={2} center>Something went wrong on our side</Typography>
+              <Typography small subtle center>Nothing you did. Your work is saved. Try again in a moment.</Typography>
+              <Button primary loading={retrying} onPress={() => setRetrying(true)}>{retrying ? "Retrying…" : "Try again"}</Button>
+              <Button link small onPress={() => toast({ message: "Support chat opened" })}>Contact support</Button>
+            </Column>
+          </Container>
+        ) : tab === 2 ? (
+          <Container xl>
+            <Column roomy>
+              <Alert warning icon={<Icon wrench warning decorative />} title="Scheduled maintenance until 10:30 UTC" description="Boards are read-only for about 20 minutes. Edits made before then are safe." />
+              <Grid minTileWidth={160} comfortable>
+                <Skeleton card />
+                <Skeleton card />
+                <Skeleton card />
+              </Grid>
+              <Skeleton card />
+            </Column>
+          </Container>
+        ) : (
+          <Container md>
+            {project ? (
+              <Card selected onPress={() => toast({ message: "Untitled project opened" })}>
+                <Row roomy alignCenter>
+                  <Emblem primary><Icon folderOpen decorative /></Emblem>
+                  <Column fill>
+                    <Typography body semibold>Untitled project</Typography>
+                    <Typography caption mono subtle>created just now · 0 boards</Typography>
+                  </Column>
+                  <Icon chevronRight muted decorative />
+                </Row>
+              </Card>
+            ) : (
+              <EmptyState
+                bordered
+                icon={<Icon folderPlus primary decorative />}
+                title="No projects yet"
+                description="Projects hold boards, tokens and docs for one product."
+                actionLabel="Create project"
+                onAction={() => setProject(true)}
+              />
+            )}
+          </Container>
+        )}
       </Row>
     </Column>
   );
 }
 
-function MaintenanceLive() {
-  const { toast } = useToast();
-  return (
-    <Alert
-      warning
-      icon={<Icon alertTriangle size={16} />}
-      title="Scheduled maintenance"
-      description="Canvas Cloud is read-only until 04:00 UTC while we upgrade the database. Nothing is lost; writes resume automatically."
-      actions={
-        <Button
-          link
-          small
-          onPress={() => toast({ message: "Status page", description: "In a real app this opens the live status page." })}
-        >
-          Status page
-        </Button>
-      }
-    />
-  );
-}
-
-function FirstRunLive() {
-  const { toast } = useToast();
-  const [created, setCreated] = useState(false);
-  if (created) {
-    return (
-      <Container lg start>
-        <Card>
-          <Row between alignCenter wrap>
-            <Row snug alignCenter>
-              <Emblem primary>
-                <Icon folderPlus />
-              </Emblem>
-              <Column tight>
-                <Typography small medium>Production</Typography>
-                <Typography tiny>Created just now · 0 identities</Typography>
-              </Column>
-            </Row>
-            <Row snug alignCenter>
-              <Badge status success>Active</Badge>
-              <Button link small onPress={() => setCreated(false)}>Start over</Button>
-            </Row>
-          </Row>
-        </Card>
-      </Container>
-    );
-  }
-  return (
-    <EmptyState
-      bordered
-      icon={<Icon folderPlus />}
-      title="No projects yet"
-      description="Projects group your identities, policies, and API keys per environment."
-      actionLabel="Create your first project"
-      onAction={() => {
-        setCreated(true);
-        toast({ success: true, message: "Project created", description: "Production is ready for identities and keys." });
-      }}
-    />
-  );
-}
-
 export const ERRORS_TEMPLATE: TemplateDoc = {
   slug: "errors",
-  name: "Errors & empty states",
-  description: "404, server error, maintenance, and first-run empty states. Calm, honest, and always pointing at the next step. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Not found (404)",
-      anatomy: "EmptyState with a search icon: name the miss, offer the way home. The status code is muted metadata, not the headline.",
-      render: () => <NotFoundLive />,
-    },
-    {
-      title: "Something went wrong (500)",
-      anatomy: "EmptyState with a warning icon, then a retry Button that shows its loading state, plus a secondary support link.",
-      render: () => <ServerErrorLive />,
-    },
-    {
-      title: "Maintenance",
-      anatomy: "A warning Alert banner over the product shell while a window is active.",
-      render: () => <MaintenanceLive />,
-    },
-    {
-      title: "First run",
-      anatomy: "The empty project list as an invitation: creating the project swaps the EmptyState for the new project's Card.",
-      render: () => <FirstRunLive />,
-    },
-  ],
+  name: "Errors & empty",
+  group: "States",
+  icon: "circleAlert",
+  description: "404, server error, maintenance and first run. Calm, honest, always pointing at the next step.",
+  path: "errors",
+  app: false,
+  Screen: ErrorsScreen,
 };

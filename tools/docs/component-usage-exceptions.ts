@@ -74,6 +74,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The overlay host wraps scroll content rather than using its app-root flex default, which would collapse the scroll child, and is the v4 hand-off's page frame: full width, capped at its 1440 px (off the kit's widths scale, design-language item 8).",
   },
   {
+    file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["width"], occurrences: 1,
+    reason: "A lead section (the Library hero) sits above the capped page frame at the scroll content's full width, so its backdrop reaches the window's edges as the hand-off's does; it paints nothing itself.",
+  },
+  {
     file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["paddingLeft"], occurrences: 1,
     reason: "The page content clears the web shell's room rail at the frame's start edge (the rail and its 28 px gap, decision S9); docs scaffolding, zero where no rail stands.",
   },
@@ -178,15 +182,84 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Brand illustration (decision P5-G2): the Library hero's aurora, an untouchable layer spread over the hero section from the page's top to its hairline and out to the window's edges, painting only its svg radial gradients.",
   },
   {
-    file: "docs/src/brand/glow.tsx", owner: "AuroraFrame", tag: "View", attribute: "style", keys: ["paddingBottom", "paddingTop"], occurrences: 1,
-    reason: "Brand illustration (decision P5-G2): the hero section's own room above and below its content (the hand-off's 120 px less the page's 96, and 96), the box the aurora fills; it paints nothing itself.",
+    file: "docs/src/brand/glow.tsx", owner: "AuroraFrame", tag: "View", attribute: "style", keys: ["overflow", "width"], occurrences: 1,
+    reason: "Brand illustration (decision P5-G2): the hero section spans the window's width, as the hand-off's full-bleed hero does, and clips the aurora spread behind it; it paints nothing itself.",
   },
   {
-    file: "docs/src/brand/gradient-text.tsx", owner: "GradientText", tag: "View", attribute: "style", keys: ["alignSelf", "left", "opacity", "pointerEvents", "position", "top"], occurrences: 3,
+    file: "docs/src/brand/glow.tsx", owner: "AuroraFrame", tag: "View", attribute: "style", keys: ["alignSelf", "maxWidth", "paddingBottom", "paddingHorizontal", "paddingTop", "width"], occurrences: 1,
+    reason: "Brand illustration (decision P5-G2): the hero section's own room around its content (the hand-off's section padding) and the content capped at the page frame's 1440 px (off the kit's widths scale, design-language item 8) and centred; it paints nothing itself.",
+  },
+  {
+    file: "docs/src/brand/gradient-text.tsx", owner: "GradientText", tag: "View", attribute: "style", keys: ["alignSelf", "bottom", "left", "opacity", "pointerEvents", "position", "right", "top"], occurrences: 3,
     reason: "Brand illustration (decision P5-G1): the headline's gradient word, a kit Typography held invisible for the line box with the svg text drawn over it at the same place; React Native has no text clip.",
   },
   {
     file: "docs/src/brand/hero-collage.tsx", owner: "HeroCollage", tag: "View", attribute: "style", keys: ["height", "left", "position", "top", "transform", "transformOrigin", "width"], occurrences: 2,
     reason: "Brand illustration (decision P5-T1): the Library hero's tilted collage, the hand-off's 580 px perspective box with each live kit panel placed at its offset and projected by its own 3D transform.",
+  },
+  {
+    file: "docs/src/ui/templates/frame.tsx", owner: "TemplateStage", tag: "View", attribute: "style",
+    keys: ["alignItems", "backgroundColor", "borderColor", "borderRadius", "borderWidth", "overflow", "paddingHorizontal", "paddingVertical", "position"], occurrences: 1,
+    reason: "Templates page stage: the hand-off's 24 px sunken well that centres the device frame; docs-only scaffolding around the live template, no kit control.",
+  },
+  {
+    file: "docs/src/ui/templates/frame.tsx", owner: "TemplateStage", tag: "Svg", attribute: "style",
+    keys: ["bottom", "left", "position", "right", "top"], occurrences: 1,
+    reason: "Templates page stage: the accent glow's svg radial gradient spread under the device frame; it paints only the gradient.",
+  },
+  {
+    file: "docs/src/ui/templates/frame.tsx", owner: "TemplateFrame", tag: "View", attribute: "style",
+    keys: ["alignItems", "backgroundColor", "borderColor", "borderRadius", "borderWidth", "boxShadow", "flex", "flexDirection", "flexShrink", "height", "justifyContent", "maxWidth", "minHeight", "overflow", "position", "width"], occurrences: 6,
+    reason: "Templates page device illustration (the hand-off's FRAMES): the browser window or handset chassis, its screen box and the home indicators, at the hand-off's sizes and capped at the stage width.",
+  },
+  {
+    file: "docs/src/ui/templates/frame.tsx", owner: "BrowserBar", tag: "View", attribute: "style",
+    keys: ["alignItems", "backgroundColor", "borderBottomWidth", "borderColor", "borderRadius", "flex", "flexDirection", "flexShrink", "gap", "height", "justifyContent", "marginHorizontal", "maxWidth", "paddingHorizontal", "width"], occurrences: 4,
+    reason: "Templates page device illustration (the hand-off's FRAMES): the noninteractive browser title bar, its window-control dots and its address pill.",
+  },
+  {
+    file: "docs/src/ui/templates/frame.tsx", owner: "IosStatusBar", tag: "View", attribute: "style",
+    keys: ["alignItems", "backgroundColor", "borderRadius", "flexDirection", "flexShrink", "height", "justifyContent", "left", "marginLeft", "paddingLeft", "paddingRight", "paddingTop", "position", "top", "width"], occurrences: 2,
+    reason: "Templates page device illustration (the hand-off's FRAMES): the iPhone status bar and its Dynamic Island cutout.",
+  },
+  {
+    file: "docs/src/ui/templates/frame.tsx", owner: "AndroidStatusBar", tag: "View", attribute: "style",
+    keys: ["alignItems", "backgroundColor", "borderRadius", "flexDirection", "flexShrink", "height", "justifyContent", "left", "marginLeft", "paddingHorizontal", "position", "top", "width"], occurrences: 2,
+    reason: "Templates page device illustration (the hand-off's FRAMES): the Pixel status bar and its punch-hole camera.",
+  },
+  {
+    file: "docs/src/ui/templates/app-chrome.tsx", owner: "WebSidebar", tag: "View", attribute: "style",
+    keys: ["backgroundColor", "borderColor", "borderRightWidth", "flexShrink", "width"], occurrences: 1,
+    reason: "Template app frame scaffolding: the hand-off's 220 px sunken rail that holds the kit Sidebar inside the framed browser window.",
+  },
+  {
+    file: "docs/src/ui/templates/app-chrome.tsx", owner: "WebSidebar", tag: "ScrollView", attribute: "contentContainerStyle",
+    keys: ["paddingHorizontal", "paddingVertical"], occurrences: 1,
+    reason: "Template app frame scaffolding: the rail's inset around the kit Sidebar, the hand-off's 16/12.",
+  },
+  {
+    file: "docs/src/ui/templates/app-chrome.tsx", owner: "IosHeader", tag: "View", attribute: "style",
+    keys: ["flexShrink", "paddingBottom", "paddingHorizontal", "paddingTop"], occurrences: 1,
+    reason: "Template app frame scaffolding: the iPhone large-title band's insets (the hand-off's iosApp header) around kit Icons and Typography.",
+  },
+  {
+    file: "docs/src/ui/templates/app-chrome.tsx", owner: "PhoneTabBar", tag: "View", attribute: "style",
+    keys: ["bottom", "left", "position", "right"], occurrences: 1,
+    reason: "Template app frame scaffolding: floats the kit TabBar over the framed screen's scrolling content, as the iOS 26 tab bar floats.",
+  },
+  {
+    file: "docs/src/ui/templates/explorer.tsx", owner: "FramedScreen", tag: "OverlayProvider", attribute: "style",
+    keys: ["flex", "flexDirection", "minWidth"], occurrences: 1,
+    reason: "Template app frame scaffolding: the framed screen's column beside the web sidebar, hosting the frame's overlays and toasts.",
+  },
+  {
+    file: "docs/src/ui/templates/explorer.tsx", owner: "FramedScreen", tag: "ScrollView", attribute: "style",
+    keys: ["flex", "minHeight"], occurrences: 1,
+    reason: "Template app frame scaffolding: the framed screen's scroller fills what the app chrome leaves.",
+  },
+  {
+    file: "docs/src/ui/templates/explorer.tsx", owner: "FramedScreen", tag: "ScrollView", attribute: "contentContainerStyle",
+    keys: ["flexGrow", "paddingBottom", "paddingHorizontal", "paddingTop"], occurrences: 1,
+    reason: "Template app frame scaffolding: the hand-off's screen insets (28 on the web, 16 on phones, 96 under the iOS floating tab bar).",
   },
 ];

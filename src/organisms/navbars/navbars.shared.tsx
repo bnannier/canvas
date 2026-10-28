@@ -1,4 +1,4 @@
-import { type ComponentType, type ReactNode } from "react";
+import { type ComponentProps, type ComponentType, type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassPane, GlassSurface, paneStyle, paneRipple, withInnerFill, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
@@ -118,6 +118,14 @@ export interface NavbarProps {
    */
   brandContent?: ReactNode;
   /**
+   * Where the brand leads (an app's home, `/`). With it, or with `onBrandPress`, the brand
+   * lockup is one link: a real anchor on the web (an `<a href>`, so middle-click and
+   * modifier-click open it in a new tab), named by `brand`, with the kit's focus ring.
+   */
+  brandHref?: string;
+  /** Called when the brand is pressed; on the web a modifier-click on a `brandHref` stays the browser's. */
+  onBrandPress?: (event: GestureResponderEvent) => void;
+  /**
    * Draw a short vertical separator between the brand and the links (the kit
    * `<Divider vertical inset strong />`), as the hand-off's floating docs pill does. It
    * shows only while both the brand and the links row are on the bar, so a collapsed
@@ -210,6 +218,11 @@ export function densityOf(p: NavbarProps): Density {
 // A modifier or middle click on an anchor is the browser's (a new tab or window), so
 // the bar neither selects the link nor reports it. Natively the event carries none of
 // these keys, so every press is a plain one.
+/** The bar's material host: a GlassSurface that floats over the page. */
+function FloatingSurface(props: ComponentProps<typeof GlassSurface>) {
+  return <GlassSurface {...props} floating />;
+}
+
 function browserOwnsClick(event: GestureResponderEvent): boolean {
   const native = event.nativeEvent as unknown as { metaKey?: boolean; ctrlKey?: boolean; shiftKey?: boolean; button?: number };
   return !!(native.metaKey || native.ctrlKey || native.shiftKey || (native.button != null && native.button !== 0));
@@ -301,7 +314,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Button = parts.Button ?? WebButton;
   const Avatar = parts.Avatar ?? WebAvatar;
   return function Navbar(props: NavbarProps) {
-    const { brand, brandContent, brandDivider, links: linkProp = [], hrefs, actions, actionLabel, onAction, avatar, onSelect, onMenu, scrolls, testID, style } = props;
+    const { brand, brandContent, brandHref, onBrandPress, brandDivider, links: linkProp = [], hrefs, actions, actionLabel, onAction, avatar, onSelect, onMenu, scrolls, testID, style } = props;
     // An app menu (`onMenu`) stands in for the links row and its narrow menu at every width.
     const links = onMenu ? [] : linkProp;
     const { tokens } = useTheme();
@@ -347,7 +360,9 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
       skin.surfaceContainer(tokens, surface),
       style,
     ];
-    const Host = bare ? View : GlassSurface;
+    // The bar floats over the page, so the web frosts it under glass as the hand-off's
+    // pill and app bars are; a bare bar is a plain View.
+    const Host = bare ? View : FloatingSurface;
 
     const select = (index: number, event?: GestureResponderEvent) => {
       setActive(index);
@@ -371,10 +386,26 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
           </Dropdown>
         ) : null}
         {brandContent != null || brand ? (
-          <View style={skin.brandGroup(tokens, density)}>
-            {brandContent}
-            {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
-          </View>
+          brandHref != null || onBrandPress ? (
+            <Pressable
+              {...(brandHref != null ? ({ href: brandHref } as object) : undefined)}
+              onPress={(event) => {
+                if (brandHref != null && browserOwnsClick(event)) return;
+                onBrandPress?.(event);
+              }}
+              accessibilityRole="link"
+              accessibilityLabel={brand ?? "Home"}
+              style={[skin.brandGroup(tokens, density), skin.focusRing]}
+            >
+              {brandContent}
+              {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
+            </Pressable>
+          ) : (
+            <View style={skin.brandGroup(tokens, density)}>
+              {brandContent}
+              {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
+            </View>
+          )
         ) : null}
         {brandDivider && (brandContent != null || !!brand) && hasLinks && !collapsed ? (
           <Divider vertical inset strong />

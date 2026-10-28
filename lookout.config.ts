@@ -20,6 +20,7 @@ import navConfig from "./docs/src/data/nav.config.json";
 import { MATERIAL_OVERLAY_RECIPES, TOAST_RECIPE } from "./e2e/support/overlay-recipes.ts";
 import { MATERIAL_ROUTES, nativeMaterialRoutes, nativeMaterialTarget } from "./e2e/support/material-routes.ts";
 import { fitElementForScreenshot } from "./e2e/support/docs.ts";
+import { existsSync } from "node:fs";
 
 // ---------------------------------------------------------------------------
 // Routes: every component page, element-shot on the preview card (the 3-up
@@ -139,11 +140,88 @@ states["button-group-held"] = {
 };
 
 // ---------------------------------------------------------------------------
+// The v4 hand-off parity pass (target "v4"). Every docs page the hand-off draws is shot
+// whole at 1440 in the hand-off's default look (dark, glass, violet) and judged one to one
+// against its reference image in .v4-reference/dark (tools/v4/capture-references.ts
+// photographs the vendored hand-off, tools/v4/handoff). The owner's rule (2026-10-28): the
+// docs and the kit match the hand-off pixel for pixel, dimensions and responsiveness
+// included, so every divergence is a finding unless the never-file list settles it.
+// ---------------------------------------------------------------------------
+
+const REFERENCE = "./.v4-reference/dark";
+const reference = (file: string) => (existsSync(`${REFERENCE}/${file}`) ? `${REFERENCE}/${file}` : undefined);
+
+// The docs scroll an inner view ([data-page-scroll]), not the window, so a full-page
+// screenshot shows one window's worth. The whole page is photographed by growing the
+// window to the scroller's content, as the hand-off's reference pages are whole pages.
+const pageViewports = new WeakMap<Page, { width: number; height: number }>();
+states["whole-page"] = {
+  description: "The whole page at the same width, the window grown to the page's content",
+  prepare: async (page: Page) => {
+    const viewport = page.viewportSize();
+    if (!viewport) return;
+    pageViewports.set(page, viewport);
+    const height = await page.locator("[data-page-scroll]").first().evaluate((node) => node.scrollHeight);
+    await page.setViewportSize({ width: viewport.width, height: Math.min(Math.max(height, viewport.height), 16000) });
+    await page.waitForTimeout(1500);
+  },
+  restore: async (page: Page) => {
+    const viewport = pageViewports.get(page);
+    if (viewport) await page.setViewportSize(viewport);
+    pageViewports.delete(page);
+  },
+  element: null,
+};
+
+const V4_PAGES: { path: string; name: string; file: string }[] = [
+  { path: "/", name: "library", file: "pages/library.png" },
+  ...["foundations", "layout", "controls", "inputs", "navigation", "data", "charts", "overlays"].map((section) => ({
+    path: `/sections/${section}`,
+    name: `section-${section}`,
+    file: `pages/${section}.png`,
+  })),
+  { path: "/skins", name: "skins", file: "pages/skins.png" },
+];
+
+const TEMPLATE_REFERENCES: Record<string, string> = {
+  ...Object.fromEntries(["activity", "api-keys", "billing", "calendar", "chat", "dashboard", "detail-sidebar", "identities", "inbox", "kanban", "onboarding", "pricing", "profile", "settings", "team"].map((slug) => [slug, slug])),
+  errors: "errors-empty",
+  signin: "sign-in",
+  signup: "sign-up",
+};
+
+const v4Routes: RouteDef[] = [
+  ...V4_PAGES.map(({ path, name, file }) => ({ path, name: `v4-${name}`, design: reference(file), states: ["whole-page"] })),
+  // A component's reference is its detail page down to its Platforms section.
+  ...componentRoutes
+    .filter((route) => route.path.startsWith("/components/"))
+    .map((route) => {
+      const slug = route.path.slice("/components/".length);
+      return { path: route.path, name: `v4-${slug}`, design: reference(`components/${slug}.png`), states: ["whole-page"] };
+    }),
+  // A template's reference is the hand-off's Templates page showing it in the Web frame,
+  // filed under the hand-off's own names where they differ from the docs' slugs.
+  ...Object.entries(TEMPLATE_REFERENCES).map(([slug, file]) => ({
+    path: `/templates/${slug}`,
+    name: `v4-template-${slug}`,
+    design: reference(`templates/${file}-web.png`),
+    states: ["whole-page"],
+  })),
+];
 
 const config: LookoutConfig = {
   project: "canvas",
 
   targets: [
+    {
+      // The hand-off parity pass: web only, in the hand-off's default look. Run with
+      // `--targets v4 --schemes dark --viewports desktop` (the references are 1440 dark).
+      name: "v4",
+      url: "http://localhost:8081",
+      startHint: "cd docs && bun run dev  (Metro on 8081)",
+      query: { surface: "glass", palette: "violet" },
+      routes: v4Routes.map((route) => ({ ...route, platforms: ["web"] as ("web")[] })),
+    },
     {
       name: "docs",
       url: "http://localhost:8081",
@@ -186,20 +264,16 @@ const config: LookoutConfig = {
   rubric: "./lookout.rubric.md",
 
   neverFile: [
-    "the Dark Factory palette (a violet selection color, a green call to action) instead of Material dynamic color: the kit's palette is Dark Factory's by design",
-    "no tonal container / surface-tint palette on Android: by-design token approximation",
-    "the brand type family (Manrope) everywhere, in Dark Factory's dense scale (bold titles, 12.5 medium body): only size, weight, and line-height must map to platform roles",
-    "glass mode stripping hairline borders: intended material behavior",
+    "the Library Index heading reading '<count> components' with the owner's copy beneath it, where the hand-off titles it 'Index': the owner's copy (2026-10-28)",
+    "the Library eyebrow printing the package's current version where the hand-off prints v4.0.0: it reads package.json and reaches 4.0.0 with the release",
+    "differences in sample data inside live examples (names, figures, dates, avatars): illustrative content, unless it is literally placeholder text or a layout follows from it",
+    "the grain overlay's noise pattern differing pixel for pixel: it is random by construction",
+    "motion and hover states (the heroes' loops, the aurora drift, reveals, hover lifts): a still cannot show them, and they are judged through the tuning harness",
     "Android press ripple absent in WEB-ROW previews: ripple is device-only; never judge it from web shots in either direction",
-    "the react-native-web blue focus outline box on web: a known RNW artifact, not a skin bug",
-    "the small uppercase platform watermark (iOS / ANDROID / WEB) in each preview row corner: a docs harness label, not component content",
     "the iOS and Android rows on WEB captures are browser previews of the native skins: judge their metrics and anatomy, but material and feedback fidelity only from device shots",
-    "Lucide-derived outline glyphs at one 1.75 stroke: the kit's icon set, drawn from a single constant",
-    "white cards on a lavender-tinted light page, soft hairline card borders and Dark Factory's downward, palette-tinted shadow ladder: the surfaces this kit is built on",
     "the circular indicator in Spinner and in a loading Button: information-bearing motion by design; Skeleton is the shimmer",
     "pill-shaped chips and badges on the iOS and Android rows: platform shape, not a rounding accident",
     "10pt tab-bar labels on iOS rows: the HIG size for that control",
-    "sample names, addresses and figures in the examples: illustrative data, unless it is literally placeholder text",
   ],
 
   // Where a defect gets fixed. This repository IS the kit, so a finding on a docs

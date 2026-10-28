@@ -22,6 +22,7 @@ import { lightColors } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { inverseDenseTint } from "../src/style/glass-fill.ts";
 import { channelsOf } from "../src/style/color.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // The DENSE layer of the glass model: the surfaces a user reads and acts on.
 //
@@ -48,7 +49,11 @@ import { channelsOf } from "../src/style/color.ts";
 // holding the layer's under-fill, the frost (a `backdrop-filter` layer) and the
 // hairline rim (an inset box-shadow).
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 // The anchored card and its surface: walk up from a node inside the floating content
 // to the absolute `top: 100%` anchor wrapper AnchoredOverlay positions. The wrapper's

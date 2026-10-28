@@ -25,8 +25,17 @@ export interface SwitchProps {
   onValueChange?: (next: boolean) => void;
   /** E2E hook forwarded to the pressable row. */
   testID?: string;
-  // Size (pick one; default is the standard track). The web track scales; iOS and
+  // Size (pick one; default is the standard track). The web track scales;
+  // <!-- only: web -->
+  // iOS and
   // Android draw their platform switch, which comes in one size.
+  // <!-- /only -->
+  // <!-- only: ios -->
+  // iOS draws its platform switch, which comes in one size.
+  // <!-- /only -->
+  // <!-- only: android -->
+  // Android draws its platform switch, which comes in one size.
+  // <!-- /only -->
   small?: boolean;
   large?: boolean;
   // State.

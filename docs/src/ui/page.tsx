@@ -36,7 +36,24 @@ export function usePageScroller(): RefObject<ScrollView | null> | null {
   return useContext(PageScrollContext);
 }
 
-export function Page({ children, viewportOverlays = false }: { children: ReactNode; viewportOverlays?: boolean }) {
+/**
+ * Where the page's content starts below the scroller's top: on the web the hand-off's 96 px,
+ * clearing the pill floating over the page's top; natively iOS owns the inset through
+ * contentInsetAdjustmentBehavior, so the content only takes a gutter's breathing room under
+ * the transparent nav bar.
+ */
+export const PAGE_TOP = Platform.OS === "web" ? SHELL.contentTop : SHELL.gutter;
+
+export function Page({ children, lead, viewportOverlays = false }: {
+  children: ReactNode;
+  /**
+   * A full-width section leading the page, above its 1440 px frame and under the pill, as
+   * the hand-off's Library hero spans the window while its content keeps the frame. It
+   * starts at the scroller's top and owns the room above its content (`PAGE_TOP`).
+   */
+  lead?: ReactNode;
+  viewportOverlays?: boolean;
+}) {
   // The scroller, published to the native audit driver (docs/src/audit/probe-context.tsx)
   // so it can bring a card taller than the screen into view one segment at a time. The
   // probe is null outside the audit build, where this registers nothing and no sensor
@@ -66,15 +83,14 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
         style={{ flex: 1 }}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          // Web: the hand-off's 96 px, clearing the pill floating over the page's top.
-          // Native: iOS owns the inset via contentInsetAdjustmentBehavior, so the content
-          // only takes a gutter's breathing room under the transparent nav bar. The footer
-          // closes the page, so the foot adds nothing.
-          paddingTop: Platform.OS === "web" ? SHELL.contentTop : SHELL.gutter,
+          // `PAGE_TOP`, unless a lead section owns that room. The footer closes the page,
+          // so the foot adds nothing.
+          paddingTop: lead ? 0 : PAGE_TOP,
           width: "100%",
           alignItems: "center",
         }}
       >
+        {lead ? <View style={{ width: "100%" }}>{lead}</View> : null}
         {/* The longhands override the provider's app-root default (flex: 1) so the
             box wraps its content: react-native-web expands `flex: 0` to basis 0%,
             which collapses a content-sized scroll child to 0 height, so basis is

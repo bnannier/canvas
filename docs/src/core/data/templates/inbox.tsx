@@ -1,206 +1,106 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Input, Avatar, StackedList, Divider, Icon, useToast } from "@nannier/canvas";
-import type { StackedListItem } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Inbox built from real Canvas components: a message list beside the open
-// thread on wide screens, stacking above it in narrow ones through Row stacks.
-// Pressing a conversation opens its canned thread, and Send appends the typed
-// reply to whichever thread is open.
+// The hand-off's Inbox (`Canvas v4.0.0 Templates.dc.html`, `t.inbox`): the conversation
+// list beside the open thread (stacked once the screen is narrow), the thread's subject,
+// message count and correspondent, its messages and the reply composer. Every part is a
+// kit component from the frame's scope.
 
-interface InboxMessage {
-  initials: string;
-  name: string;
-  time: string;
+interface Message {
+  who: string;
   text: string;
+  when: string;
 }
 
-interface Conversation {
-  name: string;
-  detail: string;
-  meta: string;
-  subject: string;
-  messages: InboxMessage[];
-}
-
-const CONVERSATIONS: Conversation[] = [
-  {
-    name: "Rachel Chen",
-    detail: "Re: Q3 access review, sign-off needed",
-    meta: "9:12",
-    subject: "Re: Q3 access review",
-    messages: [
-      {
-        initials: "RC",
-        name: "Rachel Chen",
-        time: "9:12 AM",
-        text: "The access review is due Friday. Two admin grants look stale; can you confirm whether Kevin still needs production write?",
-      },
-      {
-        initials: "ME",
-        name: "You",
-        time: "9:20 AM",
-        text: "Kevin moved to the data team last sprint, so production write can go. I will drop it today and note it in the review.",
-      },
-      {
-        initials: "RC",
-        name: "Rachel Chen",
-        time: "9:24 AM",
-        text: "Perfect. Once that lands I will sign off on the review.",
-      },
-    ],
-  },
-  {
-    name: "Ada Lovelace",
-    detail: "SSO rollout plan draft attached",
-    meta: "8:40",
-    subject: "SSO rollout plan",
-    messages: [
-      {
-        initials: "AL",
-        name: "Ada Lovelace",
-        time: "8:40 AM",
-        text: "Draft of the SSO rollout plan is attached. Phase one covers the engineering org behind Okta; phases two and three fold in sales and support. Can you review the cutover dates?",
-      },
-      {
-        initials: "AL",
-        name: "Ada Lovelace",
-        time: "8:41 AM",
-        text: "One open question: do we force-enroll existing sessions on day one, or let them expire naturally over the week?",
-      },
-    ],
-  },
-  {
-    name: "Billing",
-    detail: "Your July invoice is ready",
-    meta: "Yesterday",
-    subject: "Your July invoice is ready",
-    messages: [
-      {
-        initials: "BI",
-        name: "Billing",
-        time: "Yesterday",
-        text: "Your July invoice for the Acme workspace is ready: 42 seats on the Pro plan, $1,050.00, due August 1. A PDF copy was sent to finance@acme.com.",
-      },
-    ],
-  },
-  {
-    name: "Kevin Turner",
-    detail: "Kudos on the launch!",
-    meta: "Yesterday",
-    subject: "Kudos on the launch!",
-    messages: [
-      {
-        initials: "KT",
-        name: "Kevin Turner",
-        time: "Yesterday",
-        text: "Huge congrats on shipping the launch: the rollout was the smoothest we have had. The data team is already using the new export API.",
-      },
-      {
-        initials: "ME",
-        name: "You",
-        time: "Yesterday",
-        text: "Thanks Kevin! Credit to the whole crew. Let me know if the export API needs anything.",
-      },
-    ],
-  },
+const CONVERSATIONS: { name: string; photo: string; subject: string; preview: string; when: string; unread: boolean; messages: Message[] }[] = [
+  { name: "Grace Hopper", photo: "/grace-hopper.jpg", subject: "Q4 token review", preview: "Can we lock --ion before the freeze?", when: "9:41", unread: true, messages: [{ who: "Grace Hopper", text: "Can we lock --ion before the freeze? Design wants one more pass on the light ramp.", when: "9:41" }] },
+  { name: "Kira Tanaka", photo: "/kira-tanaka.jpg", subject: "Glass on Android", preview: "The capture module needs a rebuild…", when: "Yesterday", unread: true, messages: [{ who: "Kira Tanaka", text: "The capture module needs a rebuild after the SDK bump. Blur falls back to solid until then.", when: "Yesterday" }] },
+  { name: "Noor Park", photo: "/noor-park.jpg", subject: "Tab bar spacing", preview: "12px off the edge looks right", when: "Mon", unread: false, messages: [{ who: "Noor Park", text: "Floating 12px off the edge looks right on the 16 Pro. Shipping it.", when: "Mon" }] },
+  { name: "Liang Bao", photo: "/liang-bao.jpg", subject: "Chart palette", preview: "Series order stays fixed", when: "Sun", unread: false, messages: [{ who: "Liang Bao", text: "Series order stays fixed when filtering. chart-3 is mint everywhere now.", when: "Sun" }] },
 ];
 
-function Message({ initials, name, time, children }: { initials: string; name: string; time: string; children: string }) {
-  return (
-    <Card flat>
-      <Column snug>
-        <Row between alignCenter>
-          <Row snug alignCenter>
-            <Avatar small name={initials} />
-            <Typography small medium>{name}</Typography>
-          </Row>
-          <Typography tiny>{time}</Typography>
-        </Row>
-        <Typography small>{children}</Typography>
-      </Column>
-    </Card>
-  );
-}
-
-function InboxLive() {
-  const { toast } = useToast();
-  const [openIndex, setOpenIndex] = useState(0);
-  const [threads, setThreads] = useState<InboxMessage[][]>(() => CONVERSATIONS.map((c) => c.messages));
+function InboxScreen({ K }: TemplateScreenProps) {
+  const { Row, Column, Card, Typography, Button, Icon, Input, Avatar, Badge, Divider } = K;
+  const [open, setOpen] = useState(0);
+  const [read, setRead] = useState<number[]>([0]);
+  const [replies, setReplies] = useState<Record<number, Message[]>>({});
   const [draft, setDraft] = useState("");
+  const thread = CONVERSATIONS[open]!;
+  const messages = [...thread.messages, ...(replies[open] ?? [])];
 
-  const open = CONVERSATIONS[openIndex] ?? CONVERSATIONS[0];
-  if (!open) return null;
-  const thread = threads[openIndex] ?? [];
-  const firstName = open.name.split(" ")[0] ?? open.name;
-
-  const openConversation = (index: number) => {
-    if (index === openIndex || !CONVERSATIONS[index]) return;
-    setOpenIndex(index);
-    setDraft("");
+  const select = (i: number) => {
+    setOpen(i);
+    setRead((prev) => (prev.includes(i) ? prev : [...prev, i]));
   };
-
-  const sendReply = () => {
+  const send = () => {
     const text = draft.trim();
-    if (!text) {
-      toast({ warning: true, message: "Nothing to send", description: "Type a reply first." });
-      return;
-    }
-    setThreads((prev) =>
-      prev.map((messages, index) =>
-        index === openIndex ? [...messages, { initials: "ME", name: "You", time: "Just now", text }] : messages,
-      ),
-    );
+    if (!text) return;
+    setReplies((prev) => ({ ...prev, [open]: [...(prev[open] ?? []), { who: "You", text, when: "now" }] }));
     setDraft("");
   };
 
-  // The open conversation trades its timestamp for an "Open" badge, so the
-  // list shows which thread the right pane is on.
-  const listItems: StackedListItem[] = CONVERSATIONS.map((c, index) =>
-    index === openIndex
-      ? { id: c.name, name: c.name, detail: c.detail, badge: "Open" }
-      : { id: c.name, name: c.name, detail: c.detail, meta: c.meta },
-  );
-
-  const list = (
-    <Card flush>
-      <StackedList clickable items={listItems} onPressItem={openConversation} />
-    </Card>
-  );
-  const threadPane = (
-    <Column cozy>
-      <Row between alignCenter wrap>
-        <Typography h4>{open.subject}</Typography>
-        <Badge secondary>{`${thread.length} ${thread.length === 1 ? "message" : "messages"}`}</Badge>
-      </Row>
-      {thread.map((message, index) => (
-        <Message key={index} initials={message.initials} name={message.name} time={message.time}>
-          {message.text}
-        </Message>
-      ))}
-      <Divider />
-      <Row snug alignCenter>
-        <Column fill>
-          <Input
-            placeholder={`Reply to ${firstName}…`}
-            value={draft}
-            onChangeText={setDraft}
-            onSubmitEditing={sendReply}
-          />
-        </Column>
-        <Button primary icon iconLeft={<Icon send primaryForeground size={18} />} accessibilityLabel="Send reply" onPress={sendReply} />
-      </Row>
-    </Column>
-  );
-  // The list takes five twelfths beside the thread and stacks above it once
-  // the section is md (768) wide or narrower, where the rail could no longer
-  // show a sender's full name beside its badge. One element tree at every
-  // width: the Row measures its own container and only its layout changes, so
-  // a half-typed reply keeps its text and focus across a resize.
   return (
-    <Row stacks stackBreakpoint="md" relaxed>
-      <Column span={5}>{list}</Column>
-      <Column span={7}>{threadPane}</Column>
+    <Row stacks roomy>
+      <Column span={5}>
+        <Card compact>
+          <Column tight>
+            {CONVERSATIONS.map((c, i) => (
+              <Card key={c.subject} flat compact selected={i === open} onPress={() => select(i)} accessibilityLabel={`${c.name}: ${c.subject}`}>
+                <Row cozy alignStart>
+                  <Avatar src={c.photo} name={c.name} />
+                  <Column fill>
+                    <Row between snug>
+                      <Typography small semibold>{c.name}</Typography>
+                      <Typography caption mono subtle>{c.when}</Typography>
+                    </Row>
+                    <Typography small medium numberOfLines={1}>{c.subject}</Typography>
+                    <Typography caption subtle numberOfLines={1}>{c.preview}</Typography>
+                  </Column>
+                  {c.unread && !read.includes(i) ? <Badge dot primary accessibilityLabel="Unread" /> : null}
+                </Row>
+              </Card>
+            ))}
+          </Column>
+        </Card>
+      </Column>
+      <Column span={7}>
+        <Card flush clip>
+          <Column pad>
+            <Row snug alignCenter wrap>
+              <Typography h5 level={2}>{thread.subject}</Typography>
+              <Badge mono secondary>{String(messages.length)}</Badge>
+              <Column fill>
+                <Typography caption subtle right>{`with ${thread.name}`}</Typography>
+              </Column>
+            </Row>
+          </Column>
+          <Divider soft />
+          <Column pad>
+            <Column snug>
+              {messages.map((m, i) => (
+                <Card key={i} compact flat selected={m.who === "You"}>
+                  <Column tight>
+                    <Row between snug>
+                      <Typography small semibold>{m.who}</Typography>
+                      <Typography caption mono subtle>{m.when}</Typography>
+                    </Row>
+                    <Typography small subtle>{m.text}</Typography>
+                  </Column>
+                </Card>
+              ))}
+            </Column>
+          </Column>
+          <Divider soft />
+          <Column padTight>
+            <Row snug>
+              <Column fill>
+                <Input placeholder="Write a reply…" accessibilityLabel="Reply" value={draft} onChangeText={setDraft} onSubmitEditing={send} />
+              </Column>
+              <Button primary iconLeft={<Icon send decorative />} onPress={send}>Send</Button>
+            </Row>
+          </Column>
+        </Card>
+      </Column>
     </Row>
   );
 }
@@ -208,12 +108,10 @@ function InboxLive() {
 export const INBOX_TEMPLATE: TemplateDoc = {
   slug: "inbox",
   name: "Inbox",
-  description: "Two-pane inbox: message list beside the open thread, stacking to one column on narrow screens. Built from live Canvas components.",
-  sections: [
-    {
-      title: "List and thread",
-      anatomy: "Clickable StackedList of conversations (a span-5 rail, the open one marked with an Open badge) beside the open thread of flat message Cards, its subject and count Badge, and the controlled reply composer (span 7); pressing a conversation opens it and Send appends the reply. The panes are a Row stacks that stacks once the section is md wide or narrower, and a half-typed reply keeps its text and focus across the switch.",
-      render: () => <InboxLive />,
-    },
-  ],
+  group: "App",
+  icon: "inbox",
+  description: "Conversation list beside the open thread, stacking to one column on phones.",
+  path: "inbox",
+  app: true,
+  Screen: InboxScreen,
 };

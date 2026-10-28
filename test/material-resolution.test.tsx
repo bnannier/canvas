@@ -23,11 +23,14 @@ const android: MaterialCapabilities = { platform: "android", frost: true, liquid
 
 describe("material role and capability resolution", () => {
   it("separates static roles from density on iOS and the web", () => {
+    // On the web only a floating surface takes the material (see the next describe), so the
+    // roles are read there on floating surfaces; iOS reads them the same either way.
     for (const capabilities of [ios, web]) {
-      expect(resolveMaterial(requested, { layer: "content" }, capabilities, false).renderer).toBe("frost");
-      expect(resolveMaterial(requested, { layer: "control", static: true }, capabilities, false).renderer).toBe("frost");
-      expect(resolveMaterial(requested, { layer: "dense", static: true }, capabilities, false).renderer).toBe("frost");
-      expect(resolveMaterial(requested, { layer: "dense" }, capabilities, false).renderer).toBe(capabilities.liquid ? "liquid" : "frost");
+      const floating = capabilities.platform === "web";
+      expect(resolveMaterial(requested, { layer: "content", floating }, capabilities, false).renderer).toBe("frost");
+      expect(resolveMaterial(requested, { layer: "control", static: true, floating }, capabilities, false).renderer).toBe("frost");
+      expect(resolveMaterial(requested, { layer: "dense", static: true, floating }, capabilities, false).renderer).toBe("frost");
+      expect(resolveMaterial(requested, { layer: "dense", floating }, capabilities, false).renderer).toBe(capabilities.liquid ? "liquid" : "frost");
     }
   });
   it("requires a safe live Android target and never treats tint as material", () => {
@@ -37,15 +40,88 @@ describe("material role and capability resolution", () => {
   });
   it("uses complete solid for missing peers and preference overrides", () => {
     expect(resolveMaterial(requested, { static: true }, { ...ios, frost: false }, false).renderer).toBe("solid");
-    // A browser without backdrop-filter renders no material at all, whatever the role.
+    // A browser without backdrop-filter renders no material at all, whatever the role,
+    // floating or not.
     for (const options of [{}, { layer: "content" as const }, { layer: "control" as const, static: true }, { layer: "dense" as const }]) {
-      expect(resolveMaterial(requested, options, { ...web, frost: false }, false)).toMatchObject({ renderer: "solid", fallback: "unavailable" });
+      expect(resolveMaterial(requested, { ...options, floating: true }, { ...web, frost: false }, false)).toMatchObject({ renderer: "solid", fallback: "unavailable" });
+      expect(resolveMaterial(requested, options, { ...web, frost: false }, false).renderer).toBe("solid");
     }
     for (const capabilities of [ios, web, android]) {
       for (const flags of [{ surface: "solid" as const }, { reducedTransparency: true }, { increasedContrast: true }]) {
         expect(resolveMaterial({ ...requested, ...flags }, {}, capabilities, true).renderer).toBe("solid");
       }
     }
+  });
+});
+
+// The owner's 2026-10-28 decision: the web matches the v4 hand-off, which frosts only what
+// floats over the page (the bars, dialogs, sheets, drawers, popovers, the command palette,
+// toasts, carousel arrows, video controls). Every surface in the page keeps its complete
+// solid skin under glass there, a fallback of its own ("design"); native platforms keep the
+// material on in-page surfaces, and the frame frost and the modal veil are not surfaces.
+describe("the web frosts only what floats over the page", () => {
+  const LAYERS = [undefined, "functional", "content", "control", "dense"] as const;
+
+  it("resolves an in-page surface on the web to its solid skin, by design, in every layer and role", () => {
+    for (const layer of LAYERS) {
+      for (const stable of [undefined, true, false]) {
+        for (const floating of [undefined, false]) {
+          expect(resolveMaterial(requested, { layer, static: stable, floating }, web, true), `${layer} static=${stable}`)
+            .toEqual({ renderer: "solid", static: stable ?? layer === "content", fallback: "design" });
+        }
+      }
+    }
+  });
+
+  it("frosts a floating surface on the web in every layer", () => {
+    for (const layer of LAYERS) {
+      expect(resolveMaterial(requested, { layer, floating: true }, web, false)).toEqual({ renderer: "frost", static: layer === "content" });
+      expect(resolveMaterial(requested, { layer, static: true, floating: true }, web, false)).toEqual({ renderer: "frost", static: true });
+    }
+  });
+
+  it("leaves iOS, Android and a platform without its own host unaffected, floating or not", () => {
+    const other: MaterialCapabilities = { platform: "other", frost: true, liquid: false, requiresTarget: false };
+    for (const floating of [undefined, false, true]) {
+      expect(resolveMaterial(requested, { layer: "control", floating }, ios, false)).toEqual({ renderer: "liquid", static: false });
+      expect(resolveMaterial(requested, { layer: "content", floating }, ios, false)).toEqual({ renderer: "frost", static: true });
+      expect(resolveMaterial(requested, { layer: "control", floating }, android, true)).toEqual({ renderer: "frost", static: false });
+      expect(resolveMaterial(requested, { layer: "control", floating }, android, false)).toMatchObject({ renderer: "solid", fallback: "missing-target" });
+      expect(resolveMaterial(requested, { layer: "content", floating }, other, false)).toEqual({ renderer: "frost", static: true });
+    }
+  });
+
+  it("keeps the frame frost and the modal veil on the web, which are no in-page surface", () => {
+    expect(resolveMaterial(requested, { frosted: true }, web, false)).toEqual({ renderer: "frost", static: true });
+    expect(resolveMaterial(requested, { veil: true }, web, false)).toEqual({ renderer: "frost", static: true });
+    // They ignore the theme's surface mode, as before.
+    expect(resolveMaterial({ ...requested, surface: "solid" }, { frosted: true }, web, false).renderer).toBe("frost");
+  });
+
+  it("puts the accessibility ladder and the solid preference ahead of the design fallback", () => {
+    expect(resolveMaterial({ ...requested, surface: "solid" }, { layer: "content" }, web, false)).toMatchObject({ fallback: "preference" });
+    expect(resolveMaterial({ ...requested, increasedContrast: true }, { floating: true }, web, false)).toMatchObject({ fallback: "contrast" });
+    expect(resolveMaterial({ ...requested, reducedTransparency: true }, { layer: "content" }, web, false)).toMatchObject({ fallback: "transparency" });
+  });
+
+  it("renders an in-page GlassSurface and GlassPane as their solid skin on the web, and a floating one through the material", () => {
+    const shape = { borderRadius: 12, borderWidth: 1, borderColor: "#abcdef", backgroundColor: "#123456" };
+    const tree = (glass: boolean) => (
+      <ThemeProvider glass={glass} solid={!glass}>
+        <GlassSurface testID="page" layer="content" style={shape}><Text>In the page</Text></GlassSurface>
+        <View testID="pane-host"><GlassPane layer="control" shape={shape} /><Text>Pane</Text></View>
+        <GlassSurface testID="floating" floating layer="functional" style={shape}><Text>Over the page</Text></GlassSurface>
+      </ThemeProvider>
+    );
+    const solid = render(tree(false));
+    const solidPage = screen.getByTestId("page").outerHTML;
+    const solidPane = screen.getByTestId("pane-host").outerHTML;
+    solid.unmount();
+    render(tree(true));
+    expect(screen.getByTestId("page").outerHTML).toBe(solidPage);
+    expect(screen.getByTestId("pane-host").outerHTML).toBe(solidPane);
+    expect(materialsIn(screen.getByTestId("page")).length).toBe(0);
+    expect(materialsIn(screen.getByTestId("floating")).length).toBe(1);
   });
 });
 
@@ -73,7 +149,7 @@ describe("material mode changes", () => {
       return <TextInput accessibilityLabel="Draft" value={value} onChangeText={setValue} />;
     }
     const tree = (glass: boolean) => <ThemeProvider glass={glass} solid={!glass}>
-      <GlassSurface testID="surface" style={{ backgroundColor: "#fff", borderWidth: 1, borderColor: "#ccc", padding: 8 }}>
+      <GlassSurface testID="surface" floating style={{ backgroundColor: "#fff", borderWidth: 1, borderColor: "#ccc", padding: 8 }}>
         <View testID="scroller"><Editor /></View>
       </GlassSurface>
     </ThemeProvider>;
@@ -103,11 +179,13 @@ describe("material mode changes", () => {
   // the shape is painted inside it. The shape names a border width without a colour, the
   // way the Android chip skin's does: a pane that painted it would draw Android's default
   // black ring one hairline inside the host.
+  // A floating host (a carousel arrow's), so the web resolves its material as a native
+  // in-page host does.
   function PaneHost() {
-    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const theme = useMaterialTheme({ static: true, layer: "control", floating: true });
     const shape = { borderRadius: 12, borderWidth: 1 };
     const chrome = [shape, { backgroundColor: "#123456", borderColor: "#abcdef" }];
-    return <View testID="host" style={paneStyle(theme, chrome)}><GlassPane static layer="control" shape={shape} testID="pane" /><Text>Readable</Text></View>;
+    return <View testID="host" style={paneStyle(theme, chrome)}><GlassPane static floating layer="control" shape={shape} testID="pane" /><Text>Readable</Text></View>;
   }
 
   it("keeps the host's own skin and mounts no pane when no material can render", () => {
@@ -179,9 +257,9 @@ describe("material mode changes", () => {
   it("hands the host the same decision its pane and surface render from", () => {
     const seen: string[] = [];
     function Probe() {
-      const options = { static: true, layer: "control" } as const;
+      const options = { static: true, layer: "control", floating: true } as const;
       seen.push(`${useMaterialResolution(options).material.renderer}:${useMaterialTheme(options).surface}`);
-      return <GlassSurface static layer="control" testID="surface" />;
+      return <GlassSurface static floating layer="control" testID="surface" />;
     }
     for (const [supported, expected, materials] of [[true, "frost:glass", 1], [false, "solid:solid", 0]] as const) {
       const restore = browserSupport(supported);

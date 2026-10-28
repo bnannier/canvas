@@ -3,11 +3,21 @@
 A single-choice dropdown field: a trigger showing the chosen value that opens a
 panel of options, styled to match Canvas inputs.
 
-Pass `label` (and `required`) to name the field: iOS and web render the label
+Pass `label` (and `required`) to name the field:
+<!-- only: web -->
+iOS and web render the label
 above the trigger, while Android floats the Material 3 in-container label once
 the menu opens or a value is selected. On Android the trigger grows with the
 user's text size, and a label longer than the trigger truncates on one line clear
-of the chevron while the trigger's accessible name stays the whole label. The trigger fills the parent it is given;
+of the chevron while the trigger's accessible name stays the whole label.
+<!-- /only -->
+<!-- only: ios -->
+iOS renders the label above the trigger.
+<!-- /only -->
+<!-- only: android -->
+Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger grows with the user's text size, and a label longer than the trigger truncates on one line clear of the chevron while the trigger's accessible name stays the whole label.
+<!-- /only -->
+The trigger fills the parent it is given;
 a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or
 a Container step sets its measure.
 
@@ -26,10 +36,21 @@ small) and a 16-pixel chevron that turns over while the list is open. The pointe
 darkens the edge to the subtle ink, and keyboard focus or the open list rings it in
 the accent with a 4-pixel halo. The list is a card 6 pixels under the trigger with
 a 4-pixel inset, 34-pixel rows, the chosen row on the `muted` wash with a trailing
-check in the accent ink. iOS keeps the pop-up button (a 44-point field with the
+check in the accent ink.
+<!-- only: web -->
+iOS keeps the pop-up button (a 44-point field with the
 up-and-down chevrons) and its menu, which marks the chosen row with a leading check;
+<!-- /only -->
+<!-- only: ios -->
+iOS keeps the pop-up button (a 44-point field with the up-and-down chevrons) and its menu, which marks the chosen row with a leading check.
+<!-- /only -->
+<!-- only: web -->
 Android keeps the Material 3 exposed dropdown, whose menu marks the chosen row with
 its state layer alone.
+<!-- /only -->
+<!-- only: android -->
+Android keeps the Material 3 exposed dropdown, whose menu marks the chosen row with its state layer alone.
+<!-- /only -->
 
 Use `dense eyebrow soft` for the compact application field on web: a 32-pixel
 trigger with a 600 13-pixel value under a tracked uppercase eyebrow label at the

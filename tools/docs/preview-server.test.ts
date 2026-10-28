@@ -5,6 +5,7 @@ import { get } from "node:http";
 import type { AddressInfo } from "node:net";
 import { adbPath, appearanceQuery, deepLink, openCommand, sanitizeRoute, shellCommand, shellQuote } from "../../docs/scripts/preview-links.mjs";
 import { createPreviewServer } from "../../docs/scripts/preview-server.mjs";
+import { parseDeviceFrames, watchDevicePorts } from "../../docs/scripts/device-ports.mjs";
 import { themeFromURL } from "../../docs/src/theme/theme-links";
 
 // The preview opener (docs/scripts/preview-server.mjs) behind every completed piece of
@@ -224,5 +225,48 @@ describe("preview opener server", () => {
         expect(failed.body).toContain("spawn adb ENOENT");
       }
     });
+  });
+});
+
+// `bun run dev` keeps every Android device able to reach Metro (docs/scripts/device-ports.mjs):
+// an emulator that boots after the dev server started has no `adb reverse` mapping, and its
+// docs app then keeps a stale bundle instead of live-reloading.
+describe("the Android port mapping", () => {
+  it("reads adb's length-prefixed device frames, keeping a partial one for later", () => {
+    const one = "emulator-5554\tdevice\n";
+    const two = "emulator-5554\tdevice\nR58M\toffline\n";
+    const hex = (s: string) => s.length.toString(16).padStart(4, "0");
+    const { frames, rest } = parseDeviceFrames(`${hex(one)}${one}${hex(two)}${two}0010emu`);
+    expect(frames).toEqual([
+      [{ serial: "emulator-5554", state: "device" }],
+      [{ serial: "emulator-5554", state: "device" }, { serial: "R58M", state: "offline" }],
+    ]);
+    expect(rest).toBe("0010emu");
+  });
+
+  it("maps both ports once per device as it comes online, and again after it reconnects", () => {
+    const { EventEmitter } = require("node:events") as typeof import("node:events");
+    const stdout = Object.assign(new EventEmitter(), { setEncoding() {} });
+    const child = Object.assign(new EventEmitter(), { stdout, kill() {} });
+    const calls: string[][] = [];
+    watchDevicePorts({
+      adb: "adb",
+      ports: [8081, 8790],
+      start: () => child,
+      run: (_cmd: string, args: string[]) => calls.push(args),
+      log: () => {},
+    });
+    const frame = (s: string) => `${s.length.toString(16).padStart(4, "0")}${s}`;
+    stdout.emit("data", frame("emulator-5554\toffline\n"));
+    stdout.emit("data", frame("emulator-5554\tdevice\n"));
+    stdout.emit("data", frame("emulator-5554\tdevice\n"));
+    stdout.emit("data", frame(""));
+    stdout.emit("data", frame("emulator-5554\tdevice\n"));
+    expect(calls).toEqual([
+      ["-s", "emulator-5554", "reverse", "tcp:8081", "tcp:8081"],
+      ["-s", "emulator-5554", "reverse", "tcp:8790", "tcp:8790"],
+      ["-s", "emulator-5554", "reverse", "tcp:8081", "tcp:8081"],
+      ["-s", "emulator-5554", "reverse", "tcp:8790", "tcp:8790"],
+    ]);
   });
 });

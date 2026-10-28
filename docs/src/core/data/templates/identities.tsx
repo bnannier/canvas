@@ -1,240 +1,135 @@
-import { useState, type ReactNode } from "react";
-import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Column,
-  Container,
-  DataTable,
-  Divider,
-  Icon,
-  Input,
-  Pagination,
-  Row,
-  Select,
-  Typography,
-  useToast,
-} from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import { useState } from "react";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// The canonical list view built from real Canvas components: a page header with
-// its primary action, a toolbar whose right slot swaps between the live result
-// count and bulk actions, a selectable DataTable, and a paginated footer. The
-// search, filters, selection, and paging all operate on the same demo data.
+// The hand-off's Identities (`Canvas v4.0.0 Templates.dc.html`, `t.identities`): the
+// heading with Add identity, the search and filter toolbar whose count gives way to the
+// bulk actions once rows are selected, and the selectable identity table with its pager.
+// Every part is a kit component from the frame's scope.
 
-type IdentityRole = "Admin" | "Editor" | "Viewer";
-type IdentityStatus = "Active" | "Pending" | "Locked";
+type Status = "Active" | "Invited" | "Locked";
 
 interface Identity {
-  id: string;
   name: string;
   email: string;
-  role: IdentityRole;
-  status: IdentityStatus;
-  lastSignIn: string;
+  photo?: string;
+  role: string;
+  status: Status;
+  seen: string;
 }
 
-const PAGE_SIZE = 5;
-const ALL_STATUSES = "All statuses";
-const ALL_ROLES = "All roles";
-const STATUS_OPTIONS = [ALL_STATUSES, "Active", "Pending", "Locked"];
-const ROLE_OPTIONS = [ALL_ROLES, "Admin", "Editor", "Viewer"];
-
-const SEED: Identity[] = [
-  { id: "rachel", name: "Rachel Chen", email: "rachel.chen@example.com", role: "Admin", status: "Active", lastSignIn: "2 min ago" },
-  { id: "ada", name: "Ada Lovelace", email: "ada@example.com", role: "Editor", status: "Active", lastSignIn: "1 hour ago" },
-  { id: "kevin", name: "Kevin Turner", email: "kevin@example.com", role: "Viewer", status: "Pending", lastSignIn: "3 days ago" },
-  { id: "linus", name: "Linus Berg", email: "linus.berg@example.com", role: "Editor", status: "Locked", lastSignIn: "1 week ago" },
-  { id: "sofia", name: "Sofia Marques", email: "sofia@example.com", role: "Viewer", status: "Active", lastSignIn: "4 hours ago" },
-  { id: "devon", name: "Devon Carter", email: "devon@example.com", role: "Editor", status: "Active", lastSignIn: "Yesterday" },
-  { id: "priya", name: "Priya Natarajan", email: "priya@example.com", role: "Admin", status: "Active", lastSignIn: "20 min ago" },
-  { id: "marcus", name: "Marcus Webb", email: "marcus@example.com", role: "Viewer", status: "Pending", lastSignIn: "5 days ago" },
-  { id: "elena", name: "Elena Volkov", email: "elena@example.com", role: "Editor", status: "Active", lastSignIn: "3 hours ago" },
-  { id: "james", name: "James Okafor", email: "james@example.com", role: "Viewer", status: "Locked", lastSignIn: "2 weeks ago" },
-  { id: "hana", name: "Hana Sato", email: "hana@example.com", role: "Editor", status: "Active", lastSignIn: "8 min ago" },
-  { id: "oscar", name: "Oscar Lindqvist", email: "oscar@example.com", role: "Viewer", status: "Active", lastSignIn: "6 hours ago" },
+const IDENTITIES: Identity[] = [
+  { name: "Ada Lovelace", email: "ada@ionize.io", photo: "/ada-lovelace.jpg", role: "Owner", status: "Active", seen: "2m ago" },
+  { name: "Grace Hopper", email: "grace@ionize.io", photo: "/grace-hopper.jpg", role: "Admin", status: "Active", seen: "1h ago" },
+  { name: "Kira Tanaka", email: "kira@ionize.io", photo: "/kira-tanaka.jpg", role: "Editor", status: "Invited", seen: "-" },
+  { name: "Noor Park", email: "noor@ionize.io", photo: "/noor-park.jpg", role: "Editor", status: "Active", seen: "3h ago" },
+  { name: "Marcus Allen", email: "marcus@ionize.io", photo: "/marcus-allen.jpg", role: "Viewer", status: "Locked", seen: "6d ago" },
+  { name: "Liang Bao", email: "liang@ionize.io", photo: "/liang-bao.jpg", role: "Admin", status: "Active", seen: "yesterday" },
 ];
 
-// Demo people appended by the "Add identity" action, drawn in order; past the
-// pool the email gets a +N suffix so every appended row stays unique.
-const RECRUITS = [
-  { name: "Avery Quinn", email: "avery.quinn@example.com" },
-  { name: "Noor Rahman", email: "noor.rahman@example.com" },
-  { name: "Tomas Rivera", email: "tomas.rivera@example.com" },
-  { name: "Mina Park", email: "mina.park@example.com" },
-];
+const STATUS_TONE: Record<Status, "success" | "info" | "error"> = { Active: "success", Invited: "info", Locked: "error" };
+const STATUS_FILTERS = ["Status: All", "Active", "Invited", "Locked"];
+const ROLE_FILTERS = ["Role: All", "Owner", "Admin", "Editor", "Viewer"];
 
-function matches(i: Identity, query: string, status: string, role: string): boolean {
-  const q = query.trim().toLowerCase();
-  const textHit = q === "" || i.name.toLowerCase().includes(q) || i.email.toLowerCase().includes(q);
-  return textHit && (status === ALL_STATUSES || i.status === status) && (role === ALL_ROLES || i.role === role);
-}
-
-function statusBadge(status: IdentityStatus): ReactNode {
-  if (status === "Active") return <Badge key="st" status success>Active</Badge>;
-  if (status === "Pending") return <Badge key="st" status warning>Pending</Badge>;
-  return <Badge key="st" status error>Locked</Badge>;
-}
-
-function identityRow(i: Identity, selected: boolean): ReactNode[] {
-  return [
-    <Row key="who" snug alignCenter>
-      <Avatar small name={i.name} />
-      <Typography small medium>{i.name}</Typography>
-      {selected ? <Icon check primary size={16} accessibilityLabel="Selected" /> : null}
-    </Row>,
-    i.email,
-    i.role === "Admin" ? <Badge key="role">Admin</Badge> : <Badge key="role" secondary>{i.role}</Badge>,
-    statusBadge(i.status),
-    i.lastSignIn,
-  ];
-}
-
-function IdentitiesLive() {
+function IdentitiesScreen({ K, phone }: TemplateScreenProps) {
+  const { Row, Column, Card, Typography, Button, Icon, Input, Select, Avatar, Badge, DataTable, Divider, View, useMeasuredWidth, useToast } = K;
   const { toast } = useToast();
-  const [identities, setIdentities] = useState<Identity[]>(SEED);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState(ALL_STATUSES);
-  const [roleFilter, setRoleFilter] = useState(ALL_ROLES);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState(STATUS_FILTERS[0]!);
+  const [roleFilter, setRoleFilter] = useState(ROLE_FILTERS[0]!);
+  const [added, setAdded] = useState(0);
+  const [selected, setSelected] = useState<Array<string | number>>([]);
 
-  const filtered = identities.filter((i) => matches(i, query, statusFilter, roleFilter));
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const current = Math.min(page, totalPages);
-  const start = (current - 1) * PAGE_SIZE;
-  const paged = filtered.slice(start, start + PAGE_SIZE);
-
-  const toggleRow = (id: string) => {
-    setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
-  };
-
-  const onAdd = () => {
-    const n = identities.length - SEED.length;
-    const base = RECRUITS[n % RECRUITS.length];
-    const dupe = Math.floor(n / RECRUITS.length);
-    const person: Identity = {
-      id: `added-${n}`,
-      name: base.name,
-      email: dupe === 0 ? base.email : base.email.replace("@", `+${dupe + 1}@`),
-      role: "Viewer",
-      status: "Pending",
-      lastSignIn: "Just now",
-    };
-    const next = [...identities, person];
-    setIdentities(next);
-    if (matches(person, query, statusFilter, roleFilter)) {
-      const visible = next.filter((i) => matches(i, query, statusFilter, roleFilter)).length;
-      setPage(Math.max(1, Math.ceil(visible / PAGE_SIZE)));
-      toast({ success: true, message: "Identity added", description: `${person.name} joined as a Viewer, pending first sign-in.` });
-    } else {
-      toast({ success: true, message: "Identity added", description: `${person.name} is hidden by the current search or filters.` });
-    }
-  };
-
-  const onExport = () => {
-    const n = selected.length;
-    toast({ message: "Export started", description: `${n} selected ${n === 1 ? "identity" : "identities"} will download as CSV.` });
-  };
-
-  const onDeactivate = () => {
-    const n = selected.length;
-    setIdentities((prev) => prev.map((i) => (selected.includes(i.id) ? { ...i, status: "Locked" } : i)));
-    setSelected([]);
-    toast({
-      warning: true,
-      message: n === 1 ? "1 identity deactivated" : `${n} identities deactivated`,
-      description: "Their status is now Locked and sign-in is blocked.",
-    });
-  };
-
-  const rangeLabel =
-    filtered.length === 0
-      ? "Showing 0 of 0"
-      : `Showing ${start + 1}–${start + paged.length} of ${filtered.length}`;
+  const all: Identity[] = [
+    ...IDENTITIES,
+    ...Array.from({ length: added }, (_, i): Identity => ({ name: `New identity ${i + 1}`, email: `new${i + 1}@ionize.io`, role: "Viewer", status: "Invited", seen: "-" })),
+  ];
+  const q = query.trim().toLowerCase();
+  const rows = all.filter((r) =>
+    (!q || `${r.name}${r.email}${r.role}`.toLowerCase().includes(q))
+    && (status === STATUS_FILTERS[0] || r.status === status)
+    && (roleFilter === ROLE_FILTERS[0] || r.role === roleFilter));
+  const count = selected.length;
+  const { width, onLayout } = useMeasuredWidth();
+  // Below 600 each row is the identity with its status at the trailing edge, as the
+  // hand-off's phone draws it. It is one column, so it reads the same where the iOS
+  // table collapses to its primary column.
+  const wide = width === 0 || width >= 600;
+  const identity = (r: Identity) => (
+    <Row snug alignCenter>
+      <Avatar small src={r.photo} name={r.name} />
+      <Column fill>
+        <Typography small medium numberOfLines={1}>{r.name}</Typography>
+        <Typography caption subtle numberOfLines={1}>{r.email}</Typography>
+      </Column>
+      {wide ? null : statusBadge(r)}
+    </Row>
+  );
+  const statusBadge = (r: Identity) => <Badge soft {...{ [STATUS_TONE[r.status]]: true }}>{r.status}</Badge>;
 
   return (
-    <Column relaxed>
-      <Row between alignCenter wrap>
-        <Column tight>
-          <Typography h3>Identities</Typography>
-          <Typography small>{identities.length} total</Typography>
-        </Column>
-        <Button primary iconLeft={<Icon userPlus primaryForeground size={16} />} onPress={onAdd}>
-          Add identity
-        </Button>
+    <Column airy>
+      <Row between alignEnd wrap cozy>
+        {phone ? null : (
+          <Column tight>
+            <Typography h3 level={2}>Identities</Typography>
+            <Typography small subtle>People and service accounts that can sign in.</Typography>
+          </Column>
+        )}
+        <Button primary raised iconLeft={<Icon userPlus decorative />} onPress={() => { setAdded((n) => n + 1); toast({ message: "Identity added" }); }}>Add identity</Button>
       </Row>
-
-      <Card flat flush>
-        <Row snug alignCenter between wrap pad>
-          <Row snug alignCenter wrap fill>
-            <Container xs start>
-              <Input
-                small
-                leadingIcon
-                icon="search"
-                placeholder="Search identities..."
-                value={query}
-                onChangeText={(t) => {
-                  setQuery(t);
-                  setPage(1);
-                }}
-                accessibilityLabel="Search identities"
-              />
-            </Container>
-            <Column>
-              <Select
-                small
-                options={STATUS_OPTIONS}
-                value={statusFilter}
-                onSelect={(v) => {
-                  setStatusFilter(v);
-                  setPage(1);
-                }}
-              />
-            </Column>
-            <Column>
-              <Select
-                small
-                options={ROLE_OPTIONS}
-                value={roleFilter}
-                onSelect={(v) => {
-                  setRoleFilter(v);
-                  setPage(1);
-                }}
-              />
-            </Column>
-          </Row>
-          {selected.length === 0 ? (
-            <Typography tiny>{filtered.length} {filtered.length === 1 ? "result" : "results"}</Typography>
+      <Row stacks snug alignCenter>
+        <Column fill>
+          <Input leadingIcon icon="search" placeholder="Search name, email or role" accessibilityLabel="Search identities" value={query} onChangeText={setQuery} />
+        </Column>
+        <Row snug alignCenter>
+          <Column>
+            <Select accessibilityLabel="Status" options={STATUS_FILTERS} value={status} onSelect={setStatus} />
+          </Column>
+          <Column>
+            <Select accessibilityLabel="Role" options={ROLE_FILTERS} value={roleFilter} onSelect={setRoleFilter} />
+          </Column>
+          {count === 0 ? (
+            <Typography caption mono subtle>{`${rows.length} identities`}</Typography>
           ) : (
-            <Row snug alignCenter wrap>
-              <Typography tiny medium>{selected.length} selected</Typography>
-              <Button outline small onPress={onExport}>Export</Button>
-              <Button destructive small onPress={onDeactivate}>Deactivate</Button>
+            <Row tight alignCenter>
+              <Typography caption mono primary>{`${count} selected`}</Typography>
+              <Button destructive outline small onPress={() => { setSelected([]); toast({ message: `${count} identities locked` }); }}>Lock</Button>
+              <Button ghost small onPress={() => setSelected([])}>Clear</Button>
             </Row>
           )}
         </Row>
-        <Divider />
-        <DataTable
-          selectable
-          columns={["Identity", "Email", "Role", "Status", "Last sign-in"]}
-          rows={paged.map((i) => identityRow(i, selected.includes(i.id)))}
-          rowKey={(_row, index) => paged[index].id}
-          onRowPress={(_row, index) => toggleRow(paged[index].id)}
-        />
-        {paged.length === 0 ? (
-          <Column alignCenter padLoose>
-            <Typography small>No identities match the current search and filters.</Typography>
+      </Row>
+      <View onLayout={onLayout}>
+        <Card flush clip>
+          <DataTable
+            attached
+            selectable
+            selectedKeys={selected}
+            onSelectionChange={setSelected}
+            rowKey={(_, index) => rows[index]?.email ?? index}
+            emptyMessage={`No identities match “${query}”.`}
+            columns={wide ? [
+              { label: "Identity", grow: 2 },
+              "Role",
+              { label: "Status", width: 100 },
+              { label: "Last seen", width: 110 },
+            ] : [{ label: "Identity", grow: 1 }]}
+            rows={rows.map((r) => wide
+              ? [identity(r), r.role, statusBadge(r), <Typography key="seen" caption mono subtle>{r.seen}</Typography>]
+              : [identity(r)])}
+          />
+          <Divider />
+          <Column pad>
+            <Row between alignCenter>
+              <Typography small subtle>Page 1 of 4</Typography>
+              <Row tight>
+                <Button outline mediumIcon disabled accessibilityLabel="Previous page" iconLeft={<Icon chevronLeft decorative />} />
+                <Button outline mediumIcon accessibilityLabel="Next page" iconLeft={<Icon chevronRight decorative />} onPress={() => toast({ message: "Page 2 of 4" })} />
+              </Row>
+            </Row>
           </Column>
-        ) : null}
-        <Divider />
-        <Row alignCenter between wrap pad>
-          <Typography tiny>{rangeLabel}</Typography>
-          <Pagination small page={current} total={totalPages} onChange={setPage} />
-        </Row>
-      </Card>
+        </Card>
+      </View>
     </Column>
   );
 }
@@ -242,36 +137,10 @@ function IdentitiesLive() {
 export const IDENTITIES_TEMPLATE: TemplateDoc = {
   slug: "identities",
   name: "Identities",
-  description: "Searchable, filterable identity table with row selection, bulk actions, and pagination. Built from live Canvas components.",
-  sections: [
-    {
-      title: "The shape of a list",
-      description: "A list page is a toolbar + a table + a paginator. The toolbar holds search, filters, and bulk actions (which only appear when rows are selected).",
-      anatomy: "PageHeader (title + primary action) -> Toolbar (search, filters, count / bulk-action slot) -> table -> footer (pagination).",
-      render: () => (
-        <Card>
-          <Typography small>
-            Search and filters live on the left of the toolbar; the right slot shows the result count until rows are selected, then swaps to bulk actions. The table fills the middle, pagination anchors the footer, and pressing a row toggles its selection.
-          </Typography>
-        </Card>
-      ),
-    },
-    {
-      title: "Live preview",
-      description: "Everything operates on the same demo data: search combines with the Status and Role filters, pressing rows selects them (swapping the toolbar to bulk actions), Add identity appends a row, and the footer pages the filtered set.",
-      anatomy: "Page header with primary CTA, toolbar (search Input + filter Selects + swapping right slot), selectable DataTable, Pagination footer.",
-      render: () => <IdentitiesLive />,
-    },
-    {
-      title: "Bulk-action toolbar swap",
-      description: "When rows are selected, the right-hand slot of the toolbar swaps from result count to bulk actions. Same toolbar height, no jank.",
-      render: () => (
-        <Card>
-          <Typography small>
-            The count and the bulk actions share one toolbar slot, so selecting rows never reflows the table below it. Select a row in the live preview above to watch the result count give way to Export and Deactivate; deactivating locks the selected identities, clears the selection, and the count returns.
-          </Typography>
-        </Card>
-      ),
-    },
-  ],
+  group: "App",
+  icon: "users",
+  description: "Searchable identity table. Selecting rows swaps the toolbar count for bulk actions.",
+  path: "identities",
+  app: true,
+  Screen: IdentitiesScreen,
 };

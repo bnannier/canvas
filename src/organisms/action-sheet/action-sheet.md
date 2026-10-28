@@ -1,6 +1,15 @@
 # ActionSheet
 
-A modal sheet of contextual actions, the iOS action sheet idiom: a bottom sheet
+<!-- only: web -->
+A modal sheet of contextual actions, the iOS action sheet idiom:
+<!-- /only -->
+<!-- only: ios -->
+A modal sheet of contextual actions, the iOS action sheet idiom:
+<!-- /only -->
+<!-- only: android -->
+A modal sheet of contextual actions, the bottom sheet idiom:
+<!-- /only -->
+a bottom sheet
 of choices summoned in response to a user action, over a dimmed scrim that glass
 on the web also blurs.
 
@@ -13,11 +22,29 @@ reach for Dropdown or RowMenu instead.
 
 On the web the sheet is two cards a little off the window's edges: a centered header
 over full-width rows in the accent's ink (a destructive one in the error ink), each under
-a hairline, and a separate Cancel card. iOS keeps its Liquid Glass sheet with detached
+a hairline, and a separate Cancel card.
+<!-- only: web -->
+iOS keeps its Liquid Glass sheet with detached
 capsules, and Android the Material 3 bottom sheet with a drag handle and list rows.
+<!-- /only -->
+<!-- only: ios -->
+iOS keeps its Liquid Glass sheet with detached capsules.
+<!-- /only -->
+<!-- only: android -->
+Android keeps the Material 3 bottom sheet with a drag handle and list rows.
+<!-- /only -->
 
+<!-- only: web -->
 iOS accessibility escape and Android system back request cancellation without
-running an action. An open child overlay handles the request first. Disabled
+running an action.
+<!-- /only -->
+<!-- only: ios -->
+iOS accessibility escape requests cancellation without running an action.
+<!-- /only -->
+<!-- only: android -->
+Android system back requests cancellation without running an action.
+<!-- /only -->
+An open child overlay handles the request first. Disabled
 actions do not disable cancellation, and a controlled owner can keep the sheet
 open. The visible Cancel row remains available to assistive technology.
 

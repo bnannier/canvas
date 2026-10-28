@@ -119,11 +119,22 @@ export interface InputProps extends TextEntryProps, MeasureProps {
   /** Placeholder shown while the field is empty. */
   placeholder?: string;
   /**
-   * The field's persistent label. Its placement is platform-adaptive: iOS and
+   * The field's persistent label. Its placement is platform-adaptive:
+   * <!-- only: web -->
+   * iOS and
    * web render it ABOVE the field (the static title the Field/Form composers
    * produce today); Android renders the Material 3 in-container FLOATING label
    * (centered like a placeholder at rest, floating to the top once the field is
-   * focused or filled). The label is the field's programmatic name (wired via
+   * focused or filled).
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * iOS renders it ABOVE the field (the static title the Field/Form composers produce today).
+   * <!-- /only -->
+   * <!-- only: android -->
+   * Android renders the Material 3 in-container FLOATING label (centered like a
+   * placeholder at rest, floating to the top once the field is focused or filled).
+   * <!-- /only -->
+   * The label is the field's programmatic name (wired via
    * both accessibilityLabel and aria-labelledby), so a placeholder is no longer
    * needed for the accessible name.
    */
@@ -138,9 +149,16 @@ export interface InputProps extends TextEntryProps, MeasureProps {
   soft?: boolean;
   /**
    * Marks the field as required: appends a destructive "*" to the label (decorative,
-   * never in the accessible name) and announces the field as required, through
+   * never in the accessible name) and announces the field as required,
+   * <!-- only: web -->
+   * through
    * aria-required on the web and with the word in its name ("Full name, required")
-   * on iOS and Android. The star takes effect only alongside `label`.
+   * on iOS and Android.
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * with the word in its name ("Full name, required").
+   * <!-- /only -->
+   * The star takes effect only alongside `label`.
    */
   required?: boolean;
   // State (orthogonal). `error` (alias `invalid`) flags a validation problem.

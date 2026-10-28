@@ -1,6 +1,13 @@
 # QRCode
 
-Encodes a string as a scannable QR code. Built on react-native-svg, so it renders the same on iOS, Android, and the web. The code stays a fixed dark-on-white card so any camera can read it, whatever the app theme.
+Encodes a string as a scannable QR code. Built on react-native-svg,
+<!-- only: web -->
+so it renders the same on iOS, Android, and the web.
+<!-- /only -->
+<!-- only: ios android -->
+so it renders the same on every platform Canvas supports.
+<!-- /only -->
+The code stays a fixed dark-on-white card so any camera can read it, whatever the app theme.
 
 ## Usage
 

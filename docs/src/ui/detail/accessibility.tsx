@@ -1,4 +1,5 @@
 import type { Ref } from "react";
+import { PLATFORM_COPY } from "../../data/platform-copy";
 import { View, Grid, Card, Column, Row, Typography, Badge, Kbd, DescriptionList, Icon } from "@nannier/canvas";
 import { KEYBOARD_PATTERNS, type KeyboardPatternKey } from "../../core/data/detail-specs";
 import type { DocProse, DocSemantics } from "../../core/scope";
@@ -60,7 +61,7 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
               <Row snug alignStart>
                 <Icon smartphone primary size={15} decorative />
                 <Column fill>
-                  <Typography small subtle>Below the platform minimum, the touch area grows to 44 pt on iOS and 48 dp on Android without moving the layout.</Typography>
+                  <Typography small subtle>{PLATFORM_COPY.touchNote}</Typography>
                 </Column>
               </Row>
             ) : null}

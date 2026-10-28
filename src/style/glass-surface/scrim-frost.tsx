@@ -32,7 +32,9 @@ const FROST = { backdropFilter: BLUR, WebkitBackdropFilter: BLUR } as ViewStyle;
  * is unchanged.
  */
 export function useScrimFrost(): ViewStyle | null {
-  const { material } = useMaterialResolution({ layer: "functional" });
+  // The scrim lies under a modal that floats over the page, so it reads the floating
+  // functional layer's decision: the web keeps every in-page surface solid, never a scrim.
+  const { material } = useMaterialResolution({ layer: "functional", floating: true });
   return Platform.OS === "web" && material.renderer !== "solid" && WEB_FROST.scrimBlur > 0 ? FROST : null;
 }
 

@@ -9,6 +9,7 @@ import { lightColors, type GlassTokens } from "../src/style/tokens.ts";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
 import { PANE_HOSTS } from "./fixtures/pane-hosts.tsx";
 import type { GlassLayer } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // The web frost's paint order (glass-surface-web-frost-self-sample-1). A CSS backdrop filter
 // blurs everything painted before it, so whatever a surface paints beneath its own frost is
@@ -24,7 +25,10 @@ import type { GlassLayer } from "../src/style/glass-surface/glass-surface.shared
 // beneath it paints (the material clip, the surface's own host and, for a pane, the host the
 // pane paints behind), and the fill comes after it, then the rim. It is checked for every
 // layer, a brand, a wash, a sheer pane and a state border on the bare host, and for every kit
-// file that renders a GlassPane, in blush, mint and dark.
+// file that renders a GlassPane, in blush, mint and dark. On the web only a floating surface
+// takes the frost (the v4 hand-off), so the bare hosts here float; the kit's pane hosts are
+// in-page material, which the native builds keep, so their sweep renders under a platform
+// with its own frost and React Native Web paints it with this same host.
 
 afterEach(cleanup);
 
@@ -71,14 +75,14 @@ describe("the web frost samples nothing of its own surface", () => {
       const { container } = render(
         <ThemeProvider {...lookProps(look)} glass>
           {LAYERS.map((layer) => (
-            <GlassSurface key={layer} testID={layer} layer={layer} style={{ backgroundColor: lightColors.card, borderRadius: 14, borderWidth: 1, borderColor: lightColors.border }}>
+            <GlassSurface key={layer} floating testID={layer} layer={layer} style={{ backgroundColor: lightColors.card, borderRadius: 14, borderWidth: 1, borderColor: lightColors.border }}>
               <Text>{layer}</Text>
             </GlassSurface>
           ))}
-          <GlassSurface testID="brand" layer="control" brand={lightColors.primary} style={{ borderRadius: 999 }}><Text>brand</Text></GlassSurface>
-          <GlassSurface testID="wash" layer="content" tint="rgba(37, 99, 235, 0.12)" style={{ borderRadius: 12 }}><Text>wash</Text></GlassSurface>
-          <GlassSurface testID="sheer" layer="content" sheer style={{ borderRadius: 12 }}><Text>sheer</Text></GlassSurface>
-          <GlassSurface testID="state" layer="content" stateBorder style={{ borderRadius: 12, borderWidth: 2, borderColor: lightColors.primary }}><Text>state</Text></GlassSurface>
+          <GlassSurface floating testID="brand" layer="control" brand={lightColors.primary} style={{ borderRadius: 999 }}><Text>brand</Text></GlassSurface>
+          <GlassSurface floating testID="wash" layer="content" tint="rgba(37, 99, 235, 0.12)" style={{ borderRadius: 12 }}><Text>wash</Text></GlassSurface>
+          <GlassSurface floating testID="sheer" layer="content" sheer style={{ borderRadius: 12 }}><Text>sheer</Text></GlassSurface>
+          <GlassSurface floating testID="state" layer="content" stateBorder style={{ borderRadius: 12, borderWidth: 2, borderColor: lightColors.primary }}><Text>state</Text></GlassSurface>
         </ThemeProvider>,
       );
       await waitFor(() => expect(frosted(container)).toHaveLength(8));
@@ -107,7 +111,7 @@ describe("the web frost samples nothing of its own surface", () => {
     const { container } = render(
       <ThemeProvider light glass>
         <View testID="pane-host" style={paneStyle(true, shape)}>
-          <GlassPane layer="control" shape={shape} />
+          <GlassPane layer="control" floating shape={shape} />
           <Text>pane</Text>
         </View>
       </ThemeProvider>,
@@ -116,25 +120,28 @@ describe("the web frost samples nothing of its own surface", () => {
     expectFrostFirst(frosted(container)[0]!, "pane");
   });
 
-  // How many frosts each host rendered, so the sweep cannot pass by finding none: a host whose
-  // panes are all clear (a text field's veil) has no frost to order and passes trivially.
-  const swept = new Map<string, number>();
-  for (const host of PANE_HOSTS) {
-    it(`${host.name}: every frost it renders is the first layer of its material`, async () => {
-      for (const look of LOOKS) {
-        const result = render(<ThemeProvider {...lookProps(look)} glass>{host.node}</ThemeProvider>);
-        host.act?.(result);
-        await waitFor(() => expect(materialsIn(result.container).length).toBeGreaterThan(0));
-        const frosts = frosted(result.container);
-        for (const material of frosts) expectFrostFirst(material, `${host.name} ${look.name}`);
-        swept.set(host.name, (swept.get(host.name) ?? 0) + frosts.length);
-        result.unmount();
-      }
-    });
-  }
+  describe("across the kit's pane hosts", () => {
+    frostInPageSurfaces();
+    // How many frosts each host rendered, so the sweep cannot pass by finding none: a host whose
+    // panes are all clear (a text field's veil) has no frost to order and passes trivially.
+    const swept = new Map<string, number>();
+    for (const host of PANE_HOSTS) {
+      it(`${host.name}: every frost it renders is the first layer of its material`, async () => {
+        for (const look of LOOKS) {
+          const result = render(<ThemeProvider {...lookProps(look)} glass>{host.node}</ThemeProvider>);
+          host.act?.(result);
+          await waitFor(() => expect(materialsIn(result.container).length).toBeGreaterThan(0));
+          const frosts = frosted(result.container);
+          for (const material of frosts) expectFrostFirst(material, `${host.name} ${look.name}`);
+          swept.set(host.name, (swept.get(host.name) ?? 0) + frosts.length);
+          result.unmount();
+        }
+      });
+    }
 
-  it("found frosts across the pane hosts, so the sweep is not vacuous", () => {
-    expect([...swept.values()].filter((n) => n > 0).length).toBeGreaterThan(40);
+    it("found frosts across the pane hosts, so the sweep is not vacuous", () => {
+      expect([...swept.values()].filter((n) => n > 0).length).toBeGreaterThan(40);
+    });
   });
 });
 

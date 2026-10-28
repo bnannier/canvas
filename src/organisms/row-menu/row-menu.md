@@ -4,8 +4,17 @@ Vertical action menu items and navigation links.
 
 On the web the ··· trigger is a 32px square on the field hairline, washed while its
 menu is open or under the pointer, and it opens a card menu 220 wide: rows 34 tall
-with a muted leading glyph beside the label, and a destructive row in red. iOS and
+with a muted leading glyph beside the label, and a destructive row in red.
+<!-- only: web -->
+iOS and
 Android keep their platform context menus in the theme's colours.
+<!-- /only -->
+<!-- only: ios -->
+iOS keeps its platform context menu in the theme's colours.
+<!-- /only -->
+<!-- only: android -->
+Android keeps its platform context menu in the theme's colours.
+<!-- /only -->
 
 In glass mode the menu is a dense-layer glass card beside its glyph; a row's
 callback fires the moment it is pressed. Solid mode paints the skin's own menu.

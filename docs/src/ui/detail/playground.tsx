@@ -7,6 +7,7 @@ import type { DetailSpec, Knob } from "../../core/data/detail-specs";
 import type { PreviewScope } from "../../core/scope";
 import { ExampleErrorBoundary, FitStage } from "../stage";
 import { DetailSection, DotGrid, heldOpen, renderComponent, stageData, type SpecimenBase } from "./frame";
+import { PLATFORMS_SHOWN, PLATFORM_LABELS } from "../../core/platforms-shown";
 import { knobKey, optionLabel, type KnobState, type KnobValue, type PropDescriptors } from "./knobs";
 
 // The detail page's Playground (Component.dc.html `#cv-pg`): the component live on the
@@ -18,11 +19,8 @@ import { knobKey, optionLabel, type KnobState, type KnobValue, type PropDescript
 /** The glyphs an icon slot offers, in the hand-off's order ("" is none). */
 const ICONS = ["", "plus", "sparkles", "chevronDown", "chevronRight", "arrowRight", "search", "settings", "bell", "check", "x", "copy", "send", "heart", "star", "zap", "globe", "lock", "user", "trash2", "download", "tag"] as const;
 
-const PLATFORMS = [
-  { label: "Web", platform: "web" },
-  { label: "iOS", platform: "ios" },
-  { label: "Android", platform: "android" },
-] as const;
+/** The platforms the switch offers: the web's three, a native app's own alone (../../core/platforms-shown). */
+const PLATFORMS = PLATFORMS_SHOWN.map((platform) => ({ platform, label: PLATFORM_LABELS[platform]!.label }));
 
 /** The scope a platform's column renders through: the web skin, or the iOS or Android skins swapped in. */
 export function scopeFor(tokens: ColorTokens, platform: PreviewScope["platform"]): PreviewScope {
@@ -153,7 +151,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   // The knob panel sits beside the stage while the frame is wider than the kit's `lg` step
   // (the hand-off's 1180 px window, about 900 px of content) and under it below that.
   const { value: stacked, onLayout } = useContainerBreakpoint({ base: false, lg: true });
-  const preview = scopeFor(tokens, PLATFORMS[platform].platform);
+  const preview = scopeFor(tokens, (PLATFORMS[platform] ?? PLATFORMS[0]!).platform);
   // The stage is the frame's own ground under the dot grid, not a CardMedia well: a well
   // is as tall as what it holds and cannot grow to the knob panel's height beside it, so
   // its sunken fill would stop short of the frame's floor. (A recorded difference: the
@@ -193,7 +191,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
       title="Playground"
       note={`Every control sets a real prop of ${spec.propsInterface.replace(/^react-native:/, "")}. The JSX below updates as you go.`}
       sectionRef={sectionRef}
-      actions={Platform.OS === "web" ? (
+      actions={PLATFORMS.length > 1 ? (
         <ButtonGroup segmented small accessibilityLabel="Playground platform" items={PLATFORMS.map((p) => p.label)} active={platform} onSelect={setPlatform} />
       ) : null}
     >

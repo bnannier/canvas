@@ -20,7 +20,15 @@ lag behind the rail). Tapping the track puts the handle on the tapped value at
 once. The rail, the filled range, the value label and the hit target stay
 fixed. A disabled slider is inert; solid mode keeps the skin's own handle.
 
-On iOS 26 the handle is a real Apple Liquid Glass control, with the material's edge-lensing and specular showing on a physical device. This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own look: on the web a 20 px white thumb (16 `small`, 26 `large`) on a 6 px rail (4, 8) whose accent range glows, ringed in the accent's soft wash while a pointer hovers or presses it, under a 13 px title with the value in the mono face; on Android Material 3 Expressive's split 16dp track (24dp `large`) and 4dp bar handle.
+<!-- only: web ios -->
+On iOS 26 the handle is a real Apple Liquid Glass control, with the material's edge-lensing and specular showing on a physical device. This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob.
+<!-- /only -->
+<!-- only: web -->
+The Android and web handles keep their own look: on the web a 20 px white thumb (16 `small`, 26 `large`) on a 6 px rail (4, 8) whose accent range glows, ringed in the accent's soft wash while a pointer hovers or presses it, under a 13 px title with the value in the mono face; on Android Material 3 Expressive's split 16dp track (24dp `large`) and 4dp bar handle.
+<!-- /only -->
+<!-- only: android -->
+On Android the handle keeps its own look: Material 3 Expressive's split 16dp track (24dp `large`) and 4dp bar handle.
+<!-- /only -->
 
 ## Variants
 

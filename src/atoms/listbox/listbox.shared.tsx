@@ -48,7 +48,19 @@ export interface ListboxProps extends MeasureProps {
   items: ListboxItem[];
   /** Accessible name of the option list or multi-select checkbox group. Defaults to "Options". */
   accessibilityLabel?: string;
-  /** Multi-select: each row is a checkbox (a leading indicator on the web and Android, a trailing ✓ on iOS) instead of a single choice. */
+  /**
+   * Multi-select: each row is a checkbox
+   * <!-- only: web -->
+   * (a leading indicator on the web and Android, a trailing ✓ on iOS)
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * (a trailing ✓)
+   * <!-- /only -->
+   * <!-- only: android -->
+   * (a leading indicator)
+   * <!-- /only -->
+   * instead of a single choice.
+   */
   multi?: boolean;
   /** Wrap the list in a rounded, bordered content card with static glass in glass mode. */
   bordered?: boolean;

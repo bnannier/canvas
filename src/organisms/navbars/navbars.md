@@ -6,9 +6,18 @@ primary app-level navigation.
 The bar measures its own width: at and below the `sm` breakpoint (640) the links
 row automatically collapses into a menu button opening a dropdown of the same
 links (the active one checkmarked), so links never clip off a phone screen;
-`active` and `onSelect` keep their contract in both renderings. The menu button
+`active` and `onSelect` keep their contract in both renderings.
+<!-- only: web -->
+The menu button
 leads the bar, ahead of the logo and brand, where Material 3's top app bar puts
 its navigation icon.
+<!-- /only -->
+<!-- only: ios -->
+The menu button leads the bar, ahead of the logo and brand.
+<!-- /only -->
+<!-- only: android -->
+The menu button leads the bar, ahead of the logo and brand, where Material 3's top app bar puts its navigation icon.
+<!-- /only -->
 Pass `scrolls` to keep every link at every width instead: the bar's content row
 then pans sideways inside the bar, with no scroll indicator, and the links never
 fold into the menu. `onMenu` still replaces the links when both are passed.
@@ -16,12 +25,31 @@ fold into the menu. `onMenu` still replaces the links when both are passed.
 On the web the bar is the v4 hand-off's: 56px tall with a 16px gutter, 32px
 capsule links in the interface face, the active one (and a hovered one) on the
 `secondary` fill. `floating` lifts it as a pill on the stronger hairline with the
-md shade. On iOS and Android the bar keeps the platform's own navigation bar and
+md shade.
+<!-- only: web -->
+On iOS and Android the bar keeps the platform's own navigation bar and
 top app bar shape.
+<!-- /only -->
+<!-- only: ios -->
+On iOS the bar keeps the platform's own navigation bar shape.
+<!-- /only -->
+<!-- only: android -->
+On Android the bar keeps the platform's own top app bar shape.
+<!-- /only -->
 
-In glass mode the active link paints a control-layer pane (iOS keeps its
+In glass mode the active link paints a control-layer pane
+<!-- only: web -->
+(iOS keeps its
 inactive capsules and carries the brand fill as glass, web and Android carry
-their tinted tile), and the collapsed menu is Dropdown's dense-layer glass card
+their tinted tile),
+<!-- /only -->
+<!-- only: ios -->
+(iOS keeps its inactive capsules and carries the brand fill as glass),
+<!-- /only -->
+<!-- only: android -->
+(Android carries its tinted tile),
+<!-- /only -->
+and the collapsed menu is Dropdown's dense-layer glass card
 under the hamburger. Solid mode keeps the skin's own active tile.
 
 Either cluster takes a caller-supplied element beside its built-in parts:
@@ -101,8 +129,18 @@ Natively `hrefs` is ignored and `onSelect` does the navigating.
 
 A bare bar paints no surface and no hairline, so it sits clear on what is behind it.
 Pass it at the scroll edge, while nothing has scrolled under the bar, and drop it once
-content does: the bar's own surface then returns to keep its labels legible, as iOS's
-navigation bar and Material 3's top app bar do. A framed bar (`bordered`, `floating`)
+content does: the bar's own surface then returns to keep its labels legible,
+<!-- only: web -->
+as iOS's
+navigation bar and Material 3's top app bar do.
+<!-- /only -->
+<!-- only: ios -->
+as iOS's navigation bar does.
+<!-- /only -->
+<!-- only: android -->
+as Material 3's top app bar does.
+<!-- /only -->
+A framed bar (`bordered`, `floating`)
 keeps its frame over `bare`.
 
 ```tsx

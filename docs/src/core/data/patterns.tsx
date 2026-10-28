@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { shownItems } from "../../ui/shown-on";
 import type { TextInput as NativeInput } from "react-native";
 import {
   Row, Column, Container, Grid, GridItem, Card, Typography, Input, Button, CodeBlock,
@@ -10,8 +11,9 @@ import type { PatternDoc } from "./types";
 
 // Patterns compose the public kit API. Their controls own real local state, and
 // stable component identities keep it intact when their container changes size.
-function Notes({ items }: { items: ReadonlyArray<readonly [string, string]> }) {
-  return <Grid minTileWidth={220} relaxed>{items.map(([title, body]) => (
+/** Note cards; a note tagged with a platform shows only in a build that shows it (../../ui/shown-on). */
+function Notes({ items }: { items: Parameters<typeof shownItems<readonly [string, string]>>[0] }) {
+  return <Grid minTileWidth={220} relaxed>{shownItems(items).map(([title, body]) => (
     <Card key={title}><Typography h4>{title}</Typography><Typography small muted>{body}</Typography></Card>
   ))}</Grid>;
 }
@@ -245,7 +247,7 @@ const PATTERNS: PatternDoc[] = [
       },
       {
         title: "Cross-platform support",
-        description: "Canvas components announce their role and state to assistive tech on iOS, Android, and the web from one codebase, and the role follows the control each platform draws: a one-setting Checkbox is the switch on iOS and Android and announces as one there, while a selection Checkbox stays a checkbox everywhere. react-native-web does not forward accessibilityState or accessibilityValue to the DOM, so each component also carries the matching aria-* attribute (React Native maps it back to the native state). You get VoiceOver, TalkBack, and web screen-reader support from one codebase.",
+        description: "Canvas components announce their role and state to assistive tech on every platform from one codebase, and the role follows the control each platform draws: a one-setting Checkbox is the platform switch on native and announces as one there, while a selection Checkbox stays a checkbox everywhere. react-native-web does not forward accessibilityState or accessibilityValue to the DOM, so each component also carries the matching aria-* attribute (React Native maps it back to the native state). You get native and web screen-reader support from one codebase.",
         render: () => (<CrossPlatformDemo />),
       },
       {
@@ -349,7 +351,7 @@ const density = getDensity();
     sections: [
       {
         title: "What 'glass' means in Canvas",
-        description: "Material, density, and motion are separate decisions. Reading panes, field wells, passive badges, and chart frames use stable frost. Functional floating shells and controls can use Liquid Glass where supported, with native feedback first. Labels, images, chart marks, layout wrappers, and unfilled variants inherit their host instead of gaining a pane. The kit's shared material rendering supplies the material; glass-tint, glass-tint-content, glass-tint-control, and glass-tint-dense control coverage without replacing semantic colors. A dense menu can remain Liquid Glass while keeping its rows legible. A liquid material names the surface, never a motion: nothing deforms, travels or springs.",
+        description: "Surface material, density, and motion are separate decisions. Reading panes, field wells, passive badges, and chart frames use stable frost. Functional floating shells and controls can use Liquid Glass where supported, with native feedback first. Labels, images, chart marks, layout wrappers, and unfilled variants inherit their host instead of gaining a pane. The kit's shared material rendering supplies the material; glass-tint, glass-tint-content, glass-tint-control, and glass-tint-dense control coverage without replacing semantic colors. A dense menu can remain Liquid Glass while keeping its rows legible. A liquid material names the surface, never a motion: nothing deforms, travels or springs.",
         anatomy: "Toggle with the Solid / Glass switch in the topbar, or pass the boolean to the provider: <ThemeProvider glass> forces glass, <ThemeProvider solid> forces flat, and omitting both picks the platform default (glass on iOS 26+ via liquidGlassAvailable(), solid elsewhere).",
         render: () => (<Card><Typography small>Component APIs stay the same. Shared rendering supplies native Liquid Glass where supported, Dark Factory’s plain frost on the web, and supported native blur elsewhere. Semantic card and popover colors stay opaque. Unavailable or unsafe material, Reduce Transparency, and Increase Contrast restore the complete solid appearance.</Typography></Card>),
       },
@@ -371,11 +373,11 @@ const density = getDensity();
       {
         title: "When NOT to use glass",
         description: "Use the complete solid appearance when the material cannot preserve readability, performance, or accessibility. A static content frame is appropriate only when its content remains clear.",
-        render: () => (<Notes items={[["Accessibility preferences", "Reduce Transparency and Increase Contrast use a complete opaque appearance."], ["Unsupported material", "A platform or capture configuration without safe blur falls back to solid."], ["Android page surfaces", "Android frosts only what floats over a separate capture plane: overlays in an OverlayProvider outlet and sheets in a window of their own. A surface in the page itself has no plane it can sample without capturing itself, so with glass requested it keeps its complete solid skin, by design."], ["Unfilled variants", "Layout wrappers and ghost or link actions inherit their surroundings without another pane."]]} />),
+        render: () => (<Notes items={[["Accessibility preferences", "Reduce Transparency and Increase Contrast use a complete opaque appearance."], ["Unsupported material", "A platform or capture configuration without safe blur falls back to solid."], { on: "android", item: ["Android page surfaces", "Android frosts only what floats over a separate capture plane: overlays in an OverlayProvider outlet and sheets in a window of their own. A surface in the page itself has no plane it can sample without capturing itself, so with glass requested it keeps its complete solid skin, by design."] }, ["Unfilled variants", "Layout wrappers and ghost or link actions inherit their surroundings without another pane."]]} />),
       },
       {
         title: "Implementation",
-        description: "ThemeProvider carries the preference: pass glass or solid (glass wins if both are set), or omit both for the platform default reported by liquidGlassAvailable(). Shared rendering selects a supported material for each surfaced role, with complete opaque fallback when accessibility or capability requires it. Material changes preserve interaction state and native host identity. On the web, setSurface(\"glass\") persists the choice and sets data-surface for the CSS handoff's material mode and page backdrop. Also pass the choice from getSurface() to ThemeProvider so React Native components follow it. CSS variables do not style native components.",
+        description: "ThemeProvider carries the preference: pass glass or solid (glass wins if both are set), or omit both for the platform default reported by liquidGlassAvailable(). Shared rendering selects a supported material for each surfaced role, with complete opaque fallback when accessibility or capability requires it. Material switches preserve interaction state and native host identity. On the web, setSurface(\"glass\") persists the choice and sets data-surface for the CSS handoff's material mode and page backdrop. Also pass the choice from getSurface() to ThemeProvider so React Native components follow it. CSS variables do not style native components.",
         render: () => (<CodeBlock language="tsx" code={"// Request material through the provider.\n<ThemeProvider glass>...</ThemeProvider>\n<ThemeProvider solid>...</ThemeProvider>\n\n// Keep the same tree when a user changes the preference.\n<ThemeProvider glass={glass} solid={!glass}>\n  <Card><Input label=\"Project name\" /></Card>\n</ThemeProvider>"} />),
       },
     ],

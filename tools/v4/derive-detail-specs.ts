@@ -76,6 +76,12 @@ const DROPPED_STATES: Record<string, Record<string, string>> = {
 // Text knobs on a prop that takes a React node hosted in a View, which React Native renders
 // a bare string under only inside a text element: the knob's text renders in the named kit
 // element (`<View><Text>View</Text></View>`). By slug, then the knob's prop.
+/**
+ * Sample text the owner rewrote: the hand-off's slogan "Light as material" became "Made of
+ * light" (2026-10-28), so a knob that prints the slogan prints the owner's.
+ */
+const OWNER_TEXT: Record<string, string> = { "Light as material": "Made of light" };
+
 const TEXT_ELEMENTS: Record<string, Record<string, string>> = {
   view: { children: "Text" },
   pressable: { children: "Text" },
@@ -230,7 +236,7 @@ function build() {
         } else if (k.kind === "enum") {
           knobs.push({ ...k, options: k.options.map(asset), value: asset(k.value) });
         } else if (k.kind === "text") {
-          knobs.push({ ...k, value: asset(k.value) });
+          knobs.push({ ...k, value: asset(OWNER_TEXT[k.value] ?? k.value) });
         } else {
           knobs.push(k);
         }

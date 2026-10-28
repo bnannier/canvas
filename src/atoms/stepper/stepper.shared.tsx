@@ -92,9 +92,16 @@ export interface StepperProps {
   description?: ReactNode;
   /**
    * Marks the control required: appends a destructive "*" to the label (decorative,
-   * never in the accessible name) and announces the control as required, through
+   * never in the accessible name) and announces the control as required,
+   * <!-- only: web -->
+   * through
    * aria-required on the web's numeric field and with the word in its name ("Quantity,
-   * required") on iOS and Android. The star takes effect only alongside `label`.
+   * required") on iOS and Android.
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * with the word in its name ("Quantity, required").
+   * <!-- /only -->
+   * The star takes effect only alongside `label`.
    */
   required?: boolean;
   // Size (pick one; default is the medium control). Precedence: large > small.

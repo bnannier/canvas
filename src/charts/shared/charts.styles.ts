@@ -214,9 +214,13 @@ export const verticalColumn: ViewStyle = {
 // The value shown above each vertical bar (mb-1 text-center text-xs font-medium
 // text-card-foreground). Mirrors `horizontalValue` so the magnitude is visible
 // (and reachable as text by assistive tech) in the vertical orientation too.
+export const VERTICAL_VALUE_GAP = 4;
+// The room a value label takes above its bar: the plot reserves it on top of the bar
+// travel, so the tallest bar's value stays inside the chart instead of over its edge.
+export const VERTICAL_VALUE_ROOM = CHART_LOOK.axisLine + VERTICAL_VALUE_GAP;
 export function verticalValue(tokens: ColorTokens): TextStyle {
   return {
-    marginBottom: 4,
+    marginBottom: VERTICAL_VALUE_GAP,
     textAlign: "center",
     ...axisLabel(tokens),
   };

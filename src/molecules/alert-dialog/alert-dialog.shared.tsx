@@ -303,7 +303,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
                 text legible while the card still takes the material. In solid mode
                 GlassSurface is the plain box wearing the skin's own `popover` fill.
                 The dimming scrim behind it is unaffected. */}
-            <GlassSurface layer="dense" style={[s.cardBase, skin.card(tokens)]}>
+            <GlassSurface layer="dense" floating style={[s.cardBase, skin.card(tokens)]}>
               {/* The panel content region: a focusable (tabIndex -1) container the
                   web focus manager pulls focus into and traps Tab within, wrapping
                   the content in a KeyboardAvoidingView so the iOS keyboard never

@@ -101,6 +101,7 @@ The hairline by default; `strong` for a firmer line, `soft` for a quieter one.
 
 **Do** — Click a provider: keep the label to a few words and let the buttons carry the options.
 
+<!-- only: web -->
 ```tsx
 <Column snug>
   <Button primary block>Sign in</Button>
@@ -115,6 +116,23 @@ The hairline by default; `strong` for a firmer line, `soft` for a quieter one.
   </Row>
 </Column>
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<Column snug>
+  <Button primary block>Sign in</Button>
+  <Divider>or continue with</Divider>
+  <Row snug>
+    <Column fill>
+      <Button outline block>Email</Button>
+    </Column>
+    <Column fill>
+      <Button outline block>GitHub</Button>
+    </Column>
+  </Row>
+</Column>
+```
+<!-- /only -->
 
 **Don't** — Click Sign in: a full sentence in the label divider buries the choice.
 

@@ -11,9 +11,13 @@ recipe Alert and the other toned surfaces share); a palette hue is that hue's
 16% wash inside the same hue at 30%, under a deep ink in the hue that holds
 4.5:1 on the wash. A selectable chip rests as the bare pill in the field border,
 and once selected it is the accent's soft wash in the accent ink, inside an
-accent edge and leading with a check. On Android the chip is Material 3's: a 32dp outlined
+accent edge and leading with a check.
+<!-- only: web android -->
+On Android the chip is Material 3's: a 32dp outlined
 container at the 8dp chip corner, its selected filter chip tonal with an 18dp
-check and no outline. The chip owns that whole look, so no call site
+check and no outline.
+<!-- /only -->
+The chip owns that whole look, so no call site
 hand-composes a `borderRadius` + `backgroundColor` + padding Pressable.
 
 Two orthogonal axes drive the look:
@@ -26,9 +30,21 @@ Two orthogonal axes drive the look:
   success Badge and Alert; `info` is the primary color. Precedence when more than one
   is set: status names first, then hues in the order above.
 - **Emphasis**. `outline` drops the fill for the field-border edge around the
-  color's ink; `primary` is the solid accent; `secondary` is the higher raised
+  color's ink; `primary` is the solid accent;
+<!-- only: web -->
+`secondary` is the higher raised
   fill with no edge (on Android, the filled chip beside the bare outlined
-  container that is its idle chip). `neutral` is the muted tag with no edge;
+  container that is its idle chip).
+<!-- /only -->
+<!-- only: ios -->
+`secondary` is the higher raised fill with no edge.
+<!-- /only -->
+<!-- only: android -->
+`secondary` is the higher raised
+  fill with no edge (on Android, the filled chip beside the bare outlined
+  container that is its idle chip).
+<!-- /only -->
+`neutral` is the muted tag with no edge;
   `gray` is the same muted fill and ink inside the chip's own edge. `outline` composes with any color,
   e.g. `<Chip blue outline>`. Precedence: a color wins over `primary`, and
   `outline` wins over `primary`'s fill.
@@ -179,4 +195,22 @@ draws no chrome of its own: it wraps its chips 8 px apart, and fills its parent.
 
 ## Touch area
 
-On Android a tappable Chip's touch area grows to the 48dp minimum without the chip changing size: 8dp above and below the 32dp chip, and nothing sideways once it is 48dp wide. On iOS it keeps 8pt of extra touch area on every side, which clears the 44pt minimum around the 28pt chip. The remove "×" pads out to the minimum on both, biased away from the label. Inside one chip the two never overlap: the chip splits the gap between its label and its "×", so a tap on the label never removes it. Between chips, React Native's own rule applies: where two touch areas overlap, the later chip takes the tap. Android chips that meet the minimum's width reach nothing sideways, so a Row of them never overlaps; on iOS two tappable chips closer than 16pt do, and a tap on the edge of one toggles the next. Leave room between chips on iOS where a mistaken toggle matters.
+<!-- only: web -->
+On Android a tappable Chip's touch area grows to the 48dp minimum without the chip changing size: 8dp above and below the 32dp chip, and nothing sideways once it is 48dp wide. On iOS it keeps 8pt of extra touch area on every side, which clears the 44pt minimum around the 28pt chip. The remove "×" pads out to the minimum on both, biased away from the label.
+<!-- /only -->
+<!-- only: ios -->
+A tappable Chip keeps 8pt of extra touch area on every side, which clears the 44pt minimum around the 28pt chip. The remove "×" pads out to the minimum too, biased away from the label.
+<!-- /only -->
+<!-- only: android -->
+A tappable Chip's touch area grows to the 48dp minimum without the chip changing size: 8dp above and below the 32dp chip, and nothing sideways once it is 48dp wide. The remove "×" pads out to the minimum too, biased away from the label.
+<!-- /only -->
+Inside one chip the two never overlap: the chip splits the gap between its label and its "×", so a tap on the label never removes it. Between chips, React Native's own rule applies: where two touch areas overlap, the later chip takes the tap.
+<!-- only: web -->
+Android chips that meet the minimum's width reach nothing sideways, so a Row of them never overlaps; on iOS two tappable chips closer than 16pt do, and a tap on the edge of one toggles the next. Leave room between chips on iOS where a mistaken toggle matters.
+<!-- /only -->
+<!-- only: ios -->
+Two tappable chips closer than 16pt do, and a tap on the edge of one toggles the next. Leave room between chips where a mistaken toggle matters.
+<!-- /only -->
+<!-- only: android -->
+Chips that meet the minimum's width reach nothing sideways, so a Row of them never overlaps.
+<!-- /only -->

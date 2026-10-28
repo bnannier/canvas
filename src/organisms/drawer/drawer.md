@@ -1,12 +1,28 @@
 # Drawer
 
-A full-screen panel that slides in from an edge: a navigation drawer, a mobile menu, or a bottom action sheet. Built on React Native's Modal, so it floats over the whole app on iOS, Android, and the web, over a dimmed scrim that glass on the web also blurs. For a small contextual menu, reach for Dropdown or RowMenu instead.
+A full-screen panel that slides in from an edge: a navigation drawer, a mobile menu, or a bottom action sheet. Built on React Native's Modal,
+<!-- only: web -->
+so it floats over the whole app on iOS, Android, and the web,
+<!-- /only -->
+<!-- only: ios android -->
+so it floats over the whole app on every platform Canvas supports,
+<!-- /only -->
+over a dimmed scrim that glass on the web also blurs. For a small contextual menu, reach for Dropdown or RowMenu instead.
 
 Drawer provides an overlay host inside its own window. Dropdown, Select, and other anchored children render above the panel without being clipped by its corners; no additional OverlayProvider is needed inside the drawer. A tap outside an open child menu dismisses that menu, and Escape dismisses the child before the drawer. Nested drawers each keep their overlays in their own window.
 
+<!-- only: web ios -->
 On iOS, VoiceOver's accessibility escape gesture requests dismissal of the
-foremost open child before the drawer. Android system back uses the same child
-ownership. A controlled child that stays open continues to own later requests;
+foremost open child before the drawer.
+<!-- /only -->
+<!-- only: web -->
+Android system back uses the same child
+ownership.
+<!-- /only -->
+<!-- only: android -->
+Android system back requests dismissal of the foremost open child before the drawer.
+<!-- /only -->
+A controlled child that stays open continues to own later requests;
 one request never falls through to its parent. The scrim remains a pointer
 target, and the built-in trigger opens the drawer. Sidebar drill-down navigation
 has its own back behavior; accessibility escape dismisses the overlay rather

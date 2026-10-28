@@ -19,8 +19,13 @@ import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Stepper as AndroidStepper } from "../src/atoms/stepper/stepper.android.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 // `buttonDisabled` is the Button's own dim: the hand-off's 0.4 on the web and iOS, M3's 0.38
 // on Android, and the Chip's the same. `pressed` is the Button's label dim on a glass puck: none on the web, whose

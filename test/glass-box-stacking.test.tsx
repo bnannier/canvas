@@ -34,7 +34,7 @@ function boxProps(node: ReactNode, testID: string): ViewProps | undefined {
 
 describe("GlassSurface box", () => {
   it("keeps its native view when it paints a material, so the material cannot be hoisted beneath its siblings", () => {
-    const props = boxProps(<ThemeProvider light glass><GlassSurface testID="frame" layer="content" style={{ borderRadius: 22 }} /></ThemeProvider>, "frame");
+    const props = boxProps(<ThemeProvider light glass><GlassSurface testID="frame" floating layer="content" style={{ borderRadius: 22 }} /></ThemeProvider>, "frame");
     expect(props).toBeDefined();
     expect(props!.collapsable).toBe(false);
   });

@@ -2,7 +2,24 @@
 
 Multi-select option, single yes/no, grouped lists.
 
-One job, a platform's own control: a Checkbox that is one setting (a yes/no, a consent, an opt-in) renders the platform's switch on iOS and Android, where a single setting is a switch (Material 3 on phones included), and stays a checkbox on the web; its role follows what renders (`switch` there, `checkbox` here). A Checkbox that selects items in a list, a table's rows or a "select all" parent takes `selection`: the web keeps the checkbox, Android the Material 3 checkbox, and iOS draws the edit-mode selection circle. `indeterminate` implies `selection`, since a mixed state belongs to a "select all" parent and a switch has none. In glass mode the box keeps its solid look on every platform: it is a small mark inside content, not a surface, so it draws with no pane and no rim, a checked box in its solid brand fill under its check and an empty box with its solid outline.
+One job, a platform's own control: a Checkbox that is one setting (a yes/no, a consent, an opt-in)
+<!-- only: web -->
+renders the platform's switch on iOS and Android, where a single setting is a switch (Material 3 on phones included), and stays a checkbox on the web; its role follows what renders (`switch` there, `checkbox` here).
+<!-- /only -->
+<!-- only: ios android -->
+renders the platform's switch, where a single setting is a switch, and stays a checkbox on the web; its role follows what renders (`switch` here, `checkbox` there).
+<!-- /only -->
+A Checkbox that selects items in a list, a table's rows or a "select all" parent takes `selection`:
+<!-- only: web -->
+the web keeps the checkbox, Android the Material 3 checkbox, and iOS draws the edit-mode selection circle.
+<!-- /only -->
+<!-- only: ios -->
+iOS draws the edit-mode selection circle.
+<!-- /only -->
+<!-- only: android -->
+Android draws the Material 3 checkbox.
+<!-- /only -->
+`indeterminate` implies `selection`, since a mixed state belongs to a "select all" parent and a switch has none. In glass mode the box keeps its solid look on every platform: it is a small mark inside content, not a surface, so it draws with no pane and no rim, a checked box in its solid brand fill under its check and an empty box with its solid outline.
 
 Pass `ref` to access the interactive checkbox row, including its label. Use `useRef<ComponentRef<typeof Checkbox>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 

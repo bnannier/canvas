@@ -51,10 +51,10 @@ export function VideoControls(props: VideoTransport) {
   // The bar is a content pane under glass (the clip above it keeps its own pixels): the
   // node keeps its layout and drops its fill, and the pane paints the material behind it.
   // Where that material resolves solid the pane renders nothing, so the bar keeps its fill.
-  const theme = useMaterialTheme({ layer: "content" });
+  const theme = useMaterialTheme({ layer: "content", floating: true });
   return (
     <View style={paneStyle(theme, props.style)}>
-      <GlassPane layer="content" shape={props.style} />
+      <GlassPane layer="content" floating shape={props.style} />
       <Row tight alignCenter>
         <Button
           ghost

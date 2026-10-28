@@ -5,11 +5,16 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { createSlider } from "../src/atoms/slider/slider.shared.tsx";
 import { iosSkin, androidSkin, webSkin } from "../src/atoms/slider/slider.styles.ts";
 import { lightColors, darkColors } from "../src/style/tokens.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // The thumb is a control-layer glass knob while each platform keeps its own shape.
 // The rail is static glass and the iOS skin retains its bright native tint.
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 const IOSSlider = createSlider(iosSkin);
 

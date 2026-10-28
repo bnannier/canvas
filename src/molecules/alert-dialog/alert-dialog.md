@@ -2,13 +2,30 @@
 
 Catalyst-style confirmation dialog: a centered panel over a dimmed backdrop, which glass on the web also blurs, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.
 
+<!-- only: web -->
 On the web and Android the panel leads with a tone tile (a trash glyph on the
 destructive wash, otherwise an info glyph on the accent's), then a display title over
 its description, and closes on two equal buttons: a secondary Cancel and the primary or
-destructive confirm. On iOS it is the system alert: centered text over a two-cell action
+destructive confirm.
+<!-- /only -->
+<!-- only: android -->
+On Android the panel leads with a tone tile (a trash glyph on the destructive wash, otherwise an info glyph on the accent's), then a display title over its description, and closes on two equal buttons: a secondary Cancel and the primary or destructive confirm.
+<!-- /only -->
+<!-- only: web ios -->
+On iOS it is the system alert: centered text over a two-cell action
 row under a hairline, the confirm in the error ink when destructive.
+<!-- /only -->
 
-Browser Escape and iOS accessibility escape cancel the dialog, clear its
+<!-- only: web -->
+Browser Escape and iOS accessibility escape cancel the dialog,
+<!-- /only -->
+<!-- only: ios -->
+Browser Escape and iOS accessibility escape cancel the dialog,
+<!-- /only -->
+<!-- only: android -->
+Browser Escape and the system back cancel the dialog,
+<!-- /only -->
+clear its
 confirmation field and request `open=false`. The confirmation text gates only
 the confirm action; cancellation remains available while confirm is disabled.
 An open child overlay handles dismissal first. A controlled owner can refuse
@@ -91,8 +108,18 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 ### Controlled
 
 Drive the open state from outside the dialog: omit `trigger`, own `open` yourself,
-and pass `onOpenChange` so every way the dialog closes (confirm, cancel, browser
-Escape or iOS accessibility escape) reports back and keeps your state in sync. (`Stateful` is a
+and pass `onOpenChange` so every way the dialog closes (confirm, cancel,
+<!-- only: web -->
+browser
+Escape or iOS accessibility escape) reports back
+<!-- /only -->
+<!-- only: ios -->
+browser Escape or iOS accessibility escape) reports back
+<!-- /only -->
+<!-- only: android -->
+browser Escape or the system back) reports back
+<!-- /only -->
+and keeps your state in sync. (`Stateful` is a
 docs-only state holder; in an app you would hold `open` with `useState`.)
 
 ```tsx

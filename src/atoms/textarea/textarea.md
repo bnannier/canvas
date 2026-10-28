@@ -2,23 +2,47 @@
 
 Multi-line input, with character count, with toolbar.
 
-Pass `label` (and `required`) to name the field: iOS and web render the label
+Pass `label` (and `required`) to name the field:
+<!-- only: web -->
+iOS and web render the label
 above the control, while Android floats the Material 3 in-container label at the
 top of the multiline box, making room for itself at the user's text size and
 truncating on one line when it is longer than the box while the field's
-accessible name stays the whole label. The required star is decorative: a screen
-reader hears the field as required, from `aria-required` on the web and from its
-name ("Bio, required") on iOS and Android. The box fills the parent it is given; a step of its
+accessible name stays the whole label.
+<!-- /only -->
+<!-- only: ios -->
+iOS renders the label above the control.
+<!-- /only -->
+<!-- only: android -->
+Android floats the Material 3 in-container label at the top of the multiline box, making room for itself at the user's text size and truncating on one line when it is longer than the box while the field's accessible name stays the whole label.
+<!-- /only -->
+The required star is decorative: a screen
+reader hears the field as required,
+<!-- only: web -->
+from `aria-required` on the web and from its
+name ("Bio, required") on iOS and Android.
+<!-- /only -->
+<!-- only: ios android -->
+from its name ("Bio, required").
+<!-- /only -->
+The box fills the parent it is given; a step of its
 own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container
 step sets its measure.
 
 The box is the single-line Input's on each platform. On the web it is the sunken
 well with a 1 px hairline that steps to the subtle ink on hover, takes the `ring`
 edge and a 4 px accent halo on focus and the `destructive` edge on error, with a
-400 value on a 1.55 line; the count is an 11 px mono caption ("12 / 280"). iOS keeps
-its 8 pt `card` box with the error wash and a tabular count ("12/280"). Android uses
+400 value on a 1.55 line; the count is an 11 px mono caption ("12 / 280").
+<!-- only: web ios -->
+iOS keeps
+its 8 pt `card` box with the error wash and a tabular count ("12/280").
+<!-- /only -->
+<!-- only: web android -->
+Android uses
 the same opaque muted surface as the other filled fields, and its count sits at the
-end of the supporting-text row. Its label uses `primary-text` when focused and
+end of the supporting-text row.
+<!-- /only -->
+Its label uses `primary-text` when focused and
 `destructive-text` on error. The over-limit character count also uses
 `destructive-text` on every platform. Without `rows` the field starts four rows tall.
 
@@ -50,9 +74,16 @@ web label. `accessibilityLabel` overrides the visible label’s accessible name;
 
 ### Pre-filled
 
+<!-- only: web -->
 ```tsx
 <Textarea defaultValue="Renders natively on iOS and Android and on the web." />
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<Textarea defaultValue="Renders natively on phones and tablets and on the web." />
+```
+<!-- /only -->
 
 ### Required
 

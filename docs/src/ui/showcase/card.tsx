@@ -59,9 +59,11 @@ export function ShowcaseCard({ id, title, meta, links, caption, children }: Show
         {head.title != null || head.meta != null || chips.length > 0 ? (
           <Column roomy>
             {head.title != null || head.meta != null ? (
+              // Both lines shrink and wrap when the row runs out of room, as the hand-off's
+              // flex items do; a React Native box would otherwise keep its text's width.
               <Row between cozy alignStart>
-                <Typography eyebrow subtle>{head.title ?? ""}</Typography>
-                {head.meta != null ? <Typography eyebrow subtle right>{head.meta}</Typography> : null}
+                <Column shrink><Typography eyebrow subtle>{head.title ?? ""}</Typography></Column>
+                {head.meta != null ? <Column shrink><Typography eyebrow subtle right>{head.meta}</Typography></Column> : null}
               </Row>
             ) : null}
             {chips.length > 0 ? (
