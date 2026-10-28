@@ -92,7 +92,9 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     cardTitle: d(pageRoles.cardTitle),
     panelTitle: d(pageRoles.panelTitle),
     tagline: d(pageRoles.tagline),
-    pageLead: pageRoles.pageLead,
+    // The hand-off caps the page summary at `max-width: 72ch`: 72 of Instrument Sans's
+    // 0.666 em "0" at 18px is 863px, a text measure, not a box width.
+    pageLead: { ...pageRoles.pageLead, maxWidth: 863 },
     sectionLead: pageRoles.sectionLead,
     cardBody: pageRoles.cardBody,
     sectionNote: pageRoles.sectionNote,

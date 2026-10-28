@@ -1,6 +1,6 @@
 import { useState, type Ref } from "react";
 import { Platform } from "react-native";
-import { View, ScrollView, Row, Column, Container, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, useContainerBreakpoint, type ColorTokens } from "@nannier/canvas";
+import { View, ScrollView, Row, Column, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, useContainerBreakpoint, type ColorTokens } from "@nannier/canvas";
 import { CodeBlock as KitCodeBlock } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
 import type { DetailSpec, Knob } from "../../core/data/detail-specs";
@@ -57,11 +57,11 @@ function labelOf(knob: Knob): string {
 // The chip value of an unset option (the knob's "none"): no option label can collide with it.
 const NONE = "\u0000none";
 
-/** A pick-one set of options as selectable chips, the selected one the accent's soft pill. */
+/** A pick-one set of options as the kit's option chips, the selected one the accent's soft wash. */
 function OptionChips({ name, options, value, onPick }: { name: string; options: readonly (string | null)[]; value: KnobValue; onPick: (next: string | null) => void }) {
   return (
     // One tab stop per knob: a pick-one set is a radiogroup, its arrows move the choice.
-    <ChipGroup accessibilityLabel={name} value={typeof value === "string" ? value : NONE} onChange={(next) => onPick(next === NONE ? null : String(next))}>
+    <ChipGroup option accessibilityLabel={name} value={typeof value === "string" ? value : NONE} onChange={(next) => onPick(next === NONE ? null : String(next))}>
       {options.map((option) => (
         <Chip key={option ?? NONE} value={option ?? NONE}>
           {optionLabel(option)}
@@ -74,7 +74,7 @@ function OptionChips({ name, options, value, onPick }: { name: string; options: 
 /** An icon slot's glyphs as icon-only chips ("none" first). */
 function IconChips({ name, value, onPick }: { name: string; value: KnobValue; onPick: (next: string) => void }) {
   return (
-    <ChipGroup accessibilityLabel={name} value={typeof value === "string" ? value : ""} onChange={(next) => onPick(String(next))}>
+    <ChipGroup option accessibilityLabel={name} value={typeof value === "string" ? value : ""} onChange={(next) => onPick(String(next))}>
       {ICONS.map((glyph) => (
         <Chip
           key={glyph || "none"}
@@ -109,11 +109,17 @@ function KnobControl({ knob, value, onChange }: { knob: Knob; value: KnobValue; 
   }
 }
 
+// The hand-off's knob column (Component.dc.html `minmax(0,1fr) 300px`, its 1 px rule
+// included) and its 18 px padding. The playground is docs-only harness, so its frame
+// carries the hand-off's own numbers rather than a kit step.
+const KNOB_COLUMN = { width: 299 } as const;
+const KNOB_PAD = { padding: 18 } as const;
+
 /** The knob panel: the PROPS eyebrow with its Reset, then one labelled control per knob. */
 function KnobPanel({ spec, state, onChange, onReset }: { spec: DetailSpec; state: KnobState; onChange: (key: string, value: KnobValue) => void; onReset: () => void }) {
   return (
-    <ScrollView style={{ maxHeight: 560 }}>
-      <Column relaxed pad>
+    <ScrollView style={{ maxHeight: 560 }} contentContainerStyle={KNOB_PAD}>
+      <Column relaxed>
         <Row between alignCenter>
           <Typography eyebrow subtle>Props</Typography>
           <Button link small onPress={onReset}>Reset</Button>
@@ -207,7 +213,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
             <Row flush>
               {stage}
               <Divider vertical />
-              <Container xs>{panel}</Container>
+              <View style={KNOB_COLUMN}>{panel}</View>
             </Row>
           )}
         </Card>

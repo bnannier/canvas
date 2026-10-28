@@ -174,6 +174,21 @@ draws no chrome of its own: it wraps its chips 8 px apart, and fills its parent.
 </ChipGroup>
 ```
 
+### Options
+
+`option` is the compact pick of a settings panel: 26 px tall at a small corner, a 500 12 px
+label and no check, a bare field-border edge around the muted ink at rest and the accent's
+soft wash inside its edge once chosen. An icon-only option is a 30 px square. `ChipGroup
+option` makes every chip in the set an option and sets them 4 px apart.
+
+```tsx
+<ChipGroup option accessibilityLabel="Size" defaultValue="base">
+  <Chip value="small">small</Chip>
+  <Chip value="base">base</Chip>
+  <Chip value="large">large</Chip>
+</ChipGroup>
+```
+
 ## Do & Don't
 
 ### Removable filter

@@ -298,7 +298,10 @@ describe("widths come from the parent", () => {
           // The hand-off's referenceDetail box is `width:min(100%,360px)` (cv-kit-code3.js), and
           // the owner's 2026-10-28 pixel-exact rule makes the hand-off's measure win.
           const referenceDetail = file === "src/molecules/card/card.reference.styles.ts" && /^  if \(mode === "detail"\) return \{ \.\.\.box, width: "100%", maxWidth: 360,/.test(line);
-          if (!promoTitle && !referenceDetail && !steps.has(Number(m[1]))) offenders.push(`${file}:${i + 1} maxWidth ${m[1]}`);
+          // The hand-off's page summary is `max-width: 72ch` (Component.dc.html), a text measure
+          // the pageLead role carries; the pixel-exact rule makes it win over the scale.
+          const pageLead = file === "src/atoms/typography/typography.styles.ts" && /^    pageLead: \{ \.\.\.pageRoles\.pageLead, maxWidth: 863 \},$/.test(line);
+          if (!promoTitle && !referenceDetail && !pageLead && !steps.has(Number(m[1]))) offenders.push(`${file}:${i + 1} maxWidth ${m[1]}`);
         }
       });
     }
