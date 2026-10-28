@@ -46,9 +46,11 @@ export interface PageProblems {
 
 /**
  * Requests the browser aborts on purpose. A navigation that supersedes an in-flight
- * fetch cancels it, and that is not a defect.
+ * fetch cancels it (a media element's range request too), and that is not a defect.
+ * Each engine spells the one abort its own way: Chromium `net::ERR_ABORTED`, WebKit
+ * "Load request cancelled", Firefox `NS_BINDING_ABORTED`.
  */
-const BENIGN_FAILURES = /net::ERR_ABORTED/;
+const BENIGN_FAILURES = /^(net::ERR_ABORTED|Load request cancelled|NS_BINDING_ABORTED)$/;
 
 /**
  * Record what the page reports while it runs: console errors, uncaught errors, CSP
