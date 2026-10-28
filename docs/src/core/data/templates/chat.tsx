@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChatMessageData } from "@nannier/canvas";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Chat (`Canvas v4.0.0 Templates.dc.html`, `t.chat`): the assistant's
 // header (its mark, provider and online state), the thread with its typing indicator, the

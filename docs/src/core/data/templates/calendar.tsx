@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Calendar (`Canvas v4.0.0 Templates.dc.html`, `t.calendar`): the October
 // 2026 heading with Today and the month chevrons, the kit Calendar's month grid with a dot

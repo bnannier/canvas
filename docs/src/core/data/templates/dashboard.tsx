@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Dashboard (`Canvas v4.0.0 Templates.dc.html`, `t.dashboard`): the
 // Overview heading with Export and New report, four stat cards with their trend bars,

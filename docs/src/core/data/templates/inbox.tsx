@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Inbox (`Canvas v4.0.0 Templates.dc.html`, `t.inbox`): the conversation
 // list beside the open thread (stacked once the screen is narrow), the thread's subject,

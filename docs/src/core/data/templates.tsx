@@ -1,4 +1,4 @@
-import type { TemplateDoc, TemplateGroup } from "./types";
+import type { TemplateDoc, TemplateGroup } from "./template-types";
 import { ACTIVITY_TEMPLATE } from "./templates/activity";
 import { API_KEYS_TEMPLATE } from "./templates/api-keys";
 import { BILLING_TEMPLATE } from "./templates/billing";

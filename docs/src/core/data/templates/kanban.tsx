@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { BoardItem } from "@nannier/canvas";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Kanban (`Canvas v4.0.0 Templates.dc.html`, `t.kanban`): the Q4 board
 // heading with Add card, then the kit Board's four status lanes, each card carrying its grip,
