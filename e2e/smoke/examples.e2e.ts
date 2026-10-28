@@ -15,7 +15,7 @@
  * them, and the URL component-reference.tsx replaces into the address bar.
  */
 import { componentExamples } from "../support/routes";
-import { gotoDocs, isDetailPath, selectExample, stage, BASE_PATH } from "../support/docs";
+import { gotoDocs, selectExample, stage, BASE_PATH } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 const FAILURE = "Example failed to render";
@@ -29,10 +29,8 @@ for (const { route, examples } of componentExamples()) {
     // One example means no switcher: the page is already showing it.
     if (examples.length === 1) return;
 
-    // The Playground page switches examples on its rail; the v4 detail page renders every
-    // example in its Variants grid and switches its comparison stage with a picker.
-    if (!isDetailPath(route.path)) await expect(page.locator('[data-testid="playground-examples"]')).toBeVisible();
-
+    // The detail page renders every example in its Variants grid and switches its
+    // comparison stage with the "Platform example" picker.
     for (const example of examples) {
       await selectExample(page, example.label);
       // Each example has exactly one canonical address, and selecting it puts the

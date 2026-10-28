@@ -9,8 +9,8 @@
  *      load; nothing switches the look in the page.
  *   2. `document.fonts.ready`.
  *   3. Structure before pixels: the page must still be at the example's own address, and
- *      the example rail (testID `playground-examples`) must have exactly the expected
- *      label selected, so a silent redirect to another example fails the cell instead of
+ *      the comparison stage's preview card must name the expected example in its
+ *      `data-example`, so a silent redirect to another example fails the cell instead of
  *      photographing the wrong thing.
  *   4. `fitElementForScreenshot` grows the viewport to hold the card, then one `card.png`
  *      of `[data-preview-card]` at the context's device scale (2).
@@ -29,7 +29,7 @@ import { appendFileSync, mkdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, type BrowserContext, type Page } from "@playwright/test";
 import { scan } from "../support/axe";
-import { BASE_PATH, FIXED_TIME, LOOKS, exampleCard, fitElementForScreenshot, gotoDocs, isDetailPath, platformRow, previewCard } from "../support/docs";
+import { BASE_PATH, FIXED_TIME, LOOKS, exampleCard, fitElementForScreenshot, gotoDocs, platformRow, previewCard } from "../support/docs";
 import { describeProblems, stubRegistry, watchForProblems, type PageProblems } from "../support/fixtures";
 import { readMaterialEffects } from "../support/material-evidence";
 import { probePageOverflow, probeRow } from "../support/audit-probes";
@@ -167,29 +167,14 @@ export async function verifyStructure(page: Page, cell: Pick<WebCell, "path" | "
     throw new Error(`opened ${expected} but the page is at ${new URL(page.url()).pathname}: a redirect, so this is not the example the cell names`);
   }
   if (examples <= 1) return { path: expected, selected: null };
-  if (isDetailPath(cell.path)) {
-    // The v4 detail page has no rail: its comparison stage's preview card names the
-    // example it shows in data-example (docs/src/ui/detail/platform-skins.tsx).
-    const card = exampleCard(page, cell.label);
-    try {
-      await card.waitFor({ state: "visible", timeout: 10_000 });
-    } catch {
-      const shown = await page.locator("[data-preview-card]").evaluateAll((cards) => cards.map((c) => c.getAttribute("data-example") ?? ""));
-      throw new Error(`the comparison stage shows ${shown.length ? shown.map((s) => `"${s}"`).join(", ") : "no example"} where "${cell.label}" was opened`);
-    }
-    return { path: expected, selected: cell.label };
-  }
-  const rail = page.getByTestId("playground-examples");
+  // A component page has no example rail: its comparison stage's preview card names the
+  // example it shows in data-example (docs/src/ui/detail/platform-skins.tsx).
+  const card = exampleCard(page, cell.label);
   try {
-    await rail.waitFor({ state: "visible", timeout: 10_000 });
+    await card.waitFor({ state: "visible", timeout: 10_000 });
   } catch {
-    throw new Error(`${expected} shows no example rail (testID playground-examples) in 10 s, though its page has ${examples} examples: it is not the component page, or it did not render`);
-  }
-  const match = rail.getByRole("tab", { name: cell.label, exact: true, selected: true });
-  if ((await match.count()) !== 1) {
-    const selected = await rail.getByRole("tab", { selected: true }).evaluateAll((tabs) =>
-      tabs.map((tab) => (tab.getAttribute("aria-label") ?? tab.textContent ?? "").replace(/\s+/g, " ").trim()));
-    throw new Error(`the example rail selected ${selected.length ? selected.map((s) => `"${s}"`).join(", ") : "no tab"} where "${cell.label}" was opened`);
+    const shown = await page.locator("[data-preview-card]").evaluateAll((cards) => cards.map((c) => c.getAttribute("data-example") ?? ""));
+    throw new Error(`the comparison stage shows ${shown.length ? shown.map((s) => `"${s}"`).join(", ") : "no example"} where "${cell.label}" was opened`);
   }
   return { path: expected, selected: cell.label };
 }

@@ -12,7 +12,8 @@ export type Knob =
   /** A pick-one axis of boolean props (`null` passes none of them). */
   | { kind: "axis"; label: string; options: readonly SpecOption[] }
   | { kind: "boolean"; prop: string; value: boolean }
-  | { kind: "text"; prop: string; value: string }
+  /** A text, rendered inside the kit `element` where the prop hosts it in a View. */
+  | { kind: "text"; prop: string; value: string; element?: string }
   | { kind: "number"; prop: string; min: number; max: number; value: number }
   /** One of a fixed set of values for one prop. */
   | { kind: "enum"; prop: string; options: readonly string[]; value: string }
@@ -41,6 +42,8 @@ export interface DetailSpec {
   states?: readonly SpecOption[];
   /** The Anatomy figure: its numbered parts, and the props its demo renders with. */
   anatomy: { parts: readonly string[]; props: Readonly<Record<string, AnatomyValue>> };
+  /** The props that show an overlay open in place on every specimen, and the example props that would undo them. */
+  specimen?: { props: Readonly<Record<string, boolean>>; omit?: readonly string[] };
   keyboard: KeyboardPatternKey;
 }
 
@@ -111,7 +114,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
   },
   "emblem": {
     knobs: [
-      {"kind":"text","prop":"children","value":"CV"},
+      {"kind":"text","prop":"children","value":"CV","element":"Typography"},
       {"kind":"axis","label":"Tone","options":["primary","success","warning","destructive","muted"]},
       {"kind":"axis","label":"Size","options":[null,"small","large"]},
       {"kind":"boolean","prop":"circle","value":false},
@@ -143,7 +146,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
       {"kind":"axis","label":"Direction","options":["fromBelow","fromAbove","fromLeft","fromRight"]},
       {"kind":"boolean","prop":"pronounced","value":false},
       {"kind":"boolean","prop":"brisk","value":false},
-      {"kind":"text","prop":"children","value":"Revealed when it scrolls into view"},
+      {"kind":"text","prop":"children","value":"Revealed when it scrolls into view","element":"Typography"},
     ],
     section: "Foundations",
     propsInterface: "RevealProps",
@@ -199,7 +202,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
   },
   "view": {
     knobs: [
-      {"kind":"text","prop":"children","value":"View"},
+      {"kind":"text","prop":"children","value":"View","element":"Text"},
     ],
     section: "Layout",
     propsInterface: "react-native:ViewProps",
@@ -217,7 +220,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
   },
   "pressable": {
     knobs: [
-      {"kind":"text","prop":"children","value":"Pressable surface"},
+      {"kind":"text","prop":"children","value":"Pressable surface","element":"Text"},
       {"kind":"boolean","prop":"disabled","value":false},
     ],
     section: "Layout",
@@ -228,7 +231,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
   },
   "app-frame": {
     knobs: [
-      {"kind":"text","prop":"header","value":"Workspace"},
+      {"kind":"text","prop":"header","value":"Workspace","element":"Typography"},
     ],
     section: "Layout",
     propsInterface: "AppFrameProps",
@@ -380,7 +383,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     knobs: [
       {"kind":"axis","label":"Size","options":[null,"tiny","small","large"]},
       {"kind":"axis","label":"Shape","options":["circle","rounded","ring"]},
-      {"kind":"enum","prop":"uri","options":["docs/public/ada-lovelace.jpg","docs/public/kira-tanaka.jpg",""],"value":"docs/public/ada-lovelace.jpg"},
+      {"kind":"enum","prop":"uri","options":["/ada-lovelace.jpg","/kira-tanaka.jpg",""],"value":"/ada-lovelace.jpg"},
       {"kind":"text","prop":"initials","value":"AL"},
       {"kind":"number","prop":"hue","min":0,"max":360,"value":285},
       {"kind":"boolean","prop":"glow","value":false},
@@ -388,7 +391,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Controls",
     propsInterface: "AvatarProps",
     sizes: {"options":["tiny","small",null,"large"]},
-    anatomy: {"parts":["Frame","Image or initials","Ring"],"props":{"ring":true,"uri":"docs/public/ada-lovelace.jpg"}},
+    anatomy: {"parts":["Frame","Image or initials","Ring"],"props":{"ring":true,"uri":"/ada-lovelace.jpg"}},
     keyboard: "none",
   },
   "badge": {
@@ -1252,6 +1255,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "DialogProps",
     anatomy: {"parts":["Scrim","Panel","Title","Description","Body","Actions","Close"],"props":{}},
+    specimen: {"props":{"open":true,"embedded":true},"omit":["trigger"]},
     keyboard: "dialog",
   },
   "alert-dialog": {
@@ -1267,6 +1271,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "AlertDialogProps",
     anatomy: {"parts":["Scrim","Panel","Icon","Title","Description","Actions"],"props":{}},
+    specimen: {"props":{"open":true,"embedded":true},"omit":["trigger"]},
     keyboard: "dialog",
   },
   "drawer": {
@@ -1302,6 +1307,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "PopoverProps",
     anatomy: {"parts":["Trigger","Panel","Arrow","Title","Description","Action"],"props":{}},
+    specimen: {"props":{"inline":true},"omit":["trigger"]},
     keyboard: "dialog",
   },
   "tooltip": {
@@ -1350,6 +1356,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "WizardProps",
     anatomy: {"parts":["Panel","Steps","Body","Footer actions"],"props":{}},
+    specimen: {"props":{"open":true,"embedded":true}},
     keyboard: "dialog",
   },
   "toast": {

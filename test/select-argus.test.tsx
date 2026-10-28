@@ -20,3 +20,14 @@ test("compact selection fields expose their purpose and choose plain options wit
   expect(queryByRole("listbox")).toBeNull();
   expect(trigger.getAttribute("aria-expanded")).toBe("false");
 });
+
+test("a soft field drops only its resting edge: open, its edge is the ring", () => {
+  const { getByRole } = render(<ThemeProvider light solid><Select dense eyebrow soft label="Priority" defaultValue="medium" options={[{ value: "high", label: "High" }, { value: "medium", label: "Medium" }]} /></ThemeProvider>);
+  const trigger = getByRole("button", { name: "Priority" });
+  const edge = () => getComputedStyle(trigger).borderTopColor;
+  const rest = edge();
+  fireEvent.click(trigger);
+  expect(trigger.getAttribute("aria-expanded")).toBe("true");
+  expect(edge()).not.toBe(rest);
+  expect(edge()).not.toBe("transparent");
+});

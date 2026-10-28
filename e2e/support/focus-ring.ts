@@ -96,7 +96,8 @@ type Reading = { out?: true; id?: number; skipped?: true; shown?: boolean; doubl
  * cue. A focus state lands in a React commit after the focus moves, so each stop waits
  * for its cue before it counts as ringless. The walk starts at the top of the page's
  * scroller and ends where focus leaves it or comes back round; a stop inside a Don't
- * specimen, which shows its anti-pattern on purpose, is passed over.
+ * specimen, which shows its anti-pattern on purpose, or a detail specimen that pins a
+ * ring-coloured state, is passed over.
  */
 export async function ringlessStops(page: Page, color: string): Promise<{ stops: number; ringless: RinglessStop[]; doubled: DoubledStop[] }> {
   await page.evaluate(({ color, name }) => {
@@ -128,7 +129,10 @@ export async function ringlessStops(page: Page, color: string): Promise<{ stops:
         const label = stop.getAttribute("aria-label") ?? (stop.textContent ?? "").trim().slice(0, 40);
         return `${stop.tagName.toLowerCase()}${stop.getAttribute("role") ? ` role=${stop.getAttribute("role")}` : ""} "${label}"${row ? ` in the ${row} row` : ""}`;
       };
-      if (stop.closest("[data-dont-specimen]")) return { id: ids.get(stop), skipped: true, stop: describe() };
+      // A Don't specimen shows its anti-pattern on purpose, and a detail specimen that pins a
+      // ring-coloured state (focus, or held open; docs/src/ui/detail/frame.tsx `stageData`)
+      // draws that edge at rest, so neither can show a new cue.
+      if (stop.closest("[data-dont-specimen], [data-pinned-ring]")) return { id: ids.get(stop), skipped: true, stop: describe() };
       const box = stop.getBoundingClientRect();
       const touches = (node: Element) => {
         const r = node.getBoundingClientRect();
@@ -139,7 +143,10 @@ export async function ringlessStops(page: Page, color: string): Promise<{ stops:
       const brought = [...new Set([stop, ...scroller.querySelectorAll("*")])].filter(touches)
         .map((node) => ({ node, cue: cue(node) & ~(rest.get(node) ?? 0) }))
         .filter(({ cue }) => cue !== 0);
-      const shown = brought.length > 0;
+      // A field built with `systemFocus` (src/style/text.tsx) keeps the platform's own focus
+      // outline instead of the themed ring, by its documented contract: the browser's `auto`
+      // ring on the stop itself is that cue, in the system's colour rather than `ring`.
+      const shown = brought.length > 0 || getComputedStyle(stop).outlineStyle === "auto";
       // Two ring borders on one box: nodes whose edges all lie within 3 px of each other.
       const bordered = brought.filter(({ cue }) => (cue & 2) !== 0).map(({ node }) => ({ node, r: node.getBoundingClientRect() }));
       let doubled: [string, string] | null = null;

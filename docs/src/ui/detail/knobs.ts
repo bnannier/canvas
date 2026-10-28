@@ -51,7 +51,8 @@ export function componentName(spec: DetailSpec, state: KnobState): string {
  * The props a knob state passes (the hand-off's `K.props`): a pick-one axis passes its
  * picked boolean, a flag passes itself when on (and `false` when it is on by default and
  * switched off), an icon slot an Icon element, Icon's own glyph its glyph boolean (first,
- * as the JSX reads it), and a text, number or enum knob its value unless empty.
+ * as the JSX reads it), and a text, number or enum knob its value unless empty (a text
+ * knob with an `element` as that element holding the text).
  */
 export function knobProps(knobs: readonly Knob[], state: KnobState): PropDescriptors {
   const glyph: Record<string, PropValue> = {};
@@ -74,6 +75,9 @@ export function knobProps(knobs: readonly Knob[], state: KnobState): PropDescrip
         break;
       case "component":
         break;
+      case "text":
+        if (value !== "" && value != null) props[knob.prop] = knob.element ? { element: knob.element, children: String(value) } : value;
+        break;
       default:
         if (value !== "" && value != null) props[knob.prop] = value;
     }
@@ -93,6 +97,37 @@ export function withOption(props: PropDescriptors, options: readonly SpecOption[
   for (const option of options) if (option != null) delete next[option];
   if (pick != null) next[pick] = true;
   return next;
+}
+
+/**
+ * The props the page drives on a specimen: each knob's (an axis's options, a flag's, a
+ * text's, a number's, an enum's or an icon slot's prop, and Icon's `glyphs` for its glyph
+ * knob), the Sizes row's and the States row's, and the example props an overlay's
+ * specimen leaves out (a dialog's `trigger`). The default example's props under these
+ * names are dropped before the page's own are laid over them (frame.tsx `renderComponent`),
+ * so a knob switched off is off and a size or state replaces the example's own.
+ */
+export function controlledProps(spec: DetailSpec, glyphs: readonly string[]): ReadonlySet<string> {
+  const names = new Set<string>();
+  for (const knob of spec.knobs) {
+    switch (knob.kind) {
+      case "axis":
+        for (const option of knob.options) if (option != null) names.add(option);
+        break;
+      case "glyph":
+        for (const glyph of glyphs) names.add(glyph);
+        break;
+      case "component":
+        break;
+      default:
+        names.add(knob.prop);
+    }
+  }
+  if (spec.sizes?.prop) names.add(spec.sizes.prop);
+  else for (const option of spec.sizes?.options ?? []) if (option != null) names.add(option);
+  for (const state of spec.states ?? []) if (state != null && !isPinnedState(state)) names.add(state);
+  for (const prop of spec.specimen?.omit ?? []) names.add(prop);
+  return names;
 }
 
 /** The interaction states a States cell pins rather than passes. */
@@ -123,7 +158,7 @@ export function jsxCode(name: string, props: PropDescriptors): string {
   let children = "";
   for (const [key, value] of Object.entries(props)) {
     if (key === "children") {
-      children = String(value);
+      children = typeof value === "object" && "element" in value ? `<${value.element}>${value.children ?? ""}</${value.element}>` : String(value);
       continue;
     }
     attributes.push(attribute(key, value));

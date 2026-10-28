@@ -9,7 +9,7 @@
  * worked, and in a browser the keydown never left the text field.
  */
 import type { Locator, Page } from "@playwright/test";
-import { gotoDocs, platformRow } from "../support/docs";
+import { exampleCard, gotoDocs, platformRow } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 test("a tab set walks with every key the roving-focus pattern promises", async ({ page }) => {
@@ -54,29 +54,22 @@ test("a radio group moves the checked option with the arrows", async ({ page }) 
   await expect.poll(checkedIndex).toBe(start);
 });
 
-test("the example rail selects with the arrow keys and addresses the example", async ({ page }) => {
+test("the example picker selects with the arrow keys and addresses the example", async ({ page }) => {
   await gotoDocs(page, "/components/badge", { scheme: "dark" });
-  const tabs = page.locator('[data-testid="playground-examples"]').getByRole("tab");
-  await expect(tabs.first()).toHaveAttribute("aria-selected", "true");
-
-  await tabs.first().focus();
+  const picker = page.getByRole("button", { name: "Platform example", exact: true });
+  await picker.click();
+  // The picker is the kit Select: focus enters its list at the selected example, the
+  // arrows move it, Enter chooses (the WAI-ARIA listbox pattern, src/style/use-row-focus.ts).
+  // The selected option's name carries the Select's checkmark glyph ("✓ Default").
+  await expect(page.getByRole("option", { name: /^(✓ )?Default$/ })).toBeFocused();
   await page.keyboard.press("ArrowDown");
-  await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
-  // Selecting an example is addressable: the URL names it (Badge's rail after the Usage
-  // default: Notification count, Solid, Outline, ...).
+  await expect(page.getByRole("option", { name: "Notification count", exact: true })).toBeFocused();
+  await page.keyboard.press("Enter");
+  // Selecting an example is addressable: the URL names it, rewritten in place (no
+  // navigation, so nothing remounts), and focus goes back to the picker.
   await expect(page).toHaveURL(/\/components\/badge\/notificationcount(\?|$)/);
-  // Formerly a KNOWN GAP: selecting used to drop keyboard focus to the document body,
-  // because /components/badge and /components/badge/solid are different route files
-  // and router.replace remounted the whole screen out from under the focused tab. The
-  // docs page now updates the address bar in place instead of navigating, so the
-  // component and its children stay mounted and the kit's own roving-focus keeps focus
-  // on the newly selected tab, exactly like the component in isolation (the test
-  // above); a second arrow press keeps walking the rail instead of landing on nothing.
-  await expect(tabs.nth(1)).toBeFocused();
-  await page.keyboard.press("ArrowDown");
-  await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
-  await expect(page).toHaveURL(/\/components\/badge\/solid(\?|$)/);
-  await expect(tabs.nth(2)).toBeFocused();
+  await expect(exampleCard(page, "Notification count")).toHaveCount(1);
+  await expect(picker).toBeFocused();
 });
 
 test("a slider moves its value with the arrows", async ({ page }) => {

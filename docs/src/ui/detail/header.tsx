@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Column, Row, Container, Typography, Badge, Breadcrumb, Button, Chip, CodeBlock, Divider, Icon } from "@nannier/canvas";
+import { Column, Row, Container, Typography, Badge, Breadcrumb, Button, Chip, CodeBlock, Divider, Icon, useFormFactor } from "@nannier/canvas";
 import navConfig from "../../data/nav.config.json";
 import type { ComponentDoc } from "../../core/data/types";
 import { InlineMarkdown } from "../prose";
@@ -40,6 +40,7 @@ export function DetailHeader({ comp, description, sourcePath, exports, jumps }: 
   jumps: readonly Jump[];
 }) {
   const router = useRouter();
+  const phone = useFormFactor() === "phone";
   const tier = TIER[comp.category];
   const section = sectionHref(comp.section);
   const importLine = `import { ${exports.join(", ")} } from "@nannier/canvas";`;
@@ -54,7 +55,10 @@ export function DetailHeader({ comp, description, sourcePath, exports, jumps }: 
         }}
       />
       <Row roomy alignCenter wrap>
-        <Typography display>{comp.name}</Typography>
+        {/* The hand-off sizes the title fluidly (`clamp(40px, 5vw, 64px)`); on a phone the
+            display role's 56 px runs a long name (CandlestickChart) past the column, so the
+            title steps down to the h1 role there, the scale's nearest to the hand-off's 40. */}
+        <Typography display={!phone} h1={phone}>{comp.name}</Typography>
         <Badge mono uppercase secondary={tier.badge === "secondary"} soft={tier.badge === "soft"} outline={tier.badge === "outline"}>{tier.label}</Badge>
       </Row>
       <Container wide start>

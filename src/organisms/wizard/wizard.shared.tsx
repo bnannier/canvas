@@ -36,8 +36,9 @@ export interface WizardProps {
   /**
    * Show the open wizard as a non-modal specimen, for a catalogue or a showcase: it keeps
    * its look, its dialog role and its labelling, but does not take focus, trap Tab,
-   * claim `aria-modal`, or close on Escape or native back. It still presents into the
-   * nearest OverlayProvider, so give it a host of the size it should fill.
+   * claim `aria-modal`, or close on Escape or native back. It renders in place, in the
+   * flow of the page, as Dialog's contained form does, rather than presenting into an
+   * OverlayProvider.
    */
   embedded?: boolean;
   /** Prefix for modal, steps, body-scroll and footer test hooks. */
@@ -54,7 +55,9 @@ export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = W
     const narrowFooter = width <= breakpoints.sm;
     // The hand-off's status: 12px mono meta in the subtle ink.
     const saveStatus = status ? <Typography caption mono subtle>{status}</Typography> : null;
-    return <Dialog form workspace overlay embedded={embedded} open={open} title={title} description={description}
+    // A specimen is the Dialog's contained form, in the flow of the page that shows it,
+    // hugging its stage; a live wizard teleports into the nearest OverlayProvider and fills it.
+    return <Dialog form workspace overlay={!embedded} compact={embedded} embedded={embedded} open={open} title={title} description={description}
       panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID}
       workspaceHeader={<Steps stacks steps={steps} current={current} testID={hook("steps")} />}
       footer={<Column comfortable><Divider /><View onLayout={onLayout} testID={hook("footer")} style={skin.footer}>

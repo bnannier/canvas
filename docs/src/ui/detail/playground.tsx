@@ -6,7 +6,7 @@ import { buildScopes } from "../../core/build-scopes";
 import type { DetailSpec, Knob } from "../../core/data/detail-specs";
 import type { PreviewScope } from "../../core/scope";
 import { ExampleErrorBoundary, FitStage } from "../stage";
-import { DetailSection, DotGrid, renderComponent } from "./frame";
+import { DetailSection, DotGrid, heldOpen, renderComponent, stageData, type SpecimenBase } from "./frame";
 import { knobKey, optionLabel, type KnobState, type KnobValue, type PropDescriptors } from "./knobs";
 
 // The detail page's Playground (Component.dc.html `#cv-pg`): the component live on the
@@ -137,7 +137,7 @@ function KnobPanel({ spec, state, onChange, onReset }: { spec: DetailSpec; state
   );
 }
 
-export function PlaygroundSection({ spec, component, props, code, state, onChange, onReset, tokens, sectionRef }: {
+export function PlaygroundSection({ spec, component, props, code, state, onChange, onReset, tokens, base, sectionRef }: {
   spec: DetailSpec;
   component: string;
   props: PropDescriptors;
@@ -146,6 +146,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   onChange: (key: string, value: KnobValue) => void;
   onReset: () => void;
   tokens: ColorTokens;
+  base?: SpecimenBase;
   sectionRef?: Ref<View>;
 }) {
   const [platform, setPlatform] = useState(0);
@@ -159,7 +160,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   // hand-off's stage is the sunken bg2, a step darker than its panel.)
   const live = (
     <ExampleErrorBoundary key={`${preview.platform}:${code}`}>
-      <FitStage>{renderComponent(preview.scope, component, props)}</FitStage>
+      <FitStage>{renderComponent(preview.scope, component, props, base)}</FitStage>
     </ExampleErrorBoundary>
   );
   // Beside the knob panel the stage is the frame's own ground under the dot grid, not a
@@ -168,7 +169,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   // difference: the hand-off's stage is the sunken bg2, a step darker than its panel).
   // Stacked, nothing stands beside it, and it is the tall sunken well.
   const stage = stacked ? (
-    <View {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}>
+    <View {...(Platform.OS === "web" ? ({ dataSet: stageData(heldOpen(props)) } as object) : null)}>
       <CardMedia tall>
         <DotGrid />
         {live}
@@ -180,7 +181,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
       <View
         // The live render is an example like every other on the page, found by the same
         // web-only tooling attribute (the e2e checks that hold examples to the kit's rules).
-        {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
+        {...(Platform.OS === "web" ? ({ dataSet: stageData(heldOpen(props)) } as object) : null)}
       >
         {live}
       </View>

@@ -33,15 +33,14 @@ import {
   useFormFactor,
 } from "@nannier/canvas";
 import { COMPONENTS } from "../core/data/components";
-import { PreviewViewport } from "../ui/preview-viewport";
 import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
 
 // The Overlays & feedback section page (`Canvas v4.0.0 Overlays.dc.html`): its hero
 // vignette and its eleven cards. The hand-off draws every overlay open inside its card.
 // Here the ones the kit can contain are shown open in place: Dialog and AlertDialog are
 // contained overlays by default, Command has an embedded card, Toast and Popover have
-// in-flow forms, and the Wizard opens into a docs-only overlay host the size of its card.
-// The dialogs are `embedded` specimens, so the page keeps its focus and scroll position.
+// in-flow forms. The dialogs and the Wizard are `embedded` specimens, open in place, so
+// the page keeps its focus and scroll position.
 // Drawer and ActionSheet present through a native Modal over the whole window, so their
 // cards show the trigger that opens them. The Dropdown and Tooltip specimen is shown open
 // above the phone tier only: on a phone an anchored overlay becomes a sheet along the
@@ -293,55 +292,51 @@ function WizardCard() {
   const [hue, setHue] = useState<(typeof HUES)[number]>("violet");
   return (
     <ShowcaseCard id="c-wizard" caption="Wizard · Dialog + Steps + Button, fixed chrome around a scrolling body">
-      {/* The Wizard is an overlay form: a docs-only host the card's size keeps it here. */}
-      <PreviewViewport height={460}>
-        <OverlayProvider>
-          <Wizard
-            open
-            embedded
-            onOpenChange={noop}
-            title="New workspace"
-            steps={[{ label: "Basics" }, { label: "Brand" }, { label: "Invite" }]}
-            current={1}
-            status="Step 2 of 3"
-            previous={{ label: "Back", onPress: noop }}
-            actions={<Button primary iconRight={<Icon arrowRight size={16} decorative />}>Continue</Button>}
-          >
-            <Row stacks stackBreakpoint="sm" relaxed>
-              <Column span={6}>
-                <Column relaxed>
-                  <Column snug>
-                    <Typography small medium>Accent hue · repaints this whole page</Typography>
-                    <Row snug>
-                      {HUES.map((name) => (
-                        <Swatch key={name} circle large {...{ [name]: true }} selected={hue === name} onPress={() => setHue(name)} />
-                      ))}
-                    </Row>
-                  </Column>
-                  <Column snug>
-                    <Typography small medium>Workspace mark</Typography>
-                    <Row snug>
-                      <Emblem primary label="Rk" />
-                      <Emblem muted><Icon sparkles size={18} decorative /></Emblem>
-                      <Emblem muted><Icon upload size={18} decorative /></Emblem>
-                    </Row>
-                  </Column>
-                </Column>
+      {/* An embedded Wizard is a specimen in the card's flow, open and non-modal. */}
+      <Wizard
+        open
+        embedded
+        onOpenChange={noop}
+        title="New workspace"
+        steps={[{ label: "Basics" }, { label: "Brand" }, { label: "Invite" }]}
+        current={1}
+        status="Step 2 of 3"
+        previous={{ label: "Back", onPress: noop }}
+        actions={<Button primary iconRight={<Icon arrowRight size={16} decorative />}>Continue</Button>}
+      >
+        <Row stacks stackBreakpoint="sm" relaxed>
+          <Column span={6}>
+            <Column relaxed>
+              <Column snug>
+                <Typography small medium>Accent hue · repaints this whole page</Typography>
+                <Row snug>
+                  {HUES.map((name) => (
+                    <Swatch key={name} circle large {...{ [name]: true }} selected={hue === name} onPress={() => setHue(name)} />
+                  ))}
+                </Row>
               </Column>
-              <Column span={6}>
-                <Card flat>
-                  <Typography eyebrow subtle>Preview</Typography>
-                  <Row snug alignCenter>
-                    <Button primary small>Primary</Button>
-                    <Chip selectable defaultSelected>Selected</Chip>
-                  </Row>
-                  <Progress value={0.62} />
-                </Card>
+              <Column snug>
+                <Typography small medium>Workspace mark</Typography>
+                <Row snug>
+                  <Emblem primary label="Rk" />
+                  <Emblem muted><Icon sparkles size={18} decorative /></Emblem>
+                  <Emblem muted><Icon upload size={18} decorative /></Emblem>
+                </Row>
               </Column>
-            </Row>
-          </Wizard>
-        </OverlayProvider>
-      </PreviewViewport>
+            </Column>
+          </Column>
+          <Column span={6}>
+            <Card flat>
+              <Typography eyebrow subtle>Preview</Typography>
+              <Row snug alignCenter>
+                <Button primary small>Primary</Button>
+                <Chip selectable defaultSelected>Selected</Chip>
+              </Row>
+              <Progress value={0.62} />
+            </Card>
+          </Column>
+        </Row>
+      </Wizard>
     </ShowcaseCard>
   );
 }
