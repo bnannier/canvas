@@ -8,8 +8,8 @@ Audit checklist for `/templates/dashboard`. The facts block and the variants tab
 | Route | `/templates/dashboard` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/dashboard.tsx` |
-| Sections | 1. Hero stats; 2. Activity and chart; 3. Secondary widgets |
-| Kit names its entry uses | Badge, Button, Card, Column, Feed, Grid, LineChart, Progress, Row, Stats, Tabs, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-dashboard.md`, written by `bun run audit:turn -- --slug=template-dashboard --phase=before\|after` (the before and after capture runs) |
@@ -23,9 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `herostats` | Hero stats | [ ] | [ ] | [ ] |  |
-| `activityandchart` | Activity and chart | [ ] | [ ] | [ ] |  |
-| `secondarywidgets` | Secondary widgets | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

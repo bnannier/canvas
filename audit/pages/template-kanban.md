@@ -8,9 +8,9 @@ Audit checklist for `/templates/kanban`. The facts block and the variants table 
 | Route | `/templates/kanban` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/kanban.tsx` |
-| Sections | 1. Board |
-| Kit names its entry uses | AlertDialog, Avatar, Badge, Button, Card, Chip, Column, DescriptionList, Dialog, DragDropProvider, DragHandle, Draggable, DropZone, EmptyState, Feed, Grid, Icon, Input, Pressable, Progress, Row, RowMenu, Select, Stats, Textarea, Typography, useToast |
-| E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
+| Sections | none parsed |
+| Kit names its entry uses | none |
+| E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-kanban.md`, written by `bun run audit:turn -- --slug=template-kanban --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
@@ -23,7 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `board` | Board | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

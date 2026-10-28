@@ -8,8 +8,8 @@ Audit checklist for `/templates/detail-sidebar`. The facts block and the variant
 | Route | `/templates/detail-sidebar` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/detail-sidebar.tsx` |
-| Sections | 1. Order detail |
-| Kit names its entry uses | Avatar, Badge, Breadcrumb, Button, Card, Column, DataTable, DescriptionList, Divider, Feed, Icon, Row, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-detail-sidebar.md`, written by `bun run audit:turn -- --slug=template-detail-sidebar --phase=before\|after` (the before and after capture runs) |
@@ -23,7 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `orderdetail` | Order detail | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

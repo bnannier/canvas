@@ -8,8 +8,8 @@ Audit checklist for `/templates/pricing`. The facts block and the variants table
 | Route | `/templates/pricing` |
 | Kind | template |
 | Data module | `docs/src/core/data/templates/pricing.tsx` |
-| Sections | 1. Plan tiers; 2. Feature comparison; 3. Billing FAQ |
-| Kit names its entry uses | Accordion, Badge, Button, Card, Column, DataTable, Grid, Icon, Row, Tabs, Typography, useToast |
+| Sections | none parsed |
+| Kit names its entry uses | none |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-pricing.md`, written by `bun run audit:turn -- --slug=template-pricing --phase=before\|after` (the before and after capture runs) |
@@ -23,9 +23,6 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `plantiers` | Plan tiers | [ ] | [ ] | [ ] |  |
-| `featurecomparison` | Feature comparison | [ ] | [ ] | [ ] |  |
-| `billingfaq` | Billing FAQ | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric
