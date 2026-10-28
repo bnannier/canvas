@@ -254,7 +254,9 @@ export function createCard(skin: CardSkin) {
     const reference = referenceModeOf(props);
     if (reference) return <ReferenceCard {...props} mode={reference} hoverEnabled={skin.hover != null} />;
     const brand = brandCardModeOf(props);
-    if (brand) return <BrandCard {...props} mode={brand} hoverEnabled={skin.hover != null} />;
+    // The brand modes are FILL like every Card: without it a native stage that centres its
+    // child sizes a featured card at its copy's full width and clips it.
+    if (brand) return <BrandCard {...props} style={[widthFill, style]} mode={brand} hoverEnabled={skin.hover != null} />;
 
     // Empty strings count as "no content", so a cleared field never renders an empty
     // header, footer, or a stray separator: guard on truthiness rather than null for

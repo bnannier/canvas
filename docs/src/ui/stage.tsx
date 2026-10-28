@@ -86,8 +86,19 @@ function ErrorNote({ message }: { message: string }) {
 // same-orientation scroller. `align` (default "center") keeps the centering above;
 // "start" pins the example to the leading edge and stretches it (a block-level,
 // leading-aligned component such as Breadcrumb spans the row and reads from the left).
-export function FitStage({ children, align = "center" }: { children: ReactNode; align?: "center" | "start" }) {
-  return <Container><Column flush center alignCenter={align === "center"}>{children}</Column></Container>;
+// An example whose fence opens on a Row or Column stretches the same way, whatever
+// `align` says: the hand-off's specimen renderer (`row-column` in cv-kit-code.js) gives
+// the fence's top-level Row or Column `width:100%`, so its fill and span children share
+// the stage and its own justification places them, where a centered stage would let the
+// Row hug its content and its fill children collapse to nothing.
+export function FitStage({ children, align = "center", code }: { children: ReactNode; align?: "center" | "start"; code?: string }) {
+  const stretch = align === "start" || (code != null && fenceRootIsLayout(code));
+  return <Container><Column flush center alignCenter={!stretch}>{children}</Column></Container>;
+}
+
+/** Whether a fence's first element is a Row or Column (the hand-off's top-level layout box). */
+export function fenceRootIsLayout(code: string): boolean {
+  return /^\s*(?:\{\/\*[\s\S]*?\*\/\}\s*)*<(?:Row|Column)[\s>/]/.test(code);
 }
 
 /**
@@ -143,8 +154,10 @@ export function useAuditCard(cardRef: RefObject<View | null>, label: string | un
 // intercepts a press, and it costs no layout width: dropping the old 96px label column hands
 // that space back to the preview. On a device there is a single preview and you ARE the
 // platform, so the tag is dropped and the render spans the full width.
-export function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAlign }: {
+export function PlatformRow({ label, scope, render, code, resetKey, first, showLabel, stageAlign }: {
   label: string;
+  /** The example's fence source, which decides whether its root stretches (FitStage). */
+  code?: string;
   scope: ExampleScope;
   render: (s: ExampleScope) => ReactNode;
   resetKey: string;
@@ -162,7 +175,7 @@ export function PlatformRow({ label, scope, render, resetKey, first, showLabel, 
       {first ? null : <Divider />}
       <Column flush center alignCenter padLoose>
         <ExampleErrorBoundary key={resetKey}>
-          <FitStage align={stageAlign}>{render(scope)}</FitStage>
+          <FitStage align={stageAlign} code={code}>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
       </Column>
       {showLabel ? (

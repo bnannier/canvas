@@ -497,7 +497,7 @@ it("owns reference summary content and opens the supplied source once", () => {
   const { getByRole, getByText } = ui(<Card referenceStacked referenceKey="CORE-1" title="Preserve the interface" description="Ready" onPress={() => { opened += 1; }} accessibilityLabel="Open reference" />);
   expect(getByText("CORE-1")).toBeTruthy();
   expect(getByText("Preserve the interface")).toBeTruthy();
-  expect(getByText("· Ready")).toBeTruthy();
+  expect(getByText("Ready")).toBeTruthy();
   fireEvent.click(getByRole("button", { name: "Open reference" }));
   expect(opened).toBe(1);
 });

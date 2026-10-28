@@ -79,7 +79,7 @@ export function PlatformSkinsSection({ examples, selected, onSelect, tokens, sta
                     <View {...(Platform.OS === "web" ? ({ dataSet: { platformRow: p.platform } } as object) : null)}>
                       <CardMedia tall>
                         <ExampleErrorBoundary key={`${p.platform}:${selected}`}>
-                          <FitStage align={stageAlign}>{example.render(p.scope)}</FitStage>
+                          <FitStage align={stageAlign} code={example.code}>{example.render(p.scope)}</FitStage>
                         </ExampleErrorBoundary>
                       </CardMedia>
                     </View>
