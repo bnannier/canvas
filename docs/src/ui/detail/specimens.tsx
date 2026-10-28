@@ -5,7 +5,7 @@ import type { DocExample, DocProse, ExampleScope } from "../../core/scope";
 import type { DetailSpec } from "../../core/data/detail-specs";
 import { ExampleErrorBoundary, FitStage } from "../stage";
 import { Prose } from "../prose";
-import { DetailSection, renderComponent } from "./frame";
+import { DetailSection, heldOpen, renderComponent, stageData, type SpecimenBase } from "./frame";
 import { PINNED_STATES, isPinnedState, optionLabel, withOption, type PropDescriptors } from "./knobs";
 
 // The detail page's specimen grids (Component.dc.html `#cv-var`, `#cv-sz`, `#cv-st`):
@@ -20,9 +20,9 @@ import { PINNED_STATES, isPinnedState, optionLabel, withOption, type PropDescrip
  * would be a hugging child of the well's centred column, and a fill example in it would
  * collapse instead of spanning the well.
  */
-export function Well({ compact, tall, children }: { compact?: boolean; tall?: boolean; children: ReactNode }) {
+export function Well({ compact, tall, pinsRing, children }: { compact?: boolean; tall?: boolean; pinsRing?: boolean; children: ReactNode }) {
   return (
-    <View {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}>
+    <View {...(Platform.OS === "web" ? ({ dataSet: stageData(pinsRing) } as object) : null)}>
       <CardMedia compact={compact} tall={tall}>
         <ExampleErrorBoundary>
           <FitStage>{children}</FitStage>
@@ -71,10 +71,10 @@ export function VariantsSection({ examples, path, note, scope, selected, section
 }
 
 /** A Sizes or States cell: the specimen on a compact well over its mono caption. */
-function SpecimenCard({ label, children }: { label: string; children: ReactNode }) {
+function SpecimenCard({ label, pinsRing, children }: { label: string; pinsRing?: boolean; children: ReactNode }) {
   return (
     <Card flush>
-      <Well compact>{children}</Well>
+      <Well compact pinsRing={pinsRing}>{children}</Well>
       <CardSeparator />
       <CardContent>
         <Typography caption mono subtle>{label}</Typography>
@@ -83,7 +83,7 @@ function SpecimenCard({ label, children }: { label: string; children: ReactNode 
   );
 }
 
-export function SizesSection({ spec, component, props, scope, sectionRef }: { spec: DetailSpec; component: string; props: PropDescriptors; scope: ExampleScope; sectionRef?: Ref<View> }) {
+export function SizesSection({ spec, component, props, base, scope, sectionRef }: { spec: DetailSpec; component: string; props: PropDescriptors; base?: SpecimenBase; scope: ExampleScope; sectionRef?: Ref<View> }) {
   const sizes = spec.sizes;
   if (!sizes || sizes.options.length === 0) return null;
   return (
@@ -91,8 +91,8 @@ export function SizesSection({ spec, component, props, scope, sectionRef }: { sp
       {/* The hand-off's sizes share the row (each `flex: 1 1 200px`), so the grid takes as many columns as there are sizes. */}
       <Grid minTileWidth={200} columns={sizes.options.length} roomy>
         {sizes.options.map((option) => (
-          <SpecimenCard key={option ?? "-"} label={sizes.prop && option != null ? `${sizes.prop} ${option}` : optionLabel(option)}>
-            {renderComponent(scope, component, withOption(props, sizes.options, option, sizes.prop))}
+          <SpecimenCard key={option ?? "-"} pinsRing={heldOpen(props)} label={sizes.prop && option != null ? `${sizes.prop} ${option}` : optionLabel(option)}>
+            {renderComponent(scope, component, withOption(props, sizes.options, option, sizes.prop), base)}
           </SpecimenCard>
         ))}
       </Grid>
@@ -100,7 +100,7 @@ export function SizesSection({ spec, component, props, scope, sectionRef }: { sp
   );
 }
 
-export function StatesSection({ spec, component, props, scope, sectionRef }: { spec: DetailSpec; component: string; props: PropDescriptors; scope: ExampleScope; sectionRef?: Ref<View> }) {
+export function StatesSection({ spec, component, props, base, scope, sectionRef }: { spec: DetailSpec; component: string; props: PropDescriptors; base?: SpecimenBase; scope: ExampleScope; sectionRef?: Ref<View> }) {
   const states = spec.states;
   if (!states || states.length === 0) return null;
   return (
@@ -112,9 +112,9 @@ export function StatesSection({ spec, component, props, scope, sectionRef }: { s
       <Grid minTileWidth={200} roomy>
         {states.map((state) => {
           const pinned = isPinnedState(state) ? PINNED_STATES[state] : null;
-          const element = renderComponent(scope, component, pinned || state == null ? props : { ...props, [state]: true });
+          const element = renderComponent(scope, component, pinned || state == null ? props : { ...props, [state]: true }, base);
           return (
-            <SpecimenCard key={state ?? "-"} label={optionLabel(state)}>
+            <SpecimenCard key={state ?? "-"} label={optionLabel(state)} pinsRing={pinned === "focused" || state === "open" || heldOpen(props)}>
               <InteractionOverride hovered={pinned === "hovered"} focused={pinned === "focused"} pressed={pinned === "pressed"}>
                 {element}
               </InteractionOverride>

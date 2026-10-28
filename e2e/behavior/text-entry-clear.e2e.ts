@@ -1,5 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
-import { gotoDocs, platformRow } from "../support/docs";
+import { gotoDocs, platformRow, selectExample } from "../support/docs";
 import { LINE_START } from "../support/keys";
 import { expectNoMaterialEffects, readMaterialEffects } from "../support/material-evidence";
 import { expect, test } from "../support/fixtures";
@@ -29,7 +29,7 @@ const additional: EntryCase[] = [
 
 async function entry(page: Page, recipe: EntryCase, scheme: "light" | "dark", width: number, surface: "glass" | "solid" = "glass") {
   await gotoDocs(page, `/components/${recipe.slug}`, { scheme, surface, viewport: { width, height: 900 } });
-  if (recipe.variant) await page.getByRole("tab", { name: recipe.variant, exact: true }).click();
+  if (recipe.variant) await selectExample(page, recipe.variant);
   const row = platformRow(page, "web").first();
   if (recipe.open) await recipe.open(row);
   const field = row.getByRole(recipe.role ?? "textbox").first();

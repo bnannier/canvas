@@ -17,7 +17,7 @@
  * The dev server renders every document at its request URL, so it never had the defect
  * and the test passes there too.
  */
-import { BASE_PATH, gotoDocs, platformRow } from "../support/docs";
+import { BASE_PATH, exampleCard, gotoDocs, platformRow } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 const ROUTE = "/components/carousel/defaultindex";
@@ -38,6 +38,6 @@ test("a variant page whose name ends in index is pre-rendered for its own URL", 
   expect(html, "the server rendered no Playground stage for this page").toContain("data-preview-card");
 
   await gotoDocs(page, ROUTE);
-  await expect(page.getByTestId("playground-examples").getByRole("tab", { name: "Default index", exact: true })).toHaveAttribute("aria-selected", "true");
+  await expect(exampleCard(page, "Default index")).toHaveCount(1);
   await expect(platformRow(page, "web").getByRole("button", { name: "Slide 2 of 3, current slide" })).toHaveAttribute("aria-current", "true");
 });

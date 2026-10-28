@@ -453,6 +453,11 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     );
   }
 
+  // A copyable pill hugs its code but never runs past the bounds its parent gives it: a
+  // long line (a detail page's import) wraps inside the pill instead of pushing the page
+  // sideways on a phone, as Card's reference row caps itself.
+  const INLINE_COPY_CAP: ViewStyle = { maxWidth: "100%" };
+
   // The copyable inline pill (`inline copy`): the whole pill is one copy button, its code
   // in one ink with a trailing glyph that flips to a check once copied. A control with a
   // surface of its own, so under glass it is a control-layer pane; the hovered accent
@@ -482,7 +487,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // box so the touch area is in place before the first layout.
     const target = useSeededMinTargetSlop(skin.minTarget, styleBox(box, type.lineHeight));
     return (
-      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} style={[hug, style]} {...hoverTarget}>
+      <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} style={[hug, INLINE_COPY_CAP, style]} {...hoverTarget}>
         <Pressable
           {...target}
           testID={testID}

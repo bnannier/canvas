@@ -1,7 +1,7 @@
-import { createElement, useId, type ReactNode, type Ref } from "react";
+import { createElement, isValidElement, useId, type ReactNode, type Ref } from "react";
 import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg";
 import { View, Row, Column, Typography, useTheme } from "@nannier/canvas";
-import type { ExampleScope } from "../../core/scope";
+import type { ExampleRender, ExampleScope } from "../../core/scope";
 import type { PropDescriptors, PropValue } from "./knobs";
 
 // The detail page's docs-only frame: a section's heading block, the hand-off's dotted
@@ -82,24 +82,103 @@ export function withIconTones(component: string, props: PropDescriptors): PropDe
   return out;
 }
 
-/** A descriptor as the value the component receives: an icon slot's or anatomy slot's element, or the literal. */
-function propValue(scope: ExampleScope, value: PropValue): unknown {
-  if (typeof value !== "object") return value;
+/** An icon slot's or element slot's descriptor as the element it describes. */
+function slotElement(scope: ExampleScope, value: Exclude<PropValue, string | number | boolean>): ReactNode {
   if ("icon" in value) return createElement(scope.Icon, { [value.icon]: true, ...(value.tone ? { [value.tone]: true } : null), size: 16 });
   const element = (scope as unknown as Record<string, Parameters<typeof createElement>[0]>)[value.element];
   return element ? createElement(element, null, value.children) : null;
+}
+
+/** A descriptor as the value the component receives: an icon slot's or anatomy slot's element, or the literal. */
+function propValue(scope: ExampleScope, value: PropValue): unknown {
+  return typeof value === "object" ? slotElement(scope, value) : value;
+}
+
+/**
+ * The data a specimen starts from: the component's examples, the default first, whose
+ * first element of the component carries the props no knob drives (a chart's series, a
+ * list's items, a table's columns), and the props the page drives itself (knobs.ts
+ * `controlledProps`).
+ */
+export interface SpecimenBase {
+  examples: readonly ExampleRender[];
+  controlled: ReadonlySet<string>;
+  /** The props that show an overlay open in place (the spec's `specimen`), over the example's. */
+  open?: PropDescriptors;
+}
+
+/** The props the first example that renders `component` gives it, through `scope`. */
+function exampleProps(scope: ExampleScope, component: unknown, examples: readonly ExampleRender[]): Record<string, unknown> | undefined {
+  for (const render of examples) {
+    const found = firstPropsOf(render(scope), component, scope.Stateful);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/** The docs' render-prop state helper (live-state.tsx), whose children are a function of its state. */
+type StatefulProps = { initial: unknown; children: (value: unknown, set: (next: unknown) => void) => ReactNode };
+
+/**
+ * The props of the first element of `component` in an element tree, searched depth first
+ * through every prop (children and slots alike) and into a `Stateful`'s children at its
+ * initial state, or none when the tree renders it only inside a component of its own.
+ */
+function firstPropsOf(node: unknown, component: unknown, stateful: unknown): Record<string, unknown> | undefined {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = firstPropsOf(child, component, stateful);
+      if (found) return found;
+    }
+    return undefined;
+  }
+  if (!isValidElement(node)) return undefined;
+  const props = node.props as Record<string, unknown>;
+  if (node.type === component) return props;
+  if (node.type === stateful && typeof props.children === "function") {
+    const { initial, children } = props as StatefulProps;
+    return firstPropsOf(children(initial, () => {}), component, stateful);
+  }
+  for (const value of Object.values(props)) {
+    const found = firstPropsOf(value, component, stateful);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/**
+ * The web-only tooling attribute every live specimen stage carries (`data-preview-stage`),
+ * plus `data-pinned-ring` when the specimen pins a state that draws its ring-coloured edge
+ * at rest: a States cell pinned to focus, or a specimen held open (an open field's edge is
+ * the ring colour). Tab landing on such a stop brings no new cue, so the keyboard sweep
+ * (e2e/support/focus-ring.ts) passes it over, as it does a Don't specimen.
+ */
+export function stageData(pinsRing = false): Record<string, string> {
+  return pinsRing ? { previewStage: "", pinnedRing: "" } : { previewStage: "" };
+}
+
+/** Whether a specimen's props hold it open, which draws its edge in the ring colour. */
+export function heldOpen(props: PropDescriptors | undefined): boolean {
+  return props?.open === true;
 }
 
 /**
  * Renders the export `name` of an example scope with the props a knob state describes:
  * the playground, the Sizes and States cells and the anatomy specimen all come from here,
  * through the scope a platform column builds (so the iOS and Android skins render too).
+ * With a `base`, the props the first example rendering the component gives it (built
+ * through the same scope) lie under the page's own, less the ones the page drives, so a
+ * component whose data no knob supplies renders the example's data.
  */
-export function renderComponent(scope: ExampleScope, name: string, props: PropDescriptors): ReactNode {
+export function renderComponent(scope: ExampleScope, name: string, props: PropDescriptors, base?: SpecimenBase): ReactNode {
   const component = (scope as unknown as Record<string, Parameters<typeof createElement>[0]>)[name];
   if (!component) return null;
   const { children, ...rest } = props;
   const live: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(rest)) live[key] = propValue(scope, value);
-  return createElement(component, live, children == null ? undefined : String(children));
+  const example = base ? exampleProps(scope, component, base.examples) : undefined;
+  if (example) for (const [key, value] of Object.entries(example)) if (key !== "children" && !base!.controlled.has(key)) live[key] = value;
+  for (const [key, value] of Object.entries({ ...base?.open, ...rest })) live[key] = propValue(scope, value);
+  const own = children == null ? undefined : typeof children === "object" ? slotElement(scope, children) : String(children);
+  const content = own !== undefined ? own : base?.controlled.has("children") ? undefined : (example?.children as ReactNode);
+  return createElement(component, live, content);
 }

@@ -93,12 +93,17 @@ function inheritedNote(name: string): string {
   return inherited.props.map((p) => (scale[p.name] ? `${p.name} ${scale[p.name]}` : p.name)).join(" · ");
 }
 
-export function PropsSection({ groups, sectionRef }: { groups: readonly PropGroup[]; sectionRef?: Ref<View> }) {
+/**
+ * The Props section. `propsInterface` names the component's own interface (the detail
+ * spec's), whose table leads; the docs module may list a sub-component's group before it
+ * (Avatar's AvatarMenuProps), and every other group is a sub-component's collapsible.
+ */
+export function PropsSection({ groups, propsInterface, sectionRef }: { groups: readonly PropGroup[]; propsInterface: string; sectionRef?: Ref<View> }) {
   const [all, setAll] = useState(false);
-  const main = groups[0];
+  const main = groups.find((group) => group.name === propsInterface) ?? groups[0];
   if (!main) return null;
   const total = main.props.filter((p) => !/^testOnly/.test(p.name)).length;
-  const subs = groups.slice(1);
+  const subs = groups.filter((group) => group !== main);
   return (
     <DetailSection
       title="Props"

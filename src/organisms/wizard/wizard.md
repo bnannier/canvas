@@ -5,8 +5,8 @@ A modal workflow with fixed step navigation and footer actions around a bounded,
 Add `embedded` to show an open wizard in a page as a specimen, the way a catalogue
 or a showcase does: it keeps its look, its dialog role and its labelling, but it is
 not modal. It does not take focus, trap Tab, set `aria-modal`, or close on Escape or
-native back. It still presents into the nearest `OverlayProvider`, so give it a host
-of the size it should fill.
+native back, and it renders in place in the page's flow instead of presenting into an
+`OverlayProvider`.
 
 ## Usage
 
@@ -59,13 +59,13 @@ Set `scrollBody={false}` for a bounded child such as Chat that already manages i
 **Do** — Name the previous stage so its destination is clear.
 
 ```tsx
-<Wizard open={false} onOpenChange={() => {}} title="Project setup" steps={[{ label: "Details" }, { label: "Review" }]} current={1} previous={{ label: "Details", onPress: () => {} }} />
+<Wizard open embedded onOpenChange={() => {}} title="Project setup" steps={[{ label: "Details" }, { label: "Review" }]} current={1} previous={{ label: "Details", onPress: () => {} }} />
 ```
 
 **Don't** — Hide the destination behind a generic label.
 
 ```tsx
-<Wizard open={false} onOpenChange={() => {}} title="Project setup" steps={[{ label: "Details" }, { label: "Review" }]} current={1} previous={{ label: "Back", onPress: () => {} }} />
+<Wizard open embedded onOpenChange={() => {}} title="Project setup" steps={[{ label: "Details" }, { label: "Review" }]} current={1} previous={{ label: "Back", onPress: () => {} }} />
 ```
 
 ## Accessibility

@@ -293,7 +293,10 @@ export function createSelect(skin: SelectSkin) {
     const above = hasLabel && !inline && !floating;
     const keyFocused = !!skin.focusHalo && focusFrame.focused && !disabled;
     const softLook = props.soft ? (skin.soft ? skin.soft(tokens) : { backgroundColor: tokens["field-fill"] ?? tokens.card }) : null;
-    const triggerShape = { ...(dense ? skin.reference!.trigger(tokens, open, hover.hovered, keyFocused) : skin.trigger(tokens, size, open, hover.hovered, keyFocused)), ...softLook };
+    const baseTrigger = dense ? skin.reference!.trigger(tokens, open, hover.hovered, keyFocused) : skin.trigger(tokens, size, open, hover.hovered, keyFocused);
+    // `soft` drops the resting edge, never a state edge: keyboard focus and the open list
+    // keep the ring-coloured edge the skin resolved, or a soft field would show no ring.
+    const triggerShape = { ...baseTrigger, ...softLook, ...(softLook && (keyFocused || open) ? { borderColor: baseTrigger.borderColor } : null) };
     // Keyboard focus turns the edge to the ring and adds the halo. While the list is open
     // the edge is the ring already, so focus could not change it and the faint halo alone
     // would be the cue: then the trigger wears the kit's keyboard ring outside its box in

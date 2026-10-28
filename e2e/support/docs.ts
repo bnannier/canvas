@@ -25,7 +25,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { colorsFor } from "../../src/style/tokens.ts";
 import { pageColor } from "../../docs/src/shell/page-look.ts";
-import { isDetailV4 } from "../../docs/src/ui/detail/gate.ts";
 
 export type Scheme = "dark" | "light";
 export type Surface = "solid" | "glass";
@@ -256,14 +255,14 @@ export function platformRow(page: Page, platform: "ios" | "android" | "web"): Lo
 }
 
 /**
- * Whether a docs path is a component page on the v4 detail page (docs/src/ui/detail,
- * piloted behind `DETAIL_V4`). That page has no example rail: its comparison stage is the
+ * Whether a docs path is a component page, every one of which is the v4 detail page
+ * (docs/src/ui/detail). That page has no example rail: its comparison stage is the
  * Platform skins section, whose preview card names the example it shows in
  * `data-example`, and a "Platform example" picker moves between the examples.
  */
 export function isDetailPath(path: string): boolean {
   const slug = /^\/components\/([^/?#]+)/.exec(path.replace(BASE_PATH, ""))?.[1];
-  return slug != null && isDetailV4(slug);
+  return slug != null;
 }
 
 /** The preview card showing one example, by its label (the v4 detail page). */

@@ -34,7 +34,9 @@ test("an open dialog and its draft survive narrow and desktop layouts", async ({
 for (const slug of ["dialog", "calendar", "grid-lists"] as const) {
   test(`${slug} screenshot does not resize the browser viewport`, async ({ page }, testInfo) => {
     await page.clock.setFixedTime(FIXED_TIME);
-    await gotoDocs(page, `/components/${slug}`, { scheme: slug === "dialog" ? "light" : "dark" });
+    // The detail page's example cards fit a 900 px window, so the resting examples load in
+    // a short one, where their card is again taller than the viewport it is captured in.
+    await gotoDocs(page, `/components/${slug}`, slug === "dialog" ? { scheme: "light" } : { scheme: "dark", viewport: { width: 1280, height: 400 } });
     const frame = slug === "dialog" ? stage(page) : previewCard(page).first();
     await expect(frame).toBeVisible();
     if (slug === "dialog") {

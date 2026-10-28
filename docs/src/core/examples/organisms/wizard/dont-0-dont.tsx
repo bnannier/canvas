@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Wizard } = scope;
   return (
-<Wizard open={false} onOpenChange={() => {}} title="Project setup" steps={[{ label: "Details" }, { label: "Review" }]} current={1} previous={{ label: "Back", onPress: () => {} }} />
+<Wizard open embedded onOpenChange={() => {}} title="Project setup" steps={[{ label: "Details" }, { label: "Review" }]} current={1} previous={{ label: "Back", onPress: () => {} }} />
   );
 }

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { DETAIL_SPECS, type Knob } from "../docs/src/core/data/detail-specs.ts";
-import { DETAIL_V4, isDetailV4 } from "../docs/src/ui/detail/gate.ts";
-import { componentName, initialKnobs, isPinnedState, jsxCode, knobKey, knobProps, optionLabel, withOption } from "../docs/src/ui/detail/knobs.ts";
+import { componentName, controlledProps, initialKnobs, isPinnedState, jsxCode, knobKey, knobProps, optionLabel, withOption } from "../docs/src/ui/detail/knobs.ts";
 import { placeMarks } from "../docs/src/ui/detail/anatomy-marks.ts";
 
 // The v4 detail page's pure model: the playground's knob state, the props and JSX it
@@ -16,14 +15,6 @@ const BUTTON_KNOBS: readonly Knob[] = [
   { kind: "boolean", prop: "disabled", value: false },
   { kind: "boolean", prop: "wrap", value: true },
 ];
-
-describe("detail page gate", () => {
-  it("pilots on Button alone", () => {
-    expect([...DETAIL_V4]).toEqual(["button"]);
-    expect(isDetailV4("button")).toBe(true);
-    expect(isDetailV4("badge")).toBe(false);
-  });
-});
 
 describe("knob state", () => {
   it("keys an axis by its label and every other knob by its prop", () => {
@@ -61,6 +52,27 @@ describe("knob props", () => {
 
   it("drops an empty text knob", () => {
     expect(knobProps(BUTTON_KNOBS, { ...initialKnobs(BUTTON_KNOBS), children: "" })).toEqual({ wrap: true });
+  });
+
+  it("puts a text knob with an element inside that element, as a View's text must be", () => {
+    const knobs: readonly Knob[] = [{ kind: "text", prop: "children", value: "View", element: "Text" }];
+    const props = knobProps(knobs, initialKnobs(knobs));
+    expect(props).toEqual({ children: { element: "Text", children: "View" } });
+    expect(jsxCode("View", props)).toBe("<View><Text>View</Text></View>");
+    expect(DETAIL_SPECS.view!.knobs).toEqual(knobs);
+  });
+});
+
+describe("the props a specimen's page drives", () => {
+  it("names every knob's props, the size row and the state props, never a pinned state", () => {
+    const controlled = controlledProps(DETAIL_SPECS.button!, []);
+    for (const prop of ["secondary", "outline", "destructive", "small", "large", "children", "iconLeft", "disabled", "loading"]) expect(controlled.has(prop), prop).toBe(true);
+    for (const state of ["hover", "focus", "pressed"]) expect(controlled.has(state), state).toBe(false);
+  });
+
+  it("names Icon's glyphs for its glyph knob, so the example's glyph gives way", () => {
+    expect(controlledProps(DETAIL_SPECS.icon!, ["shield", "star"]).has("shield")).toBe(true);
+    expect(controlledProps(DETAIL_SPECS.button!, ["shield"]).has("shield")).toBe(false);
   });
 });
 

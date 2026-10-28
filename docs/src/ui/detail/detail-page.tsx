@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { Redirect } from "expo-router";
-import { View, Column, Alert, useTheme } from "@nannier/canvas";
+import { View, Column, Alert, useTheme, ICON_NAMES } from "@nannier/canvas";
 import { DETAIL_SPECS } from "../../core/data/detail-specs";
 import type { ComponentDoc } from "../../core/data/types";
 import type { DocGuidanceBlock, DocProse } from "../../core/scope";
@@ -18,8 +18,8 @@ import { PropsSection } from "./props";
 import { AccessibilitySection } from "./accessibility";
 import { PlatformSkinsSection } from "./platform-skins";
 import { UsageSection, DoDontSection, TokensSection, PrevNext } from "./sections";
-import { componentName, initialKnobs, jsxCode, knobProps, type KnobState, type KnobValue } from "./knobs";
-import { withIconTones } from "./frame";
+import { componentName, controlledProps, initialKnobs, jsxCode, knobProps, type KnobState, type KnobValue } from "./knobs";
+import { withIconTones, type SpecimenBase } from "./frame";
 
 // The v4 component detail page (Component.dc.html, audit/v4-redesign/PLAN.md decisions P1
 // to P3), behind the pilot gate in ./gate.ts. Everything on it is generated data: the
@@ -36,6 +36,9 @@ import { withIconTones } from "./frame";
 // from the URL variant, the address bar rewritten in place (no navigation, so nothing
 // remounts), and a variant segment that names the default or nothing redirects to the
 // bare component URL so each example keeps exactly one canonical address.
+
+/** Icon's glyph names, the props its glyph knob drives. */
+const GLYPHS = ICON_NAMES.map((name) => name.key);
 
 /** The scroll margin the jump strip leaves above a section (the hand-off's `scroll-margin-top`). */
 const JUMP_MARGIN = 80;
@@ -88,6 +91,8 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   const a11yNotes = entry.guidance?.find((g) => g.title === "Accessibility");
   const guidance = (entry.guidance ?? []).filter((g) => g !== a11yNotes);
   const usage = examples[0];
+  // The specimens' data: the props the first example rendering the component gives it, under the knobs'.
+  const base: SpecimenBase = { examples: examples.map((example) => example.render), controlled: controlledProps(spec, GLYPHS), open: spec.specimen?.props };
 
   const jumps: Jump[] = (
     [
@@ -120,13 +125,14 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
         onChange={(key: string, value: KnobValue) => setKnobs((s) => ({ ...s, [key]: value }))}
         onReset={() => setKnobs(initial)}
         tokens={tokens}
+        base={base}
         sectionRef={refFor("playground")}
       />
       {variants.length ? <VariantsSection examples={variants} path={`${sourcePath}/${dir}.md`} note={entry.variantsNote} scope={web} selected={selected} sectionRef={refFor("variants")} /> : null}
-      <SizesSection spec={spec} component={name} props={props} scope={web} sectionRef={refFor("sizes")} />
-      <StatesSection spec={spec} component={name} props={props} scope={web} sectionRef={refFor("states")} />
-      <AnatomySection spec={spec} component={name} props={props} scope={web} sectionRef={refFor("anatomy")} />
-      <PropsSection groups={entry.props} sectionRef={refFor("props")} />
+      <SizesSection spec={spec} component={name} props={props} base={base} scope={web} sectionRef={refFor("sizes")} />
+      <StatesSection spec={spec} component={name} props={props} base={base} scope={web} sectionRef={refFor("states")} />
+      <AnatomySection spec={spec} component={name} props={props} base={base} scope={web} sectionRef={refFor("anatomy")} />
+      <PropsSection groups={entry.props} propsInterface={spec.propsInterface} sectionRef={refFor("props")} />
       <AccessibilitySection keyboard={spec.keyboard} semantics={entry.semantics} notes={a11yNotes ? a11yProse(a11yNotes.blocks) : undefined} sectionRef={refFor("a11y")} />
       <PlatformSkinsSection examples={examples} selected={selected} onSelect={onSelect} tokens={tokens} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} sectionRef={refFor("platforms")} />
       <UsageSection note={usage?.note} code={usage?.code} overview={entry.overview} guidance={guidance} scope={web} sectionRef={refFor("usage")} />

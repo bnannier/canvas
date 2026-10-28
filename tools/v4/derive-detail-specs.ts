@@ -73,6 +73,30 @@ const DROPPED_STATES: Record<string, Record<string, string>> = {
   "text-input": { disabled: TEXT_INPUT_DISABLED },
 };
 
+// Text knobs on a prop that takes a React node hosted in a View, which React Native renders
+// a bare string under only inside a text element: the knob's text renders in the named kit
+// element (`<View><Text>View</Text></View>`). By slug, then the knob's prop.
+const TEXT_ELEMENTS: Record<string, Record<string, string>> = {
+  view: { children: "Text" },
+  pressable: { children: "Text" },
+  reveal: { children: "Typography" },
+  emblem: { children: "Typography" },
+  "app-frame": { header: "Typography" },
+};
+
+// The props that show an overlay open in place on the page's specimens (the playground,
+// Sizes, States and Anatomy), the way the hand-off draws every overlay open inside its
+// frame, and the example props that would undo it (`omit`). A dialog is an `embedded`
+// specimen, which a `trigger` would turn back into a live modal; a popover is its
+// `inline` card. Drawer and ActionSheet present through a native Modal over the window,
+// so their specimens keep the trigger that opens them.
+const SPECIMEN_PROPS: Record<string, { props: Record<string, boolean>; omit?: string[] }> = {
+  dialog: { props: { open: true, embedded: true }, omit: ["trigger"] },
+  "alert-dialog": { props: { open: true, embedded: true }, omit: ["trigger"] },
+  wizard: { props: { open: true, embedded: true } },
+  popover: { props: { inline: true }, omit: ["trigger"] },
+};
+
 // Knobs the repository spells as something other than a prop of the same name.
 // Icon's `name` knob picks a glyph, which the repository names with one boolean per glyph
 // (`<Icon sparkles />`, IconGlyphProps), so it is a `glyph` knob.
@@ -108,7 +132,7 @@ type Option = string | null;
 type Knob =
   | { kind: "axis"; label: string; options: Option[] }
   | { kind: "boolean"; prop: string; value: boolean }
-  | { kind: "text"; prop: string; value: string }
+  | { kind: "text"; prop: string; value: string; element?: string }
   | { kind: "number"; prop: string; min: number; max: number; value: number }
   | { kind: "enum"; prop: string; options: string[]; value: string }
   | { kind: "icon"; prop: string; value: string }
@@ -151,8 +175,17 @@ export function parseSizes(sz: string): { prop?: string; options: Option[] } {
  * (`{ icon }`) as written, and an element the prototype pre-rendered to HTML
  * (`{ el: "Button", html }`) as the component it names and its label text.
  */
+// The hand-off's prototype loads the docs' images from `docs/public/<file>`, relative to
+// itself; the docs app serves that folder at its root, as its examples do (`/ada-lovelace.jpg`).
+const HANDOFF_ASSETS = "docs/public/";
+
+/** A hand-off value with its asset path made the docs app's own. */
+function asset<T>(value: T): T {
+  return (typeof value === "string" && value.startsWith(HANDOFF_ASSETS) ? `/${value.slice(HANDOFF_ASSETS.length)}` : value) as T;
+}
+
 function anatomyValue(slug: string, prop: string, value: unknown): unknown {
-  if (value === null || typeof value !== "object") return value;
+  if (value === null || typeof value !== "object") return asset(value);
   const v = value as Raw;
   if (typeof v.icon === "string" && Object.keys(v).length === 1) return { icon: v.icon };
   if (typeof v.el === "string") {
@@ -192,6 +225,12 @@ function build() {
           knobs.push({ kind: "glyph", value: k.kind === "icon" ? k.value : String((k as { value: unknown }).value) });
         } else if (k.kind === "enum" && COMPONENT_KNOBS[slug] === k.prop) {
           knobs.push({ kind: "component", options: k.options, value: k.value });
+        } else if (k.kind === "text" && TEXT_ELEMENTS[slug]?.[k.prop]) {
+          knobs.push({ ...k, element: TEXT_ELEMENTS[slug][k.prop] });
+        } else if (k.kind === "enum") {
+          knobs.push({ ...k, options: k.options.map(asset), value: asset(k.value) });
+        } else if (k.kind === "text") {
+          knobs.push({ ...k, value: asset(k.value) });
         } else {
           knobs.push(k);
         }
@@ -212,12 +251,13 @@ function build() {
         ...(s.sz ? { sizes: parseSizes(s.sz) } : {}),
         ...(s.st ? { states: states(slug, s.st, dropped) } : {}),
         anatomy: { parts: [...(s.an ?? [])], props: anatomyProps },
+        ...(SPECIMEN_PROPS[slug] ? { specimen: SPECIMEN_PROPS[slug] } : {}),
         keyboard,
       };
     }
   }
   // Every spec's keys must be real, and every slug the tables name a component.
-  for (const [table, entries] of [["DROPPED_KNOBS", DROPPED_KNOBS], ["DROPPED_ANATOMY", DROPPED_ANATOMY], ["DROPPED_STATES", DROPPED_STATES]] as const) {
+  for (const [table, entries] of [["DROPPED_KNOBS", DROPPED_KNOBS], ["DROPPED_ANATOMY", DROPPED_ANATOMY], ["DROPPED_STATES", DROPPED_STATES], ["TEXT_ELEMENTS", TEXT_ELEMENTS], ["SPECIMEN_PROPS", SPECIMEN_PROPS]] as const) {
     for (const slug of Object.keys(entries)) if (!specs[slug]) throw new Error(`${table} names "${slug}", which no hand-off section lists`);
   }
   // The keyboard tables are the hand-off's K.KB (cv-kit.js, with `tooltip` and `toast`
@@ -258,7 +298,8 @@ export type Knob =
   /** A pick-one axis of boolean props (\`null\` passes none of them). */
   | { kind: "axis"; label: string; options: readonly SpecOption[] }
   | { kind: "boolean"; prop: string; value: boolean }
-  | { kind: "text"; prop: string; value: string }
+  /** A text, rendered inside the kit \`element\` where the prop hosts it in a View. */
+  | { kind: "text"; prop: string; value: string; element?: string }
   | { kind: "number"; prop: string; min: number; max: number; value: number }
   /** One of a fixed set of values for one prop. */
   | { kind: "enum"; prop: string; options: readonly string[]; value: string }
@@ -287,6 +328,8 @@ export interface DetailSpec {
   states?: readonly SpecOption[];
   /** The Anatomy figure: its numbered parts, and the props its demo renders with. */
   anatomy: { parts: readonly string[]; props: Readonly<Record<string, AnatomyValue>> };
+  /** The props that show an overlay open in place on every specimen, and the example props that would undo them. */
+  specimen?: { props: Readonly<Record<string, boolean>>; omit?: readonly string[] };
   keyboard: KeyboardPatternKey;
 }
 

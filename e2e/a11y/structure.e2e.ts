@@ -23,7 +23,7 @@ const PAGES = [
   { path: "/sections/overlays", title: "Overlays & feedback" },
 ];
 
-// A component page's Do/Don't section heading (docs/src/ui/dont.tsx), named after the
+// A component page's Do/Don't section heading (docs/src/ui/detail/sections.tsx), named after the
 // `## Do & Don't` section of the component's .md source, with the typographic apostrophe
 // the page sets. One h2 for the section; each pair's title is an h3 under it.
 const DO_DONT_HEADING = "Do & Don’t";
@@ -40,7 +40,9 @@ for (const width of [1280, 390]) {
         await expect(main.getByRole("heading", { level: 1, name: entry.title, exact: true })).toBeVisible();
         if (entry.path === "/components/avatar") {
           await expect(main.getByRole("heading", { level: 2, name: "Props", exact: true })).toHaveCount(1);
-          await expect(main.getByRole("heading", { level: 3, name: "AvatarMenu", exact: true })).toHaveCount(1);
+          // Avatar's own props lead; its sub-components' tables are collapsibles under them.
+          await expect(main.getByText(/props on AvatarProps,/)).toHaveCount(1);
+          await expect(main.getByRole("button", { name: /^AvatarMenuProps/ })).toHaveCount(1);
           await expect(main.getByRole("heading", { level: 2, name: DO_DONT_HEADING, exact: true })).toHaveCount(1);
           await expect(main.getByRole("heading", { level: 3, name: "Identity", exact: true })).toHaveCount(1);
           // Each card's Do or Don't is a Badge label, never a heading of its own.
@@ -49,11 +51,19 @@ for (const width of [1280, 390]) {
         if (isDetailPath(entry.path)) {
           // The v4 detail page (docs/src/ui/detail): every section an h2 under the title,
           // Props and Do & Don't among them, and the guidance in Usage as h3 cards.
+          // A specimen's own headings sit in a preview stage (Typography's samples name
+          // themselves "Playground"), so only the page's outline is counted.
+          const outline = await main.getByRole("heading", { level: 2 }).evaluateAll((headings) => headings
+            .filter((heading) => !heading.closest("[data-preview-stage]"))
+            .map((heading) => heading.textContent));
           for (const section of ["Playground", "Variants", "Props", "Usage", DO_DONT_HEADING]) {
-            await expect(main.getByRole("heading", { level: 2, name: section, exact: true }), section).toHaveCount(1);
+            expect(outline.filter((name) => name === section), section).toHaveLength(1);
           }
-          await expect(main.getByRole("heading", { level: 3, name: "Touch area", exact: true })).toHaveCount(1);
           await expect(main.getByRole("heading", { name: /^(Do|Don’t)$/ })).toHaveCount(0);
+          // A section of the component's own after Do & Don't (Button's "## Touch area").
+          if (entry.path === "/components/button") {
+            await expect(main.getByRole("heading", { level: 3, name: "Touch area", exact: true })).toHaveCount(1);
+          }
         }
         await expect(page.getByRole("banner")).toHaveCount(1);
         // The pill navbar is the Primary navigation at every width (docs/src/shell/pill-nav.tsx).

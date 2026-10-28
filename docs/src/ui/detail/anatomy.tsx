@@ -1,10 +1,11 @@
 import { useState, type Ref } from "react";
+import { Platform } from "react-native";
 import Svg, { Line } from "react-native-svg";
 import { View, Row, Column, Card, CardMedia, Badge, Typography, AnatomyProvider, useTheme, type AnatomyRects } from "@nannier/canvas";
 import type { ExampleScope } from "../../core/scope";
 import type { DetailSpec } from "../../core/data/detail-specs";
 import { ExampleErrorBoundary } from "../stage";
-import { DetailSection, DotGrid, renderComponent } from "./frame";
+import { DetailSection, DotGrid, heldOpen, renderComponent, stageData, type SpecimenBase } from "./frame";
 import { placeMarks } from "./anatomy-marks";
 import type { PropDescriptors } from "./knobs";
 
@@ -36,12 +37,14 @@ function Marks({ parts, rects, box }: { parts: readonly string[]; rects: Anatomy
   );
 }
 
-export function AnatomySection({ spec, component, props, scope, sectionRef }: { spec: DetailSpec; component: string; props: PropDescriptors; scope: ExampleScope; sectionRef?: Ref<View> }) {
+export function AnatomySection({ spec, component, props, base, scope, sectionRef }: { spec: DetailSpec; component: string; props: PropDescriptors; base?: SpecimenBase; scope: ExampleScope; sectionRef?: Ref<View> }) {
   const parts = spec.anatomy.parts;
   const [rects, setRects] = useState<AnatomyRects>({});
   const [box, setBox] = useState({ width: 0, height: 0 });
   if (parts.length === 0) return null;
   const demo = { ...props, ...(spec.anatomy.props as PropDescriptors) };
+  // The demo's own props replace the example's too.
+  const demoBase = base && { ...base, controlled: new Set([...base.controlled, ...Object.keys(spec.anatomy.props)]) };
   return (
     <DetailSection title="Anatomy" sectionRef={sectionRef}>
       <Row stacks stackBreakpoint="md" roomy>
@@ -49,13 +52,18 @@ export function AnatomySection({ spec, component, props, scope, sectionRef }: { 
           <Card flush clip>
             <CardMedia tall>
               <DotGrid />
-              <View onLayout={(e) => setBox({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}>
+              {/* A preview stage like every specimen well: the specimen's own headings are the
+                  component's sample, not the page's outline. */}
+              <View
+                {...(Platform.OS === "web" ? ({ dataSet: stageData(heldOpen(demo)) } as object) : null)}
+                onLayout={(e) => setBox({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}
+              >
                 <AnatomyProvider onMeasure={setRects}>
                   {/* The specimen sits a marker's reach inside the measured box, so a
                       marker above or below a part lands on the ground, not off it. */}
                   <Column padLoose>
                     <Column padLoose center alignCenter>
-                      <ExampleErrorBoundary>{renderComponent(scope, component, demo)}</ExampleErrorBoundary>
+                      <ExampleErrorBoundary>{renderComponent(scope, component, demo, demoBase)}</ExampleErrorBoundary>
                     </Column>
                   </Column>
                   <Marks parts={parts} rects={rects} box={box} />
