@@ -84,7 +84,7 @@ export function PlatformSkinsSection({ examples, selected, onSelect, tokens, sta
                       </CardMedia>
                     </View>
                     <CardSeparator />
-                    <CardContent>
+                    <CardContent compact>
                       <Column tight>
                         <Typography small semibold>{PLATFORM_LABELS[p.platform]?.label}</Typography>
                         <Typography tiny mono muted>{PLATFORM_LABELS[p.platform]?.metrics}</Typography>

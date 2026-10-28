@@ -166,6 +166,14 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The hand-off's knob panel scrolls inside the playground frame past 560 px (its `max-height` on the panel) so a component with many knobs keeps the stage and its JSX in view.",
   },
   {
+    file: "docs/src/ui/detail/playground.tsx", owner: "KnobPanel", tag: "ScrollView", attribute: "contentContainerStyle", keys: ["padding"], occurrences: 1,
+    reason: "The hand-off's knob panel pads its knobs 18 px (Component.dc.html), inside the scroller so the padding scrolls with them.",
+  },
+  {
+    file: "docs/src/ui/detail/playground.tsx", owner: "PlaygroundSection", tag: "View", attribute: "style", keys: ["width"], occurrences: 1,
+    reason: "The hand-off's playground grid gives the knob panel a 300 px column beside the stage (`minmax(0,1fr) 300px`, its 1 px rule included), a harness frame number with no step on the width scale.",
+  },
+  {
     file: "docs/src/ui/detail/anatomy.tsx", owner: "Marks", tag: "Svg", attribute: "style", keys: ["left", "position", "top"], occurrences: 1,
     reason: "The anatomy figure's leader lines are drawn over the specimen at the part rectangles AnatomyProvider measured (the hand-off's `_measure`), so the svg sits at the figure's origin.",
   },

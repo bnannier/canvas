@@ -25,4 +25,4 @@ export {
   CardFooter,
   CardSeparator,
 } from "./card.shared.js";
-export type { CardProps, CardSectionProps, CardTextProps, CardMediaProps } from "./card.shared.js";
+export type { CardProps, CardSectionProps, CardContentProps, CardTextProps, CardMediaProps } from "./card.shared.js";

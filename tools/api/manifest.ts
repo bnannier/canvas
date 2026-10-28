@@ -234,6 +234,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   CardMediaProps: { kind: "type", docs: "components/card" },
   CardProps: { kind: "type", docs: "components/card" },
   CardSectionProps: { kind: "type", docs: "components/card" },
+  CardContentProps: { kind: "type", docs: "components/card" },
   CardSeparator: { kind: "part", docs: "components/card" },
   CardTextProps: { kind: "type", docs: "components/card" },
   CardTitle: { kind: "part", docs: "components/card" },

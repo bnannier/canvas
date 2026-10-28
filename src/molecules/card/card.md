@@ -195,6 +195,25 @@ Given children instead of `src`, `CardMedia` is a sunken well that stages live c
 </Card>
 ```
 
+### Caption density
+
+`CardContent` pads its body 20 px on every side. Under a media well a caption takes a
+tighter inset: `dense` is 10 x 14 (a one-line label), `compact` 12 x 16 (a title over a
+meta line) and `cozy` 14 x 16 (a title, a note and a code line). Precedence is `dense`,
+then `compact`, then `cozy`.
+
+```tsx
+<Card flush>
+  <CardMedia compact>
+    <Button small>Save</Button>
+  </CardMedia>
+  <CardSeparator />
+  <CardContent dense>
+    <Typography caption mono medium muted>size small</Typography>
+  </CardContent>
+</Card>
+```
+
 ### Specimen well sizes
 
 ```tsx

@@ -39,8 +39,8 @@ export function InlineMarkdown({ text, lead, pageLead, sectionLead, pageBody, pa
 type BlockRole = { small?: boolean; subtle?: boolean; pageBody?: boolean; pageNote?: boolean };
 
 /** One paragraph of inline Markdown, in the body role (or `small`, or a page prose role). */
-export function Paragraph({ text, ...role }: { text: string } & BlockRole) {
-  return <Typography {...role}><InlineMarkdown text={text} {...role} /></Typography>;
+export function Paragraph({ text, small, subtle, pageBody, pageNote }: { text: string } & BlockRole) {
+  return <Typography small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote}><InlineMarkdown text={text} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} /></Typography>;
 }
 
 // A bulleted list with list semantics: a `list` whose items are each a `listitem`, which
@@ -51,17 +51,17 @@ export function Paragraph({ text, ...role }: { text: string } & BlockRole) {
 // composed of kit primitives and Typography, never added to the kit for the docs. The
 // items sit flush, as a browser sets a tight list, because a gap between them would take
 // a layout wrapper between the list and its items, which the list role forbids.
-export function BulletList({ items, ...role }: { items: string[] } & BlockRole) {
+export function BulletList({ items, small, subtle, pageBody, pageNote }: { items: string[] } & BlockRole) {
   return (
     <View role="list">
       {items.map((item, i) => (
         <View key={i} role="listitem">
           <Row snug>
             <View aria-hidden>
-              <Typography small={role.small} pageBody={role.pageBody} pageNote={role.pageNote} subtle>•</Typography>
+              <Typography small={small} pageBody={pageBody} pageNote={pageNote} subtle>•</Typography>
             </View>
             <Column fill>
-              <Paragraph text={item} {...role} />
+              <Paragraph text={item} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} />
             </Column>
           </Row>
         </View>
@@ -74,14 +74,14 @@ export function BulletList({ items, ...role }: { items: string[] } & BlockRole) 
  * Prose from a component's .md (its overview, an example's note, a guidance paragraph):
  * each paragraph, and each bullet list as a list.
  */
-export function Prose({ blocks, relaxed, ...role }: { blocks: DocProse[]; /** 16 between blocks, a page section's own rhythm, in place of 8. */ relaxed?: boolean } & BlockRole) {
+export function Prose({ blocks, relaxed, small, subtle, pageBody, pageNote }: { blocks: DocProse[]; /** 16 between blocks, a page section's own rhythm, in place of 8. */ relaxed?: boolean } & BlockRole) {
   return (
     <Column snug={!relaxed} relaxed={relaxed}>
       {blocks.map((block, i) =>
         typeof block === "string" ? (
-          <Paragraph key={i} text={block} {...role} />
+          <Paragraph key={i} text={block} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} />
         ) : (
-          <BulletList key={i} items={block.list} {...role} />
+          <BulletList key={i} items={block.list} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} />
         ),
       )}
     </Column>

@@ -56,7 +56,7 @@ export function VariantsSection({ examples, path, note, scope, selected, section
           <Card key={example.label} flush selected={index === selected}>
             <Well code={example.code}>{example.render(scope)}</Well>
             <CardSeparator />
-            <CardContent>
+            <CardContent cozy>
               <Column snug>
                 <Typography small medium>{example.label}</Typography>
                 {example.note?.length ? <Prose blocks={example.note} small subtle /> : null}
@@ -76,8 +76,8 @@ function SpecimenCard({ label, pinsRing, children }: { label: string; pinsRing?:
     <Card flush>
       <Well compact pinsRing={pinsRing}>{children}</Well>
       <CardSeparator />
-      <CardContent>
-        <Typography caption mono subtle>{label}</Typography>
+      <CardContent dense>
+        <Typography caption mono medium muted>{label}</Typography>
       </CardContent>
     </Card>
   );
