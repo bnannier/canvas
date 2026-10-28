@@ -50,10 +50,10 @@ export interface BreadcrumbRipple {
 // (passed in from useTheme) so light/dark/glass keep working; the skin layers only
 // the per-OS type (size/weight/tracking) on top.
 export interface BreadcrumbSkin {
-  /** A muted ancestor link (size / line-height / weight / tracking + color). */
-  link: (tokens: ColorTokens) => TextStyle;
-  /** The current page: emphasized foreground text, not a link. */
-  current: (tokens: ColorTokens) => TextStyle;
+  /** A muted ancestor link (size / line-height / weight / tracking + color); `subtle` the quieter trail's. */
+  link: (tokens: ColorTokens, subtle?: boolean) => TextStyle;
+  /** The current page: emphasized foreground text, not a link; `subtle` the quieter trail's. */
+  current: (tokens: ColorTokens, subtle?: boolean) => TextStyle;
   /** The divider glyph, quieter than the labels so it reads as a path divider. */
   separator: (tokens: ColorTokens) => TextStyle;
   /**
@@ -97,6 +97,11 @@ export interface BreadcrumbProps {
    */
   homeIcon?: boolean;
   /**
+   * A quieter trail for a page header: the ancestors (and the home glyph) in the subtle
+   * ink and the current page at the regular weight, so the trail recedes under the title.
+   */
+  subtle?: boolean;
+  /**
    * Collapse a long trail: when the trail has more than `maxItems` crumbs, keep
    * the first crumb and the last `maxItems - 1` (so `maxItems` crumbs in all), and
    * replace the middle with a single "…" crumb, so a deep path stays on one
@@ -136,6 +141,8 @@ export interface BreadcrumbItemProps {
   children?: ReactNode;
   /** Render as the current page: emphasized foreground text, non-interactive. */
   current?: boolean;
+  /** The quieter trail's type (see Breadcrumb's `subtle`). */
+  subtle?: boolean;
   onPress?: (event: GestureResponderEvent) => void;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<TextStyle>;
@@ -173,13 +180,13 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
   // pressable links with the skin's press feedback (ripple on Android, dim on
   // iOS/web).
   function BreadcrumbItem(props: BreadcrumbItemProps) {
-    const { children, current, onPress, style } = props;
+    const { children, current, subtle, onPress, style } = props;
     const { tokens } = useTheme();
     if (children == null) return null;
     if (current) {
       return (
         <Text
-          style={[skin.current(tokens), style]}
+          style={[skin.current(tokens, subtle), style]}
           accessibilityRole="text"
           accessibilityState={{ selected: true }}
           aria-current="page"
@@ -190,7 +197,7 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
     }
     // Pad the ~20px-tall text link out to the platform minimum touch target
     // vertically; horizontally a modest fixed slop keeps neighbors distinct.
-    const linkType = skin.link(tokens);
+    const linkType = skin.link(tokens, subtle);
     const vertical = targetSlop(skin.minTarget, linkType.lineHeight ?? LABEL_LINE_HEIGHT);
     return (
       <Pressable
@@ -215,7 +222,7 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
   }
 
   function Breadcrumb(props: BreadcrumbProps) {
-    const { items, homeIcon, maxItems, onItemPress, testID, style } = props;
+    const { items, homeIcon, subtle, maxItems, onItemPress, testID, style } = props;
     const { tokens } = useTheme();
     const trail = items ?? [];
     const separator = separatorOf(props);
@@ -277,7 +284,7 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null
               }
             >
-              <Icon home muted size={skin.homeIconSize} />
+              <Icon home size={skin.homeIconSize} color={skin.link(tokens, subtle).color as string} />
             </Pressable>
             {trail.length === 0 ? null : separatorMark()}
           </View>
@@ -287,12 +294,13 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
           return (
             <View key={`${index}-${entry.label}`} style={crumb}>
               {entry.ellipsis ? (
-                <Text style={skin.link(tokens)} accessibilityLabel="More levels" aria-label="More levels">
+                <Text style={skin.link(tokens, subtle)} accessibilityLabel="More levels" aria-label="More levels">
                   {entry.label}
                 </Text>
               ) : (
                 <BreadcrumbItem
                   current={last}
+                  subtle={subtle}
                   onPress={last ? undefined : () => onItemPress?.(entry.label, entry.origIndex)}
                 >
                   {entry.label}

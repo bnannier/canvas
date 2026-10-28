@@ -40,7 +40,9 @@ announce the menu with `expanded` and `haspopup`.
 `identityAction` is a 28 px hairline pill around a leading avatar and its name;
 `referenceLink` an underlined monospace key in the link ink; `inlineIcon` an unboxed
 22 px icon action; `themeChoice` a 32 px pill whose `selected` state is the accent
-edge with a soft accent halo.
+edge with a soft accent halo. `pageLink` is a page header's link, a 34 px hairline box
+around a muted 13 px label (a page's section, its source); add `mono` when the label is a
+path, which sets it in the 400 12 px mono face.
 
 ## Usage
 

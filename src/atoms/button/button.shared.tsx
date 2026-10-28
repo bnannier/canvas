@@ -83,6 +83,10 @@ export interface ButtonProps extends MeasureProps {
   scopeTrigger?: boolean;
   /** An identity action: a 28-tall hairline pill around a leading avatar and its name. */
   identityAction?: boolean;
+  /** A page header's link: a 34-tall hairline box around a muted label (a source path, the page's section). */
+  pageLink?: boolean;
+  /** A `pageLink` whose label is a path or code: the 400 12px mono face. */
+  mono?: boolean;
   /** A reference-key link: an underlined monospace key in the link ink. */
   referenceLink?: boolean;
   /** An unboxed 22px icon action. */
@@ -215,7 +219,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const iconBox = iconBoxOf(props);
-    const opts = { identityAction: !!props.identityAction, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer

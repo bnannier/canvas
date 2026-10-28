@@ -28,6 +28,15 @@ Hierarchical navigation showing where you are.
 <Breadcrumb items={["Projects", "Identity Platform", "Settings"]} homeIcon />
 ```
 
+### Subtle
+
+A page header's quieter trail: the ancestors in the subtle ink and the current page at the
+regular weight, so the trail recedes under the title.
+
+```tsx
+<Breadcrumb items={["Library", "Controls", "Button"]} slash subtle />
+```
+
 ## Do & Don't
 
 ### Current page

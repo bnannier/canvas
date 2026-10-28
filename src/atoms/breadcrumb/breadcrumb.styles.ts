@@ -6,7 +6,8 @@ import { type BreadcrumbSkin } from "./breadcrumb.shared.js";
 // (PLATFORM-REFERENCES.md: iOS uses the navigation bar's back button, Android the top app
 // bar's up navigation), so every platform draws the same trail, in its own face:
 //   - the crumbs are 400 13px, the ancestors in `muted-foreground`, the current page in
-//     `foreground` at 500;
+//     `foreground` at 500; a `subtle` trail (the component page header's, Component.dc.html)
+//     sets the ancestors in `subtle-foreground` and the current page at 400;
 //   - the separator is a 13px chevron, a "/" or a "·" in `subtle-foreground` (the hand-off's
 //     tx3), 8 from the crumbs on either side;
 //   - the home affordance is a 14px house glyph in the ancestors' ink.
@@ -19,8 +20,8 @@ const HOME_ICON_SIZE = 14;
 const SEPARATOR_ICON_SIZE = 13;
 
 const trail = {
-  link: (tokens: ColorTokens) => ({ ...TYPE, color: tokens["muted-foreground"] }),
-  current: (tokens: ColorTokens) => ({ ...TYPE, fontWeight: "500" as const, color: tokens.foreground }),
+  link: (tokens: ColorTokens, subtle?: boolean) => ({ ...TYPE, color: subtle ? tokens["subtle-foreground"] ?? tokens["muted-foreground"] : tokens["muted-foreground"] }),
+  current: (tokens: ColorTokens, subtle?: boolean) => ({ ...TYPE, fontWeight: subtle ? ("400" as const) : ("500" as const), color: tokens.foreground }),
   separator: (tokens: ColorTokens) => ({ ...TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }),
   homeIconSize: HOME_ICON_SIZE,
   separatorIconSize: SEPARATOR_ICON_SIZE,
