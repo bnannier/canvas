@@ -28,6 +28,8 @@ export type Size = "small" | "base" | "large";
 
 export interface ButtonSkinOpts {
   identityAction?: boolean;
+  pageLink?: boolean;
+  mono?: boolean;
   referenceLink?: boolean;
   inlineIcon?: boolean;
   themeChoice?: boolean;
@@ -135,9 +137,10 @@ export function webLinkInkOf(p: Pick<ButtonSkinOpts, "inverse" | "foreground">) 
 }
 
 /** Resolve reference anatomy before generic utility-box metrics. */
-export function webBodyOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityAction" | "referenceLink" | "inlineIcon" | "scopeTrigger" | "filterTrigger" | "inlineLink" | "utility">) {
+export function webBodyOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityAction" | "pageLink" | "referenceLink" | "inlineIcon" | "scopeTrigger" | "filterTrigger" | "inlineLink" | "utility">) {
   if (p.themeChoice) return "themeChoice";
   if (p.identityAction) return "identity";
+  if (p.pageLink) return "pageLink";
   if (p.referenceLink) return "reference";
   if (p.inlineIcon) return "inlineIcon";
   if (p.scopeTrigger) return "scope";
@@ -255,6 +258,10 @@ const BODY_TYPE: TextStyle = { ...FS(13, 18), fontWeight: "500" };
 const SCOPE_TYPE: TextStyle = { ...FS(14, 20), fontWeight: "600" };
 const TRIGGER_HEIGHT = 32;
 const IDENTITY_HEIGHT = 28;
+// The component page header's links (Component.dc.html `<header>`): 34 tall, 12 at the
+// sides, the hairline `border` around a muted label, a `mono` path at 400 12/16.
+const PAGE_LINK = { height: 34, padX: 12 };
+const PAGE_LINK_MONO: TextStyle = { ...FS(12, 16), fontWeight: "400", fontFamily: MONO_FONT };
 const INLINE_ICON = 22;
 
 /**
@@ -285,6 +292,13 @@ function bodyContainer(t: ColorTokens, intent: Intent, o: ButtonSkinOpts, corner
       ...fade,
     };
   }
+  if (body === "pageLink") {
+    return {
+      ...ROW, gap: 8, height: PAGE_LINK.height, paddingVertical: 0, paddingHorizontal: PAGE_LINK.padX,
+      borderRadius: corner, borderWidth: BORDER, borderColor: t.border, backgroundColor: "transparent",
+      ...fade,
+    };
+  }
   if (body === "reference") return { ...ROW, gap: 4, padding: 0, borderWidth: 0, backgroundColor: "transparent", ...fade };
   if (body === "inlineIcon") return { ...ROW, ...sq(INLINE_ICON), borderRadius: corner, borderWidth: 0, backgroundColor: "transparent", ...fade };
   if (body === "scope" || body === "filter") {
@@ -310,6 +324,7 @@ function bodyContainer(t: ColorTokens, intent: Intent, o: ButtonSkinOpts, corner
 function bodyLabel(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOpts): TextStyle | null {
   const body = webBodyOf(o);
   if (body === "themeChoice" || body === "identity") return { ...BODY_TYPE, color: t.foreground };
+  if (body === "pageLink") return { ...(o.mono ? PAGE_LINK_MONO : BODY_TYPE), color: t["muted-foreground"] };
   if (body === "reference") return { ...BODY_TYPE, fontFamily: MONO_FONT, color: primaryText(t), textDecorationLine: "underline" };
   if (body === "scope") return { ...SCOPE_TYPE, color: t.foreground };
   if (body === "filter") return { ...BODY_TYPE, color: t["muted-foreground"] };

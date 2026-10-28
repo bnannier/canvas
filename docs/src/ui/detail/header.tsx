@@ -47,6 +47,7 @@ export function DetailHeader({ comp, description, sourcePath, exports, jumps }: 
     <Column airy>
       <Breadcrumb
         slash
+        subtle
         items={["Library", comp.section, comp.name]}
         onItemPress={(_, index) => {
           if (index === 0) router.push("/components" as never);
@@ -63,9 +64,9 @@ export function DetailHeader({ comp, description, sourcePath, exports, jumps }: 
       </Container>
       <Row snug wrap alignCenter>
         <CodeBlock inline copy language="tsx" code={importLine} />
-        <Button outline small external href={`${REPOSITORY}/${sourcePath}`} iconLeft={<Icon code size={14} decorative />}>{sourcePath}</Button>
+        <Button pageLink mono external href={`${REPOSITORY}/${sourcePath}`} iconLeft={<Icon code size={14} decorative />}>{sourcePath}</Button>
         {section ? (
-          <Button outline small href={section} onPress={() => router.push(section as never)} iconRight={<Icon arrowUpRight size={14} decorative />}>{`View in ${comp.section}`}</Button>
+          <Button pageLink href={section} onPress={() => router.push(section as never)} iconRight={<Icon arrowUpRight size={14} decorative />}>{`View in ${comp.section}`}</Button>
         ) : null}
       </Row>
       <Column relaxed>
