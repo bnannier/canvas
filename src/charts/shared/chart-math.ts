@@ -106,6 +106,45 @@ export function niceTicks(min: number, max: number, count = 5): Ticks {
   return { ticks, niceMin: ticks[0], niceMax: ticks[ticks.length - 1] };
 }
 
+/** The hand-off's "nice" bound (cv-kit-code4.js `nice`): the 1, 2, 2.5, 5 or 10 step of the value's power of ten at or above it. */
+export function niceBound(v: number): number {
+  if (!(v > 0)) return 1;
+  const p = 10 ** Math.floor(Math.log10(v));
+  const n = v / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+}
+
+/**
+ * The hand-off's value axis (cv-kit-code4.js `dom` and `gridD`): a zero-based extent runs
+ * from 0 to the nice bound above 102% of its max, a signed or offset one floors and ceils
+ * to a quarter-span step and is at least two steps tall, and the grid is always the five
+ * quarters of that domain. `exact` keeps a caller's own bounds and only quarters them.
+ */
+export function quarterTicks(min: number, max: number, exact = false): Ticks {
+  if (!Number.isFinite(min)) min = 0;
+  if (!Number.isFinite(max)) max = 0;
+  if (min > max) [min, max] = [max, min];
+  let lo: number;
+  let hi: number;
+  if (exact && max > min) {
+    lo = min;
+    hi = max;
+  } else if (min === 0) {
+    lo = 0;
+    hi = niceBound(max * 1.02);
+  } else {
+    const st = niceBound((max - min) / 4 || Math.abs(max) / 4 || 1);
+    lo = Math.floor(min / st) * st;
+    hi = Math.ceil(max / st) * st;
+    if (hi - lo < st * 2) {
+      lo -= st;
+      hi += st;
+    }
+  }
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((t) => Number((lo + (hi - lo) * t).toFixed(10)));
+  return { ticks, niceMin: ticks[0], niceMax: ticks[4] };
+}
+
 // --- line & area paths ----------------------------------------------------------
 
 const fmt = (n: number) => String(Math.round(n * 100) / 100);
@@ -586,6 +625,19 @@ export function formatCompact(v: number): string {
   // Small magnitudes keep at most two decimals, trimmed.
   const s = (Math.round(v * 100) / 100).toString();
   return s;
+}
+
+/**
+ * The hand-off's axis value (cv-kit-code4.js `fmt`): whole below 10,000 (two decimals at
+ * most), thousands as "k" from there (one decimal under 100,000); millions and up fall back
+ * to formatCompact, which the hand-off never reaches.
+ */
+export function formatAxis(v: number): string {
+  if (!Number.isFinite(v)) return "";
+  const abs = Math.abs(v);
+  if (abs >= 1e6) return formatCompact(v);
+  if (abs >= 1e4) return `${(v / 1000).toFixed(abs >= 1e5 ? 0 : 1).replace(/\.0$/, "")}k`;
+  return String(Math.round(v * 100) / 100);
 }
 
 // --- accessible names --------------------------------------------------------------

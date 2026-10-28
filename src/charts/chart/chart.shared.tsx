@@ -1,27 +1,27 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState } from "react";
-import { StyleSheet } from "react-native";
+import { Rect } from "react-native-svg";
 import { View, Text, useControllableState, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { ChartLegend } from "../shared/chart-legend.js";
-import { ChartValueFlag, ScrubSurface, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
-import { CHART_ROOT } from "../shared/chart-frame.js";
+import { ChartValueFlag, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
+import { CHART_ROOT, CartesianFrame, type CartesianLayout } from "../shared/chart-frame.js";
+import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
+import { niceBound } from "../shared/chart-math.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
 
-// Shared Chart shell. The structure (a token-themed bar chart built entirely from
-// View views, no SVG and no CSS grid), the boolean-prop axes (tone + orientation +
-// density), the value-to-pixel math, the data-shape types, and the token-backed fill
-// logic all live here once; a platform file supplies only its skin (the surface and
-// bar corner radii) and calls createChart.
+// Shared Chart shell. The boolean-prop axes (tone + orientation + arrangement +
+// density), the bar geometry, the data-shape types, and the token-backed fill logic
+// all live here once; a platform file supplies only its skin (the surface and bar
+// corner radii) and calls createChart.
 //
-// Chart: each datum is a vertical (or horizontal) bar whose length is a pixel height
-// computed in JS from its value against the axis max. A label sits under (or beside)
-// each bar.
-//
-// This is Canvas's faithful, SVG-free take on the docs "charts" organism: the other
-// chart types in that entry (sparkline, gauge, heatmap, stacked) lean on SVG and grid,
-// so they are approximated by the bar chart here.
+// Chart is the hand-off's `O('chart')` renderer (tools/v4/handoff/cv-kit-code4.js).
+// Vertical columns stand on the shared cartesian frame the line charts use (the
+// quarter grid, the y labels at 0, half and the top, the 360 by 170 proportion), each
+// bar a rounded `Rect` at most 28 units wide (14 per series in a cluster, 2 apart).
+// Horizontal rows are its sideways bars: an 86-unit label column, a bar scaled to
+// the remaining 264 units less the value's room, the value after the bar.
 //
 // Chart is a "Shared" platform treatment: data visualization is platform-neutral. The
 // iOS HIG Charts page (Swift Charts) and the shadcn web chart are the same plotted-bar
@@ -39,8 +39,9 @@ import { type ChartSeries, type ChartSkin } from "../shared/types.js";
 // - Arrangement (grouped mode): `stacked` accumulates the series within one
 //   column per category (composition), measured against the per-category
 //   totals; omit for side-by-side clusters (comparison).
-// - Density: `compact` shrinks the plot area and tightens the gaps; omit for
-//   the default density.
+// - Density: `compact` tightens the frame (12 padding, 8 gaps, as the hand-off's
+//   compact frame does); the plot keeps the hand-off's proportion. Omit for the
+//   default density.
 
 export interface ChartDatum {
   /**
@@ -98,17 +99,74 @@ export function toneOf(p: ChartProps): Tone {
   return "primary";
 }
 
-// The hand-off's column proportions: a grouped pair (11 + 2 + 11 units) fills 46% of
-// its 52.7-unit month, a stacked or single column (22 units) 42%, centered in its band.
-const CLUSTER_SHARE = "46%";
-const COLUMN_SHARE = "42%";
+// The hand-off's bar geometry, in its viewBox units (scaled by the frame's `scale`).
+const BAR = {
+  /** A single or stacked column: at most 28 wide, else 60% of its band. */
+  column: 28,
+  columnShare: 0.6,
+  /** A clustered bar: at most 14 wide, else its share of 70% of the band, 2 apart. */
+  cluster: 14,
+  clusterShare: 0.7,
+  clusterGap: 2,
+  /** The bands sit 6 in from each plot edge. */
+  bandInset: 6,
+} as const;
 
-// Plot length in px (bar travel: chart height for vertical, bar width for
-// horizontal), by density.
-const PLOT_LENGTH = { default: 140, compact: 96 } as const;
-// The standard chart width when the caller leaves the chart unsized. Without
-// it, a content-sized parent (native Fabric especially) collapses the flex
-// columns to their intrinsic minimum: pencil bars and letter-wrapped labels.
+// The hand-off's horizontal rows, in its 360-unit viewBox: the label column, the bar's
+// travel (W - 96), the row and its gap, the top inset, the value's offset after the bar.
+const ROW = { label: 86, travel: 264, height: 18, gap: 8, top: 4, valueGap: 4 } as const;
+const VIEW_W = 360;
+
+/** One column's bars in data units: each series' [from, to] on the value axis (stacked accumulates). */
+export function columnSpans(series: ChartSeries[], i: number, stacked: boolean): [number, number][] {
+  let acc = 0;
+  return series.map((sr) => {
+    const raw = sr.values[i];
+    const v = Number.isFinite(raw) && (raw as number) > 0 ? (raw as number) : 0;
+    if (!stacked) return [0, v];
+    const span: [number, number] = [acc, acc + v];
+    acc += v;
+    return span;
+  });
+}
+
+export interface BarRect {
+  category: number;
+  series: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * The hand-off's column geometry on a measured frame: one rect per non-empty bar, a
+ * single or stacked column centered in its band, a cluster's bars side by side. A bar
+ * above the axis top (a caller's `max` under the data) is cut at the top.
+ */
+export function barRects(series: ChartSeries[], count: number, stacked: boolean, layout: CartesianLayout): BarRect[] {
+  const band = layout.band;
+  if (!band) return [];
+  const m = series.length;
+  const single = stacked || m === 1;
+  const bw = single
+    ? Math.min(BAR.column * layout.scale, band.step * BAR.columnShare)
+    : Math.min(BAR.cluster * layout.scale, (band.step * BAR.clusterShare) / m);
+  const gap = BAR.clusterGap * layout.scale;
+  const at = (v: number) => layout.y(Math.min(v, layout.yMax));
+  const rects: BarRect[] = [];
+  for (let i = 0; i < count; i++) {
+    const cx = band.center(i);
+    columnSpans(series, i, stacked).forEach(([from, to], j) => {
+      const y = at(to);
+      const height = Math.max(0, at(from) - y);
+      if (height <= 0) return;
+      const x = single ? cx - bw / 2 : cx - (bw * m + gap * (m - 1)) / 2 + j * (bw + gap);
+      rects.push({ category: i, series: j, x, y, width: bw, height });
+    });
+  }
+  return rects;
+}
 
 export function createChart(skin: ChartSkin) {
   return function Chart(props: ChartProps) {
@@ -121,15 +179,16 @@ export function createChart(skin: ChartSkin) {
     const glass = isGlass(theme);
 
     // Grouped mode: `labels` + `series` render clustered columns per category.
-    // Single-series mode: the original `data` shape. Exactly one applies.
+    // Single-series mode: the original `data` shape, drawn as one series.
     const grouped = props.series != null && props.series.length > 0;
-    const series = props.series ?? [];
-    const labels = props.labels ?? [];
     const data = props.data ?? [];
+    const series: ChartSeries[] = grouped ? props.series! : [{ label: title ?? "", values: data.map((d) => d.value) }];
+    const labels = grouped ? (props.labels ?? []) : data.map((d) => d.label);
     const horizontal = !!props.horizontal && !grouped;
     // Stacking is an arrangement of GROUPED series (a column is the category's
     // composition); single-series data has nothing to accumulate.
     const stacked = !!props.stacked && grouped;
+    const multi = series.length > 1;
 
     devWarn(
       props.data != null && props.series != null,
@@ -160,62 +219,21 @@ export function createChart(skin: ChartSkin) {
       "[canvas] <Chart />: tone props apply to single-series charts only; set `success`/`destructive` on a SERIES to color it by meaning, else grouped series use the chart-1..8 tokens.",
     );
 
-    const fill = s.barFill(tokens, tone);
-    const plot = compact ? PLOT_LENGTH.compact : PLOT_LENGTH.default;
-    // A segment's contribution to a stacked column: negatives and non-finite
-    // values carry no length, so they count as 0 (matching the stacked area
-    // chart's running sums).
-    const positive = (value: number | undefined): number => (Number.isFinite(value) && (value as number) > 0 ? (value as number) : 0);
-    // The category totals a stacked chart is measured against: the column IS
-    // the sum, so the tallest column, not the largest single value, sets the axis.
-    const totals = labels.map((_, i) => series.reduce((sum, sr) => sum + positive(sr.values[i]), 0));
-    // Axis max: the caller's, else the largest finite value, else 1 to avoid /0.
-    // Non-finite data (NaN / Infinity) is filtered here so a single bad datum
-    // cannot poison `max` (and thus every bar) with NaN.
-    const values = stacked
-      ? totals
-      : grouped
-        ? series.flatMap((sr) => sr.values).filter((v) => Number.isFinite(v))
-        : data.map((d) => d.value).filter((v) => Number.isFinite(v));
-    const max = props.max != null && props.max > 0 ? props.max : Math.max(1, ...values);
+    const colorOf = (j: number): string => (grouped ? s.seriesColor(tokens, series[j], j) : s.barFill(tokens, tone));
+    const valueOf = (sr: ChartSeries, i: number): number => (Number.isFinite(sr.values[i]) ? (sr.values[i] as number) : 0);
+    // The value axis: a stacked chart is measured against the per-category totals (the
+    // column IS the sum), a clustered one against the largest single value.
+    const spans = labels.map((_, i) => columnSpans(series, i, stacked));
+    const dataMax = Math.max(0, ...spans.flatMap((col) => col.map(([, to]) => to)));
+    const userMax = props.max != null && props.max > 0 ? props.max : null;
 
-    // Map a value to a clamped pixel length along the plot axis. A non-finite
-    // value (NaN / Infinity) is treated as 0 so it never reaches a style
-    // dimension (an invalid `height` / `width` would break the bar's layout).
-    const lengthPx = (value: number): number => {
-      const v = Number.isFinite(value) ? value : 0;
-      const ratio = Math.max(0, Math.min(1, v / max));
-      return Math.max(2, Math.round(ratio * plot));
-    };
-
-    // One stacked category's segment heights, bottom series first. An empty
-    // segment paints nothing (a 2px floor would inflate the column past its
-    // total), a non-empty one keeps a 1px hairline, and the running sum is
-    // clamped to the plot so a caller-supplied `max` below the true total
-    // cannot overflow the column.
-    const stackHeights = (i: number): number[] => {
-      let used = 0;
-      return series.map((sr) => {
-        const v = positive(sr.values[i]);
-        if (v === 0) return 0;
-        const h = Math.min(Math.max(1, Math.round((v / max) * plot)), plot - used);
-        used += h;
-        return h;
-      });
-    };
-
-    // Per-bar gap by density: gap-1.5 (6) compact, gap-2 (8) default.
-    const gap = compact ? 6 : 8;
-
-    // Press-to-inspect (vertical charts): pressing a category toggles its
-    // selection, dims the other categories, and (grouped) flags the values.
-    // The announcement mirrors the flag for assistive tech.
+    // Each category is announced with every series' value; a stacked column also names
+    // its total, which no other channel carries.
     const categoryName = (i: number): string => {
-      if (!grouped) return `${data[i]?.label}: ${data[i]?.value}`;
-      const parts = series.map((sr) => `${sr.label} ${Number.isFinite(sr.values[i]) ? sr.values[i] : 0}`).join(", ");
-      // A stacked column's height encodes the category total, and no other
-      // channel carries it, so the accessible item names it after the segments.
-      return stacked ? `${labels[i]}: ${parts}, total ${totals[i]}` : `${labels[i]}: ${parts}`;
+      if (!grouped) return `${labels[i]}: ${valueOf(series[0], i)}`;
+      const parts = series.map((sr) => `${sr.label} ${valueOf(sr, i)}`).join(", ");
+      const total = spans[i].reduce((sum, [from, to]) => sum + (to - from), 0);
+      return stacked ? `${labels[i]}: ${parts}, total ${total}` : `${labels[i]}: ${parts}`;
     };
     const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
     const setSelected = (i: number | null) => {
@@ -224,22 +242,32 @@ export function createChart(skin: ChartSkin) {
       if (i != null) announceSelection(categoryName(i));
     };
     const dimmed = (i: number): number => (selected != null && selected !== i ? DIM_OPACITY : 1);
-    // The flag and the scrub surface position against the measured plot row
-    // (flex columns have no px coordinates until layout).
-    const [plotWidth, setPlotWidth] = useState(0);
-    const count = grouped ? labels.length : data.length;
-    const columnStep = count > 0 ? (plotWidth + gap) / count : 0;
-    const columnCenter = (i: number): number => {
-      const colW = count > 0 ? (plotWidth - gap * (count - 1)) / count : 0;
-      return i * (colW + gap) + colW / 2;
-    };
-    const columnAt = (x: number): number | null =>
-      columnStep > 0 ? Math.max(0, Math.min(count - 1, Math.floor(x / columnStep))) : null;
 
     // Summarize the chart for assistive tech: the title if there is one, else a
-    // generic name. The container is grouped (role="group") so a screen reader
-    // announces the summary and then walks into the per-bar items below.
+    // generic name. The container is grouped (role="group"); the plot is one image
+    // whose name carries every category's values.
     const chartName = title != null && title !== "" ? `${title} chart` : "Bar chart";
+    const plotName = labels.map((_, i) => categoryName(i)).join("; ");
+
+    // The horizontal rows scale with the frame's width as the hand-off's SVG does.
+    const [rowsWidth, setRowsWidth] = useState(0);
+    const k = rowsWidth > 0 ? rowsWidth / VIEW_W : 1;
+
+    const columns = (layout: CartesianLayout) =>
+      barRects(series, labels.length, stacked, layout).map((r) => (
+        <Rect
+          key={`b${r.category}-${series[r.series].id ?? r.series}`}
+          x={r.x}
+          y={r.y}
+          width={r.width}
+          height={r.height}
+          rx={Math.min(skin.barRadius, r.width / 2, r.height / 2)}
+          fill={colorOf(r.series)}
+          opacity={dimmed(r.category)}
+        />
+      ));
+
+    const travel = userMax ?? niceBound(dataMax);
 
     return (
       <View
@@ -259,123 +287,14 @@ export function createChart(skin: ChartSkin) {
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}
 
-        {grouped ? (
-          // Grouped: each category is a cluster of series bars sharing the
-          // column, colored by the chart-1..8 tokens in fixed series order (or
-          // by a series' own success/destructive tone). A 2px gap keeps
-          // adjacent fills separable (the dataviz spacer rule). `stacked` turns
-          // the cluster into ONE column whose segments accumulate.
-          <View>
-            <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot }]}>
-              {labels.map((label, i) => {
-                // Stacked: segment heights bottom-up; every non-empty segment is its
-                // own rounded rect, as the hand-off draws each `rect rx`.
-                const heights = stacked ? stackHeights(i) : null;
-                return (
-                  // Each category is one accessible item announcing every
-                  // series' value ("Mon: Revenue 45, Costs 30"); the scrub
-                  // surface below drives the inspection flag.
-                  <View
-                    key={i}
-                    accessible
-                    accessibilityRole="image"
-                    role="img"
-                    accessibilityLabel={categoryName(i)}
-                    aria-label={categoryName(i)}
-                    style={s.verticalColumn}
-                  >
-                    {heights ? (
-                      // column-reverse stacks the first series on the baseline,
-                      // matching the stacked AreaChart's band order. The
-                      // segments abut (no gap), like StackedBar, so the column
-                      // reads as one total.
-                      <View style={{ flexDirection: "column-reverse", opacity: dimmed(i), width: COLUMN_SHARE, alignSelf: "center" }}>
-                        {series.map((sr, j) => (
-                          <View
-                            key={sr.id ?? j}
-                            style={s.verticalBar(s.seriesColor(tokens, sr, j), heights[j], heights[j] > 0 ? skin.barRadius : 0)}
-                          />
-                        ))}
-                      </View>
-                    ) : (
-                      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 2, opacity: dimmed(i), width: CLUSTER_SHARE, alignSelf: "center" }}>
-                        {series.map((sr, j) => (
-                          <View
-                            key={sr.id ?? j}
-                            style={[
-                              s.verticalBar(s.seriesColor(tokens, sr, j), lengthPx(sr.values[i] ?? 0), skin.barRadius),
-                              { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
-                            ]}
-                          />
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
-              <ScrubSurface indexAt={columnAt} selected={selected} onScrub={setSelected} style={StyleSheet.absoluteFill} />
-              {selected != null && labels[selected] != null ? (
-                <ChartValueFlag
-                  title={labels[selected]}
-                  rows={series.map((sr, j) => ({
-                    label: sr.label,
-                    color: s.seriesColor(tokens, sr, j),
-                    value: String(Number.isFinite(sr.values[selected]) ? sr.values[selected] : 0),
-                  }))}
-                  x={columnCenter(selected)}
-                  plotW={plotWidth}
-                />
-              ) : null}
-            </View>
-            {/* Baseline under the clusters. */}
-            <View style={s.baseline(tokens)} />
-            <View style={[s.verticalLabelsRow, { gap }]}>
-              {labels.map((label, i) => (
-                <Text key={i} style={s.verticalLabel(tokens)}>
-                  {label}
-                </Text>
-              ))}
-            </View>
-            {/* Series identity, outside the per-category img items. */}
-            {props.hideLegend ? null : (
-              <ChartLegend horizontal items={series.map((sr, j) => ({ label: sr.label, color: s.seriesColor(tokens, sr, j) }))} />
-            )}
-          </View>
-        ) : horizontal ? (
-          // Horizontal: each row is a label, a track-aligned bar, and the value.
-          <View style={[s.horizontalStack, { gap }]}>
-            {data.map((d, i) => (
-              // Each row is one accessible item announcing "label: value", so the
-              // bar's magnitude is reachable assistively (the bar itself is a bare
-              // colored View). role="image" gives the RNW DOM an img element.
-              <View
-                key={d.id ?? i}
-                accessible
-                accessibilityRole="image"
-                role="img"
-                accessibilityLabel={`${d.label}: ${d.value}`}
-                aria-label={`${d.label}: ${d.value}`}
-                style={s.horizontalRow}
-              >
-                <Text style={s.horizontalLabel(tokens)}>{d.label}</Text>
-                <View style={s.horizontalTrack}>
-                  <View style={s.horizontalBar(fill, lengthPx(d.value), skin.barRadius)} />
-                </View>
-                <Text style={s.horizontalValue(tokens)}>{d.value}</Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          // Vertical: a baseline-aligned row of columns, each a value over a bar,
-          // with the category label beneath the baseline.
-          <View>
-            <View onLayout={(e) => setPlotWidth(e.nativeEvent.layout.width)} style={[s.verticalBars, { gap, height: plot + s.VERTICAL_VALUE_ROOM }]}>
-              {data.map((d, i) => (
-                // Each column is one accessible item announcing "label: value".
-                // The value is also rendered as visible Text above the bar so the
-                // magnitude is present in both the UI and the accessibility tree
-                // (it was previously only shown in the horizontal orientation).
-                // Pressing or scrubbing a column focuses it (the others dim).
+        {horizontal ? (
+          // Horizontal: each row is a label, the bar, and the value after it.
+          <View onLayout={(e) => setRowsWidth(e.nativeEvent.layout.width)} style={{ width: "100%", paddingTop: ROW.top * k, gap: ROW.gap * k }}>
+            {data.map((d, i) => {
+              const v = valueOf(series[0], i);
+              const w = (Math.max(0, Math.min(v, travel)) / travel) * ROW.travel * k;
+              return (
+                // Each row is one accessible item announcing "label: value".
                 <View
                   key={d.id ?? i}
                   accessible
@@ -383,27 +302,55 @@ export function createChart(skin: ChartSkin) {
                   role="img"
                   accessibilityLabel={`${d.label}: ${d.value}`}
                   aria-label={`${d.label}: ${d.value}`}
-                  style={s.verticalColumn}
+                  style={[s.barRow, { height: ROW.height * k }]}
                 >
-                  <View style={{ opacity: dimmed(i) }}>
-                    <Text style={s.verticalValue(tokens)}>{d.value}</Text>
-                    <View style={[s.verticalBar(fill, lengthPx(d.value), skin.barRadius), { width: COLUMN_SHARE, alignSelf: "center" }]} />
-                  </View>
+                  <Text numberOfLines={1} style={[s.rowLabel(tokens), { width: ROW.label * k }]}>
+                    {d.label}
+                  </Text>
+                  <View style={s.horizontalBar(colorOf(0), w, skin.barRadius, ROW.height * k)} />
+                  <Text numberOfLines={1} style={[s.axisLabel(tokens), { marginLeft: ROW.valueGap * k }]}>
+                    {d.value}
+                  </Text>
                 </View>
-              ))}
-              <ScrubSurface indexAt={columnAt} selected={selected} onScrub={setSelected} style={StyleSheet.absoluteFill} />
-            </View>
-            {/* Baseline under the bars. */}
-            <View style={s.baseline(tokens)} />
-            <View style={[s.verticalLabelsRow, { gap }]}>
-              {data.map((d, i) => (
-                <Text key={d.id ?? i} style={s.verticalLabel(tokens)}>
-                  {d.label}
-                </Text>
-              ))}
-            </View>
+              );
+            })}
+          </View>
+        ) : (
+          <View accessible accessibilityRole="image" role="img" accessibilityLabel={plotName} aria-label={plotName}>
+            <CartesianFrame
+              yExtent={[0, userMax ?? (dataMax > 0 ? dataMax : 1)]}
+              yExact={userMax != null}
+              xLabels={labels}
+              plotHeight={PLOT_HEIGHT.default}
+              aspect
+              bandInset={BAR.bandInset}
+              compact={compact}
+              selectedBand={selected}
+              onBandScrub={setSelected}
+              overlay={(layout) =>
+                selected != null && layout.band && labels[selected] != null ? (
+                  <ChartValueFlag
+                    title={labels[selected]}
+                    rows={series.map((sr, j) => ({
+                      label: multi ? sr.label : undefined,
+                      color: multi ? colorOf(j) : undefined,
+                      value: String(valueOf(sr, selected)),
+                    }))}
+                    x={layout.band.center(selected)}
+                    plotW={layout.plotW}
+                  />
+                ) : null
+              }
+            >
+              {columns}
+            </CartesianFrame>
           </View>
         )}
+
+        {/* Series identity for several series, outside the plot image. */}
+        {multi && !props.hideLegend ? (
+          <ChartLegend horizontal items={series.map((sr, j) => ({ label: sr.label, color: colorOf(j) }))} />
+        ) : null}
       </View>
     );
   };

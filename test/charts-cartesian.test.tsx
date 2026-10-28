@@ -15,6 +15,9 @@ import { Histogram } from "../src/charts/histogram/histogram.tsx";
 import { BoxPlot } from "../src/charts/box-plot/box-plot.tsx";
 import { WaterfallChart } from "../src/charts/waterfall-chart/waterfall-chart.tsx";
 import { seriesColor } from "../src/charts/shared/charts.styles.ts";
+import { barRects } from "../src/charts/chart/chart.shared.tsx";
+import { bandScale, linearScale } from "../src/charts/shared/chart-math.ts";
+import type { CartesianLayout } from "../src/charts/shared/chart-frame.tsx";
 import { lightColors, palette } from "../src/style/tokens.ts";
 import { statusColors } from "../src/style/status.ts";
 
@@ -41,6 +44,28 @@ const asRgba = (hex: string): string => {
   const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)!;
   return `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, 1.00)`;
 };
+
+// happy-dom has no ResizeObserver, so react-native-web's onLayout never fires on its own:
+// report a width to every measuring host, as a browser laying the chart out would.
+function measure(c: HTMLElement, width: number) {
+  for (const el of Array.from(c.querySelectorAll("*"))) {
+    const h = (el as unknown as { __reactLayoutHandler?: (e: unknown) => void }).__reactLayoutHandler;
+    if (typeof h === "function") act(() => h({ nativeEvent: { layout: { x: 0, y: 0, width, height: 200, left: 0, top: 0 } }, timeStamp: 1 }));
+  }
+}
+
+// A measured frame's coordinate system: a 300 by 140 plot over [0, yMax], equal bands.
+const frameOf = (count: number, yMax: number): CartesianLayout => ({
+  plotW: 300,
+  plotH: 140,
+  y: linearScale(0, yMax, 140, 0),
+  x: (v) => v,
+  band: bandScale(count, 0, 300, 0, 0),
+  yTicks: [0, yMax / 4, yMax / 2, (yMax * 3) / 4, yMax],
+  yMin: 0,
+  yMax,
+  scale: 1,
+});
 
 // Two-category variant for grouped-Chart tests (values align with 2 labels).
 const twoSeriesShort = [
@@ -112,9 +137,7 @@ describe("LineChart", () => {
 describe("Chart (grouped bars)", () => {
   it("announces each category as one item carrying every series' value", () => {
     const { container } = ui(<Chart title="Revenue vs costs" labels={["Q1", "Q2"]} series={twoSeriesShort} />);
-    const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
-    expect(items).toContain("Q1: Web 120, Mobile 60");
-    expect(items).toContain("Q2: Web 180, Mobile 90");
+    expect(plotName(container)).toBe("Q1: Web 120, Mobile 60; Q2: Web 180, Mobile 90");
   });
 
   it("shows the series legend, suppressible with hideLegend", () => {
@@ -128,8 +151,7 @@ describe("Chart (grouped bars)", () => {
   it("keeps the single-series data shape working unchanged", () => {
     const { container } = ui(<Chart title="Signups" data={[{ label: "Mon", value: 3 }]} />);
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Signups chart");
-    const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
-    expect(items).toContain("Mon: 3");
+    expect(plotName(container)).toBe("Mon: 3");
   });
 });
 
@@ -141,77 +163,56 @@ describe("Chart (stacked columns)", () => {
     { label: "Client credentials", values: [10, 0] },
   ];
   const clients = ["acme", "globex"];
-  // Every bar/segment style, in DOM order (the legend swatches are the 8 px
-  // squares, so dropping `width: 8px` selects exactly the marks).
-  const barStyles = (c: HTMLElement) =>
-    Array.from(c.querySelectorAll("div"))
-      .map((el) => el.getAttribute("style") ?? "")
-      .filter((st) => st.includes("border-radius") && st.includes("height:") && !st.includes("width: 8px"));
-  const heightOf = (style: string) => Number(/height: (\d+)px/.exec(style)?.[1]);
+  const heights = (stacked: boolean, yMax: number, series = grants) =>
+    barRects(series, clients.length, stacked, frameOf(clients.length, yMax)).map((r) => Math.round(r.height));
 
-  it("measures the axis against per-category totals, not the largest single value", () => {
-    const { container } = ui(<Chart stacked labels={clients} series={grants} />);
-    // acme totals 20 (the tallest column) and fills the 140px plot: 70 + 70.
-    // globex totals 5, a quarter of the axis: 35 and an empty segment.
-    expect(barStyles(container).map(heightOf)).toEqual([70, 70, 35, 0]);
+  it("stacks each column's segments against the per-category totals", () => {
+    // On an axis topping out at 20, acme's two 10s fill the 140 px plot: 70 + 70. globex
+    // totals 5, a quarter of the axis, and its empty segment draws no rect at all.
+    expect(heights(true, 20)).toEqual([70, 70, 35]);
   });
 
   it("clusters against the largest single value when stacked is omitted", () => {
-    // The same data unstacked: max is 10, so every 10 is a full-height bar.
-    const { container } = ui(<Chart labels={clients} series={grants} />);
-    expect(barStyles(container).map(heightOf)).toEqual([140, 140, 70, 2]);
+    expect(heights(false, 10)).toEqual([140, 140, 70]);
   });
 
-  it("rounds every non-empty segment at the bar corner and paints nothing for an empty one", () => {
-    const { container } = ui(<Chart stacked labels={clients} series={grants} />);
-    const [bottom, top, loneSegment, empty] = barStyles(container);
-    // The v4 hand-off draws each segment as its own `rect rx="3"`.
-    expect(bottom).toContain("border-radius: 3px");
-    expect(top).toContain("border-radius: 3px");
-    // globex's second grant type is 0: the surviving segment keeps its corner and
-    // the empty one has no height at all (a 2px floor would inflate the total).
-    expect(loneSegment).toContain("border-radius: 3px");
-    expect(heightOf(empty)).toBe(0);
+  it("draws the hand-off's bars: a 28-unit column, 14-unit clustered bars 2 apart", () => {
+    const stacked = barRects(grants, 2, true, frameOf(2, 20));
+    expect(stacked.every((r) => r.width === 28)).toBe(true);
+    const clustered = barRects(grants, 2, false, frameOf(2, 10));
+    expect(clustered[0].width).toBe(14);
+    expect(clustered[1].x - (clustered[0].x + clustered[0].width)).toBe(2);
+    // The cluster is centered on its band (150 wide, centered at 75).
+    expect((clustered[0].x + clustered[1].x + 14) / 2).toBe(75);
+  });
+
+  it("cuts a column at the axis top when max is below the true total", () => {
+    // A caller-supplied max under the real total cannot overflow the plot.
+    const rects = barRects(grants.map((g) => ({ ...g, values: [10] })), 1, true, frameOf(1, 10));
+    expect(rects.map((r) => r.height)).toEqual([140]);
+  });
+
+  it("treats a negative segment as zero", () => {
+    const rects = barRects([{ label: "Granted", values: [10] }, { label: "Refunded", values: [-4] }], 1, true, frameOf(1, 10));
+    expect(rects.map((r) => r.height)).toEqual([140]);
   });
 
   it("names each column's total in its accessible item", () => {
     const { container } = ui(<Chart stacked labels={clients} series={grants} />);
-    const items = Array.from(container.querySelectorAll('[role="img"]')).map((el) => el.getAttribute("aria-label"));
-    expect(items).toContain("acme: Authorization code 10, Client credentials 10, total 20");
-    expect(items).toContain("globex: Authorization code 5, Client credentials 0, total 5");
+    expect(plotName(container)).toContain("acme: Authorization code 10, Client credentials 10, total 20");
+    expect(plotName(container)).toContain("globex: Authorization code 5, Client credentials 0, total 5");
   });
 
   it("keeps the legend, the value flag, and the dimming working", () => {
     const { container } = ui(<Chart stacked labels={clients} series={grants} defaultSelected={0} />);
     expect(container.textContent).toContain("Authorization code");
     expect(container.textContent).toContain("Client credentials");
-    // The flag renders the selected column's per-series values ...
+    measure(container, 400);
+    // The flag renders the selected column's per-series values (the dimmed bars are SVG,
+    // which this harness does not render).
     expect(container.textContent).toContain("10");
-    // ... and the unselected column dims.
-    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
-    expect(styles.some((st) => st.includes("opacity: 0.45"))).toBe(true);
   });
 
-  it("clamps a column to the plot when max is below the true total", () => {
-    // A caller-supplied max under the real total cannot overflow the column.
-    const { container } = ui(<Chart stacked max={10} labels={["acme"]} series={[
-      { label: "Authorization code", values: [10] },
-      { label: "Client credentials", values: [10] },
-    ]} />);
-    const heights = barStyles(container).map(heightOf);
-    expect(heights).toEqual([140, 0]);
-    expect(heights.reduce((a, b) => a + b, 0)).toBeLessThanOrEqual(140);
-  });
-
-  it("treats a negative segment as zero", () => {
-    const { container } = ui(<Chart stacked labels={["acme"]} series={[
-      { label: "Granted", values: [10] },
-      { label: "Refunded", values: [-4] },
-    ]} />);
-    // The total is 10, so the positive segment fills the plot and the negative
-    // one contributes no length (it cannot be drawn below the baseline).
-    expect(barStyles(container).map(heightOf)).toEqual([140, 0]);
-  });
 });
 
 describe("per-series semantic tones", () => {
@@ -241,11 +242,10 @@ describe("per-series semantic tones", () => {
   it("paints the grouped Chart's bars and legend dots by meaning", () => {
     const { container } = ui(<Chart labels={["Q1", "Q2"]} series={signIns} />);
     const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
-    const green = styles.filter((st) => st.includes(asRgba(SUCCESS)));
-    const red = styles.filter((st) => st.includes(asRgba(ERROR)));
-    // Two categories' bars plus the legend dot, for each series.
-    expect(green.length).toBe(3);
-    expect(red.length).toBe(3);
+    // The legend dot for each series (the bars share `seriesColor`, proven above; they are
+    // SVG, which this harness does not render).
+    expect(styles.filter((st) => st.includes(asRgba(SUCCESS))).length).toBe(1);
+    expect(styles.filter((st) => st.includes(asRgba(ERROR))).length).toBe(1);
     // No ramp color is left over for a fully toned chart.
     expect(styles.some((st) => st.includes(asRgba(lightColors["chart-1"])))).toBe(false);
   });
@@ -301,14 +301,15 @@ describe("scrub-to-inspect", () => {
     expect(scrubEvent("move", null, tap.gesture, 3).select).toBeUndefined();
   });
 
-  it("a controlled selection dims the other categories", () => {
-    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} selected={0} />);
-    const styles = Array.from(container.querySelectorAll("div")).map((el) => el.getAttribute("style") ?? "");
-    expect(styles.some((st) => st.includes("opacity: 0.45"))).toBe(true);
+  it("a controlled selection flags the selected category", () => {
+    const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} selected={1} />);
+    measure(container, 400);
+    expect(container.textContent).toContain("180");
   });
 
   it("defaultSelected renders the grouped flag without any press", () => {
     const { container } = ui(<Chart labels={["Q1", "Q2"]} series={twoSeriesShort} defaultSelected={0} />);
+    measure(container, 400);
     expect(container.textContent).toContain("60");
   });
 
