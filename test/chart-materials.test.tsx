@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { cloneElement, type ReactElement } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import {
@@ -123,6 +123,15 @@ for (const [name, chart] of Object.entries(intrinsic)) {
   });
 }
 
+// happy-dom has no ResizeObserver, so react-native-web's onLayout never fires on its own:
+// report a width to every measuring host, as a browser laying the chart out would.
+function measure(c: HTMLElement, width: number) {
+  for (const el of Array.from(c.querySelectorAll("*"))) {
+    const h = (el as unknown as { __reactLayoutHandler?: (e: unknown) => void }).__reactLayoutHandler;
+    if (typeof h === "function") act(() => h({ nativeEvent: { layout: { x: 0, y: 0, width, height: 200, left: 0, top: 0 } }, timeStamp: 1 }));
+  }
+}
+
 describe("chart capability, accessibility and plain variants", () => {
   it("restores every static frame where Liquid Glass renders but no frost", () => {
     liquidWithoutFrost();
@@ -162,6 +171,7 @@ describe("chart capability, accessibility and plain variants", () => {
       }) as unknown as MediaQueryList);
       restores.push(() => media.mockRestore());
       const result = render(ui(<Chart testID="chart" labels={labels} series={series} defaultSelected={1} />, true));
+      measure(result.container, 400);
       expect(materials(result.container)).toHaveLength(0);
       expect(screen.getByTestId("chart").style.backgroundColor).not.toContain("0.00");
       expect(screen.getByText("7")).toBeDefined();
@@ -209,6 +219,7 @@ it("keeps a selected Chart datum while switching appearance both ways", () => {
   browser(true);
   const child = <Chart testID="chart" labels={labels} series={series} defaultSelected={1} />;
   const result = render(ui(child, false));
+  measure(result.container, 400);
   for (const glass of [true, false, true]) {
     result.rerender(ui(child, glass));
     expect(screen.getByText("7")).toBeDefined();

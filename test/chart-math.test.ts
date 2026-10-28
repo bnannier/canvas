@@ -10,12 +10,15 @@ import {
   bandScale,
   estimateTextWidth,
   formatCompact,
+  formatAxis,
   funnelLayout,
   seriesAccessibleName,
   linePath,
   linearScale,
   monotonePath,
   niceTicks,
+  quarterTicks,
+  niceBound,
   pieLayout,
   polarPoint,
   polygonPath,
@@ -62,6 +65,28 @@ describe("bandScale", () => {
     expect(b.step).toBe(25);
     expect(b.center(0)).toBe(12.5);
     expect(b.center(3)).toBe(87.5);
+  });
+});
+
+describe("quarterTicks (the hand-off's value axis)", () => {
+  it("tops a zero-based axis at the nice bound above 102% of the max, in quarters", () => {
+    expect(niceBound(97.92)).toBe(100);
+    expect(niceBound(20.4)).toBe(25);
+    expect(quarterTicks(0, 96).ticks).toEqual([0, 25, 50, 75, 100]);
+    // 100 itself takes the next bound up, as the hand-off's `dom` does.
+    expect(quarterTicks(0, 100).niceMax).toBe(200);
+  });
+
+  it("keeps a caller's exact bounds and only quarters them", () => {
+    expect(quarterTicks(0, 10, true).ticks).toEqual([0, 2.5, 5, 7.5, 10]);
+  });
+
+  it("floors and ceils a signed extent to a quarter-span step", () => {
+    expect(quarterTicks(-4, 10).ticks).toEqual([-5, -1.25, 2.5, 6.25, 10]);
+  });
+
+  it("gives an empty axis a unit domain", () => {
+    expect(quarterTicks(0, 0).ticks).toEqual([0, 0.25, 0.5, 0.75, 1]);
   });
 });
 
@@ -301,6 +326,17 @@ describe("seriesAccessibleName", () => {
     const name = seriesAccessibleName("S", values, labels, fmt);
     expect(name).toContain("from 0 to 5");
     expect(name).toContain("low 0");
+  });
+});
+
+describe("formatAxis (the hand-off's axis values)", () => {
+  it("prints whole values below 10,000 and thousands as k above", () => {
+    expect(formatAxis(2500)).toBe("2500");
+    expect(formatAxis(1.255)).toBe("1.26");
+    expect(formatAxis(12500)).toBe("12.5k");
+    expect(formatAxis(20000)).toBe("20k");
+    expect(formatAxis(250000)).toBe("250k");
+    expect(formatAxis(3400000)).toBe("3.4M");
   });
 });
 

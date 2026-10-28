@@ -4,7 +4,7 @@ import Svg, { Line } from "react-native-svg";
 import { View, Text, useTheme, FILL, type ViewStyle } from "../../style/index.js";
 import { CHART_LOOK, axisLabel } from "./charts.styles.js";
 import { ScrubSurface } from "./chart-inspect.js";
-import { bandScale, estimateTextWidth, formatCompact, linearScale, niceTicks, type Band } from "./chart-math.js";
+import { bandScale, estimateTextWidth, formatAxis, linearScale, niceTicks, quarterTicks, type Band } from "./chart-math.js";
 
 // The shared cartesian plot frame for the Chart family's SVG types (line,
 // area, scatter): it measures its width, sizes a y-axis gutter from the tick
@@ -30,17 +30,28 @@ export interface CartesianLayout {
   yTicks: number[];
   yMin: number;
   yMax: number;
+  /** The hand-off's drawing scale: its 360-unit viewBox width over the frame's (1 without `aspect`). */
+  scale: number;
 }
 
 export interface CartesianFrameProps {
-  /** Raw data extent of the y axis (the frame nices it). */
+  /** Raw data extent of the y axis (the frame nices it to the hand-off's quarter grid). */
   yExtent: [number, number];
+  /** Keep `yExtent` as the domain (a caller's own min or max) and only quarter it. */
+  yExact?: boolean;
   /** Categorical x axis: one label per band. Mutually exclusive with xDomain. */
   xLabels?: string[];
   /** Numeric x axis extent (scatter). Mutually exclusive with xLabels. */
   xDomain?: [number, number];
-  /** Plot-area height in px (chart component picks it by density). */
+  /** Plot-area height in px (chart component picks it by density); with `aspect`, the most the plot grows to. */
   plotHeight: number;
+  /**
+   * Size the frame to the hand-off's 360 by 170 chart (cv-kit-charts.js `W`, `H`), drawn at
+   * the measured width, up to `plotHeight`: its marks then scale by `layout.scale`.
+   */
+  aspect?: boolean;
+  /** Inset the categorical bands this many hand-off units from each plot edge (the bar Chart's 6). */
+  bandInset?: number;
   /**
    * Reserve this many px at the bottom of the plot for a docked companion
    * pane (e.g. candlestick volume): the y scale and its gridlines compress to
@@ -51,7 +62,7 @@ export interface CartesianFrameProps {
   compact?: boolean;
   hideGrid?: boolean;
   hideAxes?: boolean;
-  /** Tick/label formatter (defaults to compact "1.2k" notation). */
+  /** Tick/label formatter (defaults to the hand-off's axis notation: whole below 10,000, then "12.5k"). */
   formatValue?: (v: number) => string;
   /** The SVG mark layer, given the computed coordinate system. */
   children: (layout: CartesianLayout) => ReactNode;
@@ -76,8 +87,13 @@ const X_BAND = 20;
 // Tick label typography: the hand-off's mono axis label at the 10 px floor.
 const LABEL_SIZE = CHART_LOOK.axisSize;
 const LABEL_LINE = CHART_LOOK.axisLine;
-// The hand-off labels every other category on its 12-month axes (a label per ~54 px of
-// its plot); a thinned axis keeps at least this much room per label.
+// The hand-off's chart viewBox (cv-kit-charts.js): 360 wide, 170 tall.
+const VIEW_W = 360;
+const VIEW_H = 170;
+// The hand-off's y gutter (`PL`), in its units.
+const VIEW_GUTTER = 28;
+// The hand-off labels every other category on an axis of more than 8 (its 12-month axes,
+// a label per ~54 px of its plot); a thinned axis keeps at least this much room per label.
 const MIN_X_SLOT = 44;
 
 export function CartesianFrame(props: CartesianFrameProps) {
@@ -85,9 +101,11 @@ export function CartesianFrame(props: CartesianFrameProps) {
   const { tokens } = useTheme();
   const [width, setWidth] = useState(0);
 
-  const formatValue = props.formatValue ?? formatCompact;
-  const tickCount = compact ? 3 : 5;
-  const { ticks, niceMin, niceMax } = niceTicks(yExtent[0], yExtent[1], tickCount);
+  const formatValue = props.formatValue ?? formatAxis;
+  const { ticks, niceMin, niceMax } = quarterTicks(yExtent[0], yExtent[1], props.yExact);
+  // The hand-off's chart is an SVG drawn at the frame's width: every length scales with it,
+  // until the plot reaches the density's height.
+  const aspectPlot = props.aspect && width > 0 ? Math.round((width * VIEW_H) / VIEW_W) - TOP_PAD - (hideAxes ? 0 : X_BAND) : null;
 
   // Y gutter: widest tick label (estimated - RN has no synchronous text
   // measurement) plus breathing room, clamped so an extreme label cannot eat
@@ -98,28 +116,30 @@ export function CartesianFrame(props: CartesianFrameProps) {
   const labelled = (i: number): boolean => ticks.length < 5 || i % 2 === 0;
   const axisInk = axisLabel(tokens);
   const widest = labels.reduce((m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)), 0);
-  const gutter = hideAxes ? 0 : Math.min(64, Math.max(24, Math.ceil(widest) + 8));
+  const plotH = aspectPlot != null ? Math.max(48, Math.min(plotHeight, aspectPlot)) : plotHeight;
+  const scale = props.aspect ? (plotH + TOP_PAD + (hideAxes ? 0 : X_BAND)) / VIEW_H : 1;
+  const gutter = hideAxes ? 0 : Math.min(64, Math.max(props.aspect ? VIEW_GUTTER * scale : 24, Math.ceil(widest) + 8));
 
   const plotW = Math.max(0, width - gutter);
-  const plotH = plotHeight;
-  const inset = Math.max(0, Math.min(props.plotInsetBottom ?? 0, plotH - 24));
+  const insetBottom = Math.max(0, Math.min(props.plotInsetBottom ?? 0, plotH - 24));
 
-  const y = linearScale(niceMin, niceMax, plotH - inset, 0);
+  const y = linearScale(niceMin, niceMax, plotH - insetBottom, 0);
 
   // X axis: categorical equal bands (labels centered under each band) or a
   // niced numeric domain (scatter).
-  const band: Band | null = xLabels ? bandScale(xLabels.length, 0, plotW, 0, 0) : null;
+  const inset = (props.bandInset ?? 0) * scale;
+  const band: Band | null = xLabels ? bandScale(xLabels.length, inset, Math.max(inset, plotW - inset), 0, 0) : null;
   const xTicksInfo = xDomain ? niceTicks(xDomain[0], xDomain[1], compact ? 3 : 5) : null;
   const x = xTicksInfo ? linearScale(xTicksInfo.niceMin, xTicksInfo.niceMax, 0, plotW) : (v: number) => v;
 
-  const layout: CartesianLayout = { plotW, plotH, y, x, band, yTicks: ticks, yMin: niceMin, yMax: niceMax };
+  const layout: CartesianLayout = { plotW, plotH, y, x, band, yTicks: ticks, yMin: niceMin, yMax: niceMax, scale };
 
   // Categorical labels collide on narrow plots: render every kth label so a
   // label never overflows its band step.
   let xLabelStep = 1;
   if (xLabels && band && xLabels.length > 0 && band.step > 0) {
     const widestX = xLabels.reduce((m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)), 0);
-    xLabelStep = Math.max(1, Math.ceil(Math.max(widestX + 6, xLabels.length > 6 ? MIN_X_SLOT : 0) / band.step));
+    xLabelStep = Math.max(1, Math.ceil(Math.max(widestX + 6, xLabels.length > 8 ? MIN_X_SLOT : 0) / band.step));
   }
 
   const ready = width > 0 && plotW > 0;
@@ -154,10 +174,10 @@ export function CartesianFrame(props: CartesianFrameProps) {
             {/* The plot: gridlines, baseline, then the mark layer. */}
             <View style={{ position: "absolute", left: gutter, top: TOP_PAD, width: plotW, height: plotH }}>
               <Svg width={plotW} height={plotH}>
-                {/* The hand-off's grid: dotted 2 4 hairlines, the 0 line solid. */}
+                {/* The hand-off's grid: dotted 2 4 hairlines, the bottom line solid. */}
                 {!hideGrid
                   ? ticks.map((t, i) => (
-                      <Line key={`g${i}`} x1={0} y1={y(t)} x2={plotW} y2={y(t)} stroke={tokens.border} strokeWidth={1} strokeDasharray={t === 0 ? undefined : CHART_LOOK.gridDash} />
+                      <Line key={`g${i}`} x1={0} y1={y(t)} x2={plotW} y2={y(t)} stroke={tokens.border} strokeWidth={1} strokeDasharray={i === 0 ? undefined : CHART_LOOK.gridDash} />
                     ))
                   : null}
                 {/* The hand-off draws horizontal gridlines only, on a numeric x axis too. */}
@@ -173,7 +193,7 @@ export function CartesianFrame(props: CartesianFrameProps) {
                   accessible name already carries the data). */}
               {onBandScrub && band && xLabels && xLabels.length > 0 && band.step > 0 ? (
                 <ScrubSurface
-                  indexAt={(x) => Math.max(0, Math.min(xLabels.length - 1, Math.floor(x / band.step)))}
+                  indexAt={(x) => Math.max(0, Math.min(xLabels.length - 1, Math.floor((x - inset) / band.step)))}
                   selected={selectedBand ?? null}
                   onScrub={onBandScrub}
                   style={StyleSheet.absoluteFill}

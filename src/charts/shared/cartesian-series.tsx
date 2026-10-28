@@ -7,7 +7,7 @@ import { type ChartSeries, type ChartSkin } from "./types.js";
 import { CartesianFrame, CHART_ROOT, type CartesianLayout } from "./chart-frame.js";
 import { ChartLegend } from "./chart-legend.js";
 import { ChartValueFlag, announceSelection } from "./chart-inspect.js";
-import { formatCompact, seriesAccessibleName, type Pt } from "./chart-math.js";
+import { formatAxis, seriesAccessibleName, type Pt } from "./chart-math.js";
 
 // The shared core of the categorical-x series charts (LineChart, AreaChart):
 // the props contract, the per-chart setup hook (warnings, tone/color
@@ -80,7 +80,7 @@ export function useSeriesChart(
   // An explicit tone boolean always wins over a derived (gain/loss) tone.
   const tone = props.success || props.destructive ? toneOf(props) : (opts?.autoTone ?? toneOf(props));
   const multi = series.length > 1;
-  const formatValue = props.formatValue ?? formatCompact;
+  const formatValue = props.formatValue ?? formatAxis;
 
   devWarn(series.length === 0, `[canvas] <${displayName} />: \`series\` is empty; the chart renders with no marks.`);
   devWarn(labels.length === 0, `[canvas] <${displayName} />: \`labels\` is empty; the chart renders with no columns.`);
@@ -171,8 +171,11 @@ export function chartShell(
       <View accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name}>
         <CartesianFrame
           yExtent={yExtent}
+          yExact={props.min != null || props.max != null}
           xLabels={labels}
-          plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
+          // The hand-off's chart proportion at every density (its compact only tightens the frame).
+          plotHeight={PLOT_HEIGHT.default}
+          aspect
           compact={compact}
           hideGrid={props.hideGrid}
           hideAxes={props.hideAxes}

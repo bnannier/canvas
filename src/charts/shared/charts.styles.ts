@@ -156,18 +156,9 @@ export function seriesColor(tokens: ColorTokens, sr: ChartSeries | undefined, i:
 
 // --- horizontal layout ------------------------------------------------------
 
-// The horizontal stack of rows (flex-col); the gap is applied by the component.
-export const horizontalStack: ViewStyle = { flexDirection: "column" };
-
 // One horizontal row: a label, a track-aligned bar, and the value
 // (flex-row items-center gap-2).
 export const horizontalRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
-
-// The row's leading label: the hand-off's mono axis label (its horizontal bars put the
-// month at x 0 in a 40-unit gutter).
-export function horizontalLabel(tokens: ColorTokens): TextStyle {
-  return { width: 40, ...axisLabel(tokens) };
-}
 
 // The track that holds a horizontal bar (flex-1 flex-row items-center).
 export const horizontalTrack: ViewStyle = {
@@ -178,82 +169,24 @@ export const horizontalTrack: ViewStyle = {
   alignItems: "center",
 };
 
-// A horizontal bar: the hand-off's 9-unit bar (about 10 px painted) at the bar corner,
-// rounded all round as its `rect rx` draws it; its fill and width are set by the component.
-export function horizontalBar(fill: string, width: number, radius: number): ViewStyle {
-  return {
-    height: 10,
-    borderRadius: radius,
-    backgroundColor: fill,
-    width,
-  };
-}
-
 // The trailing value: the hand-off's 500 12 px mono value in the card ink.
 export function horizontalValue(tokens: ColorTokens): TextStyle {
   return { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"] };
 }
 
-// --- vertical layout --------------------------------------------------------
+// The bar Chart's sideways row: the label column, the bar and its value abut, as the
+// hand-off places them at fixed x positions (the component sizes each from its width).
+export const barRow: ViewStyle = { flexDirection: "row", alignItems: "center" };
 
-// The baseline-aligned row of columns (flex-row items-end); the gap and the
-// plot height are applied by the component.
-export const verticalBars: ViewStyle = { flexDirection: "row", alignItems: "flex-end" };
-
-// One column wrapping a vertical bar (flex-1 items-stretch). It also sizes the
-// bar to its share of the plot via flex (justify-end so the bar foots on the
-// baseline and the value sits above it).
-export const verticalColumn: ViewStyle = {
-  flexGrow: 1,
-  flexShrink: 1,
-  flexBasis: "0%",
-  alignItems: "stretch",
-  justifyContent: "flex-end",
-};
-
-// The value shown above each vertical bar (mb-1 text-center text-xs font-medium
-// text-card-foreground). Mirrors `horizontalValue` so the magnitude is visible
-// (and reachable as text by assistive tech) in the vertical orientation too.
-export const VERTICAL_VALUE_GAP = 4;
-// The room a value label takes above its bar: the plot reserves it on top of the bar
-// travel, so the tallest bar's value stays inside the chart instead of over its edge.
-export const VERTICAL_VALUE_ROOM = CHART_LOOK.axisLine + VERTICAL_VALUE_GAP;
-export function verticalValue(tokens: ColorTokens): TextStyle {
-  return {
-    marginBottom: VERTICAL_VALUE_GAP,
-    textAlign: "center",
-    ...axisLabel(tokens),
-  };
+// The row's leading label: the hand-off's 10 px interface-face label in the muted ink.
+export function rowLabel(tokens: ColorTokens): TextStyle {
+  return { fontSize: CHART_LOOK.axisSize, lineHeight: CHART_LOOK.axisLine, color: tokens["muted-foreground"] };
 }
 
-// A vertical bar: the hand-off's `rect rx` at the bar corner, rounded all round, plus its
-// fill and height (set by the component); the foot sits on the baseline.
-export function verticalBar(fill: string, height: number, radius: number): ViewStyle {
-  return {
-    borderRadius: Math.min(radius, height / 2),
-    backgroundColor: fill,
-    height,
-  };
-}
-
-// The hairline baseline under the bars (the hand-off's solid 0 gridline).
-export function baseline(tokens: ColorTokens): ViewStyle {
-  return { height: 1, width: "100%", backgroundColor: tokens.border };
-}
-
-// The labels row under the baseline (mt-2 flex-row); the gap is applied by the
-// component.
-export const verticalLabelsRow: ViewStyle = { marginTop: 8, flexDirection: "row" };
-
-// One column's label: the hand-off's mono axis label, centered under its column.
-export function verticalLabel(tokens: ColorTokens): TextStyle {
-  return {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: "0%",
-    textAlign: "center",
-    ...axisLabel(tokens),
-  };
+// A horizontal bar: the hand-off's `rect rx` at the bar corner, rounded all round; its
+// fill, length and thickness are set by the component.
+export function horizontalBar(fill: string, width: number, radius: number, height: number): ViewStyle {
+  return { height, borderRadius: Math.min(radius, height / 2, width / 2), backgroundColor: fill, width };
 }
 
 // --- per-OS skins -----------------------------------------------------------
