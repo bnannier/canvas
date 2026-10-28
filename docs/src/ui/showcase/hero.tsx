@@ -13,11 +13,13 @@ import { DotGrid } from "../detail/frame";
 
 export function SectionHero({ room, vignette }: { room: Pick<Room, "title" | "lead" | "body">; vignette: ReactNode }) {
   return (
-    // No cross-axis alignment: a stacked Row keeps its alignment, and a centred column would
-    // hug the vignette instead of giving it the full width, so side by side the text sits
-    // at the top of the row where the hand-off centres it.
+    // No cross-axis alignment on the Row: a stacked Row keeps its alignment, and a centred
+    // column would hug the vignette instead of giving it the full width. The text column
+    // centres its own content instead: side by side it grows to its span cell's height (the
+    // row's) and its text sits in the middle, as the hand-off centres it; stacked it is its
+    // content's height and the centring does nothing.
     <Row stacks stackBreakpoint="md" panel>
-      <Column span={6}>
+      <Column span={6} grow center>
         <Container xxl start>
           <Column cozy>
             <DocsHead title={room.title} />
