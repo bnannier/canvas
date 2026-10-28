@@ -323,7 +323,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Row", "Column", "Grid"],
     pages: ["row-column", "grid"],
     resolver: "src/atoms/layout/layout.shared.tsx#gapOf",
-    members: ["chapter", "page", "panel", "section", "loose", "generous", "spacious", "airy", "relaxed", "roomy", "cozy", "balanced", "comfortable", "nested", "snug", "close", "compact", "dense", "tight", "fine", "flush"],
+    members: ["chapter", "apart", "page", "panel", "section", "loose", "generous", "spacious", "airy", "relaxed", "roomy", "cozy", "balanced", "comfortable", "nested", "snug", "close", "compact", "dense", "tight", "fine", "flush"],
     resolve: gapOf,
   }),
   subject({ id: "Layout.justify", components: ["Row", "Column"], pages: ["row-column"], resolver: "src/atoms/layout/layout.shared.tsx#justifyOf", members: ["between", "around", "evenly", "center", "end", "start"], resolve: justifyOf }),

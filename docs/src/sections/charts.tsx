@@ -94,15 +94,21 @@ export function Vignette() {
 /** c-chart: weekly signups as bars beside sessions as two lines. */
 function ChartCard() {
   return (
-    <ShowcaseCard id="c-chart">
-      <Row stacks stackBreakpoint="md" relaxed>
-        <Column span={6}>
-          <Chart data={SIGNUPS} />
-        </Column>
-        <Column span={6}>
-          <LineChart title="Line · sessions vs. last month" labels={SESSIONS.labels} series={SESSIONS.series} />
-        </Column>
-      </Row>
+    <ShowcaseCard id="c-chart" split>
+      <Column relaxed>
+        <Row between cozy>
+          <Typography eyebrow subtle>Bar chart · weekly signups</Typography>
+          <Typography eyebrow subtle>chart-1</Typography>
+        </Row>
+        <Chart plain defaultSelected={SIGNUPS.length - 1} data={SIGNUPS} />
+      </Column>
+      <Column relaxed>
+        <Row between cozy>
+          <Column shrink><Typography eyebrow subtle>Line · sessions vs. last month</Typography></Column>
+          <Column shrink><Typography eyebrow subtle right>chart-1 · chart-2</Typography></Column>
+        </Row>
+        <LineChart plain labels={SESSIONS.labels} series={SESSIONS.series} />
+      </Column>
     </ShowcaseCard>
   );
 }
@@ -113,13 +119,13 @@ export function Cards() {
       <ShowcaseGrid minTileWidth={300}>
         <GridItem full><ChartCard /></GridItem>
         <ShowcaseCard id="c-area-chart" caption="<AreaChart stacked> · running-sum bands, overlap by default">
-          <AreaChart stacked labels={PLATFORM_AREA.labels} series={PLATFORM_AREA.series} />
+          <AreaChart plain stacked labels={PLATFORM_AREA.labels} series={PLATFORM_AREA.series} />
         </ShowcaseCard>
         <ShowcaseCard id="c-range-area-chart" caption="<RangeAreaChart> · y hugs the data, never anchored at zero">
-          <RangeAreaChart label="High · mid · low" labels={TEMPERATURE.labels} data={TEMPERATURE.data} formatValue={(v) => `${v}°`} />
+          <RangeAreaChart plain label="High · mid · low" labels={TEMPERATURE.labels} data={TEMPERATURE.data} formatValue={(v) => `${v}°`} />
         </ShowcaseCard>
         <ShowcaseCard id="c-composed-chart" caption="series pick a mark with line or area · bars by default">
-          <ComposedChart labels={REVENUE_COMPOSED.labels} series={REVENUE_COMPOSED.series} />
+          <ComposedChart plain labels={REVENUE_COMPOSED.labels} series={REVENUE_COMPOSED.series} />
         </ShowcaseCard>
         <ShowcaseCard id="c-sparkline" caption="<Sparkline values={…} success /> · tone booleans, no hand-built bar rows">
           {SPARKS.map((spark) => (
@@ -133,22 +139,22 @@ export function Cards() {
           ))}
         </ShowcaseCard>
         <ShowcaseCard id="c-histogram" caption="<Histogram values={samples}> · bins override the rule">
-          <Histogram label="Response time · ms" values={LATENCY_SAMPLES} />
+          <Histogram plain label="Response time · ms" values={LATENCY_SAMPLES} />
         </ShowcaseCard>
         <ShowcaseCard id="c-box-plot" caption="quartiles by interpolation · whiskers at 1.5 IQR · outliers as rings">
-          <BoxPlot data={SCREEN_LOAD} formatValue={(v) => `${Math.round(v)} ms`} />
+          <BoxPlot plain data={SCREEN_LOAD} formatValue={(v) => `${Math.round(v)} ms`} />
         </ShowcaseCard>
         <ShowcaseCard id="c-scatter-plot" caption="<ScatterPlot> · numeric x and y, nice ticks on both">
-          <ScatterPlot series={FRAME_TIME} />
+          <ScatterPlot plain series={FRAME_TIME} />
         </ShowcaseCard>
         <ShowcaseCard id="c-waterfall-chart" caption="steps float by their signed value · a total step snapshots from zero">
-          <WaterfallChart steps={QUARTER_BRIDGE} />
+          <WaterfallChart plain steps={QUARTER_BRIDGE} />
         </ShowcaseCard>
         <ShowcaseCard id="c-pie-chart" caption="<PieChart donut> · pressing a slice dims the others">
           <PieChart donut label="sessions" slices={SESSIONS_BY_PLATFORM} />
         </ShowcaseCard>
         <ShowcaseCard id="c-treemap" caption="area ∝ value · labels render only where they fit">
-          <Treemap data={USAGE_TREEMAP} formatValue={(v) => `${v}%`} />
+          <Treemap plain data={USAGE_TREEMAP} formatValue={(v) => `${v}%`} />
         </ShowcaseCard>
         <ShowcaseCard id="c-stacked-bar" caption="segments keep chart-1…8 order even when one is zero">
           <Column snug>
@@ -167,7 +173,7 @@ export function Cards() {
           </Column>
         </ShowcaseCard>
         <ShowcaseCard id="c-funnel-chart" caption="each trapezoid narrows to the next stage · conversion from the stage above">
-          <FunnelChart stages={CONVERSION} />
+          <FunnelChart plain stages={CONVERSION} />
         </ShowcaseCard>
         <ShowcaseCard id="c-gauge" caption={"<Gauge value={72} label=\"…\" /> · tone booleans recolor the arc"}>
           <Gauge value={72} label="of Q4 adoption goal" />
@@ -183,10 +189,10 @@ export function Cards() {
           <RadialBarChart label="Installs" max={80} data={INSTALLS_BY_PLATFORM} formatValue={(v) => `${v}k`} />
         </ShowcaseCard>
         <ShowcaseCard id="c-bullet-chart" caption="<BulletChart ranges={[…]}> · tone follows the target">
-          <BulletChart data={TARGETS} />
+          <BulletChart plain data={TARGETS} />
         </ShowcaseCard>
         <ShowcaseCard id="c-radar-chart" caption="rings at nice fractions · values align to axes by index">
-          <RadarChart axes={SKIN_RADAR.axes} series={SKIN_RADAR.series} max={10} />
+          <RadarChart plain axes={SKIN_RADAR.axes} series={SKIN_RADAR.series} max={10} />
         </ShowcaseCard>
         <ShowcaseCard id="c-metric-breakdown" caption="October · USD · net of refunds">
           <MetricBreakdown
@@ -204,7 +210,7 @@ export function Cards() {
           <BarList plain items={TOP_PAGES} />
         </ShowcaseCard>
         <ShowcaseCard id="c-depth-chart" caption="spread 0.12%">
-          <DepthChart bids={ORDER_BOOK.bids} asks={ORDER_BOOK.asks} />
+          <DepthChart plain bids={ORDER_BOOK.bids} asks={ORDER_BOOK.asks} />
         </ShowcaseCard>
       </ShowcaseGrid>
       <ShowcaseGrid minTileWidth={560}>
@@ -216,7 +222,7 @@ export function Cards() {
           <Heatmap calendar label="Commits" values={COMMITS.cells} />
         </ShowcaseCard>
         <ShowcaseCard id="c-candlestick-chart" caption="direction from success / destructive · MA 20 as an overlay series">
-          <CandlestickChart
+          <CandlestickChart plain
             labels={TRADING_DAY.labels}
             candles={TRADING_DAY.candles}
             volume={TRADING_DAY.volume}
@@ -226,14 +232,14 @@ export function Cards() {
         </ShowcaseCard>
         <ShowcaseCard id="c-uptime-bar" caption="<UptimeBar> per-period pills · <ServiceHealthList> status by precedence: down › degraded › operational">
           <UptimeBar label="api.canvas.app" caption="99.94% uptime" startLabel="60 days ago" endLabel="today" periods={API_UPTIME} />
-          <ServiceHealthList items={SERVICES} />
+          <ServiceHealthList plain items={SERVICES} />
         </ShowcaseCard>
         <ShowcaseCard id="c-geo-map" caption="<GeoMap zoomable> · geometry pre-projected at build time · crowded places merge and split as you zoom">
           <Row snug baseline>
             <Typography metricValue tabular>18.4k</Typography>
             <Typography small muted>{`sessions in ${CITY_SESSIONS.length} cities, last 24h`}</Typography>
           </Row>
-          <GeoMap zoomable points={CITY_SESSIONS} formatValue={(v) => `${v.toLocaleString("en-US")} sessions`} />
+          <GeoMap plain zoomable points={CITY_SESSIONS} formatValue={(v) => `${v.toLocaleString("en-US")} sessions`} />
         </ShowcaseCard>
       </ShowcaseGrid>
     </Column>

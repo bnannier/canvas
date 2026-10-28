@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useRouter } from "expo-router";
-import { Card, Chip, Column, Icon, Row, Typography } from "@nannier/canvas";
+import { Card, Chip, Column, Grid, Icon, Row, Typography } from "@nannier/canvas";
 import { getComponent } from "../../core/data/components";
 import { showcaseCard } from "../../data/showcase";
 
@@ -46,13 +46,33 @@ export interface ShowcaseCardProps {
   links?: readonly string[];
   /** The mono line at the card's foot, usually the JSX the card demonstrates. */
   caption?: ReactNode;
+  /**
+   * The hand-off's split card (`c-chart`): no header row, and the chips take the first cell
+   * of a grid whose other cells are the children (each carrying its own header), 320 px
+   * tiles 32 apart.
+   */
+  split?: boolean;
   children?: ReactNode;
 }
 
-export function ShowcaseCard({ id, title, meta, links, caption, children }: ShowcaseCardProps) {
+export function ShowcaseCard({ id, title, meta, links, caption, split, children }: ShowcaseCardProps) {
   const spec = showcaseCard(id);
   const head = { title: title ?? spec?.title, meta: meta ?? spec?.meta };
   const chips = links ?? spec?.links ?? [];
+  if (split) {
+    return (
+      <Card flush testID={`showcase-${id}`}>
+        <Column padLoose>
+          <Grid minTileWidth={320} apart>
+            <Row wrap compact>
+              {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
+            </Row>
+            {children}
+          </Grid>
+        </Column>
+      </Card>
+    );
+  }
   return (
     <Card flush testID={`showcase-${id}`}>
       <Column padLoose spacious grow>

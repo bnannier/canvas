@@ -49,7 +49,7 @@ import { type FlexSkin } from "./layout.styles.js";
 // same scale maps. The full per-OS file structure exists to match the kit recipe.
 
 export type Direction = "row" | "column";
-export type Gap = "chapter" | "page" | "panel" | "section" | "loose" | "generous" | "spacious" | "airy" | "relaxed" | "roomy" | "cozy" | "balanced" | "comfortable" | "nested" | "snug" | "close" | "compact" | "dense" | "tight" | "fine" | "flush";
+export type Gap = "chapter" | "apart" | "page" | "panel" | "section" | "loose" | "generous" | "spacious" | "airy" | "relaxed" | "roomy" | "cozy" | "balanced" | "comfortable" | "nested" | "snug" | "close" | "compact" | "dense" | "tight" | "fine" | "flush";
 export type Justify = "start" | "center" | "end" | "between" | "around" | "evenly";
 export type Align = "alignStart" | "alignCenter" | "alignEnd" | "baseline" | "stretch";
 export type Pad = "padTight" | "pad" | "padLoose";
@@ -86,6 +86,8 @@ export interface FlexProps {
   section?: boolean; // 26
   panel?: boolean; // 28
   page?: boolean; // 30
+  /** The step between side-by-side panels of one composition (32), the hand-off's widest grid gap. */
+  apart?: boolean; // 32
   /**
    * The widest gap step (64): the space between a page's chapters, the major
    * sections of a long docs page (a component detail page's Playground, Props
@@ -213,6 +215,7 @@ const ALIGN: Record<Align, ViewStyle["alignItems"]> = {
 // Exported for Grid, which shares the gap axis and its precedence.
 export function gapOf(p: Pick<FlexProps, Gap>): Gap {
   if (p.chapter) return "chapter";
+  if (p.apart) return "apart";
   if (p.page) return "page";
   if (p.panel) return "panel";
   if (p.section) return "section";

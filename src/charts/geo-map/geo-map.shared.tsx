@@ -100,6 +100,8 @@ export interface GeoMapProps {
   title?: string;
   // Density (omit for the default map size).
   compact?: boolean;
+  /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
+  plain?: boolean;
   /** Formats the flagged and accessible counts (data formatting, not styling). */
   formatValue?: (v: number) => string;
   /** Press-to-inspect: the selected point index (controlled). Pass null for none. */
@@ -498,14 +500,14 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
           CHART_ROOT,
           style,
           zoomable ? frame.ring() : null,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass ? <GlassPane layer="content" shape={surfaceShape} /> : null}
+        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}

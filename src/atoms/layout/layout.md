@@ -10,12 +10,13 @@ hand-rolls `flexDirection`, `gap`, or `alignItems`.
 The Argus reference adds intermediate spacing steps without rounding its layout:
 `fine` 3, `dense` 5, `compact` 6, `close` 7, `nested` 9, `comfortable` 10,
 `balanced` 11, `roomy` 14, `airy` 18, `spacious` 20, `generous` 22,
-`section` 26, `panel` 28, and `page` 30. Existing named steps keep their values.
+`section` 26, `panel` 28, `page` 30, and `apart` 32 (the space between the side-by-side
+panels of one composition). Existing named steps keep their values.
 Larger active steps take precedence.
 
 `chapter` (64) is the widest step: the space between a page's chapters, the major
 sections of a long page (a component detail page's Playground, Props and Examples).
-It wins over every other gap step, so the precedence runs `chapter` > `page` >
+It wins over every other gap step, so the precedence runs `chapter` > `apart` > `page` >
 `panel` > `section` > `loose` and on down the scale to `flush`. Row, Column and
 Grid all take it.
 
