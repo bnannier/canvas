@@ -15,7 +15,7 @@ bar) for an `app` template; the screen draws only what sits inside it.
 
 ```tsx
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 function ExampleScreen({ K, phone, go }: TemplateScreenProps) {
   const { Column, Card, Typography, Button, useToast } = K;

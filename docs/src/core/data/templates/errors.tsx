@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Errors & empty (`Canvas v4.0.0 Templates.dc.html`, `t.errors`): a switch
 // between four states, each pointing at the next step: the 404, the server error with its

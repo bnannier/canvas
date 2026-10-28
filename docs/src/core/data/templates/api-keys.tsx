@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's API keys (`Canvas v4.0.0 Templates.dc.html`, `t.apikeys`): create a key
 // (its secret shown once), the active keys with their scopes and Revoke, the empty state

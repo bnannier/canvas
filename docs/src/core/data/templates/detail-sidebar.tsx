@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Detail + sidebar (`Canvas v4.0.0 Templates.dc.html`, `t.detail`): the
 // Orders breadcrumb, the order's heading with its status badges, Refund and Mark fulfilled,

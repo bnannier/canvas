@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import type { IconName } from "@nannier/canvas";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Activity (`Canvas v4.0.0 Templates.dc.html`, `t.activity`): the Audit
 // log heading with Export CSV, the filter chips and the date range, then the day-grouped

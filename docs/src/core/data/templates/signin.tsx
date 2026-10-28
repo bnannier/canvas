@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Sign in (`Canvas v4.0.0 Templates.dc.html`, `t.signin`): on the web a
 // split screen, the customer quote over the brand panel beside the form; on a phone the

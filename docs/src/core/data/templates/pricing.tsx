@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Pricing (`Canvas v4.0.0 Templates.dc.html`, `t.pricing`): the heading and
 // the billing-cycle switch, the three plan cards (Team selected and Popular), the feature

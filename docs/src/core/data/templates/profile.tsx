@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Profile (`Canvas v4.0.0 Templates.dc.html`, `t.profile`): the hero identity
 // card (photo, name, role and status badges, Message and Edit profile, the four-figure stat

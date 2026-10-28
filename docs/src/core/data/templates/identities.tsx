@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Identities (`Canvas v4.0.0 Templates.dc.html`, `t.identities`): the
 // heading with Add identity, the search and filter toolbar whose count gives way to the

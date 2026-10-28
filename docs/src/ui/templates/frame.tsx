@@ -3,7 +3,7 @@ import { PLATFORM_LABELS } from "../../core/platforms-shown";
 import { StyleSheet } from "react-native";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { Icon, Row, Typography, View, useTheme } from "@nannier/canvas";
-import type { TemplatePlatform } from "../../core/data/types";
+import type { TemplatePlatform } from "../../core/data/template-types";
 
 // The Templates page's stage and device frames (`Canvas v4.0.0 Templates.dc.html`, the
 // stage under the header and its `data-frame`): docs-only scaffolding around a template's

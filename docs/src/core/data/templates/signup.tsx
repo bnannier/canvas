@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Sign up (`Canvas v4.0.0 Templates.dc.html`, `t.signup`): one registration
 // card with a live password strength meter and the terms consent, which swaps to the

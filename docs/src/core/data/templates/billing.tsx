@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Billing (`Canvas v4.0.0 Templates.dc.html`, `t.billing`): the current plan
 // (with its inline cancel confirmation) beside this cycle's usage meters, the payment

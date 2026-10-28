@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { IconName } from "@nannier/canvas";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Settings (`Canvas v4.0.0 Templates.dc.html`, `t.settings`): the section
 // list (General, Notifications, Appearance) beside the open section's card, then the save

@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ButtonGroup, Column, Container, OverlayProvider, Row, ScrollView, Sidebar, Typography, useTheme } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
 import { getTemplate, templateGroups, templateNumber, DEFAULT_TEMPLATE } from "../../core/data/templates";
-import type { TemplateDoc, TemplatePlatform } from "../../core/data/types";
+import type { TemplateDoc, TemplatePlatform } from "../../core/data/template-types";
 import { Page } from "../page";
 import { DocsHead } from "../docs-head";
 import { TEMPLATES_PAGE } from "../../data/rooms";

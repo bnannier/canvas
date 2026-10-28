@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import type { TemplateDoc, TemplateScreenProps } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../template-types";
 
 // The hand-off's Team (`Canvas v4.0.0 Templates.dc.html`, `t.team`): the heading, the
 // invite card (email, a role that cycles, Send invite), the pending invitations with
