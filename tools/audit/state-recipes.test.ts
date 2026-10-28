@@ -1318,7 +1318,7 @@ export function createProbe(skin: ProbeSkin) {
 
   it("places the Sidebar's drill-down rows inside the Drawer it opens, where the rail's recipes do not answer them and the drawer's do", () => {
     // The drill-down is a component the Sidebar's factory builds (`createSidebarDrillDown(skin,
-    // Badge)`) and renders inside its Drawer: its rows are the drawer's, gated by `responsive`.
+    // Badge)`) and renders inside its Drawer: its rows are the drawer's, opened by `drawer` or `responsive`.
     const places = (state: string) =>
       [...new Set(ownControls(signalsOf("sidebar")).filter((c) => c.signals.some((s) => s.state === state)).map((c) => `${c.place || "surface"}: ${c.control.in} <${c.control.tag}> ${c.control.roles.join("/") || "no role"}`))].sort();
     expect(places("focus")).toEqual([
@@ -1330,7 +1330,10 @@ export function createProbe(skin: ProbeSkin) {
       "surface: renderSection <Pressable> button",
     ]);
     expect(places("hover")).toEqual(["Sidebar: SidebarRowFrame <RippleClip> no role", "surface: SidebarRowFrame <RippleClip> no role"]);
-    expect([...new Set(signalsOf("sidebar").filter((s) => s.within === "Sidebar").map((s) => s.gates.join("&")))]).toEqual(["responsive"]);
+    // The drawer opens with `drawer` or with `responsive`; a gate of either prop is one the
+    // reader cannot hold as a conjunction, so it drops it and the rows read as ungated (the
+    // conservative reading: they count as present wherever the overlay is).
+    expect([...new Set(signalsOf("sidebar").filter((s) => s.within === "Sidebar").map((s) => s.gates.join("&")))]).toEqual([""]);
     // The rail's recipes, as the table had them at the desktop alone, leave the drawer unanswered.
     const rail = { hover: recipeFor("sidebar", "hover-default"), focus: recipeFor("sidebar", "focus-default"), pressed: recipeFor("sidebar", "pressed-default"), open: recipeFor("sidebar", "open") };
     expect(check("sidebar", rail)).toEqual([

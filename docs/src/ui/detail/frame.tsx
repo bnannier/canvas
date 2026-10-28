@@ -25,7 +25,7 @@ export function DetailSection({ title, note, actions, sectionRef, children }: {
       <Column relaxed>
         <Row between alignEnd wrap relaxed>
           <Column compact shrink>
-            <Typography h3 level={2}>{title}</Typography>
+            <Typography sectionTitle>{title}</Typography>
             {note == null ? null : <Typography small subtle>{note}</Typography>}
           </Column>
           {actions}

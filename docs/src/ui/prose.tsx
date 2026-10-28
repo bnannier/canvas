@@ -15,7 +15,7 @@ export function Rule() { return <Divider />; }
 // The role a line of prose is set in. A strong run repeats it at semibold, so a bold word
 // keeps its paragraph's size; a heading is set strong already, so a strong run in one is
 // its plain text.
-type ProseRole = { lead?: boolean; small?: boolean; subtle?: boolean; heading?: boolean };
+type ProseRole = { lead?: boolean; pageLead?: boolean; small?: boolean; subtle?: boolean; heading?: boolean };
 
 /**
  * A line of a component's .md prose (a description, a note, a Do/Don't caption or title)
@@ -23,12 +23,12 @@ type ProseRole = { lead?: boolean; small?: boolean; subtle?: boolean; heading?: 
  * strong runs at semibold, nothing printed with its Markdown syntax
  * (docs/src/lib/inline-markdown.ts, the grammar the generator holds every page to).
  */
-export function InlineMarkdown({ text, lead, small, subtle, heading }: { text: string } & ProseRole) {
+export function InlineMarkdown({ text, lead, pageLead, small, subtle, heading }: { text: string } & ProseRole) {
   return (
     <>
       {parseInline(text).map((run, i) => {
         if (run.code) return <InlineCode key={i} strong={run.strong && !heading}>{run.text}</InlineCode>;
-        if (run.strong && !heading) return <Typography key={i} lead={lead} small={small} subtle={subtle} semibold>{run.text}</Typography>;
+        if (run.strong && !heading) return <Typography key={i} lead={lead} pageLead={pageLead} small={small} subtle={subtle} semibold>{run.text}</Typography>;
         return run.text;
       })}
     </>

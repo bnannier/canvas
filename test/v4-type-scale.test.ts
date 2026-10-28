@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
-import { fluidRoles, fluidType, typeRoles } from "../src/style/type-scale";
+import { fluidRoles, fluidType, pageRoles, typeRoles } from "../src/style/type-scale";
 
 // The kit's type roles are derived from the v4 hand-off, not typed in: each role is the
 // hand-off Typography renderer's `TY` entry (tools/v4/handoff/cv-kit-controls.js), its
@@ -104,3 +104,29 @@ describe("v4 fluid headlines", () => {
   });
 });
 
+
+// The page roles are the hand-off pages' own `font: <weight> <size>px/<ratio>` styles,
+// read from the element that sets each, converted as the Typography table is.
+const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string }> = {
+  pageLead: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ summary }}\"" },
+  sectionLead: { page: "Controls", text: "Everything here is live." },
+  tagline: { page: "Controls", text: "Buttons, toggles and sliders." },
+  sectionTitle: { page: "Component", text: ">Playground<" },
+  cardTitle: { page: "Library", text: ">Light is the material<" },
+  panelTitle: { page: "Inputs", text: ">Workspace<" },
+};
+
+describe("v4 page roles", () => {
+  for (const [role, { page, text }] of Object.entries(PAGE_SOURCES) as [keyof typeof pageRoles, { page: string; text: string }][]) {
+    it(`${role} is the ${page} page's own style`, () => {
+      const html = readFileSync(new URL(`../tools/v4/handoff/Canvas v4.0.0 ${page}.dc.html`, import.meta.url), "utf8");
+      const at = html.indexOf(text);
+      expect(at).toBeGreaterThan(-1);
+      const tag = html.slice(html.lastIndexOf("<", at - (text.startsWith(">") ? 0 : 1)), at);
+      const style = /style="([^"]*)"/.exec(tag)?.[1] ?? "";
+      const want = derive(/font:(.*?) var/.exec(style)![1]! + (/letter-spacing:(-?[\d.]+)em/.test(style) ? ` letter-spacing:${/letter-spacing:(-?[\d.]+)em/.exec(style)![1]}em` : ""));
+      const got = pageRoles[role] as { fontSize: number; lineHeight: number; fontWeight: string; letterSpacing?: number };
+      expect(got).toEqual({ fontSize: want.fontSize, lineHeight: want.lineHeight, fontWeight: want.fontWeight, ...(want.letterSpacing != null ? { letterSpacing: want.letterSpacing } : {}) });
+    });
+  }
+});

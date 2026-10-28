@@ -2,7 +2,7 @@ import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
-import { fluidRoles, fluidType, typeRoles } from "../../style/type-scale.js";
+import { fluidRoles, fluidType, pageRoles, typeRoles } from "../../style/type-scale.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type TypographySkin } from "./typography.shared.js";
@@ -35,6 +35,12 @@ export type Role =
 
   | "hero"
   | "pageTitle"
+  | "sectionTitle"
+  | "cardTitle"
+  | "panelTitle"
+  | "tagline"
+  | "pageLead"
+  | "sectionLead"
   | "display"
   | "h1"
   | "h2"
@@ -79,6 +85,13 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     // (fluidRoles in src/style/type-scale.ts).
     hero: d(fluidType(fluidRoles.hero, 0)),
     pageTitle: d(fluidType(fluidRoles.pageTitle, 0)),
+    // The hand-off pages' own titles and leads (src/style/type-scale.ts `pageRoles`).
+    sectionTitle: d(pageRoles.sectionTitle),
+    cardTitle: d(pageRoles.cardTitle),
+    panelTitle: d(pageRoles.panelTitle),
+    tagline: d(pageRoles.tagline),
+    pageLead: pageRoles.pageLead,
+    sectionLead: pageRoles.sectionLead,
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -115,6 +128,8 @@ export const androidSkin: TypographySkin = webSkin;
 export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
   switch (role) {
     case "label":
+    case "pageLead":
+    case "sectionLead":
       return { color: tokens["muted-foreground"] };
     case "eyebrow":
     case "eyebrowLg":
