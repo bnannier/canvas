@@ -488,12 +488,31 @@ export function CardDescription({ children, style }: CardTextProps) {
   return <Text style={[s.description(tokens), style]}>{children}</Text>;
 }
 
+export interface CardContentProps extends CardSectionProps {
+  /** The tightest inset, 10 x 14: a one-line label under a specimen well. */
+  dense?: boolean;
+  /** A 12 x 16 inset: a short caption (a title over a meta line). */
+  compact?: boolean;
+  /** A 14 x 16 inset: a fuller caption (a title, a note, a code line). */
+  cozy?: boolean;
+}
+
+/** The CardContent density a set of props selects, first match wins: `dense` > `compact` > `cozy`. */
+export function contentDensityOf(p: Pick<CardContentProps, "dense" | "compact" | "cozy">): keyof typeof s.contentDensity | null {
+  if (p.dense) return "dense";
+  if (p.compact) return "compact";
+  if (p.cozy) return "cozy";
+  return null;
+}
+
 /**
  * The body region of a Card. It carries the standard surface padding and the card's
- * flat-child rhythm, so its children space themselves with no wrapper.
+ * flat-child rhythm, so its children space themselves with no wrapper. `dense`, `compact`
+ * and `cozy` tighten the inset for a caption under a media well.
  */
-export function CardContent({ children, style }: CardSectionProps) {
-  return <View style={[s.content, style]}>{children}</View>;
+export function CardContent({ children, style, ...density }: CardContentProps) {
+  const step = contentDensityOf(density);
+  return <View style={[s.content, step ? s.contentDensity[step] : null, style]}>{children}</View>;
 }
 
 /** The bottom region of a Card, for actions or a summary line. */

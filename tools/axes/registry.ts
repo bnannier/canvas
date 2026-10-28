@@ -69,7 +69,7 @@ import { fitOf as videoFit } from "../../src/atoms/video/video.shared.tsx";
 import { toneOf as actionPanelTone, layoutOf as actionPanelLayout } from "../../src/molecules/action-panels/action-panels.shared.tsx";
 import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx";
 import { widthOf as alertDialogWidth } from "../../src/molecules/alert-dialog/alert-dialog.shared.tsx";
-import { elevationOf, densityOf as cardDensity, mediaWellOf } from "../../src/molecules/card/card.shared.tsx";
+import { elevationOf, densityOf as cardDensity, mediaWellOf, contentDensityOf } from "../../src/molecules/card/card.shared.tsx";
 import { variantOf as codeBlockVariant } from "../../src/molecules/code-block/code-block.shared.tsx";
 import { layoutOf as descriptionLayout, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
 import { leadOf } from "../../src/molecules/feeds/feeds.shared.tsx";
@@ -425,6 +425,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Card.brand artwork", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.brand.tsx#brandCardModeOf", members: ["featured", "promo"], resolve: brandCardModeOf }),
   subject({ id: "Card.reference", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.reference.tsx#referenceModeOf", members: ["referenceDetail", "referenceTile", "referenceStacked", "referenceInline"], resolve: referenceModeOf }),
   subject({ id: "CardMedia.well", components: ["CardMedia"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#mediaWellOf", members: ["compact", "tall"], resolve: mediaWellOf }),
+  subject({ id: "CardContent.density", components: ["CardContent"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#contentDensityOf", members: ["dense", "compact", "cozy"], resolve: contentDensityOf }),
   subject({
     id: "Card.density",
     components: ["Card"],

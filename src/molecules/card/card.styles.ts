@@ -220,6 +220,15 @@ export const description = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, 
 // The body section pads itself AND spaces its flat children (gap is inert with a single child).
 export const content: ViewStyle = { paddingHorizontal: 20, paddingVertical: 20, gap: 10 };
 
+// The body's tighter insets, the caption strips under the component page's specimen wells
+// (Component.dc.html): `dense` the size and state label (10 x 14), `compact` the platform
+// caption (12 x 16), `cozy` the variant's caption (14 x 16).
+export const contentDensity = {
+  dense: { paddingVertical: 10, paddingHorizontal: 14 },
+  compact: { paddingVertical: 12, paddingHorizontal: 16 },
+  cozy: { paddingVertical: 14, paddingHorizontal: 16 },
+} as const satisfies Record<string, ViewStyle>;
+
 export const footer: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",

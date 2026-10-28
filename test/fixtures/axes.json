@@ -4626,6 +4626,32 @@
       "compact + tall": "compact"
     }
   },
+  "CardContent.density": {
+    "kind": "axis",
+    "components": [
+      "CardContent"
+    ],
+    "pages": [
+      "card"
+    ],
+    "resolver": "src/molecules/card/card.shared.tsx#contentDensityOf",
+    "order": [
+      "dense",
+      "compact",
+      "cozy"
+    ],
+    "none": null,
+    "single": {
+      "dense": "dense",
+      "compact": "compact",
+      "cozy": "cozy"
+    },
+    "pairs": {
+      "compact + cozy": "compact",
+      "compact + dense": "dense",
+      "cozy + dense": "dense"
+    }
+  },
   "Card.density": {
     "kind": "axis",
     "components": [
