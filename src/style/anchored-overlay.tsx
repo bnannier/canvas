@@ -476,6 +476,7 @@ function OverlayCard({
   cardStyle,
   opaque,
   dense,
+  floating = !dense,
   onMount,
   children,
   decoration,
@@ -488,6 +489,13 @@ function OverlayCard({
   cardStyle?: StyleProp<ViewStyle>;
   opaque?: boolean;
   dense?: boolean;
+  /**
+   * The card floats over the page, so the web frosts it under glass. Defaults to a card off
+   * the dense layer: a popover or a command palette floats, while an option list keeps its
+   * solid skin on the web as the hand-off draws its menus. A phone sheet takes the dense tint
+   * but keeps the floating decision of the card it presents.
+   */
+  floating?: boolean;
   onMount?: () => void;
   children: ReactNode;
   decoration?: ReactNode;
@@ -539,7 +547,7 @@ function OverlayCard({
   );
   const style = [cardStyle, focusFrame.ring()];
   if (opaque) return <PlainSurface style={style} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
-  return <GlassSurface layer={dense ? "dense" : "functional"} style={style} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
+  return <GlassSurface layer={dense ? "dense" : "functional"} floating={floating} style={style} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
 }
 
 interface HostedProps {
@@ -1076,7 +1084,7 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
                   obscured={holdsModal && topModal != null && topModal !== modalId}
                   style={{ position: "absolute", left: swap ? right : left, right: swap ? left : right, top, bottom, maxWidth: sheet ? undefined : maxWidth }}
                 >
-                  <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense || sheet} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
+                  <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense || sheet} floating={!dense} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
                 </Entrance>
               </OverlayScrollContext.Provider>
             </OverlaySheetContext.Provider>

@@ -44,6 +44,12 @@ export function PillNav({ onSearch }: { onSearch: () => void }) {
           brandDivider
           brand="Canvas"
           brandContent={<CanvasMark size={20} />}
+          brandHref="/"
+          onBrandPress={(event) => {
+            // The brand is an anchor home: route on the client instead of loading the page.
+            event?.preventDefault();
+            router.push("/" as never);
+          }}
           links={LABELS}
           hrefs={HREFS}
           active={pillIndexFor(pathname)}

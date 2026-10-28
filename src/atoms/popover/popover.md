@@ -2,18 +2,38 @@
 
 Floating panel with a title, supporting text, rich content such as form fields, and a single follow-up action, anchored to its trigger. Pass children to host custom content in the panel body, between the description and the action.
 
-On the web and Android the panel is the v4 card: 280 wide at the menu corner, the field
+<!-- only: web -->
+On the web and Android the panel is the v4 card:
+<!-- /only -->
+<!-- only: android -->
+On Android the panel is the v4 card:
+<!-- /only -->
+<!-- only: web android -->
+280 wide at the menu corner, the field
 hairline and the large shadow, a 15px display heading over its 14px description in the
-muted ink, and in solid mode a small diamond beak on the edge facing its trigger. iOS
+muted ink, and in solid mode a small diamond beak on the edge facing its trigger.
+<!-- /only -->
+<!-- only: web ios -->
+iOS
 keeps the iPad popover, a rounder borderless card with a tapered beak toward its
 trigger.
+<!-- /only -->
 
 The triggered card opens below its button by default and above it with `top`; either
 way it flips to the other side when its own lacks room, and the beak follows the
 side it took. At phone width a triggered card that can close is presented as a sheet
 on the bottom edge of the window, over the tab bar and a dimming scrim that glass on the
-web also blurs, its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and
+web also blurs,
+<!-- only: web -->
+its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and
 the Material 3 bottom sheet on Android.
+<!-- /only -->
+<!-- only: ios -->
+its content kept clear of the home indicator: the iOS sheet on iPhone.
+<!-- /only -->
+<!-- only: android -->
+its content kept clear of the home indicator: the Material 3 bottom sheet.
+<!-- /only -->
 
 In glass mode the triggered card is a functional-layer glass panel beside its
 button, and the sheet a dense-layer one, legible over its scrim; focus enters once the
@@ -168,4 +188,13 @@ With a keyboard, Tab moves through the panel's controls as if the card sat right
 
 The sheet on phones is modal, as it covers and dims the page: its dialog is announced as modal, Tab and Shift+Tab keep to its controls and wrap at their ends, and a Tab from anywhere on the page behind it goes into it. Escape, the action or a tap on the scrim closes it, and focus goes back to whatever opened it.
 
-On iOS and Android the open card is modal to VoiceOver and TalkBack: the page behind it is hidden from them, their focus moves to the card's first line, and when the card closes it returns to the trigger. The escape gesture and the Android back button close the card. Touch closes it with a tap anywhere outside it, and on phones a tap on the scrim above the sheet.
+<!-- only: web -->
+On iOS and Android the open card is modal to VoiceOver and TalkBack: the page behind it is hidden from them, their focus moves to the card's first line, and when the card closes it returns to the trigger. The escape gesture and the Android back button close the card.
+<!-- /only -->
+<!-- only: ios -->
+On iOS the open card is modal to VoiceOver: the page behind it is hidden from it, its focus moves to the card's first line, and when the card closes it returns to the trigger. The escape gesture closes the card.
+<!-- /only -->
+<!-- only: android -->
+On Android the open card is modal to TalkBack: the page behind it is hidden from it, its focus moves to the card's first line, and when the card closes it returns to the trigger. The back button closes the card.
+<!-- /only -->
+Touch closes it with a tap anywhere outside it, and on phones a tap on the scrim above the sheet.

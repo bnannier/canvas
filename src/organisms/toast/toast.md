@@ -2,20 +2,43 @@
 
 A transient notification card. Render a `<Toast>` directly, or drive them imperatively: mount a `<ToastProvider>` near your app root and call `toast(...)` from the `useToast()` hook to enqueue auto-dismissing toasts that stack over the app.
 
-On the web and iOS the toast is a floating card: the overlay panel at the card corner, up to 380px wide, with the intent glyph in its status color (the accent's sparkle on a neutral toast), a medium message over a muted description, and the action in the accent. A `brief` toast hugs its one line. Android keeps the Material 3 snackbar on the inverse fill.
+<!-- only: web -->
+On the web and iOS the toast is a floating card:
+<!-- /only -->
+<!-- only: ios -->
+On iOS the toast is a floating card:
+<!-- /only -->
+<!-- only: web ios -->
+the overlay panel at the card corner, up to 380px wide, with the intent glyph in its status color (the accent's sparkle on a neutral toast), a medium message over a muted description, and the action in the accent. A `brief` toast hugs its one line.
+<!-- /only -->
+<!-- only: web android -->
+Android keeps the Material 3 snackbar on the inverse fill.
+<!-- /only -->
 
 For a single brief notification, use `<ToastProvider single brief safeArea duration={2800}
 bottomInset={28} horizontalInset={20}>`. New messages replace the current toast and
 restart its lifetime. `safeArea` includes the device safe area. `brief` retains a
-single line without the dismiss control; Android retains its snackbar skin.
+single line without the dismiss
+<!-- only: web android -->
+control; Android retains its snackbar skin.
+<!-- /only -->
+<!-- only: ios -->
+control.
+<!-- /only -->
 
 Tab reaches a toast's action and its dismiss, and Escape dismisses the toast that holds
 focus, then returns focus to where it came from. A toast the user is not in never takes
 Escape, so the key still reaches the page or the Dialog under it. A provider toast always
-answers it (a `brief` one too), a directly rendered `<Toast>` when it has `onDismiss`. On
+answers it (a `brief` one too), a directly rendered `<Toast>` when it has `onDismiss`.
+<!-- only: web ios -->
+On
 iOS the same dismiss answers the accessibility escape (the VoiceOver two-finger scrub,
-and Escape under Full Keyboard Access). Android delivers no Escape key to a view, and
+and Escape under Full Keyboard Access).
+<!-- /only -->
+<!-- only: web android -->
+Android delivers no Escape key to a view, and
 its back gesture is never taken for a toast.
+<!-- /only -->
 
 ## Usage
 

@@ -8,6 +8,7 @@ import { webSkin } from "../src/atoms/button-group/button-group.styles.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
 import { brandTint } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { webShadow } from "../src/style/shadow.ts";
+import { mockInPageFrost } from "./fixtures/material-platform.ts";
 
 // The web ButtonGroup is the v4 hand-off's segmented control (`K.def('button-group')`,
 // tools/v4/handoff/cv-kit-controls.js): the row sits in a `secondary` track with the
@@ -64,13 +65,18 @@ describe("the web ButtonGroup is the hand-off's segmented control", () => {
 });
 
 describe("the split under glass is its call to action's brand glass", () => {
+  // The split is in-page material, which the web keeps solid under glass (the v4 hand-off):
+  // its brand glass is read where in-page surfaces frost.
   it("tints the material with the action colour and keeps the action ink on top, as a primary Button does", async () => {
-    const { container } = render(<ThemeProvider light glass><ButtonGroup split items={["Save"]} menu={["Save copy"]} testID="split" /></ThemeProvider>);
-    await waitFor(() => expect(container.querySelectorAll('[data-testid="glass-material"]').length).toBeGreaterThan(0));
-    const [r, g, b] = [1, 3, 5].map((i) => parseInt(actionInk(t).slice(i, i + 2), 16));
-    expect(flat(screen.getByText("Save").style.color)).toBe(`rgba(${r},${g},${b},1.00)`);
-    const tint = flat(brandTint(actionFill(t), t.background, actionInk(t)));
-    const fills = [...container.querySelectorAll<HTMLElement>('[data-testid="split"] *')].map((node) => flat(node.style.backgroundColor));
-    expect(fills.some((fill) => fill.startsWith(tint.slice(0, tint.lastIndexOf(","))))).toBe(true);
+    const frost = mockInPageFrost();
+    try {
+      const { container } = render(<ThemeProvider light glass><ButtonGroup split items={["Save"]} menu={["Save copy"]} testID="split" /></ThemeProvider>);
+      await waitFor(() => expect(container.querySelectorAll('[data-testid="glass-material"]').length).toBeGreaterThan(0));
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(actionInk(t).slice(i, i + 2), 16));
+      expect(flat(screen.getByText("Save").style.color)).toBe(`rgba(${r},${g},${b},1.00)`);
+      const tint = flat(brandTint(actionFill(t), t.background, actionInk(t)));
+      const fills = [...container.querySelectorAll<HTMLElement>('[data-testid="split"] *')].map((node) => flat(node.style.backgroundColor));
+      expect(fills.some((fill) => fill.startsWith(tint.slice(0, tint.lastIndexOf(","))))).toBe(true);
+    } finally { frost.mockRestore(); }
   });
 });

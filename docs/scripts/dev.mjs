@@ -3,10 +3,20 @@
 // docs are running. Extra args are forwarded to Expo (e.g. `bun run dev --clear`).
 // Ctrl-C stops both.
 
+import { existsSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { startPreviewServer } from "./preview-server.mjs";
+import { adbPath } from "./preview-links.mjs";
+import { watchDevicePorts } from "./device-ports.mjs";
 
 const server = startPreviewServer();
+
+// Every Android device or emulator that comes online reaches Metro and the opener through
+// `adb reverse`, so its docs app live-reloads with no hand-run step (./device-ports.mjs).
+const stopDevicePorts = watchDevicePorts({
+  adb: adbPath(process.env, existsSync),
+  ports: [Number(process.env.EXPO_WEB_PORT ?? process.env.RCT_METRO_PORT ?? 8081), Number(process.env.PREVIEW_PORT ?? 8790)],
+});
 
 const expo = spawn("expo", ["start", ...process.argv.slice(2)], {
   stdio: "inherit",
@@ -22,6 +32,7 @@ const expo = spawn("expo", ["start", ...process.argv.slice(2)], {
 });
 
 expo.on("exit", (code) => {
+  stopDevicePorts();
   try {
     server.close();
   } catch {}
@@ -29,6 +40,7 @@ expo.on("exit", (code) => {
 });
 
 function shutdown(signal) {
+  stopDevicePorts();
   try {
     server.close();
   } catch {}

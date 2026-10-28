@@ -9,10 +9,18 @@ count, that opens the same
 panel inside a start-edge drawer, so a phone keeps its width for the results;
 `open` / `defaultOpen` / `onOpenChange` drive the drawer for controlled use.
 
+<!-- only: web -->
 On iOS an option row marks a chosen filter the way an iOS list does: the label
 leads, the count follows, and a trailing check closes the row. The web and
 Android lead each row with the platform's selection checkbox. The native rows
 keep the platform's touch height (44 pt, 48 dp).
+<!-- /only -->
+<!-- only: ios -->
+On iOS an option row marks a chosen filter the way an iOS list does: the label leads, the count follows, and a trailing check closes the row. The native rows keep the platform's touch height (44 pt).
+<!-- /only -->
+<!-- only: android -->
+On Android each row leads with the platform's selection checkbox. The native rows keep the platform's touch height (48 dp).
+<!-- /only -->
 
 ## Usage
 

@@ -6,10 +6,29 @@ The search row is a real input: typing filters the grouped rows to the matching
 labels, and a query that matches nothing shows a muted "No results" row.
 
 On every platform the palette is the v4 card: 520 wide at an 18-pixel corner, a 48-pixel
-search row with an `esc` cap over a hairline, mono eyebrows over 38-pixel rows (44 on
-iOS, 48 on Android) with quiet icons and mono shortcuts, the accent's soft wash under the
-active row, and an optional footer of mono hints. Neither iOS nor Android ships a
+search row with an `esc` cap over a hairline,
+<!-- only: web -->
+mono eyebrows over 38-pixel rows (44 on
+iOS, 48 on Android) with quiet icons
+<!-- /only -->
+<!-- only: ios -->
+mono eyebrows over 38-pixel rows (44 on iOS) with quiet icons
+<!-- /only -->
+<!-- only: android -->
+mono eyebrows over 38-pixel rows (48 on Android) with quiet icons
+<!-- /only -->
+and mono shortcuts, the accent's soft wash under the
+active row, and an optional footer of mono hints.
+<!-- only: web -->
+Neither iOS nor Android ships a
 command palette, so both take this look in their own face.
+<!-- /only -->
+<!-- only: ios -->
+iOS ships no command palette, so it takes this look in its own face.
+<!-- /only -->
+<!-- only: android -->
+Android ships no command palette, so it takes this look in its own face.
+<!-- /only -->
 
 In glass mode the triggered palette is a functional-layer glass card under the
 search bar, with its own search field; the search editor keeps focus while typing

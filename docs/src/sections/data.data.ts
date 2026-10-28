@@ -1,3 +1,4 @@
+import { PLATFORM_COPY } from "../data/platform-copy";
 // The Data section page's sample data (`Canvas v4.0.0 Data.dc.html`, its script's PEOPLE,
 // ACC, CODE, CAL_EV and CHAT0 tables), as the kit's own item shapes. Plain data (React only
 // for a type); docs/src/sections/data.tsx renders it.
@@ -81,7 +82,7 @@ export const CALENDAR_EVENTS: CalendarEvent[] = [
   { day: 26, title: "Design review", start: 10, end: 11 },
   { day: 26, title: "Token sync", start: 13.5, end: 14.25 },
   { day: 26, title: "Release v6.3" },
-  { day: 28, title: "Android blur rebuild", start: 15, end: 16 },
+  { day: 28, title: `${PLATFORM_COPY.samplePlatform} blur rebuild`, start: 15, end: 16 },
   { day: 30, title: "Quarterly planning", start: 12, end: 15 },
 ];
 

@@ -168,7 +168,7 @@ export default function LayoutScreen() {
           <TokenH1>Layout & flexbox</TokenH1>
           <TokenLede>
             Compose Canvas with Row, Column, Container and Grid. Their semantic props express direction,
-            spacing, alignment and bounds using the same React Native layout on iOS, Android and the web.
+            spacing, alignment and bounds using the same React Native layout on every platform.
           </TokenLede>
           <Callout label="The parent provides the bounds.">Fields and cards fill the space their parent gives them. Buttons and badges hug their content. A Container measure caps a group without fixing its width.</Callout>
         </Column>

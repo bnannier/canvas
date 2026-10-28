@@ -235,8 +235,16 @@ export interface SidebarProps {
   drawerBreakpoint?: BreakpointKey;
   /** The narrow drawer panel width in px (default 288). */
   drawerWidth?: number;
-  /** Extra bottom padding for the drawer's scrolling content, so its last rows clear persistent
-   *  chrome painting over the drawer (e.g. a native bottom tab bar on Android). */
+  /**
+   * Extra bottom padding for the drawer's scrolling content, so its last rows clear persistent
+   * chrome painting over the drawer
+   * <!-- only: web android -->
+   * (e.g. a native bottom tab bar on Android).
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * (e.g. a native bottom tab bar).
+   * <!-- /only -->
+   */
   drawerContentInsetBottom?: number;
 
   // Responsive drawer EDGE axis: which side the drawer slides from (default = the start/left

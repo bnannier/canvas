@@ -9,6 +9,7 @@ import { Typography } from "../src/atoms/typography/typography.tsx";
 import { headingLevelOf } from "../src/atoms/typography/typography.shared.tsx";
 import { CodeBlock } from "../src/molecules/code-block/code-block.tsx";
 import { colorsFor } from "../src/style/tokens.ts";
+import { mockInPageFrost } from "./fixtures/material-platform.ts";
 
 // The three kit capabilities the v4 component detail page needs: the `chapter` gap step
 // (64, between a page's chapters), Typography's `level` (the announced heading level apart
@@ -116,11 +117,21 @@ describe("CodeBlock inline copy", () => {
   });
 
   it("is a control-layer pane under glass and paints nothing extra in solid mode", () => {
-    const glass = render(<ThemeProvider light glass><CodeBlock inline copy code={LINE} testID="chip" /></ThemeProvider>);
-    expect(glass.container.querySelectorAll('[data-testid="glass-material"]').length).toBe(1);
-    cleanup();
+    // The chip is in the page: the web keeps its solid skin under glass (the v4 hand-off),
+    // and a platform whose in-page surfaces frost paints its control-layer pane.
+    const frost = mockInPageFrost();
+    try {
+      const glass = render(<ThemeProvider light glass><CodeBlock inline copy code={LINE} testID="chip" /></ThemeProvider>);
+      expect(glass.container.querySelectorAll('[data-testid="glass-material"]').length).toBe(1);
+      cleanup();
+    } finally { frost.mockRestore(); }
     const solid = ui(<CodeBlock inline copy code={LINE} />);
     expect(solid.container.querySelectorAll('[data-testid="glass-material"]').length).toBe(0);
+    const solidChip = solid.container.innerHTML;
+    cleanup();
+    const web = render(<ThemeProvider light glass><CodeBlock inline copy code={LINE} /></ThemeProvider>);
+    expect(web.container.querySelectorAll('[data-testid="glass-material"]').length).toBe(0);
+    expect(web.container.innerHTML).toBe(solidChip);
   });
 
   it("leaves the plain inline pill unchanged without copy", () => {

@@ -2,10 +2,11 @@ import { useRef, useState, type Ref } from "react";
 import { Platform } from "react-native";
 import { View, Grid, Card, CardMedia, CardContent, CardSeparator, Column, Row, Typography, Select, Button, useMeasuredWidth, type ColorTokens } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
-import type { DocExample, PreviewScope } from "../../core/scope";
+import type { DocExample } from "../../core/scope";
 import { CodeBlock } from "../code-block";
 import { ExampleErrorBoundary, FitStage, FormFactorSwitcher, FULL_WIDTH, StageHost, formFactorAt, useAuditCard } from "../stage";
 import { DetailSection } from "./frame";
+import { PLATFORMS_SHOWN, PLATFORM_LABELS } from "../../core/platforms-shown";
 
 // The detail page's Platform skins (Component.dc.html `#cv-pf`): one example rendered
 // through the web, iOS and Android skins side by side, each over its platform's metrics.
@@ -16,14 +17,8 @@ import { DetailSection } from "./frame";
 // first (Usage) example, a variant URL its own, and the picker here moves between them
 // and rewrites the address the way the Playground page's rail did.
 
-/** Each platform's caption: its name and the metrics its skin draws (the hand-off's `PFL`). */
-const METRICS: Record<PreviewScope["platform"], { label: string; metrics: string }> = {
-  web: { label: "Web", metrics: "control 10 · field 10 · card 16 · Instrument Sans" },
-  ios: { label: "iOS", metrics: "capsule controls · field 8 · card 12 · SF Pro · 44 pt" },
-  android: { label: "Android", metrics: "Material 3 stadium · field 4 · card 12 · Roboto · 48 dp" },
-};
-
-const ORDER: readonly PreviewScope["platform"][] = ["web", "ios", "android"];
+// Each platform's caption (its name and the metrics its skin draws, the hand-off's `PFL`)
+// and the order come from ../../core/platforms-shown, so a native app captions only its own row.
 
 export function PlatformSkinsSection({ examples, selected, onSelect, tokens, stageAlign, singlePreview, sectionRef }: {
   examples: readonly DocExample[];
@@ -41,14 +36,14 @@ export function PlatformSkinsSection({ examples, selected, onSelect, tokens, sta
   const example = examples[selected] ?? examples[0];
   useAuditCard(cardRef, example?.label);
   if (!example) return null;
-  const all = [...buildScopes(tokens)].sort((a, b) => ORDER.indexOf(a.platform) - ORDER.indexOf(b.platform));
+  const all = [...buildScopes(tokens)].filter((p) => PLATFORMS_SHOWN.includes(p.platform)).sort((a, b) => PLATFORMS_SHOWN.indexOf(a.platform) - PLATFORMS_SHOWN.indexOf(b.platform));
   // A component that IS app chrome (the Sidebar's whole app shell) shows the web skin alone.
   const previews = singlePreview && all.length > 1 ? all.filter((p) => p.platform === "web") : all;
   const labels = examples.map((e) => e.label);
   return (
     <DetailSection
       title="Platform skins"
-      note="Each example on each platform: same tree, native shapes, type and touch sizes."
+      note={PLATFORMS_SHOWN.length > 1 ? "Each example on each platform: same tree, native shapes, type and touch sizes." : "Each example in this platform's skin: its native shapes, type and touch sizes."}
       sectionRef={sectionRef}
     >
       <StageHost bucket={simulating ? factor.bucket : null}>
@@ -91,8 +86,8 @@ export function PlatformSkinsSection({ examples, selected, onSelect, tokens, sta
                     <CardSeparator />
                     <CardContent>
                       <Column tight>
-                        <Typography small semibold>{METRICS[p.platform].label}</Typography>
-                        <Typography tiny mono muted>{METRICS[p.platform].metrics}</Typography>
+                        <Typography small semibold>{PLATFORM_LABELS[p.platform]?.label}</Typography>
+                        <Typography tiny mono muted>{PLATFORM_LABELS[p.platform]?.metrics}</Typography>
                       </Column>
                     </CardContent>
                   </Card>

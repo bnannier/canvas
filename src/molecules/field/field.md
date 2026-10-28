@@ -6,11 +6,27 @@ label, but nothing else in the kit renders helper or error text, so that message
 is what Field adds.
 
 When the row wraps a single field-family control that has no label of its own,
-Field hands the label down to it rather than drawing one alongside, so each
+Field hands the label down to it rather than drawing one alongside,
+<!-- only: web -->
+so each
 platform still places it its own way: a static title above on web and iOS, the
-floating in-container label on Android, and `required` goes down with it. Over
+floating in-container label on Android, and `required` goes down with it.
+<!-- /only -->
+<!-- only: ios -->
+so the platform still places it its own way: a static title above, and `required` goes down with it.
+<!-- /only -->
+<!-- only: android -->
+so the platform still places it its own way: the floating in-container label, and `required` goes down with it.
+<!-- /only -->
+Over
 any other control (a Switch, a group) Field draws the label above with its star,
-and on iOS and Android the label says "required" in its own name. Set `error` and it replaces `helper` in
+<!-- only: web -->
+and on iOS and Android the label says "required" in its own name.
+<!-- /only -->
+<!-- only: ios android -->
+and the label says "required" in its own name.
+<!-- /only -->
+Set `error` and it replaces `helper` in
 the same slot, so the row never changes height and nothing below it jumps; on the
 web an error leads with a small alert glyph.
 
@@ -160,7 +176,16 @@ destructive tone, and is never announced as an error.
 
 ### The label
 
-**Do** — Let Field hand the label to the control it wraps, so Android can float it inside the box.
+**Do** — Let Field hand the label to the control it wraps,
+<!-- only: web -->
+so Android can float it inside the box.
+<!-- /only -->
+<!-- only: ios -->
+so the platform places it its own way.
+<!-- /only -->
+<!-- only: android -->
+so Android can float it inside the box.
+<!-- /only -->
 
 ```tsx
 <Field label="Email">

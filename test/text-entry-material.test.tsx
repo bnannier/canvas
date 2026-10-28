@@ -16,6 +16,7 @@ import { PhoneInput as PhoneInputIOS } from "../src/molecules/phone-input/phone-
 import { clearSurfaceTint } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { WEB_FROST } from "../src/style/glass-surface/web-frost.ts";
 import { lightColors } from "../src/style/tokens.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 const restores: Array<() => void> = [];
 let available = true;
@@ -34,10 +35,14 @@ beforeEach(() => {
   });
 });
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(() => {
   cleanup();
   restores.splice(0).reverse().forEach(restore => restore());
 });
+frostInPageSurfaces();
 
 const mode = (children: ReactNode, glass = true) => <ThemeProvider light glass={glass} solid={!glass}>{children}</ThemeProvider>;
 // The material GlassBox paints behind a field. Counted by its wrapper, because a clear
@@ -156,7 +161,7 @@ describe("clear grouped field state borders", () => {
   });
 });
 
-describe("clear web text-entry material", () => {
+describe("clear text-entry material", () => {
   const fields: [string, ReactNode][] = [
     ["Input", <Input label="Name" />],
     ["Textarea", <Textarea label="Notes" showCount />],

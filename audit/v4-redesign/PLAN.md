@@ -191,6 +191,34 @@ components; ChatGPT reviewed the open calls and agreed with each.
   hand-off's clamp to 112, Card radius 16 against 20, the 19 px lead against 22, the 15 px
   section paragraph against 17.
 
+## The owner's pixel-exact rule (2026-10-28)
+
+Mid-run the owner said: "end of day the hand off is what i want implemneted!", "visually it
+needs to pixel perfectly exact with the hand off", "dimensions responsiveness etc should all
+be the same as hand-off", "all sections in the hand-off has animations that are missing", and
+"Leverage lookout to refine this application", using all of its skills. This overrides every
+recorded deviation above. What follows from it:
+
+- **D13 Glass on the web is the hand-off's.** The hand-off frosts only what floats over the
+  page (its `--gl` surfaces: the navbar pill, tab bar, dialogs, alert dialogs, action sheets,
+  drawers, popovers, the command palette, toasts, carousel arrows, video controls). On the
+  web every other surface keeps its complete solid skin in glass mode (`resolveMaterial`'s
+  "design" fallback; `floating` on the surfaces that float). Native keeps its materials.
+- **D14 Recorded deviations are reversed.** P5-K (the 56 px display role against the
+  hand-off's `clamp(56px, 7.2vw, 112px)` headline, Card radius 16 against the Library's 20,
+  the 19 px lead against 22, the 15 px paragraph against 17), the solved inks and the 3:1
+  `input` boundary (D4) go to the hand-off's values; where a hand-off value misses a WCAG
+  floor the report lists it as an accessibility note instead of moving the value.
+- **D15 Motion returns.** The hand-off's decorative motion (each section hero's loop, the
+  aurora drift, the reveals) is ported, reversing the 2026-09-21 removal for these, each
+  through the tuning harness against a recording of the hand-off.
+- **D16 Owner copy.** The Library's Index heading advertises the count ("107 components")
+  over the hand-off's "Index" caption.
+- **D17 Lookout drives parity.** `lookout.config.ts` target `v4` judges every page, every
+  component detail page and every template against its `.v4-reference` image; the whole
+  loop runs (map, check with every panel, ask, verify, backlog, skills improve), and only
+  `verify-fix`, from a session that did not make the fix, closes a finding.
+
 ## Phases (each committed and pushed on its own, CI run locally first; screenshot
 baselines and tuning evidence land WITH the visual phase that moves them, never at the end)
 

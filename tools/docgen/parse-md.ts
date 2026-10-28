@@ -23,6 +23,41 @@
 // readPage): what the gate calls a heading, a section or a caption is exactly what the
 // generator renders, so no spelling of a page can pass the one and lose its sections to
 // the other.
+//
+// Platform blocks. The docs app ships to the App Store and Google Play, and App Store
+// guideline 2.3.10 rejects an app that shows another mobile platform's name (the owner's
+// decision of 2026-10-28), while the web docs show all three platforms side by side. So a
+// page may scope any run of whole lines to the builds that show it:
+//
+//     <!-- only: web android -->
+//     ...text, list items, headings, Do/Don't markers, whole fences...
+//     <!-- /only -->
+//
+// The list names one or two of `web`, `ios` and `android` (spaces or commas between). A
+// marker sits on a line of its own, outside any fence, and blocks do not nest. A page is
+// read per build through platformView: the lines of a block that leaves the build out are
+// dropped and every marker line is removed, so lines on either side of a marker join into
+// one paragraph or list exactly as if the markers were not there. That is what keeps the
+// web build word for word what it was: wrapping a sentence of a paragraph in a block
+// (moved onto lines of its own; Markdown joins a paragraph's lines with one space) and
+// adding a rewritten sentence for the native builds changes nothing on the web.
+// parseDoc, splitDoc and docStructureViolations take the build (web by default), and the
+// gate reads every page in all three builds, so a block can never leave one build without
+// its Usage, a variant without its fence, or a pair without its Don't. Rule S11 holds the
+// block grammar (an unknown platform, a nested or unclosed block, a marker inside a fence,
+// an empty block, a block naming every platform).
+//
+// Rule S12 is the lint that keeps another platform's name out of a native build: a line
+// any block leaves in the iOS build may not carry a word in PLATFORM_WORDS.ios (Android,
+// Google, Roboto, Pixel, Material as the design system, M3), and a line left in the
+// Android build none of PLATFORM_WORDS.android (iOS, iPhone, iPad, SF Pro, Liquid Glass).
+// It reads every line the build shows, fences included: example code is printed on the
+// page beside the live example, so a `Platform.OS === "android"` check, an
+// `.android.tsx` file name or a chart label "iOS" in a fence names the platform as surely
+// as prose does, and is allowed only inside a block that leaves the other build out. The
+// platform names match in any case ("android", "ios"); "Material" and "Pixel" match only
+// capitalized, because "material" (the glass material) and "pixel" are ordinary words.
+// There is no line opt-out: a store rejection is not a style choice.
 
 import * as ts from "typescript";
 import { unsupportedInline } from "../../docs/src/lib/inline-markdown.ts";
@@ -57,8 +92,8 @@ export interface ParsedDoc {
 }
 
 /** The examples and the pairs: the part of the model the e2e routes and the audit inventory read. */
-export function splitDoc(src: string): { examples: Example[]; donts: DontPair[] } {
-  const { examples, donts } = parseDoc(src);
+export function splitDoc(src: string, platform: DocPlatform = "web"): { examples: Example[]; donts: DontPair[] } {
+  const { examples, donts } = parseDoc(src, platform);
   return { examples: examples.map(({ label, code }) => ({ label, code })), donts };
 }
 
@@ -67,23 +102,173 @@ export function splitDoc(src: string): { examples: Example[]; donts: DontPair[] 
 const FENCE_OPEN = /^```(\w+)?\s*$/;
 const FENCE_CLOSE = /^```\s*$/;
 
+/** The builds the docs ship in: the web docs and the two native apps. */
+export const DOC_PLATFORMS = ["web", "ios", "android"] as const;
+export type DocPlatform = (typeof DOC_PLATFORMS)[number];
+/** The native builds, each held to the words it may not show (rule S12). */
+export type NativePlatform = Exclude<DocPlatform, "web">;
+
+// A block's markers: "<!-- only: web android -->" and "<!-- /only -->", each alone on its
+// line. ONLY_LIKE catches a marker written some other way, so it fails instead of
+// reaching the page as an HTML comment.
+const ONLY_OPEN = /^\s*<!--\s*only\s*:(.*?)-->\s*$/;
+const ONLY_CLOSE = /^\s*<!--\s*\/\s*only\s*-->\s*$/;
+const ONLY_LIKE = /<!--\s*\/?\s*only\b/;
+
+/**
+ * The words a native build may not show (rule S12), by build: App Store guideline 2.3.10
+ * keeps another mobile platform's name out of the iOS app, and the Android app mirrors it.
+ */
+export const PLATFORM_WORDS: Record<NativePlatform, { word: string; pattern: RegExp }[]> = {
+  ios: [
+    { word: "Android", pattern: /\bandroid\b/i },
+    { word: "Google", pattern: /\bgoogle\b/i },
+    { word: "Roboto", pattern: /\broboto\b/i },
+    { word: "Pixel", pattern: /\bPixel\b/ },
+    { word: "Material", pattern: /\bMaterial\b/ },
+    { word: "M3", pattern: /\bM3\b/ },
+  ],
+  android: [
+    { word: "iOS", pattern: /\bios\b/i },
+    { word: "iPhone", pattern: /\biphone/i },
+    { word: "iPad", pattern: /\bipad/i },
+    { word: "SF Pro", pattern: /\bSF Pro\b/i },
+    { word: "Liquid Glass", pattern: /\bliquid glass\b/i },
+  ],
+};
+
+const PLATFORM_NAME: Record<DocPlatform, string> = { web: "web", ios: "iOS", android: "Android" };
+
+/** A finding about a page's platform blocks or the words a build shows: its line and what is wrong. */
+export type PlatformFinding = { line: number; message: string };
+
+/**
+ * Which builds show each line of a page (1-based line n at index n - 1): the platforms of
+ * the block it sits in, all three outside any block, null for a marker line. The block
+ * grammar's findings (rule S11) come with it.
+ */
+export function platformScopes(src: string): { scopes: (readonly DocPlatform[] | null)[]; problems: PlatformFinding[] } {
+  const lines = src.replace(/\r\n/g, "\n").split("\n");
+  const scopes: (readonly DocPlatform[] | null)[] = [];
+  const problems: PlatformFinding[] = [];
+  let open: { line: number; platforms: readonly DocPlatform[]; content: boolean } | null = null;
+  let inFence = false;
+  lines.forEach((text, i) => {
+    const line = i + 1;
+    if (inFence) {
+      if (FENCE_CLOSE.test(text)) inFence = false;
+      else if (ONLY_LIKE.test(text)) problems.push({ line, message: "a platform marker inside a fence is part of the code; put the markers around the whole fence, outside it" });
+      if (open) open.content = true;
+      scopes.push(open ? open.platforms : DOC_PLATFORMS);
+      return;
+    }
+    const opener = ONLY_OPEN.exec(text);
+    if (opener) {
+      const names = opener[1].split(/[\s,]+/).filter(Boolean);
+      const platforms = DOC_PLATFORMS.filter((p) => names.includes(p));
+      const unknown = names.filter((n) => !(DOC_PLATFORMS as readonly string[]).includes(n));
+      if (unknown.length) problems.push({ line, message: `"${unknown.join(", ")}" is not a build; a block names web, ios or android` });
+      if (names.length === 0) problems.push({ line, message: `the block names no build; write "<!-- only: web android -->"` });
+      else if (platforms.length === DOC_PLATFORMS.length) problems.push({ line, message: "the block names every build, so it scopes nothing; remove its markers" });
+      if (open) problems.push({ line, message: `a block opens inside the block of line ${open.line}; blocks do not nest, so close that one first` });
+      open = { line, platforms, content: false };
+      scopes.push(null);
+      return;
+    }
+    if (ONLY_CLOSE.test(text)) {
+      if (!open) problems.push({ line, message: `"<!-- /only -->" closes no block` });
+      else if (!open.content) problems.push({ line: open.line, message: "the block holds nothing" });
+      open = null;
+      scopes.push(null);
+      return;
+    }
+    if (ONLY_LIKE.test(text)) problems.push({ line, message: `a platform marker is "<!-- only: web android -->" or "<!-- /only -->", alone on its line` });
+    if (FENCE_OPEN.test(text)) inFence = true;
+    if (open && text.trim() !== "") open.content = true;
+    scopes.push(open ? open.platforms : DOC_PLATFORMS);
+  });
+  if (open) problems.push({ line: (open as { line: number }).line, message: `the block never closes; end it with "<!-- /only -->"` });
+  return { scopes, problems };
+}
+
+/** A page as one build reads it: the lines it shows, and the source line of each. */
+export interface PlatformView {
+  text: string;
+  /** The 1-based source line of each line of `text`, by its 0-based index. */
+  lines: number[];
+}
+
+/**
+ * The page as `platform`'s build shows it: every marker line removed, and with it every
+ * line of a block that leaves the build out. A page with no block reads the same in all
+ * three builds.
+ */
+export function platformView(src: string, platform: DocPlatform): PlatformView {
+  const all = src.replace(/\r\n/g, "\n").split("\n");
+  const { scopes } = platformScopes(src);
+  const kept: string[] = [];
+  const lines: number[] = [];
+  all.forEach((text, i) => {
+    const scope = scopes[i];
+    if (scope && scope.includes(platform)) { kept.push(text); lines.push(i + 1); }
+  });
+  return { text: kept.join("\n"), lines };
+}
+
+/** Whether a page scopes any line to some builds (so its builds may read it differently). */
+export function hasPlatformBlocks(src: string): boolean {
+  return platformScopes(src).scopes.some((s) => s === null);
+}
+
+/** The words in PLATFORM_WORDS[build] a text carries: what `build`'s app may not show of it. */
+export function bannedWords(text: string, build: NativePlatform): string[] {
+  return PLATFORM_WORDS[build].filter((w) => w.pattern.test(text)).map((w) => w.word);
+}
+
+/**
+ * Every line a native build would show carrying a word that build may not show (rule
+ * S12): another mobile platform's name, in prose or in a fence.
+ */
+export function platformWordViolations(src: string): PlatformFinding[] {
+  const lines = src.replace(/\r\n/g, "\n").split("\n");
+  const { scopes } = platformScopes(src);
+  const out: PlatformFinding[] = [];
+  lines.forEach((text, i) => {
+    const scope = scopes[i];
+    if (!scope) return;
+    for (const build of ["ios", "android"] as const) {
+      if (!scope.includes(build)) continue;
+      const words = bannedWords(text, build).map((w) => `"${w}"`);
+      if (words.length === 0) continue;
+      const keep = DOC_PLATFORMS.filter((p) => p !== build && scope.includes(p));
+      out.push({
+        line: i + 1,
+        message:
+          `${words.join(", ")} would show in the ${PLATFORM_NAME[build]} app, which may not name another mobile platform (App Store guideline 2.3.10); ` +
+          `reword the line for every platform, or scope it with "<!-- only: ${keep.join(" ") || "web"} -->" ... "<!-- /only -->"`,
+      });
+    }
+  });
+  return out;
+}
+
 // The body of the first ```tsx/jsx fence in a markdown slice (the Usage example).
 export function firstFence(md: string): string | null {
-  return firstFenceOf(pageBlocks(md));
+  return firstFenceOf(pageBlocks(platformView(md, "web").text));
 }
 
 // The Variants section is a flat list of "### <label>" headings, each followed by
 // exactly one ```tsx fence. The label is the heading text verbatim; the code is the
 // fence body.
 export function parseVariants(section: string): Example[] {
-  return variantsOf(pageBlocks(section)).map(({ label, code }) => ({ label, code }));
+  return variantsOf(pageBlocks(platformView(section, "web").text)).map(({ label, code }) => ({ label, code }));
 }
 
 // The Do/Don't markdown is regular: "### title" groups, each with "**Do**: caption"
 // + a ```tsx fence and "**Don't**: caption" + a ```tsx fence (Do emitted first).
 // Pair by marker name, not position, so order does not matter.
 export function parseDonts(section: string): DontPair[] {
-  return dontsOf(pageBlocks(section)).pairs;
+  return dontsOf(pageBlocks(platformView(section, "web").text)).pairs;
 }
 
 // A Do/Don't marker line: "**Do**" or "**Don't**" (a curly apostrophe too), then the
@@ -331,8 +516,19 @@ function dontsOf(blocks: Block[]): { pairs: DontPair[]; used: Block[] } {
   return { pairs, used };
 }
 
-/** The page as the docs render it, every line accounted for (see the module comment). */
-export function parseDoc(src: string): ParsedDoc {
+/**
+ * The page as the docs render it in `platform`'s build (the web by default), every line
+ * accounted for (see the module comment). Its unconsumed lines are numbered in the source.
+ */
+export function parseDoc(src: string, platform: DocPlatform = "web"): ParsedDoc {
+  const view = platformView(src, platform);
+  const doc = parseView(view.text);
+  const at = (n: number) => view.lines[n - 1] ?? n;
+  return { ...doc, unconsumed: doc.unconsumed.map((u) => ({ ...u, line: at(u.line), block: at(u.block) })) };
+}
+
+// The page model of one build's text, its markers already resolved (platformView).
+function parseView(src: string): ParsedDoc {
   const md = src.replace(/\r\n/g, "\n");
   const { title, strayTitles, intro, sections } = readPage(md);
   const placed = new Set<Block>();
@@ -480,6 +676,14 @@ export function parseDoc(src: string): ParsedDoc {
 // - S10 Once the component's audit checklist (audit/components/<slug>.md) signs a
 //       platform off, the page carries a "## Accessibility" guidance section: its
 //       accessibility and keyboard notes come from that audit.
+// - S11 The platform blocks are well formed (see "Platform blocks" in the module
+//       comment): each "<!-- only: ... -->" names one or two of web, ios and android,
+//       holds something, closes with "<!-- /only -->", and sits outside any fence and
+//       any other block. S1 to S10 then hold each build's view of the page on its own,
+//       a finding only some builds raise naming them.
+// - S12 No line a native build shows names another mobile platform (PLATFORM_WORDS):
+//       the iOS app never says Android, Google, Roboto, Pixel, Material or M3, and the
+//       Android app never says iOS, iPhone, iPad, SF Pro or Liquid Glass.
 //
 // Every heading is written one way: its "#" run at the start of the line, one space,
 // the text, and nothing after it. Markdown also reads "##  Variants", "##\tVariants",
@@ -488,7 +692,7 @@ export function parseDoc(src: string): ParsedDoc {
 // S3 for "##", and for "###" the rule of the part of the page it sits in), so the
 // source always reads the way the page renders.
 
-export type StructureRule = "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "S7" | "S8" | "S10";
+export type StructureRule = "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "S7" | "S8" | "S10" | "S11" | "S12";
 export type StructureViolation = { line: number; rule: StructureRule; message: string };
 
 /** The "##" sections every component page carries, in page order. */
@@ -519,11 +723,38 @@ export interface PageContext {
 }
 
 /**
- * The structure violations of one component page (rules S1 to S10 above), in line
- * order. An empty array means the page has the shape the generator and the docs pages
- * expect, and every line of it reaches the page.
+ * The structure violations of one component page (rules S1 to S12 above), in line
+ * order, numbered in the source. An empty array means the page has the shape the
+ * generator and the docs pages expect in every build, every line of it reaches the page,
+ * and no native build names another mobile platform.
  */
-export function docStructureViolations(src: string, { name, signedOff }: PageContext): StructureViolation[] {
+export function docStructureViolations(src: string, context: PageContext): StructureViolation[] {
+  const md = src.replace(/\r\n/g, "\n");
+  const lastLine = md.replace(/\n+$/, "").split("\n").length;
+  const out: StructureViolation[] = [];
+  for (const p of platformScopes(md).problems) out.push({ line: p.line, rule: "S11", message: p.message });
+  for (const p of platformWordViolations(md)) out.push({ line: p.line, rule: "S12", message: p.message });
+  // S1 to S10 in each build's view, a finding every build raises reported once.
+  const found = new Map<string, { violation: StructureViolation; builds: DocPlatform[] }>();
+  for (const platform of DOC_PLATFORMS) {
+    const view = platformView(md, platform);
+    for (const v of viewStructureViolations(view.text, context)) {
+      const line = view.lines[v.line - 1] ?? lastLine;
+      const key = `${line}|${v.rule}|${v.message}`;
+      const hit = found.get(key);
+      if (hit) hit.builds.push(platform);
+      else found.set(key, { violation: { ...v, line }, builds: [platform] });
+    }
+  }
+  for (const { violation, builds } of found.values()) {
+    const only = builds.length === DOC_PLATFORMS.length ? "" : ` (in the ${builds.map((b) => PLATFORM_NAME[b]).join(" and ")} build)`;
+    out.push({ ...violation, message: violation.message + only });
+  }
+  return out.sort((a, b) => a.line - b.line);
+}
+
+// S1 to S10 over one build's text, its markers already resolved (platformView).
+function viewStructureViolations(src: string, { name, signedOff }: PageContext): StructureViolation[] {
   const md = src.replace(/\r\n/g, "\n");
   const { blocks, title, strayTitles, intro, sections } = readPage(md);
   const lastLine = md.replace(/\n+$/, "").split("\n").length;
@@ -705,7 +936,7 @@ export function docStructureViolations(src: string, { name, signedOff }: PageCon
   const partOf = (line: number) => starts.filter((start) => start <= line).pop() ?? 1;
   const faulted = new Set(out.map((v) => partOf(v.line)));
   const byBlock = new Map<number, Unconsumed[]>();
-  for (const u of parseDoc(md).unconsumed) byBlock.set(u.block, [...(byBlock.get(u.block) ?? []), u]);
+  for (const u of parseView(md).unconsumed) byBlock.set(u.block, [...(byBlock.get(u.block) ?? []), u]);
   for (const us of byBlock.values()) {
     if (faulted.has(partOf(us[0].line))) continue;
     const where = us.length === 1 ? "this line never reaches" : `these ${us.length} lines (to line ${us[us.length - 1].line}) never reach`;

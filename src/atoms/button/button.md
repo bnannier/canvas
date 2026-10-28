@@ -2,7 +2,16 @@
 
 Six intents × three sizes (plus the icon square) × disabled / focus / hover states. Always semantic: the intent communicates what the button does (default = the primary action, destructive = irreversible, ghost = chrome).
 
-On the web a button is 32, 40 or 48 tall (`small`, default, `large`) with the 10 px control corner, a 500-weight label at 13, 14 or 16 px, and an 8 px gap beside its icons. The call to action fills with the accent, `destructive` with the status red, both under a lit top edge; `secondary` is the quiet well with a boundary, `outline` the boundary alone, `ghost` and `link` bare (the link underlined). A filled button brightens and rises 1 px under the pointer over 150 ms and settles back when it leaves; the other looks take the well's wash at once. A press scales the button to 96% and darkens it, unless `steadyPress`. A disabled button fades to 40%; a loading one keeps its full look while its spinner runs. A disabled or loading button stays put, and Reduce Motion makes the lift instant. On iOS the button is the 50 pt capsule with a semibold 17 pt label, on Android the 40 dp Material 3 stadium, both in the same colours.
+On the web a button is 32, 40 or 48 tall (`small`, default, `large`) with the 10 px control corner, a 500-weight label at 13, 14 or 16 px, and an 8 px gap beside its icons. The call to action fills with the accent, `destructive` with the status red, both under a lit top edge; `secondary` is the quiet well with a boundary, `outline` the boundary alone, `ghost` and `link` bare (the link underlined). A filled button brightens and rises 1 px under the pointer over 150 ms and settles back when it leaves; the other looks take the well's wash at once. A press scales the button to 96% and darkens it, unless `steadyPress`. A disabled button fades to 40%; a loading one keeps its full look while its spinner runs. A disabled or loading button stays put, and Reduce Motion makes the lift instant.
+<!-- only: web -->
+On iOS the button is the 50 pt capsule with a semibold 17 pt label, on Android the 40 dp Material 3 stadium, both in the same colours.
+<!-- /only -->
+<!-- only: ios -->
+On iOS the button is the 50 pt capsule with a semibold 17 pt label, in the same colours.
+<!-- /only -->
+<!-- only: android -->
+On Android the button is the 40 dp Material 3 stadium, in the same colours.
+<!-- /only -->
 
 Pass `ref` to access the interactive Pressable, including link buttons. Use `useRef<ComponentRef<typeof Button>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
@@ -334,4 +343,22 @@ branded surface. `consistent` gives short workflow actions a shared minimum widt
 
 ## Touch area
 
-On iOS and Android a Button smaller than the platform's minimum touch target (44pt, 48dp) keeps its size and extends only its touch area to the minimum, from its first frame, so nothing moves. React Native bounds that area by two rules of its own. It never reaches past a native container that does not contain it: a container of yours that clips (overflow hidden, a scroll view's edge) stops it at that edge. A container that paints, carries a `testID` or handles pointer events admits it, because such a container records the touch area at its layout and the Button has it from its first one. Every kit control does the same for itself; a control the kit lacks belongs in the kit, never in a Pressable of your own (see DESIGN.md, Shapes). And where two touch areas overlap, the later sibling takes the tap: on Android two small icon Buttons 8 apart in a Row both reach across the gap between them, so a tap anywhere in it presses the second. Leave at least twice the extra touch area between small Buttons you place side by side (16 between two small icon Buttons on Android, 8 on iOS).
+<!-- only: web -->
+On iOS and Android a Button smaller than the platform's minimum touch target (44pt, 48dp) keeps its size
+<!-- /only -->
+<!-- only: ios -->
+On iOS a Button smaller than the platform's minimum touch target (44pt) keeps its size
+<!-- /only -->
+<!-- only: android -->
+On Android a Button smaller than the platform's minimum touch target (48dp) keeps its size
+<!-- /only -->
+and extends only its touch area to the minimum, from its first frame, so nothing moves. React Native bounds that area by two rules of its own. It never reaches past a native container that does not contain it: a container of yours that clips (overflow hidden, a scroll view's edge) stops it at that edge. A container that paints, carries a `testID` or handles pointer events admits it, because such a container records the touch area at its layout and the Button has it from its first one. Every kit control does the same for itself; a control the kit lacks belongs in the kit, never in a Pressable of your own (see DESIGN.md, Shapes).
+<!-- only: web -->
+And where two touch areas overlap, the later sibling takes the tap: on Android two small icon Buttons 8 apart in a Row both reach across the gap between them, so a tap anywhere in it presses the second. Leave at least twice the extra touch area between small Buttons you place side by side (16 between two small icon Buttons on Android, 8 on iOS).
+<!-- /only -->
+<!-- only: ios -->
+And where two touch areas overlap, the later sibling takes the tap. Leave at least twice the extra touch area between small Buttons you place side by side (8 between two small icon Buttons).
+<!-- /only -->
+<!-- only: android -->
+And where two touch areas overlap, the later sibling takes the tap: two small icon Buttons 8 apart in a Row both reach across the gap between them, so a tap anywhere in it presses the second. Leave at least twice the extra touch area between small Buttons you place side by side (16 between two small icon Buttons).
+<!-- /only -->

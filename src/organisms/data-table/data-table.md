@@ -18,6 +18,7 @@ is handed back.
 
 Treat `rows` and `columns` as immutable inputs. When editing data, replace the outer `rows` array and each changed row, as the examples below do. When changing a column, replace its descriptor and the `columns` array. Keep unchanged arrays and callbacks stable for large tables: Canvas caches sorting, paging, and selection summaries so typing a draft or opening a row action does not process the whole data set again. `sortValue` and `rowKey` must be pure functions of their inputs. If either closes over changing external data, supply a new callback identity; for `sortValue`, also replace its column descriptor and the `columns` array. A saved edit appears in sorted order when the updated `rows` arrive.
 
+<!-- only: web -->
 On narrow web and Android layouts, the columns still share the table width and
 wrap their text, each keeping a 110 px minimum (a column with a fixed `width`
 keeps that width), and they pan horizontally only when those minimums exceed
@@ -38,6 +39,13 @@ window is resized across it or a phone measures the table on its first frame.
 The iOS first-column layout is the exception: below that width the columns
 after the first leave the table, with any editor or custom cell in them, and
 mount again when it widens.
+<!-- /only -->
+<!-- only: ios -->
+On an iPhone-width table iOS shows only the first column, as SwiftUI Table does. A table that passes `stacks` does not: at that width each row stacks its cells (see Stacked below). For a table that stacks, crossing that width changes the layout only: rows, custom cells, an open editor with its text and focus, and a windowed body's scroll position stay as they are when the window is resized across it or the table is measured on its first frame. The first-column layout is the exception: below that width the columns after the first leave the table, with any editor or custom cell in them, and mount again when it widens.
+<!-- /only -->
+<!-- only: android -->
+On narrow layouts, the columns still share the table width and wrap their text, each keeping a 110 px minimum (a column with a fixed `width` keeps that width), and they pan horizontally only when those minimums exceed the table width. A long cell wraps inside its column rather than widening the table. The overflowing scrollport is a keyboard tab stop, so the platform's arrow keys can reveal the remaining columns, and while it has keyboard focus the table's surface draws the theme's focus ring. A table that fits adds no scrolling tab stop and takes no sideways drag either, so a tap that drifts sideways still presses its row and a swipe that starts across it scrolls the page (while TalkBack explores by touch the scroller stays enabled, so the exploring finger reaches every cell). A table that passes `stacks` does not pan: at that width each row stacks its cells (see Stacked below). Crossing that width changes the layout only: rows, custom cells, an open editor with its text and focus, and a windowed body's scroll position stay as they are when a window is resized across it or a phone measures the table on its first frame.
+<!-- /only -->
 
 A `virtualized` table's body scrolls its rows under the fixed header. On the
 web, while those rows overflow, the body is a keyboard tab stop of its own
@@ -337,7 +345,17 @@ Pass `groups` in place of `rows` to title runs of rows: each group draws a band 
 
 ### Stacked
 
-Pass `stacks` when the cells carry long text. When the table's own container is at or below `stackBreakpoint` (default `sm`, 640), each row lays its cells out top to bottom at the full width: the first cell leads as the row's title and every later cell sits under its column label, so a paragraph reads at the table's width instead of a column's share of it. The header row stays only while it holds a control (a sortable column, as here, or the box that selects every row), the selection box and row actions keep their places, and on iOS the table stacks instead of collapsing to its first column. Above the breakpoint it is the ordinary table.
+Pass `stacks` when the cells carry long text. When the table's own container is at or below `stackBreakpoint` (default `sm`, 640), each row lays its cells out top to bottom at the full width: the first cell leads as the row's title and every later cell sits under its column label, so a paragraph reads at the table's width instead of a column's share of it. The header row stays only while it holds a control (a sortable column, as here, or the box that selects every row),
+<!-- only: web -->
+the selection box and row actions keep their places, and on iOS the table stacks instead of collapsing to its first column.
+<!-- /only -->
+<!-- only: ios -->
+the selection box and row actions keep their places, and the table stacks instead of collapsing to its first column.
+<!-- /only -->
+<!-- only: android -->
+the selection box and row actions keep their places.
+<!-- /only -->
+Above the breakpoint it is the ordinary table.
 
 ```tsx
 <DataTable

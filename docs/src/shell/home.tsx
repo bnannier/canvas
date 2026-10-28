@@ -46,7 +46,7 @@ import {
 import { Page } from "../ui/page";
 
 // The docs home: the v4 hand-off's Library page (`Canvas v4.0.0 Library.dc.html`): the hero
-// (the eyebrow, the "Light as material." headline, the paragraph, two calls, the stats row
+// (the eyebrow, the "Made of light." headline, the paragraph, two calls, the stats row
 // and the collage of live kit components over the aurora), the four direction cards, the
 // Index of the eight rooms with each component's tier, the tier legend, the sub-components
 // card and the templates call. The copy and the index are docs/src/data/library.ts; the
@@ -195,8 +195,8 @@ function Index() {
     <Column loose testID="library-index">
       <Container xl start>
         <Column cozy>
-          <Typography h1 level={2}>{INDEX_COPY.title}</Typography>
-          <Typography lead>{INDEX_COPY.lead(COMPONENTS.length)}</Typography>
+          <Typography h1 level={2}>{INDEX_COPY.title(COMPONENTS.length)}</Typography>
+          <Typography lead>{INDEX_COPY.lead}</Typography>
           <Typography subtle>
             {INDEX_COPY.body.before}
             <Typography mono>{INDEX_COPY.body.mono}</Typography>
@@ -273,13 +273,9 @@ function Index() {
 
 export function Home() {
   return (
-    <Page>
+    <Page lead={<><LibraryHero /><Divider /></>}>
       <Container padLoose>
         <Column chapter>
-          <Column flush>
-            <LibraryHero />
-            <Divider />
-          </Column>
           <Principles />
           <Index />
         </Column>

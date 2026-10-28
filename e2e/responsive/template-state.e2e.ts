@@ -6,8 +6,9 @@
  * resized across 640 dropped the field's focus (and its text, where the state lived
  * below the swap), and a phone load remounted every field right after hydration,
  * because the server renders the desktop variant and the client switches. A two-pane
- * template is now a `Row stacks` of spans, while the kanban board uses Grid. Both
- * measure their own container and change layout without replacing their children.
+ * template is now a `Row stacks` of spans that measures its own container, so the
+ * template's web frame (as wide as the Templates page leaves it) changes layout
+ * without replacing its children.
  *
  * Each case holds the field's DOM node from the first render and checks that the same
  * node is still connected, focused, and holding the typed text after every resize. The
@@ -35,31 +36,23 @@ interface Case {
 
 const CASES: Case[] = [
   {
-    // The split-screen form (the centered card above it also has an Email field).
+    // The web frame's split screen: the quote's bloom panel beside the form.
     slug: "signin",
-    field: (page) => page.getByLabel("Email", { exact: true }).nth(1),
-    partner: (page) => page.getByText("Welcome back", { exact: true }),
+    field: (page) => page.getByLabel("Work email", { exact: true }),
+    partner: (page) => page.getByText("Head of Platform, Riskora", { exact: true }),
     wide: "beside",
   },
   {
     slug: "settings",
     field: (page) => page.getByLabel("Workspace URL", { exact: true }),
-    partner: (page) => page.getByRole("tab", { name: "Notifications" }),
+    partner: (page) => page.getByLabel("Settings sections", { exact: true }),
     wide: "beside",
   },
   {
     slug: "inbox",
-    field: (page) => page.getByPlaceholder("Reply to Rachel…"),
-    partner: (page) => page.getByText("Ada Lovelace", { exact: true }),
+    field: (page) => page.getByLabel("Reply", { exact: true }),
+    partner: (page) => page.getByRole("button", { name: "Grace Hopper: Q4 token review", exact: true }),
     wide: "beside",
-  },
-  {
-    slug: "kanban",
-    field: (page) => page.getByPlaceholder("Search tasks…"),
-    gridTiles: (page) => [
-      page.getByRole("button", { name: "Actions for To do", exact: true }),
-      page.getByRole("button", { name: "Actions for In progress", exact: true }),
-    ],
   },
 ];
 

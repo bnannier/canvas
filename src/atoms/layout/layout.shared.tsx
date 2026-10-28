@@ -295,12 +295,16 @@ function hasSpans(children: ReactNode): boolean {
  *  (Children.toArray keeps an explicit key and numbers the rest by their slot,
  *  empty slots included), never its index in the filtered array: an index shifts
  *  when a conditional sibling before it appears or a keyed item is inserted. */
+const STACKED_CELL: ViewStyle = { width: "100%" };
+
 function spanCells(children: ReactNode, width: number, gap: number, stacked: boolean): ReactNode {
   return Children.toArray(children).map((child) => {
     if (!isValidElement(child)) return child;
     const span = (child.props as FlexProps).span;
     if (span == null) return child;
-    const cell = !stacked && width > 0 ? { width: spanWidth(width, clampSpan(span), gap) } : null;
+    // Stacked, every span cell is the whole line (Bootstrap's `col-12`): the Row's alignment
+    // is its cross axis, so it must not turn into a horizontal hug once the Row is a column.
+    const cell = stacked ? STACKED_CELL : width > 0 ? { width: spanWidth(width, clampSpan(span), gap) } : null;
     return (
       <RaiseCell key={child.key} style={cell}>
         {child}

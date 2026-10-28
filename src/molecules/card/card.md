@@ -237,7 +237,13 @@ Given children instead of `src`, `CardMedia` is a sunken well that stages live c
 
 ### Pressable
 
-Pass `onPress` and the whole card becomes a control, with the button role. On the web it lifts under the pointer: it rises 2 px over 180 ms while its resting shade deepens to the raised one in step, and settles back when the pointer leaves (a `raised` or `flat` card rises with its shade unchanged). While it lifts and settles it stacks above the cards around it, so its deeper shade falls over the next one. Reduce Motion makes the change instant. iOS and Android keep their own press feedback.
+Pass `onPress` and the whole card becomes a control, with the button role. On the web it lifts under the pointer: it rises 2 px over 180 ms while its resting shade deepens to the raised one in step, and settles back when the pointer leaves (a `raised` or `flat` card rises with its shade unchanged). While it lifts and settles it stacks above the cards around it, so its deeper shade falls over the next one. Reduce Motion makes the change instant.
+<!-- only: web -->
+iOS and Android keep their own press feedback.
+<!-- /only -->
+<!-- only: ios android -->
+The native apps keep the platform's own press feedback.
+<!-- /only -->
 
 ```tsx
 <Column relaxed>

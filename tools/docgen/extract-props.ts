@@ -6,10 +6,37 @@
 // interfaces (`Pick<RNTextInputProps, …>`, `extends`) expand to their concrete
 // members, and union/literal types render exactly as written. The result feeds the
 // generated docs prop tables, so the documented props never drift from the source.
+//
+// Platform blocks. The docs app ships to the App Store and Google Play, and a native
+// build may not name another mobile platform (rule S12 in parse-md.ts). A prop's
+// description is read per build: a `/** */` JSDoc or a `//` comment may scope whole
+// lines with the page grammar, `<!-- only: web android -->` ... `<!-- /only -->`, each
+// marker on a line of its own inside the comment:
+//
+//     /**
+//      * The field's persistent label. Its placement is platform-adaptive:
+//      * <!-- only: web -->
+//      * iOS and web render it ABOVE the field; Android floats it.
+//      * <!-- /only -->
+//      * <!-- only: ios -->
+//      * iOS renders it above the field.
+//      * <!-- /only -->
+//      */
+//
+// TypeScript keeps a JSDoc comment verbatim, so the markers reach `dist/*.d.ts` as
+// written, and an editor's hover renders the comment as Markdown, which hides them. The
+// web build's table drops the other builds' lines and joins the rest with one space, so
+// its text is exactly the comment's text before the markers went in; each native build
+// reads its own lines (platformView in parse-md.ts, the same reader as the pages). A
+// member React Native declares (an Image or TextInput passthrough) has JSDoc this repo
+// cannot edit, so a native build's text for it comes from FOREIGN_DOCS
+// (tools/docgen/foreign-docs.ts) instead, and the web keeps React Native's own.
 
 import * as ts from "typescript";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import { platformScopes, platformView, type DocPlatform } from "./parse-md.ts";
+import { FOREIGN_DOCS } from "./foreign-docs.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
@@ -132,19 +159,51 @@ function typeText(checker: ts.TypeChecker, sym: ts.Symbol, optional: boolean): s
 
 type DescSource = "jsdoc" | "line" | "none";
 
+/** Where each extracted row's description comes from, `file:line` from the repo root, for the S12 lint. */
+export const PROP_SOURCES = new WeakMap<PropDoc, string>();
+
+/** The block-grammar findings (S11) in the comments read so far, `file:line message`. */
+const BLOCK_PROBLEMS = new Set<string>();
+export function docBlockProblems(): string[] {
+  return [...BLOCK_PROBLEMS].sort();
+}
+
+const where = (decl: ts.Node, offset = 0) =>
+  `${path.relative(REPO, decl.getSourceFile().fileName)}:${decl.getSourceFile().getLineAndCharacterOfPosition(decl.getStart()).line + 1 + offset}`;
+
+// A comment's text as `platform`'s build reads it, collapsed to one line: the lines its
+// platform blocks leave the build out of, and every marker, dropped. A comment with no
+// block reads the same in every build. `at` locates its block-grammar findings.
+function viewText(raw: string, platform: DocPlatform, at: string): string {
+  for (const p of platformScopes(raw).problems) BLOCK_PROBLEMS.add(`${at} (comment line ${p.line}): ${p.message}`);
+  return platformView(raw, platform).text.replace(/\s+/g, " ").trim();
+}
+
+// A member declared outside the kit (React Native's own JSDoc), keyed for FOREIGN_DOCS.
+function foreignKey(sym: ts.Symbol): string | undefined {
+  const decl = (sym.getDeclarations() ?? [])[0];
+  if (!decl || !decl.getSourceFile().fileName.includes(`${path.sep}node_modules${path.sep}`)) return undefined;
+  const owner = decl.parent && (ts.isInterfaceDeclaration(decl.parent) || ts.isTypeAliasDeclaration(decl.parent)) ? decl.parent.name.text : undefined;
+  return owner ? `${owner}.${sym.getName()}` : undefined;
+}
+
 // A member's description: its own `/** */` JSDoc, else the `//` comment immediately
 // above it (the kit introduces boolean axes with a group `//` comment rather than
 // per-prop JSDoc), else empty. A `//` comment that wraps is one comment run over
 // several lines, so the run is read whole: the last `//` line and every `//` line
 // directly above it with no blank line between. The source is returned so the
 // caller can carry a group `//` comment forward across the axis's later members.
-function describe(checker: ts.TypeChecker, sym: ts.Symbol): { desc: string; source: DescSource } {
-  const jsdoc = ts.displayPartsToString(sym.getDocumentationComment(checker)).replace(/\s+/g, " ").trim();
-  if (jsdoc) return { desc: jsdoc, source: "jsdoc" };
+function describe(checker: ts.TypeChecker, sym: ts.Symbol, platform: DocPlatform): { desc: string; source: DescSource } {
   const decl = (sym.getDeclarations() ?? [])[0];
+  const raw = ts.displayPartsToString(sym.getDocumentationComment(checker));
+  if (raw.trim()) {
+    const key = platform === "web" ? undefined : foreignKey(sym);
+    const own = key === undefined ? undefined : FOREIGN_DOCS[key]?.[platform];
+    return { desc: own ?? viewText(raw, platform, decl ? where(decl) : sym.getName()), source: "jsdoc" };
+  }
   if (decl) {
     const full = decl.getSourceFile().getFullText();
-    const text = lineCommentRun(full, ts.getLeadingCommentRanges(full, decl.getFullStart()) ?? []);
+    const text = lineCommentRun(full, ts.getLeadingCommentRanges(full, decl.getFullStart()) ?? [], platform, where(decl));
     if (text) return { desc: text, source: "line" };
   }
   return { desc: "", source: "none" };
@@ -154,28 +213,23 @@ function describe(checker: ts.TypeChecker, sym: ts.Symbol): { desc: string; sour
 // with single spaces: two `//` lines belong to one run when only a line break and
 // indentation separate them, so a blank line (or a block comment) ends the run. A
 // line's list bullet (`- `) is dropped, since the table cell is prose.
-function lineCommentRun(full: string, ranges: readonly ts.CommentRange[]): string {
+function lineCommentRun(full: string, ranges: readonly ts.CommentRange[], platform: DocPlatform = "web", at = ""): string {
   const isLine = (r: ts.CommentRange) => r.kind === ts.SyntaxKind.SingleLineCommentTrivia;
   let last = ranges.length - 1;
   while (last >= 0 && !isLine(ranges[last])) last--;
   if (last < 0) return "";
   let first = last;
   while (first > 0 && isLine(ranges[first - 1]) && /^[ \t]*\r?\n[ \t]*$/.test(full.slice(ranges[first - 1].end, ranges[first].pos))) first--;
-  return ranges
-    .slice(first, last + 1)
-    .map((r) => full.slice(r.pos, r.end).replace(/^\/\/\s*/, "").replace(/^[-*]\s+/, "").trim())
-    .filter(Boolean)
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const lines = ranges.slice(first, last + 1).map((r) => full.slice(r.pos, r.end).replace(/^\/\/\s*/, "").replace(/^[-*]\s+/, "").trim());
+  return viewText(lines.filter(Boolean).join("\n"), platform, at);
 }
 
 // The `//` run nearest above a member among its leading comments, or "".
-function axisHeader(sym: ts.Symbol): string {
+function axisHeader(sym: ts.Symbol, platform: DocPlatform): string {
   const decl = (sym.getDeclarations() ?? [])[0];
   if (!decl) return "";
   const full = decl.getSourceFile().getFullText();
-  return lineCommentRun(full, ts.getLeadingCommentRanges(full, decl.getFullStart()) ?? []);
+  return lineCommentRun(full, ts.getLeadingCommentRanges(full, decl.getFullStart()) ?? [], platform, where(decl));
 }
 
 // Source-order sort key: own-file members in declaration order first, then any
@@ -275,6 +329,7 @@ function buildProps(
   type: ts.Type,
   node: ts.InterfaceDeclaration | ts.TypeAliasDeclaration,
   shell: readonly ts.SourceFile[],
+  platform: DocPlatform,
 ): Omit<PropGroup, "name"> {
   const homeFile = node.getSourceFile().fileName;
   const symbols = [...checker.getPropertiesOfType(type)].sort((a, b) => {
@@ -306,7 +361,7 @@ function buildProps(
     const parentNode = (sym.getDeclarations() ?? [])[0]?.parent;
     if (parentNode !== lastOwner) group = undefined;
     lastOwner = parentNode;
-    const { desc, source } = describe(checker, sym);
+    const { desc, source } = describe(checker, sym, platform);
     let description: string;
     if (source === "jsdoc") {
       description = desc;
@@ -319,7 +374,7 @@ function buildProps(
     }
     // An axis header is the `//` run nearest above the member, a JSDoc between them or not
     // ("// Overlaid glyph mode." over a documented `leadingIcon`).
-    const header = axisHeader(sym);
+    const header = axisHeader(sym, platform);
     if (header) {
       groups.push(parseAxis(header));
       group = groups.length - 1;
@@ -332,6 +387,8 @@ function buildProps(
     const value = written ?? fallback;
     if (value !== undefined) row.default = value;
     if (group !== undefined) row.group = group;
+    const decl = (sym.getDeclarations() ?? [])[0];
+    if (decl) PROP_SOURCES.set(row, where(decl));
     out.push(row);
   }
   const heritage = heritageTexts(node);
@@ -342,7 +399,7 @@ function buildProps(
 // forwardRef adds ref to the returned component, not to its input Props
 // interface. Resolve that public call signature so the table documents the
 // real host type, including factories such as Input that already forward refs.
-function factoryRef(checker: ts.TypeChecker, source: ts.SourceFile, propsName: string, propsType: ts.Type): PropDoc | undefined {
+function factoryRef(checker: ts.TypeChecker, source: ts.SourceFile, propsName: string, propsType: ts.Type, platform: DocPlatform): PropDoc | undefined {
   const module = checker.getSymbolAtLocation(source);
   if (!module) return undefined;
   const factory = checker.getExportsOfModule(module).find((symbol) => symbol.name === `create${propsName.slice(0, -5)}`);
@@ -360,8 +417,7 @@ function factoryRef(checker: ts.TypeChecker, source: ts.SourceFile, propsName: s
   const ref = publicProps.getProperty("ref");
   if (!ref) return undefined;
   const refType = checker.getTypeOfSymbolAtLocation(ref, source);
-  const description = ts.displayPartsToString(factory.getJsDocTags(checker).find((tag) => tag.name === "ref")?.text)
-    .replace(/\s+/g, " ").trim();
+  const description = viewText(ts.displayPartsToString(factory.getJsDocTags(checker).find((tag) => tag.name === "ref")?.text), platform, `${path.relative(REPO, source.fileName)} create${propsName.slice(0, -5)}`);
   const optional = isOptional(ref);
   return {
     name: "ref",
@@ -379,7 +435,7 @@ function factoryRef(checker: ts.TypeChecker, source: ts.SourceFile, propsName: s
  * de-duplicated by name so a re-exported interface is not listed twice. A group's
  * defaults are read from every file of its dir (the shell may sit beside the props).
  */
-export function extractProps(dirs: { dir: string; file: string }[], prog = program()): Record<string, PropGroup[]> {
+export function extractProps(dirs: { dir: string; file: string }[], prog = program(), platform: DocPlatform = "web"): Record<string, PropGroup[]> {
   const checker = prog.getTypeChecker();
   const out: Record<string, PropGroup[]> = {};
   const seen = new Map<string, Set<string>>();
@@ -401,8 +457,8 @@ export function extractProps(dirs: { dir: string; file: string }[], prog = progr
       const name = node.name.text;
       if (!name.endsWith("Props") || MIXIN_PROP_TYPES.has(name) || names.has(name)) return;
       const type = checker.getTypeAtLocation(node);
-      const built = buildProps(checker, type, node, filesOf.get(dir) ?? [sf]);
-      const ref = factoryRef(checker, sf, name, type);
+      const built = buildProps(checker, type, node, filesOf.get(dir) ?? [sf], platform);
+      const ref = factoryRef(checker, sf, name, type, platform);
       if (ref && !built.props.some((prop) => prop.name === "ref")) built.props.push(ref);
       if (built.props.length || built.inherits.length) {
         groups.push({ name, props: built.props, groups: built.groups, inherits: built.inherits });
@@ -421,14 +477,14 @@ export function extractProps(dirs: { dir: string; file: string }[], prog = progr
  * The shared interfaces named in groups' `inherits` (INHERITED_INTERFACES), each as its
  * own group, so their rows are documented once.
  */
-export function extractInherited(prog = program()): Record<string, PropGroup> {
+export function extractInherited(prog = program(), platform: DocPlatform = "web"): Record<string, PropGroup> {
   const checker = prog.getTypeChecker();
   const out: Record<string, PropGroup> = {};
   for (const sf of prog.getSourceFiles()) {
     if (sf.isDeclarationFile || !sf.fileName.startsWith(path.join(REPO, "src"))) continue;
     sf.forEachChild((node) => {
       if (!ts.isInterfaceDeclaration(node) || !INHERITED.has(node.name.text)) return;
-      const built = buildProps(checker, checker.getTypeAtLocation(node), node, [sf]);
+      const built = buildProps(checker, checker.getTypeAtLocation(node), node, [sf], platform);
       out[node.name.text] = { name: node.name.text, ...built };
     });
   }

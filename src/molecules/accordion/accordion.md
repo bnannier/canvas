@@ -2,10 +2,20 @@
 
 A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates when the row opens) over a collapsible content panel.
 
-Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`). An item's `description` adds a muted secondary line under its title; `card` wraps the whole group in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there).
+Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`). An item's `description` adds a muted secondary line under its title;
+<!-- only: web -->
+`card` wraps the whole group in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there).
+<!-- /only -->
+<!-- only: ios -->
+on iOS the default look already is the inset-grouped card, so `card` is a no-op there.
+<!-- /only -->
+<!-- only: android -->
+`card` wraps the whole group in an outlined card surface.
+<!-- /only -->
 
 ## Usage
 
+<!-- only: web -->
 ```tsx
 <Accordion
   items={[
@@ -16,6 +26,19 @@ Single-open by default (opening one row closes the others); pass `multiple` to l
   defaultValue="what"
 />
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<Accordion
+  items={[
+    { key: "what", title: "What is Canvas?", content: "A universal React Native UI kit for native apps and the web." },
+    { key: "access", title: "Is it accessible?", content: "Yes. Each header is a button that exposes its expanded state." },
+    { key: "theme", title: "Is it themed?", content: "Yes. Every color comes from the active theme tokens." }
+  ]}
+  defaultValue="what"
+/>
+```
+<!-- /only -->
 
 ## Variants
 
@@ -35,9 +58,17 @@ Single-open by default (opening one row closes the others); pass `multiple` to l
 
 ### Card surface
 
+<!-- only: web -->
 `card` gives the group an outlined card container with inset headers and content on
 web and Android. On iOS the default Accordion already renders as the inset-grouped
 card, so `card` changes nothing there (a documented no-op).
+<!-- /only -->
+<!-- only: ios -->
+On iOS the default Accordion already renders as the inset-grouped card, so `card` changes nothing there (a documented no-op).
+<!-- /only -->
+<!-- only: android -->
+`card` gives the group an outlined card container with inset headers and content.
+<!-- /only -->
 
 ```tsx
 <Accordion

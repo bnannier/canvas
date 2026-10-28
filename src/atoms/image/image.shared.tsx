@@ -78,7 +78,13 @@ export interface ImageProps extends Omit<RNImageProps, "resizeMode" | "width" | 
   style?: StyleProp<ImageStyle>;
   /**
    * Accessible name for the image, the same name `alt` gives (and it wins when both are
-   * set). On iOS and Android React Native makes an image its own accessibility element
+   * set).
+   * <!-- only: web -->
+   * On iOS and Android React Native makes an image its own accessibility element
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * In the app React Native makes an image its own accessibility element
+   * <!-- /only -->
    * for `alt` (or `accessible`), so prefer `alt` for an image that stands on its own.
    */
   accessibilityLabel?: string;

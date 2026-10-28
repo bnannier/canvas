@@ -2,7 +2,17 @@
 
 A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates when open) over one collapsible content panel.
 
-Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). A `description` adds a muted secondary line under the title; `card` wraps the disclosure in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there). For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.
+Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). A `description` adds a muted secondary line under the title;
+<!-- only: web -->
+`card` wraps the disclosure in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there).
+<!-- /only -->
+<!-- only: ios -->
+on iOS the default look already is the inset-grouped card, so `card` is a no-op there.
+<!-- /only -->
+<!-- only: android -->
+`card` wraps the disclosure in an outlined card surface.
+<!-- /only -->
+For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.
 
 ## Usage
 
@@ -16,11 +26,20 @@ Closed by default; pass `defaultOpen` to start open. Open state is controlled (`
 
 ### Open by default
 
+<!-- only: web -->
 ```tsx
 <Collapsible title="What is Canvas?" defaultOpen>
   A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web.
 </Collapsible>
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<Collapsible title="What is Canvas?" defaultOpen>
+  A universal React Native UI kit that renders natively on phones and tablets and on the web through React Native Web.
+</Collapsible>
+```
+<!-- /only -->
 
 ### Disabled
 
@@ -32,9 +51,17 @@ Closed by default; pass `defaultOpen` to start open. Open state is controlled (`
 
 ### Card surface
 
+<!-- only: web -->
 `card` gives the disclosure an outlined card container with inset header and content
 on web and Android. On iOS the default Collapsible already renders as the
 inset-grouped card, so `card` changes nothing there (a documented no-op).
+<!-- /only -->
+<!-- only: ios -->
+On iOS the default Collapsible already renders as the inset-grouped card, so `card` changes nothing there (a documented no-op).
+<!-- /only -->
+<!-- only: android -->
+`card` gives the disclosure an outlined card container with inset header and content.
+<!-- /only -->
 
 ```tsx
 <Collapsible card title="Shipping details" defaultOpen>

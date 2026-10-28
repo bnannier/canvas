@@ -11,6 +11,7 @@ import { PALETTES, glassByScheme, lightColors, darkColors } from "../src/style/t
 import { alpha, relativeLuminance } from "../src/style/color.ts";
 import { LOOKS, glassSets } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // The glass material's FILL (its under-fill, beneath the surface's content): the layer that
 // gives a near-clear material its body, painted over the web frost's blur and beneath the
@@ -33,7 +34,11 @@ import { shellBeds } from "./fixtures/page-look.ts";
 // and iOS's but for its sheerer dark control puck, IOS_GLASS). The token-level checks below
 // hold every set.
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 // The assertions below read from the token layer rather than restating a literal, and
 // find a token's rendered form through `printed`. `#ffffff` normalizes to this fully

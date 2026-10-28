@@ -21,6 +21,7 @@ Bars size against the largest row by default (the ranking idiom); `share` sizes 
 
 ### Share of total
 
+<!-- only: web -->
 ```tsx
 <BarList
   share
@@ -31,6 +32,19 @@ Bars size against the largest row by default (the ranking idiom); `share` sizes 
   ]}
 />
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<BarList
+  share
+  items={[
+    { label: "search", value: 412 },
+    { label: "email", value: 318 },
+    { label: "github", value: 142 },
+  ]}
+/>
+```
+<!-- /only -->
 
 ### Drill-in rows
 

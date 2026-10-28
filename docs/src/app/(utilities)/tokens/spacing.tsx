@@ -1,4 +1,5 @@
 import { Column, DataTable, Grid, Card, Emblem, Icon, Avatar, Badge, Row, Typography, radius, shape, spacing } from "@nannier/canvas";
+import { PLATFORMS_SHOWN, PLATFORM_LABELS } from "../../../core/platforms-shown";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { Playground } from "../../../ui/playground";
@@ -125,6 +126,10 @@ const densityExamples: DocExample[] = [
   },
 ];
 
+
+/** The shape table's platforms, web first as the table has always read. */
+const SHAPE_PLATFORMS = (["web", "ios", "android"] as const).filter((p) => PLATFORMS_SHOWN.includes(p));
+
 export default function SpacingScreen() {
   return (
     <Page>
@@ -156,9 +161,10 @@ export default function SpacingScreen() {
               <Typography small muted>These are Emblem, Avatar and Badge, with their own shapes and materials.</Typography>
             </Card>
           </Grid>
-          <DataTable columns={["Shape token", "Web", "iOS", "Android"]} rows={Object.keys(shape.web).map((key) => {
+          {/* One column per platform this build shows (../../../core/platforms-shown). */}
+          <DataTable columns={["Shape token", ...SHAPE_PLATFORMS.map((p) => PLATFORM_LABELS[p]!.label)]} rows={Object.keys(shape.web).map((key) => {
             const role = key as keyof typeof shape.web;
-            return [key, String(shape.web[role]), String(shape.ios[role]), String(shape.android[role])];
+            return [key, ...SHAPE_PLATFORMS.map((p) => String(shape[p][role]))];
           })} />
           <Typography small muted>The shape table records platform token values. Each component selects the platform shape only when that platform defines a control for its job; other native skins use the web shape.</Typography>
         </TokenSection>

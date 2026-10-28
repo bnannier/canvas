@@ -2,18 +2,49 @@
 
 Segmented controls, split buttons, attached groups.
 
-On the web the segmented control is the v4 hand-off's: the options sit in a rounded track on the raised fill, and the selected one rides a flat card thumb with a small shadow, the rest in the muted ink. It is 30, 36 or 44 px tall at the small, default and large sizes. The split button is the green call-to-action pill with its chevron half, and the stepper and the spaced peers are hairline pills the height of a Button beside them. On iOS and Android the groups keep their platform shapes (the iOS segmented control, the Material 3 segmented button) in the theme's colours.
+On the web the segmented control is the v4 hand-off's: the options sit in a rounded track on the raised fill, and the selected one rides a flat card thumb with a small shadow, the rest in the muted ink. It is 30, 36 or 44 px tall at the small, default and large sizes. The split button is the green call-to-action pill with its chevron half, and the stepper and the spaced peers are hairline pills the height of a Button beside them.
+<!-- only: web -->
+On iOS and Android the groups keep their platform shapes (the iOS segmented control, the Material 3 segmented button) in the theme's colours.
+<!-- /only -->
+<!-- only: ios -->
+On iOS the groups keep their platform shapes (the iOS segmented control) in the theme's colours.
+<!-- /only -->
+<!-- only: android -->
+On Android the groups keep their platform shapes (the Material 3 segmented button) in the theme's colours.
+<!-- /only -->
 
-All four kinds follow the theme's surface mode. Toggle Liquid Glass in the docs,
-or use `<ThemeProvider glass>` in an app: segmented groups paint a glass
+All four kinds follow the theme's surface mode.
+<!-- only: web -->
+Toggle Liquid Glass in the docs,
+or use `<ThemeProvider glass>` in an app:
+<!-- /only -->
+<!-- only: ios -->
+Toggle Liquid Glass in the docs,
+or use `<ThemeProvider glass>` in an app:
+<!-- /only -->
+<!-- only: android -->
+Toggle glass in the docs,
+or use `<ThemeProvider glass>` in an app:
+<!-- /only -->
+segmented groups paint a glass
 selection puck, in the segment's own corners, on the selected segment, a split group is its call to action's
 brand-tinted glass (the action colour under the material, as a primary Button), a
 stepper shares a glass capsule, and spaced peers get individual glass surfaces. Every
 kind keeps its solid size under glass: the material covers the track or cell's whole
 footprint and a hairline border gives way to the material's edge, so switching the surface
-mode never moves the page. Solid mode keeps each platform's existing skin. The material uses native Liquid Glass on supported iOS
+mode never moves the page. Solid mode keeps each platform's existing skin.
+<!-- only: web -->
+The material uses native Liquid Glass on supported iOS
 versions, the native blur or tint fallback on Android and older iOS, and
-the hand-off's frost in the browser. Reduce Transparency and Increase Contrast use the
+the hand-off's frost in the browser.
+<!-- /only -->
+<!-- only: ios -->
+The material uses native Liquid Glass on supported iOS versions and the native blur or tint fallback on older ones.
+<!-- /only -->
+<!-- only: android -->
+The material uses the native blur, or a tint fallback where the blur is unavailable.
+<!-- /only -->
+Reduce Transparency and Increase Contrast use the
 shared material's opaque fallbacks.
 
 A web segment is 8 px shorter than its track, padded 14 px a side (8 px for an icon

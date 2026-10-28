@@ -1,14 +1,14 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { getTemplate, getAllTemplates } from "../../../core/data/templates";
-import { MockupDocPage } from "../../../ui/mockup-page";
+import { TemplatesExplorer } from "../../../ui/templates/explorer";
 
 export async function generateStaticParams() {
   return getAllTemplates().map((t) => ({ slug: t.slug }));
 }
 
+// One template's page: the Templates explorer open on it (docs/src/ui/templates/explorer.tsx).
 export default function TemplateScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const template = slug ? getTemplate(slug) : undefined;
-  if (!template) return <Redirect href="/" />;
-  return <MockupDocPage name={template.name} description={template.description} sections={template.sections} />;
+  if (!slug || !getTemplate(slug)) return <Redirect href="/templates" />;
+  return <TemplatesExplorer slug={slug} />;
 }

@@ -41,9 +41,14 @@ const SHAPE = { borderRadius: 16, borderWidth: 1, borderColor: "#dddddd", backgr
 
 describe("the glass host's native view", () => {
   for (const layer of ["functional", "content", "control", "dense"] as const) {
+    // On the web only a floating surface takes the material (the v4 hand-off); an in-page
+    // one is the solid host, untouched.
     it(`keeps the ${layer} host a view of its own on the web host under glass`, () => {
-      const props = hostProps("host", () => { render(<ThemeProvider light glass><GlassSurface testID="host" layer={layer} style={SHAPE} /></ThemeProvider>); });
+      const props = hostProps("host", () => { render(<ThemeProvider light glass><GlassSurface testID="host" floating layer={layer} style={SHAPE} /></ThemeProvider>); });
       expect(props.collapsable).toBe(false);
+      cleanup();
+      const inPage = hostProps("host", () => { render(<ThemeProvider light glass><GlassSurface testID="host" layer={layer} style={SHAPE} /></ThemeProvider>); });
+      expect(inPage.collapsable).toBeUndefined();
     });
   }
 

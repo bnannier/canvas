@@ -56,9 +56,12 @@ export interface RadioGroupProps {
   /** Disable every radio in the group. */
   disabled?: boolean;
   /**
-   * Lay the options out in a wrapping row instead of the default column. iOS keeps its
+   * Lay the options out in a wrapping row instead of the default column.
+   * <!-- only: web ios -->
+   * iOS keeps its
    * checkmark list vertical (a list has no row form); `card` options still sit in a row
    * there.
+   * <!-- /only -->
    */
   row?: boolean;
   /**

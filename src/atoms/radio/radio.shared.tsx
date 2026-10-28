@@ -50,8 +50,18 @@ export interface RadioProps {
    */
   description?: ReactNode;
   /**
-   * Render the whole control as a selectable option CARD: the mark (the ring, or the
-   * trailing check on iOS) plus the title and description sit inside Card chrome
+   * Render the whole control as a selectable option CARD: the mark
+   * <!-- only: web -->
+   * (the ring, or the
+   * trailing check on iOS)
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * (the trailing check)
+   * <!-- /only -->
+   * <!-- only: android -->
+   * (the ring)
+   * <!-- /only -->
+   * plus the title and description sit inside Card chrome
    * (bordered, padded), and the ENTIRE card is the tap target. When this radio is the
    * chosen option, the card takes Card's own `selected` treatment (a primary border and
    * a soft primary tint), so the whole tile reads as chosen, not just the mark. Pairs

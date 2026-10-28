@@ -5,8 +5,13 @@ import { TextInput } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Stats } from "../src/molecules/stats/stats.tsx";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 describe("static content mode changes", () => {
   for (const kind of ["card", "pressable-card", "stats"] as const) {

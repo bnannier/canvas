@@ -132,7 +132,7 @@ export function createTabBar(skin: TabBarSkin) {
       floating ? { paddingBottom: basePad } : { alignSelf: "stretch", width: "100%", paddingBottom: basePad + bottomInset },
     ];
     const bar = (
-      <GlassSurface style={floating ? barStyle : [barStyle, style]}>
+      <GlassSurface floating style={floating ? barStyle : [barStyle, style]}>
         <View accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row", gap: skin.cellGap ?? 0 }}>
           {items.map((it) => {
             const isActive = it.key === activeKey;

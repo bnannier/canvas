@@ -1,10 +1,33 @@
 # Stepper
 
-Increment, decrement, or type a number in a bounded range. A − button, an editable numeric center field, and a + button, controlled by `value` and clamped to `min` / `max` by `step`. This is the ± numeric control (the iOS UIStepper idiom); for a multi-step progress indicator see Steps.
+Increment, decrement, or type a number in a bounded range. A − button, an editable numeric center field, and a + button, controlled by `value` and clamped to `min` / `max` by `step`.
+<!-- only: web -->
+This is the ± numeric control (the iOS UIStepper idiom); for a multi-step progress indicator see Steps.
+<!-- /only -->
+<!-- only: ios -->
+This is the ± numeric control (the iOS UIStepper idiom); for a multi-step progress indicator see Steps.
+<!-- /only -->
+<!-- only: android -->
+This is the ± numeric control; for a multi-step progress indicator see Steps.
+<!-- /only -->
 
+<!-- only: web -->
 On the web the control is one 40 px box (32 `small`, 48 `large`) at the control corner with square ± cells and the value in the mono face; on iOS the capsule [ − | + ] pill with the value to its left; on Android Material 3's outlined circular icon buttons around the value.
+<!-- /only -->
+<!-- only: ios -->
+On iOS the control is the capsule [ − | + ] pill with the value to its left.
+<!-- /only -->
+<!-- only: android -->
+On Android the control is Material 3's outlined circular icon buttons around the value.
+<!-- /only -->
 
-Pass `label` to title the control from above, `description` for a secondary line under it, and `required` to mark it: the label takes a decorative destructive star, and a screen reader hears the control as required, from `aria-required` on the web's numeric field and from its name ("Quantity, required") on iOS and Android.
+Pass `label` to title the control from above, `description` for a secondary line under it, and `required` to mark it: the label takes a decorative destructive star, and a screen reader hears the control as required,
+<!-- only: web -->
+from `aria-required` on the web's numeric field and from its name ("Quantity, required") on iOS and Android.
+<!-- /only -->
+<!-- only: ios android -->
+from its name ("Quantity, required").
+<!-- /only -->
 
 ## Usage
 

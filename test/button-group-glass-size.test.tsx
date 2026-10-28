@@ -4,6 +4,7 @@ import { type ReactElement } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { createButtonGroup } from "../src/atoms/button-group/button-group.shared.tsx";
 import { webSkin, iosSkin, androidSkin } from "../src/atoms/button-group/button-group.styles.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // ButtonGroup is the same size in solid and glass (glass-surface-button-group-size-1, the
 // owner's GP-1 decision: "a control is the same size in glass and solid"). Under glass it
@@ -18,7 +19,11 @@ import { webSkin, iosSkin, androidSkin } from "../src/atoms/button-group/button-
 // happy-dom computes no layout, so the boxes are read from the computed style the browser
 // lays out from.
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 const SIDES = ["top", "right", "bottom", "left"] as const;
 const px = (value: string) => (value === "" ? 0 : Number.parseFloat(value));

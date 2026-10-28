@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PLATFORM_COPY } from "../data/platform-copy";
 import {
   ActionSheet,
   Alert,
@@ -124,7 +125,7 @@ function ToastCard() {
       />
       <Column snug>
         <Toast info brief message="Syncing native builds…" icon={<Spinner small />} />
-        <Toast warning brief message="Android blur module needs a rebuild" action={{ label: "Rebuild", onPress: noop }} />
+        <Toast warning brief message={`${PLATFORM_COPY.samplePlatform} blur module needs a rebuild`} action={{ label: "Rebuild", onPress: noop }} />
         <Toast destructive brief message="Publish failed · contrast floor not met" action={{ label: "Details", onPress: noop }} />
       </Column>
     </ShowcaseCard>

@@ -1,3 +1,4 @@
+import { PLATFORM_COPY } from "../data/platform-copy";
 // The Charts section page's sample data, read off the hand-off's own drawings
 // (`Canvas v4.0.0 Charts.dc.html`: each card's SVG geometry and its script's SPARKS, HEAT,
 // UPT, SVC and GEO tables) and handed to the kit charts as data. Plain data with no React
@@ -29,7 +30,7 @@ export const PLATFORM_AREA = {
   labels: months(11),
   series: [
     { label: "iOS", values: above(140, AREA_IOS) },
-    { label: "Android", values: AREA_IOS.map((y, i) => y - AREA_ANDROID[i]!) },
+    { label: PLATFORM_COPY.samplePlatform, values: AREA_IOS.map((y, i) => y - AREA_ANDROID[i]!) },
     { label: "Web", values: AREA_ANDROID.map((y, i) => y - AREA_WEB[i]!) },
   ],
 };
@@ -98,7 +99,7 @@ export const QUARTER_BRIDGE = [
 /** c-pie-chart: 24.8k sessions by platform (42, 28, 18 and 12%). */
 export const SESSIONS_BY_PLATFORM = [
   { label: "iOS", value: 10416 },
-  { label: "Android", value: 6944 },
+  { label: PLATFORM_COPY.samplePlatform, value: 6944 },
   { label: "Web", value: 4464 },
   { label: "Desktop", value: 2976 },
 ];
@@ -107,7 +108,7 @@ export const SESSIONS_BY_PLATFORM = [
 export const USAGE_TREEMAP = [
   { label: "Web", value: 42 },
   { label: "iOS", value: 28 },
-  { label: "Android", value: 18 },
+  { label: PLATFORM_COPY.samplePlatform, value: 18 },
   { label: "Desktop", value: 7 },
   { label: "CLI", value: 3 },
   { label: "Other", value: 2 },
@@ -138,7 +139,7 @@ export const CONVERSION = [
 /** c-radial-bar-chart: installs by platform against an 80k goal. */
 export const INSTALLS_BY_PLATFORM = [
   { label: "iOS", value: 64 },
-  { label: "Android", value: 41 },
+  { label: PLATFORM_COPY.samplePlatform, value: 41 },
   { label: "Web", value: 23 },
 ];
 
@@ -167,7 +168,7 @@ export const INSTALLS = {
   breakdown: [
     { label: "Web", value: 54 },
     { label: "iOS", value: 31 },
-    { label: "Android", value: 15 },
+    { label: PLATFORM_COPY.samplePlatform, value: 15 },
   ],
 };
 
@@ -237,7 +238,7 @@ export const SERVICES = [
   { label: "API", detail: "99.98%", periods: Array.from({ length: 30 }, () => ({})) },
   { label: "Web app", detail: "100%", periods: Array.from({ length: 30 }, () => ({})) },
   { label: "Push notifications", detail: "98.21%", degraded: true, periods: Array.from({ length: 30 }, (_, j) => ([22, 26, 27, 29].includes(j) ? { degraded: true } : {})) },
-  { label: "Android capture module", detail: "96.40%", down: true, periods: Array.from({ length: 30 }, (_, j) => (j === 29 ? { down: true } : [12, 24, 25].includes(j) ? { degraded: true } : {})) },
+  { label: `${PLATFORM_COPY.samplePlatform} capture module`, detail: "96.40%", down: true, periods: Array.from({ length: 30 }, (_, j) => (j === 29 ? { down: true } : [12, 24, 25].includes(j) ? { degraded: true } : {})) },
 ];
 
 /** c-geo-map: sessions in ten cities over the last 24 hours (the hand-off's GEO). */

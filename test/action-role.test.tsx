@@ -8,6 +8,7 @@ import { brandTint } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Typography } from "../src/atoms/typography/typography.tsx";
+import { mockInPageFrost } from "./fixtures/material-platform.ts";
 
 // `action` / `action-foreground`: the call-to-action fill and its ink, apart from
 // `primary` (what is selected, checked, current, linked or focused). The v4 hand-off
@@ -84,14 +85,19 @@ describe("the action role", () => {
     expect(fillOf("More actions")).toBe(rgb("#21804b"));
   });
 
+  // The Button is in-page material, which the web keeps solid under glass (the v4 hand-off):
+  // its brand puck is read where in-page surfaces frost.
   it("tints a glass primary puck with the action fill", async () => {
-    const { container } = render(<ThemeProvider light glass tokens={{ action: "#21804b", "action-foreground": "#ffffff" }}><Button primary testID="go">Go</Button></ThemeProvider>);
-    await waitFor(() => expect(container.querySelectorAll('[data-testid="glass-material"]').length).toBeGreaterThan(0));
-    const button = container.querySelector('[data-testid="go"]') as HTMLElement;
-    // A brand fill paints over the frost, so it is the frost layer's next sibling.
-    const frost = button.querySelector('[data-testid="glass-material"] > [style*="backdrop-filter"]') as HTMLElement;
-    const fill = (frost.nextElementSibling as HTMLElement | null)?.style.backgroundColor ?? "";
-    expect(rgb(fill)).toBe(rgb(brandTint("#21804b", lightColors.background)));
+    const frost = mockInPageFrost();
+    try {
+      const { container } = render(<ThemeProvider light glass tokens={{ action: "#21804b", "action-foreground": "#ffffff" }}><Button primary testID="go">Go</Button></ThemeProvider>);
+      await waitFor(() => expect(container.querySelectorAll('[data-testid="glass-material"]').length).toBeGreaterThan(0));
+      const button = container.querySelector('[data-testid="go"]') as HTMLElement;
+      // A brand fill paints over the frost, so it is the frost layer's next sibling.
+      const frost = button.querySelector('[data-testid="glass-material"] > [style*="backdrop-filter"]') as HTMLElement;
+      const fill = (frost.nextElementSibling as HTMLElement | null)?.style.backgroundColor ?? "";
+      expect(rgb(fill)).toBe(rgb(brandTint("#21804b", lightColors.background)));
+    } finally { frost.mockRestore(); }
   });
 });
 

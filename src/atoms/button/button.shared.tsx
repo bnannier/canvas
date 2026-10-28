@@ -55,7 +55,12 @@ export interface ButtonProps extends MeasureProps {
   hrefAttrs?: { target?: "_blank" | "_self"; rel?: string; download?: boolean | string };
   /**
    * Called when a pointer starts hovering the button. Fires on pointer devices
+   * <!-- only: web ios -->
    * only (web via react-native-web, pointer-equipped iPads/desktops natively);
+   * <!-- /only -->
+   * <!-- only: android -->
+   * only (web via react-native-web, pointer-equipped devices natively);
+   * <!-- /only -->
    * touch never triggers it. For hover-driven disclosure such as Tooltip.
    */
   onHoverIn?: (event: MouseEvent) => void;

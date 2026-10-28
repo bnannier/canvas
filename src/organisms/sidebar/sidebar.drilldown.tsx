@@ -36,8 +36,15 @@ export interface SidebarDrillDownProps {
   onSelect: (item: SidebarItem, index: number, event: GestureResponderEvent) => void;
   /** Close the hosting Drawer (after a leaf selection or a root-level back). */
   onRequestClose: () => void;
-  /** Extra bottom padding so the last rows clear persistent chrome painting over the drawer
-   *  (e.g. a native bottom tab bar on Android). */
+  /**
+   * Extra bottom padding so the last rows clear persistent chrome painting over the drawer
+   * <!-- only: web android -->
+   * (e.g. a native bottom tab bar on Android).
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * (e.g. a native bottom tab bar).
+   * <!-- /only -->
+   */
   contentInsetBottom?: number;
   /** Fill the panel (a full-height left/right drawer) vs shrink within it (a content-sized
    *  top/bottom sheet). */

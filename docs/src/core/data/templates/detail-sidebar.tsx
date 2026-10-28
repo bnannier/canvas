@@ -1,176 +1,114 @@
-import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, DescriptionList, Divider, Avatar, Icon, useToast } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import { Fragment } from "react";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Order detail built from real Canvas components: breadcrumb + header with the
-// fulfillment status and toast-backed actions, line items and the shipment
-// timeline in the main column, and the customer / shipping / summary sidebar
-// with copyable record IDs. Two thirds and one third side by side, stacking
-// once the section is md wide or narrower.
+// The hand-off's Detail + sidebar (`Canvas v4.0.0 Templates.dc.html`, `t.detail`): the
+// Orders breadcrumb, the order's heading with its status badges, Refund and Mark fulfilled,
+// then the Items and the fulfilment Timeline beside a metadata sidebar (the customer, the
+// copyable ids, the shipping address and the totals) that stacks under them on narrow
+// screens. Every part is a kit component from the frame's scope.
 
 const ITEMS = [
-  { product: "Canvas Pro Plan", qty: "2", price: "$198.00" },
-  { product: "Priority Support (1yr)", qty: "1", price: "$49.00" },
-  { product: "Custom Theme Pack", qty: "1", price: "$29.00" },
-];
+  { icon: "users", tone: "primary", name: "Team seat", qty: "24 × $12.00", price: "$288.00" },
+  { icon: "lifeBuoy", tone: "success", name: "Priority support", qty: "1 × $40.00", price: "$40.00" },
+  { icon: "layers", tone: "muted", name: "Audit log add-on", qty: "1 × included", price: "$0.00" },
+] as const;
 
 const TIMELINE = [
-  { id: "delivered", actor: "Delivered", action: "handed to the customer", time: "May 22, 2026, 2:15 PM" },
-  { id: "shipped", actor: "Shipped", action: "left the fulfillment center", time: "May 21, 2026, 9:30 AM" },
-  { id: "paid", actor: "Payment confirmed", action: "card charged $300.84", time: "May 20, 2026, 11:02 AM" },
-  { id: "placed", actor: "Order placed", action: "submitted through checkout", time: "May 20, 2026, 10:58 AM" },
+  { label: "Payment captured", description: "Oct 24 · 14:03" },
+  { label: "Seats provisioned", description: "Oct 24 · 14:04" },
+  { label: "Awaiting fulfilment", description: "support onboarding call" },
 ];
 
-const SUMMARY = [
-  { label: "Subtotal", value: "$276.00" },
-  { label: "Shipping", value: "$0.00" },
-  { label: "Tax", value: "$24.84" },
-];
-
-function DetailSidebarLive() {
+function DetailScreen({ K }: TemplateScreenProps) {
+  const { Row, Column, Card, Typography, Button, Badge, Breadcrumb, Divider, Emblem, Icon, Avatar, Steps, DescriptionList, useToast } = K;
   const { toast } = useToast();
-
-  const header = (
-    <Column snug>
-      <Breadcrumb
-        items={["Orders", "ORD-2847"]}
-        onItemPress={(item) =>
-          toast({ message: `Navigate to ${item}`, description: "This demo stays on the order detail." })
-        }
-      />
-      <Row between alignCenter wrap relaxed>
-        <Column tight>
+  const copied = () => toast({ message: "Copied to clipboard" });
+  return (
+    <Column airy>
+      <Breadcrumb chevron items={["Orders", "#4821"]} />
+      <Row between alignEnd wrap cozy>
+        <Column tight shrink>
           <Row snug alignCenter wrap>
-            <Typography h3 semibold>ORD-2847</Typography>
-            <Badge status success>Fulfilled</Badge>
+            <Typography h3 level={2}>Order #4821</Typography>
+            <Badge soft success>Paid</Badge>
+            <Badge soft warning>Unfulfilled</Badge>
           </Row>
-          <Typography small>Placed May 20, 2026</Typography>
+          <Typography small subtle>Placed Oct 24, 2026 at 14:02 · 3 items</Typography>
         </Column>
-        <Row snug alignCenter>
-          <Button
-            outline
-            small
-            iconLeft={<Icon download size={16} />}
-            onPress={() =>
-              toast({ success: true, message: "Invoice downloaded", description: "ORD-2847.pdf saved to your downloads." })
-            }
-          >
-            Invoice
-          </Button>
-          <Button
-            primary
-            small
-            onPress={() =>
-              toast({ success: true, message: "Receipt sent", description: "rachel.chen@example.com will receive a copy." })
-            }
-          >
-            Resend receipt
-          </Button>
+        <Row snug wrap>
+          <Button outline onPress={() => toast({ message: "Refund drafted for #4821" })}>Refund</Button>
+          <Button primary raised onPress={() => toast({ message: "Marked #4821 fulfilled" })}>Mark fulfilled</Button>
         </Row>
       </Row>
-    </Column>
-  );
-
-  const main = (
-    <Column relaxed>
-      <Column snug>
-        <Typography h4>Items</Typography>
-        <DataTable
-          bordered
-          columns={["Product", "Qty", "Price"]}
-          rows={ITEMS.map((i) => [i.product, i.qty, i.price])}
-          onRowPress={(_row, index) =>
-            toast({
-              message: ITEMS[index].product,
-              description: `Qty ${ITEMS[index].qty}, line total ${ITEMS[index].price}.`,
-            })
-          }
-        />
-      </Column>
-      <Column snug>
-        <Typography h4>Timeline</Typography>
-        <Feed connector items={TIMELINE} />
-      </Column>
-    </Column>
-  );
-
-  const side = (
-    <Column relaxed>
-      <Card>
-        <Column cozy>
-          <Typography h4>Customer</Typography>
-          <Row snug alignCenter>
-            <Avatar small name="RC" />
-            <Column tight>
-              <Typography small medium>Rachel Chen</Typography>
-              <Typography tiny>rachel.chen@example.com</Typography>
-            </Column>
-          </Row>
-          <Divider />
-          <DescriptionList
-            inline
-            onCopy={(value) => toast({ success: true, message: "Copied to clipboard", description: value })}
-            items={[
-              { term: "Order ID", value: "ORD-2847", mono: true, copyValue: "ORD-2847" },
-              { term: "Payment ID", value: "pay_9f3k82aq", mono: true, copyValue: "pay_9f3k82aq" },
-              { term: "Customer ID", value: "cus_8c3177fe", mono: true, copyValue: "cus_8c3177fe" },
-            ]}
-          />
-        </Column>
-      </Card>
-      <Card>
-        <Column cozy>
-          <Typography h4>Shipping</Typography>
-          <Column tight>
-            <Typography small>Rachel Chen</Typography>
-            <Typography small>42 Innovation Drive</Typography>
-            <Typography small>San Francisco, CA 94107</Typography>
-            <Typography small>United States</Typography>
+      <Row stacks stackBreakpoint="sm" cozy>
+        <Column span={8}>
+          <Column cozy>
+            <Card flush>
+              <Column>
+                <Column pad><Typography body semibold>Items</Typography></Column>
+                {ITEMS.map((item) => (
+                  <Fragment key={item.name}>
+                    <Divider />
+                    <Column pad>
+                      <Row cozy alignCenter>
+                        <Emblem {...{ [item.tone]: true }}><Icon {...{ [item.icon]: true }} decorative /></Emblem>
+                        <Column fill>
+                          <Typography small medium>{item.name}</Typography>
+                          <Typography caption mono subtle>{item.qty}</Typography>
+                        </Column>
+                        <Typography small mono semibold>{item.price}</Typography>
+                      </Row>
+                    </Column>
+                  </Fragment>
+                ))}
+              </Column>
+            </Card>
+            <Card>
+              <Column cozy>
+                <Typography body semibold>Timeline</Typography>
+                <Steps vertical current={2} steps={TIMELINE} />
+              </Column>
+            </Card>
           </Column>
-          <Row>
-            <Button
-              outline
-              small
-              iconLeft={<Icon truck size={16} />}
-              onPress={() =>
-                toast({ info: true, message: "Tracking opened", description: "UPS 1Z999AA10123456784, delivered May 22." })
-              }
-            >
-              Track package
-            </Button>
-          </Row>
         </Column>
-      </Card>
-      <Card>
-        <Column cozy>
-          <Typography h4>Summary</Typography>
-          <Column tight>
-            {SUMMARY.map((line) => (
-              <Row key={line.label} between alignCenter>
-                <Typography small>{line.label}</Typography>
-                <Typography body>{line.value}</Typography>
+        <Column span={4}>
+          <Column cozy>
+            <Card onPress={() => toast({ message: "Grace Hopper" })}>
+              <Row cozy alignCenter>
+                <Avatar src="/grace-hopper.jpg" name="Grace Hopper" />
+                <Column fill>
+                  <Typography small semibold>Grace Hopper</Typography>
+                  <Typography caption subtle>grace@ionize.io · 12 orders</Typography>
+                </Column>
+                <Icon chevronRight muted size={16} decorative />
               </Row>
-            ))}
+            </Card>
+            <DescriptionList
+              card
+              divided
+              onCopy={copied}
+              items={[
+                { term: "Order ID", value: "ord_4821_9Kq", mono: true, copyValue: "ord_4821_9Kq" },
+                { term: "Payment", value: "pi_3Xc71", mono: true, copyValue: "pi_3Xc71" },
+              ]}
+            />
+            <Card>
+              <Column snug>
+                <Typography small subtle>Ships to</Typography>
+                <Typography>{"Riskora GmbH\nTorstraße 140\n10119 Berlin, DE"}</Typography>
+              </Column>
+            </Card>
+            <DescriptionList
+              card
+              divided
+              items={[
+                { term: "Subtotal", value: "$328.00", mono: true },
+                { term: "VAT 19%", value: "$62.32", mono: true },
+                { term: <Typography small semibold>Total</Typography>, value: <Typography small mono semibold>$390.32</Typography> },
+              ]}
+            />
           </Column>
-          <Divider />
-          <Row between alignCenter>
-            <Typography body semibold>Total</Typography>
-            <Typography body semibold>$300.84</Typography>
-          </Row>
         </Column>
-      </Card>
-    </Column>
-  );
-
-  // Main and sidebar split two thirds to one third and stack, main first, once
-  // the section is md (768) wide or narrower: below that a third is too narrow
-  // for the copyable ID rows. One element tree at every width: the Row measures
-  // its own container and only its layout changes.
-  return (
-    <Column relaxed>
-      {header}
-      <Row stacks stackBreakpoint="md" relaxed>
-        <Column span={8}>{main}</Column>
-        <Column span={4}>{side}</Column>
       </Row>
     </Column>
   );
@@ -178,13 +116,11 @@ function DetailSidebarLive() {
 
 export const DETAIL_SIDEBAR_TEMPLATE: TemplateDoc = {
   slug: "detail-sidebar",
-  name: "Detail w/ sidebar",
-  description: "Master-detail record page: order header with status and actions, line items and timeline beside a metadata sidebar. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Order detail",
-      anatomy: "Breadcrumb + header Row (title, status Badge, toast-backed actions) over a two-thirds/one-third split: items DataTable and shipment Feed in the main Column; customer identity, copyable ID DescriptionList rows, shipping address, and totals Cards in the sidebar. The split is a Row stacks of span-8 and span-4 columns that stacks once the section is md wide or narrower, where a third no longer fits the ID rows.",
-      render: () => <DetailSidebarLive />,
-    },
-  ],
+  name: "Detail + sidebar",
+  group: "App",
+  icon: "panelRight",
+  description: "Order record: items and timeline beside a metadata sidebar that stacks on phones.",
+  path: "detail",
+  app: true,
+  Screen: DetailScreen,
 };

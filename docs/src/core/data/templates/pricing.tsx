@@ -1,142 +1,104 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Tabs, Icon, Accordion, useToast, Grid } from "@nannier/canvas";
-import type { ToastOptions } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Live pricing page built from real Canvas components (the dogfood path): a
-// billing-cycle toggle that reprices the tiers, three plan cards, a feature
-// comparison table, and a billing FAQ.
+// The hand-off's Pricing (`Canvas v4.0.0 Templates.dc.html`, `t.pricing`): the heading and
+// the billing-cycle switch, the three plan cards (Team selected and Popular), the feature
+// comparison table and the billing FAQ. Every part is a kit component from the frame's scope.
 
-type Tier = {
-  name: string;
-  monthly: number;
-  yearly: number;
-  blurb: string;
-  cta: string;
-  featured: boolean;
-  features: string[];
-  toast: ToastOptions;
-};
+const PLANS = [
+  { name: "Starter", monthly: 0, yearly: 0, blurb: "For side projects", features: ["3 workspaces", "10 boards each", "Community support"] },
+  { name: "Team", monthly: 15, yearly: 12, blurb: "For product teams", features: ["Unlimited workspaces", "Unlimited boards", "Audit log", "Priority support"] },
+  { name: "Enterprise", monthly: null, yearly: null, blurb: "For regulated orgs", features: ["SSO and SCIM", "Dedicated region", "99.99% SLA", "Custom terms"] },
+] as const;
 
-const TIERS: Tier[] = [
-  {
-    name: "Starter",
-    monthly: 0,
-    yearly: 0,
-    blurb: "For side projects and evaluation.",
-    cta: "Start for free",
-    featured: false,
-    features: ["3 projects", "Community support", "1 GB storage"],
-    toast: { success: true, message: "Starter activated", description: "Your workspace is on the free plan. Upgrade anytime." },
-  },
-  {
-    name: "Pro",
-    monthly: 24,
-    yearly: 19,
-    blurb: "For teams shipping to production.",
-    cta: "Start free trial",
-    featured: true,
-    features: ["Unlimited projects", "Priority support", "100 GB storage", "Custom domains"],
-    toast: { success: true, message: "Trial started", description: "Pro is free for 14 days. No card required." },
-  },
-  {
-    name: "Enterprise",
-    monthly: 99,
-    yearly: 79,
-    blurb: "For orgs with compliance needs.",
-    cta: "Contact sales",
-    featured: false,
-    features: ["SSO / SAML", "Audit logs", "Dedicated support", "1 TB storage"],
-    toast: { info: true, message: "Sales will reach out", description: "Expect a reply within one business day." },
-  },
+const COMPARE = [
+  ["Workspaces", "3", "Unlimited", "Unlimited"],
+  ["Unlimited boards", "-", "y", "y"],
+  ["Audit log", "-", "y", "y"],
+  ["SSO / SCIM", "-", "-", "y"],
+  ["Support", "Community", "Priority", "Dedicated"],
+] as const;
+
+const FAQ = [
+  { q: "Can I switch plans later?", a: "Yes. Upgrades apply right away and are prorated; downgrades apply at renewal." },
+  { q: "Do you offer refunds?", a: "Within 14 days of any charge, no questions asked." },
+  { q: "What counts as a seat?", a: "Anyone who can sign in. Guests on a single board are free." },
 ];
 
-function PlansLive() {
-  const [cycle, setCycle] = useState(0);
+function PricingScreen({ K }: TemplateScreenProps) {
+  const { Row, Column, Grid, Card, Typography, Button, Icon, Badge, ButtonGroup, DataTable, Accordion, useToast } = K;
   const { toast } = useToast();
-  const yearly = cycle === 1;
+  const [yearly, setYearly] = useState(true);
   return (
-    <Column loose>
-      <Row center>
-        <Tabs pills tabs={[{ label: "Monthly" }, { label: "Yearly", badge: "-20%" }]} active={cycle} onSelect={setCycle} />
-      </Row>
-      <Grid minTileWidth={240} relaxed>
-        {TIERS.map((t) => (
-          <Card key={t.name} grow selected={t.featured}>
-            <Column cozy>
-              <Row between alignCenter>
-                <Typography h4>{t.name}</Typography>
-                {t.featured ? <Badge>Most popular</Badge> : null}
-              </Row>
-              <Row tight baseline>
-                <Typography h2>${yearly ? t.yearly : t.monthly}</Typography>
-                <Typography muted>/ month{yearly ? ", billed yearly" : ""}</Typography>
-              </Row>
-              <Typography small>{t.blurb}</Typography>
-              <Column tight>
-                {t.features.map((f) => (
-                  <Row key={f} snug alignCenter>
-                    <Icon check success size={16} />
-                    <Typography small>{f}</Typography>
-                  </Row>
-                ))}
+    <Column airy>
+      <Column cozy alignCenter>
+        <Typography h3 center level={2}>Plans that scale with your team</Typography>
+        <Typography small subtle center>Every plan includes web, iOS and Android apps.</Typography>
+        <ButtonGroup small accessibilityLabel="Billing cycle" active={yearly ? 1 : 0} onSelect={(i) => setYearly(i === 1)} items={["Monthly", "Yearly −20%"]} />
+      </Column>
+      <Grid minTileWidth={230} relaxed>
+        {PLANS.map((p, i) => {
+          const price = p.monthly === null ? "Custom" : `$${yearly ? p.yearly : p.monthly}`;
+          const per = p.monthly === null ? "talk to us" : p.monthly === 0 ? "free forever" : "per seat / mo";
+          const cta = p.monthly === null ? "Contact sales" : p.monthly === 0 ? "Start free" : "Start trial";
+          const featured = i === 1;
+          return (
+            <Card key={p.name} grow selected={featured}>
+              <Column roomy grow>
+                <Row between alignCenter>
+                  <Typography body semibold>{p.name}</Typography>
+                  {featured ? <Badge solid primary small>Popular</Badge> : null}
+                </Row>
+                <Row snug baseline wrap>
+                  <Typography h2>{price}</Typography>
+                  <Typography small subtle>{per}</Typography>
+                </Row>
+                <Typography small subtle>{p.blurb}</Typography>
+                <Column snug grow>
+                  {p.features.map((f) => (
+                    <Row key={f} snug alignCenter>
+                      <Icon check primary size={16} decorative />
+                      <Typography small>{f}</Typography>
+                    </Row>
+                  ))}
+                </Column>
+                <Button
+                  block
+                  primary={featured}
+                  raised={featured}
+                  secondary={!featured}
+                  onPress={() => toast({ message: p.monthly === null ? "Sales will reach out" : `${p.name} selected` })}
+                >
+                  {cta}
+                </Button>
               </Column>
-              <Button block primary={t.featured} outline={!t.featured} onPress={() => toast(t.toast)}>
-                {t.cta}
-              </Button>
-            </Column>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </Grid>
+      <DataTable
+        columns={["Feature", "Starter", "Team", "Enterprise"]}
+        rows={COMPARE.map(([feature, ...cells]) => [
+          <Typography key="f" small medium>{feature}</Typography>,
+          ...cells.map((c, j) =>
+            c === "y" ? <Icon key={j} check success size={16} accessibilityLabel="Included" />
+              : c === "-" ? <Icon key={j} minus muted size={16} accessibilityLabel="Not included" />
+                : c,
+          ),
+        ])}
+      />
+      <Accordion defaultValue="0" items={FAQ.map((f, i) => ({ key: String(i), title: f.q, content: f.a }))} />
     </Column>
   );
 }
 
-const yes = <Icon check success size={16} accessibilityLabel="Included" />;
-const no = <Icon minus muted size={16} accessibilityLabel="Not included" />;
-
 export const PRICING_TEMPLATE: TemplateDoc = {
   slug: "pricing",
   name: "Pricing",
-  description: "Plan tiers with a billing-cycle toggle, a feature comparison table, and a billing FAQ. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Plan tiers",
-      anatomy: "Billing-cycle toggle (Tabs pills) -> three plan Cards (name + price lockup + feature list + CTA), featured tier selected. Cards wrap to a single column on phones.",
-      render: () => <PlansLive />,
-    },
-    {
-      title: "Feature comparison",
-      anatomy: "DataTable with one column per tier; cells are check / minus icons or limit values.",
-      render: () => (
-        <DataTable
-          bordered
-          columns={["Feature", "Starter", "Pro", "Enterprise"]}
-          rows={[
-            ["Projects", "3", "Unlimited", "Unlimited"],
-            ["Storage", "1 GB", "100 GB", "1 TB"],
-            ["Custom domains", no, yes, yes],
-            ["Priority support", no, yes, yes],
-            ["SSO / SAML", no, no, yes],
-            ["Audit logs", no, no, yes],
-          ]}
-        />
-      ),
-    },
-    {
-      title: "Billing FAQ",
-      anatomy: "Single-open Accordion of common billing questions.",
-      render: () => (
-        <Accordion
-          items={[
-            { key: "switch", title: "Can I switch plans later?", content: "Yes. Upgrades apply immediately and are prorated; downgrades take effect at the next renewal." },
-            { key: "trial", title: "How does the free trial work?", content: "Pro is free for 14 days, no card required. You keep your data if you decide not to continue." },
-            { key: "cancel", title: "What happens when I cancel?", content: "Your workspace drops to Starter at the end of the billing period. Nothing is deleted." },
-            { key: "invoice", title: "Can I pay by invoice?", content: "Enterprise plans can pay annually by invoice with net-30 terms. Contact sales to set it up." },
-          ]}
-          defaultValue="switch"
-        />
-      ),
-    },
-  ],
+  group: "Account",
+  icon: "tags",
+  description: "Plan tiers with a billing-cycle toggle, a comparison table and a billing FAQ.",
+  path: "pricing",
+  app: true,
+  Screen: PricingScreen,
 };

@@ -12,8 +12,14 @@ clips its content to them. So pass the slide's content, not a Card. A plain
 string renders in the slide's own type, inset from its edge; any other node
 fills the slide inside its 1px edge, so a picture is masked to the slide's
 shape. A
-Card nested inside frames the slide twice, and on Android the Material 3
+Card nested inside frames the slide
+<!-- only: web android -->
+twice, and on Android the Material 3
 item's 28dp corners cut the Card's own 12dp edge.
+<!-- /only -->
+<!-- only: ios -->
+twice.
+<!-- /only -->
 
 The prev and next arrows sit beside the slides, never over them, so nothing
 near a slide's edge is hidden behind an arrow; the slides narrow by the two
@@ -34,13 +40,31 @@ the slide. Left and Right move between
 slides, while Home and End reach the first and last. Controls inside a slide
 keep their own keyboard behavior. The named slide-picker buttons report the
 current slide and its position in the set; activating the current slide does
-nothing. Picker targets measure at least 24px on web, 44pt on iOS, and 48dp on
+nothing.
+<!-- only: web -->
+Picker targets measure at least 24px on web, 44pt on iOS, and 48dp on
 Android, independently of the small painted dots.
+<!-- /only -->
+<!-- only: ios -->
+Picker targets measure at least 44pt, independently of the small painted dots.
+<!-- /only -->
+<!-- only: android -->
+Picker targets measure at least 48dp, independently of the small painted dots.
+<!-- /only -->
 
 The active dot follows the committed slide (a dot press, the arrows, the
 keyboard, a controlled `index`, a finished swipe) in both surface modes; the
-strip is absent with one slide, with `showDots={false}`, and by default on
+strip is absent with one slide,
+<!-- only: web -->
+with `showDots={false}`, and by default on
 Android.
+<!-- /only -->
+<!-- only: ios -->
+and with `showDots={false}`.
+<!-- /only -->
+<!-- only: android -->
+with `showDots={false}`, and by default on Android.
+<!-- /only -->
 
 ## Usage
 
@@ -59,7 +83,15 @@ Android.
 ### Arrows hidden (dots only)
 
 Hide the prev/next chevrons with `showArrows={false}`; swipe and the dots still
+<!-- only: web -->
 page the carousel, the iOS page-control idiom.
+<!-- /only -->
+<!-- only: ios -->
+page the carousel, the iOS page-control idiom.
+<!-- /only -->
+<!-- only: android -->
+page the carousel.
+<!-- /only -->
 
 ```tsx
 <Carousel
@@ -88,8 +120,17 @@ Start on a later slide with `defaultIndex`; the matching dot reads selected.
 
 ### Arrows and dots everywhere
 
+<!-- only: web -->
 The chrome defaults are platform-adaptive (web shows both, iOS dots only,
-Android neither); pass `showArrows` and `showDots` to force the full
+Android neither);
+<!-- /only -->
+<!-- only: ios -->
+The chrome defaults are platform-adaptive (web shows both, iOS dots only);
+<!-- /only -->
+<!-- only: android -->
+The chrome defaults are platform-adaptive (web shows both, Android neither);
+<!-- /only -->
+pass `showArrows` and `showDots` to force the full
 arrows-plus-dots anatomy on every platform.
 
 ```tsx

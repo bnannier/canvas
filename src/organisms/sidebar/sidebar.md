@@ -17,8 +17,16 @@ On the web the sidebar takes the Canvas v4 rail: a 232px column on the sunken pa
 tone, rows 36px tall at a 9px corner (30px at 8 with `compact`, the docs rail's
 density), 500 13px labels in the secondary ink, the active row on the accent's soft
 wash in the accent's text ink, and a mono uppercase eyebrow over each titled group.
+<!-- only: web -->
 iOS and Android keep their platform rows (the HIG capsule, the Material 3 pill) in the
 v4 colors.
+<!-- /only -->
+<!-- only: ios -->
+iOS keeps its platform rows (the HIG capsule) in the v4 colors.
+<!-- /only -->
+<!-- only: android -->
+Android keeps its platform rows (the Material 3 pill) in the v4 colors.
+<!-- /only -->
 
 `markers` gives each row a trailing dot: the accent on the active row, and the field
 hairline on a row of the reader's current place, either one item with `marked: true`
@@ -40,7 +48,17 @@ In the narrow `responsive` drawer the same name labels the drawer.
 
 ## Usage
 
-The one `Sidebar` below is the whole story: on desktop it is the collapsible accordion rail (tap the header chevron to shrink it to icons); narrow the window to a phone and the same component becomes a start-edge drill-down **Liquid Glass menu** opened by the top bar's hamburger, exactly like this page's own left nav. `AppShell` is the docs' live app frame (the top bar and placeholder page); the `Sidebar` wiring is the part you copy.
+The one `Sidebar` below is the whole story: on desktop it is the collapsible accordion rail (tap the header chevron to shrink it to icons); narrow the window to a phone and the same component
+<!-- only: web -->
+becomes a start-edge drill-down **Liquid Glass menu** opened by the top bar's hamburger,
+<!-- /only -->
+<!-- only: ios -->
+becomes a start-edge drill-down **Liquid Glass menu** opened by the top bar's hamburger,
+<!-- /only -->
+<!-- only: android -->
+becomes a start-edge drill-down **glass menu** opened by the top bar's hamburger,
+<!-- /only -->
+exactly like this page's own left nav. `AppShell` is the docs' live app frame (the top bar and placeholder page); the `Sidebar` wiring is the part you copy.
 
 ```tsx
 <AppShell>

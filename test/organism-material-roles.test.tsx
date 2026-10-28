@@ -14,12 +14,17 @@ import { Command } from "../src/organisms/command/command.tsx";
 import { DashboardGrid } from "../src/organisms/dashboard-grid/dashboard-grid.tsx";
 import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
 import { WEB_FROST, webBackdrop } from "../src/style/glass-surface/web-frost.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 const restores: Array<() => void> = [];
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(() => {
   cleanup();
   restores.splice(0).reverse().forEach((restore) => restore());
 });
+frostInPageSurfaces();
 
 // The browser's one material question: does it render a CSS backdrop filter? The web's
 // only material is the frost, so a browser that answers no gets every solid skin.

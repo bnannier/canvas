@@ -32,7 +32,18 @@ export interface ProgressProps extends MeasureProps {
   value?: number;
   /** A fixed number of discrete dashes, filled by the same fractional value. */
   segments?: number;
-  /** Indeterminate mode: ignore `value` and animate a sliding bar (a spinner on iOS). */
+  /**
+   * Indeterminate mode: ignore `value` and animate
+   * <!-- only: web -->
+   * a sliding bar (a spinner on iOS).
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * a spinner.
+   * <!-- /only -->
+   * <!-- only: android -->
+   * a sliding bar.
+   * <!-- /only -->
+   */
   indeterminate?: boolean;
   /**
    * Optional title line rendered ABOVE the bar. Supplying it (with or without a

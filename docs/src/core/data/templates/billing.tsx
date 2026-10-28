@@ -1,164 +1,118 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Progress, DescriptionList, Divider, Emblem, Icon, AlertDialog, useToast, Grid } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Billing settings built from real Canvas components: current plan + usage
-// meters side by side, the payment method row, and invoice history.
+// The hand-off's Billing (`Canvas v4.0.0 Templates.dc.html`, `t.billing`): the current plan
+// (with its inline cancel confirmation) beside this cycle's usage meters, the payment
+// method, and the invoice history with downloads. Every part is a kit component from the
+// frame's scope.
 
 const USAGE = [
-  { label: "Storage", detail: "62 GB of 100 GB", value: 0.62 },
-  { label: "Members", detail: "8 of 10 seats", value: 0.8 },
-  { label: "API requests", detail: "1.2M of 2M", value: 0.6 },
+  { label: "Seats", value: "24 / 30", share: 0.8 },
+  { label: "Storage", value: "82.4 / 100 GB", share: 0.82, warning: true },
+  { label: "API calls", value: "1.2M / 2M", share: 0.6 },
 ];
 
 const INVOICES = [
-  { id: "INV-2026-007", date: "Jul 1, 2026", amount: "$192.00" },
-  { id: "INV-2026-006", date: "Jun 1, 2026", amount: "$192.00" },
-  { id: "INV-2026-005", date: "May 1, 2026", amount: "$168.00" },
-  { id: "INV-2026-004", date: "Apr 1, 2026", amount: "$168.00" },
+  { date: "Oct 1, 2026", id: "INV-0042", amount: "$48.00", status: "Paid" },
+  { date: "Sep 1, 2026", id: "INV-0041", amount: "$48.00", status: "Paid" },
+  { date: "Aug 1, 2026", id: "INV-0040", amount: "$48.00", status: "Paid" },
+  { date: "Jul 1, 2026", id: "INV-0039", amount: "$36.00", status: "Refunded" },
 ];
 
-function paidBadge() {
-  return (
-    <Badge status success>
-      Paid
-    </Badge>
-  );
-}
-
-function PlanUsageLive() {
+function BillingScreen({ K, phone, go }: TemplateScreenProps) {
+  const { Row, Column, Card, Typography, Button, Icon, Emblem, Badge, Progress, Divider, useToast } = K;
   const { toast } = useToast();
-  const [cancelOpen, setCancelOpen] = useState(false);
+  const [asking, setAsking] = useState(false);
   return (
-    <Grid minTileWidth={280} relaxed>
-      <Card grow>
-        <Column cozy>
-          <Row between alignCenter>
-            <Column tight fill>
-              <Typography h4>Pro plan</Typography>
-              <Typography small>$24 per member / month, billed monthly</Typography>
-            </Column>
-            <Badge status success>Active</Badge>
-          </Row>
-          <Divider />
-          <DescriptionList
-            twoColumn
-            items={[
-              { term: "Renews", value: "Aug 17, 2026" },
-              { term: "Seats", value: "8 of 10" },
-              { term: "Billing email", value: "ap@acme.com" },
-            ]}
-          />
-          <Row snug>
-            <Button
-              outline
-              small
-              onPress={() =>
-                toast({ message: "Change plan", description: "The plan picker opens here to compare Free, Pro, and Enterprise." })
-              }
-            >
-              Change plan
-            </Button>
-            <Button ghost small onPress={() => setCancelOpen(true)}>
-              Cancel subscription
-            </Button>
-          </Row>
-          {cancelOpen ? (
-            <AlertDialog
-              open
-              onOpenChange={setCancelOpen}
-              destructive
-              small
-              title="Cancel subscription?"
-              description="Your team keeps Pro access until Aug 17, 2026, then moves to the Free plan. Invoices and data are kept."
-              cancelLabel="Keep plan"
-              confirmLabel="Cancel subscription"
-              onConfirm={() =>
-                toast({ warning: true, message: "Subscription cancelled", description: "Pro access continues until Aug 17, 2026." })
-              }
-            />
-          ) : null}
+    <Column relaxed>
+      {phone ? null : (
+        <Column tight>
+          <Typography h3 level={2}>Billing</Typography>
+          <Typography small subtle>Plan, usage, payment method and invoices.</Typography>
         </Column>
-      </Card>
-      <Card grow>
-        <Column cozy>
-          <Typography h4>Usage this cycle</Typography>
-          {USAGE.map((u) => (
-            <Column key={u.label} tight>
-              <Row between>
-                <Typography small medium>{u.label}</Typography>
-                <Typography small>{u.detail}</Typography>
+      )}
+      <Row stacks relaxed>
+        <Column span={6}><Card grow>
+          <Column cozy>
+            <Typography eyebrow subtle>Current plan</Typography>
+            <Row snug baseline wrap>
+              <Typography h3>Team</Typography>
+              <Typography subtle>$48 / month</Typography>
+            </Row>
+            <Typography small subtle>24 of 30 seats · renews Nov 1, 2026 · billed yearly</Typography>
+            {asking ? (
+              <Column cozy>
+                <Typography small>Cancel your plan? You keep access until Nov 1.</Typography>
+                <Row snug wrap>
+                  <Button outline small onPress={() => setAsking(false)}>Keep plan</Button>
+                  <Button destructive small onPress={() => { setAsking(false); toast({ message: "Plan will end on Nov 1" }); }}>Cancel plan</Button>
+                </Row>
+              </Column>
+            ) : (
+              <Row snug wrap>
+                <Button outline onPress={() => go("pricing")}>Change plan</Button>
+                <Button ghost onPress={() => setAsking(true)}>Cancel plan</Button>
               </Row>
-              <Progress value={u.value} accessibilityLabel={`${u.label} usage`} />
+            )}
+          </Column>
+        </Card></Column>
+        <Column span={6}><Card grow>
+          <Column cozy>
+            <Typography eyebrow subtle>Usage this cycle</Typography>
+            {USAGE.map((u) => (
+              <Column key={u.label} tight>
+                <Row between>
+                  <Typography small subtle>{u.label}</Typography>
+                  <Typography caption mono semibold>{u.value}</Typography>
+                </Row>
+                <Progress small warning={u.warning} value={u.share} accessibilityLabel={`${u.label} used`} />
+              </Column>
+            ))}
+          </Column>
+        </Card></Column>
+      </Row>
+      <Card>
+        <Row cozy alignCenter>
+          <Emblem large muted><Icon creditCard decorative /></Emblem>
+          <Column fill>
+            <Typography semibold>Visa •••• 4242</Typography>
+            <Typography caption subtle>Expires 08/28 · billing@ionize.io</Typography>
+          </Column>
+          <Button outline onPress={() => toast({ message: "Card update opened" })}>Update</Button>
+        </Row>
+      </Card>
+      <Card flush>
+        <Column flush>
+          <Column pad><Typography body semibold>Invoices</Typography></Column>
+          {INVOICES.map((iv) => (
+            <Column key={iv.id} flush>
+              <Divider />
+              <Column pad>
+                <Row cozy alignCenter>
+                  <Column fill flush>
+                    <Typography small medium>{iv.date}</Typography>
+                    <Typography caption mono subtle>{iv.id}</Typography>
+                  </Column>
+                  <Typography small mono semibold>{iv.amount}</Typography>
+                  {iv.status === "Paid" ? <Badge success>Paid</Badge> : <Badge neutral>{iv.status}</Badge>}
+                  <Button ghost compactIcon accessibilityLabel={`Download ${iv.id}`} iconLeft={<Icon download decorative />} onPress={() => toast({ message: `${iv.id} downloaded` })} />
+                </Row>
+              </Column>
             </Column>
           ))}
-          <Typography tiny>Usage resets at the start of each billing cycle.</Typography>
         </Column>
       </Card>
-    </Grid>
-  );
-}
-
-function PaymentLive() {
-  const { toast } = useToast();
-  return (
-    <Card>
-      <Row between alignCenter wrap>
-        <Row snug alignCenter>
-          <Emblem muted>
-            <Icon creditCard />
-          </Emblem>
-          <Column tight>
-            <Typography small medium>Visa ending in 4242</Typography>
-            <Typography tiny>Expires 04 / 2028</Typography>
-          </Column>
-        </Row>
-        <Button
-          outline
-          small
-          onPress={() => toast({ message: "Update payment method", description: "The secure card form opens here." })}
-        >
-          Update
-        </Button>
-      </Row>
-    </Card>
-  );
-}
-
-function InvoicesLive() {
-  const { toast } = useToast();
-  return (
-    <DataTable
-      bordered
-      columns={["Invoice", "Date", "Amount", "Status"]}
-      rows={INVOICES.map((inv) => [inv.id, inv.date, inv.amount, paidBadge()])}
-      onRowPress={(_row, index) => {
-        const inv = INVOICES[index];
-        toast({ message: `Opening ${inv.id}`, description: `${inv.date} · ${inv.amount} · Paid` });
-      }}
-    />
+    </Column>
   );
 }
 
 export const BILLING_TEMPLATE: TemplateDoc = {
   slug: "billing",
   name: "Billing",
-  description: "Current plan, usage meters, payment method, and invoice history. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Plan and usage",
-      anatomy: "Two Cards side by side (stacking on phones): the current plan with its renewal DescriptionList rows and actions (cancelling confirms through an AlertDialog), and per-resource usage meters (Progress). ",
-      render: () => <PlanUsageLive />,
-    },
-    {
-      title: "Payment method",
-      anatomy: "Card row: Emblem card icon + brand and expiry, with an update action.",
-      render: () => <PaymentLive />,
-    },
-    {
-      title: "Invoices",
-      anatomy: "Invoice history DataTable; the status cell is a live Badge, and pressing a row opens its invoice.",
-      render: () => <InvoicesLive />,
-    },
-  ],
+  group: "Account",
+  icon: "creditCard",
+  description: "Current plan, usage meters, payment method and invoice history.",
+  path: "billing",
+  app: true,
+  Screen: BillingScreen,
 };

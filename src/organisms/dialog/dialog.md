@@ -4,8 +4,17 @@ A modal dialog: a centered panel over a dimmed backdrop, which glass on the web 
 
 On light glass, the description and currency prefix use the stronger foreground color. For custom body content, use the default `Typography` foreground for message copy over the dimmed background.
 
+<!-- only: web -->
 Browser Escape and iOS accessibility escape cancel the foremost open child
-overlay before the dialog. Cancelling the dialog calls `onCancel` and requests
+overlay before the dialog.
+<!-- /only -->
+<!-- only: ios -->
+Browser Escape and iOS accessibility escape cancel the foremost open child overlay before the dialog.
+<!-- /only -->
+<!-- only: android -->
+Browser Escape and the system back cancel the foremost open child overlay before the dialog.
+<!-- /only -->
+Cancelling the dialog calls `onCancel` and requests
 `open=false`, including destructive dialogs and dialogs with custom children.
 A controlled owner may keep it open; that request never confirms an action.
 

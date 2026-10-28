@@ -320,7 +320,7 @@ describe("GlassBox structure (real material path)", () => {
 
   it("keeps a state border's colour on a glass surface and under Increase Contrast alike", async () => {
     const style = { borderRadius: 12, borderWidth: 2, borderColor: "#123456" };
-    render(<ThemeProvider glass><GlassSurface testID="glass" stateBorder style={style} /></ThemeProvider>);
+    render(<ThemeProvider glass><GlassSurface testID="glass" floating stateBorder style={style} /></ThemeProvider>);
     const glass = screen.getByTestId("glass") as HTMLElement;
     // The material path, not the solid fallback, is the one that used to clear it.
     expect(glass.querySelector('[data-testid="glass-material"]')).not.toBeNull();
@@ -328,7 +328,7 @@ describe("GlassBox structure (real material path)", () => {
     cleanup();
     const spy = mockMatchMedia((q) => q.includes("prefers-contrast"));
     try {
-      render(<ThemeProvider glass><GlassSurface testID="contrast" stateBorder style={style} /></ThemeProvider>);
+      render(<ThemeProvider glass><GlassSurface testID="contrast" floating stateBorder style={style} /></ThemeProvider>);
       await waitFor(() => {
         const node = screen.getByTestId("contrast") as HTMLElement;
         expect(node.style.borderColor).toMatch(/rgba?\(18, ?52, ?86/);

@@ -6,6 +6,7 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { GlassSurface as IOSGlassSurface } from "../src/style/glass-surface/glass-surface.ios.tsx";
 import { Card, CodeBlock, StackedList, Feed, MediaObject, Calendar, Command, Navbar, Sidebar, DataTable, Stats } from "../src/index.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // GlassSurface's geometry under the owner's GP-1 decision (audit/DECISIONS.md), the one
 // GlassPane's hosts already follow: under glass the material covers the surface's whole
@@ -21,7 +22,11 @@ import { Card, CodeBlock, StackedList, Feed, MediaObject, Calendar, Command, Nav
 // absolutely filled child lies on its parent's padding box, so a box is its parent's box
 // less the parent's border on each side.
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 type Side = "top" | "right" | "bottom" | "left";
 const SIDES: readonly Side[] = ["top", "right", "bottom", "left"];

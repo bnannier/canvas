@@ -11,7 +11,7 @@ import { AURORA, HERO_FRAME, auroraDiscs } from "./library-hero-look";
 // Android and the web with no filter. Static: the hand-off's 22 to 28 s drift is not
 // reproduced. The values are the table in ./library-hero-look.ts.
 
-/** The glow layer: the hero section's box, from the page's top to the hero's foot, edge to edge. */
+/** The glow layer: the hero section's box, from the page's top to the hero's foot, the window's width. */
 function AuroraGlow() {
   const { tokens, dark } = useTheme();
   const key = useId().replace(/[^A-Za-z0-9]/g, "");
@@ -28,9 +28,9 @@ function AuroraGlow() {
       }}
       style={{
         position: "absolute",
-        top: -HERO_FRAME.above,
-        left: -HERO_FRAME.bleed,
-        right: -HERO_FRAME.bleed,
+        top: 0,
+        left: 0,
+        right: 0,
         bottom: 0,
         pointerEvents: "none",
       }}
@@ -54,14 +54,17 @@ function AuroraGlow() {
 }
 
 /**
- * The hero's frame: the hand-off section's room above and below its content, with the
- * aurora behind it. Its children are the hero's kit components.
+ * The hero's section: the window's width, clipping the aurora behind it, with the hand-off
+ * section's room around its content and the content capped at 1440 px and centred. Its
+ * children are the hero's kit components.
  */
 export function AuroraFrame({ children, testID }: { children: ReactNode; testID?: string }) {
   return (
-    <View testID={testID} style={{ paddingTop: HERO_FRAME.top, paddingBottom: HERO_FRAME.bottom }}>
+    <View testID={testID} style={{ width: "100%", overflow: "hidden" }}>
       <AuroraGlow />
-      {children}
+      <View style={{ width: "100%", maxWidth: HERO_FRAME.max, alignSelf: "center", paddingTop: HERO_FRAME.top, paddingBottom: HERO_FRAME.bottom, paddingHorizontal: HERO_FRAME.side }}>
+        {children}
+      </View>
     </View>
   );
 }

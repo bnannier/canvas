@@ -12,6 +12,7 @@ import { Radio, RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Steps } from "../src/organisms/steps/steps.tsx";
 import { PANE_HOSTS, type PaneHost } from "./fixtures/pane-hosts.tsx";
 import { onPlatform, PLATFORM_PARTS } from "./fixtures/platform-parts.tsx";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 import { Autocomplete as AndroidAutocomplete } from "../src/atoms/autocomplete/autocomplete.android.tsx";
 import { Input as AndroidInput } from "../src/atoms/input/input.android.tsx";
 import { Select as AndroidSelect } from "../src/atoms/select/select.android.tsx";
@@ -33,8 +34,12 @@ import { Steps as AndroidSteps } from "../src/organisms/steps/steps.android.tsx"
 // happy-dom computes no layout, so the boxes are read the way the browser resolves them: an
 // absolutely filled child lies on its parent's padding box, so a box is its parent's box
 // less the parent's border on each side.
+//
+// The pane is in-page material, which the web resolves solid under glass (the v4 hand-off);
+// the native builds keep it, so the suite renders under a platform with its own frost.
 
 afterEach(cleanup);
+frostInPageSurfaces();
 
 type Side = "top" | "right" | "bottom" | "left";
 const SIDES: readonly Side[] = ["top", "right", "bottom", "left"];

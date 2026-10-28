@@ -1,182 +1,93 @@
-import { Fragment, useState } from "react";
-import { Row, Column, Card, CardHeader, CardSeparator, CardContent, Typography, Button, Badge, Calendar, Divider, Icon, useToast } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import { useState } from "react";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Month-view calendar built from real Canvas components: the Calendar organism
-// over the selected day's event Card. The demo carries three months of data;
-// prev/next (both the page-header Buttons and the Calendar's own chevrons)
-// really switch months, Today jumps back to May 24, and selecting a day keeps
-// the event panel in sync.
+// The hand-off's Calendar (`Canvas v4.0.0 Templates.dc.html`, `t.calendar`): the October
+// 2026 heading with Today and the month chevrons, the kit Calendar's month grid with a dot
+// on each day that holds events, and the selected day's agenda beside it (under it once the
+// screen is too narrow for two columns). Every part is a kit component from the frame's scope.
 
-interface DemoEvent {
-  title: string;
+interface DayEvent {
   time: string;
+  title: string;
+  duration: string;
 }
 
-interface DemoMonth {
-  /** Header label, e.g. "May 2026". */
-  label: string;
-  /** Short month name for the event-panel heading, e.g. "May". */
-  short: string;
-  daysInMonth: number;
-  /** Weekday (0=Sun .. 6=Sat) the 1st falls on. */
-  startWeekday: number;
-  /** The day that is "today" in the demo fiction (only May has one). */
-  today?: number;
-  /** Demo day -> events map; days missing here are free. */
-  events: Record<number, DemoEvent[]>;
-}
+/** The hand-off's CAL_EV: the events of October 2026, by day. */
+const EVENTS: Record<number, DayEvent[]> = {
+  5: [{ time: "10:00", title: "Sprint planning", duration: "1h" }],
+  12: [{ time: "14:00", title: "Token review", duration: "45m" }, { time: "16:30", title: "Design crit", duration: "30m" }],
+  14: [{ time: "11:00", title: "Release v6.2", duration: "all day" }],
+  21: [{ time: "09:30", title: "Accessibility audit", duration: "2h" }],
+  26: [{ time: "10:00", title: "Design review", duration: "1h" }, { time: "13:30", title: "Token sync", duration: "45m" }, { time: "16:00", title: "Release v6.3", duration: "all day" }],
+  28: [{ time: "15:00", title: "Android blur rebuild", duration: "1h" }],
+};
 
-const MONTHS: DemoMonth[] = [
-  {
-    label: "April 2026",
-    short: "Apr",
-    daysInMonth: 30,
-    startWeekday: 3,
-    events: {
-      9: [{ title: "Quarterly planning", time: "10:00 AM" }],
-      21: [{ title: "Design crit", time: "3:00 PM" }],
-    },
-  },
-  {
-    label: "May 2026",
-    short: "May",
-    daysInMonth: 31,
-    startWeekday: 5,
-    today: 24,
-    events: {
-      5: [{ title: "Team sync", time: "10:00 AM" }],
-      8: [{ title: "Deploy v3", time: "4:00 PM" }],
-      14: [{ title: "Sprint review", time: "1:00 PM" }],
-      24: [
-        { title: "Sprint planning", time: "9:00 AM" },
-        { title: "Design review", time: "11:30 AM" },
-        { title: "1:1 with manager", time: "2:00 PM" },
-      ],
-    },
-  },
-  {
-    label: "June 2026",
-    short: "Jun",
-    daysInMonth: 30,
-    startWeekday: 1,
-    events: {
-      2: [{ title: "Roadmap review", time: "11:00 AM" }],
-      18: [{ title: "Offsite kickoff", time: "9:30 AM" }],
-    },
-  },
-];
+/** The hand-off's DOW, indexed so that October 1, 2026 (a Thursday) reads right. */
+const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const TODAY = 26;
 
-// The demo's "today": May 24, 2026 (matching the Calendar's `today` highlight).
-const TODAY_MONTH = 1;
-const TODAY_DAY = 24;
+/** "10:00" as the kit Calendar's fractional hour. */
+const hour = (time: string) => {
+  const [h, m] = time.split(":").map(Number);
+  return (h ?? 0) + (m ?? 0) / 60;
+};
 
-function MonthViewLive() {
+function CalendarScreen({ K }: TemplateScreenProps) {
+  const { Row, Column, Card, Typography, Button, Icon, Calendar, useToast } = K;
   const { toast } = useToast();
-  const [monthIndex, setMonthIndex] = useState(TODAY_MONTH);
-  const [selected, setSelected] = useState(TODAY_DAY);
-  const month = MONTHS[monthIndex];
-  const events = month.events[selected] ?? [];
-  const eventDays = Object.keys(month.events)
-    .map(Number)
-    .sort((a, b) => a - b);
-
-  const goTo = (index: number) => {
-    setMonthIndex(index);
-    // Keep the day-of-month when it exists in the new month (May 31 -> Jun 30).
-    setSelected((day) => Math.min(day, MONTHS[index].daysInMonth));
-  };
-  const prevMonth = () => {
-    if (monthIndex === 0) {
-      toast({ message: "Start of the demo range", description: "This demo covers April through June 2026." });
-      return;
-    }
-    goTo(monthIndex - 1);
-  };
-  const nextMonth = () => {
-    if (monthIndex === MONTHS.length - 1) {
-      toast({ message: "End of the demo range", description: "This demo covers April through June 2026." });
-      return;
-    }
-    goTo(monthIndex + 1);
-  };
-  const goToday = () => {
-    if (monthIndex === TODAY_MONTH && selected === TODAY_DAY) {
-      toast({ message: "Already on today", description: "May 24, 2026 is selected." });
-      return;
-    }
-    setMonthIndex(TODAY_MONTH);
-    setSelected(TODAY_DAY);
-  };
-
-  const header = (
-    <Row between alignCenter wrap>
-      <Column tight>
-        <Typography h4>Calendar</Typography>
-        <Typography small muted>{month.label}</Typography>
-      </Column>
-      <Row snug alignCenter>
-        <Button ghost icon small accessibilityLabel="Previous month" iconLeft={<Icon chevronLeft size={16} />} onPress={prevMonth} />
-        <Button outline small onPress={goToday}>Today</Button>
-        <Button ghost icon small accessibilityLabel="Next month" iconLeft={<Icon chevronRight size={16} />} onPress={nextMonth} />
-      </Row>
-    </Row>
-  );
-
-  const grid = (
-    <Calendar
-      month={month.label}
-      today={month.today}
-      daysInMonth={month.daysInMonth}
-      startWeekday={month.startWeekday}
-      selected={selected}
-      onSelect={setSelected}
-      onPrev={prevMonth}
-      onNext={nextMonth}
-    />
-  );
-
-  const panel = (
-    <Card grow flush>
-      <CardHeader>
-        <Row between alignCenter>
-          <Typography small semibold>{`${month.short} ${selected}`}</Typography>
-          <Badge secondary>{events.length === 0 ? "Free" : `${events.length} ${events.length === 1 ? "event" : "events"}`}</Badge>
-        </Row>
-      </CardHeader>
-      <CardSeparator />
-      <CardContent>
-        {events.length === 0 ? (
-          <Column tight>
-            <Typography small muted>{`No events on ${month.short} ${selected}.`}</Typography>
-            <Typography tiny>{`Days with events this month: ${eventDays.join(", ")}.`}</Typography>
-          </Column>
-        ) : (
-          <Column tight>
-            {events.map((ev, i) => (
-              <Fragment key={ev.title}>
-                {i > 0 ? <Divider /> : null}
-                <Row between alignCenter>
-                  <Typography small medium>{ev.title}</Typography>
-                  <Typography small muted>{ev.time}</Typography>
-                </Row>
-              </Fragment>
-            ))}
-          </Column>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  // The month grid fills the width at every size, so the panel always sits
-  // below it.
+  const [selected, setSelected] = useState(TODAY);
+  const events = EVENTS[selected] ?? [];
+  const nextMonth = () => toast({ message: "November 2026" });
   return (
-    <Column relaxed>
-      {header}
-      <Column relaxed>
-        {grid}
-        {panel}
-      </Column>
+    <Column airy>
+      <Row between alignCenter wrap cozy>
+        <Row snug baseline>
+          <Typography h3 level={2}>October</Typography>
+          <Typography h3 subtle>2026</Typography>
+        </Row>
+        <Row snug alignCenter>
+          <Button secondary onPress={() => setSelected(TODAY)}>Today</Button>
+          <Button outline icon accessibilityLabel="Previous month" iconLeft={<Icon chevronLeft decorative />} />
+          <Button outline icon accessibilityLabel="Next month" iconLeft={<Icon chevronRight decorative />} onPress={nextMonth} />
+        </Row>
+      </Row>
+      <Row stacks stackBreakpoint="sm" cozy>
+        <Column span={7}>
+          <Calendar
+            month="October 2026"
+            daysInMonth={31}
+            startWeekday={4}
+            today={TODAY}
+            selected={selected}
+            onSelect={setSelected}
+            onNext={nextMonth}
+            events={Object.entries(EVENTS).flatMap(([day, list]) =>
+              list.map((e) => ({ day: Number(day), title: e.title, ...(e.duration === "all day" ? {} : { start: hour(e.time) }) })),
+            )}
+          />
+        </Column>
+        <Column span={5}>
+          <Card>
+            <Column cozy>
+              <Typography body semibold>{`${DOW[(selected + 2) % 7]}, October ${selected}`}</Typography>
+              {events.length === 0 ? <Typography small subtle>Nothing scheduled.</Typography> : null}
+              {events.map((e) => (
+                <Row key={e.title} cozy alignCenter>
+                  <Typography caption mono subtle>{e.time}</Typography>
+                  <Column fill>
+                    <Card compact>
+                      <Row between alignCenter snug>
+                        <Typography small medium>{e.title}</Typography>
+                        <Typography caption mono subtle>{e.duration}</Typography>
+                      </Row>
+                    </Card>
+                  </Column>
+                </Row>
+              ))}
+            </Column>
+          </Card>
+        </Column>
+      </Row>
     </Column>
   );
 }
@@ -184,12 +95,10 @@ function MonthViewLive() {
 export const CALENDAR_TEMPLATE: TemplateDoc = {
   slug: "calendar",
   name: "Calendar",
-  description: "Month-view calendar with month navigation, a Today jump, and a synced event panel for the selected day. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Month view",
-      anatomy: "Page header (title + prev/next icon Buttons + Today) over the Calendar organism, with the selected day's event Card below it; selecting a day syncs the panel. The Calendar fits its own container and keeps the selected day when the stage resizes.",
-      render: () => <MonthViewLive />,
-    },
-  ],
+  group: "App",
+  icon: "calendarDays",
+  description: "Month view with a Today jump and a synced event panel for the selected day.",
+  path: "calendar",
+  app: true,
+  Screen: CalendarScreen,
 };

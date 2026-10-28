@@ -585,6 +585,26 @@ export function targets(): Target[] {
   return list;
 }
 
+/**
+ * A page's sections: `current` (the inventory's, in page order), then each section a web
+ * capture of it recorded in its probe that `current` lacks, in the order captured. A page
+ * whose sections were renamed or removed still links the shots its runs took of them.
+ */
+export function withCapturedSections(current: readonly { key: string; title: string }[], cells: readonly CapturedCell[]): { key: string; title: string }[] {
+  const out = [...current];
+  const seen = new Set(current.map((section) => section.key));
+  for (const cell of cells) {
+    if (cell.family !== "page" || cell.platform !== "web") continue;
+    const probe = readJsonFile<{ sections?: { key?: unknown; title?: unknown }[] }>(join(cell.dir, PROBE_FILE));
+    for (const section of probe?.sections ?? []) {
+      if (typeof section.key !== "string" || typeof section.title !== "string" || seen.has(section.key)) continue;
+      seen.add(section.key);
+      out.push({ key: section.key, title: section.title });
+    }
+  }
+  return out;
+}
+
 function sheetFiles(dir: string): SheetLinks {
   const base = join(dir, "sheets");
   const variants = new Map<string, string[]>();
@@ -664,7 +684,10 @@ export function buildIndex(root: string, options: IndexOptions, builtAt = new Da
       uncaptured.push(target.slug);
       continue;
     }
-    const sectionKeys = target.sections.map((section) => section.key);
+    // A page's sections are the inventory's, then any its captures recorded that the page
+    // no longer has: a run is linked by what it captured, not by what the page holds today.
+    const sections = target.kind === "page" ? withCapturedSections(target.sections, cells) : target.sections;
+    const sectionKeys = sections.map((section) => section.key);
     const rows = cells.map((cell) => cellRow(cell, readJsonFile<CellAnalysis>(join(cell.dir, ANALYSIS_FILE)), root, sectionKeys));
     all.push(...rows);
     for (const row of rows) {
@@ -692,6 +715,7 @@ export function buildIndex(root: string, options: IndexOptions, builtAt = new Da
       const runIds = new Set(rows.map((row) => row.run));
       const model: ComponentIndex = {
         ...target,
+        sections,
         root,
         checklistExists: existsSync(join(root, target.checklist)),
         rows,

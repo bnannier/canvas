@@ -62,10 +62,21 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
   /** Placeholder shown while the field is empty. */
   placeholder?: string;
   /**
-   * The field's persistent label. Its placement is platform-adaptive: iOS and web
+   * The field's persistent label. Its placement is platform-adaptive:
+   * <!-- only: web -->
+   * iOS and web
    * render it ABOVE the field; Android renders the Material 3 in-container FLOATING
    * label — a MULTILINE float pinned to the first text line at rest, floating to the
-   * top once the field is focused or filled. The label names the field for a11y.
+   * top once the field is focused or filled.
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * iOS renders it ABOVE the field.
+   * <!-- /only -->
+   * <!-- only: android -->
+   * Android renders the Material 3 in-container FLOATING label: a MULTILINE float
+   * pinned to the first text line at rest, floating to the top once the field is focused or filled.
+   * <!-- /only -->
+   * The label names the field for a11y.
    */
   label?: string;
   eyebrow?: boolean;
@@ -78,9 +89,16 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
   readOnly?: boolean;
   /**
    * Marks the field as required: appends a destructive "*" to the label (decorative,
-   * never in the accessible name) and announces the field as required, through
+   * never in the accessible name) and announces the field as required,
+   * <!-- only: web -->
+   * through
    * aria-required on the web and with the word in its name ("Bio, required") on iOS
-   * and Android. The star and the spoken word take effect only alongside `label`.
+   * and Android.
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * with the word in its name ("Bio, required").
+   * <!-- /only -->
+   * The star and the spoken word take effect only alongside `label`.
    */
   required?: boolean;
   /**

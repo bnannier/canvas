@@ -4,8 +4,14 @@ A phone number field: the Input's box with a country segment at its start (the
 chosen country and a caret, which open a list of countries with their names and
 dial codes) and that country's dial code inline before the number. On the web the
 segment is a small chip inside the field naming the country by its ISO code, and
-the dial code and the number are set in the mono face; on iOS and Android it is the
+the dial code and the number are set in the mono face;
+<!-- only: web -->
+on iOS and Android it is the
 country's flag.
+<!-- /only -->
+<!-- only: ios android -->
+in the app it is the country's flag.
+<!-- /only -->
 
 The number and the country are each controlled (`value` / `country`) or
 self-managed (`defaultValue` / `defaultCountry`), the segment defaults to the
@@ -13,11 +19,20 @@ kit's curated `PHONE_COUNTRIES` list (pass `countries` for a full or localized
 one), and the number field asks for the phone keypad. Pass `label` (and
 `required`) to name it; `error` paints the whole box, segment included, and
 Field delegates its label, required mark and error into it. The required star is
-decorative: a screen reader hears the number field as required, from
+decorative: a screen reader hears the number field as required,
+<!-- only: web -->
+from
 `aria-required` on the web and from its name ("Phone number, required") on iOS and
-Android. On iOS the field is
+Android.
+<!-- /only -->
+<!-- only: ios android -->
+from its name ("Phone number, required").
+<!-- /only -->
+<!-- only: web ios -->
+On iOS the field is
 drawn to the iOS input-field reference: the white box, the flag and gray caret
 segment with its state-coloured divider, the dial code in the placeholder gray.
+<!-- /only -->
 
 In glass mode the country list is a dense-layer glass card under the box; the
 box, its segment and its number stay in place. A pick commits the country and

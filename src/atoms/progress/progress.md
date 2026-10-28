@@ -104,13 +104,31 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 
 ### Indeterminate
 
-**Do** — Reach for `indeterminate` only when the duration is genuinely unknown. Pass the label as children; on the web and Android a short bar sweeps the track; on iOS the control renders the kit Spinner, the platform's unknown-duration idiom (iOS has no linear indeterminate bar).
+**Do** — Reach for `indeterminate` only when the duration is genuinely unknown. Pass the label as children;
+<!-- only: web -->
+on the web and Android a short bar sweeps the track; on iOS the control renders the kit Spinner, the platform's unknown-duration idiom (iOS has no linear indeterminate bar).
+<!-- /only -->
+<!-- only: ios -->
+on iOS the control renders the kit Spinner, the platform's unknown-duration idiom (iOS has no linear indeterminate bar).
+<!-- /only -->
+<!-- only: android -->
+a short bar sweeps the track.
+<!-- /only -->
 
 ```tsx
 <Progress indeterminate>Connecting…</Progress>
 ```
 
-**Don't** — Don't fake indeterminate progress when you do have a measurable value; hiding a known value behind a sweep (or a spinner on iOS) hides information you could show.
+**Don't** — Don't fake indeterminate progress when you do have a measurable value;
+<!-- only: web -->
+hiding a known value behind a sweep (or a spinner on iOS) hides information you could show.
+<!-- /only -->
+<!-- only: ios -->
+hiding a known value behind a spinner hides information you could show.
+<!-- /only -->
+<!-- only: android -->
+hiding a known value behind a sweep hides information you could show.
+<!-- /only -->
 
 ```tsx
 <View style={{ gap: 8 }}>

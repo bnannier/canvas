@@ -2,14 +2,31 @@
 
 Text input + dropdown: searchable single-select.
 
-Pass `label` (and `required`) to name the field: iOS and web render the label
+Pass `label` (and `required`) to name the field:
+<!-- only: web -->
+iOS and web render the label
 above the field, while Android floats the Material 3 in-container label once the
 list opens or a value fills the field. On Android the field grows with the
 user's text size, and a label longer than the field truncates on one line clear
-of the toggle while the field's accessible name stays the whole label. The required
-star is decorative: a screen reader hears the field as required, from
+of the toggle while the field's accessible name stays the whole label.
+<!-- /only -->
+<!-- only: ios -->
+iOS renders the label above the field.
+<!-- /only -->
+<!-- only: android -->
+Android floats the Material 3 in-container label once the list opens or a value fills the field. The field grows with the user's text size, and a label longer than the field truncates on one line clear of the toggle while the field's accessible name stays the whole label.
+<!-- /only -->
+The required
+star is decorative: a screen reader hears the field as required,
+<!-- only: web -->
+from
 `aria-required` on the web and from its name ("Assigned to, required") on iOS and
-Android. The field fills the parent it is given; a
+Android.
+<!-- /only -->
+<!-- only: ios android -->
+from its name ("Assigned to, required").
+<!-- /only -->
+The field fills the parent it is given; a
 step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a
 Container step sets its measure.
 
@@ -19,10 +36,16 @@ the sunken fill behind the `field-border` hairline, a leading 16px search glyph,
 pointer darkens the edge to the subtle ink, and focus rings it in the accent with a
 4px halo. The suggestions are a card 6px under the field with a 4px inset and 34px
 rows; the typed letters are marked in each suggestion on the accent's soft wash, and
-the chosen suggestion sits on the `muted` wash. iOS ships no combo box, so it draws
-the same field and card at the iOS corners. Android keeps the Material 3 exposed
+the chosen suggestion sits on the `muted` wash.
+<!-- only: web ios -->
+iOS ships no combo box, so it draws
+the same field and card at the iOS corners.
+<!-- /only -->
+<!-- only: web android -->
+Android keeps the Material 3 exposed
 dropdown: the filled field with its active indicator and drop-down triangle, and the
 Material menu whose active and chosen rows take the state layer.
+<!-- /only -->
 
 In glass mode the suggestion list is a dense-layer glass card under the field (or
 above it when it fits there); the field, its caret and its toggle stay in place,
@@ -33,7 +56,18 @@ Arrow Down and Arrow Up open the list and highlight an option while focus stays 
 
 Use `value` with `onValueChange` to control the selection, and use `""` for a controlled empty value. The callback reports selections and clearing the field. `onSelect` remains a selection-only notification. The independent `query`/`onQueryChange` pair controls filtering; choosing an option resets the query to `""`.
 
-The disclosure button has a real target of at least 24px on web, 44pt on iOS, and 48dp on Android. The small iOS field keeps a 44pt height so its touch target fits inside the field; its typography remains compact.
+<!-- only: web -->
+The disclosure button has a real target of at least 24px on web, 44pt on iOS, and 48dp on Android.
+<!-- /only -->
+<!-- only: ios -->
+The disclosure button has a real target of at least 44pt.
+<!-- /only -->
+<!-- only: android -->
+The disclosure button has a real target of at least 48dp.
+<!-- /only -->
+<!-- only: web ios -->
+The small iOS field keeps a 44pt height so its touch target fits inside the field; its typography remains compact.
+<!-- /only -->
 
 ## Usage
 

@@ -267,7 +267,7 @@ describe("on Android a borderless control inside a frosted surface it does not o
     }
     const tree = (glass: boolean) => (
       <ThemeProvider light glass={glass} solid={!glass}>
-        <GlassSurface layer="content" testID="surface" style={{ borderRadius: 12, borderWidth: 1, padding: 8 }}><Probe /></GlassSurface>
+        <GlassSurface layer="content" floating testID="surface" style={{ borderRadius: 12, borderWidth: 1, padding: 8 }}><Probe /></GlassSurface>
       </ThemeProvider>
     );
     const result = render(tree(false));

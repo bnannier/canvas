@@ -1,176 +1,119 @@
-import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Input, Select, Avatar, StackedList, EmptyState, Icon, useToast } from "@nannier/canvas";
-import type { StackedListItem } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import { Fragment, useState } from "react";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Team management built from real Canvas components: an invite composer that
-// appends to the live pending-invitations list, and the member table with role
-// and status cells that opens (toasts) a member on row press.
+// The hand-off's Team (`Canvas v4.0.0 Templates.dc.html`, `t.team`): the heading, the
+// invite card (email, a role that cycles, Send invite), the pending invitations with
+// Revoke, and the members with their role and status. Every part is a kit component from
+// the frame's scope.
 
-const ROLES = ["Admin", "Editor", "Viewer"];
+const ROLES = ["Editor", "Viewer", "Admin"] as const;
 
-interface Member {
-  name: string;
-  initials: string;
+const MEMBERS = [
+  { name: "Ada Lovelace", email: "ada@ionize.io", photo: "/ada-lovelace.jpg", role: "Owner", status: "Active" },
+  { name: "Grace Hopper", email: "grace@ionize.io", photo: "/grace-hopper.jpg", role: "Admin", status: "Active" },
+  { name: "Kira Tanaka", email: "kira@ionize.io", photo: "/kira-tanaka.jpg", role: "Editor", status: "Invited" },
+  { name: "Noor Park", email: "noor@ionize.io", photo: "/noor-park.jpg", role: "Editor", status: "Active" },
+  { name: "Marcus Allen", email: "marcus@ionize.io", photo: "/marcus-allen.jpg", role: "Viewer", status: "Locked" },
+];
+
+const STATUS_TONE = { Active: "success", Invited: "info", Locked: "error" } as const;
+
+interface Invite {
   email: string;
   role: string;
-  active: boolean;
+  sent: string;
 }
 
-const MEMBERS: Member[] = [
-  { name: "Rachel Chen", initials: "RC", email: "rachel.chen@acme.com", role: "Admin", active: true },
-  { name: "Ada Lovelace", initials: "AL", email: "ada@acme.com", role: "Editor", active: true },
-  { name: "Kevin Turner", initials: "KT", email: "kevin@acme.com", role: "Editor", active: true },
-  { name: "Linus Berg", initials: "LB", email: "linus@acme.com", role: "Viewer", active: true },
-  { name: "Sofia Marques", initials: "SM", email: "sofia@acme.com", role: "Viewer", active: false },
-];
-
-function memberRow(m: Member) {
-  return [
-    <Row key="who" snug alignCenter>
-      <Avatar small name={m.initials} />
-      <Typography small medium>{m.name}</Typography>
-    </Row>,
-    m.email,
-    m.role === "Admin" ? <Badge key="role">Admin</Badge> : <Badge key="role" secondary>{m.role}</Badge>,
-    m.active ? (
-      <Badge key="st" status success>Active</Badge>
-    ) : (
-      <Badge key="st" status warning>Invited</Badge>
-    ),
-  ];
-}
-
-// Seed invites are days old, so "Revoke expired" has something real to clear;
-// invites sent from the composer arrive as "Just now" and are never expired.
-const SEED_PENDING: StackedListItem[] = [
-  { name: "sofia@acme.com", detail: "Invited as Viewer", meta: "2 days ago" },
-  { name: "devon@acme.com", detail: "Invited as Editor", meta: "5 days ago" },
-];
-
-const isExpired = (item: StackedListItem) => item.meta !== "Just now";
-
-// The invite composer and the pending list share one state, so a sent invite
-// visibly appends to the StackedList and revoking visibly removes rows.
-function InviteLive() {
+function TeamScreen({ K, phone }: TemplateScreenProps) {
+  const { Row, Column, Card, Typography, Button, Icon, Input, Emblem, Badge, Avatar, Divider, useToast } = K;
   const { toast } = useToast();
   const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState(false);
-  const [role, setRole] = useState("Editor");
-  const [pending, setPending] = useState(SEED_PENDING);
+  const [roleIndex, setRoleIndex] = useState(0);
+  const [invites, setInvites] = useState<Invite[]>([{ email: "liang@ionize.io", role: "Viewer", sent: "2d ago" }]);
 
-  const sendInvite = () => {
-    const address = email.trim();
-    if (!address) {
-      setEmailError(true);
-      toast({ destructive: true, message: "Enter an email address", description: "The invite needs an address to go to." });
+  const invite = () => {
+    const value = email.trim();
+    if (!value) {
+      toast({ message: "Add an email first" });
       return;
     }
-    setPending((prev) => [...prev, { name: address, detail: `Invited as ${role}`, meta: "Just now" }]);
+    setInvites((prev) => [{ email: value, role: ROLES[roleIndex]!, sent: "just now" }, ...prev]);
     setEmail("");
-    setEmailError(false);
-    toast({ success: true, message: "Invite sent", description: `${address} was invited as ${role.toLowerCase()}.` });
-  };
-
-  const resendAll = () => {
-    if (pending.length === 0) {
-      toast({ warning: true, message: "No pending invitations", description: "There is nothing to resend." });
-      return;
-    }
-    toast({
-      success: true,
-      message: "Invitations resent",
-      description: `${pending.length} pending ${pending.length === 1 ? "invite" : "invites"} re-sent by email.`,
-    });
-  };
-
-  const revokeExpired = () => {
-    const expired = pending.filter(isExpired);
-    if (expired.length === 0) {
-      toast({ warning: true, message: "No expired invitations", description: "Every pending invite is still fresh." });
-      return;
-    }
-    setPending((prev) => prev.filter((item) => !isExpired(item)));
-    toast({
-      message: expired.length === 1 ? "Expired invitation revoked" : "Expired invitations revoked",
-      description: `${expired.map((item) => item.name).join(", ")} removed from the pending list.`,
-    });
+    toast({ message: `Invite sent to ${value}` });
   };
 
   return (
-    <Column cozy>
-      <Card>
-        <Row snug stacks alignEnd>
-          <Column fill>
-            <Input
-              label="Email address"
-              placeholder="teammate@company.com"
-              value={email}
-              error={emailError}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (emailError) setEmailError(false);
-              }}
-            />
-          </Column>
-          {/* The toolbar cell (`.col-auto`): the Select hugs its value, so the email
-              field keeps the remainder of the row. A bare Select fills the row and
-              leaves the field's fill column nothing. */}
-          <Column>
-            <Select label="Role" value={role} options={ROLES} onSelect={setRole} />
-          </Column>
-          <Button primary onPress={sendInvite}>Send invite</Button>
-        </Row>
-      </Card>
-      {pending.length === 0 ? (
-        <EmptyState
-          icon={<Icon mailPlus />}
-          title="No pending invitations"
-          description="Everyone you invited has joined. Send a new invite above."
-        />
-      ) : (
-        <StackedList card title="Pending invitations" items={pending} />
+    <Column relaxed>
+      {phone ? null : (
+        <Column tight>
+          <Typography h3 level={2}>Team</Typography>
+          <Typography small subtle>Invite teammates and manage what they can change.</Typography>
+        </Column>
       )}
-      <Row snug>
-        <Button outline small onPress={resendAll}>Resend all</Button>
-        <Button ghost small onPress={revokeExpired}>Revoke expired</Button>
-      </Row>
+      <Card>
+        <Column cozy>
+          <Typography body semibold>Invite a teammate</Typography>
+          <Row snug wrap>
+            <Column fill>
+              <Input placeholder="name@company.com" accessibilityLabel="Teammate email" value={email} onChangeText={setEmail} onSubmitEditing={invite} />
+            </Column>
+            <Button outline iconRight={<Icon chevronsUpDown muted decorative />} accessibilityLabel={`Role: ${ROLES[roleIndex]}`} onPress={() => setRoleIndex((i) => (i + 1) % ROLES.length)}>{ROLES[roleIndex]}</Button>
+            <Button primary raised onPress={invite}>Send invite</Button>
+          </Row>
+        </Column>
+      </Card>
+      <Card flush clip>
+        <Column pad>
+          <Typography body semibold>Pending invitations <Typography caption mono subtle>{String(invites.length)}</Typography></Typography>
+        </Column>
+        {invites.map((inv, i) => (
+          <Fragment key={`${inv.email}-${i}`}>
+            <Divider />
+            <Column pad>
+              <Row cozy alignCenter>
+                <Emblem primary><Icon mail decorative /></Emblem>
+                <Column fill>
+                  <Typography small medium numberOfLines={1}>{inv.email}</Typography>
+                  <Typography caption subtle>{`${inv.role} · sent ${inv.sent}`}</Typography>
+                </Column>
+                <Button ghost small onPress={() => setInvites((prev) => prev.filter((_, j) => j !== i))}>Revoke</Button>
+              </Row>
+            </Column>
+          </Fragment>
+        ))}
+      </Card>
+      <Card flush clip>
+        <Column pad>
+          <Typography body semibold>Members <Typography caption mono subtle>24</Typography></Typography>
+        </Column>
+        {MEMBERS.map((m) => (
+          <Fragment key={m.email}>
+            <Divider />
+            <Column pad>
+              <Row cozy alignCenter>
+                <Avatar src={m.photo} name={m.name} />
+                <Column fill>
+                  <Typography small medium>{m.name}</Typography>
+                  <Typography caption subtle numberOfLines={1}>{m.email}</Typography>
+                </Column>
+                <Badge secondary>{m.role}</Badge>
+                <Badge soft {...{ [STATUS_TONE[m.status as keyof typeof STATUS_TONE]]: true }}>{m.status}</Badge>
+              </Row>
+            </Column>
+          </Fragment>
+        ))}
+      </Card>
     </Column>
-  );
-}
-
-// The member table: pressing a row surrogate-opens that member via a toast.
-function MembersLive() {
-  const { toast } = useToast();
-  return (
-    <DataTable
-      bordered
-      columns={["Member", "Email", "Role", "Status"]}
-      rows={MEMBERS.map(memberRow)}
-      onRowPress={(_row, index) => {
-        const m = MEMBERS[index];
-        if (m) {
-          toast({ message: m.name, description: `${m.email}, ${m.role.toLowerCase()}. The member profile would open here.` });
-        }
-      }}
-    />
   );
 }
 
 export const TEAM_TEMPLATE: TemplateDoc = {
   slug: "team",
   name: "Team",
-  description: "Invite teammates, manage member roles, and track pending invitations. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Invite a teammate",
-      anatomy: "Email Input + role Select + primary CTA on one wrapping row; each sent invite appends to the pending-invitations StackedList below it, with resend-all and revoke-expired actions.",
-      render: () => <InviteLive />,
-    },
-    {
-      title: "Members",
-      anatomy: "DataTable with Avatar + name cells, role Badges, and live status Badges; press a row to open that member.",
-      render: () => <MembersLive />,
-    },
-  ],
+  group: "App",
+  icon: "userCog",
+  description: "Invite teammates, manage member roles and track pending invitations.",
+  path: "team",
+  app: true,
+  Screen: TeamScreen,
 };

@@ -75,17 +75,35 @@ export interface AutocompleteProps extends MeasureProps {
   /** Fired when the open state changes (focus, typing, chevron, select). */
   onOpenChange?: (open: boolean) => void;
   /**
-   * The field's persistent label. Its placement is platform-adaptive: iOS and web
+   * The field's persistent label. Its placement is platform-adaptive:
+   * <!-- only: web -->
+   * iOS and web
    * render it ABOVE the field; Android renders the Material 3 in-container FLOATING
    * label (centered like a placeholder at rest, floating to the top once the list
-   * opens or a value fills the field). The label names the field for assistive tech.
+   * opens or a value fills the field).
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * iOS renders it ABOVE the field.
+   * <!-- /only -->
+   * <!-- only: android -->
+   * Android renders the Material 3 in-container FLOATING label (centered like a
+   * placeholder at rest, floating to the top once the list opens or a value fills the field).
+   * <!-- /only -->
+   * The label names the field for assistive tech.
    */
   label?: string;
   /**
    * Marks the field as required: appends a destructive "*" to the label (decorative,
-   * never in the accessible name) and announces the field as required, through
+   * never in the accessible name) and announces the field as required,
+   * <!-- only: web -->
+   * through
    * aria-required on the web and with the word in its name ("Assigned to, required")
-   * on iOS and Android. The star and the spoken word take effect only alongside `label`.
+   * on iOS and Android.
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * with the word in its name ("Assigned to, required").
+   * <!-- /only -->
+   * The star and the spoken word take effect only alongside `label`.
    */
   required?: boolean;
   /** Optional muted helper line rendered below the option list. */

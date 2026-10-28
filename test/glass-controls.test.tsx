@@ -48,6 +48,7 @@ import { GlassBlurTargetContext } from "../src/style/glass-surface/glass-surface
 import { createCaptureTarget } from "../src/style/glass-surface/capture-target.ts";
 import * as runtime from "../src/style/glass-surface/material-runtime.ts";
 import type { MaterialCapabilities } from "../src/style/glass-surface/material-resolution.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // The CONTROL layer of the glass model: every control that paints a surface of its
 // own (a field box, a button, a badge, a chip, a keycap, a tab pill, a page cell)
@@ -66,9 +67,13 @@ import type { MaterialCapabilities } from "../src/style/glass-surface/material-r
 //
 // The material only renders on a material path, and with the expo peers stubbed the one
 // reachable here is the web frost, which renders wherever the browser supports a CSS
-// backdrop-filter (the test DOM's CSS.supports says it does).
+// backdrop-filter (the test DOM's CSS.supports says it does). Every control here is in-page
+// material, which the web resolves solid under glass (the v4 hand-off) and the native builds
+// keep, so the suite renders under a platform with its own frost and React Native Web paints
+// it with the web host. test/web-glass-contract.test.tsx holds the web's solid controls.
 
 afterEach(cleanup);
+frostInPageSurfaces();
 
 async function renderGlass(ui: React.ReactElement, solid = false) {
   const result = render(<ThemeProvider glass={!solid} solid={solid}>{ui}</ThemeProvider>);

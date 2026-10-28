@@ -67,6 +67,7 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 
 ### Gradient fade, multi-series
 
+<!-- only: web -->
 ```tsx
 <LineChart
   title="Sessions by platform"
@@ -78,6 +79,20 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
   fade
 />
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<LineChart
+  title="Sessions by platform"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+  series={[
+    { label: "Web", values: [42, 48, 45, 61, 58, 71, 84] },
+    { label: "App", values: [28, 31, 36, 34, 41, 49, 56] }
+  ]}
+  fade
+/>
+```
+<!-- /only -->
 
 ### Price vs previous close
 

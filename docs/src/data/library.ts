@@ -1,13 +1,15 @@
 import { COMPONENTS } from "../core/data/components";
 import { SECTION_ROOMS, TEMPLATES_PAGE, type SectionId } from "./rooms";
 import { TIER_LABELS, tierOf, type Tier } from "./tiers";
+import { PLATFORM_COPY } from "./platform-copy";
 
 // The docs home: the v4 hand-off's Library page (`tools/v4/handoff/Canvas v4.0.0
 // Library.dc.html`), its copy and its index as data. docs/src/shell/home.tsx draws it from
 // kit components and the brand illustrations in docs/src/brand; test/docs-library.test.ts
 // holds it to the hand-off and to the kit's real exports.
 //
-// Where the hand-off's copy says something Canvas does not do, the copy is Canvas's own:
+// The headline is the owner's slogan, "Made of light." (2026-10-28), over the hand-off's
+// "Light as material.". Where the hand-off's copy says something Canvas does not do, the copy is Canvas's own:
 // the kit removed its spring motion on 2026-09-21 (CLAUDE.md "Motion"), so the hero
 // paragraph says "functional motion" and the fourth principle describes the motion that
 // stayed. Every count is read from the registries, never written in.
@@ -21,8 +23,9 @@ export const LIBRARY_HERO = {
   /** The eyebrow after the version: "Canvas v4.0.0 · Component library". */
   eyebrow: (version: string) => `Canvas v${version} · Component library`,
   /** The headline's plain part, then its gradient word. The h1's accessible name is both. */
-  headline: { plain: "Light as", accent: "material." },
-  body: "One component API, three native looks. Every surface is now lit glass: a single charged accent, functional motion, and type that carries the hierarchy on its own.",
+  headline: { plain: "Made of", accent: "light." },
+  /** Names the platforms, so it is per build (./platform-copy). */
+  body: PLATFORM_COPY.heroBody,
   primary: { label: "Explore components", href: "/sections/controls" },
   secondary: { label: "bnannier/canvas", url: REPO_URL },
 } as const;
@@ -32,7 +35,7 @@ export const LIBRARY_HEADLINE = `${LIBRARY_HERO.headline.plain} ${LIBRARY_HERO.h
 
 /** The mono stats row under the calls. */
 export function heroStats(componentCount: number = COMPONENTS.length): readonly string[] {
-  return [`${componentCount} components`, "2 schemes", "3 platform skins", "1 accent, rebrandable"];
+  return [`${componentCount} components`, "2 schemes", PLATFORM_COPY.heroSkins, "1 accent, rebrandable"];
 }
 
 export interface Principle {
@@ -65,14 +68,18 @@ export const PRINCIPLES: readonly Principle[] = [
   },
 ];
 
-/** The Index heading, its lead line and its paragraph (the mono package name is its own run). */
+/**
+ * The Index heading, its lead line and its paragraph (the mono package name is its own run).
+ * The owner's copy (2026-10-28) over the hand-off's "Index" caption: the heading advertises
+ * the kit's size, counted from the registry.
+ */
 export const INDEX_COPY = {
-  title: "Index",
-  lead: (count: number = COMPONENTS.length) => `All ${count} components, filed by the job they do.`,
+  title: (count: number = COMPONENTS.length) => `${count} components`,
+  lead: PLATFORM_COPY.indexLead,
   body: {
-    before: "Every export of ",
+    before: "Every one is in ",
     mono: "@nannier/canvas",
-    after: ", regrouped from atomic tiers into the rooms below. The tag is the tier it ships from in src today; every name jumps to the component, restyled.",
+    after: PLATFORM_COPY.indexAfter,
   },
 } as const;
 
@@ -158,7 +165,7 @@ export const SUB_COMPONENT_COUNT = SUB_COMPONENTS.reduce((sum, group) => sum + g
 /** The templates call to action; the count is the templates registry's, passed in by the page. */
 export const TEMPLATES_CALL = {
   title: (count: number) => `${count} page templates`,
-  body: "Full screens built from these components, each in web, iOS and Android skins.",
+  body: PLATFORM_COPY.templatesBody,
   label: "Open templates",
   href: TEMPLATES_PAGE.href,
 } as const;

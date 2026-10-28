@@ -74,7 +74,16 @@ export interface VideoProps {
   loop?: boolean;
   /** Play without sound. */
   muted?: boolean;
-  /** Transport controls: the platform's own player controls on iOS and Android, the kit's control bar on the web. */
+  /**
+   * Transport controls: the platform's own player controls
+   * <!-- only: web -->
+   * on iOS and Android,
+   * <!-- /only -->
+   * <!-- only: ios android -->
+   * in a native app,
+   * <!-- /only -->
+   * the kit's control bar on the web.
+   */
   controls?: boolean;
   /** Width over height of the clip; the frame fills its parent's width at this ratio (default 16 / 9). */
   aspectRatio?: number;

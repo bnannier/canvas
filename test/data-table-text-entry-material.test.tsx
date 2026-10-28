@@ -4,17 +4,22 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { DataTable as IOSDataTable } from "../src/organisms/data-table/data-table.ios.tsx";
 import { DataTable as AndroidDataTable } from "../src/organisms/data-table/data-table.android.tsx";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 let css: PropertyDescriptor | undefined;
 beforeEach(() => {
   css = Object.getOwnPropertyDescriptor(globalThis, "CSS");
   Object.defineProperty(globalThis, "CSS", { configurable: true, value: { supports: () => true } });
 });
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(() => {
   cleanup();
   if (css) Object.defineProperty(globalThis, "CSS", css);
   else Reflect.deleteProperty(globalThis, "CSS");
 });
+frostInPageSurfaces();
 
 // The material GlassBox paints behind the editor. A clear editor draws one with no frost
 // in it: Dark Factory draws its fields as an unblurred translucent fill.

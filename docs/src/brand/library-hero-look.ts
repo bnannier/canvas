@@ -10,20 +10,20 @@
 // Plain data and math with no React import, so the unit tests read it without a kit build.
 // Registered as a tunable in .tuning-harness.json: a change here needs an evidence row.
 
-/** The hero section's frame around the page frame, px. */
+/**
+ * The hero section, px: the hand-off's full-window section (`padding: 120px 48px 96px`,
+ * its content capped at 1440 px and centred, a hairline along its foot). It leads the page
+ * above the page's frame (docs/src/ui/page.tsx `lead`), so its glow spans the window.
+ */
 export const HERO_FRAME = {
-  /** The hand-off's 120 px above the hero's content, less the page's own 96 px under the pill. */
-  top: 24,
-  /** The hand-off's 96 px under the hero's content, above its hairline. */
+  /** The room above the hero's content, from the page's top under the floating pill. */
+  top: 120,
+  /** The room under the hero's content, above its hairline. */
   bottom: 96,
-  /**
-   * How far the glow layer reaches past the hero's content box on each side: the
-   * hand-off's 48 px section padding, so the glows run to the window's edges as the
-   * full-bleed section's do (the page frame's 24 px gutter plus the home's 24).
-   */
-  bleed: 48,
-  /** How far the glow layer reaches above the hero's frame: the page's 96 px under the pill. */
-  above: 96,
+  /** The section's side padding around its content. */
+  side: 48,
+  /** The cap on the content's width. */
+  max: 1440,
 } as const;
 
 /** The hand-off's two-column hero grid: `minmax(min(100%, 460px), 1fr)`. */

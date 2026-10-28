@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { PLATFORM_COPY } from "../data/platform-copy";
 import { View, Row, Column, Container, Divider, Typography, Button } from "@nannier/canvas";
 import { CanvasMark } from "../brand/canvas-mark";
 import { GUIDES_ROOM } from "../data/rooms";
@@ -32,9 +33,7 @@ export function Footer() {
           </Row>
           <Container md start>
             <Typography small subtle>
-              Direction &ldquo;Light as material&rdquo;. One component API for iOS, Android and the web: each platform
-              renders its own control where it ships one, and the Canvas look everywhere else, in the same ion
-              accent and neutral ramps.
+              {`Direction \u201cMade of light\u201d. ${PLATFORM_COPY.footer}`}
             </Typography>
           </Container>
         </Column>

@@ -21,6 +21,7 @@ Following the classic bullet-graph anatomy each row carries its own scale, since
 
 ### Success tone
 
+<!-- only: web -->
 ```tsx
 <BulletChart
   success
@@ -31,6 +32,19 @@ Following the classic bullet-graph anatomy each row carries its own scale, since
   ]}
 />
 ```
+<!-- /only -->
+<!-- only: ios android -->
+```tsx
+<BulletChart
+  success
+  data={[
+    { label: "Web", value: 34, target: 30 },
+    { label: "Phone", value: 18, target: 24 },
+    { label: "Tablet", value: 21, target: 24 },
+  ]}
+/>
+```
+<!-- /only -->
 
 ### Compact
 

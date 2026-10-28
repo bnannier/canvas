@@ -227,9 +227,9 @@ describe("what a run captures", () => {
     expect(all.pages).toBe(24);
     expect(all.cells).toBe(24 * 18);
     expect(all.groups.length).toBe(24 * 6);
-    const two = planPageCapture(pageList, { ...parseWebFilters({ [AUDIT_ENV.looks]: "dark", [AUDIT_ENV.widths]: "phone" }), only: ["template-signin"] });
+    const two = planPageCapture(pageList, { ...parseWebFilters({ [AUDIT_ENV.looks]: "dark", [AUDIT_ENV.widths]: "phone" }), only: ["pattern-loading"] });
     expect(two).toMatchObject({ pages: 1, cells: 2 });
-    expect(two.groups[0]!.page.sections.map((s) => s.key)).toEqual(["centeredcard", "splitscreen", "magiclink"]);
+    expect(two.groups[0]!.page.sections.map((s) => s.key)).toEqual(["choosebyintent", "spinnerinbutton", "skeletonrow", "inlineprogressbar"]);
     expect(() => planPageCapture(pageList, { ...parseWebFilters({}), only: ["template-nope"] })).toThrow(/no pattern or template page is called "template-nope"/);
   });
 

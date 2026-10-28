@@ -1,184 +1,138 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Tabs, Input, Select, Switch, Divider, useToast } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { IconName } from "@nannier/canvas";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-// Workspace settings built from real Canvas components: a vertical Tabs rail
-// beside the form panes, controlled fields and switches, and a dirty-driven
-// save bar that only appears once something differs from the saved baseline.
+// The hand-off's Settings (`Canvas v4.0.0 Templates.dc.html`, `t.settings`): the section
+// list (General, Notifications, Appearance) beside the open section's card, then the save
+// bar. Every part is a kit component from the frame's scope. The hand-off's theme picker
+// also repaints its page; here the choice stays in the screen (the docs' own scheme switch
+// is the pill's), so picking a theme or an accent only moves the selection.
 
-interface SettingsState {
-  name: string;
-  url: string;
-  timezone: string;
-  emailNotifications: boolean;
-  securityAlerts: boolean;
-  weeklyDigest: boolean;
-}
-
-const INITIAL: SettingsState = {
-  name: "Acme Corp",
-  url: "acme-corp",
-  timezone: "America/Los_Angeles (UTC-7)",
-  emailNotifications: true,
-  securityAlerts: true,
-  weeklyDigest: false,
-};
-
-const TIMEZONES = [
-  "America/Los_Angeles (UTC-7)",
-  "America/New_York (UTC-4)",
-  "Europe/London (UTC+1)",
-  "Europe/Berlin (UTC+2)",
-  "Asia/Tokyo (UTC+9)",
+const SECTIONS: readonly { label: string; icon: IconName }[] = [
+  { label: "General", icon: "settings2" },
+  { label: "Notifications", icon: "bell" },
+  { label: "Appearance", icon: "palette" },
 ];
 
-const SECTIONS = [
-  { label: "General", blurb: "Manage your workspace settings and preferences." },
-  { label: "Notifications", blurb: "Choose which updates reach your inbox." },
+const SWITCHES = [
+  { key: "a", label: "Mentions", description: "When someone tags you" },
+  { key: "b", label: "Weekly digest", description: "Monday summary of your boards" },
+  { key: "c", label: "Release notes", description: "When the kit ships a version" },
+  { key: "d", label: "Security alerts", description: "New sign-ins and key changes" },
+] as const;
+
+const THEMES: readonly { key: string; label: string; icon: IconName }[] = [
+  { key: "dark", label: "Dark", icon: "moon" },
+  { key: "light", label: "Light", icon: "sun" },
+  { key: "system", label: "System", icon: "monitor" },
 ];
 
-function SettingsLive() {
+const ACCENTS = ["violet", "cyan", "mint", "rose", "amber"] as const;
+
+function SettingsScreen({ K, phone }: TemplateScreenProps) {
+  const { Row, Column, Grid, Card, Typography, Button, Icon, Input, Select, Switch, Sidebar, Tabs, Swatch, Divider, useToast } = K;
   const { toast } = useToast();
-  const [tab, setTab] = useState(0);
-  const [saved, setSaved] = useState(INITIAL);
-  const [draft, setDraft] = useState(INITIAL);
+  const [section, setSection] = useState(0);
+  const [on, setOn] = useState<Record<string, boolean>>({ a: true, b: false, c: true, d: true });
+  const [theme, setTheme] = useState("dark");
+  const [accent, setAccent] = useState<(typeof ACCENTS)[number]>("violet");
 
-  const dirty = (Object.keys(saved) as Array<keyof SettingsState>).some(
-    (key) => saved[key] !== draft[key],
-  );
-
-  function set<K extends keyof SettingsState>(key: K, value: SettingsState[K]) {
-    setDraft((d) => ({ ...d, [key]: value }));
-  }
-
-  function discard() {
-    setDraft(saved);
-  }
-
-  function save() {
-    setSaved(draft);
-    toast({
-      success: true,
-      message: "Settings saved",
-      description: "Your workspace preferences are up to date.",
-    });
-  }
-
-  // `block` fills the rail's span beside the panes and the full width once
-  // stacked above them.
-  const rail = (
-    <Tabs
-      vertical
-      block
-      tabs={SECTIONS.map((s) => s.label)}
-      active={tab}
-      onSelect={setTab}
+  const nav = phone ? (
+    <Tabs pills wrap tabs={SECTIONS.map((s) => s.label)} active={section} onSelect={setSection} />
+  ) : (
+    <Sidebar
+      embedded
+      accessibilityLabel="Settings sections"
+      active={section}
+      onSelect={(_, index) => setSection(index)}
+      items={SECTIONS.map((s) => ({ id: s.label, label: s.label, icon: s.icon }))}
     />
   );
 
-  const general = (
-    <Card>
-      <Column cozy>
-        <Typography h4>Workspace</Typography>
-        <Input
-          label="Workspace name"
-          value={draft.name}
-          onChangeText={(text) => set("name", text)}
-        />
-        <Input
-          label="Workspace URL"
-          value={draft.url}
-          onChangeText={(text) => set("url", text)}
-        />
-        <Select
-          label="Default timezone"
-          value={draft.timezone}
-          onSelect={(option) => set("timezone", option)}
-          options={TIMEZONES}
-        />
-      </Column>
-    </Card>
-  );
-
-  const notifications = (
-    <Card>
-      <Column cozy>
-        <Typography h4>Notifications</Typography>
-        <Switch
-          checked={draft.emailNotifications}
-          onChange={(next) => set("emailNotifications", next)}
-          description="Receive email when important events occur."
-        >
-          Email notifications
-        </Switch>
-        <Divider />
-        <Switch
-          checked={draft.securityAlerts}
-          onChange={(next) => set("securityAlerts", next)}
-          description="Get notified about suspicious activity."
-        >
-          Security alerts
-        </Switch>
-        <Divider />
-        <Switch
-          checked={draft.weeklyDigest}
-          onChange={(next) => set("weeklyDigest", next)}
-          description="A summary of activity sent every Monday."
-        >
-          Weekly digest
-        </Switch>
-      </Column>
-    </Card>
-  );
-
-  const content = (
-    <Column cozy>
-      <Column tight>
-        <Typography h4>{SECTIONS[tab].label}</Typography>
-        <Typography small>{SECTIONS[tab].blurb}</Typography>
-      </Column>
-      {tab === 0 ? general : notifications}
-      {dirty ? (
+  const body = (
+    <Column relaxed>
+      {section === 0 ? (
         <Card>
-          <Row between alignCenter wrap>
-            <Typography small>Unsaved changes</Typography>
-            <Row snug>
-              <Button ghost small onPress={discard}>
-                Discard
-              </Button>
-              <Button primary small onPress={save}>
-                Save changes
-              </Button>
-            </Row>
-          </Row>
+          <Column roomy>
+            <Grid minTileWidth={220} cozy>
+              <Input label="Workspace name" placeholder="Riskora" />
+              <Select label="Language" defaultValue="English (UK)" options={["English (UK)", "English (US)", "Deutsch", "Français"]} />
+            </Grid>
+            <Input label="Workspace URL" prefix="riskora.app/" defaultValue="team" />
+          </Column>
         </Card>
       ) : null}
+      {section === 1 ? (
+        <Card>
+          <Column>
+            {SWITCHES.map((w, i) => (
+              <Column key={w.key} roomy>
+                {i ? <Divider /> : null}
+                <Switch checked={!!on[w.key]} onValueChange={(next) => setOn((x) => ({ ...x, [w.key]: next }))} description={w.description}>
+                  {w.label}
+                </Switch>
+              </Column>
+            ))}
+          </Column>
+        </Card>
+      ) : null}
+      {section === 2 ? (
+        <Card>
+          <Column roomy>
+            <Typography small medium subtle>Theme</Typography>
+            <Grid minTileWidth={72} columns={3} snug>
+              {THEMES.map((t) => (
+                <Card key={t.key} compact selected={theme === t.key} onPress={() => setTheme(t.key)} accessibilityLabel={t.label}>
+                  <Column snug alignCenter>
+                    <Icon {...{ [t.icon]: true }} size={20} primary={theme === t.key} muted={theme !== t.key} decorative />
+                    <Typography small medium primary={theme === t.key} subtle={theme !== t.key}>{t.label}</Typography>
+                  </Column>
+                </Card>
+              ))}
+            </Grid>
+            <Typography small medium subtle>Accent · repaints every page</Typography>
+            <Row cozy alignCenter>
+              {ACCENTS.map((a) => (
+                <Swatch key={a} {...{ [a]: true }} selected={accent === a} onPress={() => setAccent(a)} />
+              ))}
+            </Row>
+          </Column>
+        </Card>
+      ) : null}
+      <Row end snug alignCenter>
+        <Button ghost onPress={() => toast({ message: "Changes discarded" })}>Discard</Button>
+        <Button primary raised onPress={() => toast({ message: "Preferences saved" })}>Save changes</Button>
+      </Row>
     </Column>
   );
 
-  // The rail takes a quarter beside the panes and stacks above them once the
-  // section is phone width. One element tree at every width: the Row measures
-  // its own container and only its layout changes, so an edited field keeps its
-  // text and focus across a resize.
   return (
-    <Row stacks relaxed>
-      <Column span={3}>{rail}</Column>
-      <Column span={9}>{content}</Column>
-    </Row>
+    <Column relaxed>
+      {phone ? null : (
+        <Column tight>
+          <Typography h3 level={2}>Settings</Typography>
+          <Typography small subtle>Workspace preferences for Riskora.</Typography>
+        </Column>
+      )}
+      {phone ? (
+        <Column relaxed>{nav}{body}</Column>
+      ) : (
+        <Row stacks relaxed>
+          <Column span={3}>{nav}</Column>
+          <Column span={9}>{body}</Column>
+        </Row>
+      )}
+    </Column>
   );
 }
 
 export const SETTINGS_TEMPLATE: TemplateDoc = {
   slug: "settings",
   name: "Settings",
-  description:
-    "Section-railed settings page: workspace form, notification toggles, and a save bar that appears only with unsaved changes. Built from live Canvas components.",
-  sections: [
-    {
-      title: "Settings layout",
-      anatomy:
-        "Vertical block Tabs rail (span 3) beside the form panes (span 9), a Row stacks that puts the rail above the panes once the section is sm wide or narrower; an edited field keeps its text and focus across the switch. The General pane holds the workspace Inputs and timezone Select; the Notifications pane holds the Switch list. Editing anything surfaces the save bar; Discard resets to the saved baseline, Save commits it with a toast, and the bar hides again.",
-      render: () => <SettingsLive />,
-    },
-  ],
+  group: "Account",
+  icon: "settings",
+  description: "Grouped preferences with switches, an appearance picker and a save bar.",
+  path: "settings",
+  app: true,
+  Screen: SettingsScreen,
 };

@@ -6,6 +6,7 @@ import { cleanup, render } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
 import { PANE_HOSTS as HOSTS, type PaneHost as Host } from "./fixtures/pane-hosts.tsx";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
 // Missing material restores the complete solid treatment (CLAUDE.md, the glass model).
 // Wherever glass is requested but cannot render, every surface that paints a GlassPane
@@ -20,7 +21,11 @@ import { PANE_HOSTS as HOSTS, type PaneHost as Host } from "./fixtures/pane-host
 // Every kit file that renders a GlassPane has a host in test/fixtures/pane-hosts.tsx, so a
 // new one is held to the rule from its first commit.
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 const ROOT = join(import.meta.dir, "..");
 

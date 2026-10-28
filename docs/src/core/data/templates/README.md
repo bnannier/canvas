@@ -1,35 +1,45 @@
 # Template authoring contract
 
-Every template in this directory is a LIVE demo built from real Canvas
-components (the render path in `TemplateSection`). No HTML-string mockups, no
-hand-rolled look-alikes, and no dead controls.
+Every template in this directory is a LIVE screen built from real Canvas
+components, shown on the Templates page (`docs/src/ui/templates/explorer.tsx`)
+inside the hand-off's browser window, iPhone or Pixel frame
+(`Canvas v4.0.0 Templates.dc.html`). No HTML-string mockups, no hand-rolled
+look-alikes, and no dead controls.
 
 ## File shape
 
-One file per template, exporting a single `TemplateDoc`:
+One file per template, exporting a single `TemplateDoc` whose `Screen` renders
+the template's content. The frame supplies the app chrome (the web sidebar and
+top bar, the iOS large title and tab bar, the Material 3 app bar and navigation
+bar) for an `app` template; the screen draws only what sits inside it.
 
 ```tsx
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button /* ... */ } from "@nannier/canvas";
-import type { TemplateDoc } from "../types";
+import type { TemplateDoc, TemplateScreenProps } from "../types";
 
-function SectionLive() {
+function ExampleScreen({ K, phone, go }: TemplateScreenProps) {
+  const { Column, Card, Typography, Button, useToast } = K;
   const [state, setState] = useState(/* demo state */);
-  return /* kit components only */;
+  return /* kit components from K only */;
 }
 
 export const EXAMPLE_TEMPLATE: TemplateDoc = {
   slug: "example",
   name: "Example",
-  description: "One sentence. End with: Built from live Canvas components.",
-  sections: [
-    { title: "…", anatomy: "…", render: () => <SectionLive /> },
-  ],
+  group: "App",
+  icon: "layoutDashboard",
+  description: "The hand-off's description, verbatim.",
+  path: "example", // the browser bar's app.riskora.com/<path>
+  app: true, // false for the full-screen Auth and States templates
+  Screen: ExampleScreen,
 };
 ```
 
-Hooks live in named function components (`render: () => <SectionLive />`),
-never directly inside `render`. Register the export in `../templates.tsx`.
+Take every component from `K`, the frame's example scope: it is the kit with
+the previewed platform's skins swapped in, so the page's Web / iOS / Android
+switch shows the real skins. `phone` is true in the two handset frames, and
+`go(slug)` opens another template on the same platform. Register the export
+in `../templates.tsx`, in the hand-off's list order.
 
 ## Interactivity is required
 
@@ -43,8 +53,7 @@ A template is a working product surface, not a picture of one:
   the page (Export, Contact sales, Update card), fire a toast instead:
 
   ```tsx
-  import { useToast } from "@nannier/canvas";
-  const { toast } = useToast(); // inside a component; ToastProvider is mounted in the docs root
+  const { toast } = K.useToast(); // the frame mounts the platform's ToastProvider
   toast({ success: true, message: "Invite sent", description: "ada@acme.com will get an email." });
   ```
 

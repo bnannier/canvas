@@ -434,7 +434,7 @@ describe("the states each component's source gives it", () => {
       return rest as ComponentStates;
     };
     expect(check("action-sheet", without("action-sheet"))).toEqual([
-      "action-sheet: its Disabled action example asks for a disabled control in the overlay in ActionSheet (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:206), with no disabled recipe there",
+      "action-sheet: its Disabled action example asks for a disabled control in the overlay in ActionSheet (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:217), with no disabled recipe there",
     ]);
     expect(check("row-menu", without("row-menu"))).toEqual([
       "row-menu: its Disabled item example asks for a disabled control in the overlay in RowMenu (disabled on <Pressable> at src/organisms/row-menu/row-menu.shared.tsx:91 via MenuRow), with no disabled recipe there",
@@ -454,7 +454,7 @@ describe("the states each component's source gives it", () => {
     ]);
     // An own-surface recipe a disabled example asks for (Button's `disabled`, one of the two ways `disabled || loading` is true).
     expect(check("button", without("button"))).toEqual([
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:280), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:285), with no disabled recipe there",
     ]);
   });
 
@@ -463,7 +463,7 @@ describe("the states each component's source gives it", () => {
     const item = recipeFor("dropdown", "disabled-disableditem");
     expect(check("button", { ...(STATE_RECIPES.button as object), disabled: { ...item, variant: "disabled" } } as ComponentStates)).toEqual([
       "button: its disabled recipe on the disabled example is applied inside an overlay, and its source renders none",
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:280), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:285), with no disabled recipe there",
     ]);
     const dropdown = STATE_RECIPES.dropdown as Record<string, unknown>;
     expect(check("dropdown", { ...dropdown, disabled: [recipeFor("dropdown", "disabled-disabledtrigger"), { ...item, opens: "Popover" }] } as ComponentStates)[0]).toBe(
@@ -1163,12 +1163,12 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // Dialog's footer: the iOS build's capsules (`skin.footerKind === "capsules"`) and the
     // Android build's text buttons (`skin.textButton != null`); the web build's are kit
     // Buttons, none of its own. The Dismissible example's scrim is every build's.
-    expect(builds("dialog", "focus")).toEqual(["dialog.shared.tsx:245 Pressable: ios", "dialog.shared.tsx:266 Pressable: android", "dialog.shared.tsx:278 Pressable: android"]);
+    expect(builds("dialog", "focus")).toEqual(["dialog.shared.tsx:249 Pressable: ios", "dialog.shared.tsx:270 Pressable: android", "dialog.shared.tsx:282 Pressable: android"]);
     expect(builds("dialog", "pressed")).toEqual([
-      "dialog.shared.tsx:245 Pressable: ios",
-      "dialog.shared.tsx:266 Pressable: android",
-      "dialog.shared.tsx:278 Pressable: android",
-      "dialog.shared.tsx:350 Pressable: every build",
+      "dialog.shared.tsx:249 Pressable: ios",
+      "dialog.shared.tsx:270 Pressable: android",
+      "dialog.shared.tsx:282 Pressable: android",
+      "dialog.shared.tsx:354 Pressable: every build",
     ]);
     // AlertDialog's confirm (`skin.actionLayout`): the kit Button the web and Android builds hand `disabled`, its own on iOS.
     expect(builds("alert-dialog", "disabled")).toEqual([
@@ -1179,9 +1179,9 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // DataTable's cell editor: the web build's under its glass pane (`skin.liquidTextEntry`), the
     // others' bare; its scroller only where the skin does not collapse to the primary column.
     expect(builds("data-table", "focus").filter((line) => !line.endsWith("every build"))).toEqual([
-      "data-table.shared.tsx:508 TextInput: ios and android",
-      "data-table.shared.tsx:512 TextInput: web",
-      "data-table.shared.tsx:940 ScrollView: web and android",
+      "data-table.shared.tsx:516 TextInput: ios and android",
+      "data-table.shared.tsx:520 TextInput: web",
+      "data-table.shared.tsx:948 ScrollView: web and android",
     ]);
     // The rows each page shows, and the build each renders: Toast's iOS row is the web build,
     // the docs registry injecting no iOS Toast; Sidebar's page shows one preview, the web build.
@@ -1199,9 +1199,9 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // text buttons' press, `android_ripple` alone, is the devices' whatever the table says.)
     expect(check("dialog", { ...table.dialog, focus: onWeb("dialog", "focus"), pressed: onWeb("dialog", "pressed") })).toEqual([
       "dialog: its focus recipe on the default example answers nothing on the web row: it acts on a button in the overlay in Present, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "dialog: its source gives it a focus state in the overlay in Present on the iOS and Android rows (a tab stop: <Pressable> at src/organisms/dialog/dialog.shared.tsx:245, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
+      "dialog: its source gives it a focus state in the overlay in Present on the iOS and Android rows (a tab stop: <Pressable> at src/organisms/dialog/dialog.shared.tsx:249, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
       "dialog: its pressed recipe on the default example answers nothing on the web row: it acts on a button in the overlay in Present, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "dialog: its source gives it a pressed state in the overlay in Present (onPress on <Pressable> at src/organisms/dialog/dialog.shared.tsx:248, and 2 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "dialog: its source gives it a pressed state in the overlay in Present (onPress on <Pressable> at src/organisms/dialog/dialog.shared.tsx:252, and 2 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // AlertDialog's the same on the iOS row, and its Body field's confirm: the web and Android
     // rows' is the kit Button it disables (its own for that state alone), the iOS row's its own.
@@ -1214,7 +1214,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     ]);
     // DataTable's native cell editor is on the iOS and Android rows alone.
     expect(check("data-table", { ...table["data-table"], focus: onWeb("data-table", "focus") })).toEqual([
-      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:508 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
+      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:516 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // As the table has them, each on the rows its own controls are on: nothing is left, and the
     // answers say which rows they are.
@@ -1334,9 +1334,9 @@ export function createProbe(skin: ProbeSkin) {
     // The rail's recipes, as the table had them at the desktop alone, leave the drawer unanswered.
     const rail = { hover: recipeFor("sidebar", "hover-default"), focus: recipeFor("sidebar", "focus-default"), pressed: recipeFor("sidebar", "pressed-default"), open: recipeFor("sidebar", "open") };
     expect(check("sidebar", rail)).toEqual([
-      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:110 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
-      "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:107 via SidebarDrillDown, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
-      "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:115 via SidebarDrillDown, and 5 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:115 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:114 via SidebarDrillDown, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:122 via SidebarDrillDown, and 5 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // A recipe inside the drawer acts on a row of the drill-down's own there, and answers it.
     for (const name of ["hover-default-inside", "focus-default-inside", "pressed-default-inside"]) {
@@ -1384,7 +1384,7 @@ describe("the states the web runner can never show", () => {
       const controls = new Map(signalsOf(slug).flatMap((s) => (s.state === "pressed" && s.control ? [[s.control.at, s.control] as const] : [])));
       return [...controls.values()].map((c) => `${c.at.replace(/^src\/[a-z]+\/[a-z-]+\//, "")}: ${ROW_KEYS.map((row) => deviceFeedback(c, "pressed", row, rowsOf(slug), signalsOf(slug)) ?? "-").join(" ")}`).sort();
     };
-    expect(feedback("dialog")).toEqual(["dialog.shared.tsx:245: - - -", "dialog.shared.tsx:266: - - android_ripple", "dialog.shared.tsx:278: - - android_ripple", "dialog.shared.tsx:350: - - -"]);
+    expect(feedback("dialog")).toEqual(["dialog.shared.tsx:249: - - -", "dialog.shared.tsx:270: - - android_ripple", "dialog.shared.tsx:282: - - android_ripple", "dialog.shared.tsx:354: - - -"]);
     expect(feedback("alert-dialog")).toEqual(["alert-dialog.shared.tsx:207: - - -", "alert-dialog.shared.tsx:219: - - -"]);
     // The press on the iOS and Android rows, as the table had it: on the Android row it set up a
     // state the web runner could never see reached.
@@ -1398,7 +1398,7 @@ describe("the states the web runner can never show", () => {
       const coverage = coverageOf(slug, STATE_RECIPES[slug]!, signalsOf(slug), railExamples(component(slug)), rowsOf(slug));
       expect({ slug, errors: coverage.errors }).toEqual({ slug, errors: [] });
       const devices = coverage.answers.filter((a) => a.by === "devices").map((a) => `${a.state} in ${a.within} on ${a.rows!.join(" and ")}: ${a.feedback} (${a.signals.map((s) => s.at.replace(/^.*\//, "")).join(", ")})`);
-      const at = ["dialog.shared.tsx:268", "dialog.shared.tsx:280"];
+      const at = ["dialog.shared.tsx:272", "dialog.shared.tsx:284"];
       expect({ slug, devices }).toEqual({ slug, devices: [`pressed in Present on android: android_ripple (${at.join(", ")})`] });
       expect(coverage.answers.some((a) => a.by === "recipe" && a.signals.some((s) => at.some((place) => s.at.endsWith(place))))).toBe(false);
     }

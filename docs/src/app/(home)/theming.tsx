@@ -1,3 +1,4 @@
+import { shownItems } from "../../ui/shown-on";
 import { Row, Column, ButtonGroup, Button, Card, Checkbox, Grid, Switch, ThemeProvider, Typography, type Palette } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
@@ -176,7 +177,7 @@ export default function ThemingScreen() {
 
         <Section title="Native (ThemeProvider)">
           <P>
-            On iOS and Android, wrap the app once in <InlineCode>ThemeProvider</InlineCode>. It follows the OS appearance by
+            On native, wrap the app once in <InlineCode>ThemeProvider</InlineCode>. It follows the OS appearance by
             default; force a scheme with the <InlineCode>dark</InlineCode> / <InlineCode>light</InlineCode> boolean, and the
             material with <InlineCode>glass</InlineCode> / <InlineCode>solid</InlineCode>. Both axes are flat booleans like every
             Canvas axis: pass at most one per axis, omit both for the default (the OS appearance, the platform material). No CSS
@@ -323,14 +324,14 @@ export default function ThemingScreen() {
           </P>
           <BulletList
             subtle
-            items={[
+            items={shownItems([
               "The kit's shared material rendering owns material selection and clipping. Native Liquid Glass, native frost and the browser's frost are different capabilities; a browser preview of an iOS skin does not prove native rendering",
               "No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer",
               "Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it",
               "Solid surfaces retain their full opaque treatment without glass capture. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself",
-              "Android blur needs a safe live backdrop target. Canvas's Android capture module on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin",
+              { on: "android", item: "Android blur needs a safe live backdrop target. Canvas's Android capture module on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin" },
               "The CSS handoff always carries the web material's tints, blur and hairline; data-surface marks glass mode and gates the accessibility and print fallbacks that turn the material opaque. It paints no page backdrop of its own and supplies no native material",
-            ]}
+            ])}
           />
           <H3>Web helpers</H3>
           <P muted>The helpers persist the choice and update the CSS handoff attributes. Feed the same choice to ThemeProvider so React Native components follow it.</P>

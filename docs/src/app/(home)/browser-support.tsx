@@ -1,3 +1,5 @@
+import { shownItems } from "../../ui/shown-on";
+import { shows } from "../../core/platforms-shown";
 import { Column, Typography, DataTable } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
@@ -5,15 +7,16 @@ import { P, H3, InlineCode, Rule } from "../../ui/prose";
 import { Card } from "@nannier/canvas";
 import { PageNav } from "../../ui/page-nav";
 
-const PLATFORMS = [
-  ["iOS", "React Native (native)", "iOS 13.4+"],
-  ["Android", "React Native (native)", "Android 6.0+ (API 23)"],
+// A native app lists only its own platform (../../core/platforms-shown).
+const PLATFORMS = shownItems<string[]>([
+  { on: "ios", item: ["iOS", "React Native (native)", "iOS 13.4+"] },
+  { on: "android", item: ["Android", "React Native (native)", "Android 6.0+ (API 23)"] },
   ["Web", "react-native-web + the canvas.css token layer", "Modern browsers (see baseline below)"],
-];
+]);
 
 const PEERS = [
   ["react", ">=18", "The React runtime Canvas builds on."],
-  ["react-native", ">=0.74", "Native iOS / Android host, and the module aliased to react-native-web on the web."],
+  ["react-native", ">=0.74", "The native host, and the module aliased to react-native-web on the web."],
   ["react-native-svg", ">=14", "Vector icons and the chart primitives."],
 ];
 
@@ -32,7 +35,7 @@ const NOTES = [
   {
     title: "Native uses no CSS",
     description:
-      "On iOS and Android there is no browser and no CSS feature floor. Components read the active design tokens with useTheme and build their React Native styles from them; the native minimums above come from React Native 0.74 and react-native-svg, the package's peer dependencies.",
+      "On native there is no browser and no CSS feature floor. Components read the active design tokens with useTheme and build their React Native styles from them; the native minimums above come from React Native 0.74 and react-native-svg, the package's peer dependencies.",
   },
   {
     title: "The web floor comes from the stylesheet, not the components",
@@ -52,12 +55,12 @@ export default function BrowserSupportScreen() {
       <Column loose>
         <PageHeader
           title="Platform & Browser Support"
-          description="The platforms Canvas runs on (iOS, Android, and the web through react-native-web) and the web browser baseline."
+          description="The platforms Canvas runs on (native, and the web through react-native-web) and the web browser baseline."
         />
 
         <Section title="Platforms">
           <P muted>
-            Canvas is a universal React Native UI kit. It runs natively on iOS and Android, and on the web through{" "}
+            Canvas is a universal React Native UI kit. It runs natively{shows("android") ? " on iOS and Android" : " on iOS"}, and on the web through{" "}
             <InlineCode>react-native-web</InlineCode>.
           </P>
           <Card flush>

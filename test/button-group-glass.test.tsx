@@ -5,8 +5,13 @@ import { ButtonGroup as WebGroup } from "../src/atoms/button-group/button-group.
 import { ButtonGroup as IOSGroup } from "../src/atoms/button-group/button-group.ios.tsx";
 import { ButtonGroup as AndroidGroup } from "../src/atoms/button-group/button-group.android.tsx";
 import { layoutElement, layoutEntrance } from "./entrance-layout.ts";
+import { frostInPageSurfaces } from "./fixtures/material-platform.ts";
 
+// The surfaces here are in-page material, which the web resolves solid under glass (the v4
+// hand-off) and the native builds keep: the suite renders under a platform with its own frost
+// (test/fixtures/material-platform.ts), and React Native Web paints it with the web host.
 afterEach(cleanup);
+frostInPageSurfaces();
 
 const items = ["Day", "Week", "Month"];
 // The material GlassBox paints behind a surface, found by its wrapper so a clear surface

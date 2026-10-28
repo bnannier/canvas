@@ -394,7 +394,7 @@ export function createCommand(skin: CommandSkin) {
     }
     if (!trigger) {
       return (
-        <GlassSurface testID={testID} style={[s.card(tokens), skin.cardShape, focusFrame.ring()]}>
+        <GlassSurface floating testID={testID} style={[s.card(tokens), skin.cardShape, focusFrame.ring()]}>
           <FocusFrameContext.Provider value={focusFrame.target}>{cardContent}</FocusFrameContext.Provider>
         </GlassSurface>
       );
