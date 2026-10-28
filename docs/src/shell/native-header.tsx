@@ -112,6 +112,9 @@ export function NativeHeader() {
     return (
       <Stack.Screen
         options={{
+          // `title` too: the next screen's back button reads it (without it, the route's
+          // file name, "index" or "skins", labels the back button).
+          title,
           headerTitle: title,
           // Two trailing items: the section / site-map menu (a native UIMenu), and the kit
           // appearance toggles (surface + light/dark) beside it — the SAME ThemeToggles the
@@ -144,6 +147,9 @@ export function NativeHeader() {
     <>
       <Stack.Screen
         options={{
+          // `title` too: the next screen's back button reads it (without it, the route's
+          // file name, "index" or "skins", labels the back button).
+          title,
           headerTitle: title,
           headerRight: () => (
             <Row snug alignCenter>

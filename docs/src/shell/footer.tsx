@@ -25,8 +25,12 @@ export function Footer() {
       style={{ paddingTop: FOOTER.top, paddingHorizontal: FOOTER.side, paddingBottom: FOOTER.bottom, gap: FOOTER.ruleGap }}
     >
       <Divider />
-      <Row between alignStart stacks stackBreakpoint="lg" loose>
-        <Column snug>
+      {/* No cross-axis alignment: stacked, the Row is a Column whose stretch gives the
+          brand block the line's width, so its paragraph wraps there instead of measuring
+          at its max-content width (it ran off a phone's edge on iOS). Side by side, the
+          brand block shrinks before the link columns, as the hand-off's wrap row does. */}
+      <Row between stacks stackBreakpoint="lg" loose>
+        <Column snug shrink>
           <Row snug alignCenter>
             <CanvasMark size={22} />
             <Typography h5 level={2}>{`Canvas ${version} · component library`}</Typography>
