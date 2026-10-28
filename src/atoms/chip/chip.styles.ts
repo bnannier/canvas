@@ -57,6 +57,18 @@ const removeHitSlop = MIN_TARGET == null
 // the 44pt minimum around the 28pt pill (the web drops hitSlop).
 const BODY_HIT_SLOP = 8;
 
+// The `option` chip (the hand-off playground's knob picks, Component.dc.html): 26 tall at a
+// 7 corner, 9 at the sides, a 500 12px label, no check and no hover; an icon-only pick is a
+// 30 px square at an 8 corner.
+const option: NonNullable<ChipSkin["option"]> = {
+  base: { ...shell, height: 26, gap: 6, borderRadius: 7 },
+  sidePadding: { text: 9, icon: 9, remove: 6 },
+  labelType: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
+  selectedCheck: null,
+  hoverBrightness: undefined,
+  iconOnly: { width: 30, height: 30, borderRadius: 8, justifyContent: "center", paddingStart: 0, paddingEnd: 0 },
+};
+
 export const webSkin: ChipSkin = {
   base: pill,
   sidePadding: { text: 12, icon: 8, remove: 6 },
@@ -72,6 +84,7 @@ export const webSkin: ChipSkin = {
   selectedEdge: true,
   hoverBrightness: 1.12,
   disabledOpacity: 0.4,
+  option,
 };
 
 // iOS ships no chip control: the native skin is the web skin.

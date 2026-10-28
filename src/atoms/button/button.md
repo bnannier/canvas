@@ -42,7 +42,9 @@ announce the menu with `expanded` and `haspopup`.
 22 px icon action; `themeChoice` a 32 px pill whose `selected` state is the accent
 edge with a soft accent halo. `pageLink` is a page header's link, a 34 px hairline box
 around a muted 13 px label (a page's section, its source); add `mono` when the label is a
-path, which sets it in the 400 12 px mono face.
+path, which sets it in the 400 12 px mono face. `jumpLink` is a page's jump to one of its sections, a 28 px
+hairline pill around a muted 500 12 px label. Both header links brighten their label to the
+full ink and take the `secondary` wash under the pointer.
 
 ## Usage
 

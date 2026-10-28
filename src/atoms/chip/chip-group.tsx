@@ -20,6 +20,8 @@ const RADIOGROUP: Role = "radiogroup";
 // The wrapping row of chips, and the labeled group's header over it (RadioGroup's rhythm:
 // 8 between header and options, 4 inside the header).
 const ROW: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 };
+// A set of `option` chips sits 4 apart (the hand-off playground's knob picks).
+const OPTION_GAP: ViewStyle = { gap: 4 };
 const HEADED: ViewStyle = { flexDirection: "column", gap: 8 };
 const HEADER: ViewStyle = { gap: 4 };
 
@@ -40,6 +42,11 @@ export interface ChipGroupProps {
   onChange?: (value: string | number) => void;
   /** Disable every chip in the group. */
   disabled?: boolean;
+  /**
+   * Draw every chip as an `option` chip (Chip's compact settings pick), 4 px apart: the
+   * pick-one sets of a settings panel.
+   */
+  option?: boolean;
   /**
    * The group's name, rendered as a heading above the chips and announced as the
    * radiogroup's accessible name. The group owns this label anatomy; never hand-compose
@@ -70,7 +77,7 @@ type OptionProps = { value?: string | number; disabled?: boolean };
  * `defaultValue` (or nothing) to let it manage its own selection.
  */
 export function ChipGroup(props: ChipGroupProps) {
-  const { disabled, label, description } = props;
+  const { disabled, label, description, option } = props;
   const { tokens } = useTheme();
   const fill = useFillStyle("ChipGroup");
   const [value, setValue] = useControllableState<string | number | undefined>(
@@ -111,8 +118,8 @@ export function ChipGroup(props: ChipGroupProps) {
   );
 
   const ctx = useMemo<ChipGroupContextValue>(
-    () => ({ value, select: (next) => setValue(next), disabled, itemProps: disabled ? undefined : itemProps }),
-    [value, disabled, setValue, itemProps],
+    () => ({ value, select: (next) => setValue(next), disabled, itemProps: disabled ? undefined : itemProps, option }),
+    [value, disabled, setValue, itemProps, option],
   );
 
   // The accessible name, on both the RN prop and its aria alias (RNW forwards neither on
@@ -122,7 +129,7 @@ export function ChipGroup(props: ChipGroupProps) {
   const hasHeader = label != null || description != null;
 
   const group = (
-    <View testID={hasHeader ? undefined : props.testID} role={RADIOGROUP} {...nameProps} style={[ROW, hasHeader ? null : [fill, props.style]]}>
+    <View testID={hasHeader ? undefined : props.testID} role={RADIOGROUP} {...nameProps} style={[ROW, option ? OPTION_GAP : null, hasHeader ? null : [fill, props.style]]}>
       {props.children}
     </View>
   );

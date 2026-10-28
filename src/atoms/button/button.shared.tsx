@@ -85,6 +85,8 @@ export interface ButtonProps extends MeasureProps {
   identityAction?: boolean;
   /** A page header's link: a 34-tall hairline box around a muted label (a source path, the page's section). */
   pageLink?: boolean;
+  /** A page's jump to one of its sections: a 28-tall hairline pill around a muted 12px label. */
+  jumpLink?: boolean;
   /** A `pageLink` whose label is a path or code: the 400 12px mono face. */
   mono?: boolean;
   /** A reference-key link: an underlined monospace key in the link ink. */
@@ -219,7 +221,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const iconBox = iconBoxOf(props);
-    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, jumpLink: !!props.jumpLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -335,7 +337,7 @@ export function createButton(skin: ButtonSkin) {
                 />
               ) : null}
               {!loading && iconLeft != null ? <AnatomyPart name="Leading icon">{iconLeft}</AnatomyPart> : null}
-              {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[skin.label(tokens, intent, size, opts), props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
+              {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[skin.label(tokens, intent, size, opts), live ? skin.hoverLabel?.(tokens, opts) : null, props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
               {!loading && iconRight != null ? <AnatomyPart name="Trailing icon">{iconRight}</AnatomyPart> : null}
             </View>
             {props.count !== undefined && props.count !== "" ? <View ref={countPart?.ref} onLayout={countPart?.onLayout} style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View> : null}

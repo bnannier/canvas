@@ -45,6 +45,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `link` | Link | [ ] | [ ] | [ ] |  |
 | `selectable` | Selectable | [ ] | [ ] | [ ] |  |
 | `pickone` | Pick one | [ ] | [ ] | [ ] |  |
+| `options` | Options | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

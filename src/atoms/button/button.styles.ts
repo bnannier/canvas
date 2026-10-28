@@ -29,6 +29,7 @@ export type Size = "small" | "base" | "large";
 export interface ButtonSkinOpts {
   identityAction?: boolean;
   pageLink?: boolean;
+  jumpLink?: boolean;
   mono?: boolean;
   referenceLink?: boolean;
   inlineIcon?: boolean;
@@ -75,6 +76,12 @@ export interface ButtonSkin {
    * pane sits under the button, so the look is made safe for the material.
    */
   hover?: (theme: HoverTheme, intent: Intent, opts: ButtonSkinOpts | undefined, puck: boolean) => ViewStyle | null;
+  /**
+   * The label's look while hovered, or null to keep its resting ink: the page header's
+   * links brighten their muted label to `foreground` (Component.dc.html `style-hover`).
+   * Never applied while disabled or loading; omitted by the iOS and Android skins.
+   */
+  hoverLabel?: (t: ColorTokens, opts: ButtonSkinOpts | undefined) => TextStyle | null;
   /** The resting glow under a `raised` primary button (the hand-off's raised call to action). */
   raised: (t: ColorTokens, size: Size) => ViewStyle;
   /** iOS dims the fill on press; the web scales (`press`) and Android ripples instead (null). */
@@ -137,10 +144,11 @@ export function webLinkInkOf(p: Pick<ButtonSkinOpts, "inverse" | "foreground">) 
 }
 
 /** Resolve reference anatomy before generic utility-box metrics. */
-export function webBodyOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityAction" | "pageLink" | "referenceLink" | "inlineIcon" | "scopeTrigger" | "filterTrigger" | "inlineLink" | "utility">) {
+export function webBodyOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityAction" | "pageLink" | "jumpLink" | "referenceLink" | "inlineIcon" | "scopeTrigger" | "filterTrigger" | "inlineLink" | "utility">) {
   if (p.themeChoice) return "themeChoice";
   if (p.identityAction) return "identity";
   if (p.pageLink) return "pageLink";
+  if (p.jumpLink) return "jumpLink";
   if (p.referenceLink) return "reference";
   if (p.inlineIcon) return "inlineIcon";
   if (p.scopeTrigger) return "scope";
@@ -262,6 +270,10 @@ const IDENTITY_HEIGHT = 28;
 // sides, the hairline `border` around a muted label, a `mono` path at 400 12/16.
 const PAGE_LINK = { height: 34, padX: 12 };
 const PAGE_LINK_MONO: TextStyle = { ...FS(12, 16), fontWeight: "400", fontFamily: MONO_FONT };
+// The page's jumps to its sections (the same header): a 28-tall hairline pill, 11 at the
+// sides, a muted 500 12px label.
+const JUMP_LINK = { height: 28, padX: 11 };
+const JUMP_LINK_TYPE: TextStyle = { ...FS(12, 16), fontWeight: "500" };
 const INLINE_ICON = 22;
 
 /**
@@ -299,6 +311,13 @@ function bodyContainer(t: ColorTokens, intent: Intent, o: ButtonSkinOpts, corner
       ...fade,
     };
   }
+  if (body === "jumpLink") {
+    return {
+      ...ROW, gap: 8, height: JUMP_LINK.height, paddingVertical: 0, paddingHorizontal: JUMP_LINK.padX,
+      borderRadius: pill, borderWidth: BORDER, borderColor: t.border, backgroundColor: "transparent",
+      ...fade,
+    };
+  }
   if (body === "reference") return { ...ROW, gap: 4, padding: 0, borderWidth: 0, backgroundColor: "transparent", ...fade };
   if (body === "inlineIcon") return { ...ROW, ...sq(INLINE_ICON), borderRadius: corner, borderWidth: 0, backgroundColor: "transparent", ...fade };
   if (body === "scope" || body === "filter") {
@@ -325,6 +344,7 @@ function bodyLabel(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOpts
   const body = webBodyOf(o);
   if (body === "themeChoice" || body === "identity") return { ...BODY_TYPE, color: t.foreground };
   if (body === "pageLink") return { ...(o.mono ? PAGE_LINK_MONO : BODY_TYPE), color: t["muted-foreground"] };
+  if (body === "jumpLink") return { ...JUMP_LINK_TYPE, color: t["muted-foreground"] };
   if (body === "reference") return { ...BODY_TYPE, fontFamily: MONO_FONT, color: primaryText(t), textDecorationLine: "underline" };
   if (body === "scope") return { ...SCOPE_TYPE, color: t.foreground };
   if (body === "filter") return { ...BODY_TYPE, color: t["muted-foreground"] };
@@ -410,6 +430,10 @@ export const webSkin: ButtonSkin = {
   // white label), a `softHover` link dims to 85%, and the theme choice, the reference link
   // and the inline icon have no hover look.
   hover: (theme, intent, o, puck) => glassSafeHover(webHover(theme.tokens, intent, o), theme, puck, !!o?.inverse),
+  hoverLabel: (t, o) => {
+    const body = webBodyOf(o ?? {});
+    return body === "pageLink" || body === "jumpLink" ? { color: t.foreground } : null;
+  },
   raised: (t) => raisedGlow(t, true),
   pressedOpacity: null,
   press: { scale: 0.96, brightness: 0.92 },

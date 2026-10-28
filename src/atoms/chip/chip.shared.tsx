@@ -76,7 +76,7 @@ export interface ChipSkin {
   bodyHitSlop?: number;
   /** The selected filter chip's leading check: its size, and whether it replaces a
    *  leading icon (M3) or leads only a chip that has none (the hand-off's web chip). */
-  selectedCheck: { size: number; replacesIcon: boolean };
+  selectedCheck: { size: number; replacesIcon: boolean } | null;
   /** A selected chip keeps an accent edge (the web); M3 drops the outline. */
   selectedEdge?: boolean;
   /** M3: an idle neutral chip is the bare container inside its field-border outline. Omit
@@ -88,6 +88,13 @@ export interface ChipSkin {
   hoverBrightness?: number;
   /** The disabled chip's opacity. */
   disabledOpacity: number;
+  /**
+   * The `option` chip's geometry and type over this skin (the hand-off playground's knob
+   * picks: 26 tall at a 7 corner, 9 at the sides, a 500 12px label, no check, no hover),
+   * and the square an icon-only option takes. Omit where the platform's own chip is the
+   * option (Material 3's filter chip).
+   */
+  option?: Pick<ChipSkin, "base" | "sidePadding" | "labelType" | "selectedCheck" | "hoverBrightness"> & { iconOnly: ViewStyle };
 }
 
 export interface ChipProps {
@@ -191,6 +198,13 @@ export interface ChipProps {
   secondary?: boolean;
   primary?: boolean;
   outline?: boolean;
+  /**
+   * A compact option in a settings panel, the hand-off playground's knob pick: 26 tall at a
+   * small corner, a 500 12px label and no check, idle a bare field-border edge around the
+   * muted ink, selected the accent's soft wash inside its edge. An icon-only option is a
+   * 30 px square. A ChipGroup's `option` sets it on every chip.
+   */
+  option?: boolean;
   // A chip has ONE compact size, so there is no size axis.
   disabled?: boolean;
   /** Keep resting opacity while pressed, preserving the reference filter treatment. */
@@ -311,13 +325,18 @@ function selectedTint(tokens: ColorTokens, edge: boolean): Appearance {
 }
 
 /** Build a Chip from a platform skin. */
-export function createChip(skin: ChipSkin) {
+export function createChip(platformSkin: ChipSkin) {
   return function Chip(props: ChipProps) {
     const { children, icon, trailing, onPress, onRemove, href, hrefAttrs, accessibilityLabel, testID, style } = props;
     // An option of a ChipGroup: the group owns its selection, its disabled flag and its
     // roving tab stop.
     const group = useChipGroup();
     const option = group != null && props.value !== undefined ? group : null;
+    // The `option` look (on the chip, or from its group) swaps in the skin's option geometry.
+    const optionLook = (props.option === true || option?.option === true) && platformSkin.option != null ? platformSkin.option : null;
+    const skin: ChipSkin = optionLook ? { ...platformSkin, ...optionLook } : platformSkin;
+    const iconOnly = optionLook != null && icon != null && children == null ? optionLook.iconOnly : null;
+    const paneShape = iconOnly ? StyleSheet.flatten([skin.base, iconOnly]) : skin.base;
     const disabled = props.disabled === true || option?.disabled === true;
     const selectable =
       option != null ||
@@ -369,7 +388,7 @@ export function createChip(skin: ChipSkin) {
     const surfaced = !outline || selectedActive;
     // The selected filter chip leads with a checkmark: on M3 it replaces any leading icon,
     // on the web and iOS it leads only a chip with no icon of its own.
-    const selectedCheck = selectedActive && (skin.selectedCheck.replacesIcon || icon == null) ? skin.selectedCheck.size : undefined;
+    const selectedCheck = selectedActive && skin.selectedCheck != null && (skin.selectedCheck.replacesIcon || icon == null) ? skin.selectedCheck.size : undefined;
     // A tappable chip reports its toggle/active state to AT (see the Pressable below).
     const isSelected = selectable ? selectedState : accent;
 
@@ -385,6 +404,8 @@ export function createChip(skin: ChipSkin) {
       appearance = hueTint(tokens, hue, dark, outline);
     } else if (accent) {
       appearance = outline ? outlineOf(tokens, primaryText(tokens)) : solidTint(tokens);
+    } else if (optionLook) {
+      appearance = { bg: "transparent", border: tokens["field-border"] ?? tokens.input, text: tokens["muted-foreground"] };
     } else {
       appearance = neutralTint(tokens, outline, mutedGray ? (props.neutral ? "neutral" : "gray") : null, !!skin.outlined, props.secondary === true, selectable);
     }
@@ -454,6 +475,7 @@ export function createChip(skin: ChipSkin) {
     const box: StyleProp<ViewStyle> = [
       chrome,
       { paddingStart: hasLeading ? skin.sidePadding.icon : skin.sidePadding.text, paddingEnd: trailingInset },
+      iconOnly,
     ];
     const container: StyleProp<ViewStyle> = [
       surfaced || theme.increasedContrast ? paneStyle(theme, box, stateEdge) : box,
@@ -490,7 +512,7 @@ export function createChip(skin: ChipSkin) {
 
     // The chip's content minus the remove control: the leading check/icon, the
     // label, and any trailing element.
-    const pane = surfaced ? <GlassPane static={staticMaterial} layer="control" shape={skin.base} tint={appearance.glassTint} brand={appearance.brand} /> : null;
+    const pane = surfaced ? <GlassPane static={staticMaterial} layer="control" shape={paneShape} tint={appearance.glassTint} brand={appearance.brand} /> : null;
     const bodyContent = (
       <>
         {selectedCheck != null ? (

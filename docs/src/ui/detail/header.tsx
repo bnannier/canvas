@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Column, Row, Container, Typography, Badge, Breadcrumb, Button, Chip, CodeBlock, Divider, Icon } from "@nannier/canvas";
+import { Column, Row, Typography, Badge, Breadcrumb, Button, CodeBlock, Divider, Icon } from "@nannier/canvas";
 import navConfig from "../../data/nav.config.json";
 import type { ComponentDoc } from "../../core/data/types";
 import { InlineMarkdown } from "../prose";
@@ -59,9 +59,7 @@ export function DetailHeader({ comp, description, sourcePath, exports, jumps }: 
         <Typography pageTitle>{comp.name}</Typography>
         <Badge mono uppercase secondary={tier.badge === "secondary"} soft={tier.badge === "soft"} outline={tier.badge === "outline"}>{tier.label}</Badge>
       </Row>
-      <Container wide start>
-        <Typography pageLead><InlineMarkdown text={description} pageLead /></Typography>
-      </Container>
+      <Typography pageLead><InlineMarkdown text={description} pageLead /></Typography>
       <Row snug wrap alignCenter>
         <CodeBlock inline copy language="tsx" code={importLine} />
         <Button pageLink mono external href={`${REPOSITORY}/${sourcePath}`} iconLeft={<Icon code size={14} decorative />}>{sourcePath}</Button>
@@ -72,7 +70,7 @@ export function DetailHeader({ comp, description, sourcePath, exports, jumps }: 
       <Column relaxed>
         <Divider />
         <Row wrap compact>
-          {jumps.map((jump) => <Chip key={jump.label} outline onPress={jump.onPress}>{jump.label}</Chip>)}
+          {jumps.map((jump) => <Button key={jump.label} jumpLink onPress={jump.onPress}>{jump.label}</Button>)}
         </Row>
       </Column>
     </Column>

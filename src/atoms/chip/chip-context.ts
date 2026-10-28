@@ -18,6 +18,8 @@ export interface ChipGroupContextValue {
   /** Roving-focus props for the chip with this value (the group's arrow keys); undefined
    *  when the group is disabled or the value is not one of its options. */
   itemProps?: (value: string | number) => RovingItemProps | undefined;
+  /** Every chip in the group is an `option` chip. */
+  option?: boolean;
 }
 
 export const ChipGroupContext = createContext<ChipGroupContextValue | null>(null);
