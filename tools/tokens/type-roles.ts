@@ -71,6 +71,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/organisms/sidebar/sidebar.styles.ts": { webEyebrow: "caption" },
   "src/atoms/badge/badge.styles.ts": { "webSkin.sizes": "tiny" },
   "src/molecules/card/card.styles.ts": { eyebrow: "caption" },
+  // A reference detail's source chip (the hand-off's 11px label, cv-kit-code3.js).
+  "src/molecules/card/card.reference.styles.ts": { source: "small" },
   "src/atoms/chip/chip.styles.ts": { "webSkin.countType": "tiny" },
   "src/atoms/avatar/avatar.reference.tsx": { "REFERENCE_TYPE.annotation": "annotation" },
   "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", "webMenuSkin.menuPillSecondary": "tiny" },

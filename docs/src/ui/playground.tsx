@@ -150,7 +150,7 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
           >
             <Card flush>
               {previews.map((p, i) => (
-                <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} stageAlign={stageAlign} />
+                <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} code={ex.code} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} stageAlign={stageAlign} />
               ))}
             </Card>
           </View>

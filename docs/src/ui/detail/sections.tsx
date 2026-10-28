@@ -21,7 +21,7 @@ function GuidanceExample({ code, render, scope }: { code: string; render: (scope
     <Column snug>
       <View {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}>
         <ExampleErrorBoundary>
-          <FitStage>{render(scope)}</FitStage>
+          <FitStage code={code}>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
       </View>
       <CodeBlock headerless code={code} />

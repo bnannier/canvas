@@ -20,12 +20,12 @@ import { PINNED_STATES, isPinnedState, optionLabel, withOption, type PropDescrip
  * would be a hugging child of the well's centred column, and a fill example in it would
  * collapse instead of spanning the well.
  */
-export function Well({ compact, tall, pinsRing, children }: { compact?: boolean; tall?: boolean; pinsRing?: boolean; children: ReactNode }) {
+export function Well({ compact, tall, pinsRing, code, children }: { compact?: boolean; tall?: boolean; pinsRing?: boolean; code?: string; children: ReactNode }) {
   return (
     <View {...(Platform.OS === "web" ? ({ dataSet: stageData(pinsRing) } as object) : null)}>
       <CardMedia compact={compact} tall={tall}>
         <ExampleErrorBoundary>
-          <FitStage>{children}</FitStage>
+          <FitStage code={code}>{children}</FitStage>
         </ExampleErrorBoundary>
       </CardMedia>
     </View>
@@ -54,7 +54,7 @@ export function VariantsSection({ examples, path, note, scope, selected, section
       <Grid minTileWidth={340} roomy>
         {examples.map(({ example, index }) => (
           <Card key={example.label} flush selected={index === selected}>
-            <Well>{example.render(scope)}</Well>
+            <Well code={example.code}>{example.render(scope)}</Well>
             <CardSeparator />
             <CardContent>
               <Column snug>
