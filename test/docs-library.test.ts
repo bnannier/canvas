@@ -17,14 +17,15 @@ import { tierOf } from "../docs/src/data/tiers.ts";
 import { COMPONENTS } from "../docs/src/core/data/components.ts";
 import {
   COLLAGE,
-  DISPLAY_TYPE,
+  HERO_TYPE,
+  heroType,
   auroraDiscs,
   blurredDisc,
   panelTransform,
   projectCss,
   type TransformOp,
 } from "../docs/src/brand/library-hero-look.ts";
-import { typeRoles } from "../src/style/type-scale.ts";
+import { fluidRoles, fluidType } from "../src/style/type-scale.ts";
 
 // The docs home (docs/src/shell/home.tsx): the v4 hand-off's Library page as data
 // (docs/src/data/library.ts) and the brand illustrations' math
@@ -125,8 +126,9 @@ function matrixOf(ops: TransformOp[]): number[][] {
 }
 
 describe("the hero illustrations", () => {
-  it("draw the headline word in the kit's display role", () => {
-    expect(DISPLAY_TYPE).toEqual(typeRoles.display as unknown as typeof DISPLAY_TYPE);
+  it("draw the headline word in the kit's hero role", () => {
+    expect(HERO_TYPE).toEqual(fluidRoles.hero);
+    for (const width of [0, 390, 1024, 1440, 2000]) expect(heroType(width)).toEqual(fluidType(fluidRoles.hero, width) as ReturnType<typeof heroType>);
   });
 
   it("fold each collage panel's depth into a transform that projects as the hand-off's", () => {

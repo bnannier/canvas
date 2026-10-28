@@ -224,6 +224,24 @@ export function useBreakpoint(): BreakpointKey | "base" {
   return override ?? bucket;
 }
 
+function getWidthSnapshot(): number {
+  return Dimensions.get("window").width;
+}
+const getNoWidth = (): number => 0;
+
+/**
+ * KIT-INTERNAL: the window's width in px, for the one kind of reading that is sized by it
+ * rather than switched by it: the hand-off's fluid headlines (`clamp(min, N vw, max)`, the
+ * Typography `hero` and `pageTitle` roles). Unlike useBreakpoint it re-renders on every
+ * resize pixel, so it is read only where `active` is set; inactive or on the server it holds
+ * no subscription and reads 0, which a clamp resolves to its minimum. A BreakpointOverride
+ * pins the tier, not the geometry, so this follows the real window under one, as the
+ * window-level chrome does.
+ */
+export function useViewportWidth(active: boolean): number {
+  return useSyncExternalStore(active ? subscribeViewport : subscribeNever, active ? getWidthSnapshot : getNoWidth, getNoWidth);
+}
+
 /** Hook form: resolve a Responsive map against the current viewport width. */
 export function useResponsive<T>(map: Responsive<T>): T {
   return resolveFromBucket(useBreakpoint(), map);

@@ -57,6 +57,18 @@ export class TypeSites extends SourceFolder {
     return { values, unresolved };
   }
 
+  /**
+   * A fluid size clamped up from its minimum (`Math.max(spec.min, <the window's share>)`, the
+   * hand-off's `clamp(min, N vw, max)`) is at least that minimum, the number every floor
+   * reads: the size the text takes on a phone, on the server and before the window is known.
+   */
+  protected partialMath(name: string, _node: ts.CallExpression, _sf: ts.SourceFile, args: (Origin[] | null)[]): Origin[] | null {
+    if (name !== "max") return null;
+    const seen = args.filter((a): a is Origin[] => a !== null);
+    if (seen.length !== 1) return null;
+    return seen[0];
+  }
+
   protected sinkOf(node: ts.Node, sf: ts.SourceFile): ts.Expression | null {
     // A key written plainly, as a string, or computed from a literal or a const holding one.
     if (ts.isPropertyAssignment(node) && this.propertyKey(node.name, sf) === "fontSize") return node.initializer;

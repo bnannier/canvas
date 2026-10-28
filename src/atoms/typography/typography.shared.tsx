@@ -1,6 +1,8 @@
 import { Badge } from "../badge/badge.js";
 import { sectionDescription, sectionRow, sectionActions } from "./typography.styles.js";
 import { identityTextInk } from "../../style/identity-text.js";
+import { useViewportWidth } from "../../style/responsive.js";
+import { fluidRoles, fluidType } from "../../style/type-scale.js";
 import { type ReactNode } from "react";
 import { type AccessibilityRole, type GestureResponderEvent } from "react-native";
 import { View, Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill, tabularNums } from "../../style/index.js";
@@ -122,6 +124,17 @@ export interface TypographyProps {
 
   children?: ReactNode;
   // Role (pick one; default is the plain body style). First-match precedence.
+  /**
+   * The hand-off's hero headline: the display face sized by the window,
+   * `clamp(56px, 7.2vw, 112px)` at a .94 line and -.045em tracking (56 px on a phone, 103.68
+   * at a 1440 window, 112 from 1556 up). One per page, its lead line. A level-1 heading.
+   */
+  hero?: boolean;
+  /**
+   * The hand-off's page title (a component page's name): the display face sized by the
+   * window, `clamp(40px, 5vw, 64px)` at a 1.0 line and -.04em tracking. A level-1 heading.
+   */
+  pageTitle?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -223,6 +236,8 @@ export function headingLevelOf(p: TypographyProps, role: Role = roleOf(p)): numb
 // heading to h1. Non-heading roles are absent here so
 // they stay plain text.
 const HEADING_LEVEL: Partial<Record<Role, number>> = {
+  hero: 1,
+  pageTitle: 1,
   display: 1,
   h1: 1,
   h2: 2,
@@ -246,19 +261,23 @@ export function roleOf(p: TypographyProps): Role {
   if (p.metricValue) return "metricValue";
   if (p.formValue) return "formValue";
 
+  if (p.hero) return "hero";
+  if (p.pageTitle) return "pageTitle";
   if (p.display) return "display";
   if (p.h1) return "h1";
   if (p.h2) return "h2";
   if (p.h3) return "h3";
   if (p.h4) return "h4";
   if (p.h5) return "h5";
-  if (p.lead) return "lead";
   if (p.code) return "code";
-  if (p.mono) return "mono";
+  // A reading size passed with `mono` keeps its size and takes the mono face
+  // (`<Typography caption mono>` is the 12 px mono caption); `mono` alone is its own role.
+  if (p.lead) return "lead";
   if (p.caption) return "caption";
   if (p.small) return "small";
   if (p.tiny) return "tiny";
   if (p.body) return "body";
+  if (p.mono) return "mono";
   if (p.muted) return "muted";
   return "body";
 }
@@ -329,6 +348,11 @@ export function createTypography(skin: TypographySkin) {
     const theme = useTheme();
     const { tokens, dark } = theme;
     const role = roleOf(props);
+    // A fluid headline follows the window's width (the hand-off's vw clamp); every other
+    // role holds no window subscription.
+    const fluid = role === "hero" || role === "pageTitle" ? role : null;
+    const viewportWidth = useViewportWidth(fluid != null);
+    const roleType: TextStyle = fluid ? { ...skin.roleType[role], ...fluidType(fluidRoles[fluid], viewportWidth) } : skin.roleType[role];
     const tone = toneOf(props);
     const weight = weightOf(props);
     const textAlign = textAlignOf(props);
@@ -338,7 +362,7 @@ export function createTypography(skin: TypographySkin) {
 
     // The mono/code roles ask for a monospace face; there is no font-family
     // utility, so request the cross-platform monospace alias via inline style.
-    const monoStyle = MONO_ROLES.has(role) ? { fontFamily: MONO_FONT } : null;
+    const monoStyle = MONO_ROLES.has(role) || props.mono ? { fontFamily: MONO_FONT } : null;
     // The code pill is HUG (a boxed inline token); every other role is a text run that
     // spans its parent and wraps.
     const hug = useHugStyle();
@@ -367,7 +391,7 @@ export function createTypography(skin: TypographySkin) {
         accessibilityRole={anchor ? "link" : props.accessibilityRole ?? (level ? "header" : undefined)}
         aria-level={anchor ? undefined : level}
         style={[
-          skin.roleType[role],
+          roleType,
           roleColor(tokens, role),
           props.foreground ? { color: tokens.foreground } : null,
           props.inverse ? { color: "#ffffff" } : null,
@@ -382,13 +406,13 @@ export function createTypography(skin: TypographySkin) {
           props.inverseFaint ? { color: "rgba(255,255,255,0.72)" } : null,
           textAlign ? { textAlign } : null,
           props.uppercase ? { textTransform: "uppercase" } : null,
-          props.displayTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * -0.02 } : null,
-          props.tightTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * -0.01 } : null,
-          props.referenceTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.04 } : null,
-          props.labelTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.06 } : null,
-          props.eyebrowTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.14 } : null,
-          props.wideTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.16 } : null,
-          props.expandedTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.18 } : null,
+          props.displayTracking ? { letterSpacing: Number(roleType.fontSize) * -0.02 } : null,
+          props.tightTracking ? { letterSpacing: Number(roleType.fontSize) * -0.01 } : null,
+          props.referenceTracking ? { letterSpacing: Number(roleType.fontSize) * 0.04 } : null,
+          props.labelTracking ? { letterSpacing: Number(roleType.fontSize) * 0.06 } : null,
+          props.eyebrowTracking ? { letterSpacing: Number(roleType.fontSize) * 0.14 } : null,
+          props.wideTracking ? { letterSpacing: Number(roleType.fontSize) * 0.16 } : null,
+          props.expandedTracking ? { letterSpacing: Number(roleType.fontSize) * 0.18 } : null,
           // The code pill is a Text node, which cannot host a material sibling, so under
           // glass its `muted` fill becomes an ink tint that lets the pane it sits on show
           // through (the same translucent emphasis a glass table's header band takes).
@@ -397,7 +421,7 @@ export function createTypography(skin: TypographySkin) {
           weight ? weightStyle(weight) : null,
           // After the role, whose line height it overrides; the skin's own scale is the
           // input it clamps against, so this reads the active platform's value.
-          leading ? leadingStyle(skin.roleType[role], leading) : null,
+          leading ? leadingStyle(roleType, leading) : null,
           // Decoration is orthogonal to color/weight/leading (it sets textDecorationLine),
           // so its placement in the cascade is free; it layers on before the escape hatch.
           decoration ? decorationStyle(decoration) : null,

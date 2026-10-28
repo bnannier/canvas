@@ -10,18 +10,18 @@ hand-rolls `flexDirection`, `gap`, or `alignItems`.
 The Argus reference adds intermediate spacing steps without rounding its layout:
 `fine` 3, `dense` 5, `compact` 6, `close` 7, `nested` 9, `comfortable` 10,
 `balanced` 11, `roomy` 14, `airy` 18, `spacious` 20, `generous` 22,
-`section` 26, `panel` 28, `page` 30, and `apart` 32 (the space between the side-by-side
-panels of one composition). Existing named steps keep their values.
+`section` 26, `panel` 28, `page` 30, `apart` 32 (the space between the side-by-side
+panels of one composition), and `broad` 48 (between the two halves of a page-wide split). Existing named steps keep their values.
 Larger active steps take precedence.
 
 `chapter` (64) is the widest step: the space between a page's chapters, the major
 sections of a long page (a component detail page's Playground, Props and Examples).
-It wins over every other gap step, so the precedence runs `chapter` > `apart` > `page` >
+It wins over every other gap step, so the precedence runs `chapter` > `broad` > `apart` > `page` >
 `panel` > `section` > `loose` and on down the scale to `flush`. Row, Column and
 Grid all take it.
 
-`rowsTight`, `rowsComfortable`, `rowsCozy` and `rowsSection` set a wrapped row's
-vertical gap to 4, 10, 12 and 26 independently of its main gap. Application inset
+`rowsTight`, `rowsComfortable`, `rowsSnug`, `rowsCozy` and `rowsSection` set a wrapped
+row's vertical gap to 4, 10, 8, 12 and 26 independently of its main gap. Application inset
 roles preserve identity headers (24 top/horizontal, 18 bottom), action footers
 (16 vertical, 24 horizontal), theme controls (14 top, 26 horizontal), status bands
 (10 vertical, 28 horizontal), and navigation close controls (12 top/horizontal):

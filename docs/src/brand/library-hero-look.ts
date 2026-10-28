@@ -49,12 +49,23 @@ export const GRADIENT_TEXT = {
 } as const;
 
 /**
- * The kit's display role as its web skin sets it (src/style/type-scale.ts `typeRoles.display`,
- * which the docs cannot import: test/docs-library.test.ts holds the two equal), for the SVG
- * text that has to draw the same glyphs at the same place. The kit keeps 56 px where the
- * hand-off clamps to 112 (decision P5-K).
+ * The kit's `hero` headline role (src/style/type-scale.ts `fluidRoles.hero`, which the docs
+ * cannot import: test/docs-library.test.ts holds the two equal), for the SVG text that has
+ * to draw the same glyphs at the same place: the hand-off's `clamp(56px, 7.2vw, 112px)` at a
+ * .94 line and -.045em tracking.
  */
-export const DISPLAY_TYPE = { fontSize: 56, lineHeight: 56, fontWeight: "500", letterSpacing: -2.24 } as const;
+export const HERO_TYPE = { min: 56, vw: 0.072, max: 112, ratio: 0.94, trackingEm: -0.045, fontWeight: "500" } as const;
+
+/** The hero headline's type at a window `width`, as the kit's Typography `hero` resolves it. */
+export function heroType(width: number): { fontSize: number; lineHeight: number; fontWeight: "500"; letterSpacing: number } {
+  const fontSize = Math.round(Math.min(HERO_TYPE.max, Math.max(HERO_TYPE.min, HERO_TYPE.vw * width)) * 100) / 100;
+  return {
+    fontSize,
+    lineHeight: Math.round(fontSize * HERO_TYPE.ratio * 100) / 100,
+    fontWeight: HERO_TYPE.fontWeight,
+    letterSpacing: Math.round(HERO_TYPE.trackingEm * fontSize * 100) / 100,
+  };
+}
 
 /** The SVG baseline of a single line of text, from the line box's top, px. */
 export function baselineOffset(fontSize: number, lineHeight: number): number {
