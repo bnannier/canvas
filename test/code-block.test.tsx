@@ -26,13 +26,75 @@ describe("tokenize", () => {
     expect(kinds(strLine)['"hi"']).toBe("string");
   });
 
-  it("classifies JSX tags and their attributes (bare semantic booleans included)", () => {
-    const [line] = tokenize("<Button primary large>", "tsx");
+  // The ts grammar is the hand-off's CodeBlock renderer (cv-kit-code3.js `hl`): `<Tag`
+  // whole in cyan, an identifier inside the tag an attribute.
+  it("classifies ts tags and their attributes (bare semantic booleans included)", () => {
+    const [line] = tokenize("<Button primary large>", "ts");
     const map = kinds(line);
     expect(map["<Button"]).toBe("tag");
     expect(map["primary"]).toBe("attr");
     expect(map["large"]).toBe("attr");
     expect(map[">"]).toBe("tag");
+  });
+
+  // The tsx and jsx grammar is the hand-off's component-page highlighter (`hl`,
+  // Component.dc.html line 324): the Capitalised name after `<` or `</` in the accent,
+  // an attribute name before its `=` in cyan, a string in mint, a `//` comment in the
+  // subtle ink, and everything else (brackets, slashes, boolean attributes, children,
+  // keywords, numbers) neutral. The samples are the hand-off's own.
+  describe("tsx and jsx follow the hand-off's component page", () => {
+    const spans = (line: { text: string; kind: string }[]) => line.map((t) => `${t.kind}:${t.text}`);
+
+    it("paints the tag name alone, so a label reads in one ink after one accent name", () => {
+      const [line] = tokenize("<Button>Save changes</Button>", "tsx");
+      expect(spans(line)).toEqual([
+        "text:<", "component:Button", "text:>",
+        "text:Save", "text: ", "text:changes",
+        "text:</", "component:Button", "text:>",
+      ]);
+      expect(line.filter((t) => t.kind !== "text" && t.kind !== "component")).toEqual([]);
+    });
+
+    it("keeps boolean attributes neutral and hands the context back after a nested tag", () => {
+      const [line] = tokenize("<Button outline small iconLeft={<Icon plus />}>Add item</Button>", "jsx");
+      const map = kinds(line);
+      expect(map["Button"]).toBe("component");
+      expect(map["Icon"]).toBe("component");
+      expect(map["outline"]).toBe("text");
+      expect(map["small"]).toBe("text");
+      expect(map["plus"]).toBe("text");
+      expect(map["iconLeft"]).toBe("attr");
+      expect(map["/>"]).toBe("text");
+      expect(map["Add"]).toBe("text");
+      expect(map["item"]).toBe("text");
+      // An attribute after the nested tag is still inside the outer tag.
+      const [after] = tokenize("<Button iconLeft={<Icon plus />} onPress={save}>Go</Button>", "tsx");
+      expect(kinds(after)["onPress"]).toBe("attr");
+      expect(kinds(after)["save"]).toBe("text");
+    });
+
+    it("paints a string attribute mint and its name cyan, a boolean attribute neutral", () => {
+      const [line] = tokenize('<Button variant="primary" primary>Go</Button>', "tsx");
+      const map = kinds(line);
+      expect(map["variant"]).toBe("attr");
+      expect(map['"primary"']).toBe("string");
+      expect(map["primary"]).toBe("text");
+      expect(map["="]).toBe("text");
+    });
+
+    it("paints a comment in the subtle ink and nothing else in a plain statement", () => {
+      const lines = tokenize("// the primary action\nconst n = 42; save();", "tsx");
+      expect(lines[0]).toEqual([{ text: "// the primary action", kind: "comment" }]);
+      expect(lines[1].every((t) => t.kind === "text")).toBe(true);
+    });
+
+    it("leaves a lowercase tag and a dotted member name as hl draws them", () => {
+      const [line] = tokenize('<div className="x"><Card.Header /></div>', "tsx");
+      const map = kinds(line);
+      expect(map["div"]).toBe("text");
+      expect(map["className"]).toBe("attr");
+      expect(map["Card.Header"]).toBe("component");
+    });
   });
 
   it("keeps the arrow out of tag classification and spans block comments across lines", () => {
@@ -207,10 +269,32 @@ describe("CodeBlock headerless", () => {
     const bare = ui(<CodeBlock headerless language="tsx" filename="Button.tsx" code="<Button primary>Save</Button>" />);
     expect(bare.queryByText("tsx")).toBeNull();
     expect(bare.queryByText("Button.tsx")).toBeNull();
-    // Still tokenized: the tag name is its own coloured span.
-    const tag = bare.getByText("primary", { exact: true });
+    // Still tokenized: the component name is its own coloured span (hl paints the name
+    // alone in the accent; the bare boolean `primary` stays in the code ink).
+    const tag = bare.getAllByText("Button", { exact: true })[0]!;
     expect(tag.parentElement!.textContent).toBe("<Button primary>Save</Button>");
     expect(getComputedStyle(tag).color).not.toBe(getComputedStyle(tag.parentElement!).color);
+  });
+
+  // The hand-off's playground bar (Component.dc.html lines 171 to 174) is the
+  // "JSX · <Interface>" label and a Copy button only; `unbadged` keeps `language` for the
+  // highlighting and draws no trailing badge beside the chip.
+  it("draws no language badge beside the copy chip with unbadged", () => {
+    const badged = ui(<CodeBlock copy filename="JSX · ButtonProps" language="tsx" code="<Button>Save changes</Button>" />);
+    expect(badged.getByText("JSX · ButtonProps")).toBeDefined();
+    expect(badged.getByText("tsx")).toBeDefined();
+    cleanup();
+    const bare = ui(<CodeBlock unbadged copy filename="JSX · ButtonProps" language="tsx" code="<Button>Save changes</Button>" />);
+    expect(bare.getByText("JSX · ButtonProps")).toBeDefined();
+    expect(bare.queryByText("tsx")).toBeNull();
+    expect(bare.getByRole("button", { name: "Copy code" })).toBeDefined();
+    // Still highlighted by the language: the name is its own accent span.
+    const name = bare.getAllByText("Button", { exact: true })[0]!;
+    expect(getComputedStyle(name).color).not.toBe(getComputedStyle(name.parentElement!).color);
+    cleanup();
+    // With no filename the language is the header's label, which unbadged leaves alone.
+    const labelled = ui(<CodeBlock unbadged language="tsx" code="<Button />" />);
+    expect(labelled.getByText("tsx")).toBeDefined();
   });
 
   it("floats the copy chip over the code when there is no header to host it", () => {
@@ -236,14 +320,23 @@ describe("CodeBlock type face", () => {
     ["inline", { inline: true }],
   ] as const) {
     it(`paints highlighted tokens in the mono face (${name})`, () => {
+      // The ts grammar paints the keyword and the number; the tsx grammar paints the
+      // component name alone (the hand-off's component-page `hl`).
       render(
         <ThemeProvider fonts={FACES}>
-          <CodeBlock {...props} language="tsx" code="const theme = 42;" />
+          <CodeBlock {...props} language="ts" code="const theme = 42;" />
         </ThemeProvider>,
       );
       for (const text of ["const", "42"]) {
         expect(getComputedStyle(screen.getByText(text, { exact: true })).fontFamily, `${name} ${text}`).toBe("JetBrainsMono_400Regular");
       }
+      cleanup();
+      render(
+        <ThemeProvider fonts={FACES}>
+          <CodeBlock {...props} language="tsx" code="<Button />" />
+        </ThemeProvider>,
+      );
+      expect(getComputedStyle(screen.getByText("Button", { exact: true })).fontFamily, `${name} Button`).toBe("JetBrainsMono_400Regular");
     });
   }
 });
