@@ -175,6 +175,8 @@ export interface TypographyProps {
   guideTitle?: boolean;
   /** A guidance card's paragraph: 400 13.5/1.6 in the secondary ink. */
   guideBody?: boolean;
+  /** A pager card's name (the previous or next page under its label): the display face, 500 18 on the face's own 22 line, in the foreground ink. */
+  pagerName?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -300,7 +302,7 @@ const HEADING_LEVEL: Partial<Record<Role, number>> = {
 // Role precedence when more than one is passed: first match wins. Order runs
 // largest-to-smallest, headings before helper styles, so a conflicting pair
 // resolves to the more prominent role: the titles and headings (the fluid headlines,
-// the page titles, display and h1 to h5, the guide title) first, then the page label,
+// the page titles, display and h1 to h5, the guide title, the pager name) first, then the page label,
 // then `code`, then every reading role (the page's leads, bodies and notes, lead, caption,
 // small, tiny, body). `code` sits above the reading roles so a reading role passed beside
 // `code inline` is the chip's size, not a competing role (the chip reads it through
@@ -330,6 +332,7 @@ export function roleOf(p: TypographyProps): Role {
   if (p.h4) return "h4";
   if (p.h5) return "h5";
   if (p.guideTitle) return "guideTitle";
+  if (p.pagerName) return "pagerName";
   if (p.pageLabel) return "pageLabel";
   if (p.code) return "code";
   if (p.pageLead) return "pageLead";

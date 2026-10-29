@@ -148,6 +148,29 @@ export function rowDivider(tokens: ColorTokens): ViewStyle {
   return { borderBottomWidth: 1, borderColor: tokens.border };
 }
 
+// A ruled row: the v4 hand-off's accessibility card rows (Component.dc.html line 258,
+// the keyboard card: `grid-template-columns:minmax(120px,auto) 1fr;gap:14px;align-items:center;
+// padding:9px 0;border-top:1px solid var(--ln)`). Every row, the first included, draws a
+// 1 px top rule in the `border` token (the hand-off's `var(--ln)`) and pads the skin's
+// `ruled.rowPadY` above and below its text with nothing beside; the rule and the padding
+// replace the inset card's own row padding and the divided bottom rule, so a ruled row
+// never stacks a second rule or a second pad. The two-column row takes the hand-off's
+// `gap:14px` between term and value; the inline and stacked rows keep their own gaps.
+export function rowRuled(tokens: ColorTokens, skin: DescriptionListSkin, layout: Layout): ViewStyle {
+  return {
+    borderTopWidth: 1,
+    borderColor: tokens.border,
+    paddingVertical: skin.ruled.rowPadY,
+    ...(layout === "twoColumn" ? { gap: skin.ruled.gap } : null),
+  };
+}
+
+// The ruled row's term column: `minmax(120px,auto)` (line 258), the term's own width with a
+// floor at the skin's `ruled.termMinWidth`, where the two-column term is a fixed column.
+export function termRuled(skin: DescriptionListSkin): TextStyle {
+  return { minWidth: skin.ruled.termMinWidth };
+}
+
 // The two-column value cell: grows to fill, with the value and trailing
 // affordance pushed to opposite ends. `minWidth: 0` lets it yield below its
 // content's width (Yoga and react-native-web both default it to 0 on a View, but
@@ -252,6 +275,9 @@ export const webSkin: DescriptionListSkin = {
   headerTitleType: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", color: t.foreground }),
   headerSubtitleType: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "400", color: subtle(t) }),
   inset: { cardPadY: 16, rowPadY: 12, headerPadBottom: 12 },
+  // The hand-off's ruled rows (Component.dc.html line 258): `padding:9px 0`, a term column of
+  // `minmax(120px,auto)` and `gap:14px` to the value.
+  ruled: { rowPadY: 9, termMinWidth: 120, gap: 14 },
 };
 
 // iOS (iOS 27 kit Lists value rows in a flat inset-grouped card): the term is the
@@ -273,6 +299,10 @@ export const iosSkin: DescriptionListSkin = {
   stackedTermTracking: { letterSpacing: 0.06 },
   stackedValueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: -0.15, color: t.foreground }),
   headerTitleType: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.2, color: t.foreground }),
+  // A ruled row keeps the iOS Lists row: the 52pt minimum height centers its text, so the
+  // rule needs no padding of its own (as `dividedPadBottom` is 0 here); the term floor and
+  // the gap are the web look's, since iOS Lists have no ruled term column of their own.
+  ruled: { rowPadY: 0, termMinWidth: 120, gap: 14 },
 };
 
 // Android: Material 3 has no description list, so the web skin's list in Roboto.

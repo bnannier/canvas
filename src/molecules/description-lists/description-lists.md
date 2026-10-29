@@ -2,6 +2,8 @@
 
 Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views. Rows flagged `update` carry a working in-place editor: Update opens it, Enter or Save commits the new value and fires `onUpdate`, Escape or Cancel dismisses it.
 
+The rows axis (pick one; `ruled` wins over `divided`): `divided` draws a hairline under every row but the last, the two-column detail look. `ruled` draws the v4 hand-off's accessibility-card rows: a 1 px top rule on every row, the first included, so the list reads as a table that starts under its caption, each row padded 9 above and below with nothing beside, and in the two-column layout the term hugging its content over a 120 floor with 14 to the value.
+
 ## Usage
 
 ```tsx
@@ -74,6 +76,22 @@ A `term` or `value` may be any node, as a DataTable cell may: a string or number
     { term: "Role", value: <Row snug wrap><Badge soft>button</Badge></Row> },
     { term: "States", value: <Row snug wrap><Badge soft>disabled</Badge><Badge soft>busy</Badge><Badge soft>loading</Badge><Badge soft>pressed</Badge><Badge soft>focused</Badge><Badge soft>hovered</Badge></Row> },
     { term: "Keyboard", value: "Enter and Space activate it" }
+  ]}
+/>
+```
+
+### Ruled
+
+Every row carries a top rule, the first included, under a caption the parent sets; the term hugs its content over a 120 floor.
+
+```tsx
+<DescriptionList
+  twoColumn
+  ruled
+  items={[
+    { term: <Kbd>Enter</Kbd>, value: "Activates" },
+    { term: <Kbd>Space</Kbd>, value: "Activates" },
+    { term: <Kbd>Tab</Kbd>, value: "Moves focus to the next control" }
   ]}
 />
 ```

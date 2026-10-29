@@ -49,7 +49,7 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
         <Card panel largeCorners outlined>
           <Typography pageLabel mono>Keyboard</Typography>
           {keys.length ? (
-            <DescriptionList twoColumn divided items={keys.map(([k, effect]) => ({ term: <Keys keys={k} />, value: effect }))} />
+            <DescriptionList twoColumn ruled items={keys.map(([k, effect]) => ({ term: <Keys keys={k} />, value: effect }))} />
           ) : (
             <Typography small subtle>Not focusable. It has no interaction of its own and takes the semantics of what it wraps.</Typography>
           )}
@@ -58,7 +58,7 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
           <Typography pageLabel mono>Semantics</Typography>
           <Column cozy>
             {sem.length ? (
-              <DescriptionList twoColumn divided items={sem.map(([label, values]) => ({ term: label, value: <Values values={values} /> }))} />
+              <DescriptionList twoColumn ruled items={sem.map(([label, values]) => ({ term: label, value: <Values values={values} /> }))} />
             ) : (
               <Typography small subtle>No role of its own in source; it reads as the content it renders.</Typography>
             )}

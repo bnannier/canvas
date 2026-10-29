@@ -71,7 +71,7 @@ import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx"
 import { widthOf as alertDialogWidth } from "../../src/molecules/alert-dialog/alert-dialog.shared.tsx";
 import { elevationOf, densityOf as cardDensity, cornerOf as cardCorner, mediaWellOf, contentDensityOf } from "../../src/molecules/card/card.shared.tsx";
 import { variantOf as codeBlockVariant } from "../../src/molecules/code-block/code-block.shared.tsx";
-import { layoutOf as descriptionLayout, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
+import { layoutOf as descriptionLayout, rowsOf as descriptionRows, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
 import { leadOf } from "../../src/molecules/feeds/feeds.shared.tsx";
 import { columnsOf } from "../../src/molecules/grid-lists/grid-lists.shared.tsx";
 import { alignOf as mediaAlign, directionOf } from "../../src/molecules/media-objects/media-objects.shared.tsx";
@@ -400,7 +400,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Typography"],
     pages: ["typography"],
     resolver: "src/atoms/typography/typography.shared.tsx#roleOf",
-    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "lead", "mono", "caption", "small", "tiny", "body", "muted"],
+    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "pagerName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "lead", "mono", "caption", "small", "tiny", "body", "muted"],
     resolve: roleOf,
     notes: ["`muted` is both a role and a tone."],
   }),
@@ -451,6 +451,15 @@ export const SUBJECTS: readonly AnySubject[] = [
   }),
   subject({ id: "CodeBlock.variant", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#variantOf", members: ["terminal", "numbered", "inline"], resolve: codeBlockVariant }),
   subject({ id: "DescriptionList.layout", components: ["DescriptionList"], pages: ["description-lists"], resolver: "src/molecules/description-lists/description-lists.shared.tsx#layoutOf", members: ["inline", "twoColumn", "stacked"], resolve: descriptionLayout }),
+  subject({
+    id: "DescriptionList.rows",
+    components: ["DescriptionList"],
+    pages: ["description-lists"],
+    resolver: "src/molecules/description-lists/description-lists.shared.tsx#rowsOf",
+    members: ["ruled", "divided"],
+    resolve: descriptionRows,
+    notes: ["A ruled two-column list's term hugs its content over a 120 floor; the fixed label column is the plain and divided lists'."],
+  }),
   subject({
     id: "DescriptionList.item value",
     components: ["DescriptionList"],
