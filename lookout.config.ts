@@ -162,12 +162,11 @@ const reference = (file: string) => (existsSync(`${REFERENCE}/${file}`) ? `${REF
 // The docs scroll an inner view ([data-page-scroll]), not the window, so a full-page
 // screenshot shows one window's worth. The whole page is photographed by growing the
 // window to the scroller's content, as the hand-off's reference pages are whole pages.
-// Chromium paints nothing past 16384 device pixels, and Lookout shoots the web at device
-// scale 2, so the window stops at 8192 CSS px: a taller page (Button is about 11700) is
-// photographed down to there, and its remaining sections are judged by their section
-// routes. (The 2026-10-28 Button run grew the window to the whole 11723 and the shot went
-// blank partway through Accessibility.)
-const WHOLE_PAGE_MAX = 8192;
+// Chromium paints nothing past 16384 device pixels; the v4 target shoots at device scale 1
+// (its references are scale 1, `deviceScaleFactor` below), so the window may grow to 16000
+// CSS px and every page the hand-off draws fits. (The 2026-10-28 Button run, at scale 2,
+// grew the window to 11723 and the shot went blank past 8192.)
+const WHOLE_PAGE_MAX = 16000;
 const pageViewports = new WeakMap<Page, { width: number; height: number }>();
 states["whole-page"] = {
   description: "The whole page at the same width, the window grown to the page's content",
@@ -280,6 +279,9 @@ const v4Routes: RouteDef[] = [
         element: `[data-detail-section=${id}]`,
         design: reference(`components/${slug}/${id}.png`),
         states: [`fit-section-${id}`],
+        // The fit state frames the whole section; a rest shot of a section below the first
+        // window is one band of the inner scroller, which the judge filed as a blank page.
+        rest: false,
       }));
     }),
   // A template's reference is the hand-off's Templates page showing it in the Web frame,
@@ -303,6 +305,10 @@ const config: LookoutConfig = {
       url: "http://localhost:8081",
       startHint: "cd docs && bun run dev  (Metro on 8081)",
       query: { surface: "glass", palette: "violet" },
+      // The references are photographed at scale 1 (tools/v4/capture-references.ts), so the
+      // docs are shot at the same scale: the pixel comparison then needs no resampling and a
+      // section crop reaches the judge at the size the hand-off drew it.
+      deviceScaleFactor: 1,
       routes: v4Routes.map((route) => ({ ...route, platforms: ["web"] as ("web")[] })),
     },
     {
