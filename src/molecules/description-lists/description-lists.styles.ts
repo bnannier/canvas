@@ -18,7 +18,11 @@ import { type DescriptionListSkin } from "./description-lists.shared.js";
 //          cv-kit-data.js): a card at the card corner, a 1px `border`, the `card` fill,
 //          the small shadow, inset 16 down and 20 across; each row 12 above and below
 //          its text, a divided list ruled by `border` hairlines; a 500 13/18 muted term
-//          beside a 400 14/20 foreground value, centered on each other; a stacked term
+//          beside a 400 14/20 foreground value, centered on each other; `muted` sets the
+//          value as the hand-off's component page sets a key's effect beside its cap
+//          (Canvas v4.0.0 Component.dc.html, the Keyboard card's rows:
+//          `font:400 13px/1.45 var(--ft);color:var(--tx2)`), 400 13/19 in the muted ink
+//          (the 18.85 line rounded up, as every kit line height is); a stacked term
 //          is the same 500 13 label in the subtle ink over its value, 4 apart. The
 //          header is a 500 16/24 title over a 400 13/18 subtle subtitle, 12 above a
 //          hairline inside the card's inset.
@@ -283,6 +287,7 @@ export const webSkin: DescriptionListSkin = {
   dividedPadBottom: 12,
   termType: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "500", color: t["muted-foreground"] }),
   valueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: t.foreground }),
+  mutedValueType: (t) => ({ fontSize: 13, lineHeight: 19, fontWeight: "400", color: t["muted-foreground"] }),
   stackedTermTracking: { letterSpacing: 0 },
   stackedTermType: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "500", color: subtle(t) }),
   stackedValueType: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: t.foreground }),
@@ -301,7 +306,8 @@ export const webSkin: DescriptionListSkin = {
 // PRIMARY 17/22 SF label and the value the SECONDARY gray 17/22 detail (emphasis
 // inverted, 3pt larger), 52pt center-aligned rows, 16 inset, a flat 26-radius
 // card with the continuous corner curve. SF Pro Text tracking at 17pt = -0.43;
-// the 14pt stacked value = -0.15.
+// the 14pt stacked value = -0.15. The value detail is already the secondary gray, so
+// `muted` has nothing to change here and the skin declares no muted value type.
 export const iosSkin: DescriptionListSkin = {
   cardRadius: platformShape.ios.groupedList,
   cardCurve: "continuous",

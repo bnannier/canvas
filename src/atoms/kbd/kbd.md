@@ -3,7 +3,9 @@
 Keyboard shortcut indicator: a raised 24 px key cap with a mono label. `keys`
 composes a whole shortcut, one cap per key; `sequence` says "then" between the
 caps of keys pressed one after another. A shortcut reads as one accessible name
-("⌘+K", "G then C").
+("⌘+K", "G then C"). `comfortable` pads the cap 3 px above and below its label and
+8 px at the sides (25 px tall) for a key set beside what it does, as a reference's
+keyboard table lists it; omit it for the 24 px cap with 6 px sides.
 
 ## Usage
 
@@ -29,6 +31,15 @@ caps of keys pressed one after another. A shortcut reads as one accessible name
 
 ```tsx
 <Kbd keys="G C" sequence />
+```
+
+### Comfortable
+
+```tsx
+<Row alignCenter snug>
+  <Kbd comfortable>Enter</Kbd>
+  <Typography small muted>Activates</Typography>
+</Row>
 ```
 
 ### In a button

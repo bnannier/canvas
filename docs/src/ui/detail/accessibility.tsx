@@ -14,19 +14,24 @@ import { DetailSection } from "./frame";
 /** The patterns a pressable control follows, whose touch area grows to the platform minimum. */
 const TOUCH_PATTERNS: ReadonlySet<KeyboardPatternKey> = new Set(["button", "toggle", "radio", "slider", "spin", "tabs", "menu", "link", "listbox", "combobox", "carousel"]);
 
-/** "ArrowDown · ArrowRight" as one keycap per alternative. */
+/**
+ * "ArrowDown · ArrowRight" as one keycap per alternative: the hand-off's page key
+ * (Component.dc.html's Keyboard rows, `padding:3px 8px;...;font:500 12px var(--fm)`),
+ * Kbd's comfortable cap.
+ */
 function Keys({ keys }: { keys: string }) {
   return (
     <Row wrap tight alignCenter>
-      {keys.split(" · ").map((key) => <Kbd key={key}>{key}</Kbd>)}
+      {keys.split(" · ").map((key) => <Kbd key={key} comfortable>{key}</Kbd>)}
     </Row>
   );
 }
 
+/** The Semantics card's state and ARIA chips (`height:22px;padding:0 8px;...;font:500 11px var(--fm)`): Badge's token chip. */
 function Values({ values }: { values: readonly string[] }) {
   return (
     <Row wrap compact>
-      {values.map((v) => <Badge key={v} mono small>{v}</Badge>)}
+      {values.map((v) => <Badge key={v} token>{v}</Badge>)}
     </Row>
   );
 }
@@ -49,7 +54,7 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
         <Card panel largeCorners outlined>
           <Typography pageLabel mono>Keyboard</Typography>
           {keys.length ? (
-            <DescriptionList twoColumn ruled items={keys.map(([k, effect]) => ({ term: <Keys keys={k} />, value: effect }))} />
+            <DescriptionList twoColumn ruled muted items={keys.map(([k, effect]) => ({ term: <Keys keys={k} />, value: effect }))} />
           ) : (
             <Typography small subtle>Not focusable. It has no interaction of its own and takes the semantics of what it wraps.</Typography>
           )}

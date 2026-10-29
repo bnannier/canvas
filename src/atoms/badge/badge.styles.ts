@@ -22,6 +22,10 @@ import { type BadgeSkin } from "./badge.shared.js";
 // 11 px on an 11 px line in the code face, on the accent, set off from the stage by a
 // 3 px ring of the stage well's fill (`--bg2`, the `surface-sunken` token CardMedia's
 // well paints) and the drop shadow.
+// The `token` chip is the component page template's Semantics chip (Component.dc.html
+// line 264: `height:22px;padding:0 8px;border-radius:999px;background:var(--ion-soft);
+// color:var(--ion-tx);font:500 11px var(--fm)`): 22 tall with an 8 px inset under the
+// small pill's 11 px mono label.
 
 // Badges are HUG: the shell appends `useHugStyle()` (src/style/sizing.ts) at the
 // root instead of a static alignSelf, which would pin a Row child to the top.
@@ -41,6 +45,9 @@ export const webSkin: BadgeSkin = {
     // 14 px line is what Chromium gives JetBrains Mono 11 px at `normal`, measured on the
     // served hand-off page, the small pill's line.
     band: { height: 20, paddingHorizontal: 7, fontSize: 11, lineHeight: 14 },
+    // The Semantics chip (line 264): the pill's 1 px edge sits inside the 8 px inset, so the
+    // chip is the template's width; the 14 px line is JetBrains Mono's normal at 11 px.
+    token: { height: 22, paddingHorizontal: 7, fontSize: 11, lineHeight: 14 },
   },
   // Line 220: `box-shadow:0 0 0 3px var(--bg2),0 4px 12px rgba(0,0,0,.4)`, `--bg2` the
   // stage well's fill (CardMedia reads `surface-sunken`, falling back to `muted` as it does).

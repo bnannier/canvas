@@ -8,7 +8,7 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 
 Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (`tight` / `snug` / `cozy`, default `snug`; the largest gap passed wins: `cozy` > `snug` > `tight`) and centers its badges, so a call site never hand-rolls a flex row around them. Give it an `accessibilityLabel` (say, "Rachel Chen's roles") and it is announced as a named group that keeps its badges' text; without one it is a plain row.
 
-The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label and `large` 26 px. `count` is the small pill with the heavier label, `navigationCount` the small solid count, and `reference` a linked key at the 6 px key corner in the code face, underlined, with an arrow when it has an `href`. `primary` and `action` take the accent's wash, `soft` names the soft wash every toned pill already has, `neutralFill` fills with the border color, `foreground` overrides the label ink, `dot` adds the leading dot without a status tone, and `inverse` and `solid` supply branded surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
+The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label and `large` 26 px. `count` is the small pill with the heavier label, `navigationCount` the small solid count, and `reference` a linked key at the 6 px key corner in the code face, underlined, with an arrow when it has an `href`. `token` is a code token chip, the 22 px pill under the small 11 px label in the code face, for a role, a state or an attribute name listed beside its term; `tier` is a tier tag, a 24 px pill with a 10 px inset under an 11 px mono label in caps on its own line, the tag that names a component's tier beside its title, in whichever tone the tier takes. The metric precedence is `notification` > `reference` > `navigationCount` > `count` > `tier` > `token` > `small`. `primary` and `action` take the accent's wash, `soft` names the soft wash every toned pill already has, `neutralFill` fills with the border color, `foreground` overrides the label ink, `dot` adds the leading dot without a status tone, and `inverse` and `solid` supply branded surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
 
 `notification` is a destructive count: a 20 px pill with a 600 11 px label, soft by default and solid with `solid`, set off from the page by a ring of the background; `action` adds a halo of the destructive wash. Button carries its own count when passed a `count`.
 
@@ -132,6 +132,17 @@ status-tone precedence and announces its supplied status label.
 <BadgeGroup>
   <Badge band mono>pick one</Badge>
   <Badge band mono secondary>stacks</Badge>
+```
+
+### Token chips
+
+```tsx
+<BadgeGroup tight>
+  <Badge token>busy</Badge>
+  <Badge token>disabled</Badge>
+  <Badge token>aria-expanded</Badge>
+</BadgeGroup>
+```
 </BadgeGroup>
 ```
 

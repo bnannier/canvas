@@ -9,7 +9,12 @@ import { InlineMarkdown } from "../prose";
 // library, its name and tier, its lead, the import line, its source and its section, then
 // the strip of jumps to the sections below.
 
-/** The tier pill a category wears. */
+/**
+ * The tier pill a category wears: Badge's `tier` tag (Component.dc.html's `TIER` table,
+ * `height:24px;padding:0 10px;...;font:500 11px/1 var(--fm);letter-spacing:.06em;
+ * text-transform:uppercase`), in the tone the table gives the tier (Atom
+ * `background:var(--sf3);color:var(--tx2)`, the secondary pill).
+ */
 const TIER: Record<ComponentDoc["category"], { label: string; badge: "secondary" | "soft" | "outline" }> = {
   Atoms: { label: "Atom", badge: "secondary" },
   Molecules: { label: "Molecule", badge: "soft" },

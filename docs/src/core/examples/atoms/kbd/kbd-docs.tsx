@@ -7,6 +7,7 @@ import e_atoms_kbd_example_2 from "./example-2";
 import e_atoms_kbd_example_3 from "./example-3";
 import e_atoms_kbd_example_4 from "./example-4";
 import e_atoms_kbd_example_5 from "./example-5";
+import e_atoms_kbd_example_6 from "./example-6";
 import e_atoms_kbd_dont_0_do from "./dont-0-do";
 import e_atoms_kbd_dont_0_dont from "./dont-0-dont";
 import e_atoms_kbd_dont_1_do from "./dont-1-do";
@@ -22,8 +23,9 @@ export const docs: ComponentDocs = {
     { label: "Single", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_example_1 },
     { label: "Combo", code: "<Kbd keys=\"⌘ ⇧ P\" />", render: e_atoms_kbd_example_2 },
     { label: "Sequence", code: "<Kbd keys=\"G C\" sequence />", render: e_atoms_kbd_example_3 },
-    { label: "In a button", code: "<Button outline iconRight={<Kbd keys=\"⌘ K\" />}>Search…</Button>", render: e_atoms_kbd_example_4 },
-    { label: "In a sentence", code: "<Row alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_5 },
+    { label: "Comfortable", code: "<Row alignCenter snug>\n  <Kbd comfortable>Enter</Kbd>\n  <Typography small muted>Activates</Typography>\n</Row>", render: e_atoms_kbd_example_4 },
+    { label: "In a button", code: "<Button outline iconRight={<Kbd keys=\"⌘ K\" />}>Search…</Button>", render: e_atoms_kbd_example_5 },
+    { label: "In a sentence", code: "<Row alignCenter tight>\n  <Typography small>Press </Typography>\n  <Kbd keys=\"⌘ K\" />\n  <Typography small> to search.</Typography>\n</Row>", render: e_atoms_kbd_example_6 },
   ],
   donts: [
     { title: "Single", do: { caption: "Use `children` for one real key; give each cap exactly one key.", code: "<Kbd>Esc</Kbd>", render: e_atoms_kbd_dont_0_do }, dont: { caption: "Packing a whole shortcut into one key cap reads as a single keystroke that does not exist.", code: "<Kbd>⌘K</Kbd>", render: e_atoms_kbd_dont_0_dont } },
@@ -32,10 +34,10 @@ export const docs: ComponentDocs = {
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
-  props: [{"name":"KbdProps","props":[{"name":"children","type":"ReactNode","required":false,"description":"A single key label, rendered as one cap. Ignored when `keys` is set."},{"name":"keys","type":"string | string[]","required":false,"description":"A multi-key shortcut (a combo, pressed together), rendered as one cap per key. Pass a whitespace-separated string (`\"⌘ K\"`) or an array (`[\"⌘\", \"K\"]`). A single entry renders one cap, identical to passing that key as `children`. When set, `keys` takes precedence over `children`."},{"name":"sequence","type":"boolean","required":false,"description":"Render a key SEQUENCE (press one, then the next): the caps are separated by \"then\". Only affects the `keys` form.","default":"false"},{"name":"testID","type":"string","required":false,"description":"E2E hook forwarded to the root element."},{"name":"style","type":"LayoutStyle","required":false,"description":"Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds."}],"groups":[],"inherits":[]}],
+  props: [{"name":"KbdProps","props":[{"name":"children","type":"ReactNode","required":false,"description":"A single key label, rendered as one cap. Ignored when `keys` is set."},{"name":"keys","type":"string | string[]","required":false,"description":"A multi-key shortcut (a combo, pressed together), rendered as one cap per key. Pass a whitespace-separated string (`\"⌘ K\"`) or an array (`[\"⌘\", \"K\"]`). A single entry renders one cap, identical to passing that key as `children`. When set, `keys` takes precedence over `children`."},{"name":"sequence","type":"boolean","required":false,"description":"Render a key SEQUENCE (press one, then the next): the caps are separated by \"then\". Only affects the `keys` form.","default":"false"},{"name":"comfortable","type":"boolean","required":false,"description":"The comfortable cap: padded 3 px above and below its label and 8 px at the sides (25 px tall), the key the hand-off's component page sets beside a key's effect. Omit for the 24 px cap with 6 px sides.","default":"false"},{"name":"testID","type":"string","required":false,"description":"E2E hook forwarded to the root element."},{"name":"style","type":"LayoutStyle","required":false,"description":"Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds."}],"groups":[],"inherits":[]}],
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["image","img"],"states":[],"aria":["aria-hidden","aria-label"],"touchTarget":[]},
   tokens: ["field-border","foreground","input","muted-foreground","secondary","subtle-foreground"],
-  related: ["button","row-column","typography","button-group","switch","checkbox","radio","slider"],
+  related: ["row-column","typography","button","button-group","switch","checkbox","radio","slider"],
 };

@@ -1,6 +1,6 @@
 # DescriptionList
 
-Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views. Rows flagged `update` carry a working in-place editor: Update opens it, Enter or Save commits the new value and fires `onUpdate`, Escape or Cancel dismisses it.
+Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views. Rows flagged `update` carry a working in-place editor: Update opens it, Enter or Save commits the new value and fires `onUpdate`, Escape or Cancel dismisses it. `muted` sets each text value as a note beside its term, in the small type and the muted ink, for a list that explains its terms (a key and its effect) rather than reporting data; a node value renders as given, and a platform skin whose value detail is already the secondary ink keeps its type.
 
 The rows axis (pick one; `ruled` wins over `divided`): `divided` draws a hairline under every row but the last, the two-column detail look. `ruled` draws the v4 hand-off's accessibility-card rows: a 1 px top rule on every row, the first included, so the list reads as a table that starts under its caption, each row padded 9 above and below with nothing beside, and in the two-column layout the term hugging its content over a 120 floor with 14 to the value.
 
@@ -123,6 +123,23 @@ The semantics-card rows: 8 above and below, 12 to the value, the term a fixed 11
   items={[
     { term: "Name", value: "Rachel Chen", update: true },
     { term: "Email", value: "rachel.chen@example.com", update: true }
+  ]}
+/>
+```
+
+### Muted notes
+
+Each value explains its term: a key and what it does, the value in the small type and the muted ink.
+
+```tsx
+<DescriptionList
+  twoColumn
+  divided
+  muted
+  items={[
+    { term: <Kbd comfortable>Enter</Kbd>, value: "Activates" },
+    { term: <Kbd comfortable>Space</Kbd>, value: "Activates" },
+    { term: <Kbd comfortable>Tab</Kbd>, value: "Moves focus on" }
   ]}
 />
 ```

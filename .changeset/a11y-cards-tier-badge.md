@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": minor
+---
+
+Three looks the Canvas v4 hand-off's component page draws around its own components, carried by the kit so the docs pass a boolean instead of restyling (justification for the minor: new public options). Kbd gains `comfortable`, the page key beside its effect: the same cap padded 3 px above and below its label and 8 px at the sides, 25 px tall. Badge gains two metric steps: `token`, a code token chip (the 22 px pill with its 8 px inset under the small 11 px label in the code face, for a role, a state or an attribute name), and `tier`, a tier tag (a 24 px pill with a 10 px inset under an 11 px mono label in caps on its own line); the metric precedence is `notification` > `reference` > `navigationCount` > `count` > `tier` > `token` > `small`. DescriptionList gains `muted`, which sets each text value as a note beside its term, 400 13/19 in the muted ink on the web and Android, where the default value is the full-weight foreground data; the iOS value detail is already the secondary ink and keeps its type.

@@ -3,8 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Kbd } = scope;
+  const { Kbd, Typography, Row } = scope;
   return (
-<Button outline iconRight={<Kbd keys="⌘ K" />}>Search…</Button>
+<Row alignCenter snug>
+  <Kbd comfortable>Enter</Kbd>
+  <Typography small muted>Activates</Typography>
+</Row>
   );
 }

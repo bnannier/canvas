@@ -41,8 +41,8 @@ export interface BadgeSize {
 }
 
 export interface BadgeSkin {
-  /** The pill per size step (`small`, the default, `large`), the anatomy `marker` disc (the legend `disc` shares it), the `tier` pill and the group `band` pill. */
-  sizes: Record<"small" | "default" | "large" | "marker" | "tier" | "band", BadgeSize>;
+  /** The pill per size step (`small`, the default, `large`), the anatomy `marker` disc (the legend `disc` shares it), the `tier` pill, the group `band` pill and the `token` chip. */
+  sizes: Record<"small" | "default" | "large" | "marker" | "tier" | "band" | "token", BadgeSize>;
   /**
    * The shadow set under an anatomy `marker`, from the theme's tokens: the hand-off's ring
    * of the stage's fill and its drop shadow (Component.dc.html line 220).
@@ -91,6 +91,16 @@ export interface BadgeProps {
   notification?: boolean;
   /** A linked reference key at the key corner, in the code face. */
   reference?: boolean;
+  /**
+   * A code token chip: the 22 px pill with its 8 px inset under the small 11 px label in
+   * the code face, for a role, a state or an attribute name beside its term.
+   */
+  token?: boolean;
+  /**
+   * A tier tag: a 24 px pill with a 10 px inset under an 11 px mono label in caps on its
+   * own line, the tag that names a component's tier beside its title.
+   */
+  tier?: boolean;
   /** The large pill: 26 px tall. */
   large?: boolean;
   /**
@@ -192,6 +202,7 @@ export function badgeMetricOf(p: BadgeProps) {
   if (p.count) return "count";
   if (p.tier) return "tier";
   if (p.band) return "band";
+  if (p.token) return "token";
   if (p.small) return "small";
   return "default";
 }
@@ -210,7 +221,8 @@ export function badgeInkOf(p: BadgeProps) {
 }
 export function badgeTrackingOf(p: BadgeProps) {
   if (p.reference) return "reference";
-  if (p.uppercase) return "uppercase";
+  // A tier tag is always in caps, at the uppercase tracking.
+  if (p.uppercase || p.tier) return "uppercase";
   return "normal";
 }
 
@@ -274,7 +286,7 @@ export function createBadge(skin: BadgeSkin) {
 
     const metric = badgeMetricOf(props);
     // The legend disc is the marker's size; the tier and band pills their own steps.
-    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" || metric === "band" ? metric : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
+    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" || metric === "band" || metric === "token" ? metric : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
 
     if (props.status) {
       const tone = statusOf(props);
@@ -361,10 +373,10 @@ export function createBadge(skin: BadgeSkin) {
     };
     // An outline badge is deliberately unfilled metadata, so it inherits its host.
     const surfaced = look.fill !== CLEAR;
-    // The mono modifier (a reference key and a disc too) asks for a monospace face; RN
+    // The mono modifier (a reference key, a disc, a token chip and a tier tag too) asks for a monospace face; RN
     // has no font-family utility, so request the cross-platform monospace alias via inline
     // style.
-    const monoStyle = mono || reference || disc ? { fontFamily: MONO_FONT } : null;
+    const monoStyle = mono || reference || disc || metric === "token" || metric === "tier" ? { fontFamily: MONO_FONT } : null;
     // The marker's ring and shadow, the skin's, from the theme's tokens.
     const markerShadow = marker ? { boxShadow: skin.markerShadow(tokens) } : null;
 
