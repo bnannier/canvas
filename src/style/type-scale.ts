@@ -98,6 +98,20 @@ export const pageRoles = {
   // browser's `normal`: measured in Playwright on the served hand-off page, JetBrains Mono
   // sets 12 px on a 16 px line (the strip is 10 + 16 + 10 over its hairline).
   tileCaption: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
+  // The variant card's title (Component.dc.html line 185, over the card's note and
+  // snippet): `<div style="font:500 14px/1.3 var(--ft)">{{ v.t }}</div>`, the card's
+  // foreground ink.
+  variantTitle: { fontSize: 14, lineHeight: 18.2, fontWeight: "500" },
+  // The related-component tile's name (Component.dc.html line 297, beside its arrow):
+  // `<span style="...;font:600 14px var(--ft)">{{ rl.n }}` with no ratio, so the line is
+  // the browser's `normal`: measured in Playwright on the served hand-off page, Instrument
+  // Sans sets a 600 14 px name on an 18 px line (the span's line box is 18 px).
+  linkName: { fontSize: 14, lineHeight: 18, fontWeight: "600" },
+  // A page section's own sub-heading (Component.dc.html line 296, "Related components"
+  // over the tile grid): `<h3 style="margin:16px 0 0;font:600 16px var(--ft)">` with no
+  // ratio, so the line is the browser's `normal`: measured the same way, Instrument Sans
+  // sets 600 16 px on a 20 px line (the h3's box is 20 px).
+  subsectionTitle: { fontSize: 16, lineHeight: 20, fontWeight: "600" },
 } as const satisfies Record<string, TextStyle>;
 
 /**

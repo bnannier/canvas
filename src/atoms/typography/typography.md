@@ -60,7 +60,11 @@ line the same way: `pagerLabel` (the previous or next card's label over its name
 label's 500 11 tracked .08em in caps and subtle ink on a 14 line; pass `mono`), `legendLabel`
 (a legend row's label beside its numbered disc, 500 14 on an 18 line in the foreground ink)
 and `tileCaption` (a specimen tile's caption strip, 500 12 on a 16 line in the secondary ink;
-pass `mono`).
+pass `mono`). Three more are the component page's Variants and Tokens sections: `variantTitle`
+(a variant card's title over its note and snippet, 500 14/1.3 in the foreground ink),
+`linkName` (a link tile's name beside its arrow, 600 14 on the face's own 18 line in the
+foreground ink) and `subsectionTitle` (a section's own sub-heading over a grid of tiles,
+600 16 on the face's own 20 line in the interface face, a level-3 heading).
 
 `code` is the standalone code pill (regular 13px mono on the muted fill, a 6 radius and 2
 by 6 padding). `code inline` is the prose code chip, a word of code inside a sentence: the
@@ -295,6 +299,24 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ```tsx
 <Typography tileCaption mono>small</Typography>
+```
+
+### Variant title
+
+```tsx
+<Typography variantTitle>Attention required</Typography>
+```
+
+### Link name
+
+```tsx
+<Typography linkName>Row & Column</Typography>
+```
+
+### Subsection title
+
+```tsx
+<Typography subsectionTitle>Related components</Typography>
 ```
 
 ### Semibold

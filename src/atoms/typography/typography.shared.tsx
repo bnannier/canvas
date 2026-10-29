@@ -201,6 +201,12 @@ export interface TypographyProps {
   legendLabel?: boolean;
   /** A specimen tile's caption strip (a size or state name under its well): 500 12 on the face's own 16 line, in the secondary ink. Pass `mono` for the mono face. */
   tileCaption?: boolean;
+  /** A variant card's title (an example's label over its note and snippet): 500 14/1.3 in the interface face and the foreground ink. */
+  variantTitle?: boolean;
+  /** A link tile's name (a related component beside its arrow): 600 14 on the face's own 18 line, in the foreground ink. */
+  linkName?: boolean;
+  /** A page section's own sub-heading (the "Related components" title over its tiles): 600 16 on the face's own 20 line in the interface face. A level-3 heading. */
+  subsectionTitle?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -315,6 +321,7 @@ const HEADING_LEVEL: Partial<Record<Role, number>> = {
   sectionTitle: 2,
   cardTitle: 3,
   guideTitle: 3,
+  subsectionTitle: 3,
   display: 1,
   h1: 1,
   h2: 2,
@@ -326,7 +333,8 @@ const HEADING_LEVEL: Partial<Record<Role, number>> = {
 // Role precedence when more than one is passed: first match wins. Order runs
 // largest-to-smallest, headings before helper styles, so a conflicting pair
 // resolves to the more prominent role: the titles and headings (the fluid headlines,
-// the page titles, display and h1 to h5, the guide title, the pager name) first, then the page label,
+// the page titles, display and h1 to h5, the guide and subsection titles, the pager name, the
+// variant title and the link name) first, then the page label,
 // then `code`, then every reading role (the page's leads, bodies and notes, lead, caption,
 // small, tiny, body). `code` sits above the reading roles so a reading role passed beside
 // `code inline` is the chip's size, not a competing role (the chip reads it through
@@ -356,7 +364,10 @@ export function roleOf(p: TypographyProps): Role {
   if (p.h4) return "h4";
   if (p.h5) return "h5";
   if (p.guideTitle) return "guideTitle";
+  if (p.subsectionTitle) return "subsectionTitle";
   if (p.pagerName) return "pagerName";
+  if (p.variantTitle) return "variantTitle";
+  if (p.linkName) return "linkName";
   if (p.pageLabel) return "pageLabel";
   if (p.pagerLabel) return "pagerLabel";
   if (p.legendLabel) return "legendLabel";

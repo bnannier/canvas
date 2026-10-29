@@ -24,7 +24,9 @@ function GuidanceExample({ code, render, scope }: { code: string; render: (scope
           <FitStage code={code}>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
       </View>
-      <CodeBlock headerless code={code} />
+      {/* The guidance card's snippet (Component.dc.html line 288): `padding:12px 14px;border-radius:10px;
+          ...;font:400 12px/1.65 var(--fm)`, the kit CodeBlock's `guide` density. */}
+      <CodeBlock headerless guide code={code} />
     </Column>
   );
 }
@@ -44,10 +46,13 @@ function GuidanceCard({ section, scope }: { section: DocGuidance; scope: Example
     // The hand-off's guidance card (line 285): `padding:18px 20px;border:1px solid var(--ln);
     // border-radius:18px;background:var(--sf);...;gap:10px`, no shadow; the card owns the rhythm.
     <Card guide largeCorners outlined>
-      <Typography h5 level={3}><InlineMarkdown text={section.title} heading /></Typography>
+      {/* The card's title (line 285: `<h3 style="margin:0;font:600 16px/1.3 var(--ft)">`) and
+          paragraphs (line 286: `font:400 13.5px/1.6 var(--ft);color:var(--tx2)`): the kit's
+          guideTitle (a level-3 heading) and guideBody roles. */}
+      <Typography guideTitle><InlineMarkdown text={section.title} heading /></Typography>
       {runs.map((run, i) =>
         Array.isArray(run) ? (
-          <Prose key={i} blocks={run} small subtle />
+          <Prose key={i} blocks={run} guideBody />
         ) : "heading" in run ? (
           <Typography key={i} small semibold><InlineMarkdown text={run.heading} heading /></Typography>
         ) : (
@@ -72,7 +77,9 @@ export function UsageSection({ note, code, overview, guidance, scope, sectionRef
   return (
     <DetailSection id="use" title="Usage" sectionRef={sectionRef}>
       {note?.length ? <Prose blocks={note} pageBody relaxed /> : null}
-      {code ? <CodeBlock headerless code={code} /> : null}
+      {/* The page's own snippet (line 283: `padding:16px 18px;border-radius:14px;background:var(--bg2);
+          border:1px solid var(--ln);font:400 13px/1.7 var(--fm)`), the kit CodeBlock's `snippet` density. */}
+      {code ? <CodeBlock headerless snippet code={code} /> : null}
       {overview?.length ? <Prose blocks={overview} pageNote relaxed /> : null}
       {guidance.length ? (
         <Grid minTileWidth={420} roomy>
@@ -116,35 +123,43 @@ export function TokensSection({ roles, related, tokens, sectionRef }: { roles: r
   const links = related.map((slug) => getComponent(slug)).filter((c) => c != null);
   return (
     <DetailSection id="tok" title="Tokens" note="The colour roles this component's skins read, live from the active scheme and palette." sectionRef={sectionRef}>
-      <Row wrap snug>
-        {roles.map((role) => (
-          // The hand-off's token chip (Component.dc.html line 294): the 32 px pill with its
-          // 20 px ringed swatch, the role name in mono beside it.
-          <Chip key={role} token icon={live[role] ? <Swatch tiny ring circle color={live[role]!} accessibilityLabel={role} /> : undefined}>
-            {role}
-          </Chip>
-        ))}
-      </Row>
-      {links.length ? (
-        <Column cozy>
-          <Typography h5 level={3}>Related components</Typography>
-          <Grid minTileWidth={220} comfortable>
-            {links.map((c) => (
-              // The hand-off's related link (line 297) is a compact tile (`padding:14px 16px;
-              // border-radius:14px;border:1px solid var(--ln);background:var(--sf);...;gap:6px`,
-              // no shadow; a 15 px name over its section), not a Card header's title type, so
-              // the name is the card's body and the tile owns the rhythm.
-              <Card key={c.slug} linkTile calloutCorners outlined onPress={() => router.push(`/components/${c.slug}` as never)} accessibilityLabel={`${c.name}, ${c.section}`}>
-                <Row between alignCenter snug>
-                  <Typography semibold>{c.name}</Typography>
-                  <Icon arrowRight muted size={14} decorative />
-                </Row>
-                <Typography caption subtle>{c.section}</Typography>
-              </Card>
-            ))}
-          </Grid>
-        </Column>
-      ) : null}
+      {/* The chips and the related grid sit 32 apart: the hand-off's h3 (line 296) carries
+          `margin:16px 0 0` inside the section's `gap:16px`, the `apart` step. */}
+      <Column apart>
+        <Row wrap snug>
+          {roles.map((role) => (
+            // The hand-off's token chip (Component.dc.html line 294): the 32 px pill with its
+            // 20 px ringed swatch, the role name in mono beside it.
+            <Chip key={role} token icon={live[role] ? <Swatch tiny ring circle color={live[role]!} accessibilityLabel={role} /> : undefined}>
+              {role}
+            </Chip>
+          ))}
+        </Row>
+        {links.length ? (
+          // The h3 (line 296: `font:600 16px var(--ft)` on its face's own 20 line, the kit's
+          // subsectionTitle, a level-3 heading) sits the section's 16 gap over the grid.
+          <Column relaxed>
+            <Typography subsectionTitle>Related components</Typography>
+            <Grid minTileWidth={220} comfortable>
+              {links.map((c) => (
+                // The hand-off's related link (line 297) is a compact tile (`padding:14px 16px;
+                // border-radius:14px;border:1px solid var(--ln);background:var(--sf);...;gap:6px`,
+                // no shadow), not a Card header's title type: its name is the kit's linkName
+                // (`font:600 14px var(--ft)` on its face's own 18 line, the tile's `color:var(--tx)`)
+                // and its room the caption (`font:400 12px/1.45 var(--ft);color:var(--tx3)`, the
+                // caption's own subtle ink), so the tile owns the rhythm.
+                <Card key={c.slug} linkTile calloutCorners outlined onPress={() => router.push(`/components/${c.slug}` as never)} accessibilityLabel={`${c.name}, ${c.section}`}>
+                  <Row between alignCenter snug>
+                    <Typography linkName>{c.name}</Typography>
+                    <Icon arrowRight muted size={14} decorative />
+                  </Row>
+                  <Typography caption>{c.section}</Typography>
+                </Card>
+              ))}
+            </Grid>
+          </Column>
+        ) : null}
+      </Column>
     </DetailSection>
   );
 }

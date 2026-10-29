@@ -14,7 +14,7 @@ export function Rule() { return <Divider />; }
 // The reading role a line of prose is set in. A strong run repeats it at semibold, so a
 // bold word keeps its paragraph's size; a heading is set strong already, so a strong run
 // in one is its plain text. A code span takes the same role so its chip sizes from it.
-type ReadingRole = { lead?: boolean; pageLead?: boolean; sectionLead?: boolean; pageBody?: boolean; pageNote?: boolean; specText?: boolean; small?: boolean };
+type ReadingRole = { lead?: boolean; pageLead?: boolean; sectionLead?: boolean; pageBody?: boolean; pageNote?: boolean; guideBody?: boolean; specText?: boolean; small?: boolean };
 type ProseRole = ReadingRole & { subtle?: boolean; heading?: boolean };
 
 /**
@@ -23,8 +23,8 @@ type ProseRole = ReadingRole & { subtle?: boolean; heading?: boolean };
  * role it sits in. The chip keeps its regular weight and its own foreground ink inside a
  * strong or subtle run, as the hand-off applies bold and code independently.
  */
-export function InlineCode({ children, lead, pageLead, sectionLead, pageBody, pageNote, specText, small }: { children: ReactNode } & ReadingRole) {
-  return <Typography code inline lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} specText={specText} small={small}>{children}</Typography>;
+export function InlineCode({ children, lead, pageLead, sectionLead, pageBody, pageNote, guideBody, specText, small }: { children: ReactNode } & ReadingRole) {
+  return <Typography code inline lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody} specText={specText} small={small}>{children}</Typography>;
 }
 
 /**
@@ -33,24 +33,24 @@ export function InlineCode({ children, lead, pageLead, sectionLead, pageBody, pa
  * its strong runs at semibold, nothing printed with its Markdown syntax
  * (docs/src/lib/inline-markdown.ts, the grammar the generator holds every page to).
  */
-export function InlineMarkdown({ text, lead, pageLead, sectionLead, pageBody, pageNote, specText, small, subtle, heading }: { text: string } & ProseRole) {
+export function InlineMarkdown({ text, lead, pageLead, sectionLead, pageBody, pageNote, guideBody, specText, small, subtle, heading }: { text: string } & ProseRole) {
   return (
     <>
       {parseInline(text).map((run, i) => {
-        if (run.code) return <InlineCode key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} specText={specText} small={small}>{run.text}</InlineCode>;
-        if (run.strong && !heading) return <Typography key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} specText={specText} small={small} subtle={subtle} semibold>{run.text}</Typography>;
+        if (run.code) return <InlineCode key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody} specText={specText} small={small}>{run.text}</InlineCode>;
+        if (run.strong && !heading) return <Typography key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody} specText={specText} small={small} subtle={subtle} semibold>{run.text}</Typography>;
         return run.text;
       })}
     </>
   );
 }
 
-/** The role a block of prose is set in: the body (or `small`), or a page's own prose role. */
-type BlockRole = { small?: boolean; subtle?: boolean; pageBody?: boolean; pageNote?: boolean };
+/** The role a block of prose is set in: the body (or `small`), or a page's own prose role (its body, note or guidance paragraph). */
+type BlockRole = { small?: boolean; subtle?: boolean; pageBody?: boolean; pageNote?: boolean; guideBody?: boolean };
 
 /** One paragraph of inline Markdown, in the body role (or `small`, or a page prose role). */
-export function Paragraph({ text, small, subtle, pageBody, pageNote }: { text: string } & BlockRole) {
-  return <Typography small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote}><InlineMarkdown text={text} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} /></Typography>;
+export function Paragraph({ text, small, subtle, pageBody, pageNote, guideBody }: { text: string } & BlockRole) {
+  return <Typography small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody}><InlineMarkdown text={text} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody} /></Typography>;
 }
 
 // A bulleted list with list semantics: a `list` whose items are each a `listitem`, which
@@ -61,17 +61,17 @@ export function Paragraph({ text, small, subtle, pageBody, pageNote }: { text: s
 // composed of kit primitives and Typography, never added to the kit for the docs. The
 // items sit flush, as a browser sets a tight list, because a gap between them would take
 // a layout wrapper between the list and its items, which the list role forbids.
-export function BulletList({ items, small, subtle, pageBody, pageNote }: { items: string[] } & BlockRole) {
+export function BulletList({ items, small, subtle, pageBody, pageNote, guideBody }: { items: string[] } & BlockRole) {
   return (
     <View role="list">
       {items.map((item, i) => (
         <View key={i} role="listitem">
           <Row snug>
             <View aria-hidden>
-              <Typography small={small} pageBody={pageBody} pageNote={pageNote} subtle>•</Typography>
+              <Typography small={small} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody} subtle>•</Typography>
             </View>
             <Column fill>
-              <Paragraph text={item} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} />
+              <Paragraph text={item} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody} />
             </Column>
           </Row>
         </View>
@@ -84,14 +84,14 @@ export function BulletList({ items, small, subtle, pageBody, pageNote }: { items
  * Prose from a component's .md (its overview, an example's note, a guidance paragraph):
  * each paragraph, and each bullet list as a list.
  */
-export function Prose({ blocks, relaxed, small, subtle, pageBody, pageNote }: { blocks: DocProse[]; /** 16 between blocks, a page section's own rhythm, in place of 8. */ relaxed?: boolean } & BlockRole) {
+export function Prose({ blocks, relaxed, small, subtle, pageBody, pageNote, guideBody }: { blocks: DocProse[]; /** 16 between blocks, a page section's own rhythm, in place of 8. */ relaxed?: boolean } & BlockRole) {
   return (
     <Column snug={!relaxed} relaxed={relaxed}>
       {blocks.map((block, i) =>
         typeof block === "string" ? (
-          <Paragraph key={i} text={block} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} />
+          <Paragraph key={i} text={block} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody} />
         ) : (
-          <BulletList key={i} items={block.list} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} />
+          <BulletList key={i} items={block.list} small={small} subtle={subtle} pageBody={pageBody} pageNote={pageNote} guideBody={guideBody} />
         ),
       )}
     </Column>

@@ -297,10 +297,11 @@ export const CONCENTRIC_CORNERS: ConcentricCorner[] = [
     name: "CodeBlock's expander inside the code card's border",
     site: "src/molecules/code-block/code-block.styles.ts expanderClip",
     module: "molecules/code-block/code-block",
-    // The card's corner at each density: the code-card corner, and the card corner of
-    // the `playground` density.
+    // The card's corner at each density: the code-card corner (the default and `snippet`
+    // densities), the card corner of the `playground` density and the card-snippet corner
+    // of the `guide` density.
     corners: (styles, platform, tokens) =>
-      ["default", "playground"].map((density) => {
+      ["default", "playground", "guide"].map((density) => {
         const surface = styleAt(styles[`${platform}Skin`] as Skin, "surface", tokens, density);
         return num(surface, "borderRadius") - num(surface, "borderWidth");
       }),
@@ -385,7 +386,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "molecules/alert": ["control", "callout"],
   "molecules/alert-dialog": ["dialog", "alertDialog"],
   "molecules/card": ["card", "tile", "control", "referenceCard", "referenceSource", "insetRow", "callout", "panel", "stage"],
-  "molecules/code-block": ["control", "card", "key", "codeCard", "copyButton"],
+  "molecules/code-block": ["control", "card", "key", "codeCard", "copyButton", "cardSnippet"],
   "molecules/collapsible": ["card", "disclosureCard", "insetRow"],
   "molecules/description-lists": ["card", "groupedList"],
   "molecules/empty-state": ["card", "emptyState"],

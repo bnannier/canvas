@@ -237,10 +237,11 @@ dims with the label while the button is disabled. Size the glyph (16 at the base
 
 ### Icon ink per intent
 
-The same bare glyph on each intent, in that intent's label ink.
+The same bare glyph on each intent, in that intent's label ink. The row wraps, so the
+six buttons fold onto a second line inside a narrow card instead of running past its edge.
 
 ```tsx
-<Row relaxed alignCenter>
+<Row wrap relaxed alignCenter>
   <Button iconLeft={<Icon sparkles size={16} />} iconRight={<Icon chevronDown size={16} />}>Save changes</Button>
   <Button secondary iconLeft={<Icon sparkles size={16} />}>Save changes</Button>
   <Button outline iconLeft={<Icon sparkles size={16} />}>Save changes</Button>

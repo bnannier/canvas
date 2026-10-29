@@ -174,3 +174,38 @@ test("code without inline is the standalone pill it always was, and inline witho
   expect(plain.style.borderTopWidth).toBe("");
   expect(plain.style.backgroundColor).toBe("");
 });
+
+// The component page's Variants and Tokens sections (Component.dc.html lines 185, 296 and
+// 297): the variant card's title `font:500 14px/1.3 var(--ft)` in the page's foreground, the
+// related tile's name `font:600 14px var(--ft)` on its face's own 18 px line (the hand-off
+// sets no ratio; Instrument Sans's `normal` measured on the served page) and the section's
+// h3 `font:600 16px var(--ft)` on its own 20 px line, all in the interface face.
+test("variantTitle, linkName and subsectionTitle are the page's 500 14/1.3 title, 600 14 name on an 18 line and 600 16 heading on a 20 line, in the foreground ink", () => {
+  const faces = { display: { "500": "BricolageGrotesque_500Medium", "600": "BricolageGrotesque_600SemiBold" } };
+  render(
+    <ThemeProvider dark solid fonts={faces}>
+      <Typography variantTitle>Attention required</Typography>
+      <Typography linkName>Row & Column</Typography>
+      <Typography subsectionTitle>Related components</Typography>
+    </ThemeProvider>,
+  );
+  const title = screen.getByText("Attention required");
+  expect(title.style.fontSize).toBe("14px");
+  expect(title.style.lineHeight).toBe("18.2px");
+  expect(title.style.fontWeight).toBe("500");
+  expect(rgb(title.style.color)).toEqual(rgb(dark.foreground));
+  const name = screen.getByText("Row & Column");
+  expect(name.style.fontSize).toBe("14px");
+  expect(name.style.lineHeight).toBe("18px");
+  expect(name.style.fontWeight).toBe("600");
+  expect(rgb(name.style.color)).toEqual(rgb(dark.foreground));
+  const heading = screen.getByText("Related components");
+  expect(heading.style.fontSize).toBe("16px");
+  expect(heading.style.lineHeight).toBe("20px");
+  expect(heading.style.fontWeight).toBe("600");
+  expect(rgb(heading.style.color)).toEqual(rgb(dark.foreground));
+  // The interface face, never the display face (the hand-off sets each in `var(--ft)`).
+  for (const el of [title, name, heading]) expect(getComputedStyle(el).fontFamily).not.toContain("Bricolage");
+  // The sub-heading is a level-3 heading; the title and the name are plain text.
+  expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual(["Related components"]);
+});

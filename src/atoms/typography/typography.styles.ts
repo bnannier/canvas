@@ -55,6 +55,9 @@ export type Role =
   | "pagerLabel"
   | "legendLabel"
   | "tileCaption"
+  | "variantTitle"
+  | "linkName"
+  | "subsectionTitle"
   | "display"
   | "h1"
   | "h2"
@@ -138,6 +141,13 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     pagerLabel: pageRoles.pagerLabel,
     legendLabel: pageRoles.legendLabel,
     tileCaption: pageRoles.tileCaption,
+    // The variant card's title (Component.dc.html line 185, `font:500 14px/1.3 var(--ft)`),
+    // the link tile's name (line 297, `font:600 14px var(--ft)` on its face's own 18 line)
+    // and a section's sub-heading (line 296, `font:600 16px var(--ft)` on its face's own
+    // 20 line): the interface face, so none takes the display face.
+    variantTitle: pageRoles.variantTitle,
+    linkName: pageRoles.linkName,
+    subsectionTitle: pageRoles.subsectionTitle,
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -256,6 +266,11 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "specMeta":
     // The legend row's label inherits the legend's foreground ink (Component.dc.html line 222).
     case "legendLabel":
+    // The variant card's title (line 185) and the link tile's name (line 297) inherit the
+    // page's `color:var(--tx)`, and the section's h3 (line 296) sets none, the foreground.
+    case "variantTitle":
+    case "linkName":
+    case "subsectionTitle":
       return { color: tokens.foreground };
     case "code":
       return { color: tokens.foreground, backgroundColor: tokens.secondary };

@@ -42,7 +42,11 @@ import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 //   type ramp (12 / 1.7) and padding for dense contexts such as docs panes;
 //   `playground` is the v4 hand-off component page's JSX card (Component.dc.html
 //   lines 171 to 174): the card corner, a 40 px bar on the card fill, 16 in and 8 out,
-//   its Copy a 28 px hairline button, and the code 16 by 18 at the default ramp.
+//   its Copy a 28 px hairline button, and the code 16 by 18 at the default ramp;
+//   `snippet` is the page's own snippet (line 283, the Usage section's block): the
+//   code-card corner with the code 16 by 18 at the default ramp; `guide` is a card's
+//   snippet (line 288, the guidance card's block): the card-snippet corner with the
+//   code 12 by 14 at 12 / 1.65.
 // - Orthogonal booleans that stack: `copy` (clipboard chip), `wrap` (soft-wrap
 //   long lines instead of scrolling), `diff` (+/- line tinting), `collapsible`
 //   (fold long blocks behind an expander), `attached` (square the top edge to
@@ -66,6 +70,8 @@ export interface CodeBlockSkin extends TouchTargetSkin {
   codeType: TextStyle;
   /** The tightened compact ramp. */
   codeTypeCompact: TextStyle;
+  /** The card snippet's ramp (the `guide` density, 12 / 1.65). */
+  codeTypeGuide: TextStyle;
   /** Code foreground color (token-driven so it follows light/dark). */
   codeText: (t: ColorTokens) => TextStyle;
   /** The muted, bordered, rounded code surface (plain + numbered base), per density. */
@@ -189,6 +195,18 @@ export interface CodeBlockProps {
    * above and below, 18 in, at the default 13 / 1.7 ramp. `compact` wins when both are passed.
    */
   playground?: boolean;
+  /**
+   * The hand-off component page's own snippet (Component.dc.html line 283, the Usage
+   * section's block under its paragraph): the code-card corner, with the code 16 above and
+   * below and 18 in at the default 13 / 1.7 ramp. `compact` and `playground` win over it.
+   */
+  snippet?: boolean;
+  /**
+   * The hand-off component page's card snippet (Component.dc.html line 288, the block in
+   * a Usage guidance card): the card-snippet corner, with the code 12 above and below and
+   * 14 in at 12 / 1.65. Every other density wins over it.
+   */
+  guide?: boolean;
 
   // Orthogonal modifiers.
   /**
@@ -284,13 +302,15 @@ export function variantOf(p: CodeBlockProps): Variant {
   return "plain";
 }
 
-/** The block's density (pick one): the tightened ramp, the hand-off's playground card, or the default. */
-export type Density = "compact" | "playground" | "default";
+/** The block's density (pick one): the tightened ramp, the hand-off's playground card, its page snippet, its card snippet, or the default. */
+export type Density = "compact" | "playground" | "snippet" | "guide" | "default";
 
 // Density precedence when more than one is passed: first match wins.
 export function densityOf(p: CodeBlockProps): Density {
   if (p.compact) return "compact";
   if (p.playground) return "playground";
+  if (p.snippet) return "snippet";
+  if (p.guide) return "guide";
   return "default";
 }
 
@@ -697,7 +717,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
 
     const highlights = useMemo(() => parseHighlightLines(highlightLines), [highlightLines]);
 
-    const type = density === "compact" ? skin.codeTypeCompact : skin.codeType;
+    const type = density === "compact" ? skin.codeTypeCompact : density === "guide" ? skin.codeTypeGuide : skin.codeType;
     // Empty lines render an empty Text; the row keeps its height via minHeight.
     const rowMin: ViewStyle = { minHeight: type.lineHeight };
 

@@ -61,7 +61,9 @@ export function VariantsSection({ examples, path, note, scope, selected, section
             <CardSeparator />
             <CardContent cozy>
               <Column snug>
-                <Typography small medium>{example.label}</Typography>
+                {/* The card's title (line 185: `font:500 14px/1.3 var(--ft)`), the kit's variantTitle;
+                    its note (line 186: `400 13px/1.5 var(--ft);color:var(--tx2)`) is the small role in the subtle ink. */}
+                <Typography variantTitle>{example.label}</Typography>
                 {example.note?.length ? <Prose blocks={example.note} small subtle /> : null}
                 <CodeBlock headerless code={example.code} language="tsx" compact />
               </Column>

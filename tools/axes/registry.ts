@@ -401,7 +401,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Typography"],
     pages: ["typography"],
     resolver: "src/atoms/typography/typography.shared.tsx#roleOf",
-    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "pagerName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "specText", "specMeta", "lead", "mono", "caption", "small", "tiny", "body", "muted", "pagerLabel", "legendLabel", "tileCaption", "knobLabel"],
+    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "subsectionTitle", "pagerName", "variantTitle", "linkName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "specText", "specMeta", "lead", "mono", "caption", "small", "tiny", "body", "muted", "pagerLabel", "legendLabel", "tileCaption", "knobLabel"],
     resolve: roleOf,
     notes: ["`muted` is both a role and a tone."],
   }),
@@ -451,7 +451,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     notes: ["A density pads the surface on its own and wins over `padded` and `flush`; on a sectioned card it reshapes the sections' inset and rhythm."],
   }),
   subject({ id: "CodeBlock.variant", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#variantOf", members: ["terminal", "numbered", "inline"], resolve: codeBlockVariant }),
-  subject({ id: "CodeBlock.density", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#densityOf", members: ["compact", "playground"], resolve: codeBlockDensity }),
+  subject({ id: "CodeBlock.density", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#densityOf", members: ["compact", "playground", "snippet", "guide"], resolve: codeBlockDensity }),
   subject({ id: "DescriptionList.layout", components: ["DescriptionList"], pages: ["description-lists"], resolver: "src/molecules/description-lists/description-lists.shared.tsx#layoutOf", members: ["inline", "twoColumn", "stacked"], resolve: descriptionLayout }),
   subject({
     id: "DescriptionList.rows",
