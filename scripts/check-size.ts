@@ -342,6 +342,11 @@ export interface JavaScriptBudget {
 // (+233B), and the theme choice sizes its disc slot. Measured on bun 1.4.0 at 17,427 /
 // 17,038 / 17,542B. The Button ceiling moves from 17,408 to 18,432B (5.1% headroom over the
 // Android figure); the other ceilings stay.
+// StackedList was 69,976 / 69,470 / 70,656B-adjacent (its row menu is Button) before the
+// Button's icon slots took the label ink through an ink context (src/style/ink.tsx, PLAN
+// D19) and the plain link and loading arc above; measured on bun 1.4.0 at 70,756 / 70,203 /
+// 70,678B. The StackedList ceiling moves from 70,656 to 74,752B (5.6% headroom over the web
+// figure); the other ceilings stay.
 // DataTable + ThemeProvider: the v4 Phase 4 skins (2026-10-27) grew the shared shape table every
 // bundle carries (`src/style/platform-shape.ts`: the chart, table, list, tile, disclosure,
 // code, media and lane corner roles the hand-off draws) while DataTable's own skin shrank by
@@ -351,7 +356,7 @@ export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 18_432, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 45_056, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 55_296, requiredExports: ["DataTable", "ThemeProvider"] },
-  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 70_656, requiredExports: ["StackedList", "ThemeProvider"] },
+  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 74_752, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 
 export interface JavaScriptSize extends JavaScriptBudget {
