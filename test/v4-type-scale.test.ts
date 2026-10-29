@@ -150,6 +150,14 @@ const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string;
   // first `{{ z.l }}`; the state tile's is the same style): JetBrains Mono's `normal` line
   // at 12 px measured at 16 px.
   tileCaption: { page: "Component", text: ">{{ z.l }}</div>", normalLineHeight: 16 },
+  // The variant card's title (line 185), `font:500 14px/1.3 var(--ft)`.
+  variantTitle: { page: "Component", text: ">{{ v.t }}</div>" },
+  // The related tile's name (line 297), `font:600 14px var(--ft)` with no ratio: Instrument
+  // Sans's `normal` line at 600 14 px measured at 18 px on the served hand-off page.
+  linkName: { page: "Component", text: ">{{ rl.n }}<", normalLineHeight: 18 },
+  // The Tokens section's "Related components" h3 (line 296), `font:600 16px var(--ft)`
+  // with no ratio: Instrument Sans's `normal` line at 600 16 px measured at 20 px.
+  subsectionTitle: { page: "Component", text: ">Related components</h3>", normalLineHeight: 20 },
 };
 
 describe("v4 page roles", () => {

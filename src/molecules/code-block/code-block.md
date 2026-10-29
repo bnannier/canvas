@@ -4,10 +4,14 @@ Syntax-highlighted code display with clipboard copy, horizontal scrolling, line
 emphasis, diff rendering, collapsible folding, and tabbed alternatives.
 
 The variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
-first match wins); the density axis is `compact` (the tightened ramp) or `playground`
+first match wins); the density axis is `compact` (the tightened ramp), `playground`
 (the hand-off component page's JSX card: the block at the card corner, its header a 40
 px bar on the card fill, 16 in and 8 out, its Copy a 28 px hairline button, and the code
-16 above and below and 18 in at the default ramp; `compact` wins); `copy`, `wrap`, `diff`,
+16 above and below and 18 in at the default ramp), `snippet` (the page's own snippet, the
+Usage section's block: the code-card corner with the code 16 above and below and 18 in
+at the default ramp) or `guide` (a card's snippet, the block in a guidance card: a 10 px
+corner with the code 12 above and below and 14 in at 12 / 1.65), in that order of
+precedence; `copy`, `wrap`, `diff`,
 `collapsible`, `attached`, `headerless`, and `unbadged` stack orthogonally. `language`
 drives the in-kit highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything
 else renders monochrome) and, with no `filename`, labels a header bar above the code;
@@ -247,6 +251,25 @@ Build complete in 12s`}
   filename="JSX · ButtonProps"
   language="tsx"
   code={`<Button>Save changes</Button>`}
+/>
+```
+
+### Page snippet
+
+```tsx
+<CodeBlock snippet headerless language="tsx" code={`<Button>Save changes</Button>`} />
+```
+
+### Guide snippet
+
+```tsx
+<CodeBlock
+  guide
+  headerless
+  language="tsx"
+  code={`<Row alignCenter cozy>
+  <Button link href="/pricing">Pricing</Button>
+</Row>`}
 />
 ```
 

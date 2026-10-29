@@ -34,7 +34,13 @@ import { type CodeBlockSkin, type Density } from "./code-block.shared.js";
 //   1px solid var(--ln);background:var(--sf)` with the 400 12px mono tx3 label and a Copy
 //   button `height:28px;padding:0 10px;border-radius:8px;...;font:500 12px var(--ft);
 //   color:var(--tx2);border:1px solid var(--ln2)` of a 13 px glyph 6 before its label,
-//   and its `<pre style="padding:16px 18px;font:400 13px/1.7 var(--fm)">`.
+//   and its `<pre style="padding:16px 18px;font:400 13px/1.7 var(--fm)">`. The `snippet`
+//   density is the same page's own snippet (line 283, the Usage section's block):
+//   `padding:16px 18px;border-radius:14px;background:var(--bg2);border:1px solid
+//   var(--ln);font:400 13px/1.7 var(--fm)`, the code-card corner with the playground's
+//   code inset. The `guide` density is its card snippet (line 288, the block in a Usage
+//   guidance card): `padding:12px 14px;border-radius:10px;...;font:400 12px/1.65
+//   var(--fm)`, the card-snippet corner.
 //
 // CodeBlock is a "Shared" platform treatment: neither iOS nor Android ships a code
 // display control, and the web reference is the standard `pre`/`code` HTML pattern,
@@ -50,9 +56,11 @@ export const MONO = { fontFamily: MONO_FONT } as const;
 
 // --- type ramp ---------------------------------------------------------------
 
-// The code type: 13 / 1.7, and the compact 12 / 1.7.
+// The code type: 13 / 1.7, the compact 12 / 1.7, and the card snippet's 12 / 1.65
+// (Component.dc.html line 288, `font:400 12px/1.65 var(--fm)`).
 const codeType: TextStyle = { fontSize: 13, lineHeight: 22.1 };
 const codeTypeCompact: TextStyle = { fontSize: 12, lineHeight: 20.4 };
+const codeTypeGuide: TextStyle = { fontSize: 12, lineHeight: 19.8 };
 
 // Code foreground color (text-foreground).
 function codeText(tokens: ColorTokens): TextStyle {
@@ -62,17 +70,19 @@ function codeText(tokens: ColorTokens): TextStyle {
 // --- surface -----------------------------------------------------------------
 
 // The code card: the sunken well on a hairline at the code-card corner (the card corner
-// on the playground card, `border-radius:16px`). The fill is
+// on the playground card, `border-radius:16px`; the card-snippet corner on the guide
+// snippet, `border-radius:10px`). The fill is
 // OPAQUE (a content surface); `overflow: "hidden"` clips full-bleed row tints (line
 // highlight, diff) at the rounded corners. Its header bar and the terminal window
 // share the corner; the hairline is the inset the expander's corners sit inside.
 const CARD_RADIUS = platformShape.web.codeCard;
 const PLAYGROUND_RADIUS = shape.web.card;
+const GUIDE_RADIUS = platformShape.web.cardSnippet;
 const CARD_BORDER = 1;
 
-/** The card's corner at a density: the code-card corner, or the card corner on the playground card. */
+/** The card's corner at a density: the code-card corner, the card corner on the playground card, or the card-snippet corner on the guide snippet. */
 function cardRadius(density: Density): number {
-  return density === "playground" ? PLAYGROUND_RADIUS : CARD_RADIUS;
+  return density === "playground" ? PLAYGROUND_RADIUS : density === "guide" ? GUIDE_RADIUS : CARD_RADIUS;
 }
 
 function surface(tokens: ColorTokens, density: Density = "default"): ViewStyle {
@@ -95,16 +105,20 @@ const attachedTop: ViewStyle = {
   borderTopWidth: 0,
 };
 
-// The vertical padding per density (14, 8 compact, 16 on the playground card) and the
-// row inset (16, 12 compact, 18 on the playground card: its `padding:16px 18px`).
+// The vertical padding per density (14, 8 compact, 16 on the playground card and the page
+// snippet, 12 on the guide snippet) and the row inset (16, 12 compact, 18 on the
+// playground card and the page snippet: their `padding:16px 18px`; 14 on the guide
+// snippet: its `padding:12px 14px`).
+const ROW_INSET: Record<Density, number> = { default: 16, compact: 12, playground: 18, snippet: 18, guide: 14 };
+const BODY_INSET: Record<Density, number> = { default: 14, compact: 8, playground: 16, snippet: 16, guide: 12 };
 function padUnit(density: Density): number {
-  return density === "compact" ? 12 : density === "playground" ? 18 : 16;
+  return ROW_INSET[density];
 }
 
 // Vertical padding of the rows column (horizontal padding lives on each row so
 // line tints run full-bleed to the surface edges).
 function bodyPad(density: Density): ViewStyle {
-  return { paddingVertical: density === "compact" ? 8 : density === "playground" ? 16 : 14 };
+  return { paddingVertical: BODY_INSET[density] };
 }
 
 // Horizontal padding of one code row. With a pinned gutter to the left, the row
@@ -256,11 +270,14 @@ function expanderBar(tokens: ColorTokens): ViewStyle {
 }
 
 // The expander's ripple clip: the card's bottom corners inside its 1px border, so the
-// press layer follows the card's curve (the card corner's on the playground card).
+// press layer follows the card's curve (the card corner's on the playground card, the
+// card-snippet corner's on the guide snippet).
 function expanderClip(density: Density = "default"): ViewStyle {
   return density === "playground"
     ? { borderBottomStartRadius: PLAYGROUND_RADIUS - CARD_BORDER, borderBottomEndRadius: PLAYGROUND_RADIUS - CARD_BORDER }
-    : { borderBottomStartRadius: CARD_RADIUS - CARD_BORDER, borderBottomEndRadius: CARD_RADIUS - CARD_BORDER };
+    : density === "guide"
+      ? { borderBottomStartRadius: GUIDE_RADIUS - CARD_BORDER, borderBottomEndRadius: GUIDE_RADIUS - CARD_BORDER }
+      : { borderBottomStartRadius: CARD_RADIUS - CARD_BORDER, borderBottomEndRadius: CARD_RADIUS - CARD_BORDER };
 }
 
 // 500 12 in the accent's text ink.
@@ -442,6 +459,7 @@ export const webSkin: CodeBlockSkin = {
   minTarget: platformMinTarget(),
   codeType,
   codeTypeCompact,
+  codeTypeGuide,
   codeText,
   surface,
   attachedTop,
