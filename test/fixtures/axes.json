@@ -3985,6 +3985,7 @@
     "resolver": "src/atoms/badge/badge.shared.tsx#badgeMetricOf",
     "order": [
       "notification",
+      "marker",
       "reference",
       "navigationCount",
       "count",
@@ -3993,16 +3994,22 @@
     "none": "default",
     "single": {
       "notification": "notification",
+      "marker": "marker",
       "reference": "reference",
       "navigationCount": "navigationCount",
       "count": "count",
       "small": "small"
     },
     "pairs": {
+      "count + marker": "marker",
       "count + navigationCount": "navigationCount",
       "count + notification": "notification",
       "count + reference": "reference",
       "count + small": "count",
+      "marker + navigationCount": "marker",
+      "marker + notification": "notification",
+      "marker + reference": "marker",
+      "marker + small": "marker",
       "navigationCount + notification": "notification",
       "navigationCount + reference": "reference",
       "navigationCount + small": "navigationCount",
@@ -4022,7 +4029,7 @@
     "resolver": "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf",
     "order": [
       "inverse",
-      "notification|navigationCount|solid",
+      "notification|marker|navigationCount|solid",
       "neutralFill",
       "soft|reference"
     ],
@@ -4030,6 +4037,7 @@
     "single": {
       "inverse": "inverse",
       "notification": "solid",
+      "marker": "solid",
       "navigationCount": "solid",
       "solid": "solid",
       "neutralFill": "neutral",
@@ -4037,12 +4045,19 @@
       "reference": "soft"
     },
     "pairs": {
+      "inverse + marker": "inverse",
       "inverse + navigationCount": "inverse",
       "inverse + neutralFill": "inverse",
       "inverse + notification": "inverse",
       "inverse + reference": "inverse",
       "inverse + soft": "inverse",
       "inverse + solid": "inverse",
+      "marker + navigationCount": "marker|navigationCount",
+      "marker + neutralFill": "marker",
+      "marker + notification": "marker|notification",
+      "marker + reference": "marker",
+      "marker + soft": "marker",
+      "marker + solid": "marker|solid",
       "navigationCount + neutralFill": "navigationCount",
       "navigationCount + notification": "navigationCount|notification",
       "navigationCount + reference": "navigationCount",
@@ -4071,25 +4086,31 @@
     "resolver": "src/atoms/badge/badge.shared.tsx#badgeInkOf",
     "order": [
       "inverse",
-      "notification|navigationCount|solid",
+      "notification|marker|navigationCount|solid",
       "foreground"
     ],
     "none": "intent",
     "single": {
       "inverse": "inverse",
       "notification": "solid",
+      "marker": "solid",
       "navigationCount": "solid",
       "solid": "solid",
       "foreground": "foreground"
     },
     "pairs": {
       "foreground + inverse": "inverse",
+      "foreground + marker": "marker",
       "foreground + navigationCount": "navigationCount",
       "foreground + notification": "notification",
       "foreground + solid": "solid",
+      "inverse + marker": "inverse",
       "inverse + navigationCount": "inverse",
       "inverse + notification": "inverse",
       "inverse + solid": "inverse",
+      "marker + navigationCount": "marker|navigationCount",
+      "marker + notification": "marker|notification",
+      "marker + solid": "marker|solid",
       "navigationCount + notification": "navigationCount|notification",
       "navigationCount + solid": "navigationCount|solid",
       "notification + solid": "notification|solid"

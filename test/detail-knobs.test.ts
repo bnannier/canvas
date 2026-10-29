@@ -1,7 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import { DETAIL_SPECS, type Knob } from "../docs/src/core/data/detail-specs.ts";
 import { componentName, controlledProps, initialKnobs, isPinnedState, jsxCode, knobKey, knobProps, optionLabel, withOption } from "../docs/src/ui/detail/knobs.ts";
-import { placeMarks } from "../docs/src/ui/detail/anatomy-marks.ts";
+import { inStage, placeMarks } from "../docs/src/ui/detail/anatomy-marks.ts";
+import { zoomRect } from "../src/style/anatomy.tsx";
 
 // The v4 detail page's pure model: the playground's knob state, the props and JSX it
 // produces (the hand-off's `K.init`, `K.props` and `K.code` in tools/v4/handoff/cv-kit.js),
@@ -138,6 +139,22 @@ describe("placeMarks", () => {
   it("keeps a marker inside the figure", () => {
     const [a] = placeMarks(["A"], { A: { x: 0, y: 2, width: 10, height: 4 } }, box);
     expect(a).toEqual({ n: 1, x: 14, y: 14, lineTop: 25, lineHeight: 0 });
+  });
+
+  it("places a zoomed part's marker against the stage: the provider's mapped rectangle carried in by its box", () => {
+    // The stage is a 480 by 320 well; the provider's root sits 400 wide at (40, 128) in it, its
+    // inner box 250 wide at (75, 12), scaled 1.6 about its centre. A container filling the
+    // inner box is seen spanning the root, and a label 20 in from its edge 32 in.
+    const inner = { x: 75, y: 12, width: 250, height: 40 };
+    const box = { x: 40, y: 128, width: 400, height: 64 };
+    const seen = { Container: zoomRect({ x: 75, y: 12, width: 250, height: 40 }, inner, 1.6), Label: zoomRect({ x: 95, y: 22, width: 80, height: 20 }, inner, 1.6) };
+    const staged = inStage(seen, box);
+    expect(staged).toEqual({ Container: { x: 40, y: 128, width: 400, height: 64 }, Label: { x: 72, y: 144, width: 128, height: 32 } });
+    const marks = placeMarks(["Container", "Label"], staged, { width: 480, height: 320 });
+    expect(marks).toEqual([
+      { n: 1, x: 240, y: 98, lineTop: 109, lineHeight: 19 },
+      { n: 2, x: 136, y: 206, lineTop: 176, lineHeight: 19 },
+    ]);
   });
 
   it("steps a marker that lands on another 28 px along", () => {

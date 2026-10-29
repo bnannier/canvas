@@ -15,6 +15,8 @@ The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label 
 `signal` is the original standalone 10px status marker. It uses the existing
 status-tone precedence and announces its supplied status label.
 
+`marker` is an anatomy figure's numbered disc: a 22 px pill with no inset, its number 600 11 px in the code face on the accent (the solid call-to-action fill under its ink), set off from the stage by a 3 px ring of the stage well's fill (`surface-sunken`) and a drop shadow, the way the component page's Anatomy section numbers a specimen's parts. It wins over the other metrics but `notification`.
+
 ## Usage
 
 ```tsx
@@ -86,6 +88,16 @@ status-tone precedence and announces its supplied status label.
 
 ```tsx
 <Badge reference href="https://example.com">CORE-1842</Badge>
+```
+
+### Anatomy marker
+
+```tsx
+<BadgeGroup>
+  <Badge marker>1</Badge>
+  <Badge marker>2</Badge>
+  <Badge marker>3</Badge>
+</BadgeGroup>
 ```
 
 ## Do & Don't

@@ -41,8 +41,13 @@ export interface BadgeSize {
 }
 
 export interface BadgeSkin {
-  /** The pill per size step (`small`, the default, `large`). */
-  sizes: Record<"small" | "default" | "large", BadgeSize>;
+  /** The pill per size step (`small`, the default, `large`), and the anatomy `marker` disc. */
+  sizes: Record<"small" | "default" | "large" | "marker", BadgeSize>;
+  /**
+   * The shadow set under an anatomy `marker`, from the theme's tokens: the hand-off's ring
+   * of the stage's fill and its drop shadow (Component.dc.html line 220).
+   */
+  markerShadow: (tokens: ColorTokens) => string;
   /** The pill corner. */
   radius: number;
   /** The reference key's corner. */
@@ -88,6 +93,12 @@ export interface BadgeProps {
   reference?: boolean;
   /** The large pill: 26 px tall. */
   large?: boolean;
+  /**
+   * An anatomy figure's numbered marker: a 22 px disc on the accent with its number in
+   * the code face, set off from the stage by a ring of the stage's fill and a shadow
+   * (Component.dc.html line 220).
+   */
+  marker?: boolean;
   /** Show the intent dot without switching to the status family. */
   dot?: boolean;
   /** Standalone 10px signal marker, retaining its status label. */
@@ -154,6 +165,7 @@ export function badgeIntentOf(p: BadgeProps) {
 }
 export function badgeMetricOf(p: BadgeProps) {
   if (p.notification) return "notification";
+  if (p.marker) return "marker";
   if (p.reference) return "reference";
   if (p.navigationCount) return "navigationCount";
   if (p.count) return "count";
@@ -162,14 +174,14 @@ export function badgeMetricOf(p: BadgeProps) {
 }
 export function badgeSurfaceOf(p: BadgeProps) {
   if (p.inverse) return "inverse";
-  if (p.notification || p.navigationCount || p.solid) return "solid";
+  if (p.notification || p.marker || p.navigationCount || p.solid) return "solid";
   if (p.neutralFill) return "neutral";
   if (p.soft || p.reference) return "soft";
   return "surface";
 }
 export function badgeInkOf(p: BadgeProps) {
   if (p.inverse) return "inverse";
-  if (p.notification || p.navigationCount || p.solid) return "solid";
+  if (p.notification || p.marker || p.navigationCount || p.solid) return "solid";
   if (p.foreground) return "foreground";
   return "intent";
 }
@@ -238,7 +250,7 @@ export function createBadge(skin: BadgeSkin) {
     if (props.signal) return <View testID={testID} accessibilityRole="image" accessibilityLabel={accessibilityLabel ?? statusOf(props)} aria-label={accessibilityLabel ?? statusOf(props)} style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: statusColors(tokens, statusOf(props)).dot }} />;
 
     const metric = badgeMetricOf(props);
-    const size = skin.sizes[metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
+    const size = skin.sizes[metric === "marker" ? "marker" : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
 
     if (props.status) {
       const tone = statusOf(props);
@@ -291,6 +303,7 @@ export function createBadge(skin: BadgeSkin) {
     const inkKind = badgeInkOf(props);
     const ink = inkKind === "foreground" ? tokens.foreground : look.ink;
     const reference = metric === "reference";
+    const marker = metric === "marker";
     const toned = !!(props.success || props.warning || props.error || props.info || props.neutral);
     const base: ViewStyle = {
       flexDirection: "row",
@@ -300,6 +313,9 @@ export function createBadge(skin: BadgeSkin) {
       paddingHorizontal: size.paddingHorizontal,
       borderWidth: 1,
       borderRadius: reference ? skin.referenceRadius : skin.radius,
+      // The marker is a disc: as wide as it is tall, its number centred (the hand-off's
+      // `width:22px;height:22px;...;display:grid;place-items:center`, line 220).
+      ...(marker ? { width: size.height, justifyContent: "center" as const } : null),
     };
     const fill: ViewStyle = { backgroundColor: look.fill, borderColor: look.border };
     const label: TextStyle = {
@@ -313,9 +329,12 @@ export function createBadge(skin: BadgeSkin) {
     };
     // An outline badge is deliberately unfilled metadata, so it inherits its host.
     const surfaced = look.fill !== CLEAR;
-    // The mono modifier (and a reference key) asks for a monospace face; RN has no
-    // font-family utility, so request the cross-platform monospace alias via inline style.
-    const monoStyle = mono || reference ? { fontFamily: MONO_FONT } : null;
+    // The mono modifier (a reference key and a marker too) asks for a monospace face; RN
+    // has no font-family utility, so request the cross-platform monospace alias via inline
+    // style.
+    const monoStyle = mono || reference || marker ? { fontFamily: MONO_FONT } : null;
+    // The marker's ring and shadow, the skin's, from the theme's tokens.
+    const markerShadow = marker ? { boxShadow: skin.markerShadow(tokens) } : null;
 
     const content = <>
       {surfaced ? <GlassPane static layer="control" shape={base} brand={look.brand} tint={look.tint} /> : null}
@@ -324,7 +343,7 @@ export function createBadge(skin: BadgeSkin) {
       {reference && props.href ? <Icon decorative arrowUpRight size={11} primary /> : null}
     </>;
     // Under glass a reference key's resting hairline drops: the material's rim is its edge.
-    const rootStyle = [surfaced || theme.increasedContrast ? paneStyle(theme, [base, fill]) : [base, fill], hug, props.start ? { alignSelf: "flex-start" as const } : null, style];
+    const rootStyle = [surfaced || theme.increasedContrast ? paneStyle(theme, [base, fill]) : [base, fill], markerShadow, hug, props.start ? { alignSelf: "flex-start" as const } : null, style];
     const minTarget = platformMinTarget();
     const linkSlop = minTarget == null ? undefined : Math.max(0, (minTarget - size.height) / 2);
     if (props.href) return <Pressable hitSlop={linkSlop} accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? `Open ${children}`} onPress={() => Linking.openURL(props.href!)} style={[rootStyle, hovered ? { opacity: 0.85 } : null]} {...target} testID={testID}>{content}</Pressable>;

@@ -174,6 +174,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The hand-off's playground grid gives the knob panel a 300 px column beside the stage (`minmax(0,1fr) 300px`, its 1 px rule included), a harness frame number with no step on the width scale.",
   },
   {
+    file: "docs/src/ui/detail/anatomy.tsx", owner: "Marks", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "The anatomy figure's marker layer: an untouchable layer spread over the stage well beside the zoomed specimen (the hand-off places its markers against the padded stage, Component.dc.html lines 217 to 220, and the kit's zoom never touches them), measuring the stage the markers are clamped inside.",
+  },
+  {
     file: "docs/src/ui/detail/anatomy.tsx", owner: "Marks", tag: "Svg", attribute: "style", keys: ["left", "position", "top"], occurrences: 1,
     reason: "The anatomy figure's leader lines are drawn over the specimen at the part rectangles AnatomyProvider measured (the hand-off's `_measure`), so the svg sits at the figure's origin.",
   },

@@ -14,6 +14,14 @@ import { type BadgeSkin } from "./badge.shared.js";
 // in its ink. A reference key is the same height at the 6 px key corner. The status
 // family has no pill: a 7 px dot inside a 3 px ring of its wash, beside the label. The
 // colors live in badge.shared.tsx.
+//
+// The anatomy marker (`marker`) is the hand-off's numbered disc over the Anatomy figure
+// (Component.dc.html line 220: `width:22px;height:22px;...;border-radius:50%;...;
+// background:var(--ion);color:var(--ion-fg);font:600 11px/1 var(--fm);box-shadow:0 0 0
+// 3px var(--bg2),0 4px 12px rgba(0,0,0,.4)`): a 22 px pill with no inset, its number 600
+// 11 px on an 11 px line in the code face, on the accent, set off from the stage by a
+// 3 px ring of the stage well's fill (`--bg2`, the `surface-sunken` token CardMedia's
+// well paints) and the drop shadow.
 
 // Badges are HUG: the shell appends `useHugStyle()` (src/style/sizing.ts) at the
 // root instead of a static alignSelf, which would pin a Row child to the top.
@@ -22,7 +30,12 @@ export const webSkin: BadgeSkin = {
     small: { height: 18, paddingHorizontal: 6, fontSize: 11, lineHeight: 14 },
     default: { height: 22, paddingHorizontal: 8, fontSize: 12, lineHeight: 16 },
     large: { height: 26, paddingHorizontal: 8, fontSize: 12, lineHeight: 16 },
+    // Line 220: `width:22px;height:22px` and `font:600 11px/1 var(--fm)`.
+    marker: { height: 22, paddingHorizontal: 0, fontSize: 11, lineHeight: 11 },
   },
+  // Line 220: `box-shadow:0 0 0 3px var(--bg2),0 4px 12px rgba(0,0,0,.4)`, `--bg2` the
+  // stage well's fill (CardMedia reads `surface-sunken`, falling back to `muted` as it does).
+  markerShadow: (tokens) => `0px 0px 0px 3px ${tokens["surface-sunken"] ?? tokens.muted}, 0px 4px 12px rgba(0,0,0,0.4)`,
   radius: shape.web.pill,
   referenceRadius: platformShape.web.key,
   gap: 6,
@@ -35,6 +48,8 @@ export const webSkin: BadgeSkin = {
   statusRing: 3,
 };
 
-// No native label pill on either platform: the native skins are the web skin.
+// No native label pill on either platform: the native skins are the web skin, the
+// marker's ring and shadow included (React Native's own boxShadow, as the notification
+// count's ring is drawn), since neither platform ships a control for the job.
 export const iosSkin: BadgeSkin = webSkin;
 export const androidSkin: BadgeSkin = webSkin;
