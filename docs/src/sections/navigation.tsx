@@ -1,37 +1,36 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import {
   Avatar,
   Breadcrumb,
+  Button,
   ButtonGroup,
   Card,
   Column,
-  Container,
-  Grid,
+  Divider,
   GridItem,
   Icon,
   Input,
-  MediaObject,
   Navbar,
   Pagination,
   RowMenu,
   Row,
   Sidebar,
-  Skeleton,
   Steps,
   TabBar,
   Tabs,
   Typography,
   type IconName,
 } from "@nannier/canvas";
+import { CanvasMark } from "../brand/canvas-mark";
 import { COMPONENTS } from "../core/data/components";
 import { resolvePhoto } from "../core/photos";
-import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
+import { PagePlaceholder, SectionStage, ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
 
 // The Navigation section page (`Canvas v4.0.0 Navigation.dc.html`): its hero vignette and
-// its six cards. The hand-off's travelling indicators (the gliding underline and thumb)
-// are motion the owner removed (2026-09-21), so a selection paints where it is. The
-// RowMenu cards show their ⋯ triggers closed: an open menu is an anchored overlay that
-// would cover the rest of the card (and a page sheet on a phone).
+// its six cards. The hand-off's travelling indicators (the gliding underline, thumb and
+// rail bar, the Steps pulse) are motion the owner removed (2026-09-21), so a selection
+// paints where it is. The RowMenu card draws both menus in place (`inline`), as the
+// hand-off shows them open.
 
 /** A bundled sample photo, resolved for the platform (docs/src/core/photos.ts). */
 const photo = (path: string) => resolvePhoto(path) as string | undefined;
@@ -75,23 +74,21 @@ function TabsCard() {
 /** Tab bar · Steps, at phone width. */
 function TabBarCard() {
   return (
-    <ShowcaseCard id="c-tab-bar" caption="<TabBar> floats off the edge on the functional glass tint · <Steps current={1}>">
-      <Container xs>
-        <Card sunken flush clip>
-          <Column padLoose>
-            <TabBar
-              defaultActive="home"
-              items={[
-                { key: "home", label: "Home", icon: tabIcon("home") },
-                { key: "search", label: "Search", icon: tabIcon("search") },
-                { key: "inbox", label: "Inbox", icon: tabIcon("inbox") },
-                { key: "you", label: "You", icon: tabIcon("user") },
-              ]}
-            />
-          </Column>
-        </Card>
-      </Container>
+    <ShowcaseCard id="c-tab-bar" caption="<TabBar> floats off the edge on the functional glass tint · <Steps segmented current={1}>">
+      {/* The 150 px well with its glow, the bar floating off its foot (`left/right/bottom:12px`). */}
+      <SectionStage minHeight={150} bottom glow={{ left: "20%", top: "-50%", width: "60%", height: "120%", opacity: 0.5 }}>
+        <TabBar
+          defaultActive="home"
+          items={[
+            { key: "home", label: "Home", icon: tabIcon("home") },
+            { key: "search", label: "Search", icon: tabIcon("search") },
+            { key: "inbox", label: "Inbox", icon: tabIcon("inbox"), unread: true },
+            { key: "you", label: "You", icon: tabIcon("user") },
+          ]}
+        />
+      </SectionStage>
       <Steps
+        segmented
         current={1}
         steps={[
           { label: "Account", description: "Done" },
@@ -107,23 +104,23 @@ function TabBarCard() {
 function NavbarCard() {
   return (
     <ShowcaseCard id="c-navbar" caption="<Navbar> · <Sidebar> · glass comes from <ThemeProvider glass>, never a prop">
-      <Card sunken flush clip>
+      <SectionStage minHeight={340} glow={{ left: "30%", top: "-40%", width: "50%", height: "100%", opacity: 0.4 }}>
         <Navbar
-          bordered
+          scrolls
           brand="Canvas"
+          brandContent={<CanvasMark size={22} />}
           links={["Docs", "Components", "Tokens", "Changelog"]}
           defaultActive={0}
           actions={
             <Row snug alignCenter>
               <Input small xxs placeholder="Search…" shortcut="⌘K" accessibilityLabel="Search" />
+              <Button outline largeIcon accessibilityLabel="Notifications" iconLeft={<Icon bell decorative />} />
               <Avatar small src={photo("/liang-bao.jpg")} name="Liang Bao" />
             </Row>
           }
         />
         <Row stacks stackBreakpoint="md" flush>
           <Sidebar
-            embedded
-            compact
             defaultActive="overview"
             accessibilityLabel="Example workspace"
             sections={[
@@ -131,25 +128,19 @@ function NavbarCard() {
                 title: "Workspace",
                 items: [
                   { id: "overview", label: "Overview", icon: "layoutDashboard" },
-                  { id: "members", label: "Members", icon: "users", badge: "24" },
+                  { id: "members", label: "Members", icon: "users", meta: "24" },
                   { id: "integrations", label: "Integrations", icon: "plug" },
-                  { id: "tokens", label: "Tokens", icon: "palette", badge: "New" },
+                  { id: "tokens", label: "Tokens", icon: "palette", badge: "New", badgeAccent: true },
                 ],
               },
             ]}
-            footer={<MediaObject compact src={photo("/grace-hopper.jpg")} title="Riskora" description="24 members" />}
+            account={{ name: "Riskora", detail: "24 members", src: photo("/grace-hopper.jpg") }}
           />
-          <Column fill relaxed padLoose>
-            <Skeleton text long />
-            <Grid minTileWidth={160} columns={3} relaxed>
-              <Skeleton card />
-              <Skeleton card />
-              <Skeleton card />
-            </Grid>
-            <Skeleton card />
+          <Column fill>
+            <PagePlaceholder />
           </Column>
         </Row>
-      </Card>
+      </SectionStage>
     </ShowcaseCard>
   );
 }
@@ -157,12 +148,12 @@ function NavbarCard() {
 /** How many components the docs list in a category. */
 const countOf = (category: (typeof COMPONENTS)[number]["category"]) => String(COMPONENTS.filter((c) => c.category === category).length);
 
-/** The vertical tabs' panels (the hand-off's settings sections). */
-const SETTINGS: { label: string; body: string }[] = [
-  { label: "General", body: "Name, URL and region. Shown to everyone in the workspace." },
-  { label: "Members", body: "24 members and 3 pending invites. Roles map straight onto board permissions." },
-  { label: "Integrations", body: "GitHub and Figma are connected. Token changes open a pull request." },
-  { label: "Security", body: "SSO is enforced. Sessions end after 12 idle hours." },
+/** The vertical tabs' panels (the hand-off's settings sections) and their rail glyphs. */
+const SETTINGS: { label: string; icon: IconName; body: string }[] = [
+  { label: "General", icon: "settings2", body: "Name, URL and region. Shown to everyone in the workspace." },
+  { label: "Members", icon: "users", body: "24 members and 3 pending invites. Roles map straight onto board permissions." },
+  { label: "Integrations", icon: "plug", body: "GitHub and Figma are connected. Token changes open a pull request." },
+  { label: "Security", icon: "shieldCheck", body: "SSO is enforced. Sessions end after 12 idle hours." },
 ];
 
 /** Tabs · pill · vertical · badges. */
@@ -180,15 +171,21 @@ function TabsVariantsCard() {
           { label: "Charts", badge: countOf("Charts") },
         ]}
       />
-      <Row relaxed alignStart>
-        <Tabs vertical active={active} onSelect={setActive} tabs={SETTINGS.map((entry) => entry.label)} />
-        <Column fill>
-          <Card sunken calloutCorners>
-            <Typography paneTitle level={2}>{panel.label}</Typography>
-            <Typography small subtle>{panel.body}</Typography>
-          </Card>
-        </Column>
-      </Row>
+      {/* The rule over the rail and its panel: the card's 20 above it, 16 below. */}
+      <Column relaxed>
+        <Divider />
+        <Row relaxed alignStart>
+          <Tabs vertical active={active} onSelect={setActive} tabs={SETTINGS.map(({ label, icon }) => ({ label, icon }))} />
+          <Column fill>
+            <Card sunken calloutCorners insetContent>
+              <Column compact>
+                <Typography paneTitle level={2}>{panel.label}</Typography>
+                <Typography small subtle>{panel.body}</Typography>
+              </Column>
+            </Card>
+          </Column>
+        </Row>
+      </Column>
     </ShowcaseCard>
   );
 }
@@ -196,59 +193,45 @@ function TabsVariantsCard() {
 /** Steps · vertical · with progress. */
 function StepsCard() {
   return (
-    <ShowcaseCard id="c-steps" caption="<Steps vertical> · horizontal is the default · <Steps progress> carries a step's own progress">
+    <ShowcaseCard id="c-steps" caption="<Steps vertical> · horizontal is the default · the current step carries its own progress">
       <Steps
         vertical
         current={2}
         steps={[
           { label: "Create workspace", description: "Riskora · EU Frankfurt" },
           { label: "Connect repository", description: "bnannier/canvas · main" },
-          { label: "Import components", description: "Restyling 72 of 107" },
+          { label: "Import components", description: "Restyling 72 of 107", progress: 67 },
           { label: "Invite your team", description: "Optional" },
         ]}
       />
-      <Steps progress value={67} label="Import components" steps={[{ label: "Import components" }]} />
     </ShowcaseCard>
   );
 }
 
-/** A RowMenu's trigger with its name beside it. */
-function NamedMenu({ name, children }: { name: string; children: ReactNode }) {
-  return (
-    <Row cozy alignCenter>
-      {children}
-      <Typography caption mono subtle>{name}</Typography>
-    </Row>
-  );
-}
-
-/** RowMenu · actions · links. */
+/** RowMenu · actions · links, both drawn in place. */
 function RowMenuCard() {
   return (
     <ShowcaseCard id="c-row-menu" caption="<RowMenu> · every row icon names a real glyph · destructive rows sit last, behind a hairline">
-      <NamedMenu name="actions">
-        <RowMenu
-          triggerLabel="Actions"
-          items={[
-            { label: "Edit details", icon: "pencil" },
-            { label: "Duplicate", icon: "copy" },
-            { label: "Move to…", icon: "folderOpen" },
-            { label: "Archive", icon: "archive", separatorBefore: true },
-            { label: "Delete", icon: "trash2", destructive: true },
-          ]}
-        />
-      </NamedMenu>
-      <NamedMenu name="links">
-        <RowMenu
-          links
-          triggerLabel="Account"
-          items={[
-            { label: "Profile", icon: "userRound" },
-            { label: "Notifications", icon: "bell" },
-            { label: "Integrations", icon: "plug" },
-          ]}
-        />
-      </NamedMenu>
+      <RowMenu
+        inline
+        triggerLabel="Actions"
+        items={[
+          { label: "Edit details", icon: "pencil", shortcut: "⌘E" },
+          { label: "Duplicate", icon: "copy", shortcut: "⌘D" },
+          { label: "Move to…", icon: "folderOpen", submenu: true },
+          { label: "Archive", icon: "archive", separatorBefore: true },
+          { label: "Delete", icon: "trash2", destructive: true, shortcut: "⌘⌫" },
+        ]}
+      />
+      <RowMenu
+        inline
+        links
+        items={[
+          { label: "Profile", icon: "userRound" },
+          { label: "Notifications", icon: "bell", badge: "3 new" },
+          { label: "Integrations", icon: "plug", meta: "3" },
+        ]}
+      />
     </ShowcaseCard>
   );
 }

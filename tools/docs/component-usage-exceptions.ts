@@ -13,6 +13,30 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The section hero stage's ground (the v4 hand-off's canvas-hero.js `.st`: two radial washes and an 18 px dot grid fading downward), the one docs-only brand illustration the rules allow: an untouchable layer spread over the stage it sits in, painting only the svg; the stage itself is the kit Card.",
   },
   {
+    file: "docs/src/ui/showcase/stage.tsx", owner: "StageGlow", tag: "View", attribute: "style", keys: ["height", "left", "opacity", "pointerEvents", "position", "top", "width"], occurrences: 1,
+    reason: "A Navigation section stage's blurred accent glow (the hand-off's `radial-gradient(circle,var(--ion),transparent 65%);filter:blur(...)` box behind the navbar and the tab bar, decision OD-1): an untouchable layer at the hand-off's box in the well, painting only the svg; the well itself is the kit Card.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage.tsx", owner: "SectionStage", tag: "View", attribute: "style", keys: ["justifyContent", "minHeight"], occurrences: 1,
+    reason: "A Navigation section stage's height floor inside the kit Card well (the hand-off's `min-height:340px` navbar stage and 150 px tab-bar stage, its bar pinned to the foot), decision OD-1; it paints nothing.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage.tsx", owner: "PagePlaceholder", tag: "View", attribute: "style", keys: ["gap", "minHeight", "padding", "pointerEvents"], occurrences: 1,
+    reason: "The navbar stage's placeholder page body (the hand-off's `padding:24px;gap:14px` block under a 280 px floor), an untouchable diagram of page content, decision OD-1; it is no control.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage.tsx", owner: "PagePlaceholder", tag: "View", attribute: "style", keys: ["backgroundColor", "borderRadius", "height", "width"], occurrences: 2,
+    reason: "The placeholder page's heading bar and closing block (the hand-off's 12 px bar at 40 %, radius 6, and its 100 px block, radius 14, both in --sf3), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage.tsx", owner: "PagePlaceholder", tag: "View", attribute: "style", keys: ["flexDirection", "gap"], occurrences: 1,
+    reason: "The placeholder page's row of three tiles 12 apart (the hand-off's three-column grid), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage.tsx", owner: "PagePlaceholder", tag: "View", attribute: "style", keys: ["backgroundColor", "borderRadius", "flexBasis", "flexGrow", "flexShrink", "height", "minWidth"], occurrences: 1,
+    reason: "The placeholder page's 80 px tiles (radius 14, --sf3), diagram scenery, decision OD-1.",
+  },
+  {
     file: "docs/src/core/photos.ts", owner: "Wrapped", tag: "Loose", attribute: "spread", keys: ["<unresolved props>"], occurrences: 1,
     expression: "createElement(Loose, next ?? rec)",
     reason: "The example-scope adapter forwards the existing Canvas component's props after resolving bundled sample-photo paths; it authors no control or style.",
