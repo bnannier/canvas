@@ -16,6 +16,8 @@ export interface EmblemSkin {
   radius: Record<EmblemSize, number>;
   /** Extra shape refinement on the emblem root (iOS: the app-icon continuous superellipse corner curve). */
   shape: ViewStyle;
+  /** The `soft` tile's corner (the hand-off's dialog tone tile, 12 px). */
+  softRadius: number;
   /** Monogram label type (weight, face); color comes from the shell. */
   monogram: TextStyle;
   /** Monogram size per tile size, in px (its line box is the same number). */
@@ -42,6 +44,7 @@ export const webSkin: EmblemSkin = {
   iconSize,
   radius: { small: platformShape.web.emblemSmall, default: platformShape.web.emblem, large: platformShape.web.emblemLarge },
   shape: { borderCurve: "continuous" },
+  softRadius: platformShape.web.emblemSoft,
   monogram: { fontFamily: DISPLAY_FONT, fontWeight: "600" },
   monogramSize,
   washAlpha: 0.18,

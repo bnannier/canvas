@@ -4,10 +4,12 @@ import { type ViewStyle } from "react-native";
 import { type ColorTokens, alpha, platformMinTarget, shadow, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type ToastSkin } from "./toast.shared.js";
+import { type GlassLayer } from "../../style/glass-surface/glass-surface-props.js";
 
 // Co-located Toast skins, as the Canvas v4 hand-off draws them (`K.def('toast')` in
 // tools/v4/handoff/cv-kit-overlays.js and its `K.PF` row in cv-kit-platform.js). Under
-// glass the shell renders the capsule through GlassSurface as a DENSE-layer surface; the
+// glass the shell renders the capsule through GlassSurface on the skin's layer (the card on the
+// functional layer, the hand-off's `--gl`, on the web and on iOS, which has no toast control); the
 // Android snackbar, painted on the inverse surface, takes the inverse dense tint, so its
 // light ink keeps its contrast.
 //
@@ -92,7 +94,8 @@ const panel = (t: ColorTokens): ViewStyle => ({
   ...shadow("lg", t),
 });
 
-const cardSkin = (radius: number): ToastSkin => ({
+const cardSkin = (radius: number, glassLayer: GlassLayer): ToastSkin => ({
+  glassLayer,
   container: (t) => ({
     flexDirection: "row",
     alignItems: "flex-start",
@@ -127,7 +130,7 @@ const cardSkin = (radius: number): ToastSkin => ({
   actionButton: () => ({ paddingHorizontal: 4, paddingVertical: 2, borderRadius: shape.web.control, alignItems: "center", justifyContent: "center" }),
   actionLabel: (t) => ({ fontSize: 13, lineHeight: 17, fontWeight: "600", color: primaryText(t) }),
   actionHitSlop: slopTo(CARD_ACTION_HEIGHT),
-  dismissButton: () => ({ width: CARD_DISMISS, height: CARD_DISMISS, borderRadius: shape.web.control, marginTop: -3, alignItems: "center", justifyContent: "center" }),
+  dismissButton: () => ({ width: CARD_DISMISS, height: CARD_DISMISS, borderRadius: platformShape.web.dismiss, marginTop: -3, alignItems: "center", justifyContent: "center" }),
   dismissIconSize: 16,
   dismissColor: (t) => t["subtle-foreground"] ?? t["muted-foreground"],
   dismissHitSlop: slopTo(CARD_DISMISS),
@@ -135,10 +138,11 @@ const cardSkin = (radius: number): ToastSkin => ({
   ripple: null,
 });
 
-/** The web toast: the card at the web card role. */
-export const webSkin: ToastSkin = cardSkin(shape.web.card);
+/** The web toast: the card at the web card role, floating on the functional layer. */
+export const webSkin: ToastSkin = cardSkin(shape.web.card, "functional");
 
-// iOS has no toast control (PLATFORM-REFERENCES.md): the web skin.
+// iOS has no toast control (PLATFORM-REFERENCES.md): the web skin, the floating card on the
+// functional layer, which iOS paints as its Liquid Glass.
 export const iosSkin: ToastSkin = webSkin;
 
 // ---------- Android (Material 3 snackbar): a small-radius bar ----------

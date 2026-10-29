@@ -450,7 +450,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Card"],
     pages: ["card"],
     resolver: "src/molecules/card/card.shared.tsx#densityOf",
-    members: ["dense", "snug", "cozy", "relaxed", "roomy", "spacious", "insetContent", "rail", "summary", "metric", "request", "menu", "panel", "guide", "linkTile", "pager", "compact", "comfortable"],
+    members: ["dense", "snug", "cozy", "relaxed", "roomy", "spacious", "insetContent", "rail", "summary", "metric", "request", "menu", "panel", "guide", "linkTile", "pager", "well", "compact", "comfortable"],
     resolve: cardDensity,
     notes: ["A density pads the surface on its own and wins over `padded` and `flush`; on a sectioned card it reshapes the sections' inset and rhythm."],
   }),

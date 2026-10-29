@@ -1,6 +1,7 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
+import { primaryText } from "../../style/primary-text.js";
 import { MENU_ICON, MENU_ROW_GAP, menuDetail, menuIconColor, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
 
 // Co-located Dropdown skins, one per platform, all driven by the theme tokens (passed
@@ -79,6 +80,17 @@ export interface DropdownSkin {
   itemTextColor: (t: ColorTokens, dark: boolean, destructive: boolean) => TextStyle;
   /** Trailing keyboard shortcut, right-aligned and muted. */
   shortcut: (t: ColorTokens) => TextStyle;
+  /** The trailing chevron of a `submenu` row: its size; its ink is the shortcut's. */
+  submenuSize: number;
+  /**
+   * How a selected choice reads where the platform marks it with a leading check (the
+   * web): its row's wash, the check's size and ink, and the label's ink. A menu holding a
+   * selected choice indents its glyphless rows by the check's width so the labels align.
+   * Omitted, the selected label takes the accent ink alone.
+   */
+  selectedMark?: { wash: (t: ColorTokens) => ViewStyle; size: number; color: (t: ColorTokens) => string };
+  /** The trigger's look, as Button booleans. */
+  trigger: { outline?: boolean; secondary?: boolean; chevron: boolean };
   /** Standoff between the trigger and the menu card, in px. Skin-owned rather than
    *  caller-owned: it is a platform number (the hand-off's 6 on the web, 4 on the native
    *  menus, which the account pill's menu raises to 6 for its taller trigger), and a
@@ -151,6 +163,11 @@ export const webSkin: DropdownSkin = {
     return { color: t.foreground };
   },
   shortcut: menuDetail,
+  // The renderer's 13 px chevron, the section page's leading check on the accent's soft
+  // wash, and the renderer's `secondary small` trigger with its trailing chevron.
+  submenuSize: 13,
+  selectedMark: { wash: (t) => ({ backgroundColor: t["primary-soft"] ?? t.accent }), size: 14, color: (t) => primaryText(t) },
+  trigger: { secondary: true, chevron: true },
   menuGap: WEB_MENU_GAP,
   disabledOpacity: 0.5, // the hand-off's --p-disabled on web
   disabledRow: { opacity: 1, muted: true },
@@ -227,6 +244,8 @@ export const iosSkin: DropdownSkin = {
   disabledOpacity: 0.4,
   disabledRow: { opacity: 0.4, muted: false },
   pressedOpacity: 0.8,
+  submenuSize: 14,
+  trigger: { outline: true, chevron: false },
   ripple: null,
 };
 
@@ -289,5 +308,7 @@ export const androidSkin: DropdownSkin = {
   disabledOpacity: 0.38, // M3 disabled opacity, the hand-off's --p-disabled on Android
   disabledRow: { opacity: 0.38, muted: false },
   pressedOpacity: null, // Android uses a ripple instead
+  submenuSize: 18,
+  trigger: { outline: true, chevron: false },
   ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
 };

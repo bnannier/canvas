@@ -14,7 +14,7 @@ The section props (`eyebrow` / `badge` / `title` / `description` / `icon` / `act
 
 Density: the card's own inset is 20 px with an 8 px rhythm; pass `compact` (14 / 8) or `comfortable` (28 / 8) to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own). On a sectioned card (an eyebrow, a title or a footer) the surface never pads, so a density moves its inset and rhythm onto the sections instead: the first section takes the inset above, every section the inset beside, the last the inset below, and each section sits the rhythm under the one before it. `grow` fills the height a parent Row or Column hands the card (the body takes the slack, so a footer stays on its floor); inside a `Grid` cell it is implied, so the tiles of one row are equal-height without being asked.
 
-The hand-off's component page insets are their own density steps, the same on every platform: `panel` (18 with a 12 px rhythm: a section panel, an accessibility card, a figure's legend), `guide` (18×20 with 10: a guidance card), `linkTile` (14×16 with 6: a link tile) and `pager` (16×18 with 4: a previous or next card).
+The hand-off's component page insets are their own density steps, the same on every platform: `panel` (18 with a 12 px rhythm: a section panel, an accessibility card, a figure's legend), `guide` (18×20 with 10: a guidance card), `linkTile` (14×16 with 6: a link tile) and `pager` (16×18 with 4: a previous or next card); the section pages add `well` (16 with a 12 px rhythm: a loading-state well, a wizard's preview).
 
 Gap-free content densities preserve dense application layouts: `dense` (12),
 `snug` (18), `cozy` (20), `relaxed` (22×24), `spacious` (28), `insetContent` (14),
@@ -22,7 +22,7 @@ Gap-free content densities preserve dense application layouts: `dense` (12),
 and `menu` (12 vertical). `roomy` sits between `relaxed` and `spacious` and keeps a
 rhythm: a 24 px inset with 20 px between flat children, the Canvas v4 section page's
 showcase card, the same on every platform. Precedence follows that order, then the
-page steps (`panel`, `guide`, `linkTile`, `pager`), before compact/comfortable.
+page steps (`panel`, `guide`, `linkTile`, `pager`, `well`), before compact/comfortable.
 `gapless` removes flat-child spacing; `borderless`, `inset`,
 `dimmed` and `clip` control surface anatomy. `tileShadow`, `rowShadow`, and
 `emptyShadow` extend the elevation axis after raised/flat/outlined/heroShadow. Accessible names and
@@ -204,6 +204,10 @@ The section pages' frame: a showcase card at the showcase corner with the `roomy
   <Card outlined pager>
     <Typography eyebrow subtle>Pager</Typography>
     <Typography lead semibold>16 by 18, a 4 px rhythm.</Typography>
+  </Card>
+  <Card sunken well>
+    <Typography eyebrow subtle>Well</Typography>
+    <Typography small subtle>16 all round, a 12 px rhythm.</Typography>
   </Card>
 </Column>
 ```

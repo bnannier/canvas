@@ -43,8 +43,8 @@ export interface SwatchProps {
   /** The fill: any React Native color string. Pass a theme token, not a literal. */
   color?: string;
   // Palette picker (pick one): the sample becomes the 16 px hue disc of that accent
-  // palette, a radio named for it. Precedence is ThemeProvider's: cyan, mint, rose,
-  // amber, violet.
+  // palette, a radio named for it (a size boolean sizes the disc to that sample edge:
+  // `small` is 32 px). Precedence is ThemeProvider's: cyan, mint, rose, amber, violet.
   violet?: boolean;
   cyan?: boolean;
   mint?: boolean;
@@ -276,13 +276,18 @@ export function createSwatch(skin: SwatchSkin) {
  * scale; the hover target is the Pressable, which never moves, and the disc inside it
  * scales, ring included, as the hand-off's button does.
  */
-function PalettePick({ skin, palette, selected, onPress, accessibilityLabel, testID, style }: SwatchProps & { skin: SwatchSkin; palette: Palette }) {
+function PalettePick(props: SwatchProps & { skin: SwatchSkin; palette: Palette }) {
+  const { skin, palette, selected, onPress, accessibilityLabel, testID, style } = props;
   const { tokens } = useTheme();
   const motion = skin.pickerHover;
   const { hovered, target } = useHover(motion != null);
   const reduced = useReducedMotion();
   const minTarget = platformMinTarget();
-  const edge = skin.picker;
+  // The navbar's 16 px disc by default; a size boolean takes the sample's own edge for that
+  // size (`small` is the hand-off wizard's 32 px hue disc), so a picker in a form reads at
+  // the size of the samples beside it.
+  const size = sizeOf(props);
+  const edge = size === "default" ? skin.picker : skin.box[size];
   const label = accessibilityLabel ?? paletteName(palette);
   const grow: ViewStyle | null = motion
     ? ({

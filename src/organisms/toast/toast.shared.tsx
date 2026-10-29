@@ -30,6 +30,7 @@ import { inverseFill } from "../../style/inverse.js";
 import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { rowSeam } from "../../style/touch-seam.js";
 import { useEscapeLayer } from "../../style/escape-layer.js";
+import { type GlassLayer } from "../../style/glass-surface/glass-surface-props.js";
 
 // Shared Toast shell. Two layers live here once and a platform file supplies only
 // its skin (capsule shape, type, action/dismiss feedback) and calls createToastSystem:
@@ -103,6 +104,10 @@ export interface ToastProps {
 // The platform-varying surface. Everything shape/type/feedback-bearing the capsule
 // needs lives here, built from the active tokens (so each follows light/dark).
 export interface ToastSkin {
+  /** The glass layer the toast takes under glass; omitted, the dense layer. The web card
+   *  floats on the functional layer, as every web floating surface does (design-language
+   *  item 7, the hand-off's `--gl`). */
+  glassLayer?: GlassLayer;
   /** The capsule shape + density (radius, padding, gap, minHeight, shadow, maxWidth).
    *  `hasTrailing` is true when a trailing action/dismiss control renders, so a skin
    *  can tighten the trailing padding (M3: 8dp beside a trailing control);
@@ -245,7 +250,8 @@ export function createToastSystem(skin: ToastSkin) {
   // which assistive tech misses).
   function ToastCapsule(props: Omit<ToastProps, "testID" | "style">) {
     const { message, description, action, icon, onDismiss } = props;
-    const theme = useMaterialTheme({ layer: "dense", floating: true });
+    const layer = skin.glassLayer ?? "dense";
+    const theme = useMaterialTheme({ layer, floating: true });
     const { tokens } = theme;
     const intent = intentOf(props);
 
@@ -322,14 +328,14 @@ export function createToastSystem(skin: ToastSkin) {
       </>
     );
 
-    // The dense layer under glass, the plain box wearing the skin's own fill in solid
-    // mode (see the header note above). A skin whose fill is the inverse surface (the M3
+    // The skin's layer under glass (dense unless the skin names another), the plain box
+    // wearing the skin's own fill in solid mode (see the header note above). A skin whose fill is the inverse surface (the M3
     // snackbar on the toast pill) takes the inverse dense tint of that fill so its
     // inverse text stays legible.
     const fill = inverseFill(tokens);
     const inverse = (StyleSheet.flatten(containerStyle) as ViewStyle).backgroundColor === fill;
     return (
-      <GlassSurface layer="dense" floating tint={inverse ? inverseDenseTint(theme, fill) : undefined} style={containerStyle}>
+      <GlassSurface layer={layer} floating tint={inverse ? inverseDenseTint(theme, fill) : undefined} style={containerStyle}>
         {content}
       </GlassSurface>
     );

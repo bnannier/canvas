@@ -122,6 +122,10 @@ export const scrimDim = StyleSheet.create({
 // scrim reaches the dismiss control.
 export const scrimContent: ViewStyle = { zIndex: 1 };
 
+// An embedded specimen fills the box its parent gives it, the stack resting on its foot
+// over the dim.
+export const embeddedRoot: ViewStyle = { flexGrow: 1, alignSelf: "stretch", minHeight: 0, justifyContent: "flex-end", overflow: "hidden" };
+
 // ---------- Web: the v4 hand-off's two cards ----------
 // No web library ships an action sheet, so the hand-off draws the classic iOS idiom: two
 // cards at the menu corner in the overlay material (the `popover` fill, the

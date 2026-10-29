@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { platformMinTarget, shape } from "../../style/index.js";
+import { platformMinTarget } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type AlertSkin } from "./alert.shared.js";
 
@@ -31,7 +31,7 @@ const CONTAINER: ViewStyle = {
 
 // The dismiss box sits on the title line: the 16 px glyph centred in a 24 px box pulled
 // back by the 4 px it overhangs on each side, so the glyph lands where the hand-off's
-// bare 16 px glyph does.
+// bare 16 px glyph does; its press and hover wash round at the dismiss corner (6).
 const DISMISS: ViewStyle = {
   marginEnd: -4,
   marginTop: -3,
@@ -39,7 +39,7 @@ const DISMISS: ViewStyle = {
   width: DISMISS_BOX,
   alignItems: "center",
   justifyContent: "center",
-  borderRadius: shape.web.control,
+  borderRadius: platformShape.web.dismiss,
 };
 
 // The actions row: 6 px below the description, on top of the column's 4 px gap.
@@ -47,6 +47,30 @@ const ACTIONS: ViewStyle = { flexDirection: "row", gap: 8, marginTop: 6 };
 
 // The glyph box: the 18 px icon one pixel down from the title's top (its padding-top).
 const ICON_SLOT: ViewStyle = { paddingTop: 1 };
+
+// The announcement bar (the v4 hand-off's Overlays page, `#c-alert-variants`): one row
+// centred, 12 apart, padded 10 10 10 14 at the announcement corner, the accent's glow
+// (`0 10px 26px -12px`), a 16 px glyph, the message in 500 13 / 1.35 and the inline action
+// in 600 13, and a 24 px dismiss box at the dismiss corner holding a 14 px x.
+const ANNOUNCEMENT: AlertSkin["announcement"] = {
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingStart: 14,
+    paddingEnd: 10,
+    borderRadius: platformShape.web.announcement,
+    overflow: "hidden",
+  },
+  glow: (glow) => ({ boxShadow: `0px 10px 26px -12px ${glow}` }),
+  iconSize: 16,
+  message: { fontSize: 13, lineHeight: 17.55, fontWeight: "500" },
+  action: { fontSize: 13, lineHeight: 17, fontWeight: "600" },
+  dismissButton: { height: DISMISS_BOX, width: DISMISS_BOX, alignItems: "center", justifyContent: "center", borderRadius: platformShape.web.dismiss },
+  dismissIconSize: 14,
+};
 
 export const webSkin: AlertSkin = {
   container: CONTAINER,
@@ -62,6 +86,7 @@ export const webSkin: AlertSkin = {
   dismissPressedOpacity: 0.7,
   dismissHitSlop: MIN_TARGET == null ? null : (MIN_TARGET - DISMISS_BOX) / 2,
   actions: ACTIONS,
+  announcement: ANNOUNCEMENT,
 };
 
 // No native inline banner on either platform: the native skins are the web skin.

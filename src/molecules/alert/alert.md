@@ -82,6 +82,34 @@ Pressing the trailing "×" (`dismissible`) hides the banner out of the box; `onD
 />
 ```
 
+### Inline action
+
+`action` is one quiet link in the banner's actions, for the single next step a notice offers.
+
+```tsx
+<Alert
+  info
+  title="New sign-in"
+  description="A browser in Lisbon signed in to your account."
+  action={{ label: "Review activity" }}
+/>
+```
+
+### Announcement
+
+`announcement` is the full-width product bar: the accent's gradient under its own ink, a
+sparkles glyph, the message, an inline `action` link and the dismiss box. It has its own
+look, so the tone booleans do not apply to it.
+
+```tsx
+<Alert
+  announcement
+  dismissible
+  title="Canvas 4.0 is live: every component on lit glass."
+  action={{ label: "See what moved" }}
+/>
+```
+
 ### Measures come from the parent
 
 ```tsx

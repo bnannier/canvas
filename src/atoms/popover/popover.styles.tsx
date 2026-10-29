@@ -52,9 +52,12 @@ export interface PopoverSkin {
   /** The supporting line beneath the title. */
   description: (t: ColorTokens) => TextStyle;
   /** Renders the anchor pointer toward the anchor, or null when the platform has none. */
-  arrow: ((t: ColorTokens, placement: Placement, anchor?: { centerX: number; cardWidth: number }) => ReactNode) | null;
+  arrow: ((t: ColorTokens, placement: Placement, anchor?: { centerX: number; cardWidth: number }, end?: boolean) => ReactNode) | null;
   /** Standoff reserved for the solid arrow's protrusion. */
   arrowGap?: number;
+  /** The arrow draws under glass too (the web, whose beak is the hand-off's opaque tail on
+   *  the floating glass card); omitted, it draws in solid mode only. */
+  arrowUnderGlass?: boolean;
   /** Space above the custom content and the action row (the panel's gap); 12 when omitted. */
   sectionGap?: number;
   /** The card presented as a sheet at the phone form factor: corners, padding, fill, elevation. */
@@ -112,16 +115,17 @@ const WEB_DESC: TextStyle = { marginTop: 8, fontSize: 14, lineHeight: 21, fontWe
 
 /** The hand-off's beak: a 12px square turned 45 degrees, half of it out past the card
  *  edge facing the trigger, in the card's fill with the hairline on its two outer sides.
- *  Centered on the trigger when the anchor is known, else 24 in from the start edge. */
-export function webBeakStyle(t: ColorTokens, placement: Placement, anchor?: { centerX: number; cardWidth: number }): ViewStyle {
+ *  Centered on the trigger when the anchor is known, else 24 in from the start edge (from
+ *  the end edge with `end`, a card aligned to its trigger's end). */
+export function webBeakStyle(t: ColorTokens, placement: Placement, anchor?: { centerX: number; cardWidth: number }, end?: boolean): ViewStyle {
   const up = placement === "bottom";
   const inset = shape.web.menu;
-  const left = anchor
-    ? Math.max(inset, Math.min(anchor.centerX - WEB_BEAK / 2, anchor.cardWidth - inset - WEB_BEAK))
-    : 24;
+  const along: ViewStyle = anchor
+    ? { left: Math.max(inset, Math.min(anchor.centerX - WEB_BEAK / 2, anchor.cardWidth - inset - WEB_BEAK)) }
+    : end ? { right: 24 } : { left: 24 };
   return {
     position: "absolute",
-    left,
+    ...along,
     ...(up ? { top: -WEB_BEAK / 2 } : { bottom: -WEB_BEAK / 2 }),
     width: WEB_BEAK,
     height: WEB_BEAK,
@@ -153,7 +157,8 @@ export const webSkin: PopoverSkin = {
   sectionGap: 8,
   // The beak overlaps the card by half its diagonal; the card stands 10 off the trigger.
   arrowGap: 10,
-  arrow: (t, placement, anchor) => <View style={webBeakStyle(t, placement, anchor)} />,
+  arrowUnderGlass: true,
+  arrow: (t, placement, anchor, end) => <View style={webBeakStyle(t, placement, anchor, end)} />,
   // Dark Factory's sheet: the sheet corner on the top edge, the hairline on the three
   // edges the page meets, the `popover` fill and its shadow.
   sheet: (t) => ({

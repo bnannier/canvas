@@ -72,6 +72,10 @@ export interface DrawerSkin {
    * M3 48dp); null on web (pointer-first, layout untouched).
    */
   triggerMinHeight: number | null;
+  /** The header and footer bands' inset (the renderer's panel padding). */
+  band: ViewStyle;
+  /** A side panel's cap against the window (or, embedded, its parent): the web's 70%. */
+  sideMaxWidth?: ViewStyle;
 }
 
 // --- panel layers + positioner (identical across platforms) ------------------
@@ -97,6 +101,11 @@ export const slideLayer: ViewStyle = StyleSheet.create({ slide: { pointerEvents:
 
 // The panel positioner: a plain box around the panel surface. Side drawers fill the
 // height; the sheet fills the width. Identical across platforms.
+// An embedded specimen fills the box its parent gives it, the dim and the docked panel
+// laid over each other in it.
+export const embeddedRoot: ViewStyle = { flexGrow: 1, alignSelf: "stretch", minHeight: 0, overflow: "hidden" };
+export const embeddedLayer: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
+
 export const panelPos: Record<Edge, ViewStyle> = {
   left: { height: "100%" },
   right: { height: "100%" },
@@ -133,6 +142,9 @@ export const webSkin: DrawerSkin = {
     ? { width: 36, height: 5, borderRadius: 9999, alignSelf: "center", marginTop: 10, backgroundColor: t["field-border"] }
     : null),
   triggerMinHeight: null,
+  band: { padding: 18 },
+  // The renderer's side panel: `min(300px, 70%)`, the cap on the layer that spans the window.
+  sideMaxWidth: { maxWidth: "70%" },
   panelShape: (edge, width, t) => {
     const base = { ...panelBase(t), backgroundColor: t.popover };
     const r = shape.web.sheet;
@@ -163,7 +175,7 @@ export const webSkin: DrawerSkin = {
     return {
       ...base,
       width,
-      maxWidth: "70%",
+      maxWidth: "100%",
       height: "100%",
       borderColor: t["field-border"],
       ...(edge === "right"
@@ -188,6 +200,7 @@ const IOS_SIDE_RADIUS = shape.ios.sheet;
 // (wider + softer than the shadow("xl") preset it replaces).
 const iosSheetShadow = customShadow({ offsetY: 15, radius: 50, opacity: 0.18 });
 export const iosSkin: DrawerSkin = {
+  band: { padding: 18 },
   scrimOpacity: (scheme) => (scheme === "dark" ? 0.48 : 0.2),
   sheetMaxWidth: null,
   triggerMinHeight: 44,
@@ -254,6 +267,7 @@ const ANDROID_SHEET_RADIUS = shape.android.sheet;
 // M3 side-sheet docked container max-width token.
 const ANDROID_SIDE_MAX = 400;
 export const androidSkin: DrawerSkin = {
+  band: { padding: 18 },
   scrimOpacity: () => 0.32,
   // M3 bottom sheet: full width up to a 640dp max, centered on wider windows.
   sheetMaxWidth: 640,

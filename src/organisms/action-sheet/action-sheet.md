@@ -120,6 +120,25 @@ open. The visible Cancel row remains available to assistive technology.
 </Stateful>
 ```
 
+### Open in place
+
+`embedded` draws the sheet open at the foot of its parent over the parent's own dim, for a
+specimen or a preview: no modal, no focus trap, no Escape or hardware back, and a dim that
+passes touches through. A `trigger` always opens the live modal sheet instead.
+
+```tsx
+<ActionSheet
+  embedded
+  open
+  title="Share photo"
+  actions={[
+    { label: "Copy Link", onPress: () => {} },
+    { label: "Send by Email", onPress: () => {} },
+    { label: "Print", onPress: () => {}, disabled: true }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Right tool for the job

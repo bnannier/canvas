@@ -27,7 +27,7 @@ import { DISPLAY_FONT } from "../../style/mono.js";
 //     `field-border` hairline, the lg shadow) at the dialog corner, 22 padding, an 18px
 //     display heading (600, -0.015em) over its 14/1.5 muted description, 14 between
 //     the parts, and a right-aligned action row of a ghost Cancel + a primary/destructive
-//     Confirm Button.
+//     Confirm Button; a form's close is the renderer's bare 28 px ghost box with a 16 px x.
 
 export type Size = "xs" | "small" | "medium" | "default" | "large" | "wide";
 
@@ -63,6 +63,12 @@ export interface DialogSkin {
     title: (t: ColorTokens) => TextStyle;
     description: (t: ColorTokens) => TextStyle;
   };
+  /** The form's close as the platform draws it: the kit's bare 28 px ghost icon Button
+   *  (`compactIcon`) with this glyph size and ink. Omitted, the close is the kit's round
+   *  ghost icon Button. */
+  close?: { iconSize: number; color: (t: ColorTokens) => string };
+  /** The space between the `icon` tile and the title under it. */
+  iconGap: number;
   /** The dim backdrop behind the card (full black at the per-platform opacity). */
   backdrop: (t: ColorTokens) => ViewStyle;
   /** The card layout box: shape, fill, border (or lack of), shadow, padding. The
@@ -115,6 +121,10 @@ export interface DialogSkin {
 // content width when it is a flex item in a row. The trigger button is wrapped in
 // `triggerWrap` so it keeps its natural width rather than stretching to this full width.
 export const root: ViewStyle = { width: "100%", minWidth: 0 };
+
+// An embedded specimen grows into the height its parent gives it, its scrim with it, so a
+// stage that sizes the specimen is the specimen's well.
+export const embeddedFill: ViewStyle = { flexGrow: 1 };
 
 // Keeps the optional trigger button at its natural (content) width and leading-aligned,
 // so the full-width `root` above does not stretch it across the container.
@@ -178,6 +188,13 @@ export const workspaceHeader: ViewStyle = { flexShrink: 0, marginTop: 18 };
 export const compactWorkspaceContent: ViewStyle = { flexGrow: 0, flexShrink: 1, flexBasis: "auto", minHeight: 0 };
 export const workspaceBody: ViewStyle = { flex: 1, minHeight: 0, marginTop: 18 };
 export const workspaceFooter: ViewStyle = { flexShrink: 0, marginTop: 18 };
+// The `banded` form (the Wizard's panel): the panel takes no padding and draws three bands
+// split by hairline rules, the header padded 20 20 16 over its rule (its rows 16 apart),
+// the body padded 20, the footer padded 14 20 under its rule.
+export const bandedCard: ViewStyle = { padding: 0, overflow: "hidden" };
+export const bandedHeader: ViewStyle = { flexShrink: 0, paddingTop: 20, paddingHorizontal: 20, paddingBottom: 16, gap: 16, borderBottomWidth: 1 };
+export const bandedBody: ViewStyle = { flex: 1, minHeight: 0, padding: 20 };
+export const bandedFooter: ViewStyle = { flexShrink: 0, paddingVertical: 14, paddingHorizontal: 20, borderTopWidth: 1 };
 export const dismissBackdrop: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
 
 // Per-size panel width: a dialog is a floating container (a bounds provider for
@@ -204,6 +221,12 @@ const webPanel = (t: ColorTokens): ViewStyle => ({
   ...shadow("lg", t),
 });
 export const webSkin: DialogSkin = {
+  // The renderer's close: a bare 28 px ghost box holding the 16 px x in the third ink.
+  close: {
+    iconSize: 16,
+    color: (t) => t["subtle-foreground"] ?? t["muted-foreground"],
+  },
+  iconGap: 20,
   form: {
     card: webPanel,
     title: (t) => ({ ...WEB_TITLE, color: t["popover-foreground"] }),
@@ -240,6 +263,7 @@ export const webSkin: DialogSkin = {
 const IOS_RADIUS = shape.ios.dialog;
 const IOS_CAPSULE_RADIUS = shape.ios.control;
 export const iosSkin: DialogSkin = {
+  iconGap: 16,
   backdrop: (t) => ({ borderRadius: IOS_RADIUS, backgroundColor: scrimFill(t, 0.3) }),
   card: (t) => ({
     borderRadius: IOS_RADIUS,
@@ -306,6 +330,7 @@ export const iosSkin: DialogSkin = {
 // android_ripple on each, and NO dividers.
 const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: DialogSkin = {
+  iconGap: 16,
   backdrop: (t) => ({ borderRadius: ANDROID_RADIUS, backgroundColor: scrimFill(t, 0.32) }),
   card: (t) => ({ ...webPanel(t), borderRadius: ANDROID_RADIUS }),
   title: (t) => ({ ...WEB_TITLE, fontFamily: undefined, color: t["popover-foreground"] }),

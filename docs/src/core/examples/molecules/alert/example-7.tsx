@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Column, Container } = scope;
+  const { Alert } = scope;
   return (
-<Column snug>
-  <Container xs start>
-    <Alert title="In an xs Container" description="The banner fills the 320px step, the measure of a short form." />
-  </Container>
-  <Alert title="Bare" description="No container of its own: the banner fills whatever parent it sits in." />
-</Column>
+<Alert
+  info
+  title="New sign-in"
+  description="A browser in Lisbon signed in to your account."
+  action={{ label: "Review activity" }}
+/>
   );
 }

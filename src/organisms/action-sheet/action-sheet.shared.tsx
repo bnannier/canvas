@@ -98,6 +98,14 @@ export interface ActionSheetProps {
   actions: ActionSheetAction[];
   /** The Cancel row label (default "Cancel"). */
   cancelLabel?: string;
+  /**
+   * Show the open sheet as a non-modal specimen inside its parent, for a catalogue or a
+   * showcase: the stack rests against the parent's bottom edge (the parent gives it its
+   * height) over the dim, with no Modal, no rise, no focus trap and no close on Escape,
+   * native back or a tap on the dim. Its rows still run their actions. Ignored with
+   * `trigger`, which always opens a live sheet.
+   */
+  embedded?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /**
@@ -153,8 +161,10 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
     // event is consumed while the sheet is up and default back behavior runs once
     // it is closed; it also skips web, where the BackHandler shim would
     // console.error on every call.
-    const escapeScope = useEscapeLayer(open, close);
-    useHardwareBack(open, escapeScope.onRequestClose);
+    // An embedded specimen is not a live modal; a trigger always opens a live one.
+    const embedded = props.embedded === true && trigger == null;
+    const escapeScope = useEscapeLayer(open && !embedded, close);
+    useHardwareBack(open && !embedded, escapeScope.onRequestClose);
 
     // The sheet SLIDES up by hand (translateY) behind a SEPARATE, stationary dim
     // layer that FADES in. RN Modal's animationType="slide" transforms the whole
@@ -246,6 +256,56 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
       </Pressable>
     );
 
+    // The bottom-anchored stack: the actions card and, where the platform separates it,
+    // the Cancel card.
+    const stack = (
+                    <View style={[skin.stack, style]}>
+                      <GlassSurface floating style={skin.actionsCard(tokens)}>
+                        {/* The handle (Android) sits above the header inside the sheet. */}
+                        {skin.handle ? <View style={skin.handle(tokens)} /> : null}
+                        {headerNode}
+                        {/* The rows scroll if they overflow the viewport (a long action list).
+                            rowsContent spaces the rows on iOS (the detached-capsule gap);
+                            web/Android leave it undefined so the rows stay flush. */}
+                        <ScrollView bounces={false} style={{ maxHeight: 360 }}>
+                          {/* RippleClip clips the Android bounded-ripple action rows to the
+                              card's rounded top corners (a no-op on iOS/web). It also carries
+                              the iOS detached-capsule gap (skin.rowsContent), moved off the
+                              ScrollView's contentContainer so it now spaces the rows inside
+                              the clip and iOS layout is unchanged. */}
+                          <RippleClip
+                            shape={cornerRadii(skin.actionsCard(tokens))}
+                            style={[skin.rowsContent, { alignSelf: "stretch" }]}
+                          >
+                            {actionRows}
+                          </RippleClip>
+                          {/* Android: Cancel is the last row in the same sheet. */}
+                          {skin.cancelLayout === "lastRow" ? (
+                            <Fragment>
+                              {skin.divider ? <View style={skin.divider(tokens)} /> : null}
+                              {cancelRow}
+                            </Fragment>
+                          ) : null}
+                        </ScrollView>
+                      </GlassSurface>
+                      {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
+                      {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
+                        <GlassSurface floating style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
+                      ) : null}
+                    </View>
+    );
+
+    if (embedded) {
+      // The specimen: the dim and the resting stack in the parent's own box, still. The dim
+      // takes no touches, so the page around the specimen keeps every tap and scroll.
+      return open ? (
+        <View testID={testID} style={s.embeddedRoot}>
+          <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} />
+          {stack}
+        </View>
+      ) : null;
+    }
+
     return (
       <Fragment>
         {trigger != null ? (
@@ -313,40 +373,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
                   onLayout={(e) => setSheetH(e.nativeEvent.layout.height)}
                 >
                   <SafeAreaView edges={["bottom", "left", "right"]}>
-                    <View style={[skin.stack, style]}>
-                      <GlassSurface floating style={skin.actionsCard(tokens)}>
-                        {/* The handle (Android) sits above the header inside the sheet. */}
-                        {skin.handle ? <View style={skin.handle(tokens)} /> : null}
-                        {headerNode}
-                        {/* The rows scroll if they overflow the viewport (a long action list).
-                            rowsContent spaces the rows on iOS (the detached-capsule gap);
-                            web/Android leave it undefined so the rows stay flush. */}
-                        <ScrollView bounces={false} style={{ maxHeight: 360 }}>
-                          {/* RippleClip clips the Android bounded-ripple action rows to the
-                              card's rounded top corners (a no-op on iOS/web). It also carries
-                              the iOS detached-capsule gap (skin.rowsContent), moved off the
-                              ScrollView's contentContainer so it now spaces the rows inside
-                              the clip and iOS layout is unchanged. */}
-                          <RippleClip
-                            shape={cornerRadii(skin.actionsCard(tokens))}
-                            style={[skin.rowsContent, { alignSelf: "stretch" }]}
-                          >
-                            {actionRows}
-                          </RippleClip>
-                          {/* Android: Cancel is the last row in the same sheet. */}
-                          {skin.cancelLayout === "lastRow" ? (
-                            <Fragment>
-                              {skin.divider ? <View style={skin.divider(tokens)} /> : null}
-                              {cancelRow}
-                            </Fragment>
-                          ) : null}
-                        </ScrollView>
-                      </GlassSurface>
-                      {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
-                      {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
-                        <GlassSurface floating style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
-                      ) : null}
-                    </View>
+                    {stack}
                   </SafeAreaView>
                 </Animated.View>
               </View>

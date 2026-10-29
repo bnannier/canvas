@@ -60,6 +60,13 @@ export interface ProgressProps extends MeasureProps {
    * line. Indeterminate has no measurable value, so this renders nothing then.
    */
   showValue?: boolean;
+  /**
+   * A short status word on the title line, in the percent readout's place and type
+   * ("indeterminate", "strong", "paused"): what the bar means right now, where
+   * `description` is a sentence under the title. It shows while indeterminate too, and
+   * when both are passed the status wins the readout slot over `showValue`.
+   */
+  status?: ReactNode;
   // Tone axis (the active fill color; pick one, default is the call-to-action fill). `warning` paints the bar in the warning color, `danger` in the destructive color, for a metric over a soft threshold or a hard limit (a WIP meter over its cap); the track stays neutral. Pair with copy: the tone adds no accessible value.
   warning?: boolean;
   danger?: boolean;
@@ -295,18 +302,20 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     // `showValue` has no percent to show while indeterminate, so it is dropped then. A bare
     // <Progress value={...}/> passes none of these, so `hasHeader` is false and every
     // render path below stays byte-identical to the header-less original.
-    const showPercent = !!props.showValue && !indeterminate;
-    const hasHeader = children != null || description != null || showPercent;
+    const status = props.status;
+    const showPercent = !!props.showValue && !indeterminate && status == null;
+    const hasReadout = showPercent || status != null;
+    const hasHeader = children != null || description != null || hasReadout;
     // Derive the accessible name from a string title when no explicit label is given, so a
     // labelled bar announces its title without a redundant accessibilityLabel.
     const accessibilityName = accessibilityLabel ?? (typeof children === "string" ? children : undefined);
     const header = hasHeader ? (
       <View style={HEADER_COLUMN}>
-        {children != null || showPercent ? (
+        {children != null || hasReadout ? (
           <View style={TITLE_ROW}>
             {children != null ? <Text style={skin.label(tokens)}>{children}</Text> : null}
-            {showPercent ? (
-              <Text style={[skin.valueReadout(tokens), VALUE_READOUT_LAYOUT]}>{`${Math.round(fraction * 100)}%`}</Text>
+            {hasReadout ? (
+              <Text style={[skin.valueReadout(tokens), VALUE_READOUT_LAYOUT]}>{status ?? `${Math.round(fraction * 100)}%`}</Text>
             ) : null}
           </View>
         ) : null}

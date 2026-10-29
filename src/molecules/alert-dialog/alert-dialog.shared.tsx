@@ -31,8 +31,8 @@ import { type Width, type AlertDialogSkin } from "./alert-dialog.styles.js";
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf). Axes:
 //
-// - Width: `narrow` < `small` < (default medium) < `large`, the panel max-width.
-//   Pass at most one; first match wins in that order (narrow, small, large).
+// - Width: `narrow` < `small` = (default) < `large`, the panel max-width. Pass at most
+//   one; first match wins in that order (narrow, small, large).
 // - Confirm intent: `destructive` renders the confirm action as a destructive
 //   action (for an irreversible action); omit for the default primary confirm.
 
@@ -60,8 +60,8 @@ export interface AlertDialogProps {
   // a real safety gate, not a decorative field.
   withInput?: boolean;
   /** The token the confirmation field must match to enable confirm (default
-   *  "DELETE"). Only used when `withInput` is set; drives the label, placeholder,
-   *  and the gate. */
+   *  "DELETE"). Only used when `withInput` is set; drives the placeholder
+   *  ("type DELETE to confirm"), the field's accessible name, and the gate. */
   confirmText?: string;
   // Confirm intent (default is a primary confirm).
   destructive?: boolean;
@@ -169,7 +169,6 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
     const baseId = useId();
     const titleId = `${baseId}-title`;
     const descriptionId = `${baseId}-description`;
-    const inputLabelId = `${baseId}-input-label`;
 
     const width = widthOf(props);
 
@@ -257,11 +256,12 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
       skin.backdrop(tokens),
       trigger != null && !overlay ? s.triggerGap : null,
       overlay ? s.backdropOverlay : { minHeight: 200, minWidth: 0 },
+      !modal && !overlay ? s.embeddedFill : null,
     ];
     // Under glass on the web the dim moves onto the scrim's blur layer (useHeldScrim).
     const scrim = useHeldScrim(backdrop);
     return (
-      <View testID={testID} style={s.root}>
+      <View testID={testID} style={[s.root, !modal ? s.embeddedFill : null]}>
         {trigger != null ? (
           <View style={s.triggerWrap}>
             <Button outline small onPress={() => setOpen(true)}>
@@ -295,15 +295,12 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
                 neither (a blur here would cut the card's frost off from the page). */}
             {scrim.layer}
             <View style={[s.cardBase, s.panelWidth[width], skin.panelWidth, style]}>
-            {/* An alert dialog takes the DENSE layer of the glass model: the same
-                material as a Dialog, under the model's densest tint. It is the prompt
-                that stops the user to confirm a destructive action, and under the
-                functional layer's sheer tint the page it interrupts read straight
-                through the very text asking the question; the dense tint keeps that
-                text legible while the card still takes the material. In solid mode
-                GlassSurface is the plain box wearing the skin's own `popover` fill.
-                The dimming scrim behind it is unaffected. */}
-            <GlassSurface layer="dense" floating style={[s.cardBase, skin.card(tokens)]}>
+            {/* An alert dialog takes its platform's layer of the glass model (skin.glassLayer):
+                on the web the functional layer every floating surface takes (the hand-off's
+                `--gl`), on native the dense layer, where the system material reads the page
+                behind more strongly. In solid mode GlassSurface is the plain box wearing the
+                skin's own `popover` fill. The dimming scrim behind it is unaffected. */}
+            <GlassSurface layer={skin.glassLayer} floating style={[s.cardBase, skin.card(tokens)]}>
               {/* The panel content region: a focusable (tabIndex -1) container the
                   web focus manager pulls focus into and traps Tab within, wrapping
                   the content in a KeyboardAvoidingView so the iOS keyboard never
@@ -316,7 +313,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
                     // The hand-off's tone tile: a trash glyph on the destructive wash, else
                     // info on the accent's.
                     <View style={skin.emblem}>
-                      {destructive ? <Emblem destructive><Icon trash2 decorative /></Emblem> : <Emblem primary><Icon info decorative /></Emblem>}
+                      {destructive ? <Emblem destructive soft><Icon trash2 decorative /></Emblem> : <Emblem primary soft><Icon info decorative /></Emblem>}
                     </View>
                   ) : null}
                   {title != null ? (
@@ -330,25 +327,17 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
                     </Text>
                   ) : null}
                   {withInput ? (
-                    // The confirmation field is wired to its visible label: the label
-                    // Text carries a stable id and the group is associated to it via
-                    // aria-labelledby (role="group" so web screen readers name the
-                    // field by the visible label, independent of the placeholder).
-                    <View
-                      style={skin.inputBlock}
-                      role="group"
-                      aria-labelledby={inputLabelId}
-                    >
-                      <Text nativeID={inputLabelId} style={skin.inputLabel(tokens)}>
-                        Type {confirmText} to confirm
-                      </Text>
+                    // The confirmation field's placeholder is its instruction ("type <confirmText> to
+                    // confirm"), and the same words are its accessible name,
+                    // so the field is announced by what it asks for once text replaces the
+                    // placeholder.
+                    <View style={skin.inputBlock}>
                       <Input
- value={confirmInput}
- onChangeText={setConfirmInput}
- placeholder={confirmText}
- accessibilityLabel={`Type ${confirmText} to confirm`}
- aria-labelledby={inputLabelId}
-/>
+                        value={confirmInput}
+                        onChangeText={setConfirmInput}
+                        placeholder={`type ${confirmText} to confirm`}
+                        accessibilityLabel={`Type ${confirmText} to confirm`}
+                      />
                     </View>
                   ) : null}
                   </View>

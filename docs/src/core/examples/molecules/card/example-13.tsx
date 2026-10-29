@@ -18,6 +18,10 @@ export default function Example(scope: ExampleScope) {
     <Typography eyebrow subtle>Pager</Typography>
     <Typography lead semibold>16 by 18, a 4 px rhythm.</Typography>
   </Card>
+  <Card sunken well>
+    <Typography eyebrow subtle>Well</Typography>
+    <Typography small subtle>16 all round, a 12 px rhythm.</Typography>
+  </Card>
 </Column>
   );
 }

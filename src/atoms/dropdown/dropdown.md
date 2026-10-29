@@ -142,6 +142,23 @@ Checked choices use browser menu-radio semantics and the native radio trait.
 />
 ```
 
+### Choices and submenus
+
+A `selected` item is the menu's current choice: on the web it takes the accent's soft wash
+and a leading check, and the menu keeps the check's column on its other rows. A `submenu`
+item draws a trailing chevron, the hint that its `onSelect` opens another menu.
+
+```tsx
+<Dropdown
+  trigger="View"
+  items={[
+    { label: "Grid", selected: true },
+    { label: "List" },
+    { label: "Sort by", submenu: true }
+  ]}
+/>
+```
+
 ### Custom trigger
 
 ```tsx

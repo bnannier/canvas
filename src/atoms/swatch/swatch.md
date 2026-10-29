@@ -24,8 +24,9 @@ violet), with `selected` and `onPress`. It is a 16px disc of the palette's hue,
 the same in both schemes, and a radio named for its palette ("Violet"). The
 palette in force wears the selection ring, a 2px gap in the card color and then
 a 2px muted-foreground band; the others draw none. On the web a hovered disc
-grows to 1.25 times its size. Put the pickers in a `radiogroup` so the set
-reads as one choice. A plain sample still uses `color`.
+grows to 1.25 times its size. A size boolean sizes the disc to that sample edge
+(`small` is a 32px disc, the size a form's hue choice takes). Put the pickers in
+a `radiogroup` so the set reads as one choice. A plain sample still uses `color`.
 
 ## Usage
 
@@ -105,6 +106,18 @@ The token chip's swatch: a 20px disc edged by a 1px inset ring.
     <Swatch mint onPress={() => {}} />
     <Swatch rose onPress={() => {}} />
     <Swatch amber onPress={() => {}} />
+  </Row>
+</View>
+```
+
+### Form-sized palette picker
+
+```tsx
+<View role="radiogroup" aria-label="Accent hue">
+  <Row comfortable alignCenter>
+    <Swatch small circle violet selected onPress={() => {}} />
+    <Swatch small circle cyan onPress={() => {}} />
+    <Swatch small circle mint onPress={() => {}} />
   </Row>
 </View>
 ```

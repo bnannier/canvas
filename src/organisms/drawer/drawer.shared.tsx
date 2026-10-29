@@ -62,6 +62,14 @@ export interface DrawerProps {
   plain?: boolean;
   /** Present and dismiss immediately, preserving the original application interaction. */
   instant?: boolean;
+  /**
+   * Show the open drawer as a non-modal specimen inside its parent, for a catalogue or a
+   * showcase: the panel docks against its edge of the parent (which gives it its height)
+   * over the dim, with no Modal, no slide, no focus trap, and no close on Escape, native
+   * back or a tap on the dim. It keeps its labelling as a named region. Ignored with
+   * `trigger`, which always opens a live drawer.
+   */
+  embedded?: boolean;
   /** Panel content. */
   children?: ReactNode;
   /** Controlled open state. Omit for uncontrolled (a `trigger` opens it). */
@@ -139,8 +147,10 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // event is consumed while the drawer is up and default back behavior runs
     // once it is closed; it also skips web, where the BackHandler shim would
     // console.error on every call.
-    const escapeScope = useEscapeLayer(open, () => setOpen(false));
-    useHardwareBack(open, escapeScope.onRequestClose);
+    // An embedded specimen is not a live modal; a trigger always opens a live one.
+    const embedded = props.embedded === true && trigger == null;
+    const escapeScope = useEscapeLayer(open && !embedded, () => setOpen(false));
+    useHardwareBack(open && !embedded, escapeScope.onRequestClose);
 
     // EVERY edge SLIDES by hand (translateX/translateY) behind a SEPARATE, stationary
     // dim layer that fades in. RN Modal's animationType can only slide vertically upward
@@ -223,11 +233,11 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     const sideInset = physicalRight ? insets?.right ?? 0 : insets?.left ?? 0;
     const panelShape = plain ? skin.plainPanel!(edge, width + sideInset, tokens) : skin.panelShape(edge, width, tokens);
     const panelBody = structured ? <>
-      {props.header != null ? <View style={{ borderBottomWidth: 1, borderBottomColor: tokens.border }}>{props.header}</View> : null}
+      {props.header != null ? <View style={[skin.band, { borderBottomWidth: 1, borderBottomColor: tokens.border }]}>{props.header}</View> : null}
       <OverlayScrollView style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }} contentContainerStyle={props.navigation ? { flexGrow: 1 } : { padding: 18, gap: 14, ...(props.footer ? null : { paddingBottom: 0 }) }} keyboardShouldPersistTaps="handled">
         {children}
       </OverlayScrollView>
-      {props.footer ? <View style={{ borderTopWidth: 1, borderTopColor: tokens.border }}>{props.footer}</View> : null}
+      {props.footer ? <View style={[skin.band, { borderTopWidth: 1, borderTopColor: tokens.border }]}>{props.footer}</View> : null}
     </> : children;
     const panel = (
       <View style={[s.panelPos[edge], sheetCap]} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
@@ -243,6 +253,19 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
         </GlassSurface>
       </View>
     );
+
+    if (embedded) {
+      // The specimen: the dim and the docked panel in the parent's own box, still. The dim
+      // takes no touches, so the page around the specimen keeps every tap and scroll.
+      return open ? (
+        <View testID={testID} role="region" aria-label={accessibilityLabel} accessibilityLabel={accessibilityLabel} style={s.embeddedRoot}>
+          <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} />
+          <View style={[s.panelLayer[edge], s.embeddedLayer]}>
+            <View style={[s.slideLayer, !isVertical ? skin.sideMaxWidth : null]}>{panel}</View>
+          </View>
+        </View>
+      ) : null;
+    }
 
     return (
       <>
@@ -306,7 +329,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                       {plain ? <GlassSurface veil tint={dimFill} pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} /> : <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />}
                       <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
                       <View style={s.panelLayer[edge]}>
-                        <Animated.View style={[s.slideLayer, plain ? { maxWidth: "100%" } : null, { transform: slideTransform }]}>{panel}</Animated.View>
+                        <Animated.View style={[s.slideLayer, plain ? { maxWidth: "100%" } : !isVertical ? skin.sideMaxWidth : null, { transform: slideTransform }]}>{panel}</Animated.View>
                       </View>
                     </View>
                   </KeyboardAvoidingView>

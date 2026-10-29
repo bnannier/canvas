@@ -24,6 +24,16 @@ Indeterminate wins over discrete segments; a labelled segmented meter retains it
 <Progress showValue description="3 of 5 files" value={0.6}>Uploading files</Progress>
 ```
 
+### Status
+
+`status` puts a short word on the title line, in the percent's place and type: what the
+bar means now, where `description` is a sentence under the title. It shows while
+indeterminate too, and wins the slot over `showValue`.
+
+```tsx
+<Progress indeterminate status="indexing">Indexing components</Progress>
+```
+
 ### Indeterminate
 
 ```tsx

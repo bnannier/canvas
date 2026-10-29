@@ -5,6 +5,7 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, widths, shape } from "../../style/index.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { type GlassLayer } from "../../style/glass-surface/glass-surface-props.js";
 
 // Co-located AlertDialog skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The card is OPAQUE on every
@@ -23,22 +24,24 @@ import { platformShape } from "../../style/platform-shape.js";
 //     in Roboto.
 //   Web (the hand-off's AlertDialog renderer): the overlay material (`popover` fill,
 //     the `field-border` hairline, the lg shadow) at the dialog corner, 24 padding; a
-//     40 tone tile (a trash glyph on the destructive wash, else info on the accent's),
-//     16 above a 20px display title, its 14 / 1.5 muted description 6 under it, and
-//     16 below them two equal Buttons side by side: a secondary Cancel and a
-//     primary/destructive confirm.
+//     40 soft tone tile (a trash glyph on the destructive wash, else info on the
+//     accent's, no ring), 16 above a 20px display title, its 14 / 1.5 muted description 6
+//     under it, the confirmation field whose placeholder is the instruction, and 16 below
+//     them two equal Buttons side by side: a secondary Cancel and a primary/destructive
+//     confirm. Under glass the panel floats on the functional layer, as every web
+//     floating surface does (design-language item 7, the hand-off's `--gl`).
 
 export type Width = "narrow" | "small" | "medium" | "large";
 
-// Panel width per width axis, drawn from the shared width scale (xs..lg). Shared
-// by every platform; the native skins narrow the medium/large footprint a touch
-// but the axis mapping is one source of truth. The panel is a floating container
-// (a bounds provider for its own content): it spans its definite backdrop and caps
-// at the step.
+// Panel width per width axis, drawn from the shared width scale (xs..lg), each the
+// step nearest the hand-off's renderer (narrow 320, small 360, the default 380, large
+// 520): the default and `small` share the sm step. Shared by every platform; the axis
+// mapping is one source of truth. The panel is a floating container (a bounds provider
+// for its own content): it spans its definite backdrop and caps at the step.
 export const panelWidth: Record<Width, ViewStyle> = {
   narrow: { width: "100%", maxWidth: widths.xs },
   small: { width: "100%", maxWidth: widths.sm },
-  medium: { width: "100%", maxWidth: widths.md },
+  medium: { width: "100%", maxWidth: widths.sm },
   large: { width: "100%", maxWidth: widths.lg },
 };
 
@@ -68,10 +71,11 @@ export interface AlertDialogSkin {
   /** The text block's inset inside the card, where the card itself is unpadded so the
    *  action row runs to its edges (the iOS alert); null where the card pads it all. */
   content: ViewStyle | null;
-  /** The confirmation-field block container ("Type DELETE to confirm" + input). */
+  /** The glass layer the panel takes under glass: the functional layer on the web (a
+   *  floating surface, the hand-off's `--gl`), the dense layer on native. */
+  glassLayer: GlassLayer;
+  /** The confirmation field's block (its space above). */
   inputBlock: ViewStyle;
-  /** The confirmation-field label. */
-  inputLabel: (t: ColorTokens) => TextStyle;
   /** Which action structure the shell renders. */
   actionLayout: ActionLayout;
   // --- "buttons" layout (web/Android): a right-aligned row of shell Buttons ----
@@ -131,6 +135,10 @@ export const backdropOverlay: ViewStyle = {
 
 export const root: ViewStyle = { width: "100%", minWidth: 0 };
 
+// An embedded specimen grows into the height its parent gives it, its scrim with it, so a
+// stage that sizes the specimen is the specimen's well.
+export const embeddedFill: ViewStyle = { flexGrow: 1 };
+
 // Keeps the optional trigger button at its natural (content) width and leading-aligned,
 // so the full-width `root` above does not stretch it across the container.
 export const triggerWrap: ViewStyle = { alignSelf: "flex-start" };
@@ -165,8 +173,8 @@ export const webSkin: AlertDialogSkin = {
   description: (t) => ({ marginTop: 6, fontSize: 14, lineHeight: 21, color: t["muted-foreground"] }),
   emblem: { marginBottom: 16 },
   content: null,
+  glassLayer: "functional",
   inputBlock: { marginTop: 16 },
-  inputLabel: (t) => ({ marginBottom: 6, fontSize: 13, lineHeight: 17, fontWeight: "500", color: t["muted-foreground"] }),
   actionLayout: "buttons",
   actions: { flexDirection: "row", gap: 8, marginTop: 16 },
   buttonSmall: false,
@@ -212,8 +220,8 @@ export const iosSkin: AlertDialogSkin = {
   // (the hand-off draws 270).
   panelWidth: { width: "100%", maxWidth: widths.xxs },
   content: { paddingTop: 18, paddingHorizontal: 16, paddingBottom: 14 },
+  glassLayer: "dense",
   inputBlock: { marginTop: 10 },
-  inputLabel: (t) => ({ marginBottom: 6, fontSize: 13, lineHeight: 18, fontWeight: "400", textAlign: "center", color: t["muted-foreground"] }),
   actionLayout: "capsule",
   // Unused in the capsule layout, but the contract requires concrete values.
   actions: { flexDirection: "row" },
@@ -242,6 +250,7 @@ export const iosSkin: AlertDialogSkin = {
 const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: AlertDialogSkin = {
   ...webSkin,
+  glassLayer: "dense",
   backdrop: (t) => ({ ...webSkin.backdrop(t), borderRadius: ANDROID_RADIUS, backgroundColor: scrimFill(t, 0.32) }),
   card: (t) => ({ ...webCard(t), borderRadius: ANDROID_RADIUS }),
   title: (t) => ({ ...WEB_TITLE, fontFamily: undefined, color: t["popover-foreground"] }),

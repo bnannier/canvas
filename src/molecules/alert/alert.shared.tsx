@@ -1,7 +1,11 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
-import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
+import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from "react";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+import { actionFill, actionInk } from "../../style/action.js";
+import { mixOklab } from "../../style/color.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { Button as WebButton } from "../../atoms/button/button.js";
 import {
   View,
   Pressable,
@@ -44,6 +48,12 @@ import {
 
 export type Tone = "info" | "success" | "warning" | "error" | "neutral";
 
+/** The component an Alert draws with that looks different per platform: the link Button
+ *  its `action` takes outside the announcement bar. */
+export interface AlertParts {
+  Button?: typeof WebButton;
+}
+
 export interface AlertSkin {
   /** Banner shape + density (border-radius, padding, gap). */
   container: ViewStyle;
@@ -74,6 +84,17 @@ export interface AlertSkin {
   /** Footer action region: the row layout + gap between action buttons, plus the
    *  top separation dividing them from the body above. */
   actions: ViewStyle;
+  /** The `announcement` bar: its one-line row (shape, padding, gap), its glow, its message
+   *  and inline action type, its glyph size and its dismiss box. */
+  announcement: {
+    container: ViewStyle;
+    glow: (glow: string) => ViewStyle;
+    iconSize: number;
+    message: TextStyle;
+    action: TextStyle;
+    dismissButton: ViewStyle;
+    dismissIconSize: number;
+  };
 }
 
 export interface AlertProps {
@@ -94,6 +115,19 @@ export interface AlertProps {
   /** The danger tone. This is the name the intent axis uses across the kit (Button,
    *  AlertDialog, and every chart) and the one the design hand-off uses here too. */
   destructive?: boolean;
+  /**
+   * The announcement bar: one line on the accent gradient (the accent running into the
+   * cyan series hue) in the accent's own ink, under its glow, with its `action` inline at
+   * the end. For page-wide news ("v4 is live"), not for a status. It is its own look, so
+   * it ignores the tone axis.
+   */
+  announcement?: boolean;
+  /**
+   * One action, as a label and a handler. On the announcement bar it sits inline at the
+   * end of the line, in the bar's ink; on the other looks it is a link Button in the
+   * actions region, before any `actions`.
+   */
+  action?: { label: string; onPress?: () => void };
   /** Shows a trailing dismiss control. Pressing it hides the banner out of the box
    *  (uncontrolled); pass `dismissed` to own that state instead. */
   dismissible?: boolean;
@@ -170,11 +204,34 @@ function toneGlyph(tone: Tone): Record<string, true> {
   return tone === "success" ? { circleCheck: true } : tone === "warning" ? { circleAlert: true } : tone === "error" ? { circleX: true } : { info: true };
 }
 
-export function createAlert(skin: AlertSkin) {
+/** The announcement bar's gradient: the accent into a 60 / 40 mix of the accent and cyan. */
+function AnnouncementFill({ tokens }: { tokens: ColorTokens }) {
+  const id = `announcement-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const from = actionFill(tokens);
+  const to = mixOklab(from, tokens["chart-2"] ?? from, 0.4);
+  return (
+    <View style={ANNOUNCEMENT_FILL} pointerEvents="none">
+      <Svg width="100%" height="100%" viewBox="0 0 1 1" preserveAspectRatio="none">
+        <Defs>
+          <LinearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor={from} />
+            <Stop offset="1" stopColor={to} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="1" height="1" fill={`url(#${id})`} />
+      </Svg>
+    </View>
+  );
+}
+
+const ANNOUNCEMENT_FILL: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
+
+export function createAlert(skin: AlertSkin, parts: AlertParts = {}) {
   const content: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: skin.contentGap };
+  const LinkButton = parts.Button ?? WebButton;
 
   return function Alert(props: AlertProps) {
-    const { title, description, icon, children, actions, dismissible, onDismiss, testID, style } = props;
+    const { title, description, icon, children, actions, action, dismissible, onDismiss, testID, style } = props;
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     const glass = isGlass(theme);
@@ -213,6 +270,50 @@ export function createAlert(skin: AlertSkin) {
 
     if (dismissed) return null;
 
+    if (props.announcement) {
+      // The announcement bar: a brand fill like a primary Button's, so it paints its
+      // gradient in every surface mode, under its glow, with the accent's own ink.
+      const a = skin.announcement;
+      const ink = actionInk(tokens);
+      const glyph = isValidElement(icon)
+        ? cloneElement(icon as ReactElement<Record<string, unknown>>, { color: ink, size: a.iconSize })
+        : icon === undefined ? <Icon sparkles color={ink} size={a.iconSize} decorative /> : null;
+      return (
+        <View
+          testID={testID}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          aria-live="polite"
+          style={[a.container, a.glow(tokens.glow ?? tokens.ring), fill, style]}
+        >
+          <AnnouncementFill tokens={tokens} />
+          {glyph}
+          <View style={content}>
+            {title != null && title !== "" ? <Text style={[a.message, { color: ink }]}>{title}</Text> : null}
+            {description != null && description !== "" ? <Text style={[a.message, { color: ink, fontWeight: "400" }]}>{description}</Text> : null}
+            {children}
+          </View>
+          {action != null ? (
+            <Pressable accessibilityRole="button" onPress={action.onPress} style={({ pressed }) => pressDim(pressed, skin.dismissPressedOpacity)}>
+              <Text style={[a.action, { color: ink }]}>{action.label}</Text>
+            </Pressable>
+          ) : null}
+          {actions}
+          {dismissible ? (
+            <Pressable
+              onPress={() => setDismissed(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss"
+              hitSlop={skin.dismissHitSlop ?? undefined}
+              style={({ pressed }) => [a.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
+            >
+              <Icon x color={ink} size={a.dismissIconSize} decorative />
+            </Pressable>
+          ) : null}
+        </View>
+      );
+    }
+
     return (
       <View
         testID={testID}
@@ -239,7 +340,12 @@ export function createAlert(skin: AlertSkin) {
             <Text style={[skin.bodyType, bodyColor(tokens)]}>{description}</Text>
           ) : null}
           {children}
-          {actions != null ? <View style={skin.actions}>{actions}</View> : null}
+          {actions != null || action != null ? (
+            <View style={skin.actions}>
+              {action != null ? <LinkButton link small onPress={action.onPress}>{action.label}</LinkButton> : null}
+              {actions}
+            </View>
+          ) : null}
           </MaterialBehind>
         </View>
         {dismissible ? (

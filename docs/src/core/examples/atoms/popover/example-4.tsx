@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Popover } = scope;
   return (
-<Popover trigger="What is a workspace?" description="A workspace groups your projects, members, and billing under one plan." />
+<Popover inline top alignEnd title="Share link" description="Anyone with the link can view." actionLabel="Copy link" />
   );
 }

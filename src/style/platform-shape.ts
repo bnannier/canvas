@@ -42,7 +42,10 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  *   (14), the alert dialog (24) and the empty state (18), the v4 hand-off's renderers
  *   for each, the `rounded` avatar square (the hand-off's 28% of its disc: 6, 8, 11 and 16
  *   on the 20, 28, 40 and 56 discs), the emblem tile (the same 28%: 8, 11 and 16 on the
- *   28, 40 and 56 tiles, the v4 hand-off's Emblem renderer), the board's lane (14) and its card (10), the v4
+ *   28, 40 and 56 tiles, the v4 hand-off's Emblem renderer) and its soft dialog tone tile (12, the
+ *   hand-off's AlertDialog renderer), the 24 px dismiss box of an alert and a toast (6, the
+ *   hand-off's `border-radius:6px` close), the announcement bar (12, the Overlays page's
+ *   accent bar), the board's lane (14) and its card (10), the v4
  *   hand-off's board renderer, the sidebar's (the v4 hand-off's rail: a nav row at 9, 8 in the compact docs rail, the
  *   bordered rail card at 12 and the floating one at 14), and the two Card corner steps
  *   the hand-off's component page draws above the card: the section panel (18, its
@@ -73,7 +76,7 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  * the public table.
  */
 export const platformShape = {
-  web: { insetRow: 10, disclosureCard: 14, codeCard: 14, mediaFrame: 14, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, emblemSmall: 8, emblem: 11, emblemLarge: 16, referenceCard: 14, referenceSource: 6, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, keySmall: 5, keyTiny: 4, inlineCode: 5, optionChip: 7, optionTile: 8, tooltip: 8, event: 6, bar: 3, mark: 4, cell: 2, candle: 1.5, chartTile: 8, heatCell: 2.5, sparkTrack: 6, funnelBar: 6, listBar: 8, stripBar: 1, tableFrame: 14, listFrame: 14, gridTile: 14, dragGhost: 12, composer: 16, bubble: 16, bubbleTail: 4, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14, lane: 14, laneCard: 10, panel: 18, stage: 20, copyButton: 8, cardSnippet: 10, showcaseCard: 20, heroStage: 24 },
+  web: { insetRow: 10, disclosureCard: 14, codeCard: 14, mediaFrame: 14, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, emblemSmall: 8, emblem: 11, emblemLarge: 16, emblemSoft: 12, dismiss: 6, announcement: 12, referenceCard: 14, referenceSource: 6, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, keySmall: 5, keyTiny: 4, inlineCode: 5, optionChip: 7, optionTile: 8, tooltip: 8, event: 6, bar: 3, mark: 4, cell: 2, candle: 1.5, chartTile: 8, heatCell: 2.5, sparkTrack: 6, funnelBar: 6, listBar: 8, stripBar: 1, tableFrame: 14, listFrame: 14, gridTile: 14, dragGhost: 12, composer: 16, bubble: 16, bubbleTail: 4, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14, lane: 14, laneCard: 10, panel: 18, stage: 20, copyButton: 8, cardSnippet: 10, showcaseCard: 20, heroStage: 24 },
   ios: { actionSheet: 34, groupedList: 26, event: 6, searchField: 10, navRow: 10, alertDialog: 14 },
   android: {
     chip: M3.small,

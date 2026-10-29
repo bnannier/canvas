@@ -16,7 +16,7 @@ export interface WizardSkin {
 export const bodyScroll: ViewStyle = { flex: 1, minHeight: 0 };
 
 export const webSkin: WizardSkin = {
-  bodyContent: { paddingBottom: 12 },
+  bodyContent: {},
   footer: { gap: 8 },
 };
 export const iosSkin: WizardSkin = webSkin;

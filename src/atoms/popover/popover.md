@@ -84,6 +84,16 @@ trigger’s trailing edge.
 <Popover top trigger="Filter" title="Filter results" description="Show only the projects you own." actionLabel="Apply" />
 ```
 
+### Inline with a beak
+
+An inline panel draws its beak when it is given a side: with `top` the panel sits above
+what it belongs to and points down at it, with `bottom` below it and points up, and
+`alignEnd` moves the beak to the panel's end, over a trigger that sits there.
+
+```tsx
+<Popover inline top alignEnd title="Share link" description="Anyone with the link can view." actionLabel="Copy link" />
+```
+
 ### Description only
 
 ```tsx
