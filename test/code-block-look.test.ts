@@ -43,7 +43,7 @@ describe("the v4 code block", () => {
   it("holds every light code ink to 4.5:1 on the well, and each hue ink on every palette's highlighted row", () => {
     // The comment is the kit's subtle ink, as the hand-off draws it: 4.9:1 on the well,
     // about 4.2:1 on a highlighted row (a recorded difference, not a solved ink).
-    const kinds: TokenKind[] = ["string", "keyword", "number", "tag", "attr", "text"];
+    const kinds: TokenKind[] = ["string", "keyword", "number", "tag", "component", "attr", "text"];
     for (const palette of ["violet", "cyan", "mint", "rose", "amber"] as const) {
       const tokens = colorsFor(palette, "light");
       const beds = [tokens["surface-sunken"]!, composite(tokens["primary-soft"]!, tokens["surface-sunken"]!)];
@@ -54,6 +54,16 @@ describe("the v4 code block", () => {
   it("paints the dark scheme's inks in the terminal of a light page", () => {
     expect(syntaxColor("string", t, true)).toBe(darkColors["chart-3"]!);
     expect(syntaxColor("keyword", t, true)).toBe(darkColors["primary-text"]!);
+  });
+  // The component page's `hl` (Component.dc.html line 324): the tag name in
+  // var(--ion-tx), an attribute name in var(--cyan), a string in var(--mint), a comment
+  // in var(--tx3).
+  it("paints a component tag name in the accent's text ink, the jsx grammar's four inks", () => {
+    expect(syntaxColor("component", darkColors, true)).toBe(darkColors["primary-text"]!);
+    expect(syntaxColor("attr", darkColors, true)).toBe(darkColors["chart-2"]!);
+    expect(syntaxColor("string", darkColors, true)).toBe(darkColors["chart-3"]!);
+    expect(syntaxColor("comment", darkColors, true)).toBe(darkColors["subtle-foreground"]!);
+    expect(syntaxColor("text", darkColors, true)).toBe(darkColors.foreground);
   });
   it("is one look on every platform", () => {
     expect(iosSkin).toBe(s);

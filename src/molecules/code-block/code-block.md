@@ -5,19 +5,27 @@ emphasis, diff rendering, collapsible folding, and tabbed alternatives.
 
 The variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
 first match wins); `compact` tightens the density; `copy`, `wrap`, `diff`,
-`collapsible`, `attached`, and `headerless` stack orthogonally. `language` drives the
-in-kit highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything else
-renders monochrome) and, with no `filename`, labels a header bar above the code;
-`headerless` keeps the highlighting and drops that bar (a `tabs` strip and the
-terminal chrome stay), so `copy` floats over the code's corner. Long lines scroll
-horizontally instead of truncating, and every run of code, highlighted tokens
-included, is set in the theme's mono face.
+`collapsible`, `attached`, `headerless`, and `unbadged` stack orthogonally. `language`
+drives the in-kit highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything
+else renders monochrome) and, with no `filename`, labels a header bar above the code;
+with a `filename` it is a trailing badge beside the copy chip instead, which `unbadged`
+drops for a filename that already names the language (the hand-off's playground bar,
+"JSX · ButtonProps" and a Copy button only). `headerless` keeps the highlighting and
+drops the whole bar (a `tabs` strip and the terminal chrome stay), so `copy` floats
+over the code's corner. Long lines scroll horizontally instead of truncating, and
+every run of code, highlighted tokens included, is set in the theme's mono face.
 
 The block is the v4 hand-off's code card on every platform: the sunken well on a
 hairline at a 14 px corner, a 36 px header of 12 px mono labels, 13 / 1.7 code, line
-numbers in the subtle ink, and keywords, strings, numbers and tags in the accent,
-mint, amber and cyan (each light-scheme ink held to 4.5:1 on the well). The
-terminal is a fixed dark window in every scheme.
+numbers in the subtle ink, and the hand-off's code inks (each light-scheme ink held
+to 4.5:1 on the well). A ts or js snippet takes the hand-off's CodeBlock renderer:
+keywords, strings, numbers and tag names in the accent, mint, amber and cyan. A tsx
+or jsx snippet takes the hand-off's component-page highlighter, which paints four
+things and nothing else: a Capitalised tag name in the accent (the brackets and slash
+neutral), an attribute name before its `=` in cyan, a string literal in mint and a
+comment in the subtle ink; a bare boolean attribute, a keyword, a number and the
+children text stay in the code ink, so `<Button>Save changes</Button>` reads as one
+label after one accent name. The terminal is a fixed dark window in every scheme.
 
 `inline` honours `copy` alone of the orthogonal booleans: `<CodeBlock inline copy>`
 is the import chip, a raised monospace pill (34 tall, the control corner, the
@@ -211,6 +219,18 @@ Build complete in 12s`}
   copy
   language="tsx"
   code={`<Button primary>Save changes</Button>`}
+/>
+```
+
+### Unbadged
+
+```tsx
+<CodeBlock
+  unbadged
+  copy
+  filename="JSX · ButtonProps"
+  language="tsx"
+  code={`<Button outline small iconLeft={<Icon plus />}>Add item</Button>`}
 />
 ```
 

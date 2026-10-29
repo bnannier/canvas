@@ -44,7 +44,8 @@ import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 //   long lines instead of scrolling), `diff` (+/- line tinting), `collapsible`
 //   (fold long blocks behind an expander), `attached` (square the top edge to
 //   sit flush under an adjoining bar), `headerless` (highlight by `language`
-//   with no header bar). The inline variant honours `copy` alone.
+//   with no header bar), `unbadged` (keep the header, drop the trailing language
+//   badge a `filename` already names). The inline variant honours `copy` alone.
 //
 // Long lines scroll horizontally by default (never truncate); `wrap` trades the
 // scroller for soft-wrapping. Syntax highlighting is driven by `language` via the
@@ -206,6 +207,14 @@ export interface CodeBlockProps {
    * chrome.
    */
   headerless?: boolean;
+  /**
+   * Keep the header bar but draw no trailing language badge beside the copy chip:
+   * `language` still drives the highlighting, for a header whose `filename` already
+   * names the language (the hand-off's playground bar, Component.dc.html lines 171 to
+   * 174, is "JSX · <Interface>" and a Copy button only). Nothing changes when there is
+   * no `filename`, since the language is then the header's label, not a badge.
+   */
+  unbadged?: boolean;
 
   /**
    * Emphasize lines: entries are 1-based line numbers or "start-end" ranges
@@ -826,7 +835,10 @@ export function createCodeBlock(skin: CodeBlockSkin) {
               </Text>
             )}
             <View style={HEADER_END}>
-              {!tabList && filename && language ? (
+              {/* The hand-off's playground bar (Component.dc.html lines 171 to 174) is the
+                  "JSX · <Interface>" label and the Copy button only; `unbadged` drops the
+                  badge for a filename that already names the language. */}
+              {!tabList && filename && language && !props.unbadged ? (
                 <Text style={[skin.headerBadge(tokens), MONO]}>{language}</Text>
               ) : null}
               {copy ? <CopyChip dark={false} floating={false} copied={copied} onPress={handleCopy} /> : null}

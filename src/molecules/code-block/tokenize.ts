@@ -9,11 +9,14 @@ import { type ColorTokens, darkColors, oklchHex } from "../../style/index.js";
 // else. It is a display highlighter, not a parser: rules are ordered regex
 // alternatives with a small amount of carried context (inside-a-JSX-tag, shell
 // command position), which is the same trade every lightweight highlighter makes.
+// tsx and jsx are their own grammar (JSX_RULES): the hand-off's component page paints
+// its JSX samples with a different, sparser highlighter than its CodeBlock renderer
+// paints ts and js, and the kit follows each where the hand-off uses it.
 
 /**
  * What one span of highlighted code is: plain text, a comment, a string, a keyword, a
- * number, a tag, an attribute, a function name or a variable. CodeBlock paints each kind
- * in its own ink (`syntaxColor`).
+ * number, a tag, a component tag name, an attribute, a function name or a variable.
+ * CodeBlock paints each kind in its own ink (`syntaxColor`).
  */
 export type TokenKind =
   | "text"
@@ -22,6 +25,7 @@ export type TokenKind =
   | "keyword"
   | "number"
   | "tag"
+  | "component"
   | "attr"
   | "fn"
   | "var";
@@ -33,9 +37,13 @@ export interface CodeToken {
 }
 
 // Mutable context threaded through one tokenize pass, letting a rule's classifier
-// see where it is (inside a JSX/HTML tag, at a shell command position).
+// see where it is (inside a JSX/HTML tag, at a shell command position). `inTag` is
+// the flat flag the ts and html grammars keep; `tagDepth` is the jsx grammar's count
+// of open tags, so a tag nested in an attribute expression (`iconLeft={<Icon plus />}`)
+// hands the context back to the outer tag when it closes.
 interface Ctx {
   inTag: boolean;
+  tagDepth: number;
 }
 
 interface Rule {
@@ -79,6 +87,9 @@ function trackTag(match: string, _source: string, _index: number, ctx: Ctx): Tok
   return "tag";
 }
 
+// The ts and js grammar: the hand-off's CodeBlock renderer (cv-kit-code3.js `hl`), which
+// paints keywords, strings, numbers and `<Tag` names. The jsx grammar below is a
+// different highlighter.
 const TS_RULES: Rule[] = [
   { kind: "comment", re: "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/" },
   {
@@ -91,6 +102,69 @@ const TS_RULES: Rule[] = [
   { kind: "tag", re: "<\\/?[A-Za-z][\\w.]*|\\/?>", classify: trackTag },
   { kind: "number", re: "\\b0[xX][0-9a-fA-F]+\\b|\\b\\d+(?:\\.\\d+)?\\b" },
   { kind: "text", re: "[A-Za-z_$][\\w$]*", classify: classifyIdent(TS_KEYWORDS) },
+];
+
+// --- tsx / jsx ---------------------------------------------------------------
+//
+// The hand-off's component page highlights every JSX sample (the playground line, the
+// usage, variant and section snippets) with its own `hl`, tools/v4/handoff/"Canvas
+// v4.0.0 Component.dc.html" line 324:
+//
+//   const hl=code=>({__html:esc(code)
+//     .replace(/(\s)([a-z][\w-]*)(=)/g,'$1<span style="color:var(--cyan)">$2</span>$3')
+//     .replace(/(&quot;[^&]*&quot;)/g,'<span style="color:var(--mint)">$1</span>')
+//     .replace(/(&lt;\/?)([A-Z][\w.]*)/g,'$1<span style="color:var(--ion-tx)">$2</span>')
+//     .replace(/(^|\n)(\s*\/\/[^\n]*)/g,'$1<span style="color:var(--tx3)">$2</span>')});
+//
+// So four things are painted and nothing else: an attribute name right before its `=`
+// in cyan (`attr`), a string literal in mint (`string`), a Capitalised tag name right
+// after `<` or `</` in the accent text ink (`component`, the name alone: the brackets
+// and the slash stay neutral), and a `//` comment in the subtle ink (`comment`). A
+// keyword, a number, a function name, a lowercase tag, a bare boolean attribute
+// (`primary`, `outline small`) and the children text are the neutral code ink, so
+// `<Button>Save changes</Button>` reads as one label after one accent name.
+
+// The jsx grammar's tag context: the opening `<Name` or `</Name` of a tag opens one
+// level and `>` or `/>` closes it, so a tag inside an attribute expression gives the
+// context back to the tag around it. Every bracket is neutral (`hl` paints only the
+// Capitalised name, which the next rule takes as its own span).
+function trackJsxTag(match: string, _source: string, _index: number, ctx: Ctx): TokenKind {
+  ctx.tagDepth = match.startsWith("<") ? ctx.tagDepth + 1 : Math.max(0, ctx.tagDepth - 1);
+  ctx.inTag = ctx.tagDepth > 0;
+  return "text";
+}
+
+const JSX_RULES: Rule[] = [
+  // hl: `/(^|\n)(\s*\/\/[^\n]*)/` paints a `//` comment in var(--tx3); a block comment
+  // takes the same ink, so a commented sample never splits across two inks.
+  { kind: "comment", re: "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/" },
+  // hl: `/(&quot;[^&]*&quot;)/` paints a string literal in var(--mint); a single-quoted
+  // or template literal is the same kind of token and takes the same ink.
+  {
+    kind: "string",
+    re: "\"(?:\\\\.|[^\"\\\\\\n])*\"|'(?:\\\\.|[^'\\\\\\n])*'|`(?:\\\\.|[^`\\\\])*`",
+  },
+  // The arrow is consumed whole so its `>` never closes a tag.
+  { kind: "text", re: "=>" },
+  // hl: `/(&lt;\/?)([A-Z][\w.]*)/` keeps `<` and `</` neutral and paints the
+  // Capitalised name after them in var(--ion-tx). The bracket (with its slash) is one
+  // neutral span that opens the tag context; the name is the next rule's span.
+  { kind: "text", re: "<\\/?(?=[A-Za-z])|\\/?>", classify: trackJsxTag },
+  // A dotted name is one span, so `<Card.Header>` keeps hl's `[A-Z][\w.]*` name whole.
+  {
+    kind: "text",
+    re: "[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*",
+    classify: (match, source, index, ctx) => {
+      const before = source[index - 1];
+      const afterTagOpen = before === "<" || (before === "/" && source[index - 2] === "<");
+      // hl: `([A-Z][\w.]*)` right after `<` or `</` is the component name, in the accent.
+      if (afterTagOpen) return /^[A-Z]/.test(match) ? "component" : "text";
+      // hl: `(\s)([a-z][\w-]*)(=)` is an attribute name before its `=`, in var(--cyan);
+      // a bare boolean attribute has no `=` and stays neutral.
+      if (ctx.inTag && /^[a-z]/.test(match) && source[index + match.length] === "=") return "attr";
+      return "text";
+    },
+  },
 ];
 
 // --- json --------------------------------------------------------------------
@@ -192,6 +266,7 @@ const PY_RULES: Rule[] = [
 
 const GRAMMARS: Record<string, Rule[]> = {
   ts: TS_RULES,
+  jsx: JSX_RULES,
   json: JSON_RULES,
   bash: SH_RULES,
   css: CSS_RULES,
@@ -200,8 +275,8 @@ const GRAMMARS: Record<string, Rule[]> = {
 };
 
 const ALIASES: Record<string, string> = {
-  ts: "ts", tsx: "ts", js: "ts", jsx: "ts", mjs: "ts", cjs: "ts",
-  typescript: "ts", javascript: "ts",
+  ts: "ts", js: "ts", mjs: "ts", cjs: "ts", typescript: "ts", javascript: "ts",
+  tsx: "jsx", jsx: "jsx",
   json: "json", jsonc: "json",
   bash: "bash", sh: "bash", shell: "bash", zsh: "bash", console: "bash",
   css: "css", scss: "css",
@@ -241,7 +316,7 @@ export function tokenize(code: string, language?: string): CodeToken[][] {
   if (!rules) return toLines([{ text: source, kind: "text" }]);
 
   const master = new RegExp(rules.map((r) => `(${r.re})`).join("|"), "g");
-  const ctx: Ctx = { inTag: false };
+  const ctx: Ctx = { inTag: false, tagDepth: 0 };
   const flat: CodeToken[] = [];
   let last = 0;
   for (const m of source.matchAll(master)) {
@@ -275,10 +350,12 @@ const LIGHT_INK = {
 
 /**
  * The theme-aware color for a token kind: the hand-off's code inks (cv-kit-code3.js
- * `hl`). Keywords in the accent's text ink, strings in mint, numbers in amber, tags and
- * attributes in cyan, comments in the subtle ink. `dark` says the code sits on a dark
- * bed: the dark scheme's own tokens, or the terminal's fixed dark window in any scheme,
- * which takes the dark scheme's inks.
+ * `hl`, and the component page's `hl` at Component.dc.html line 324 for the jsx
+ * grammar). Keywords and component tag names in the accent's text ink
+ * (`var(--ion-tx)`), strings in mint (`var(--mint)`), numbers in amber, tags and
+ * attributes in cyan (`var(--cyan)`), comments in the subtle ink (`var(--tx3)`). `dark`
+ * says the code sits on a dark bed: the dark scheme's own tokens, or the terminal's
+ * fixed dark window in any scheme, which takes the dark scheme's inks.
  */
 export function syntaxColor(kind: TokenKind, tokens: ColorTokens, dark: boolean): string {
   const t = dark && tokens.background !== darkColors.background ? darkColors : tokens;
@@ -288,6 +365,7 @@ export function syntaxColor(kind: TokenKind, tokens: ColorTokens, dark: boolean)
     case "string":
       return dark ? t["chart-3"] : LIGHT_INK.string;
     case "keyword":
+    case "component":
       return t["primary-text"] ?? t.primary;
     case "number":
       return dark ? t["chart-4"] : LIGHT_INK.number;

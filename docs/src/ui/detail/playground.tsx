@@ -219,7 +219,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
           )}
         </Card>
       </View>
-      <KitCodeBlock testID="playground-code" code={code} filename={`JSX · ${spec.propsInterface.replace(/^react-native:/, "")}`} language="tsx" copy />
+      <KitCodeBlock testID="playground-code" code={code} filename={`JSX · ${spec.propsInterface.replace(/^react-native:/, "")}`} language="tsx" unbadged copy />
     </DetailSection>
   );
 }
