@@ -1,7 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { forwardRef, type ReactNode } from "react";
 import {
-  ActivityIndicator,
   Linking,
   type GestureResponderEvent,
   type MouseEvent,
@@ -18,10 +17,10 @@ import { CountBadge } from "../badge/badge.notification.js";
 import { ButtonAttention } from "./button-attention.js";
 import { shrinkButton, shrinkLabel, type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
-// Shared Button shell. The structure (Pressable + optional loading spinner +
-// leading icon + label + trailing icon), the accessibility, and the intent/size
-// precedence live here once; a platform file supplies only its skin (shape,
-// sizing, label weight, press feedback) and calls createButton.
+// Shared Button shell. The structure (Pressable + optional loader + leading icon +
+// label + trailing icon), the accessibility, and the intent/size precedence live
+// here once; a platform file supplies only its skin (shape, sizing, label weight,
+// press feedback, the loader it shows) and calls createButton.
 
 export interface ButtonProps extends MeasureProps {
   children?: ReactNode;
@@ -100,6 +99,13 @@ export interface ButtonProps extends MeasureProps {
   filterTrigger?: boolean;
   /** Inline text action: an underlined link label with no box, read as a link, washed on hover. */
   inlineLink?: boolean;
+  /**
+   * A plain accent text action with no box and no underline, still read as a button: a
+   * panel's Reset, a table's show-all row. On the web a 500 13 px label in the accent text
+   * ink (12 px with `small`) that brightens to the foreground ink under the pointer;
+   * natively the platform's own tint-coloured text button.
+   */
+  plainLink?: boolean;
   /** Foreground ink on an inline text action. */
   foreground?: boolean;
   /** Extra-bold inline text action label. */
@@ -221,7 +227,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const iconBox = iconBoxOf(props);
-    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, jumpLink: !!props.jumpLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, jumpLink: !!props.jumpLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, plainLink: !!props.plainLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -255,7 +261,8 @@ export function createButton(skin: ButtonSkin) {
     // Its instant hover style (a wash, a dim) switches with the pointer, never while inert.
     const lift = opts.iconBox ? null : skin.lift?.(intent, opts) ?? null;
     const hoverLook = skin.hover?.(theme, intent, opts, puck) ?? null;
-    const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null || hoverLook != null);
+    const hoverLabel = skin.hoverLabel?.(tokens, opts) ?? null;
+    const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null || hoverLook != null || hoverLabel != null);
     const reduced = useReducedMotion();
     const live = (pointerOver || !!props.testOnly_hovered) && !(disabled || loading);
     const lifted = lift != null && live;
@@ -323,13 +330,13 @@ export function createButton(skin: ButtonSkin) {
               // Keep this row in every mode to retain foreground child state.
               puck ? { opacity: pressed && !props.steadyPress && skin.pressedOpacity != null ? skin.pressedOpacity : container.opacity ?? 1 } : null,
             ]}>
-              {/* The button announces the wait itself (busy, with its own label), so the
-                  indicator is decorative: react-native-web draws ActivityIndicator as a
+              {/* The skin's loader (the web's arc, the platforms' activity indicator), in the
+                  label's ink. The button announces the wait itself (busy, with its own label),
+                  so the loader is decorative: react-native-web draws ActivityIndicator as a
                   `progressbar` with no name, which assistive tech would read as a second,
                   unnamed control inside the button. Spinner hides its renderer the same way. */}
               {loading ? (
-                <ActivityIndicator
-                  size="small"
+                <skin.loader
                   color={skin.foreground(tokens, intent, opts)}
                   aria-hidden
                   accessibilityElementsHidden
@@ -337,7 +344,7 @@ export function createButton(skin: ButtonSkin) {
                 />
               ) : null}
               {!loading && iconLeft != null ? <AnatomyPart name="Leading icon">{iconLeft}</AnatomyPart> : null}
-              {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[skin.label(tokens, intent, size, opts), live ? skin.hoverLabel?.(tokens, opts) : null, props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
+              {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[skin.label(tokens, intent, size, opts), live ? hoverLabel : null, props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
               {!loading && iconRight != null ? <AnatomyPart name="Trailing icon">{iconRight}</AnatomyPart> : null}
             </View>
             {props.count !== undefined && props.count !== "" ? <View ref={countPart?.ref} onLayout={countPart?.onLayout} style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View> : null}

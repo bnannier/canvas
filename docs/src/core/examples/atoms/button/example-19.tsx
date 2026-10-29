@@ -3,14 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Column, Container } = scope;
+  const { Button } = scope;
   return (
-<Container>
-  <Column>
-    <Button xs start>xs step, pinned to the start (320)</Button>
-    <Button md>md step, centered (448)</Button>
-    <Button block>Block: fills the parent</Button>
-  </Column>
-</Container>
+<Button block>Create account</Button>
   );
 }

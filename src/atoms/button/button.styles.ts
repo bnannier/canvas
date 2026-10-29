@@ -4,6 +4,7 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { MONO_FONT, alpha, shape, withInnerFill, type ColorTokens } from "../../style/index.js";
 import { HOVER } from "../../style/motion.js";
 import { type HoverMotion } from "../../style/hover.js";
+import { LoadingArc, PlatformLoader, type ButtonLoader } from "./button-loader.js";
 
 export const shrinkButton: ViewStyle = { flexShrink: 1, minWidth: 0 };
 export const shrinkLabel: TextStyle = { flexShrink: 1, textAlign: "center" };
@@ -38,6 +39,7 @@ export interface ButtonSkinOpts {
   scopeTrigger?: boolean;
   filterTrigger?: boolean;
   inlineLink?: boolean;
+  plainLink?: boolean;
   foreground?: boolean;
   extraBold?: boolean;
   utility?: boolean;
@@ -62,8 +64,14 @@ export interface ButtonSkin {
   surround?: (opts: ButtonSkinOpts) => ViewStyle;
   container: (t: ColorTokens, intent: Intent, size: Size, opts: ButtonSkinOpts) => ViewStyle;
   label: (t: ColorTokens, intent: Intent, size: Size, opts?: ButtonSkinOpts) => TextStyle;
-  /** The label's colour, which the loading spinner takes too. */
+  /** The label's colour, which the loader takes too. */
   foreground: (t: ColorTokens, intent: Intent, opts?: ButtonSkinOpts) => string;
+  /**
+   * What a loading button shows in place of its leading icon (button-loader.tsx): the web
+   * draws the hand-off's open arc in the label's ink, iOS and Android the platform's own
+   * activity indicator. The shell renders it and hides it from assistive tech.
+   */
+  loader: ButtonLoader;
   /**
    * Whether this intent paints a surface of its own. Under glass a button that does is a
    * CONTROL-layer puck (the material behind its label); one that does not stays bare.
@@ -143,8 +151,8 @@ export function webLinkInkOf(p: Pick<ButtonSkinOpts, "inverse" | "foreground">) 
   return "primary";
 }
 
-/** Resolve reference anatomy before generic utility-box metrics. */
-export function webBodyOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityAction" | "pageLink" | "jumpLink" | "referenceLink" | "inlineIcon" | "scopeTrigger" | "filterTrigger" | "inlineLink" | "utility">) {
+/** Resolve reference anatomy before generic utility-box metrics; the underlined inline link wins over the plain one. */
+export function webBodyOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityAction" | "pageLink" | "jumpLink" | "referenceLink" | "inlineIcon" | "scopeTrigger" | "filterTrigger" | "inlineLink" | "plainLink" | "utility">) {
   if (p.themeChoice) return "themeChoice";
   if (p.identityAction) return "identity";
   if (p.pageLink) return "pageLink";
@@ -154,6 +162,7 @@ export function webBodyOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityActio
   if (p.scopeTrigger) return "scope";
   if (p.filterTrigger) return "filter";
   if (p.inlineLink) return "link";
+  if (p.plainLink) return "plainLink";
   if (p.utility) return "utility";
   return "button";
 }
@@ -193,9 +202,13 @@ export function lookOf(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): Look
   }
 }
 
-/** The intent's foreground: the label colour and the loading spinner's. */
+/**
+ * The label's ink, which the loader takes too (the hand-off's arc is `currentColor`): a
+ * special body's own ink, else the intent's.
+ */
 export function foregroundOf(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): string {
-  return lookOf(t, intent, o).label;
+  const body = o ? bodyLabel(t, intent, "base", o) : null;
+  return (body?.color as string | undefined) ?? lookOf(t, intent, o).label;
 }
 
 function linkInk(t: ColorTokens, o?: ButtonSkinOpts): string {
@@ -274,23 +287,34 @@ const PAGE_LINK_MONO: TextStyle = { ...FS(12, 16), fontWeight: "400", fontFamily
 // sides, a muted 500 12px label.
 const JUMP_LINK = { height: 28, padX: 11 };
 const JUMP_LINK_TYPE: TextStyle = { ...FS(12, 16), fontWeight: "500" };
+// The plain accent link, the hand-off's bare `<button>` (Component.dc.html line 43:
+// `background:none;border:0;padding:0`) in the accent text ink: the props table's show-all
+// row is `font:500 13px var(--ft);color:var(--ion-tx)` (line 241), the props panel's
+// Reset `font:500 12px var(--ft);color:var(--ion-tx)` (line 158), which `small` gives.
+const PLAIN_LINK_TYPE: TextStyle = { ...FS(13, 18), fontWeight: "500" };
+const PLAIN_LINK_SMALL_TYPE: TextStyle = { ...FS(12, 16), fontWeight: "500" };
 const INLINE_ICON = 22;
 
 /**
  * The hand-off's special bodies (cv-kit-code.js's button overrides), the same on every
  * platform but for the corner a platform gives its controls, or null for the standard
- * control. A theme choice is a 32-tall pill whose selection is the accent edge and a soft
- * accent halo; an identity action a 28-tall hairline pill; a reference link and an inline
- * icon are unboxed; a scope or filter trigger is a bare 32-tall row that washes on hover;
- * the utility box is a square of its own size.
+ * control. A theme choice is a 32-tall pill around its colour disc whose selection is the
+ * accent edge and a soft accent halo; an identity action a 28-tall hairline pill; a
+ * reference link, a plain link and an inline icon are unboxed; a scope or filter trigger
+ * is a bare 32-tall row that washes on hover; the utility box is a square of its own size.
  */
 function bodyContainer(t: ColorTokens, intent: Intent, o: ButtonSkinOpts, corner: number, pill: number): ViewStyle | null {
   const body = webBodyOf(o);
   const fade = o.disabled ? { opacity: 0.4 } : null;
   if (body === "themeChoice") {
+    // The hand-off's theme choice (cv-kit-code.js line 69): `height:32px;padding:0 12px 0 6px;
+    // border-radius:999px;...gap:8px` around a 20 px disc (`width:20px;height:20px;
+    // border-radius:50%;...box-shadow:inset 0 0 0 1px rgba(127,127,127,.35)`, the caller's
+    // `<Swatch tiny ring circle>` through `iconLeft`), so the height is the border box, not
+    // padding around the 18 px label line, and the disc centres in it.
     return {
       ...ROW, gap: 8, borderRadius: pill, borderWidth: BORDER,
-      paddingVertical: (TRIGGER_HEIGHT - 2 * BORDER - (BODY_TYPE.lineHeight as number)) / 2, paddingLeft: 6, paddingRight: 12,
+      height: TRIGGER_HEIGHT, paddingVertical: 0, paddingLeft: 6, paddingRight: 12,
       borderColor: o.selected ? t.primary : t.input,
       backgroundColor: o.selected ? t.secondary : "transparent",
       ...(o.selected ? { boxShadow: `0px 0px 0px 3px ${t["primary-soft"] ?? alpha(t.primary, 0.16)}` } : null),
@@ -324,7 +348,7 @@ function bodyContainer(t: ColorTokens, intent: Intent, o: ButtonSkinOpts, corner
     const line = (body === "scope" ? SCOPE_TYPE : BODY_TYPE).lineHeight as number;
     return { ...ROW, gap: 6, borderRadius: corner, borderWidth: 0, backgroundColor: "transparent", paddingVertical: (TRIGGER_HEIGHT - line) / 2, paddingLeft: 10, paddingRight: 6, ...fade };
   }
-  if (body === "link") return { ...ROW, gap: 8, padding: 0, borderWidth: 0, backgroundColor: "transparent", ...fade };
+  if (body === "link" || body === "plainLink") return { ...ROW, gap: 8, padding: 0, borderWidth: 0, backgroundColor: "transparent", ...fade };
   if (body === "utility") {
     const box = UTILITY_BOX[o.iconBox!];
     const look = lookOf(t, intent, o);
@@ -349,6 +373,8 @@ function bodyLabel(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOpts
   if (body === "scope") return { ...SCOPE_TYPE, color: t.foreground };
   if (body === "filter") return { ...BODY_TYPE, color: t["muted-foreground"] };
   if (body === "link") return { ...CONTROL[size].type, fontWeight: o.extraBold ? "800" : "500", color: lookOf(t, intent, o).label, textDecorationLine: "underline" };
+  // The plain link: the accent text ink (the hand-off's `--ion-tx`), 13 px, 12 with `small`, no underline.
+  if (body === "plainLink") return { ...(size === "small" ? PLAIN_LINK_SMALL_TYPE : PLAIN_LINK_TYPE), color: primaryText(t) };
   return null;
 }
 
@@ -382,7 +408,8 @@ function controlContainer(t: ColorTokens, intent: Intent, size: Size, o: ButtonS
 
 function webHover(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): ViewStyle | null {
   const body = webBodyOf(o ?? {});
-  if (body === "themeChoice" || body === "reference" || body === "inlineIcon") return null;
+  // A plain link has no box to wash; its label brightens instead (`hoverLabel`).
+  if (body === "themeChoice" || body === "reference" || body === "inlineIcon" || body === "plainLink") return null;
   if (o?.softHover && intent === "link") return { opacity: 0.85 };
   if (body === "button" && webHoverKindOf(o ?? {}) === "inverse") return { backgroundColor: alpha(INVERSE_INK, 0.12) };
   if (filled(intent, o)) return { filter: "brightness(1.07)" };
@@ -421,18 +448,21 @@ export const webSkin: ButtonSkin = {
       ...(intent === "link" ? { textDecorationLine: "underline" } : null),
     },
   foreground: (t, intent, o) => foregroundOf(t, intent, o),
+  // The hand-off's open arc, turning in the label's ink.
+  loader: LoadingArc,
   // The filled intents and the secondary well paint a surface; the outline, ghost and
   // link looks, the emphases and the special bodies are bare.
   surface: (intent, o) => standard(o) && (FILLED.has(intent) || intent === "secondary"),
   // A filled button brightens under the pointer (its rise is `lift`); every other look
   // takes the `secondary` wash, a secondary well its raised step. An inverse outline keeps
   // a translucent white wash (the hand-off's `secondary` wash would sit light under its
-  // white label), a `softHover` link dims to 85%, and the theme choice, the reference link
-  // and the inline icon have no hover look.
+  // white label), a `softHover` link dims to 85%, and the theme choice, the reference link,
+  // the plain link and the inline icon have no hover look.
   hover: (theme, intent, o, puck) => glassSafeHover(webHover(theme.tokens, intent, o), theme, puck, !!o?.inverse),
+  // The page's links and the plain link brighten their label to the foreground ink.
   hoverLabel: (t, o) => {
     const body = webBodyOf(o ?? {});
-    return body === "pageLink" || body === "jumpLink" ? { color: t.foreground } : null;
+    return body === "pageLink" || body === "jumpLink" || body === "plainLink" ? { color: t.foreground } : null;
   },
   raised: (t) => raisedGlow(t, true),
   pressedOpacity: null,
@@ -448,11 +478,14 @@ export const webSkin: ButtonSkin = {
 // ghost and link, the outline included (a plain control puck under glass).
 const nativeSurface = (intent: Intent, o: ButtonSkinOpts) => standard(o) && intent !== "ghost" && intent !== "link";
 
-// The iOS and Android text buttons are tint-coloured with no underline, the platforms' own.
+// The iOS and Android text buttons are tint-coloured with no underline, the platforms' own,
+// and a plain link is that text button (its tint ink at the platform's weight and size),
+// since each platform ships one; the web's 13 and 12 px accent label is the web's alone.
 function nativeLabel(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOpts | undefined, m: Record<Size, Metrics>, weight: TextStyle["fontWeight"], letterSpacing: number): TextStyle {
-  const body = bodyLabel(t, intent, size, o ?? { icon: false, block: false, dim: false });
+  const plain = webBodyOf(o ?? {}) === "plainLink";
+  const body = plain ? null : bodyLabel(t, intent, size, o ?? { icon: false, block: false, dim: false });
   if (body) return body;
-  return { ...m[size].type, fontWeight: weight, letterSpacing, color: lookOf(t, intent, o).label };
+  return { ...m[size].type, fontWeight: weight, letterSpacing, color: lookOf(t, plain ? "link" : intent, o).label };
 }
 
 // ---------- iOS (HIG / iOS 26+ Liquid Glass): capsule, semibold, dim on press ----------
@@ -464,6 +497,8 @@ export const iosSkin: ButtonSkin = {
   // The hand-off's iOS row: 600 weight, -0.2 tracking.
   label: (t, intent, size, o) => nativeLabel(t, intent, size, o, IOS_CONTROL, "600", -0.2),
   foreground: (t, intent, o) => foregroundOf(t, intent, o),
+  // The platform's own activity indicator.
+  loader: PlatformLoader,
   surface: nativeSurface,
   raised: (t) => raisedGlow(t, true),
   pressedOpacity: 0.8,
@@ -490,6 +525,8 @@ export const androidSkin: ButtonSkin = {
   // The hand-off's Android row: 500 weight, 0.1 tracking.
   label: (t, intent, size, o) => nativeLabel(t, intent, size, o, CONTROL, "500", 0.1),
   foreground: (t, intent, o) => foregroundOf(t, intent, o),
+  // The platform's own activity indicator.
+  loader: PlatformLoader,
   surface: nativeSurface,
   // The wrapper carries the glow here (its ripple clip would cut one drawn on the button),
   // and the button keeps its own lit edge.

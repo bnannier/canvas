@@ -86,7 +86,7 @@ function bands(group: PropGroup, limit: number): { bands: DataTableGroup[]; tota
  */
 function PropTable({ group, limit = Infinity, footer }: { group: PropGroup; limit?: number; footer?: ReactNode }) {
   const { bands: groups } = bands(group, limit);
-  return <DataTable testID="prop-table" bordered compact eyebrowHeader alignTop columns={COLUMNS} rows={[]} groups={groups} stacks stackBreakpoint="md" footer={footer} />;
+  return <DataTable testID="prop-table" bordered eyebrowHeader alignTop columns={COLUMNS} rows={[]} groups={groups} stacks stackBreakpoint="md" footer={footer} />;
 }
 
 /**
@@ -129,7 +129,7 @@ export function PropsSection({ groups, propsInterface, sectionRef }: { groups: r
         limit={all ? Infinity : ROW_LIMIT}
         // The hand-off's `morePropsLabel` (Component.dc.html line 415):
         // `s.allProps?'Show fewer':'Show all '+total+' props'`.
-        footer={total > ROW_LIMIT ? <Button link small onPress={() => setAll(!all)}>{all ? "Show fewer" : `Show all ${total} props`}</Button> : undefined}
+        footer={total > ROW_LIMIT ? <Button plainLink onPress={() => setAll(!all)}>{all ? "Show fewer" : `Show all ${total} props`}</Button> : undefined}
       />
       {main.inherits.map((heritage) => {
         const name = heritage.match(/\w+Props/)?.[0] ?? heritage;

@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": minor
+---
+
+Adds Button's `plainLink` body (justification for the minor: a new public option, a plain accent text action). It is the Canvas v4 hand-off's bare accent button, a panel's Reset and a table's show-all row: no box, no fill, no underline, a 500 13 px label in the accent text ink (12 px with `small`) that brightens to the foreground ink under the pointer on the web, while iOS and Android draw their own tint-coloured text button; it is still read as a button. Two corrections ride with it: a loading web Button now draws the hand-off's open arc (14 px, a 2 px stroke in the label's ink with the right edge open, one turn per 0.8 s on the loop primitive) in place of React Native's ring with its track, with iOS and Android keeping the platform's activity indicator through a `loader` the skin names; and `themeChoice` is the hand-off's 32 px border box around a 20 px colour disc (`<Swatch tiny ring circle>` through `iconLeft`) instead of padding around the label line, so the disc centres in the pill. A loading button's loader also takes a special body's own label ink.

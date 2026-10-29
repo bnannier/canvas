@@ -127,7 +127,7 @@ function KnobPanel({ spec, state, onChange, onReset }: { spec: DetailSpec; state
       <Column relaxed>
         <Row between alignCenter>
           <Typography pageLabel mono>Props</Typography>
-          <Button link small onPress={onReset}>Reset</Button>
+          <Button plainLink small onPress={onReset}>Reset</Button>
         </Row>
         {spec.knobs.map((knob) => {
           const key = knobKey(knob);

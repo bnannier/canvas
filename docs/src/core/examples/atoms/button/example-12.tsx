@@ -3,8 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button } = scope;
+  const { Button, Row } = scope;
   return (
-<Button small>Save changes</Button>
+<Row snug alignCenter>
+  <Button plainLink>Show all 54 props</Button>
+  <Button plainLink small>Reset</Button>
+</Row>
   );
 }
