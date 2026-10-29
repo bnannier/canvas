@@ -75,7 +75,7 @@ const DOWNLOADS = [20, 34, 30, 54, 48, 72, 66, 90, 84, 108, 102];
 /** The hero's still frame: the downloads area beside the bars and the donut. */
 export function Vignette() {
   return (
-    <VignetteStage testID="vignette-charts">
+    <VignetteStage>
       <Row cozy>
         <Column span={7}>
           <AreaChart compact hideLegend title="Weekly downloads" labels={DOWNLOADS.map((_, i) => `W${i + 1}`)} series={[{ label: "Downloads", values: DOWNLOADS }]} />

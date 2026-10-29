@@ -41,7 +41,7 @@ const photo = (path: string) => resolvePhoto(path) as string | number | undefine
 /** The hero's still frame: the vignette's panel in the reference image's state. */
 export function Vignette() {
   return (
-    <VignetteStage testID="vignette-controls">
+    <VignetteStage>
       <Card raised>
         <Column cozy>
           <Switch description="Frost on every pane">Glass surfaces</Switch>

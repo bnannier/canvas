@@ -24,7 +24,7 @@ const ORDER: readonly Platform[] = (["ios", "android", "web"] as const).filter(s
 /** The hero's still frame: the platform switcher on Web, the morphing button and switch. */
 export function Vignette() {
   return (
-    <VignetteStage testID="vignette-skins">
+    <VignetteStage>
       <Column relaxed alignCenter>
         {PLATFORMS_SHOWN.length > 1 ? (
           <ButtonGroup segmented small defaultActive={0} items={PLATFORMS_SHOWN.map((p) => PLATFORM_LABELS[p]!.label)} accessibilityLabel="Platform" />

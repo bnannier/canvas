@@ -76,7 +76,7 @@ const photo = (path: string) => resolvePhoto(path) as string | undefined;
 /** The hero's still frame: the installs stat, its spark drawn in full. */
 export function Vignette() {
   return (
-    <VignetteStage testID="vignette-data">
+    <VignetteStage>
       <Stats
         items={[{
           label: "Installs · this week",

@@ -8,6 +8,8 @@
 // Chromium, and writes, per scheme:
 //   pages/<page>.png               the whole page (Library, the eight sections, Skins)
 //   cards/<card-id>.png            every section card (`#c-*`), as the section page draws it
+//   heroes/<section>.png           a section page's hero (its `<cv-hero>` host, the 300 px stage;
+//                                  Library has none)
 //   components/<slug>.png          a component's whole detail page
 //   components/<slug>/<id>.png     one section of it (`DETAIL_SECTIONS` below): the crop
 //                                  Lookout judges against the docs page's same section
@@ -97,6 +99,11 @@ for (const scheme of schemes) {
     await settle(page);
     await setScheme(page, scheme);
     await shoot(page, join(dir, "pages", `${section.toLowerCase()}.png`));
+    // The navbar pill floats over whatever scrolls under it, so the card and hero crops hide
+    // it (the nav is `height: 0`; nothing moves), as the component sections below do. The
+    // whole-page shot above is taken with it.
+    await page.addStyleTag({ content: "nav { visibility: hidden }" });
+    if (await page.locator("cv-hero").count()) await shoot(page, join(dir, "heroes", `${section.toLowerCase()}.png`), "cv-hero");
     for (const id of await page.locator('[id^="c-"]').evaluateAll((els) => els.map((e) => e.id))) {
       await shoot(page, join(dir, "cards", `${id.slice(2)}.png`), `#${id}`);
     }

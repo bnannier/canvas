@@ -50,7 +50,7 @@ import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
 /** The hero's still frame: the invite dialog at the point the loop holds it open. */
 export function Vignette() {
   return (
-    <VignetteStage testID="vignette-overlays">
+    <VignetteStage>
       <Dialog
         form
         open

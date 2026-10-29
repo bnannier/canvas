@@ -36,11 +36,13 @@ export function SectionHero({ room, vignette }: { room: Pick<Room, "title" | "le
 
 /**
  * The vignette's stage (the hand-off's `.st`): a raised card clipped to its corner over the
- * dotted staging ground, its composition centred in it.
+ * dotted staging ground, its composition centred in it. Its test id is the one hook
+ * Lookout's hero routes crop to (lookout.config.ts), the box the hand-off's `<cv-hero>`
+ * host draws.
  */
-export function VignetteStage({ children, testID }: { children: ReactNode; testID?: string }) {
+export function VignetteStage({ children }: { children: ReactNode }) {
   return (
-    <Card raised flush clip testID={testID}>
+    <Card raised flush clip testID="section-hero">
       <DotGrid />
       <Column padLoose center alignCenter>
         <Container sm>{children}</Container>

@@ -20,7 +20,7 @@ import navConfig from "./docs/src/data/nav.config.json";
 import { MATERIAL_OVERLAY_RECIPES, TOAST_RECIPE } from "./e2e/support/overlay-recipes.ts";
 import { MATERIAL_ROUTES, nativeMaterialRoutes, nativeMaterialTarget } from "./e2e/support/material-routes.ts";
 import { fitElementForScreenshot } from "./e2e/support/docs.ts";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 // ---------------------------------------------------------------------------
 // Routes: every component page, element-shot on the preview card (the 3-up
@@ -229,10 +229,14 @@ async function settledSectionHeight(page: Page, selector: string): Promise<numbe
   }
   return last;
 }
-for (const id of V4_SECTIONS) {
-  const section = `[data-detail-section=${id}]`;
-  states[`fit-section-${id}`] = {
-    description: `The ${id} section of a component page, the window grown to hold it, the navbar hidden`,
+/**
+ * A fit state: the window grown to hold one element, the navbar hidden. The component
+ * sections, the section pages' cards and their heroes all frame an element the same way,
+ * so they share this routine; only the element's selector and the state's description differ.
+ */
+function fitState(description: string, selector: string): StateRecipe {
+  return {
+    description,
     prepare: async (page: Page) => {
       const viewport = page.viewportSize();
       if (viewport) sectionViewports.set(page, viewport);
@@ -241,22 +245,22 @@ for (const id of V4_SECTIONS) {
         const style = Array.from(document.querySelectorAll("style")).find((node) => node.textContent?.includes(marker));
         if (style) style.id = marker;
       }, HIDE_BANNER);
-      // Grow the window to the section plus headroom, scroll the inner view so the section
-      // starts SECTION_TOP below the window's top, and let the section's height and the
+      // Grow the window to the element plus headroom, scroll the inner view so the element
+      // starts SECTION_TOP below the window's top, and let its height and the
       // backdrop settle: a crop past the painted window showed the document under the last
-      // cards (the 2026-10-28 rulings on Variants and Usage), and growing to the section's
+      // cards (the 2026-10-28 rulings on Variants and Usage), and growing to the element's
       // exact height left no room for a late layout pass.
       const width = viewport?.width ?? 1440;
       for (let round = 0; round < 3; round++) {
-        const height = await settledSectionHeight(page, section);
+        const height = await settledSectionHeight(page, selector);
         await page.setViewportSize({ width, height: Math.min(height + SECTION_TOP + SECTION_HEADROOM, 16000) });
         await page.waitForTimeout(400);
-        await page.locator(section).first().evaluate((node, top) => {
+        await page.locator(selector).first().evaluate((node, top) => {
           const scroller = node.closest<HTMLElement>("[data-page-scroll]");
           if (scroller) scroller.scrollTop += node.getBoundingClientRect().top - top;
         }, SECTION_TOP);
         await page.waitForTimeout(400);
-        const after = await settledSectionHeight(page, section);
+        const after = await settledSectionHeight(page, selector);
         if (after === height) break;
       }
       await page
@@ -273,14 +277,42 @@ for (const id of V4_SECTIONS) {
       if (viewport) await page.setViewportSize(viewport);
       sectionViewports.delete(page);
     },
-    element: section,
+    element: selector,
   };
 }
+for (const id of V4_SECTIONS) {
+  states[`fit-section-${id}`] = fitState(`The ${id} section of a component page, the window grown to hold it, the navbar hidden`, `[data-detail-section=${id}]`);
+}
+
+// The section pages (Foundations to Overlays, and Skins) are judged per card and per hero, as
+// a component page is judged per section: a whole page is too tall for the judge to see a
+// fine difference. The cards are the hand-off's `<div id="c-<id>">` in
+// `Canvas v4.0.0 <Section>.dc.html`, the docs' ShowcaseCard `showcase-c-<id>` (a kit Card
+// with that testID); the hero is the hand-off's `<cv-hero>` host (canvas-hero.js: the 300 px
+// stage, radius 24), the docs' VignetteStage `section-hero`. The ids are read from the
+// hand-off pages, which are the authority.
+const HANDOFF = "./tools/v4/handoff";
+const handoffCardIds = (section: string): string[] => {
+  const file = `${HANDOFF}/Canvas v4.0.0 ${section[0]!.toUpperCase()}${section.slice(1)}.dc.html`;
+  return existsSync(file) ? [...readFileSync(file, "utf8").matchAll(/\bid="c-([a-z0-9-]+)"/g)].map((match) => match[1]!) : [];
+};
+const SECTION_PAGE_NAMES = ["foundations", "layout", "controls", "inputs", "navigation", "data", "charts", "overlays"] as const;
+for (const section of SECTION_PAGE_NAMES) {
+  for (const id of handoffCardIds(section)) {
+    states[`fit-card-${id}`] = fitState(`The ${id} card of the ${section} page, the window grown to hold it, the navbar hidden`, `[data-testid="showcase-c-${id}"]`);
+  }
+}
+states["fit-hero"] = fitState("A section page's hero stage, the window grown to hold it, the navbar hidden", '[data-testid="section-hero"]');
+
+// A section page's route comes from nav.config.json (its `section-<id>` entries), as the
+// component routes come from the sidebar, so a later move of the section pages follows here.
+const navRoutes = (navConfig as { routes: Record<string, { href: string }> }).routes;
+const sectionPath = (section: string) => navRoutes[`section-${section}`]!.href;
 
 const V4_PAGES: { path: string; name: string; file: string }[] = [
   { path: "/", name: "library", file: "pages/library.png" },
-  ...["foundations", "layout", "controls", "inputs", "navigation", "data", "charts", "overlays"].map((section) => ({
-    path: `/sections/${section}`,
+  ...SECTION_PAGE_NAMES.map((section) => ({
+    path: sectionPath(section),
     name: `section-${section}`,
     file: `pages/${section}.png`,
   })),
@@ -322,6 +354,29 @@ const v4Routes: RouteDef[] = [
         rest: false,
       }));
     }),
+  // A section page's cards, each against its own crop of the hand-off's page. The ?card=
+  // query gives each its own route identity, as ?section= does for the component sections.
+  ...SECTION_PAGE_NAMES.flatMap((section) =>
+    handoffCardIds(section).map((id) => ({
+      path: `${sectionPath(section)}?card=${id}`,
+      name: `v4-${section}-${id}`,
+      element: `[data-testid="showcase-c-${id}"]`,
+      design: reference(`cards/${id}.png`),
+      states: [`fit-card-${id}`],
+      // The fit state frames the whole card; a rest shot is one band of the inner scroller.
+      rest: false,
+    })),
+  ),
+  // A section page's hero against the hand-off's `<cv-hero>` crop (heroes/<section>.png;
+  // Library draws none). Skins is a section page of its own, with a hero and no cards.
+  ...[...SECTION_PAGE_NAMES.map((section) => ({ section, path: sectionPath(section) })), { section: "skins", path: "/skins" }].map(({ section, path }) => ({
+    path: `${path}?hero=1`,
+    name: `v4-${section}-hero`,
+    element: '[data-testid="section-hero"]',
+    design: reference(`heroes/${section}.png`),
+    states: ["fit-hero"],
+    rest: false,
+  })),
   // A template's reference is the hand-off's Templates page showing it in the Web frame,
   // filed under the hand-off's own names where they differ from the docs' slugs.
   ...Object.entries(TEMPLATE_REFERENCES).map(([slug, file]) => ({
