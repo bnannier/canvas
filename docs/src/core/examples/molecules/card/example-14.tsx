@@ -3,17 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, DescriptionList } = scope;
+  const { Card, Typography, Column } = scope;
   return (
-<Card outlined largeCorners panel eyebrow="Keyboard">
-  <DescriptionList
-    twoColumn
-    divided
-    items={[
-      { term: "Enter", value: "Activates" },
-      { term: "Space", value: "Activates" },
-    ]}
-  />
-</Card>
+<Column cozy>
+  <Card showcaseCorners roomy>
+    <Typography eyebrow subtle>Showcase card</Typography>
+    <Typography small subtle>24 in, a 20 px rhythm, the 20 corner.</Typography>
+  </Card>
+  <Card heroCorners heroShadow>
+    <Typography small medium>Hero stage</Typography>
+    <Typography small subtle>The 24 corner under the medium shadow.</Typography>
+  </Card>
+</Column>
   );
 }

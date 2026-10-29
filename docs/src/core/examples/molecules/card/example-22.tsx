@@ -3,27 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardMedia, CardSeparator, Typography, Column } = scope;
+  const { Button, Card, CardContent, CardMedia, CardSeparator, Typography } = scope;
   return (
-<Column relaxed>
-  <Card flush>
-    <CardMedia compact>
-      <Button small>Small</Button>
-    </CardMedia>
-    <CardSeparator />
-    <CardContent>
-      <Typography small medium>compact</Typography>
-    </CardContent>
-  </Card>
-  <Card flush>
-    <CardMedia tall>
-      <Button large>Large</Button>
-    </CardMedia>
-    <CardSeparator />
-    <CardContent>
-      <Typography small medium>tall</Typography>
-    </CardContent>
-  </Card>
-</Column>
+<Card flush>
+  <CardMedia>
+    <Button primary>Save changes</Button>
+  </CardMedia>
+  <CardSeparator />
+  <CardContent>
+    <Typography small medium>Primary</Typography>
+  </CardContent>
+</Card>
   );
 }

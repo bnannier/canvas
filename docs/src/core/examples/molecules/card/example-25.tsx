@@ -3,10 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography } = scope;
+  const { Button, Card, CardContent, CardFooter, CardSeparator, Typography } = scope;
   return (
-<Card selected onPress={() => {}}>
-  <Typography lead semibold>Pro</Typography>
+<Card flush>
+  <CardContent>
+    <Typography small>Rename the workspace. The URL updates everywhere.</Typography>
+  </CardContent>
+  <CardSeparator />
+  <CardFooter>
+    <Button ghost small>Cancel</Button>
+    <Button primary small>Save</Button>
+  </CardFooter>
 </Card>
   );
 }

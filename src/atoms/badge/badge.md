@@ -82,6 +82,18 @@ status-tone precedence and announces its supplied status label.
 </BadgeGroup>
 ```
 
+### Bare dot
+
+`dot` with no label is the 8 px dot alone, in the tone's ink with no pill: a marker beside
+text that names it. Give it an `accessibilityLabel` when it carries meaning of its own.
+
+```tsx
+<Row snug alignCenter>
+  <Badge dot />
+  <Typography small>Live</Typography>
+</Row>
+```
+
 ### Hue tones
 
 ```tsx

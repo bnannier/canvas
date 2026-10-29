@@ -126,7 +126,7 @@ describe("the state recipe table", () => {
     // recipe or an opening a resting pointer makes, and no hover recipe goes without one.
     expect([...new Set([...withHover, ...byOpening])].sort()).toEqual(resting);
     // Every reader of the hover primitive is among them.
-    expect(hoverDeclarers()).toEqual(["accordion", "autocomplete", "avatar", "badge", "button", "card", "checkbox", "chip", "code-block", "collapsible", "dropdown", "input", "listbox", "navbars", "pagination", "radio", "row-menu", "select", "sidebar", "slider", "stepper", "swatch", "switch", "tabs", "textarea"]);
+    expect(hoverDeclarers()).toEqual(["accordion", "autocomplete", "avatar", "badge", "button", "card", "checkbox", "chip", "code-block", "collapsible", "dropdown", "icon", "input", "listbox", "navbars", "pagination", "radio", "row-menu", "select", "sidebar", "slider", "stepper", "swatch", "switch", "tabs", "textarea"]);
     for (const slug of hoverDeclarers()) expect(withHover).toContain(slug);
     // Spread handlers count: the Calendar's blocks take `{...hoverProps}` and Tooltip's
     // triggers `{...disclosure}`; Tooltip's hover is its open recipe's (a resting pointer opens it).

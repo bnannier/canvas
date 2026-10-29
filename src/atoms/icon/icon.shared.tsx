@@ -3,6 +3,7 @@ import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react
 import { View, useTheme, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 import { ICONS, NAMES, type Shape, type IconGlyphProps, type IconName } from "./icon.glyphs.js";
 import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
+import { IconCell } from "./icon-cell.js";
 import { primaryText } from "../../style/primary-text.js";
 import { useInk } from "../../style/ink.js";
 
@@ -79,7 +80,16 @@ export interface IconProps extends IconGlyphProps, IconInternalProps {
   success?: boolean;
   /** Caution/amber status (the warning token, scheme-aware; matches Alert/Toast warning). */
   warning?: boolean;
+  /** The third ink (`subtle-foreground`, the hand-off's `--tx3`): a glyph that recedes. */
   muted?: boolean;
+  /** The second ink (`muted-foreground`, the hand-off's `--tx2`), as Typography's `subtle`. */
+  subtle?: boolean;
+  /**
+   * The glyph centred in a square cell that fills its parent (a Grid tile of a glyph
+   * gallery) at a 10 px corner. On the web a hovered cell takes the accent's soft wash and
+   * its glyph the accent ink.
+   */
+  cell?: boolean;
   // Single-glyph size in px (default 24).
   size?: number;
   /**
@@ -130,13 +140,17 @@ export function nameOf(p: IconProps): string {
 // Icon renderer paints it (`--ion-tx`, `K.def('icon')` in
 // tools/v4/handoff/cv-kit-controls.js), so a primary glyph matches the primary label
 // beside it and clears the text floor on every bed.
+// Tone precedence when more than one is passed: first match wins. `muted` is the third
+// ink (the hand-off's TONEC `--tx3`, cv-kit-controls.js) and `subtle` the second, the
+// names Typography gives the same two inks.
 export function strokeOf(p: IconProps, tokens: ColorTokens, ink?: string): string {
   if (p.primary) return primaryText(tokens);
   if (p.primaryForeground) return tokens["primary-foreground"];
   if (p.destructive) return tokens.destructive;
   if (p.success) return tokens.success;
   if (p.warning) return tokens.warning;
-  if (p.muted) return tokens["muted-foreground"];
+  if (p.muted) return tokens["subtle-foreground"] ?? tokens["muted-foreground"];
+  if (p.subtle) return tokens["muted-foreground"];
   return p.color ?? ink ?? tokens.foreground;
 }
 
@@ -207,11 +221,30 @@ export function strokeWidthOf(p: IconProps): number {
 
 /** An outline glyph from the kit's icon set, sized and colored by props. */
 export function Icon(props: IconProps) {
+  if (props.cell) {
+    // A hovered cell paints its glyph in the accent ink, over any tone the caller set.
+    const glyph = (hovered: boolean) => (
+      <IconGlyph
+        {...props}
+        {...(hovered ? { primary: true, primaryForeground: false, destructive: false, success: false, warning: false, muted: false, subtle: false } : null)}
+        cell={false}
+        decorative={false}
+        accessibilityLabel={undefined}
+        testID={undefined}
+        style={undefined}
+      />
+    );
+    return <IconCell glyph={glyph} accessibilityLabel={props.accessibilityLabel} decorative={props.decorative} testID={props.testID} style={props.style} />;
+  }
+  return <IconGlyph {...props} />;
+}
+
+function IconGlyph(props: IconProps) {
   const { tokens } = useTheme();
   // The hosting control's label ink (a Button's), undefined on the page.
   const ink = useInk();
 
-  if (props.disclosure) return <DisclosureRotation expanded={!!props.expanded}><Icon {...props} disclosure={false} /></DisclosureRotation>;
+  if (props.disclosure) return <DisclosureRotation expanded={!!props.expanded}><IconGlyph {...props} disclosure={false} /></DisclosureRotation>;
 
   const wrapped = props.decorative || props.accessibilityLabel != null;
   const glyph = (

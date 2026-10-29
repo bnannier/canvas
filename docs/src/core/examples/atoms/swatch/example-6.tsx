@@ -3,11 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Swatch, Row } = scope;
+  const { tokens, Swatch, Row, Column } = scope;
   return (
-<Row relaxed>
-  <Swatch selected color={tokens.primary} value="--primary">primary</Swatch>
-  <Swatch color={tokens.success} value="--success">success</Swatch>
+<Row cozy>
+  <Column fill><Swatch fluid circle glow centered bare color={tokens["chart-1"]} value="285" /></Column>
+  <Column fill><Swatch fluid circle glow centered bare color={tokens["chart-2"]} value="205" /></Column>
+  <Column fill><Swatch fluid circle glow centered bare color={tokens["chart-3"]} value="165" /></Column>
 </Row>
   );
 }

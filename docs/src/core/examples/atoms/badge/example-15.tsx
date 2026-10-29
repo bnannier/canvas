@@ -5,10 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Badge, BadgeGroup } = scope;
   return (
-<BadgeGroup tight>
-  <Badge token>busy</Badge>
-  <Badge token>disabled</Badge>
-  <Badge token>aria-expanded</Badge>
+<BadgeGroup>
+  <Badge band mono>pick one</Badge>
+  <Badge band mono secondary>stacks</Badge>
 </BadgeGroup>
   );
 }

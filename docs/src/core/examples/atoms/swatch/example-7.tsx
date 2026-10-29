@@ -3,10 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Swatch } = scope;
+  const { tokens, Swatch, Row, Column } = scope;
   return (
-<Swatch color={tokens.primary} value="--primary" detail="oklch(0.511 0.262 276.966)">
-  primary
-</Swatch>
+<Column snug>
+  <Row snug>
+    <Column fill><Swatch tile bare color={tokens.primary} ink={tokens["primary-foreground"]}>primary</Swatch></Column>
+    <Column fill><Swatch tile bare color={tokens.success} ink={tokens["success-foreground"]}>success</Swatch></Column>
+  </Row>
+  <Row snug>
+    <Column fill><Swatch tile small bare color={tokens["primary-soft"]} ink={tokens.primary}>primary-soft</Swatch></Column>
+    <Column fill><Swatch tile small bare color={tokens["success-soft"]} ink={tokens.success}>success-soft</Swatch></Column>
+  </Row>
+</Column>
   );
 }

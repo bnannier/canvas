@@ -144,6 +144,19 @@ export interface CardProps {
    * `--sh-md`, canvas-hero.js `.st`), between the resting card and the raised one.
    */
   heroShadow?: boolean;
+  /**
+   * An elevation sample: an empty card 72 px tall on the popover fill (the hand-off's
+   * `--sf2`) that shows the elevation it is given, its edge the field border at the
+   * `heroShadow` and `raised` steps (the Foundations page's depth tiles). Composes with
+   * the elevation and corner axes; it takes no children.
+   */
+  sample?: boolean;
+  /**
+   * The card floats over the page: under glass on the web it takes the floating material
+   * (the functional layer's tint over the backdrop blur, design-language item 7), where a
+   * resting card keeps its solid skin. Native glass and solid mode are unchanged.
+   */
+  floating?: boolean;
   // Padding (orthogonal booleans). A card with raw children is padded by default,
   // and the data-driven string path (no children) pads through its self-padding
   // sections instead, so neither prop moves the surface inset there.
@@ -309,7 +322,8 @@ export function createCard(skin: CardSkin) {
   const BrandCard = createBrandCard(skin);
   return function Card(props: CardProps) {
     const { children, title, icon, actions, description, body, footer, flush, onPress, selected, testID, style, onLiftChange } = props;
-    const theme = useMaterialTheme({ static: true });
+    const floating = !!props.floating;
+    const theme = useMaterialTheme({ static: true, floating, layer: floating ? "functional" : "content" });
     const { tokens } = theme;
     // Under glass the card is a CONTENT-layer pane: GlassSurface strips the skin's fill
     // and hairline and lays the content tint + material behind the sections (see the
@@ -414,6 +428,7 @@ export function createCard(skin: CardSkin) {
       props.clip ? { overflow: "hidden" } : null,
       selected ? selectedCard(tokens) : null,
       panel ? s.insetPanel(panel, tokens) : null,
+      props.sample ? s.sampleSurface(tokens, elev) : null,
     ];
     // Under glass the selection is the primary border, kept over the material as a state
     // border, over the selection wash: the same soft primary tint as in solid, capped where
@@ -536,7 +551,7 @@ export function createCard(skin: CardSkin) {
             android_ripple={paneRipple(theme, surfaceRipple(tokens))}
             style={({ pressed }) => [paneStyle(theme, surface, !!selected), elevChild, fill, props.steadyPress ? null : pressDim(pressed), lift]}
           >
-            <GlassPane layer="content" shape={surface} stateBorder={!!selected} tint={selectionWash} />
+            <GlassPane static layer={floating ? "functional" : "content"} floating={floating} shape={surface} stateBorder={!!selected} tint={selectionWash} />
             <MaterialBehind rendered={isGlass(theme)}>
               <CardCornerContext.Provider value={corner}>{inner}</CardCornerContext.Provider>
             </MaterialBehind>
@@ -545,7 +560,7 @@ export function createCard(skin: CardSkin) {
       );
     }
     return (
-      <GlassSurface layer="content" testID={testID} stateBorder={!!selected} tint={selectionWash} style={[surface, skin.elevation(elev, tokens, !!selected), outer]}>
+      <GlassSurface static layer={floating ? "functional" : "content"} floating={floating} testID={testID} stateBorder={!!selected} tint={selectionWash} style={[surface, skin.elevation(elev, tokens, !!selected), outer]}>
         <CardCornerContext.Provider value={corner}>{inner}</CardCornerContext.Provider>
       </GlassSurface>
     );

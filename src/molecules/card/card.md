@@ -150,6 +150,32 @@ source affordance in the detail panel. An `href` opens through the system browse
 </Card>
 ```
 
+### Elevation samples
+
+`sample` draws an empty card 72 px tall on the popover fill, so a row of them shows the
+elevation steps side by side; its edge is the field border at `heroShadow` and `raised`.
+
+```tsx
+<Row cozy alignEnd>
+  <Column fill><Card sample flat calloutCorners /></Column>
+  <Column fill><Card sample calloutCorners /></Column>
+  <Column fill><Card sample heroShadow calloutCorners /></Column>
+  <Column fill><Card sample raised calloutCorners /></Column>
+</Row>
+```
+
+### Floating
+
+`floating` marks a card that floats over the page: under glass on the web it takes the
+floating material (the functional layer's tint over the backdrop blur), where a resting
+card keeps its solid skin.
+
+```tsx
+<Card floating heroShadow calloutCorners>
+  <Typography label foreground>A pane over the page</Typography>
+</Card>
+```
+
 ### Corners
 
 ```tsx

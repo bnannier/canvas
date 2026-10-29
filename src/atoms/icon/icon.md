@@ -1,6 +1,6 @@
 # Icon
 
-Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to the theme foreground token and tracks light and dark automatically; pick other hues with the semantic color booleans (`primary`, `destructive`, `success`, `warning`, `muted`). Inside a control that owns a label ink (a Button's `iconLeft` and `iconRight` slots) a glyph with no tone takes that ink instead, the way the hand-off's icons inherit `currentColor`: the primary's contrast ink on a primary button, the muted ink on a quiet one. The precedence is the explicit tone, then the host's ink, then the foreground, so a toned glyph keeps its tone anywhere.
+Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to the theme foreground token and tracks light and dark automatically; pick other hues with the semantic color booleans (`primary`, `destructive`, `success`, `warning`, `muted`, `subtle`; that order is the precedence). `muted` is the third ink (`subtle-foreground`) and `subtle` the second (`muted-foreground`), the names Typography gives the same two inks. Inside a control that owns a label ink (a Button's `iconLeft` and `iconRight` slots) a glyph with no tone takes that ink instead, the way the hand-off's icons inherit `currentColor`: the primary's contrast ink on a primary button, the muted ink on a quiet one. The precedence is the explicit tone, then the host's ink, then the foreground, so a toned glyph keeps its tone anywhere.
 
 ## Usage
 
@@ -38,6 +38,29 @@ Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to th
 
 ```tsx
 <Icon shield muted />
+```
+
+### Subtle
+
+The second ink, a glyph that reads quieter than the foreground but louder than `muted`.
+
+```tsx
+<Icon shield subtle />
+```
+
+### Cell
+
+`cell` centres the glyph in a square cell that fills its parent at a 10 px corner, the
+tile of a glyph gallery laid out by a `Grid`. On the web a hovered cell takes the
+accent's soft wash and its glyph the accent ink.
+
+```tsx
+<Grid minTileWidth={40} compact>
+  <Icon cell subtle search size={20} accessibilityLabel="search" />
+  <Icon cell subtle bell size={20} accessibilityLabel="bell" />
+  <Icon cell subtle settings size={20} accessibilityLabel="settings" />
+  <Icon cell subtle user size={20} accessibilityLabel="user" />
+</Grid>
 ```
 
 ### Gallery

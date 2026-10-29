@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Badge, BadgeGroup } = scope;
   return (
 <BadgeGroup>
-  <Badge disc default>1</Badge>
-  <Badge disc default>2</Badge>
-  <Badge disc secondary>3</Badge>
+  <Badge marker>1</Badge>
+  <Badge marker>2</Badge>
+  <Badge marker>3</Badge>
 </BadgeGroup>
   );
 }

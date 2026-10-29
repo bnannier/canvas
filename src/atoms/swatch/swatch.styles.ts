@@ -1,5 +1,6 @@
 import { type TextStyle, type ViewStyle } from "react-native";
 import { shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { webHover } from "../../style/hover.js";
 import { type SwatchSize } from "./swatch.shared.js";
 
@@ -30,6 +31,25 @@ export interface SwatchSkin {
   value: TextStyle;
   /** The secondary mono detail line's type; family and color come from the shell. */
   detail: TextStyle;
+  /** The `centered` lockup's gap: the label column centred under the chip, 10 px below it. */
+  centeredGap: number;
+  /** The `glow` shadow, the fill's own ambient light under the chip at `alpha` of the fill. */
+  glow: { offsetY: number; blur: number; spread: number; alpha: number };
+  /**
+   * The `tile`: the labelled colour tile, its name inside the fill. Its height per size (a
+   * bottom-aligned name at the default, a centred one `small`), its inset and its name type.
+   */
+  tile: { height: { default: number; small: number }; inset: number; name: TextStyle };
+  /** The `bar`: the parent's width at this height and corner, its edge the hairline. */
+  bar: { height: number; radius: number };
+  /**
+   * `steps`: one bar of colour steps. Flush, the bar is clipped at `flushRadius` at the size's
+   * height; `segmented`, the steps stand `segmentGap` apart in a `segmentedHeight` bar, each at
+   * the `innerRadius` corner but for the bar's two outer ends at `endRadius`.
+   */
+  steps: { flushRadius: number; segmentedHeight: number; segmentGap: number; innerRadius: number; endRadius: number };
+  /** The `compact` lockup: the stretched chip's height, the mono name and value, their gaps. */
+  compact: { box: number; gap: number; lineGap: number; name: TextStyle; value: TextStyle };
   /** The palette picker's disc edge, in px. */
   picker: number;
   /**
@@ -44,7 +64,8 @@ export interface SwatchSkin {
 // (`K.def('swatch')` in tools/v4/handoff/cv-kit-controls.js): a 32, 48 or 72 px chip at
 // the tile corner (`shape.web.tile`), the label 8 px under it (10 px beside it when inline), the name a
 // 500 13 px line and the value lines 400 11 px mono in the subtle ink, set flush (each line
-// at its face's normal line box, rounded up to a whole pixel). `tiny` is the token chip's
+// at its face's normal line box: 16 px for the 13 px name and 14 px for the 11 px mono
+// values, the renderer's `font:500 13px` and `font:400 11px` at `normal`). `tiny` is the token chip's
 // swatch (Component.dc.html line 294: `width:20px;height:20px;border-radius:50%`), the
 // 20 px disc inside a 32 px token pill; the page draws it only as a circle, so off the
 // circle it takes the same tile corner as the other sizes.
@@ -63,9 +84,22 @@ export const webSkin: SwatchSkin = {
   gap,
   inlineGap,
   lineGap,
-  name: { fontSize: 13, lineHeight: 17, fontWeight: "500" },
-  value: { fontSize: 11, lineHeight: 15, fontWeight: "400" },
-  detail: { fontSize: 11, lineHeight: 15, fontWeight: "400" },
+  name: { fontSize: 13, lineHeight: 16, fontWeight: "500" },
+  value: { fontSize: 11, lineHeight: 14, fontWeight: "400" },
+  detail: { fontSize: 11, lineHeight: 14, fontWeight: "400" },
+  // The Foundations section page's samples (Canvas v4.0.0 Foundations.dc.html): the
+  // spectrum's circles (`box-shadow:0 12px 30px -8px` the fill at .6, the hue 10 px under
+  // the chip, centred), the status tiles (64 and 40 px, `padding:8px`, `font:500 11px
+  // var(--fm)` on the mono face's 14 px line), the neutral bars (26 px at the bar corner),
+  // the series bar (28 px, 4 apart, the step corner inside and the bar's at its ends), the
+  // accent ramp (one bar clipped at the ramp corner) and the emblem card's named blocks (56 px, the name `font:500 12px
+  // var(--fm)` and the value `font:400 10px var(--fm)` on their 16 and 13 px lines, 6 apart).
+  centeredGap: 10,
+  glow: { offsetY: 12, blur: 30, spread: -8, alpha: 0.6 },
+  tile: { height: { default: 64, small: 40 }, inset: 8, name: { fontSize: 11, lineHeight: 14, fontWeight: "500" } },
+  bar: { height: 26, radius: platformShape.web.swatchBar },
+  steps: { flushRadius: platformShape.web.rampBar, segmentedHeight: 28, segmentGap: 4, innerRadius: platformShape.web.swatchStep, endRadius: platformShape.web.swatchBar },
+  compact: { box: 56, gap: 6, lineGap: 6, name: { fontSize: 12, lineHeight: 16, fontWeight: "500" }, value: { fontSize: 10, lineHeight: 13, fontWeight: "400" } },
   // The hand-off docs navbar's hue swatch (Controls.dc.html): a 16 px disc that grows to
   // 1.25 under the pointer on a .4 s overshooting curve. Local to this skin rather than in
   // the HOVER table: no other control grows on hover, and the value is the hand-off's.
