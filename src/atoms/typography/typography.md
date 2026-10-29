@@ -42,9 +42,11 @@ summary, 18/1.55, held to the hand-off's 72ch measure), `sectionLead` (a section
 card's description, 14/1.55), `sectionNote` (the note under a section's heading,
 14/1.5), `pageBody` (a page's body paragraph, 15/1.6) and `pageNote` (a page's note paragraph,
 14/1.6), the last six in the secondary ink and the last two held to an 80ch measure.
-Three more are the component page's own: `pageLabel` (a panel's "Props", a rail's group
+Four more are the component page's own: `pageLabel` (a panel's "Props", a rail's group
 header, a table's header cell, a previous/next eyebrow: 500 11/1 tracked .08em in caps, in
-the subtle ink; pass `mono` for the mono face, as the hand-off's page does), `guideTitle` (a
+the subtle ink; pass `mono` for the mono face, as the hand-off's page does), `knobLabel` (a
+knob panel's label row, a knob's name and its type hint: 500 12/1 in the secondary ink, the
+hint beside it in the `muted` tone, the third ink; pass `mono` for the mono face), `guideTitle` (a
 guidance card's title, 600 16/1.3 in the interface face, a level-3 heading) and `guideBody`
 (a guidance card's paragraph, 400 13.5/1.6 in the secondary ink). `pageLabel` is not the
 `eyebrow`: that is the type table's accent-ink label tracked .1em. `pagerName` is the
@@ -236,6 +238,15 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ```tsx
 <Typography pageLabel mono>Props</Typography>
+```
+
+### Knob label
+
+```tsx
+<Row between snug>
+  <Typography knobLabel mono>iconLeft</Typography>
+  <Typography knobLabel mono muted>icon</Typography>
+</Row>
 ```
 
 ### Guide title

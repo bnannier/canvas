@@ -1,5 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useEffect, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, isGlass, withInnerFill, LayoutAxisProvider, columnAxis, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
@@ -259,6 +259,14 @@ export function cornerOf(p: CardProps): Corner {
   return "default";
 }
 
+/**
+ * The corner step the nearest Card draws, for the parts that nest inside its corner
+ * (CardMedia's top corners sit inside the card's border): a `stageCorners` card's media
+ * rounds inside the stage corner, not the default card corner. Outside a Card the media
+ * takes the skin's default corner.
+ */
+const CardCornerContext = createContext<Corner>("default");
+
 export function createCard(skin: CardSkin) {
   // The featured, promotional and artwork modes, at this skin's corner and title face.
   const BrandCard = createBrandCard(skin);
@@ -335,7 +343,8 @@ export function createCard(skin: CardSkin) {
 
     // Shape: the corner step's radius from the skin's own row; iOS adds Apple's continuous
     // (superellipse) corner curve (an iOS-only RN style prop, omitted entirely on the other skins).
-    const shape: ViewStyle = { borderRadius: skin.corners[cornerOf(props)], ...(skin.curve ? { borderCurve: skin.curve } : null) };
+    const corner = cornerOf(props);
+    const shape: ViewStyle = { borderRadius: skin.corners[corner], ...(skin.curve ? { borderCurve: skin.curve } : null) };
     // The card's visual box WITHOUT the elevation shadow and WITHOUT outer layout: shape, the
     // per-variant surface colors, density padding, and the selected tint.
     const surface: StyleProp<ViewStyle> = [
@@ -491,14 +500,16 @@ export function createCard(skin: CardSkin) {
             style={({ pressed }) => [paneStyle(theme, surface, !!selected), elevChild, fill, props.steadyPress ? null : pressDim(pressed), lift]}
           >
             <GlassPane layer="content" shape={surface} stateBorder={!!selected} tint={selectionWash} />
-            <MaterialBehind rendered={isGlass(theme)}>{inner}</MaterialBehind>
+            <MaterialBehind rendered={isGlass(theme)}>
+              <CardCornerContext.Provider value={corner}>{inner}</CardCornerContext.Provider>
+            </MaterialBehind>
           </Pressable>
         </RippleClip>
       );
     }
     return (
       <GlassSurface layer="content" testID={testID} stateBorder={!!selected} tint={selectionWash} style={[surface, skin.elevation(elev, tokens, !!selected), outer]}>
-        {inner}
+        <CardCornerContext.Provider value={corner}>{inner}</CardCornerContext.Provider>
       </GlassSurface>
     );
   };
@@ -639,16 +650,17 @@ export function mediaWellOf(p: Pick<CardMediaProps, "compact" | "tall" | "stage"
 // The well is a fill INSIDE the card's pane, so under glass it is an ink tint over the
 // material (withInnerFill), never an opaque patch.
 export function createCardMedia(skin: CardSkin) {
-  // The nested top radius: the card's corner minus the border it sits inside.
-  const radius = Math.max(0, skin.radius - s.CARD_BORDER);
-  const shape = {
-    borderTopLeftRadius: radius,
-    borderTopRightRadius: radius,
-    ...(skin.curve ? { borderCurve: skin.curve } : null),
-  };
   return function CardMedia(props: CardMediaProps) {
     const { src, height = 180, alt, accessibilityLabel, children, testID } = props;
     const theme = useMaterialTheme({ static: true });
+    // The nested top radius: the corner the card around it draws (its Corners step, the
+    // default corner outside a Card) minus the border it sits inside.
+    const radius = Math.max(0, skin.corners[useContext(CardCornerContext)] - s.CARD_BORDER);
+    const shape = {
+      borderTopLeftRadius: radius,
+      borderTopRightRadius: radius,
+      ...(skin.curve ? { borderCurve: skin.curve } : null),
+    };
     if (children != null && children !== false) {
       return (
         <View testID={testID} style={[s.mediaWell[mediaWellOf(props)], shape, withInnerFill(theme, { backgroundColor: theme.tokens["surface-sunken"] ?? theme.tokens.muted }, "soft")]}>

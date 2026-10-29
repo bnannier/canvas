@@ -155,6 +155,10 @@ export const glassSegmentColor = (t: ColorTokens, selected: boolean): TextStyle 
 // (8 for an icon alone), labels 12 at small and 13 otherwise. The split and stepper kinds
 // and the spaced peers are the web Button's pills (29 / 36 / 40): the split is the call
 // to action with its chevron half, the stepper and the spaced peers hairline pills.
+// The compact density is the hand-off component page's platform switch (Component.dc.html
+// line 153, the same track around `height:28px;padding:0 12px;border-radius:7px;
+// font:500 12px/1 var(--ft)` buttons): a segment keeps its size's height and takes the
+// small label on a 12 px inset.
 // =============================================================================
 
 const SEGMENT_INSET = 3;
@@ -170,6 +174,10 @@ const WEB_SEGMENT_TYPE: Record<Size, TextStyle> = {
   default: { fontSize: 13, lineHeight: 18 },
   large: { fontSize: 13, lineHeight: 18 },
 };
+// The compact segment (Component.dc.html line 153): `padding:0 12px` and the small
+// label on the hand-off's own 12 px line, `font:500 12px/1`, on its size's height (the
+// line is the page's, where the small size's label sits on the renderer's 16).
+const WEB_COMPACT_SEGMENT = { size: { paddingHorizontal: 12 } as ViewStyle, type: { fontSize: 12, lineHeight: 12 } as TextStyle };
 // The Button's pill metrics (button.styles.ts), so a split or stepper lines up with a Button beside it.
 const WEB_CELL: Record<Size, ViewStyle> = {
   small: { height: 29, paddingHorizontal: 14 },
@@ -207,6 +215,7 @@ export const webSkin: ButtonGroupSkin = {
   // Glyphs track the label: foreground on the selected thumb, muted otherwise.
   segmentIconColor: (selected) => (selected ? "foreground" : "muted"),
   segmentIconOnlyPadding: 8,
+  compactSegment: WEB_COMPACT_SEGMENT,
   showSelectedCheck: false,
   segmentSize: WEB_SEGMENT,
   segmentType: WEB_SEGMENT_TYPE,

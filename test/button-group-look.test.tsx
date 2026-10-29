@@ -41,6 +41,17 @@ describe("the web ButtonGroup is the hand-off's segmented control", () => {
     expect(webSkin.segmentIconOnlyPadding).toBe(8);
   });
 
+  it("keeps a compact segment at its size's height with the page's 12 px label on a 12 px inset", () => {
+    // The hand-off component page's platform switch (Component.dc.html line 153): the
+    // default track around `height:28px;padding:0 12px;...;font:500 12px/1` buttons.
+    expect(webSkin.compactSegment).toEqual({ size: { paddingHorizontal: 12 }, type: { fontSize: 12, lineHeight: 12 } });
+    render(<ThemeProvider light solid><ButtonGroup compact items={["Web", "iOS", "Android"]} defaultActive={0} accessibilityLabel="Platform" /></ThemeProvider>);
+    const [web] = screen.getAllByRole("tab");
+    expect([web.style.height, web.style.paddingLeft, web.style.paddingRight]).toEqual(["28px", "12px", "12px"]);
+    const label = web.querySelector("div[dir]") as HTMLElement;
+    expect([label.style.fontSize, label.style.lineHeight, label.style.fontWeight]).toEqual(["12px", "12px", "500"]);
+  });
+
   it("renders the selected segment on the thumb and the rest bare, inside the track", () => {
     render(<ThemeProvider light solid><ButtonGroup items={["Day", "Week", "Month"]} defaultActive={0} accessibilityLabel="Range" /></ThemeProvider>);
     const track = screen.getByRole("tablist", { name: "Range" });

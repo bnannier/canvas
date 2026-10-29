@@ -125,6 +125,9 @@ const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string;
   // The knob panel's "Props" label; the rail's group headers, the props table's header
   // cells and the previous/next eyebrows set the same style.
   pageLabel: { page: "Component", text: ">Props</span>" },
+  // The knob panel's label row (line 161), the row's own font on the div around the name
+  // and its hint.
+  knobLabel: { page: "Component", text: "><span>{{ k.label }}</span>" },
   // The Usage guidance card's h3 and its paragraph.
   guideTitle: { page: "Component", text: ">{{ x.t }}<" },
   guideBody: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ xp }}\"" },

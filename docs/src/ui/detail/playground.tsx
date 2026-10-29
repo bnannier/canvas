@@ -133,9 +133,11 @@ function KnobPanel({ spec, state, onChange, onReset }: { spec: DetailSpec; state
           const key = knobKey(knob);
           return (
             <Column key={key} close>
+              {/* The hand-off's label row (Component.dc.html line 161): the knob's name in the
+                  secondary ink, its type hint in the subtle ink, a 12 px line. */}
               <Row between snug>
-                <Typography caption mono subtle>{labelOf(knob)}</Typography>
-                <Typography caption mono muted>{hintOf(knob)}</Typography>
+                <Typography knobLabel mono>{labelOf(knob)}</Typography>
+                <Typography knobLabel mono muted>{hintOf(knob)}</Typography>
               </Row>
               <KnobControl knob={knob} value={state[key] ?? null} onChange={(next) => onChange(key, next)} />
             </Column>
@@ -192,7 +194,9 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
       note={`Every control sets a real prop of ${spec.propsInterface.replace(/^react-native:/, "")}. The JSX below updates as you go.`}
       sectionRef={sectionRef}
       actions={PLATFORMS.length > 1 ? (
-        <ButtonGroup segmented small accessibilityLabel="Playground platform" items={PLATFORMS.map((p) => p.label)} active={platform} onSelect={setPlatform} />
+        // The hand-off's platform switch (Component.dc.html line 153): the default-height
+        // track around 28 px segments of 12 px labels on a 12 px inset, the kit's compact density.
+        <ButtonGroup segmented compact accessibilityLabel="Playground platform" items={PLATFORMS.map((p) => p.label)} active={platform} onSelect={setPlatform} />
       ) : null}
     >
       <View onLayout={onLayout}>
@@ -214,7 +218,9 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
           )}
         </Card>
       </View>
-      <KitCodeBlock testID="playground-code" code={code} filename={`JSX · ${spec.propsInterface.replace(/^react-native:/, "")}`} language="tsx" unbadged copy />
+      {/* The hand-off's JSX card (lines 171 to 174) is the page's own card, not its CodeBlock
+          renderer: the kit CodeBlock's `playground` density. */}
+      <KitCodeBlock testID="playground-code" playground code={code} filename={`JSX · ${spec.propsInterface.replace(/^react-native:/, "")}`} language="tsx" unbadged copy />
     </DetailSection>
   );
 }

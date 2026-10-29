@@ -1,7 +1,7 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { MONO_FONT, platformMinTarget, shape, statusColors, darkColors, lightColors, type ColorTokens } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
-import { type CodeBlockSkin } from "./code-block.shared.js";
+import { type CodeBlockSkin, type Density } from "./code-block.shared.js";
 
 // Co-located CodeBlock skins. Layout-only fragments are static objects; anything
 // that reads a color is a function of the active tokens, so the code card follows
@@ -27,6 +27,14 @@ import { type CodeBlockSkin } from "./code-block.shared.js";
 //   The terminal: the dark scheme's page as a fixed dark window in every scheme, its
 //   header the three 9 px status dots and the label, the prompt in the success green,
 //   commands in the dark foreground and output in the dark subtle ink.
+//   The `playground` density is the hand-off component page's own JSX card instead
+//   (Component.dc.html lines 171 to 174, the playground's output, drawn by the page and
+//   not by its CodeBlock renderer): `border:1px solid var(--ln);border-radius:16px;
+//   background:var(--bg2)`, its bar `height:40px;padding:0 8px 0 16px;...;border-bottom:
+//   1px solid var(--ln);background:var(--sf)` with the 400 12px mono tx3 label and a Copy
+//   button `height:28px;padding:0 10px;border-radius:8px;...;font:500 12px var(--ft);
+//   color:var(--tx2);border:1px solid var(--ln2)` of a 13 px glyph 6 before its label,
+//   and its `<pre style="padding:16px 18px;font:400 13px/1.7 var(--fm)">`.
 //
 // CodeBlock is a "Shared" platform treatment: neither iOS nor Android ships a code
 // display control, and the web reference is the standard `pre`/`code` HTML pattern,
@@ -53,19 +61,26 @@ function codeText(tokens: ColorTokens): TextStyle {
 
 // --- surface -----------------------------------------------------------------
 
-// The code card: the sunken well on a hairline at the code-card corner. The fill is
+// The code card: the sunken well on a hairline at the code-card corner (the card corner
+// on the playground card, `border-radius:16px`). The fill is
 // OPAQUE (a content surface); `overflow: "hidden"` clips full-bleed row tints (line
 // highlight, diff) at the rounded corners. Its header bar and the terminal window
 // share the corner; the hairline is the inset the expander's corners sit inside.
 const CARD_RADIUS = platformShape.web.codeCard;
+const PLAYGROUND_RADIUS = shape.web.card;
 const CARD_BORDER = 1;
 
-function surface(tokens: ColorTokens): ViewStyle {
+/** The card's corner at a density: the code-card corner, or the card corner on the playground card. */
+function cardRadius(density: Density): number {
+  return density === "playground" ? PLAYGROUND_RADIUS : CARD_RADIUS;
+}
+
+function surface(tokens: ColorTokens, density: Density = "default"): ViewStyle {
   return {
     width: "100%",
     alignSelf: "flex-start",
     overflow: "hidden",
-    borderRadius: CARD_RADIUS,
+    borderRadius: cardRadius(density),
     borderWidth: CARD_BORDER,
     borderColor: tokens.border,
     backgroundColor: tokens["surface-sunken"] ?? tokens.muted,
@@ -80,48 +95,52 @@ const attachedTop: ViewStyle = {
   borderTopWidth: 0,
 };
 
-// The vertical padding per density (14, 8 compact) and the row inset (16, 12 compact).
-function padUnit(compact: boolean): number {
-  return compact ? 12 : 16;
+// The vertical padding per density (14, 8 compact, 16 on the playground card) and the
+// row inset (16, 12 compact, 18 on the playground card: its `padding:16px 18px`).
+function padUnit(density: Density): number {
+  return density === "compact" ? 12 : density === "playground" ? 18 : 16;
 }
 
 // Vertical padding of the rows column (horizontal padding lives on each row so
 // line tints run full-bleed to the surface edges).
-function bodyPad(compact: boolean): ViewStyle {
-  return { paddingVertical: compact ? 8 : 14 };
+function bodyPad(density: Density): ViewStyle {
+  return { paddingVertical: density === "compact" ? 8 : density === "playground" ? 16 : 14 };
 }
 
 // Horizontal padding of one code row. With a pinned gutter to the left, the row
 // keeps only its end padding (the gutter carries the start inset).
-function rowPad(compact: boolean, gutter: boolean): ViewStyle {
+function rowPad(density: Density, gutter: boolean): ViewStyle {
   return {
     flexDirection: "row",
-    paddingStart: gutter ? 0 : padUnit(compact),
-    paddingEnd: padUnit(compact),
+    paddingStart: gutter ? 0 : padUnit(density),
+    paddingEnd: padUnit(density),
   };
 }
 
 // --- header bar (filename/language label, tab strip, hosted copy chip) -------
 
 // The header row above the code: the card's own top, on the sunken well, its bottom
-// edge the hairline the code surface's top border draws.
-function headerBar(tokens: ColorTokens): ViewStyle {
+// edge the hairline the code surface's top border draws. On the playground card it is
+// the hand-off's 40 px bar on the `card` fill (its `background:var(--sf)`), 16 in and 8
+// out (`padding:0 8px 0 16px`).
+function headerBar(tokens: ColorTokens, density: Density = "default"): ViewStyle {
+  const playground = density === "playground";
   return {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     alignSelf: "flex-start",
     width: "100%",
-    borderTopStartRadius: CARD_RADIUS,
-    borderTopEndRadius: CARD_RADIUS,
+    borderTopStartRadius: cardRadius(density),
+    borderTopEndRadius: cardRadius(density),
     borderWidth: 1,
     borderBottomWidth: 0,
     borderColor: tokens.border,
-    backgroundColor: tokens["surface-sunken"] ?? tokens.muted,
-    paddingStart: 14,
-    paddingEnd: 12,
+    backgroundColor: playground ? tokens.card : tokens["surface-sunken"] ?? tokens.muted,
+    paddingStart: playground ? 16 : 14,
+    paddingEnd: playground ? 8 : 12,
     paddingVertical: 4,
-    minHeight: 36,
+    minHeight: playground ? 40 : 36,
   };
 }
 
@@ -205,12 +224,12 @@ function diffMarker(kind: "add" | "del" | "ctx", tokens: ColorTokens, _dark: boo
 
 // The pinned line-number column: right-aligned digits, start inset matching the
 // row inset. Sits OUTSIDE the horizontal scroller so numbers never scroll.
-function gutterCol(compact: boolean): ViewStyle {
-  return { alignItems: "stretch", paddingStart: padUnit(compact) };
+function gutterCol(density: Density): ViewStyle {
+  return { alignItems: "stretch", paddingStart: padUnit(density) };
 }
 
 // One gutter row: a right-aligned number, 14 before the code.
-function gutterRow(_compact: boolean): ViewStyle {
+function gutterRow(_density: Density): ViewStyle {
   return { alignItems: "flex-end", paddingEnd: 14 };
 }
 
@@ -237,8 +256,12 @@ function expanderBar(tokens: ColorTokens): ViewStyle {
 }
 
 // The expander's ripple clip: the card's bottom corners inside its 1px border, so the
-// press layer follows the card's curve.
-const expanderClip: ViewStyle = { borderBottomStartRadius: CARD_RADIUS - CARD_BORDER, borderBottomEndRadius: CARD_RADIUS - CARD_BORDER };
+// press layer follows the card's curve (the card corner's on the playground card).
+function expanderClip(density: Density = "default"): ViewStyle {
+  return density === "playground"
+    ? { borderBottomStartRadius: PLAYGROUND_RADIUS - CARD_BORDER, borderBottomEndRadius: PLAYGROUND_RADIUS - CARD_BORDER }
+    : { borderBottomStartRadius: CARD_RADIUS - CARD_BORDER, borderBottomEndRadius: CARD_RADIUS - CARD_BORDER };
+}
 
 // 500 12 in the accent's text ink.
 function expanderLabel(tokens: ColorTokens): TextStyle {
@@ -301,8 +324,8 @@ const terminalLabel: TextStyle = {
 };
 
 // The terminal body: the dark page; vertical padding per density (rows carry horizontal).
-function terminalBody(compact: boolean): ViewStyle {
-  return { backgroundColor: DARK.background, ...bodyPad(compact) };
+function terminalBody(density: Density): ViewStyle {
+  return { backgroundColor: DARK.background, ...bodyPad(density) };
 }
 
 // The non-selectable prompt, in the success green. `userSelect: "none"` keeps the
@@ -378,17 +401,21 @@ const inlineCopyIcon = 13;
 // floating chip is placed by an absolutely-positioned wrapper in the shell (which also
 // measures its width so code rows can reserve a matching end inset). A hosted chip sits
 // bare in the header; a floating one, over code, takes the card fill so the code does
-// not read through it. `dark` is the terminal's chip, on the dark window.
-function copyButton(tokens: ColorTokens, dark: boolean, floating: boolean): ViewStyle {
+// not read through it. `dark` is the terminal's chip, on the dark window. On the
+// playground card it is the hand-off page's Copy button: 28 tall, 10 in, at the page's
+// copy-button corner (`height:28px;padding:0 10px;border-radius:8px`, the same
+// `field-border` hairline, 500 12 label and 13 px glyph 6 apart).
+function copyButton(tokens: ColorTokens, dark: boolean, floating: boolean, density: Density = "default"): ViewStyle {
   const t = dark ? DARK : tokens;
+  const playground = density === "playground";
   return {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    minHeight: 26,
-    borderRadius: platformShape.web.key,
+    minHeight: playground ? 28 : 26,
+    borderRadius: playground ? platformShape.web.copyButton : platformShape.web.key,
     borderWidth: 1,
-    paddingHorizontal: 8,
+    paddingHorizontal: playground ? 10 : 8,
     paddingVertical: 4,
     borderColor: t["field-border"] ?? t.border,
     ...(floating ? { backgroundColor: t.card } : null),

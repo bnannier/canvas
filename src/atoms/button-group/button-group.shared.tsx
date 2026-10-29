@@ -39,6 +39,14 @@ import { paneRipple, paneStyle } from "../../style/glass-surface/glass-pane.js";
 
 export type Kind = "segmented" | "split" | "stepper" | "spaced";
 export type Size = "small" | "default" | "large";
+/**
+ * The segmented row's density: `compact` keeps each segment at its size's height and
+ * gives it the small label on a tighter inset, the v4 hand-off component page's platform
+ * switch (Component.dc.html line 153: the default track around 28 px buttons of
+ * `padding:0 12px;...;font:500 12px/1`). A skin without a compact segment draws the
+ * default density (the iOS and Android skins, whose platforms ship the control).
+ */
+export type Density = "compact" | "default";
 
 /** A segment: a bare label, or a label paired with a kit icon glyph rendered
  *  before it (or alone, under the group-level `iconsOnly`, where the label
@@ -117,6 +125,11 @@ export interface ButtonGroupSkin {
   segmentType?: Record<Size, TextStyle>;
   /** A segment's horizontal padding when it shows its icon alone (`iconsOnly`); omit to keep the size's. */
   segmentIconOnlyPadding?: number;
+  /**
+   * A `compact` segment's inset and label type over its size's (the hand-off page's
+   * platform switch); omit where the platform's control has one density.
+   */
+  compactSegment?: { size: ViewStyle; type: TextStyle };
   /** Height and padding of the split, stepper and spaced cells (the web's match its Button). */
   cellSize?: Record<Size, ViewStyle>;
   /** Label type of the split, stepper and spaced cells. */
@@ -155,6 +168,14 @@ export interface ButtonGroupProps extends MeasureProps {
   // Size (pick one; default is the medium size).
   small?: boolean;
   large?: boolean;
+
+  /**
+   * Density of the segmented row: the segments keep their size's height and take the
+   * small label on a 12 px inset (the hand-off component page's platform switch, a
+   * default-height track of 12 px labels). On the web only: a platform that ships the
+   * control keeps its one density. The split, stepper and spaced kinds ignore it.
+   */
+  compact?: boolean;
 
   /**
    * Segmented/spaced only: each segment renders its `icon` alone and the item's
@@ -203,6 +224,11 @@ export function sizeOf(p: ButtonGroupProps): Size {
   return "default";
 }
 
+/** The segmented row's density: `compact`, or the default. */
+export function densityOf(p: ButtonGroupProps): Density {
+  return p.compact ? "compact" : "default";
+}
+
 const DEFAULT_ITEMS = ["Day", "Week", "Month"];
 const DEFAULT_MENU = ["Save as draft", "Save and close", "Save a copy"];
 
@@ -238,6 +264,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     /** Flex to an equal share of a `block` group's row. */
     block?: boolean;
     size: Size;
+    /** The segmented row's density (attached segments only; a standalone peer keeps its cell). */
+    density?: Density;
     disabled?: boolean;
     onPress?: (event: GestureResponderEvent) => void;
     onPressIn?: () => void;
@@ -245,7 +273,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     onLayout?: (event: LayoutChangeEvent) => void;
   }
 
-  function Segment({ label, icon, iconOnly, selected, steadyPress, selectable, corners, leading, standalone, block, size, disabled, onPress, onPressIn, onPressOut, onLayout }: SegmentProps) {
+  function Segment({ label, icon, iconOnly, selected, steadyPress, selectable, corners, leading, standalone, block, size, density = "default", disabled, onPress, onPressIn, onPressOut, onLayout }: SegmentProps) {
     const theme = useMaterialTheme({ layer: "control" });
     const { tokens, surface } = theme;
     const glass = surface === "glass";
@@ -256,8 +284,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // A spaced peer (standalone) is its own control, sized like the skin's other cells and,
     // where the skin says so, drawn with its own surface; an attached segment sits in the row.
     const solidSurface = standalone && skin.spacedSurface ? skin.spacedSurface(tokens) : skin.segmentSurface(tokens, selected);
+    // A compact attached segment keeps its size's height and takes the skin's compact
+    // inset and label over the size's; a skin with no compact segment draws the size's.
+    const compact = !standalone && density === "compact" ? skin.compactSegment : undefined;
     const cellSize = standalone ? skin.cellSize?.[size] : skin.segmentSize?.[size];
-    const labelType = (standalone ? skin.cellType?.[size] : skin.segmentType?.[size]) ?? s.sizeLabel[size];
+    const labelType = compact?.type ?? (standalone ? skin.cellType?.[size] : skin.segmentType?.[size]) ?? s.sizeLabel[size];
     const labelLook = standalone && skin.spacedLabel ? skin.spacedLabel(tokens) : skin.segmentLabel(tokens, selected);
     // The skin's own box in both modes (GP-1): under glass `paneStyle` turns its resting
     // borders (a spaced peer's hairline, Android's divider) into padding, and the segment's
@@ -266,6 +297,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       s.segmentBase,
       { borderWidth: skin.segmentBorderWidth },
       cellSize ?? s.sizeContainer[size],
+      compact?.size,
       iconOnly && icon != null && !standalone && skin.segmentIconOnlyPadding != null ? { paddingHorizontal: skin.segmentIconOnlyPadding } : null,
       corners,
       leading && skin.segmentDivider ? skin.segmentDivider(tokens) : null,
@@ -576,6 +608,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
       if (!glass || disabled || kind !== "segmented") setPressedSegment(null);
     }, [glass, disabled, kind]);
     const size = sizeOf(props);
+    const density = densityOf(props);
     // HUG, or FILL under `block` or a measure step (the segmented/spaced kinds
     // only; see below). Under either the segments flex to equal shares of the row.
     const sizing = useSizing(props);
@@ -591,6 +624,10 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     devWarn(
       !!props.iconsOnly && (kind === "split" || kind === "stepper"),
       `[canvas] <ButtonGroup />: \`iconsOnly\` applies to the segmented and spaced kinds; the ${kind} kind renders labels and ignores it.`,
+    );
+    devWarn(
+      density === "compact" && kind !== "segmented",
+      `[canvas] <ButtonGroup />: \`compact\` applies to the segmented kind's attached segments; the ${kind} kind keeps its cells and ignores it.`,
     );
     devWarn(
       !!props.iconsOnly && (kind === "segmented" || kind === "spaced") && items.some((it) => itemIconOf(it) == null),
@@ -680,6 +717,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         leading={i > 0}
         block={fills}
         size={size}
+        density={density}
         disabled={disabled}
         onPress={(e) => {
           setActive(i);

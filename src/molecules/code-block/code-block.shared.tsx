@@ -39,7 +39,10 @@ import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 //     hand-off's import chip: a raised mono pill with a trailing copy glyph, the
 //     whole pill one copy button.
 // - Density (pick one; default is the comfortable ramp): `compact` tightens the
-//   type ramp (12 / 1.7) and padding for dense contexts such as docs panes.
+//   type ramp (12 / 1.7) and padding for dense contexts such as docs panes;
+//   `playground` is the v4 hand-off component page's JSX card (Component.dc.html
+//   lines 171 to 174): the card corner, a 40 px bar on the card fill, 16 in and 8 out,
+//   its Copy a 28 px hairline button, and the code 16 by 18 at the default ramp.
 // - Orthogonal booleans that stack: `copy` (clipboard chip), `wrap` (soft-wrap
 //   long lines instead of scrolling), `diff` (+/- line tinting), `collapsible`
 //   (fold long blocks behind an expander), `attached` (square the top edge to
@@ -65,16 +68,16 @@ export interface CodeBlockSkin extends TouchTargetSkin {
   codeTypeCompact: TextStyle;
   /** Code foreground color (token-driven so it follows light/dark). */
   codeText: (t: ColorTokens) => TextStyle;
-  /** The muted, bordered, rounded code surface (plain + numbered base). */
-  surface: (t: ColorTokens) => ViewStyle;
+  /** The muted, bordered, rounded code surface (plain + numbered base), per density. */
+  surface: (t: ColorTokens, density?: Density) => ViewStyle;
   /** Squares the top edge for `attached` blocks (flush under an adjoining bar). */
   attachedTop: ViewStyle;
   /** Vertical padding of the rows column, per density. */
-  bodyPad: (compact: boolean) => ViewStyle;
+  bodyPad: (density: Density) => ViewStyle;
   /** One code row: direction + horizontal insets, per density and gutter presence. */
-  rowPad: (compact: boolean, gutter: boolean) => ViewStyle;
-  /** Header strip carrying the filename/language label or the tab strip. */
-  headerBar: (t: ColorTokens) => ViewStyle;
+  rowPad: (density: Density, gutter: boolean) => ViewStyle;
+  /** Header strip carrying the filename/language label or the tab strip, per density. */
+  headerBar: (t: ColorTokens, density?: Density) => ViewStyle;
   /** Header adjustments when it hosts the tab strip. */
   headerBarWithTabs: ViewStyle;
   /** Header label type (the file/language name). */
@@ -96,15 +99,15 @@ export interface CodeBlockSkin extends TouchTargetSkin {
   /** The +/- marker glyph type (non-selectable). */
   diffMarker: (kind: "add" | "del" | "ctx", t: ColorTokens, dark: boolean) => TextStyle;
   /** The pinned line-number column, per density. */
-  gutterCol: (compact: boolean) => ViewStyle;
+  gutterCol: (density: Density) => ViewStyle;
   /** One gutter row (right-aligned number), per density. */
-  gutterRow: (compact: boolean) => ViewStyle;
+  gutterRow: (density: Density) => ViewStyle;
   /** Dimmed line-number color. */
   gutterText: (t: ColorTokens) => TextStyle;
-  /** The expander bar under a collapsed block. */
+  /** The expander bar under a collapsed block; its ripple clip follows the card's corner at each density. */
   expanderBar: (t: ColorTokens) => ViewStyle;
   /** The expander's ripple clip: the surface's bottom corners, inside its border. */
-  expanderClip: ViewStyle;
+  expanderClip: (density?: Density) => ViewStyle;
   /** The expander label type. */
   expanderLabel: (t: ColorTokens) => TextStyle;
   /** Terminal outer window: shape, border, shadow/elevation, clipping. */
@@ -118,7 +121,7 @@ export interface CodeBlockSkin extends TouchTargetSkin {
   /** Terminal chrome label type. */
   terminalLabel: TextStyle;
   /** Terminal body container (dark fill + vertical padding), per density. */
-  terminalBody: (compact: boolean) => ViewStyle;
+  terminalBody: (density: Density) => ViewStyle;
   /** The non-selectable prompt glyph. */
   terminalPrompt: TextStyle;
   /** The command line text. */
@@ -135,8 +138,8 @@ export interface CodeBlockSkin extends TouchTargetSkin {
   inlineCopyType: (t: ColorTokens, hovered: boolean) => TextStyle;
   /** The copyable inline pill's trailing glyph size. */
   inlineCopyIcon: number;
-  /** The copy chip shape/fill (`dark` picks the terminal chip; `floating` adds its shadow). */
-  copyButton: (t: ColorTokens, dark: boolean, floating: boolean) => ViewStyle;
+  /** The copy chip shape/fill (`dark` picks the terminal chip; `floating` adds its shadow), per density. */
+  copyButton: (t: ColorTokens, dark: boolean, floating: boolean, density?: Density) => ViewStyle;
   /** The copy chip label. */
   copyText: (t: ColorTokens, dark: boolean) => TextStyle;
   /** Press dim opacity for pressable chrome (iOS/web feedback). */
@@ -179,6 +182,13 @@ export interface CodeBlockProps {
 
   // Density (pick one; default is the comfortable ramp).
   compact?: boolean;
+  /**
+   * The hand-off component page's JSX card (Component.dc.html lines 171 to 174, the
+   * playground's output): the block at the card corner, its header a 40 px bar on the
+   * card fill, 16 in and 8 out, with its Copy a 28 px hairline button, and the code 16
+   * above and below, 18 in, at the default 13 / 1.7 ramp. `compact` wins when both are passed.
+   */
+  playground?: boolean;
 
   // Orthogonal modifiers.
   /**
@@ -272,6 +282,16 @@ export function variantOf(p: CodeBlockProps): Variant {
   if (p.numbered) return "numbered";
   if (p.inline) return "inline";
   return "plain";
+}
+
+/** The block's density (pick one): the tightened ramp, the hand-off's playground card, or the default. */
+export type Density = "compact" | "playground" | "default";
+
+// Density precedence when more than one is passed: first match wins.
+export function densityOf(p: CodeBlockProps): Density {
+  if (p.compact) return "compact";
+  if (p.playground) return "playground";
+  return "default";
 }
 
 const DEFAULT_CODE = 'const theme = getTheme();\nsetTheme(theme === "dark" ? "light" : "dark");';
@@ -417,11 +437,14 @@ export function createCodeBlock(skin: CodeBlockSkin) {
   function CopyChip({
     dark,
     floating,
+    density = "default",
     copied,
     onPress,
   }: {
     dark: boolean;
     floating: boolean;
+    /** The block's density: the playground card's Copy is the hand-off's 28 px button. */
+    density?: Density;
     copied: boolean;
     onPress: (event: GestureResponderEvent) => void;
   }) {
@@ -432,7 +455,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // (whose own shadow is unclipped by its child-overflow); iOS `shadow*` stays
     // on the inner Pressable.
     const { elevation, ...box } = StyleSheet.flatten(
-      skin.copyButton(tokens, dark, floating),
+      skin.copyButton(tokens, dark, floating, density),
     ) as ViewStyle & { elevation?: number };
     const { parent: elevParent } = splitElevation({ elevation });
     // The copy chip is a 26pt pill of label plus glyph: deliberately quiet chrome on
@@ -572,10 +595,10 @@ export function createCodeBlock(skin: CodeBlockSkin) {
       prompt = "$",
       collapsible,
       collapsedLines = 8,
-      compact = false,
       attached = false,
     } = props;
     const variant = variantOf(props);
+    const density = densityOf(props);
     const scrollFocus = useHorizontalScrollFocus();
     // The overflowing scroller is a keyboard stop that sits flush inside the block's
     // clipping card, so the card draws its focus ring (src/style/focus-frame.tsx).
@@ -674,7 +697,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
 
     const highlights = useMemo(() => parseHighlightLines(highlightLines), [highlightLines]);
 
-    const type = compact ? skin.codeTypeCompact : skin.codeType;
+    const type = density === "compact" ? skin.codeTypeCompact : skin.codeType;
     // Empty lines render an empty Text; the row keeps its height via minHeight.
     const rowMin: ViewStyle = { minHeight: type.lineHeight };
 
@@ -704,9 +727,9 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     if (variant === "terminal" && term) {
       const label = language ?? filename ?? "bash";
       const rows = (
-        <View style={[GROW, skin.terminalBody(compact)]}>
+        <View style={[GROW, skin.terminalBody(density)]}>
           {term.rows.map((row, i) => (
-            <View key={i} style={[skin.rowPad(compact, false), rowMin]}>
+            <View key={i} style={[skin.rowPad(density, false), rowMin]}>
               {row.kind === "cmd" ? (
                 <>
                   <Text style={[type, MONO, skin.terminalPrompt]}>{`${prompt} `}</Text>
@@ -783,12 +806,12 @@ export function createCodeBlock(skin: CodeBlockSkin) {
       <View
         style={[
           GROW,
-          skin.bodyPad(compact),
+          skin.bodyPad(density),
           copyInset > 0 ? { paddingEnd: copyInset } : null,
         ]}
       >
         {tokenLines.slice(0, visibleCount).map((spans, i) => (
-          <View key={i} style={[skin.rowPad(compact, gutter), rowMin, rowTint(i)]}>
+          <View key={i} style={[skin.rowPad(density, gutter), rowMin, rowTint(i)]}>
             {diffLines ? (
               <Text style={[type, MONO, skin.diffMarker(diffLines[i].kind, tokens, dark)]}>
                 {`${DIFF_GLYPH[diffLines[i].kind]} `}
@@ -811,18 +834,18 @@ export function createCodeBlock(skin: CodeBlockSkin) {
         testID={testID}
         style={[
           RELATIVE,
-          glass ? skin.surface(tokens) : null,
+          glass ? skin.surface(tokens, density) : null,
           glass ? GLASS_ROOT : null,
           style,
           // Under glass the root carries the card's corners; in solid mode the header
           // and the surface round their own, so the ring takes the card's shape.
-          focusFrame.ring(glass ? undefined : [skin.surface(tokens), attached ? skin.attachedTop : null]),
+          focusFrame.ring(glass ? undefined : [skin.surface(tokens, density), attached ? skin.attachedTop : null]),
         ]}
       >
         {hasHeader ? (
           <View
             style={[
-              glass ? withInnerFill(theme, { ...skin.headerBar(tokens), borderWidth: 0, borderBottomWidth: 0 }, "soft") : skin.headerBar(tokens),
+              glass ? withInnerFill(theme, { ...skin.headerBar(tokens, density), borderWidth: 0, borderBottomWidth: 0 }, "soft") : skin.headerBar(tokens, density),
               tabList ? skin.headerBarWithTabs : null,
               attached ? skin.attachedTop : null,
             ]}
@@ -841,22 +864,22 @@ export function createCodeBlock(skin: CodeBlockSkin) {
               {!tabList && filename && language && !props.unbadged ? (
                 <Text style={[skin.headerBadge(tokens), MONO]}>{language}</Text>
               ) : null}
-              {copy ? <CopyChip dark={false} floating={false} copied={copied} onPress={handleCopy} /> : null}
+              {copy ? <CopyChip dark={false} floating={false} density={density} copied={copied} onPress={handleCopy} /> : null}
             </View>
           </View>
         ) : null}
         <View
           style={[
-            glass ? { ...skin.surface(tokens), backgroundColor: "transparent", borderWidth: 0, borderTopWidth: 0, borderRadius: 0 } : skin.surface(tokens),
+            glass ? { ...skin.surface(tokens, density), backgroundColor: "transparent", borderWidth: 0, borderTopWidth: 0, borderRadius: 0 } : skin.surface(tokens, density),
             hasHeader ? skin.surfaceUnderHeader : null,
             !hasHeader && attached ? skin.attachedTop : null,
           ]}
         >
           <View style={ROW}>
             {gutter ? (
-              <View style={[skin.gutterCol(compact), skin.bodyPad(compact)]}>
+              <View style={[skin.gutterCol(density), skin.bodyPad(density)]}>
                 {Array.from({ length: visibleCount }, (_, i) => (
-                  <View key={i} style={[skin.gutterRow(compact), rowMin, rowTint(i)]}>
+                  <View key={i} style={[skin.gutterRow(density), rowMin, rowTint(i)]}>
                     <Text style={[type, skin.gutterText(tokens), MONO]}>
                       {String(startLine + i)}
                     </Text>
@@ -880,7 +903,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
             )}
           </View>
           {folds ? (
-            <RippleClip shape={skin.expanderClip}>
+            <RippleClip shape={skin.expanderClip(density)}>
               <Pressable
                 android_ripple={surfaceRipple(tokens)}
                 onPress={() => setExpanded(!expanded)}
@@ -907,7 +930,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
               setCopyInset((prev) => Math.max(prev, Math.ceil(width) + 16));
             }}
           >
-            <CopyChip dark={false} floating copied={copied} onPress={handleCopy} />
+            <CopyChip dark={false} floating density={density} copied={copied} onPress={handleCopy} />
           </View>
         ) : null}
       </GlassSurface>

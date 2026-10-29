@@ -4,7 +4,10 @@ Syntax-highlighted code display with clipboard copy, horizontal scrolling, line
 emphasis, diff rendering, collapsible folding, and tabbed alternatives.
 
 The variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
-first match wins); `compact` tightens the density; `copy`, `wrap`, `diff`,
+first match wins); the density axis is `compact` (the tightened ramp) or `playground`
+(the hand-off component page's JSX card: the block at the card corner, its header a 40
+px bar on the card fill, 16 in and 8 out, its Copy a 28 px hairline button, and the code
+16 above and below and 18 in at the default ramp; `compact` wins); `copy`, `wrap`, `diff`,
 `collapsible`, `attached`, `headerless`, and `unbadged` stack orthogonally. `language`
 drives the in-kit highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything
 else renders monochrome) and, with no `filename`, labels a header bar above the code;
@@ -231,6 +234,19 @@ Build complete in 12s`}
   filename="JSX · ButtonProps"
   language="tsx"
   code={`<Button outline small iconLeft={<Icon plus />}>Add item</Button>`}
+/>
+```
+
+### Playground card
+
+```tsx
+<CodeBlock
+  playground
+  unbadged
+  copy
+  filename="JSX · ButtonProps"
+  language="tsx"
+  code={`<Button>Save changes</Button>`}
 />
 ```
 

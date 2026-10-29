@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup items={["Day", "Week", "Month"]} disabled />
+<ButtonGroup compact items={["Day", "Week", "Month"]} defaultActive={0} accessibilityLabel="Range" />
   );
 }

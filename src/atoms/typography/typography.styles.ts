@@ -46,6 +46,7 @@ export type Role =
   | "pageBody"
   | "pageNote"
   | "pageLabel"
+  | "knobLabel"
   | "guideTitle"
   | "guideBody"
   | "pagerName"
@@ -116,6 +117,9 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     // The component page's label, 500 11px/1 tracked .08em in caps; the caller's `mono`
     // sets its face, as the hand-off's `var(--fm)` does.
     pageLabel: pageRoles.pageLabel,
+    // The knob panel's label row, 500 12px/1; the caller's `mono` sets its face, as the
+    // hand-off's `var(--fm)` does (Component.dc.html line 161).
+    knobLabel: pageRoles.knobLabel,
     // The Usage guidance card's title and paragraph, both in the interface face
     // (the hand-off's `var(--ft)`), so neither takes the display face.
     guideTitle: pageRoles.guideTitle,
@@ -221,6 +225,9 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "specText":
     // The specimen tile's caption strip: `color:var(--tx2)` (Component.dc.html line 199).
     case "tileCaption":
+    // The knob panel's label row: `color:var(--tx2)` (Component.dc.html line 161); its type
+    // hint takes the `muted` tone (the third ink), the row's `color:var(--tx3)` span.
+    case "knobLabel":
       return { color: tokens["muted-foreground"] };
     // The component page's label: `color:var(--tx3)` (Component.dc.html, the knob panel's
     // "Props" label), the subtle ink, where the Typography eyebrow is the accent's.

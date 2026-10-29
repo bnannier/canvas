@@ -3,8 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Row } = scope;
   return (
-<Typography guideTitle>Real links (href)</Typography>
+<Row between snug>
+  <Typography knobLabel mono>iconLeft</Typography>
+  <Typography knobLabel mono muted>icon</Typography>
+</Row>
   );
 }

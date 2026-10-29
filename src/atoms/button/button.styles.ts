@@ -291,8 +291,12 @@ const JUMP_LINK_TYPE: TextStyle = { ...FS(12, 16), fontWeight: "500" };
 // `background:none;border:0;padding:0`) in the accent text ink: the props table's show-all
 // row is `font:500 13px var(--ft);color:var(--ion-tx)` (line 241), the props panel's
 // Reset `font:500 12px var(--ft);color:var(--ion-tx)` (line 158), which `small` gives.
-const PLAIN_LINK_TYPE: TextStyle = { ...FS(13, 18), fontWeight: "500" };
-const PLAIN_LINK_SMALL_TYPE: TextStyle = { ...FS(12, 16), fontWeight: "500" };
+// Neither sets a ratio, so each line is the browser's `normal` for Instrument Sans at its
+// size, measured in Playwright on the hand-off page served from tools/v4/handoff
+// (Chromium, the face loaded): the Reset button's line box is 15 px at 12 px, and the
+// show-all row's 16 px at 13 px.
+const PLAIN_LINK_TYPE: TextStyle = { ...FS(13, 16), fontWeight: "500" };
+const PLAIN_LINK_SMALL_TYPE: TextStyle = { ...FS(12, 15), fontWeight: "500" };
 const INLINE_ICON = 22;
 
 /**

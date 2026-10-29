@@ -1,0 +1,7 @@
+---
+"@nannier/canvas": minor
+---
+
+Three new options close the docs playground's measured drifts against the Canvas v4 hand-off (justification for the minor: new component options). ButtonGroup gains a density axis with `compact`, the hand-off component page's platform switch: the segmented row's segments keep their size's height and take the 12 px label on a 12 px inset, on the web (iOS and Android ship the control and keep its one density; the other kinds ignore it). CodeBlock gains a density axis of `compact` and the new `playground`, the hand-off page's JSX card: the block at the card corner, its header a 40 px bar on the card fill 16 in and 8 out, its Copy a 28 px hairline button at the page's copy-button corner, and the code 16 above and below and 18 in at the default ramp. Typography gains the `knobLabel` page role, the knob panel's label row: 500 12/1 in the secondary ink, its type hint in the `muted` tone (the third ink), `mono` for the face.
+
+Value corrections, carried in the same release: the plain accent link's line is the face's own `normal` at its size, as the hand-off sets no ratio (16 px at 13 px, 15 px with `small`, measured on the served hand-off page), so a panel's Reset row is 15 px tall; and CardMedia's top corners now nest inside the corner the Card around it draws (a `stageCorners` card's well rounds inside the 20 px stage corner), not always the default card corner.
