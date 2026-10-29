@@ -227,7 +227,20 @@ for (const id of V4_SECTIONS) {
         const style = Array.from(document.querySelectorAll("style")).find((node) => node.textContent?.includes(marker));
         if (style) style.id = marker;
       }, HIDE_BANNER);
-      await fitElementForScreenshot(page, page.locator(section).first());
+      const target = page.locator(section).first();
+      await fitElementForScreenshot(page, target);
+      // A section keeps growing after the first fit (code blocks and grids measure in
+      // stages), and a crop past the painted window comes out white: the 2026-10-28 ruling
+      // on Usage read a 35 px white band under its last cards. Fit again until the height
+      // holds still.
+      for (let round = 0; round < 4; round++) {
+        await page.waitForTimeout(500);
+        const before = (await target.boundingBox())?.height;
+        await fitElementForScreenshot(page, target);
+        const after = (await target.boundingBox())?.height;
+        if (before === after) break;
+      }
+      await page.waitForTimeout(300);
     },
     restore: async (page: Page) => {
       await page.evaluate((marker) => document.getElementById(marker)?.remove(), HIDE_BANNER);
@@ -366,6 +379,7 @@ const config: LookoutConfig = {
     "the Do and Don't section on a component page, which the hand-off does not draw: the owner keeps it (PLAN P3, rule S8), after Usage, in the hand-off's card look (2026-10-28)",
     "the example picker, form-factor switcher and code block above and below the Platform skins cards, which the hand-off does not draw: the owner keeps them for the docs and glass targets and the e2e recipes, and their look is still judged (2026-10-28)",
     "the Platform skins cards rendering the chosen example where the hand-off renders the playground's props: the same owner decision that keeps the example picker, form-factor switcher and code block (2026-10-28)",
+    "the floating navbar pill's row cut at the window's edge at tablet and phone widths: the hand-off's pill is `max-width:100%;overflow-x:auto` and scrolls sideways where it does not fit (measured at 834 px: the hand-off's row 1177 px in an 800 px pill, the docs' 1221 in 800), as design-language item 8 records (2026-10-28)",
     "which paragraphs, example cards, variants, prop rows, semantics rows, token chips and related tiles a component page shows, and their wording: that content is read from the repository's current .md files and source, while the hand-off carries a snapshot of them (its canvas-docs.js, tools/v4/README.md: the repository wins); how each is drawn is still judged (2026-10-28)",
   ],
 
