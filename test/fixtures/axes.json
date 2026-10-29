@@ -1057,6 +1057,28 @@
       "warning + yellow": "warning"
     }
   },
+  "Chip.look": {
+    "kind": "axis",
+    "components": [
+      "Chip"
+    ],
+    "pages": [
+      "chip"
+    ],
+    "resolver": "src/atoms/chip/chip.shared.tsx#lookOf",
+    "order": [
+      "token",
+      "option"
+    ],
+    "none": null,
+    "single": {
+      "token": "token",
+      "option": "option"
+    },
+    "pairs": {
+      "option + token": "token"
+    }
+  },
   "Container.measure": {
     "kind": "axis",
     "components": [
@@ -2677,16 +2699,20 @@
     ],
     "resolver": "src/atoms/swatch/swatch.shared.tsx#sizeOf",
     "order": [
+      "tiny",
       "small",
       "large"
     ],
     "none": "default",
     "single": {
+      "tiny": "tiny",
       "small": "small",
       "large": "large"
     },
     "pairs": {
-      "large + small": "small"
+      "large + small": "small",
+      "large + tiny": "tiny",
+      "small + tiny": "tiny"
     }
   },
   "Swatch.stretch": {

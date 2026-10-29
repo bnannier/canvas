@@ -3,16 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Swatch, Row } = scope;
+  const { tokens, Swatch } = scope;
   return (
-<View role="radiogroup" aria-label="Palette">
-  <Row snug alignCenter>
-    <Swatch violet selected onPress={() => {}} />
-    <Swatch cyan onPress={() => {}} />
-    <Swatch mint onPress={() => {}} />
-    <Swatch rose onPress={() => {}} />
-    <Swatch amber onPress={() => {}} />
-  </Row>
-</View>
+<Swatch color={tokens.primary} value="--primary" detail="oklch(0.511 0.262 276.966)">
+  primary
+</Swatch>
   );
 }

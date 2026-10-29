@@ -71,7 +71,11 @@ function OptionChips({ name, options, value, onPick }: { name: string; options: 
   );
 }
 
-/** An icon slot's glyphs as icon-only chips ("none" first). */
+/**
+ * An icon slot's glyphs as icon-only chips ("none" first). The "none" pick is the same
+ * 30 px tile as its neighbours (Component.dc.html line 163 draws every pick of the ICONS
+ * list, the empty glyph included, as the one square), its label the tile's mono type.
+ */
 function IconChips({ name, value, onPick }: { name: string; value: KnobValue; onPick: (next: string) => void }) {
   return (
     <ChipGroup option accessibilityLabel={name} value={typeof value === "string" ? value : ""} onChange={(next) => onPick(String(next))}>
@@ -79,6 +83,7 @@ function IconChips({ name, value, onPick }: { name: string; value: KnobValue; on
         <Chip
           key={glyph || "none"}
           value={glyph}
+          square={!glyph}
           accessibilityLabel={glyph || "none"}
           icon={glyph ? <Icon {...{ [glyph]: true }} size={14} decorative /> : undefined}
         >

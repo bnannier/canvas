@@ -6,6 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { tokens, Swatch, Row } = scope;
   return (
 <Row>
+  <Swatch tiny color={tokens.info}>info</Swatch>
   <Swatch small color={tokens.primary}>primary</Swatch>
   <Swatch color={tokens.success}>success</Swatch>
   <Swatch large color={tokens.destructive}>destructive</Swatch>

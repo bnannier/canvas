@@ -133,6 +133,37 @@ describe("Swatch boolean axes", () => {
     expect(blockOf(container).style.height).toBe("32px");
   });
 
+  it("tiny is the token chip's 20 px disc and wins over small", () => {
+    const { container } = ui(<Swatch color="#4f46e5" tiny small circle />);
+    expect(blockOf(container).style.height).toBe("20px");
+    expect(blockOf(container).style.width).toBe("20px");
+    expect(blockOf(container).style.borderTopLeftRadius).toBe("9999px");
+  });
+
+  it("ring draws a 1 px inset ring in the field border in place of the hairline edge", () => {
+    const { container } = ui(<Swatch ring color="#4f46e5" />);
+    const s = blockOf(container).style;
+    expect(s.boxShadow).toBe(`inset 0 0 0 1px ${lightColors["field-border"]}`);
+    expect(s.borderTopWidth).toBe("0px");
+    const plain = ui(<Swatch color="#4f46e5" />);
+    expect(blockOf(plain.container).style.borderTopWidth).not.toBe("0px");
+    expect(blockOf(plain.container).style.boxShadow).toBe("");
+  });
+
+  it("the root hugs through the layout context, never a static flex-start, so a chip's centred row centres the disc", () => {
+    // Outside a stretching Column the root declares no alignSelf: the parent's cross-axis
+    // alignment (a Chip's centre, a Row's) decides where the sample sits.
+    const { container } = ui(<Swatch tiny ring circle color="#4f46e5" />);
+    expect(rootOf(container).style.alignSelf).toBe("");
+  });
+
+  it("a selected ringed sample keeps the selection ring outside the inset ring", () => {
+    const { container } = ui(<Swatch ring selected color="#4f46e5" />);
+    expect(blockOf(container).style.boxShadow).toBe(
+      `inset 0 0 0 1px ${lightColors["field-border"]}, 0 0 0 2px ${lightColors.background}, 0 0 0 4px ${lightColors.primary}`,
+    );
+  });
+
   it("circle rounds the block fully", () => {
     const { container } = ui(<Swatch circle color="#4f39f6" />);
     expect(blockOf(container).style.borderTopLeftRadius).toBe("9999px");

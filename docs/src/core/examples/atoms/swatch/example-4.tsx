@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { tokens, Swatch } = scope;
   return (
-<Swatch block color={tokens.primary}>primary</Swatch>
+<Swatch inline color={tokens.primary}>primary</Swatch>
   );
 }

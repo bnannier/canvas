@@ -44,8 +44,11 @@ export interface SwatchSkin {
 // (`K.def('swatch')` in tools/v4/handoff/cv-kit-controls.js): a 32, 48 or 72 px chip at
 // the tile corner (`shape.web.tile`), the label 8 px under it (10 px beside it when inline), the name a
 // 500 13 px line and the value lines 400 11 px mono in the subtle ink, set flush (each line
-// at its face's normal line box, rounded up to a whole pixel).
-const box: Record<SwatchSize, number> = { small: 32, default: 48, large: 72 };
+// at its face's normal line box, rounded up to a whole pixel). `tiny` is the token chip's
+// swatch (Component.dc.html line 294: `width:20px;height:20px;border-radius:50%`), the
+// 20 px disc inside a 32 px token pill; the page draws it only as a circle, so off the
+// circle it takes the same tile corner as the other sizes.
+const box: Record<SwatchSize, number> = { tiny: 20, small: 32, default: 48, large: 72 };
 const gap = 8;
 const inlineGap = 10;
 const lineGap = 0;
@@ -55,7 +58,7 @@ const lineGap = 0;
 // native skins are the web skin.
 export const webSkin: SwatchSkin = {
   box,
-  radius: { small: shape.web.tile, default: shape.web.tile, large: shape.web.tile },
+  radius: { tiny: shape.web.tile, small: shape.web.tile, default: shape.web.tile, large: shape.web.tile },
   shape: { borderCurve: "continuous" },
   gap,
   inlineGap,

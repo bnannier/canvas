@@ -178,8 +178,13 @@ draws no chrome of its own: it wraps its chips 8 px apart, and fills its parent.
 
 `option` is the compact pick of a settings panel: 26 px tall at a small corner, a 500 12 px
 label and no check, a bare field-border edge around the muted ink at rest and the accent's
-soft wash inside its edge once chosen. An icon-only option is a 30 px square. `ChipGroup
-option` makes every chip in the set an option and sets them 4 px apart.
+soft wash inside its edge once chosen. An icon-only option is a 30 px square, and `square`
+holds any option to that square, its label then the tile's own 500 10 px mono line (the
+"none" pick at the head of an icon knob). `ChipGroup option` makes every chip in the set an
+option and sets them 4 px apart.
+<!-- only: web android -->
+On Android an option is the Material 3 chip.
+<!-- /only -->
 
 ```tsx
 <ChipGroup option accessibilityLabel="Size" defaultValue="base">
@@ -187,6 +192,34 @@ option` makes every chip in the set an option and sets them 4 px apart.
   <Chip value="base">base</Chip>
   <Chip value="large">large</Chip>
 </ChipGroup>
+```
+
+### Square options
+
+```tsx
+<ChipGroup option accessibilityLabel="Icon" defaultValue="">
+  <Chip value="" square>none</Chip>
+  <Chip value="plus" icon={<Icon plus size={14} />} accessibilityLabel="plus" />
+  <Chip value="sparkles" icon={<Icon sparkles size={14} />} accessibilityLabel="sparkles" />
+</ChipGroup>
+```
+
+### Token
+
+`token` is the tag of a colour role: a 32 px pill in the card fill inside the hairline, 8 px
+between its elements, a 500 12 px mono label with 12 px beside it, and 6 px beside its
+leading element, which is sized for a `tiny` `ring` Swatch. `token` wins over `option`
+when both are passed.
+<!-- only: web android -->
+On Android a token tag is the Material 3 chip.
+<!-- /only -->
+
+```tsx
+<Row wrap snug>
+  <Chip token icon={<Swatch tiny ring circle color={tokens.primary} accessibilityLabel="primary" />}>primary</Chip>
+  <Chip token icon={<Swatch tiny ring circle color={tokens.border} accessibilityLabel="border" />}>border</Chip>
+  <Chip token icon={<Swatch tiny ring circle color={tokens.foreground} accessibilityLabel="foreground" />}>foreground</Chip>
+</Row>
 ```
 
 ## Do & Don't

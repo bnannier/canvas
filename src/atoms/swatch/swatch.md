@@ -7,12 +7,14 @@ column and drifts row to row.
 
 Pass a live theme token as `color` and the sample follows the active scheme; a
 hairline edge keeps a white or near-black sample visible on the surface behind
-it. The chip is 48px at a 12px corner (32 `small`, 72 `large`), the name a
-13px line and the value lines 11px mono in the subtle ink; the lockup also comes
-as a `circle`, `inline` (the label beside the block), or as a `block` (a
-full-width ramp bar). `selected` marks the chosen sample with the selection
-ring, a 2px gap in the page color and then a 2px accent band, and adds
-"selected" to its accessible name.
+it. The chip is 48px at a 12px corner (32 `small`, 72 `large`, and 20 `tiny`,
+the disc of a token Chip), the name a 13px line and the value lines 11px mono
+in the subtle ink; the lockup also comes as a `circle`, `inline` (the label
+beside the block), or as a `block` (a full-width ramp bar). `ring` draws the
+edge as a 1px inset ring in the field border instead of the hairline, the token
+chip's swatch. `selected` marks the chosen sample with the selection ring, a
+2px gap in the page color and then a 2px accent band, and adds "selected" to
+its accessible name.
 
 A palette picker takes one of the kit's five accent palettes, `violet`, `cyan`,
 `mint`, `rose` or `amber` (ThemeProvider's precedence: cyan, mint, rose, amber,
@@ -37,6 +39,7 @@ reads as one choice. A plain sample still uses `color`.
 
 ```tsx
 <Row>
+  <Swatch tiny color={tokens.info}>info</Swatch>
   <Swatch small color={tokens.primary}>primary</Swatch>
   <Swatch color={tokens.success}>success</Swatch>
   <Swatch large color={tokens.destructive}>destructive</Swatch>
@@ -47,6 +50,18 @@ reads as one choice. A plain sample still uses `color`.
 
 ```tsx
 <Swatch circle color={tokens.primary}>primary</Swatch>
+```
+
+### Ring
+
+The token chip's swatch: a 20px disc edged by a 1px inset ring.
+
+```tsx
+<Row snug alignCenter>
+  <Swatch tiny ring circle color={tokens.card} accessibilityLabel="card" />
+  <Swatch tiny ring circle color={tokens.primary} accessibilityLabel="primary" />
+  <Swatch tiny ring circle color={tokens.background} accessibilityLabel="background" />
+</Row>
 ```
 
 ### Inline
