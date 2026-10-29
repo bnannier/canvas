@@ -16,9 +16,10 @@ import {
   CardSeparator,
 } from "../src/molecules/card/card.tsx";
 import * as cardStyles from "../src/molecules/card/card.styles.ts";
-import { elevationOf, mediaWellOf } from "../src/molecules/card/card.shared.tsx";
+import { elevationOf, densityOf, mediaWellOf } from "../src/molecules/card/card.shared.tsx";
 import { platformShape } from "../src/style/platform-shape.ts";
 import { shape, lightColors } from "../src/style/tokens.ts";
+import { shadow, customShadow } from "../src/style/index.ts";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
 import { mockInPageFrost } from "./fixtures/material-platform.ts";
 
@@ -551,6 +552,10 @@ describe("Card corners", () => {
     expect(radius(ui(<Card largeCorners testID="c"><Text>a</Text></Card>))).toBe(`${platformShape.web.panel}px`);
     cleanup();
     expect(radius(ui(<Card stageCorners testID="c"><Text>a</Text></Card>))).toBe(`${platformShape.web.stage}px`);
+    cleanup();
+    expect(radius(ui(<Card showcaseCorners testID="c"><Text>a</Text></Card>))).toBe(`${platformShape.web.showcaseCard}px`);
+    cleanup();
+    expect(radius(ui(<Card heroCorners testID="c"><Text>a</Text></Card>))).toBe(`${platformShape.web.heroStage}px`);
   });
 
   it("the smaller step wins when several are passed", () => {
@@ -563,10 +568,69 @@ describe("Card corners", () => {
       expect(skin.corners.callout).toBe(skin.radius);
       expect(skin.corners.large).toBe(skin.radius);
       expect(skin.corners.stage).toBe(skin.radius);
+      expect(skin.corners.showcase).toBe(skin.radius);
+      expect(skin.corners.hero).toBe(skin.radius);
       expect(skin.corners.default).toBe(skin.radius);
     }
     expect(cardStyles.iosSkin.corners.small).toBe(shape.ios.tile);
     expect(cardStyles.androidSkin.corners.small).toBe(shape.android.tile);
+  });
+
+  // The v4 hand-off section pages' two steps (`<Section>.dc.html`, canvas-hero.js): the
+  // web skin draws the showcase card at 20 and the hero stage at 24; the native skins keep
+  // their own card corner on them, as on the component page's steps.
+  it("the section pages' showcase card and hero stage are the web row's 20 and 24", () => {
+    expect(platformShape.web.showcaseCard).toBe(20);
+    expect(platformShape.web.heroStage).toBe(24);
+    expect(cardStyles.webSkin.corners.showcase).toBe(platformShape.web.showcaseCard);
+    expect(cardStyles.webSkin.corners.hero).toBe(platformShape.web.heroStage);
+    // The component page's stage and the section page's showcase card are both 20 on the
+    // web; the stage, the earlier step, wins the tie, and both win over the hero's 24.
+    const { getByTestId } = ui(<Card heroCorners showcaseCorners stageCorners testID="c"><Text>a</Text></Card>);
+    expect(getByTestId("c").style.borderRadius).toBe(`${platformShape.web.stage}px`);
+    cleanup();
+    expect(ui(<Card heroCorners showcaseCorners testID="c"><Text>a</Text></Card>).getByTestId("c").style.borderRadius).toBe(`${platformShape.web.showcaseCard}px`);
+  });
+});
+
+// The section hero's stage shadow and the showcase card's density (the v4 hand-off's
+// section pages): `heroShadow` is the ladder's medium step between the resting and the
+// raised card, and `roomy` the card's 24 px inset with a 20 px rhythm, on every platform.
+describe("Card hero shadow and roomy density", () => {
+  it("heroShadow is the medium shadow on the web and iOS, M3 level 2 on Android", () => {
+    expect(elevationOf({ heroShadow: true })).toBe("hero");
+    expect(elevationOf({ raised: true, heroShadow: true })).toBe("raised");
+    expect(elevationOf({ outlined: true, heroShadow: true })).toBe("outlined");
+    expect(elevationOf({ heroShadow: true, tileShadow: true })).toBe("hero");
+    expect(cardStyles.webSkin.elevation("hero", lightColors)).toEqual(shadow("md", lightColors));
+    expect(cardStyles.iosSkin.elevation("hero", lightColors)).toEqual(shadow("md", lightColors));
+    // M3 level 2 (3dp), between the resting level 1 and the raised level 3.
+    expect(cardStyles.androidSkin.elevation("hero", lightColors)).toEqual(customShadow({ offsetY: 2, radius: 4, opacity: 0.1, elevation: 3 }));
+    expect(cardStyles.androidSkin.elevation("hero", lightColors)).not.toEqual(cardStyles.androidSkin.elevation("raised", lightColors));
+    expect(cardStyles.androidSkin.elevation("hero", lightColors)).not.toEqual(cardStyles.androidSkin.elevation("default", lightColors));
+    const { getByTestId } = ui(
+      <>
+        <Card heroShadow testID="hero"><Text>a</Text></Card>
+        <Card raised testID="raised"><Text>a</Text></Card>
+        <Card testID="rest"><Text>a</Text></Card>
+      </>,
+    );
+    const hero = getByTestId("hero").style.boxShadow;
+    expect(hero).not.toBe("none");
+    expect(hero).not.toBe(getByTestId("raised").style.boxShadow);
+    expect(hero).not.toBe(getByTestId("rest").style.boxShadow);
+  });
+
+  it("roomy is a 24 px inset with a 20 px rhythm on every skin, between relaxed and spacious", () => {
+    expect(densityOf({ roomy: true })).toBe("roomy");
+    expect(densityOf({ relaxed: true, roomy: true })).toBe("relaxed");
+    expect(densityOf({ roomy: true, spacious: true, compact: true })).toBe("roomy");
+    for (const skin of [cardStyles.webSkin, cardStyles.iosSkin, cardStyles.androidSkin]) {
+      expect(skin.density.roomy).toEqual({ padding: 24, gap: 20 });
+    }
+    const { getByTestId } = ui(<Card roomy testID="c"><Text>a</Text><Text>b</Text></Card>);
+    expect(getByTestId("c").style.padding).toBe("24px");
+    expect(getByTestId("c").style.gap).toBe("20px");
   });
 });
 

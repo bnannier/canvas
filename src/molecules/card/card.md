@@ -1,8 +1,8 @@
 # Card
 
-A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface, and `outlined` drops the shadow and keeps the card fill under the hairline (the hand-off's page cards; a platform whose card control draws an outline instead of a shadow draws both the same). Precedence is `raised`, `flat`, `outlined`. A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
+A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface, and `outlined` drops the shadow and keeps the card fill under the hairline (the hand-off's page cards; a platform whose card control draws an outline instead of a shadow draws both the same), and `heroShadow` is the medium shadow (the hand-off's `--sh-md`, its section hero's stage), between the resting card and the raised one. Precedence is `raised`, `flat`, `outlined`, `heroShadow`. A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
 
-Corners (pick one; the smaller step wins): the card corner by default, `smallCorners` for the tile corner (12), and the three steps the hand-off's component page frames with, `calloutCorners` (14: a note under a table, a compact link tile), `largeCorners` (18: a card framing a section of a page) and `stageCorners` (20: a staging frame, a figure and its legend). The web skin draws each from its row; the native skins keep their own card corner on every step but the tile.
+Corners (pick one; the smaller step wins): the card corner by default, `smallCorners` for the tile corner (12), and the three steps the hand-off's component page frames with, `calloutCorners` (14: a note under a table, a compact link tile), `largeCorners` (18: a card framing a section of a page) and `stageCorners` (20: a staging frame, a figure and its legend), and the two its section pages frame with, `showcaseCorners` (20: a section page's showcase card) and `heroCorners` (24: the section hero's stage). The web skin draws each from its row; the native skins keep their own card corner on every step but the tile.
 
 A card with content is padded by default, and a padded surface also spaces its flat children (the card owns the vertical rhythm, so a stack of Typography lines needs no layout wrapper); pass `flush` to opt out of both, the inset and the spacing, for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`.
 
@@ -15,11 +15,13 @@ The hand-off's component page insets are their own density steps, the same on ev
 Gap-free content densities preserve dense application layouts: `dense` (12),
 `snug` (18), `cozy` (20), `relaxed` (22×24), `spacious` (28), `insetContent` (14),
 `rail` (12×14), `summary` (14×16), `metric` (14×18), `request` (18/22/18/20),
-and `menu` (12 vertical). Precedence follows that order, then the page steps
-(`panel`, `guide`, `linkTile`, `pager`), before compact/comfortable.
+and `menu` (12 vertical). `roomy` sits between `relaxed` and `spacious` and keeps a
+rhythm: a 24 px inset with 20 px between flat children, the Canvas v4 section page's
+showcase card, the same on every platform. Precedence follows that order, then the
+page steps (`panel`, `guide`, `linkTile`, `pager`), before compact/comfortable.
 `gapless` removes flat-child spacing; `borderless`, `inset`,
 `dimmed` and `clip` control surface anatomy. `tileShadow`, `rowShadow`, and
-`emptyShadow` extend the elevation axis after raised/flat/outlined. Accessible names and
+`emptyShadow` extend the elevation axis after raised/flat/outlined/heroShadow. Accessible names and
 hover-lift reporting are supported on interactive cards.
 
 `interactiveContents` keeps a clickable card from nesting a button role around its
@@ -148,6 +150,29 @@ source affordance in the detail panel. An `href` opens through the system browse
   </Card>
   <Card outlined stageCorners panel>
     <Typography small medium>stageCorners</Typography>
+  </Card>
+  <Card outlined showcaseCorners panel>
+    <Typography small medium>showcaseCorners</Typography>
+  </Card>
+  <Card outlined heroCorners panel>
+    <Typography small medium>heroCorners</Typography>
+  </Card>
+</Column>
+```
+
+### Showcase frame
+
+The section pages' frame: a showcase card at the showcase corner with the `roomy` density (24 in, 20 between its parts), and the hero's stage at the hero corner under the medium shadow.
+
+```tsx
+<Column cozy>
+  <Card showcaseCorners roomy>
+    <Typography eyebrow subtle>Showcase card</Typography>
+    <Typography small subtle>24 in, a 20 px rhythm, the 20 corner.</Typography>
+  </Card>
+  <Card heroCorners heroShadow>
+    <Typography small medium>Hero stage</Typography>
+    <Typography small subtle>The 24 corner under the medium shadow.</Typography>
   </Card>
 </Column>
 ```

@@ -1,4 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
+import { Column } from "@nannier/canvas";
 import { Page } from "../../ui/page";
 import { SectionHero } from "../../ui/showcase";
 import { SECTION_PAGES } from "../../sections";
@@ -18,8 +19,11 @@ export default function SectionScreen() {
   const { Vignette, Cards } = SECTION_PAGES[room.id as SectionId];
   return (
     <Page>
-      <SectionHero room={room} vignette={<Vignette />} />
-      <Cards />
+      {/* The hand-off's hero sits 40 over the cards (its grid's `margin-bottom:40px`). */}
+      <Column ample>
+        <SectionHero room={room} vignette={<Vignette />} />
+        <Cards />
+      </Column>
     </Page>
   );
 }

@@ -49,7 +49,7 @@ import { type FlexSkin } from "./layout.styles.js";
 // same scale maps. The full per-OS file structure exists to match the kit recipe.
 
 export type Direction = "row" | "column";
-export type Gap = "chapter" | "broad" | "apart" | "page" | "panel" | "section" | "loose" | "generous" | "spacious" | "airy" | "relaxed" | "roomy" | "cozy" | "balanced" | "comfortable" | "nested" | "snug" | "close" | "compact" | "dense" | "tight" | "fine" | "flush";
+export type Gap = "chapter" | "broad" | "ample" | "apart" | "page" | "panel" | "section" | "loose" | "generous" | "spacious" | "airy" | "relaxed" | "roomy" | "cozy" | "balanced" | "comfortable" | "nested" | "snug" | "close" | "compact" | "dense" | "tight" | "fine" | "flush";
 export type Justify = "start" | "center" | "end" | "between" | "around" | "evenly";
 export type Align = "alignStart" | "alignCenter" | "alignEnd" | "baseline" | "stretch";
 export type Pad = "padTight" | "pad" | "padLoose";
@@ -62,6 +62,12 @@ export interface FlexProps {
   rowsSnug?: boolean;
   rowsCozy?: boolean;
   rowsSection?: boolean;
+  /**
+   * A wrapped or stacked row's vertical gap of 28, apart from its main gap: the hand-off's
+   * section hero (`gap:28px 40px`), whose halves sit 40 apart beside each other and 28
+   * apart once stacked.
+   */
+  rowsPanel?: boolean;
   /** Application identity header inset. */
   insetIdentity?: boolean;
   /** Application action footer inset. */
@@ -89,6 +95,12 @@ export interface FlexProps {
   page?: boolean; // 30
   /** The step between side-by-side panels of one composition (32), the hand-off's widest grid gap. */
   apart?: boolean; // 32
+  /**
+   * The step between a section page's hero and the body under it, and between the hero's
+   * halves (40): the hand-off's section pages (`gap:28px 40px` on the hero,
+   * `margin-bottom:40px` under it).
+   */
+  ample?: boolean; // 40
   /** The gap between the two halves of a page-wide split (48): the hand-off's hero grid. */
   broad?: boolean; // 48
   /**
@@ -219,6 +231,7 @@ const ALIGN: Record<Align, ViewStyle["alignItems"]> = {
 export function gapOf(p: Pick<FlexProps, Gap>): Gap {
   if (p.chapter) return "chapter";
   if (p.broad) return "broad";
+  if (p.ample) return "ample";
   if (p.apart) return "apart";
   if (p.page) return "page";
   if (p.panel) return "panel";
@@ -244,6 +257,7 @@ export function gapOf(p: Pick<FlexProps, Gap>): Gap {
 }
 
 export function rowGapOf(props: FlexProps): number | null {
+  if (props.rowsPanel) return 28;
   if (props.rowsSection) return 26;
   if (props.rowsCozy) return 12;
   if (props.rowsSnug) return 8;

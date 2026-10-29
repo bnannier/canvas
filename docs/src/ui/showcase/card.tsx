@@ -4,10 +4,13 @@ import { Card, Chip, Column, Grid, Icon, Row, Typography } from "@nannier/canvas
 import { getComponent } from "../../core/data/components";
 import { showcaseCard } from "../../data/showcase";
 
-// A section page's card (the hand-off's `<div id="c-...">` in `Canvas v4.0.0 <Section>.dc.html`):
-// the kit Card with a 24 px inset and its parts 20 apart, the 11 px mono header row (title
-// left, meta right), a row of link chips to the components the card shows, the live
-// composition, and the mono JSX caption pinned to the card's foot. The header and the chips
+// A section page's card (the hand-off's `<div id="c-...">` in `Canvas v4.0.0 <Section>.dc.html`,
+// `background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);
+// padding:24px;display:flex;flex-direction:column;gap:20px`): the kit Card at the showcase
+// corner (`showcaseCorners`, 20) with the `roomy` density (a 24 px inset, its parts 20 apart),
+// the 11 px mono header row (title left, meta right), a row of link chips to the components
+// the card shows, the live composition, and the mono JSX caption pinned to the card's foot
+// (the hand-off's `margin-top:auto`). The header and the chips
 // come from the hand-off's card manifest (docs/src/data/showcase.ts) by the card's id; a
 // prop given here wins. A specimen card (one the hand-off draws with no header row) takes no
 // title or meta, so it shows its chips over its body.
@@ -61,41 +64,39 @@ export function ShowcaseCard({ id, title, meta, links, caption, split, children 
   const chips = links ?? spec?.links ?? [];
   if (split) {
     return (
-      <Card flush testID={`showcase-${id}`}>
-        <Column padLoose>
-          <Grid minTileWidth={320} apart>
-            <Row wrap compact>
-              {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
-            </Row>
-            {children}
-          </Grid>
-        </Column>
+      <Card showcaseCorners roomy testID={`showcase-${id}`}>
+        <Grid minTileWidth={320} apart>
+          <Row wrap compact>
+            {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
+          </Row>
+          {children}
+        </Grid>
       </Card>
     );
   }
   return (
-    <Card flush testID={`showcase-${id}`}>
-      <Column padLoose spacious grow>
-        {head.title != null || head.meta != null || chips.length > 0 ? (
-          <Column roomy>
-            {head.title != null || head.meta != null ? (
-              // Both lines shrink and wrap when the row runs out of room, as the hand-off's
-              // flex items do; a React Native box would otherwise keep its text's width.
-              <Row between cozy alignStart>
-                <Column shrink><Typography eyebrow subtle>{head.title ?? ""}</Typography></Column>
-                {head.meta != null ? <Column shrink><Typography eyebrow subtle right>{head.meta}</Typography></Column> : null}
-              </Row>
-            ) : null}
-            {chips.length > 0 ? (
-              <Row wrap compact>
-                {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
-              </Row>
-            ) : null}
-          </Column>
-        ) : null}
-        <Column grow spacious>{children}</Column>
-        {caption != null ? <Typography caption mono subtle>{caption}</Typography> : null}
-      </Column>
+    // The card's own density spaces its three parts 20 apart; the composition takes the
+    // slack a grid row hands the card, so the caption sits at the foot.
+    <Card showcaseCorners roomy grow testID={`showcase-${id}`}>
+      {head.title != null || head.meta != null || chips.length > 0 ? (
+        <Column roomy>
+          {head.title != null || head.meta != null ? (
+            // Both lines shrink and wrap when the row runs out of room, as the hand-off's
+            // flex items do; a React Native box would otherwise keep its text's width.
+            <Row between cozy alignStart>
+              <Column shrink><Typography eyebrow subtle>{head.title ?? ""}</Typography></Column>
+              {head.meta != null ? <Column shrink><Typography eyebrow subtle right>{head.meta}</Typography></Column> : null}
+            </Row>
+          ) : null}
+          {chips.length > 0 ? (
+            <Row wrap compact>
+              {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
+            </Row>
+          ) : null}
+        </Column>
+      ) : null}
+      <Column grow spacious>{children}</Column>
+      {caption != null ? <Typography caption mono subtle>{caption}</Typography> : null}
     </Card>
   );
 }
