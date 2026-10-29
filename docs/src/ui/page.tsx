@@ -90,24 +90,32 @@ export function Page({ children, lead, viewportOverlays = false }: {
           alignItems: "center",
         }}
       >
-        {lead ? <View style={{ width: "100%" }}>{lead}</View> : null}
-        {/* The longhands override the provider's app-root default (flex: 1) so the
-            box wraps its content: react-native-web expands `flex: 0` to basis 0%,
-            which collapses a content-sized scroll child to 0 height, so basis is
-            set to auto explicitly. The column gap moves here from the content
-            container, which now has one child. The host is the frame: full width, capped
-            at 1440 and centred by the content container. */}
-        <ContentHost style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto", width: "100%", maxWidth: SHELL.frameMax }}>
-          <View
-            // Marked for the document root's pre-hydration rule (docs/src/app/+html.tsx),
-            // which drops the rail's inset on a phone until the bundle runs. Web-only.
-            {...(Platform.OS === "web" ? ({ dataSet: { shellContent: "" } } as object) : null)}
-            style={{ paddingLeft: rail ? RAIL_INSET : 0 }}
-          >
-            <Container padLoose><Column loose>{children}</Column></Container>
-          </View>
+        {/* The main landmark holds the lead and the page body, and the Footer follows it as
+            a sibling, so the footer is a top-level contentinfo (Component.dc.html lines 131
+            and 307-312: main then footer). Every route renders through Page, so none
+            loses its main. */}
+        <View role="main" style={{ width: "100%", alignItems: "center" }}>
+          {lead ? <View style={{ width: "100%" }}>{lead}</View> : null}
+          {/* The longhands override the provider's app-root default (flex: 1) so the
+              box wraps its content: react-native-web expands `flex: 0` to basis 0%,
+              which collapses a content-sized scroll child to 0 height, so basis is
+              set to auto explicitly. The column gap moves here from the content
+              container, which now has one child. The host is the frame: full width, capped
+              at 1440 and centred by the content container. */}
+          <ContentHost style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto", width: "100%", maxWidth: SHELL.frameMax }}>
+            <View
+              // Marked for the document root's pre-hydration rule (docs/src/app/+html.tsx),
+              // which drops the rail's inset on a phone until the bundle runs. Web-only.
+              {...(Platform.OS === "web" ? ({ dataSet: { shellContent: "" } } as object) : null)}
+              style={{ paddingLeft: rail ? RAIL_INSET : 0 }}
+            >
+              <Container padLoose><Column loose>{children}</Column></Container>
+            </View>
+          </ContentHost>
+        </View>
+        <View style={{ width: "100%", maxWidth: SHELL.frameMax }}>
           <Footer />
-        </ContentHost>
+        </View>
       </ScrollView>
   );
   return (
