@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { Badge, BadgeGroup } = scope;
   return (
 <BadgeGroup>
-  <Badge tier secondary>Atom</Badge>
-  <Badge tier>Molecule</Badge>
-  <Badge tier outline>Organism</Badge>
+  <Badge disc default>1</Badge>
+  <Badge disc default>2</Badge>
+  <Badge disc secondary>3</Badge>
 </BadgeGroup>
   );
 }
