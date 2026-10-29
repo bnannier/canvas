@@ -371,7 +371,7 @@ describe("the states each component's source gives it", () => {
     const update = on("description-lists", "focus", "button");
     expect(check("description-lists", { focus: update, pressed: { ...update, state: "pressed" } })).toEqual([
       "description-lists: its focus recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
-      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:406), where no focus recipe acts on a control of its own, with no exemption",
+      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:428), where no focus recipe acts on a control of its own, with no exemption",
       "description-lists: its pressed recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
     ]);
     // GeoMap's focus on its Zoom in, a kit Button it disables at the end of the zoom: the map itself is the tab stop.

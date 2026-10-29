@@ -85,7 +85,9 @@ function bands(group: PropGroup, limit: number): { bands: DataTableGroup[]; tota
     const meta = axis < 0 ? undefined : group.groups[axis];
     out.push({
       label: meta ? meta.title : "Props",
-      adornment: meta?.pickOne ? <Badge mono small>pick one</Badge> : undefined,
+      // The band's pill (Component.dc.html line 237): `height:20px;padding:0 7px;...;
+      // background:var(--ion-soft);color:var(--ion-tx);font:500 11px var(--fm)`.
+      adornment: meta?.pickOne ? <Badge mono band>pick one</Badge> : undefined,
       count: `${all.length} ${all.length === 1 ? "prop" : "props"}`,
       rows: take.map((p) => row(p, group)),
     });

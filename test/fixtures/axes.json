@@ -4317,6 +4317,7 @@
       "navigationCount",
       "count",
       "tier",
+      "band",
       "small"
     ],
     "none": "default",
@@ -4328,9 +4329,18 @@
       "navigationCount": "navigationCount",
       "count": "count",
       "tier": "tier",
+      "band": "band",
       "small": "small"
     },
     "pairs": {
+      "band + count": "count",
+      "band + disc": "disc",
+      "band + marker": "marker",
+      "band + navigationCount": "navigationCount",
+      "band + notification": "notification",
+      "band + reference": "reference",
+      "band + small": "band",
+      "band + tier": "tier",
       "count + disc": "disc",
       "count + marker": "marker",
       "count + navigationCount": "navigationCount",
@@ -5500,6 +5510,24 @@
     "pairs": {
       "divided + ruled": "ruled"
     }
+  },
+  "DescriptionList.density": {
+    "kind": "toggle",
+    "components": [
+      "DescriptionList"
+    ],
+    "pages": [
+      "description-lists"
+    ],
+    "resolver": "src/molecules/description-lists/description-lists.shared.tsx#densityOf",
+    "order": [
+      "compact"
+    ],
+    "none": null,
+    "single": {
+      "compact": "compact"
+    },
+    "pairs": {}
   },
   "DescriptionList.item value": {
     "kind": "axis",

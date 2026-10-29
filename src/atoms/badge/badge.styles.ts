@@ -35,6 +35,12 @@ export const webSkin: BadgeSkin = {
     // The tier pill beside a page title (Component.dc.html line 139): `height:24px;padding:0
     // 10px;...;font:500 11px/1 var(--fm);letter-spacing:.06em;text-transform:uppercase`.
     tier: { height: 24, paddingHorizontal: 10, fontSize: 11, lineHeight: 11 },
+    // The group band's pill (Component.dc.html line 237, the props table's "pick one"):
+    // `height:20px;padding:0 7px;border-radius:999px;...;background:var(--ion-soft);
+    // color:var(--ion-tx);font:500 11px var(--fm)`. The hand-off sets no line ratio; the
+    // 14 px line is what Chromium gives JetBrains Mono 11 px at `normal`, measured on the
+    // served hand-off page, the small pill's line.
+    band: { height: 20, paddingHorizontal: 7, fontSize: 11, lineHeight: 14 },
   },
   // Line 220: `box-shadow:0 0 0 3px var(--bg2),0 4px 12px rgba(0,0,0,.4)`, `--bg2` the
   // stage well's fill (CardMedia reads `surface-sunken`, falling back to `muted` as it does).

@@ -36,6 +36,9 @@ import { type Layout } from "./description-lists.styles.js";
 //   detail look; `ruled` draws the v4 hand-off's accessibility-card rows, a 1 px
 //   top rule on every row including the first, 9 above and below the text, the
 //   term hugging its content with a 120 floor and 14 to the value.
+// - Density: `compact` tightens the ruled rows to the v4 hand-off's semantics-card rows,
+//   8 above and below the text, 12 to the value, the term a fixed 110 column and the
+//   value at the top of its row; the plain and divided rows have no compact step.
 // - Surface: `card` wraps the whole list in a card surface (border, radius,
 //   padding) so it reads as a self-contained panel. `title`/`subtitle` add a
 //   bordered header band to the card.
@@ -131,6 +134,13 @@ export interface DescriptionListProps {
    * hand-off's accessibility-card rows. Wins over `divided`.
    */
   ruled?: boolean;
+  /**
+   * Density: tightens the ruled rows to the v4 hand-off's semantics-card rows
+   * (Component.dc.html line 263): 8 above and below the text, 12 to the value, the term a
+   * fixed 110 column and the value at the top of its row. Only the ruled rows have a
+   * compact step; a plain or divided list is unchanged by it.
+   */
+  compact?: boolean;
   // Surface: wrap the list in a card surface.
   card?: boolean;
   /** Fires when a row's inline editor commits (Enter or Save): the item index and the new value. */
@@ -172,6 +182,8 @@ export interface DescriptionListSkin {
   dividedPadBottom: number;
   /** Ruled-row metrics: the padding above and below the text, the term column's floor, and the term-to-value gap. */
   ruled: { rowPadY: number; termMinWidth: number; gap: number };
+  /** Compact ruled-row metrics: the padding above and below the text, the term's fixed column, the term-to-value gap, and the row's cross-axis alignment. */
+  ruledCompact: { rowPadY: number; termWidth: number; gap: number; align: "flex-start" | "center" };
   /** Horizontal-row term type (size / line-height / weight / color / tracking). */
   termType: (t: ColorTokens) => TextStyle;
   /** Horizontal-row value type (size / line-height / weight / color / tracking). */
@@ -212,6 +224,13 @@ export type Rows = "ruled" | "divided";
 export function rowsOf(p: Pick<DescriptionListProps, "ruled" | "divided">): Rows | null {
   if (p.ruled) return "ruled";
   if (p.divided) return "divided";
+  return null;
+}
+
+// Density: `compact` is the one step; none is the regular row.
+export type Density = "compact";
+export function densityOf(p: Pick<DescriptionListProps, "compact">): Density | null {
+  if (p.compact) return "compact";
   return null;
 }
 
@@ -316,6 +335,8 @@ export function createDescriptionList(
     const rowsLook = rowsOf(props);
     const divided = rowsLook === "divided";
     const ruled = rowsLook === "ruled";
+    // The compact step acts on the ruled rows alone (the semantics card's rows).
+    const compact = ruled && densityOf(props) === "compact";
     // The two-column term label narrows when the LIST is phone-narrow (160 -> 120) so
     // the value column keeps room to breathe: a two-column list in a 320px desktop
     // panel narrows too, and one on a wide tablet does not. The list fills its parent,
@@ -358,8 +379,9 @@ export function createDescriptionList(
     const valueStyle = stacked ? skin.stackedValueType(tokens) : skin.valueType(tokens);
 
     // The two-column term's label column, text or node; a ruled list's term hugs its
-    // content over a floor instead (the hand-off's `minmax(120px,auto)`).
-    const termColumn = layout === "twoColumn" ? (ruled ? s.termRuled(skin) : [s.termColumn, narrowTermColumn ? s.termColumnNarrow : null]) : null;
+    // content over a floor instead (the hand-off's `minmax(120px,auto)`), and a compact
+    // ruled list's is the hand-off's fixed 110 column.
+    const termColumn = layout === "twoColumn" ? (ruled ? (compact ? s.termRuledCompact(skin) : s.termRuled(skin)) : [s.termColumn, narrowTermColumn ? s.termColumnNarrow : null]) : null;
 
     const rows = items.map((item, index) => {
       const last = index === items.length - 1;
@@ -372,7 +394,7 @@ export function createDescriptionList(
         inset && !ruled ? { paddingVertical: inset.rowPadY } : null,
         divided ? s.rowDividedPad(skin) : null,
         divided && !last ? s.rowDivider(tokens) : null,
-        ruled ? s.rowRuled(tokens, skin, layout) : null,
+        ruled ? s.rowRuled(tokens, skin, layout, compact) : null,
       ];
       // The shown value: the consumer's item.value, unless this row committed an
       // inline edit over that exact base (the uncontrolled path, see `edits`).

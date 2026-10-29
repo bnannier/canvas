@@ -8,7 +8,7 @@ import { Kbd } from "../src/atoms/kbd/kbd.tsx";
 import { DescriptionList, type DescriptionListProps } from "../src/molecules/description-lists/description-lists.tsx";
 import { DescriptionList as IosDescriptionList } from "../src/molecules/description-lists/description-lists.ios.tsx";
 import { DescriptionList as AndroidDescriptionList } from "../src/molecules/description-lists/description-lists.android.tsx";
-import { rowsOf } from "../src/molecules/description-lists/description-lists.shared.tsx";
+import { rowsOf, densityOf } from "../src/molecules/description-lists/description-lists.shared.tsx";
 import { webSkin, iosSkin, androidSkin } from "../src/molecules/description-lists/description-lists.styles.ts";
 
 // The rows axis: `ruled` is the v4 hand-off's accessibility-card row (Component.dc.html
@@ -84,6 +84,63 @@ for (const [platform, List, skin] of ENTRIES) {
       const row = rowOf("first");
       expect(row.style.paddingTop).toBe(`${skin.ruled.rowPadY}px`);
       expect(row.style.borderTopWidth).toBe("1px");
+    });
+  });
+}
+
+// The density axis's `compact` step: the hand-off's semantics-card rows (Component.dc.html
+// line 263: `grid-template-columns:110px 1fr;gap:12px;align-items:start;padding:8px 0;
+// border-top:1px solid var(--ln)`), the ruled row tightened, with the term a fixed column
+// and the value at the top of its row.
+
+describe("DescriptionList density axis", () => {
+  it("resolves compact, and none to the regular row", () => {
+    expect(densityOf({})).toBeNull();
+    expect(densityOf({ compact: true })).toBe("compact");
+  });
+
+  it("the web and Android skins carry the hand-off's compact ruled metrics; iOS keeps its centered 52pt row", () => {
+    expect(webSkin.ruledCompact).toEqual({ rowPadY: 8, termWidth: 110, gap: 12, align: "flex-start" });
+    expect(androidSkin.ruledCompact).toEqual(webSkin.ruledCompact);
+    expect(iosSkin.ruledCompact).toEqual({ rowPadY: 0, termWidth: 110, gap: 12, align: "center" });
+  });
+});
+
+for (const [platform, List, skin] of ENTRIES) {
+  describe(`DescriptionList ruled compact (${platform})`, () => {
+    it("keeps the rule and tightens the row to the skin's compact padding, gap and alignment", () => {
+      ui(<List twoColumn ruled compact items={[{ term: "Roles", value: "button" }, { term: "States", value: "disabled" }]} />);
+      for (const value of ["button", "disabled"]) {
+        const row = rowOf(value);
+        expect(row.style.borderTopWidth, value).toBe("1px");
+        expect(channelsOf(row.style.borderTopColor), value).toEqual(channelsOf(dark.border));
+        expect(row.style.paddingTop, value).toBe(`${skin.ruledCompact.rowPadY}px`);
+        expect(row.style.paddingBottom, value).toBe(`${skin.ruledCompact.rowPadY}px`);
+        expect(row.style.gap, value).toBe(`${skin.ruledCompact.gap}px`);
+        expect(row.style.alignItems, value).toBe(skin.ruledCompact.align);
+      }
+    });
+
+    it("fixes the term at the 110 column instead of the ruled floor, for a text and a node term", () => {
+      ui(<List twoColumn ruled compact items={[{ term: "Roles", value: "button" }, { term: <Kbd>Tab</Kbd>, value: "Moves focus" }]} />);
+      const term = screen.getByText("Roles");
+      expect(term.style.width).toBe(`${skin.ruledCompact.termWidth}px`);
+      expect(term.style.minWidth).toBe("");
+      const nodeTerm = rowOf("Moves focus").firstElementChild as HTMLElement;
+      expect(nodeTerm.textContent).toBe("Tab");
+      expect(nodeTerm.style.width).toBe(`${skin.ruledCompact.termWidth}px`);
+    });
+
+    it("changes nothing without ruled: the plain and divided rows have no compact step", () => {
+      ui(<List twoColumn compact items={[{ term: "A", value: "first" }]} />);
+      expect(rowOf("first").style.borderTopWidth).toBe("");
+      expect(rowOf("first").style.gap).toBe("16px");
+      expect(screen.getByText("A").style.width).toBe("160px");
+      cleanup();
+      ui(<List twoColumn divided compact items={[{ term: "A", value: "first" }, { term: "B", value: "last" }]} />);
+      expect(rowOf("first").style.borderBottomWidth).toBe("1px");
+      expect(rowOf("first").style.gap).toBe("16px");
+      expect(rowOf("first").style.alignItems).toBe(skin.rowAlign);
     });
   });
 }

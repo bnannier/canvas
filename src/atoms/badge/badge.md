@@ -21,6 +21,8 @@ status-tone precedence and announces its supplied status label.
 
 `tier` is the tier pill beside a page title (Atom, Molecule, Organism): 24 px tall with a 10 px inset and a 500 11 px label on its own line, tracked in caps with `uppercase` and in the code face with `mono`, in the tone axis's fill. It sits above `small` in precedence.
 
+`band` is a group band's pill, the "pick one" beside an axis's title in a props table: 20 px tall with a 7 px inset, no border, and a 500 11 px label, in the code face with `mono`, in the tone axis's fill (the accent's soft pill with none). It sits between `tier` and `small` in precedence.
+
 ## Usage
 
 ```tsx
@@ -121,6 +123,15 @@ status-tone precedence and announces its supplied status label.
   <Badge tier mono uppercase secondary>Atom</Badge>
   <Badge tier mono uppercase soft>Molecule</Badge>
   <Badge tier mono uppercase outline>Organism</Badge>
+</BadgeGroup>
+```
+
+### Band pill
+
+```tsx
+<BadgeGroup>
+  <Badge band mono>pick one</Badge>
+  <Badge band mono secondary>stacks</Badge>
 </BadgeGroup>
 ```
 

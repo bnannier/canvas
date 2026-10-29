@@ -4,6 +4,8 @@ Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail 
 
 The rows axis (pick one; `ruled` wins over `divided`): `divided` draws a hairline under every row but the last, the two-column detail look. `ruled` draws the v4 hand-off's accessibility-card rows: a 1 px top rule on every row, the first included, so the list reads as a table that starts under its caption, each row padded 9 above and below with nothing beside, and in the two-column layout the term hugging its content over a 120 floor with 14 to the value.
 
+The density axis: `compact` tightens the ruled rows to the hand-off's semantics-card rows, each padded 8 above and below with 12 to the value, the two-column term a fixed 110 column, and the value at the top of its row (so a wrapping row of badges starts level with its term); the plain and divided rows have no compact step, so `compact` without `ruled` changes nothing.
+
 ## Usage
 
 ```tsx
@@ -92,6 +94,23 @@ Every row carries a top rule, the first included, under a caption the parent set
     { term: <Kbd>Enter</Kbd>, value: "Activates" },
     { term: <Kbd>Space</Kbd>, value: "Activates" },
     { term: <Kbd>Tab</Kbd>, value: "Moves focus to the next control" }
+  ]}
+/>
+```
+
+### Compact ruled
+
+The semantics-card rows: 8 above and below, 12 to the value, the term a fixed 110 column and the value at the top of its row.
+
+```tsx
+<DescriptionList
+  twoColumn
+  ruled
+  compact
+  items={[
+    { term: "Roles", value: <Row compact wrap><Badge mono small>button</Badge></Row> },
+    { term: "States", value: <Row compact wrap><Badge mono small>disabled</Badge><Badge mono small>busy</Badge><Badge mono small>loading</Badge><Badge mono small>pressed</Badge><Badge mono small>focused</Badge><Badge mono small>hovered</Badge></Row> },
+    { term: "ARIA on web", value: <Row compact wrap><Badge mono small>aria-busy</Badge><Badge mono small>aria-disabled</Badge></Row> }
   ]}
 />
 ```

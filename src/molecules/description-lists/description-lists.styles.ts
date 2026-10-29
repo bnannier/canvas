@@ -156,12 +156,20 @@ export function rowDivider(tokens: ColorTokens): ViewStyle {
 // replace the inset card's own row padding and the divided bottom rule, so a ruled row
 // never stacks a second rule or a second pad. The two-column row takes the hand-off's
 // `gap:14px` between term and value; the inline and stacked rows keep their own gaps.
-export function rowRuled(tokens: ColorTokens, skin: DescriptionListSkin, layout: Layout): ViewStyle {
+//
+// The compact ruled row is the semantics card's (line 263: `grid-template-columns:110px
+// 1fr;gap:12px;align-items:start;padding:8px 0;border-top:1px solid var(--ln)`): the same
+// rule, the skin's `ruledCompact` padding and two-column gap, and the row's content at the
+// skin's `ruledCompact.align` (the top on the web, where the hand-off's value is a wrapping
+// row of pills) in place of the skin's `rowAlign`.
+export function rowRuled(tokens: ColorTokens, skin: DescriptionListSkin, layout: Layout, compact = false): ViewStyle {
+  const metrics = compact ? skin.ruledCompact : skin.ruled;
   return {
     borderTopWidth: 1,
     borderColor: tokens.border,
-    paddingVertical: skin.ruled.rowPadY,
-    ...(layout === "twoColumn" ? { gap: skin.ruled.gap } : null),
+    paddingVertical: metrics.rowPadY,
+    ...(layout === "twoColumn" ? { gap: metrics.gap } : null),
+    ...(compact && layout !== "stacked" ? { alignItems: skin.ruledCompact.align } : null),
   };
 }
 
@@ -169,6 +177,12 @@ export function rowRuled(tokens: ColorTokens, skin: DescriptionListSkin, layout:
 // floor at the skin's `ruled.termMinWidth`, where the two-column term is a fixed column.
 export function termRuled(skin: DescriptionListSkin): TextStyle {
   return { minWidth: skin.ruled.termMinWidth };
+}
+
+// The compact ruled row's term column: the semantics card's fixed `110px` (line 263), the
+// skin's `ruledCompact.termWidth`.
+export function termRuledCompact(skin: DescriptionListSkin): TextStyle {
+  return { width: skin.ruledCompact.termWidth };
 }
 
 // The two-column value cell: grows to fill, with the value and trailing
@@ -278,6 +292,9 @@ export const webSkin: DescriptionListSkin = {
   // The hand-off's ruled rows (Component.dc.html line 258): `padding:9px 0`, a term column of
   // `minmax(120px,auto)` and `gap:14px` to the value.
   ruled: { rowPadY: 9, termMinWidth: 120, gap: 14 },
+  // The hand-off's compact ruled rows, the semantics card's (Component.dc.html line 263):
+  // `grid-template-columns:110px 1fr;gap:12px;align-items:start;padding:8px 0`.
+  ruledCompact: { rowPadY: 8, termWidth: 110, gap: 12, align: "flex-start" },
 };
 
 // iOS (iOS 27 kit Lists value rows in a flat inset-grouped card): the term is the
@@ -303,6 +320,9 @@ export const iosSkin: DescriptionListSkin = {
   // rule needs no padding of its own (as `dividedPadBottom` is 0 here); the term floor and
   // the gap are the web look's, since iOS Lists have no ruled term column of their own.
   ruled: { rowPadY: 0, termMinWidth: 120, gap: 14 },
+  // The compact step keeps the same centered 52pt Lists row; the fixed term column and
+  // the gap are the web look's (line 263), as the ruled floor and gap are.
+  ruledCompact: { rowPadY: 0, termWidth: 110, gap: 12, align: "center" },
 };
 
 // Android: Material 3 has no description list, so the web skin's list in Roboto.
