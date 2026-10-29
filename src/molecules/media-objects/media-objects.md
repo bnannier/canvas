@@ -43,6 +43,14 @@ wire.
 <MediaObject bordered src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
 ```
 
+### Numbered step
+
+`bareIcon` draws the `icon` node as it is, with no tinted box around it, for a lead that is its own mark: a numbered `<Badge step>` numbers a list of steps.
+
+```tsx
+<MediaObject bareIcon icon={<Badge step default>1</Badge>} title="Intrinsic · no JavaScript" description="Fill or hug inside the parent's bounds, a minWidth floor, wrapping." />
+```
+
 ### Tappable
 
 Passing `onPress` makes the whole row a single tap target; wire it to your own

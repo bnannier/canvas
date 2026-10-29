@@ -298,6 +298,29 @@ The table keeps its own look and the prop changes nothing.
 />
 ```
 
+### Bare table
+
+Pass `bare` for the hairline table with no frame and no fill: the headings in the reference sheet's small uppercase mono label over a `field-border` rule 10 px below them, a `border` rule under every row, the first column flush with the table's start, the columns 12 px apart, and each cell 12 px above and below whatever the density. `reference` wins when both are passed.
+<!-- only: web -->
+On iOS the table keeps its own look and the prop changes nothing.
+<!-- /only -->
+<!-- only: ios -->
+The table keeps its own look and the prop changes nothing.
+<!-- /only -->
+
+```tsx
+<DataTable
+  bare
+  alignTop
+  columns={["Family", "Height", "Floor"]}
+  rows={[
+    ["Controls", "32 · 40 · 48", "—"],
+    ["Fields", "40", "—"],
+    ["Data", "hug · scrolls", "320"]
+  ]}
+/>
+```
+
 ### Top-aligned cells
 
 Pass `alignTop` when a cell may wrap to several lines: every cell sits at the top of its row, so a row's name, type and default stay beside the first line of its description instead of drifting to the row's middle. The selection box and the row actions center on that first line, as they do in a stacked row.

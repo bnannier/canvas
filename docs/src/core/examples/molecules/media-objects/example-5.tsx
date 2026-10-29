@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MediaObject } = scope;
+  const { Badge, MediaObject } = scope;
   return (
-<MediaObject onPress={() => {}} bordered avatar="RC" title="Rachel Chen" description="Engineering Lead" />
+<MediaObject bareIcon icon={<Badge step default>1</Badge>} title="Intrinsic · no JavaScript" description="Fill or hug inside the parent's bounds, a minWidth floor, wrapping." />
   );
 }

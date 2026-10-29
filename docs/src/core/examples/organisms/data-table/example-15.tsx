@@ -6,15 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { DataTable } = scope;
   return (
 <DataTable
+  bare
   alignTop
-  columns={[
-    { label: "Prop", minWidth: 150 },
-    { label: "Type", grow: 1.2, minWidth: 150 },
-    { label: "Description", grow: 2.2, minWidth: 220 }
-  ]}
+  columns={["Family", "Height", "Floor"]}
   rows={[
-    ["iconLeft", "ReactNode", "An icon before the label. It takes the label's ink and size, and the button keeps its height, so a leading icon never grows a row of buttons."],
-    ["href", "string", "Renders the button as a link to this address on the web, and opens it natively elsewhere."]
+    ["Controls", "32 · 40 · 48", "—"],
+    ["Fields", "40", "—"],
+    ["Data", "hug · scrolls", "320"]
   ]}
 />
   );

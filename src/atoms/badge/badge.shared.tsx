@@ -3,7 +3,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { Linking } from "react-native";
 import { type ReactNode } from "react";
 import { hueToneColors } from "../../style/hue-tone.js";
-import { View, Text, Pressable, alpha, platformMinTarget, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type StatusColorTone, type LayoutStyle, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Text, Pressable, alpha, platformMinTarget, useHugStyle, statusColors, inverseDenseTint, MONO_FONT, type ColorTokens, type StatusColorTone, type LayoutStyle, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
 import { useHover } from "../../style/hover.js";
 import { actionFill, actionInk } from "../../style/action.js";
 import { primaryText } from "../../style/primary-text.js";
@@ -30,7 +30,7 @@ import { Icon } from "../icon/icon.js";
 // "warning" alert in one view are the same state, and every ink is the solved text role
 // (success-text, warning-text, destructive-text, primary-text), 4.5:1 on its wash.
 
-export type Tone = "accent" | "default" | "secondary" | "outline" | "destructive";
+export type Tone = "accent" | "default" | "contrast" | "secondary" | "outline" | "dashed" | "destructive";
 export type Status = "success" | "warning" | "error" | "info" | "neutral";
 
 /** One size step of the pill: its height, side inset and label metrics. */
@@ -43,7 +43,7 @@ export interface BadgeSize {
 
 export interface BadgeSkin {
   /** The pill per size step (`tiny`, `small`, the default, `large`), the anatomy `marker` disc (the legend `disc` shares it), the `tier` pill, the group `band` pill and the `token` chip. */
-  sizes: Record<"tiny" | "small" | "default" | "large" | "marker" | "tier" | "band" | "token", BadgeSize>;
+  sizes: Record<"tiny" | "small" | "default" | "large" | "marker" | "tier" | "band" | "tick" | "token" | "step", BadgeSize>;
   /**
    * The shadow set under an anatomy `marker`, from the theme's tokens: the hand-off's ring
    * of the stage's fill and its drop shadow (Component.dc.html line 220).
@@ -51,6 +51,12 @@ export interface BadgeSkin {
   markerShadow: (tokens: ColorTokens) => string;
   /** The pill corner. */
   radius: number;
+  /** The `keyCorners` corner: the key cap's, on any size. */
+  keyRadius: number;
+  /** The numbered `step` mark's corner. */
+  stepRadius: number;
+  /** The shadow under a solid `step` mark: the accent's glow, from the theme's tokens. */
+  stepGlow: (tokens: ColorTokens) => string;
   /** The reference key's corner. */
   referenceRadius: number;
   /** Space between the dot, the label and a reference's glyph. */
@@ -131,6 +137,27 @@ export interface BadgeProps {
    */
   band?: boolean;
   /**
+   * A ruler tick's pill (the Layout page's "this window" readout under its marker): 20 px
+   * tall with an 8 px inset and a 500 10 px label in the code face on the pill's own 20 px
+   * line, with no border and no tone dot. Usually with `contrast`. After `band` in
+   * precedence.
+   */
+  tick?: boolean;
+  /**
+   * A numbered step mark (the Layout page's "try in this order" list): a 32 px square at
+   * the step mark's corner with its number 600 13 px in the code face, centred. In the tone
+   * axis's fill: `default` the solid accent with its glow, none the accent's soft wash,
+   * `secondary` the quiet surface inside the `field-border` edge in the second ink. Pass it
+   * as a MediaObject's `icon` with `bareIcon`. After `disc` in precedence.
+   */
+  step?: boolean;
+  /**
+   * The key cap's corner in place of the round pill's, on any size: the sizing legend's
+   * mode tags and the primitive names under a Grid (Layout.dc.html). The corner axis has
+   * this one member; `reference` and `step` keep their own corners.
+   */
+  keyCorners?: boolean;
+  /**
    * Show the intent dot without switching to the status family. With no children it is
    * the bare 8 px dot in the tone's ink, with no pill (a marker beside text that names it).
    */
@@ -146,6 +173,18 @@ export interface BadgeProps {
   default?: boolean;
   secondary?: boolean;
   outline?: boolean;
+  /**
+   * The placeholder outline: no fill inside a dashed `field-border` edge, the label in the
+   * second ink (the Layout page's primitive names). On the tone axis after `outline`.
+   */
+  dashed?: boolean;
+  /**
+   * The contrast pill: the scheme's ink (`foreground`) as the fill under the page colour
+   * (`background`) as the label, the most prominent neutral (the Layout ruler's "this
+   * window" readout). On the tone axis after `default`; under glass the ink at the dense
+   * alpha, as the Tooltip bubble's, so its label keeps its contrast.
+   */
+  contrast?: boolean;
   destructive?: boolean;
   // Metadata modifier: monospace face for tokens, scopes, event names.
   mono?: boolean;
@@ -180,9 +219,11 @@ export interface BadgeProps {
 // Tone precedence when more than one is passed: first match wins.
 export function toneOf(p: BadgeProps): Tone {
   if (p.default) return "default";
+  if (p.contrast) return "contrast";
   if (p.destructive) return "destructive";
   if (p.secondary) return "secondary";
   if (p.outline) return "outline";
+  if (p.dashed) return "dashed";
   return "accent";
 }
 
@@ -211,11 +252,13 @@ export function badgeMetricOf(p: BadgeProps) {
   if (p.notification) return "notification";
   if (p.marker) return "marker";
   if (p.disc) return "disc";
+  if (p.step) return "step";
   if (p.reference) return "reference";
   if (p.navigationCount) return "navigationCount";
   if (p.count) return "count";
   if (p.tier) return "tier";
   if (p.band) return "band";
+  if (p.tick) return "tick";
   if (p.token) return "token";
   if (p.tiny) return "tiny";
   if (p.small) return "small";
@@ -241,10 +284,18 @@ export function badgeTrackingOf(p: BadgeProps) {
   return "normal";
 }
 
+/** The corner axis: the key cap's corner, or the pill's (the default). */
+export function badgeCornerOf(p: BadgeProps): "keyCorners" | "pill" {
+  if (p.keyCorners) return "keyCorners";
+  return "pill";
+}
+
 /** What a metadata pill paints: its fill, border and ink, and how glass carries the fill. */
 interface BadgeLook {
   fill: string;
   border: string;
+  /** A dashed edge (the placeholder outline) in place of the solid one. */
+  dashed?: boolean;
   ink: string;
   strong: boolean;
   /** Under glass: a call-to-action fill is brand-tinted glass. */
@@ -258,10 +309,12 @@ const CLEAR = "transparent";
 // The tone a metadata pill paints, in the hand-off's order: a solid kind first, then the
 // reference key, then the tone axis (which wins over a status tone, as the hand-off's
 // secondary / outline / destructive override its tone colors), then the intent.
-function lookOf(p: BadgeProps, tokens: ColorTokens, dark: boolean): BadgeLook {
+function lookOf(p: BadgeProps, theme: { tokens: ColorTokens; dark: boolean; glass: Parameters<typeof inverseDenseTint>[0]["glass"] }): BadgeLook {
+  const { tokens, dark } = theme;
   const surface = badgeSurfaceOf(p);
   const tone = toneOf(p);
-  const reference = badgeMetricOf(p) === "reference";
+  const metric = badgeMetricOf(p);
+  const reference = metric === "reference";
   // `neutral` is the status axis's fallback too, so the quiet wash takes the prop itself.
   const neutral = p.neutral === true;
   const accent = (fill: string): BadgeLook => ({ fill, border: CLEAR, ink: primaryText(tokens), strong: false, tint: fill });
@@ -272,7 +325,12 @@ function lookOf(p: BadgeProps, tokens: ColorTokens, dark: boolean): BadgeLook {
   };
   if (surface === "inverse") return { fill: "rgba(255,255,255,0.18)", border: CLEAR, ink: "#ffffff", strong: false, tint: "rgba(255,255,255,0.18)" };
   if (surface === "solid" || tone === "default") return { fill: actionFill(tokens), border: CLEAR, ink: actionInk(tokens), strong: true, brand: actionFill(tokens) };
+  if (tone === "contrast") return { fill: tokens.foreground, border: CLEAR, ink: tokens.background, strong: false, tint: inverseDenseTint(theme) };
   if (reference) return { fill: tokens.muted, border: fieldBorder(tokens), ink: primaryText(tokens), strong: false };
+  // The quiet step mark (Layout.dc.html: `background:var(--sf3);border:1px solid var(--ln2);
+  // color:var(--tx2)`): the quiet surface inside the field-border edge.
+  if (metric === "step" && tone === "secondary") return { fill: tokens.secondary, border: fieldBorder(tokens), ink: tokens["muted-foreground"], strong: false };
+  if (tone === "dashed") return { fill: CLEAR, border: fieldBorder(tokens), ink: tokens["muted-foreground"], strong: false, dashed: true };
   if (tone === "outline") return { fill: CLEAR, border: fieldBorder(tokens), ink: tokens["muted-foreground"], strong: false };
   if (tone === "destructive") return wash("error");
   if (tone === "secondary") return { fill: tokens.muted, border: CLEAR, ink: tokens["muted-foreground"], strong: false };
@@ -308,7 +366,7 @@ export function createBadge(skin: BadgeSkin) {
 
     const metric = badgeMetricOf(props);
     // The legend disc is the marker's size; the tier and band pills their own steps.
-    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" || metric === "band" || metric === "token" || metric === "tiny" ? metric : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
+    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" || metric === "band" || metric === "tick" || metric === "token" || metric === "tiny" || metric === "step" ? metric : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
 
     if (props.status) {
       const tone = statusOf(props);
@@ -357,7 +415,7 @@ export function createBadge(skin: BadgeSkin) {
 
     if (props.notification) return <NotificationBadge solid={!!props.solid} halo={!!props.action} style={style} testID={testID}>{children}</NotificationBadge>;
 
-    const look = lookOf(props, tokens, theme.dark);
+    const look = lookOf(props, theme);
     // The bare dot (`dot` with no label): the pill's dot alone, at the hand-off's 8 px
     // (Foundations' glass pane, `width:8px;height:8px;border-radius:50%;background:var(--ion)`).
     // Named, it is an image; unnamed, decoration beside the text that names it.
@@ -380,31 +438,33 @@ export function createBadge(skin: BadgeSkin) {
     const marker = metric === "marker";
     // The legend disc: the marker's disc and number, in the tone's fill, with no ring or shadow.
     const disc = marker || metric === "disc";
-    const toned = !!(props.success || props.warning || props.error || props.info || props.neutral);
+    const step = metric === "step";
+    // The band pill (Component.dc.html line 237) and the tick pill lead with no tone dot.
+    const toned = metric !== "band" && metric !== "tick" && !!(props.success || props.warning || props.error || props.info || props.neutral);
     const base: ViewStyle = {
       flexDirection: "row",
       alignItems: "center",
       gap: reference ? skin.referenceGap : skin.gap,
       height: size.height,
       paddingHorizontal: size.paddingHorizontal,
-      // The tier pill (line 139) and the band pill (line 237) draw no border, so their 24
-      // and 20 px boxes are the fill alone; every other pill keeps the hand-off's 1 px
+      // The tier pill (line 139), the band pill (line 237) and the tick pill draw no border,
+      // so their boxes are the fill alone; every other pill keeps the hand-off's 1 px
       // border, transparent until a tone draws it.
-      borderWidth: metric === "tier" || metric === "band" ? 0 : 1,
-      borderRadius: reference ? skin.referenceRadius : skin.radius,
-      // The marker and the legend disc are discs: as wide as they are tall, the number
-      // centred (the hand-off's `width:22px;height:22px;...;display:grid;place-items:center`,
-      // lines 220 and 222).
-      ...(disc ? { width: size.height, justifyContent: "center" as const } : null),
+      borderWidth: metric === "tier" || metric === "band" || metric === "tick" ? 0 : 1,
+      borderRadius: reference ? skin.referenceRadius : step ? skin.stepRadius : badgeCornerOf(props) === "keyCorners" ? skin.keyRadius : skin.radius,
+      // The marker, the legend disc and the step mark are as wide as they are tall, the
+      // number centred (the hand-off's `width:22px;height:22px;...;display:grid;
+      // place-items:center`, lines 220 and 222; the Layout page's 32 px step).
+      ...(disc || step ? { width: size.height, justifyContent: "center" as const } : null),
     };
-    const fill: ViewStyle = { backgroundColor: look.fill, borderColor: look.border };
+    const fill: ViewStyle = { backgroundColor: look.fill, borderColor: look.border, ...(look.dashed ? { borderStyle: "dashed" as const } : null) };
     const label: TextStyle = {
       fontSize: size.fontSize,
       lineHeight: size.lineHeight,
       // A disc's number is always the heavier weight (line 222: `font:600 11px/1 var(--fm)`
       // on the quiet disc as on the accent one).
       // The tiny pill keeps the regular weight on every surface (the hand-off's `font:500 10px/18px`).
-      fontWeight: metric !== "tiny" && (look.strong || metric === "count" || disc) ? skin.strongWeight : skin.weight,
+      fontWeight: metric !== "tiny" && metric !== "tick" && (look.strong || metric === "count" || disc || step) ? skin.strongWeight : skin.weight,
       letterSpacing: props.uppercase ? size.fontSize * skin.uppercaseTracking : 0,
       textTransform: props.uppercase ? "uppercase" : "none",
       color: ink,
@@ -415,9 +475,10 @@ export function createBadge(skin: BadgeSkin) {
     // The mono modifier (a reference key, a disc, a token chip and a tier tag too) asks for a monospace face; RN
     // has no font-family utility, so request the cross-platform monospace alias via inline
     // style.
-    const monoStyle = mono || reference || disc || metric === "token" || metric === "tier" ? { fontFamily: MONO_FONT } : null;
-    // The marker's ring and shadow, the skin's, from the theme's tokens.
-    const markerShadow = marker ? { boxShadow: skin.markerShadow(tokens) } : null;
+    const monoStyle = mono || reference || disc || step || metric === "token" || metric === "tier" || metric === "tick" ? { fontFamily: MONO_FONT } : null;
+    // The marker's ring and shadow, the skin's, from the theme's tokens; the solid step
+    // mark's glow.
+    const markerShadow = marker ? { boxShadow: skin.markerShadow(tokens) } : step && look.strong ? { boxShadow: skin.stepGlow(tokens) } : null;
 
     const content = <>
       {surfaced ? <GlassPane static layer="control" shape={base} brand={look.brand} tint={look.tint} /> : null}

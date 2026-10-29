@@ -347,18 +347,31 @@
     "resolver": "src/atoms/badge/badge.shared.tsx#toneOf",
     "order": [
       "default",
+      "contrast",
       "destructive",
       "secondary",
-      "outline"
+      "outline",
+      "dashed"
     ],
     "none": "accent",
     "single": {
       "default": "default",
+      "contrast": "contrast",
       "destructive": "destructive",
       "secondary": "secondary",
-      "outline": "outline"
+      "outline": "outline",
+      "dashed": "dashed"
     },
     "pairs": {
+      "contrast + dashed": "contrast",
+      "contrast + default": "default",
+      "contrast + destructive": "contrast",
+      "contrast + outline": "contrast",
+      "contrast + secondary": "contrast",
+      "dashed + default": "default",
+      "dashed + destructive": "destructive",
+      "dashed + outline": "outline",
+      "dashed + secondary": "secondary",
       "default + destructive": "default",
       "default + outline": "default",
       "default + secondary": "default",
@@ -5465,11 +5478,13 @@
       "notification",
       "marker",
       "disc",
+      "step",
       "reference",
       "navigationCount",
       "count",
       "tier",
       "band",
+      "tick",
       "token",
       "tiny",
       "small"
@@ -5479,11 +5494,13 @@
       "notification": "notification",
       "marker": "marker",
       "disc": "disc",
+      "step": "step",
       "reference": "reference",
       "navigationCount": "navigationCount",
       "count": "count",
       "tier": "tier",
       "band": "band",
+      "tick": "tick",
       "token": "token",
       "tiny": "tiny",
       "small": "small"
@@ -5496,6 +5513,8 @@
       "band + notification": "notification",
       "band + reference": "reference",
       "band + small": "band",
+      "band + step": "step",
+      "band + tick": "band",
       "band + tier": "tier",
       "band + tiny": "band",
       "band + token": "band",
@@ -5505,6 +5524,8 @@
       "count + notification": "notification",
       "count + reference": "reference",
       "count + small": "count",
+      "count + step": "step",
+      "count + tick": "count",
       "count + tier": "count",
       "count + tiny": "count",
       "count + token": "count",
@@ -5513,6 +5534,8 @@
       "disc + notification": "notification",
       "disc + reference": "disc",
       "disc + small": "disc",
+      "disc + step": "disc",
+      "disc + tick": "disc",
       "disc + tier": "disc",
       "disc + tiny": "disc",
       "disc + token": "disc",
@@ -5520,31 +5543,66 @@
       "marker + notification": "notification",
       "marker + reference": "marker",
       "marker + small": "marker",
+      "marker + step": "marker",
+      "marker + tick": "marker",
       "marker + tier": "marker",
       "marker + tiny": "marker",
       "marker + token": "marker",
       "navigationCount + notification": "notification",
       "navigationCount + reference": "reference",
       "navigationCount + small": "navigationCount",
+      "navigationCount + step": "step",
+      "navigationCount + tick": "navigationCount",
       "navigationCount + tier": "navigationCount",
       "navigationCount + tiny": "navigationCount",
       "navigationCount + token": "navigationCount",
       "notification + reference": "notification",
       "notification + small": "notification",
+      "notification + step": "notification",
+      "notification + tick": "notification",
       "notification + tier": "notification",
       "notification + tiny": "notification",
       "notification + token": "notification",
       "reference + small": "reference",
+      "reference + step": "step",
+      "reference + tick": "reference",
       "reference + tier": "reference",
       "reference + tiny": "reference",
       "reference + token": "reference",
+      "small + step": "step",
+      "small + tick": "tick",
       "small + tier": "tier",
       "small + tiny": "tiny",
       "small + token": "token",
+      "step + tick": "step",
+      "step + tier": "step",
+      "step + tiny": "step",
+      "step + token": "step",
+      "tick + tier": "tier",
+      "tick + tiny": "tick",
+      "tick + token": "tick",
       "tier + tiny": "tier",
       "tier + token": "tier",
       "tiny + token": "token"
     }
+  },
+  "Badge.corners": {
+    "kind": "toggle",
+    "components": [
+      "Badge"
+    ],
+    "pages": [
+      "badge"
+    ],
+    "resolver": "src/atoms/badge/badge.shared.tsx#badgeCornerOf",
+    "order": [
+      "keyCorners"
+    ],
+    "none": "pill",
+    "single": {
+      "keyCorners": "keyCorners"
+    },
+    "pairs": {}
   },
   "Badge.surface": {
     "kind": "axis",
@@ -7268,7 +7326,7 @@
     }
   },
   "DataTable.look": {
-    "kind": "toggle",
+    "kind": "axis",
     "components": [
       "DataTable"
     ],
@@ -7277,13 +7335,17 @@
     ],
     "resolver": "src/organisms/data-table/data-table.shared.tsx#lookOf",
     "order": [
-      "reference"
+      "reference",
+      "bare"
     ],
     "none": "table",
     "single": {
-      "reference": "reference"
+      "reference": "reference",
+      "bare": "bare"
     },
-    "pairs": {}
+    "pairs": {
+      "bare + reference": "reference"
+    }
   },
   "DataTable.row align": {
     "kind": "toggle",
