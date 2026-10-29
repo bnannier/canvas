@@ -100,6 +100,33 @@ source affordance in the detail panel. An `href` opens through the system browse
 ```
 
 
+### Board tickets
+
+`board` owns the ticket anatomy while retaining Card's existing surface, corner,
+elevation and press behavior. It reads `ticketNumber`, `priorityLabel`, `title`,
+`description`, `statusLabel` and `typeLabel`. Priority, status, reason and type
+carry their field labels. Pass the Board render callback's
+`moveHandle` unchanged; Card places it at the top right beside the ticket number.
+`blocked` displays “Blocked” and reveals `blockedReason`. `aiActive` reveals
+“AI work in progress” with a shimmer in the text and cycling dots. Reduced motion
+keeps that label static. Title and description clamp to two lines; each other
+text row has one line. Reason and progress retain their empty slots when absent,
+so short and long tickets have the same text height.
+
+`imageSource` accepts an actual React Native image source (including authentication
+headers), with `imageLabel` for its accessible name. It adds a taller, full-bleed
+header, with matching top corners and the number, move handle and priority over
+an opaque, legible backing. Images use contain fitting. A failed image collapses
+to the compact metadata header; a new source retries. Only the image header adds
+height. Board anatomy takes precedence over raw children and section props.
+
+```tsx
+<Card board compact smallCorners tileShadow borderless
+  ticketNumber="ARGUS-123" priorityLabel="High" title="Preserve saved work"
+  description="Keep the current project state when returning to the board."
+  statusLabel="In Progress" typeLabel="Task" aiActive />
+```
+
 ### Generic
 
 ```tsx

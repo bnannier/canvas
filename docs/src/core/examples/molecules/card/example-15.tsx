@@ -6,21 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Card, Typography, Column } = scope;
   return (
 <Column cozy>
-  <Card outlined largeCorners guide>
-    <Typography h5 level={3}>Guide</Typography>
-    <Typography small subtle>18 by 20, a 10 px rhythm.</Typography>
+  <Card showcaseCorners roomy>
+    <Typography eyebrow subtle>Showcase card</Typography>
+    <Typography small subtle>24 in, a 20 px rhythm, the 20 corner.</Typography>
   </Card>
-  <Card outlined calloutCorners linkTile>
-    <Typography semibold>Link tile</Typography>
-    <Typography caption subtle>14 by 16, a 6 px rhythm.</Typography>
-  </Card>
-  <Card outlined pager>
-    <Typography eyebrow subtle>Pager</Typography>
-    <Typography lead semibold>16 by 18, a 4 px rhythm.</Typography>
-  </Card>
-  <Card sunken well>
-    <Typography eyebrow subtle>Well</Typography>
-    <Typography small subtle>16 all round, a 12 px rhythm.</Typography>
+  <Card heroCorners heroShadow>
+    <Typography small medium>Hero stage</Typography>
+    <Typography small subtle>The 24 corner under the medium shadow.</Typography>
   </Card>
 </Column>
   );

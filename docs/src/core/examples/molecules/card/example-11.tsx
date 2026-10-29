@@ -3,13 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Row, Column } = scope;
+  const { Card, Typography } = scope;
   return (
-<Row cozy alignEnd>
-  <Column fill><Card sample flat calloutCorners /></Column>
-  <Column fill><Card sample calloutCorners /></Column>
-  <Column fill><Card sample heroShadow calloutCorners /></Column>
-  <Column fill><Card sample raised calloutCorners /></Column>
-</Row>
+<Card sunken>
+  <Typography lead semibold>A well beneath the page</Typography>
+</Card>
   );
 }

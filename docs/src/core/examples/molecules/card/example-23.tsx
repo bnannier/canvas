@@ -6,12 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { Button, Card, CardContent, CardMedia, CardSeparator, Typography } = scope;
   return (
 <Card flush>
-  <CardMedia compact>
-    <Button small>Save</Button>
+  <CardMedia>
+    <Button primary>Save changes</Button>
   </CardMedia>
   <CardSeparator />
-  <CardContent dense>
-    <Typography caption mono medium muted>size small</Typography>
+  <CardContent>
+    <Typography small medium>Primary</Typography>
   </CardContent>
 </Card>
   );

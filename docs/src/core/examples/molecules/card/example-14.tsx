@@ -6,13 +6,20 @@ export default function Example(scope: ExampleScope) {
   const { Card, Typography, Column } = scope;
   return (
 <Column cozy>
-  <Card showcaseCorners roomy>
-    <Typography eyebrow subtle>Showcase card</Typography>
-    <Typography small subtle>24 in, a 20 px rhythm, the 20 corner.</Typography>
+  <Card outlined calloutCorners summary>
+    <Typography small medium>calloutCorners</Typography>
   </Card>
-  <Card heroCorners heroShadow>
-    <Typography small medium>Hero stage</Typography>
-    <Typography small subtle>The 24 corner under the medium shadow.</Typography>
+  <Card outlined largeCorners panel>
+    <Typography small medium>largeCorners</Typography>
+  </Card>
+  <Card outlined stageCorners panel>
+    <Typography small medium>stageCorners</Typography>
+  </Card>
+  <Card outlined showcaseCorners panel>
+    <Typography small medium>showcaseCorners</Typography>
+  </Card>
+  <Card outlined heroCorners panel>
+    <Typography small medium>heroCorners</Typography>
   </Card>
 </Column>
   );
