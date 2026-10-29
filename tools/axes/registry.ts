@@ -71,7 +71,8 @@ import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx"
 import { widthOf as alertDialogWidth } from "../../src/molecules/alert-dialog/alert-dialog.shared.tsx";
 import { elevationOf, densityOf as cardDensity, cornerOf as cardCorner, mediaWellOf, contentDensityOf } from "../../src/molecules/card/card.shared.tsx";
 import { variantOf as codeBlockVariant, densityOf as codeBlockDensity } from "../../src/molecules/code-block/code-block.shared.tsx";
-import { layoutOf as descriptionLayout, rowsOf as descriptionRows, densityOf as descriptionDensity, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
+import { layoutOf as descriptionLayout, rowsOf as descriptionRows, densityOf as descriptionDensity, valueFormOf, valueInkOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
+import { densityOf as kbdDensity } from "../../src/atoms/kbd/kbd.shared.tsx";
 import { leadOf } from "../../src/molecules/feeds/feeds.shared.tsx";
 import { columnsOf } from "../../src/molecules/grid-lists/grid-lists.shared.tsx";
 import { alignOf as mediaAlign, directionOf } from "../../src/molecules/media-objects/media-objects.shared.tsx";
@@ -413,10 +414,11 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
 
   subject({ id: "Badge.intent", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeIntentOf", members: ["action", "primary", "reference", "success", "warning", "error", "info"], resolve: badgeIntentOf }),
-  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "reference", "navigationCount", "count", "tier", "band", "small"], resolve: badgeMetricOf }),
+  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "reference", "navigationCount", "count", "tier", "band", "token", "small"], resolve: badgeMetricOf }),
   subject({ id: "Badge.surface", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "neutralFill", "soft", "reference"], resolve: badgeSurfaceOf }),
   subject({ id: "Badge.ink", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeInkOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "foreground"], resolve: badgeInkOf }),
   subject({ id: "Badge.tracking", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeTrackingOf", members: ["reference", "uppercase"], resolve: badgeTrackingOf }),
+  subject({ id: "Kbd.density", components: ["Kbd"], pages: ["kbd"], resolver: "src/atoms/kbd/kbd.shared.tsx#densityOf", members: ["comfortable"], resolve: kbdDensity }),
   subject({ id: "Button.web body", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webBodyOf", members: ["themeChoice", "identityAction", "pageLink", "jumpLink", "referenceLink", "inlineIcon", "scopeTrigger", "filterTrigger", "inlineLink", "plainLink", "utility"], resolve: webBodyOf }),
   subject({ id: "Button.inline ink", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webLinkInkOf", members: ["inverse", "foreground"], resolve: webLinkInkOf }),
   subject({ id: "Button.web hover", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webHoverKindOf", members: ["themeChoice", "identityAction", "utility", "inlineLink", "inverse"], resolve: webHoverKindOf }),
@@ -453,6 +455,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "CodeBlock.variant", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#variantOf", members: ["terminal", "numbered", "inline"], resolve: codeBlockVariant }),
   subject({ id: "CodeBlock.density", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#densityOf", members: ["compact", "playground", "snippet", "guide"], resolve: codeBlockDensity }),
   subject({ id: "DescriptionList.layout", components: ["DescriptionList"], pages: ["description-lists"], resolver: "src/molecules/description-lists/description-lists.shared.tsx#layoutOf", members: ["inline", "twoColumn", "stacked"], resolve: descriptionLayout }),
+  subject({ id: "DescriptionList.value ink", components: ["DescriptionList"], pages: ["description-lists"], resolver: "src/molecules/description-lists/description-lists.shared.tsx#valueInkOf", members: ["muted"], resolve: valueInkOf }),
   subject({
     id: "DescriptionList.rows",
     components: ["DescriptionList"],

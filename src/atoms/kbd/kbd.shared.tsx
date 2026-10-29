@@ -8,10 +8,11 @@ import { View, Text, useHugStyle, type ColorTokens, type ViewStyle, type TextSty
 // "then" between the caps of a sequence) so the component owns the composition instead
 // of pushing a Row + N caps + N-1 separators onto every call site.
 //
-// The cap has one fixed look (no size or intent variants), so there are no boolean
-// axes to map: the structure, accessibility, and token-driven colors live here once,
-// and a platform file supplies only its skin (cap geometry, label type, chord row)
-// and calls createKbd.
+// The cap has one look and one density axis: the 24px cap, or `comfortable`, the key
+// the hand-off's component page sets beside a key's effect, padded 3px above and below
+// its label and 8px at the sides. The structure, accessibility, and token-driven colors
+// live here once, and a platform file supplies only its skin (cap geometry, label type,
+// chord row) and calls createKbd.
 //
 // Kbd is a "Shared" platform treatment: neither iOS (no native keyboard-key cap
 // element) nor Material 3 (no keyboard-key cap component) has a native control, so all
@@ -21,6 +22,8 @@ import { View, Text, useHugStyle, type ColorTokens, type ViewStyle, type TextSty
 export interface KbdSkin {
   /** The key-cap box geometry: a centered row, fixed cap height, min width, radius, border width, padding. */
   capBox: ViewStyle;
+  /** The `comfortable` cap: the same corner and edge, padded around the label instead of held at the cap height. */
+  comfortableCapBox: ViewStyle;
   /** The key label type (size / line-height / weight / tracking). */
   labelType: TextStyle;
   /** The "then" between the caps of a sequence. */
@@ -44,10 +47,24 @@ export interface KbdProps {
    * Only affects the `keys` form.
    */
   sequence?: boolean;
+  /**
+   * The comfortable cap: padded 3 px above and below its label and 8 px at the sides
+   * (25 px tall), the key the hand-off's component page sets beside a key's effect.
+   * Omit for the 24 px cap with 6 px sides.
+   */
+  comfortable?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
   style?: LayoutStyle;
+}
+
+export type KbdDensity = "comfortable" | "default";
+
+/** The density axis: a single opt-in today, resolved here so the docs record it. */
+export function densityOf(p: Pick<KbdProps, "comfortable">): KbdDensity {
+  if (p.comfortable) return "comfortable";
+  return "default";
 }
 
 // The cap surface: the raised neutral fill inside the field border (platform-neutral,
@@ -74,10 +91,11 @@ function keyList(keys: string | string[] | undefined): string[] | null {
 
 /** Build a Kbd component from a platform skin. */
 export function createKbd(skin: KbdSkin) {
-  return function Kbd({ children, keys, sequence, testID, style }: KbdProps) {
+  return function Kbd({ children, keys, sequence, comfortable, testID, style }: KbdProps) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    const pane = <GlassPane static layer="control" shape={skin.capBox} />;
+    const capBox = densityOf({ comfortable }) === "comfortable" ? skin.comfortableCapBox : skin.capBox;
+    const pane = <GlassPane static layer="control" shape={capBox} />;
     // HUG: a keycap keeps its content width inside a stretching Column.
     const hug = useHugStyle();
 
@@ -87,7 +105,7 @@ export function createKbd(skin: KbdSkin) {
     if (list == null || list.length === 1) {
       const label = list != null ? list[0] : children;
       return (
-        <View testID={testID} style={[paneStyle(theme, [skin.capBox, capSurface(tokens)]), hug, style]}>
+        <View testID={testID} style={[paneStyle(theme, [capBox, capSurface(tokens)]), hug, style]}>
           {pane}
           {label != null ? <Text style={[skin.labelType, labelColor(tokens)]}>{label}</Text> : null}
         </View>
@@ -125,7 +143,7 @@ export function createKbd(skin: KbdSkin) {
               </Text>
             ) : null}
             <View
-              style={[paneStyle(theme, [skin.capBox, capSurface(tokens)])]}
+              style={[paneStyle(theme, [capBox, capSurface(tokens)])]}
               importantForAccessibility="no-hide-descendants"
               aria-hidden
             >

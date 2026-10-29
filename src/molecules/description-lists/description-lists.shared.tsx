@@ -39,6 +39,10 @@ import { type Layout } from "./description-lists.styles.js";
 // - Density: `compact` tightens the ruled rows to the v4 hand-off's semantics-card rows,
 //   8 above and below the text, 12 to the value, the term a fixed 110 column and the
 //   value at the top of its row; the plain and divided rows have no compact step.
+// - Value ink: `muted` sets a text value as a note beside its term (the small type in
+//   the muted ink, the way a key's effect sits beside its cap) where the default value
+//   is the full-weight foreground data. A node value renders as given either way, and
+//   a skin whose value is already the secondary ink (iOS) leaves it as it is.
 // - Surface: `card` wraps the whole list in a card surface (border, radius,
 //   padding) so it reads as a self-contained panel. `title`/`subtitle` add a
 //   bordered header band to the card.
@@ -141,6 +145,12 @@ export interface DescriptionListProps {
    * compact step; a plain or divided list is unchanged by it.
    */
   compact?: boolean;
+   * The values as notes beside their terms: a text value in the small type and the muted
+   * ink (400 13/19) instead of the full-weight foreground data, for a list that explains
+   * each term (a key and its effect). A node value renders as given, and a platform skin
+   * whose value detail is already the secondary ink keeps its type.
+   */
+  muted?: boolean;
   // Surface: wrap the list in a card surface.
   card?: boolean;
   /** Fires when a row's inline editor commits (Enter or Save): the item index and the new value. */
@@ -188,6 +198,8 @@ export interface DescriptionListSkin {
   termType: (t: ColorTokens) => TextStyle;
   /** Horizontal-row value type (size / line-height / weight / color / tracking). */
   valueType: (t: ColorTokens) => TextStyle;
+  /** The `muted` value type: the note beside its term. Omitted, the value keeps `valueType` (a skin whose value is already the secondary ink). */
+  mutedValueType?: (t: ColorTokens) => TextStyle;
   /** Stacked-layout term tracking (the small uppercase muted label). */
   stackedTermTracking: TextStyle;
   /** Stacked-layout value type (full-weight foreground; per-OS tracking). */
@@ -232,6 +244,14 @@ export type Density = "compact";
 export function densityOf(p: Pick<DescriptionListProps, "compact">): Density | null {
   if (p.compact) return "compact";
   return null;
+}
+
+export type ValueInk = "muted" | "default";
+
+/** The value ink axis: `muted` sets a text value as a note beside its term; otherwise the full-weight data. */
+export function valueInkOf(p: Pick<DescriptionListProps, "muted">): ValueInk {
+  if (p.muted) return "muted";
+  return "default";
 }
 
 // A text value's form, first match wins: the status pill, the metadata badge, the
@@ -327,7 +347,7 @@ export function createDescriptionList(
   }
 
   return function DescriptionList(props: DescriptionListProps) {
-    const { items, title, subtitle, card, onUpdate, onCopy, testID, style } = props;
+    const { items, title, subtitle, muted, card, onUpdate, onCopy, testID, style } = props;
     const { tokens } = useTheme();
     // FILL: the list spans the parent it is given.
     const fill = useFillStyle("DescriptionList");
@@ -375,8 +395,10 @@ export function createDescriptionList(
 
     const stacked = layout === "stacked";
     // Stacked keeps a full-weight foreground value; the horizontal rows carry the
-    // per-OS value type (secondary gray on iOS, full-weight foreground otherwise).
-    const valueStyle = stacked ? skin.stackedValueType(tokens) : skin.valueType(tokens);
+    // per-OS value type (secondary gray on iOS, full-weight foreground otherwise), or
+    // the skin's muted note type when the list is `muted` and the skin draws one.
+    const horizontalValueType = valueInkOf({ muted }) === "muted" && skin.mutedValueType ? skin.mutedValueType : skin.valueType;
+    const valueStyle = stacked ? skin.stackedValueType(tokens) : horizontalValueType(tokens);
 
     // The two-column term's label column, text or node; a ruled list's term hugs its
     // content over a floor instead (the hand-off's `minmax(120px,auto)`), and a compact
