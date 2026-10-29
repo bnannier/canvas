@@ -15,7 +15,12 @@ import { type BreadcrumbSkin } from "./breadcrumb.shared.js";
 // a pressed link to 0.7, Android ripples instead; the minimum target is the HIG's 44pt or
 // Material's 48dp, which the shell reaches with hitSlop around the text-sized links.
 
-const TYPE = { fontSize: 13, lineHeight: 18, fontWeight: "400" } as const;
+// The crumbs' line is the browser's `normal` (Component.dc.html line 138: `font:400 13px
+// var(--ft)`, no ratio), which Instrument Sans sets at 16 px for a 13 px crumb (measured
+// in Chromium on the served hand-off page: the trail's row is 16 tall); every surface
+// below the trail starts from that line, so the kit pins it rather than letting each
+// platform's face decide.
+const TYPE = { fontSize: 13, lineHeight: 16, fontWeight: "400" } as const;
 const HOME_ICON_SIZE = 14;
 const SEPARATOR_ICON_SIZE = 13;
 

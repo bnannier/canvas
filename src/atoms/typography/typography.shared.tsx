@@ -185,6 +185,16 @@ export interface TypographyProps {
   specMeta?: boolean;
   /** A reference sheet's text cell (a props table's description, an inherited-props note): 400 13/1.55 in the secondary ink. */
   specText?: boolean;
+  /**
+   * A pager card's label (Previous, Next): the page label's 500 11 tracked .08em in caps
+   * and subtle ink on the face's own 14 line (the hand-off sets no ratio there). Pass
+   * `mono` for the mono face, as the page label takes it.
+   */
+  pagerLabel?: boolean;
+  /** A legend row's label (an anatomy part's name beside its numbered disc): 500 14 on the face's own 18 line, in the foreground ink. */
+  legendLabel?: boolean;
+  /** A specimen tile's caption strip (a size or state name under its well): 500 12 on the face's own 16 line, in the secondary ink. Pass `mono` for the mono face. */
+  tileCaption?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -342,6 +352,9 @@ export function roleOf(p: TypographyProps): Role {
   if (p.guideTitle) return "guideTitle";
   if (p.pagerName) return "pagerName";
   if (p.pageLabel) return "pageLabel";
+  if (p.pagerLabel) return "pagerLabel";
+  if (p.legendLabel) return "legendLabel";
+  if (p.tileCaption) return "tileCaption";
   if (p.code) return "code";
   if (p.pageLead) return "pageLead";
   if (p.sectionLead) return "sectionLead";

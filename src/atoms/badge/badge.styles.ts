@@ -32,6 +32,9 @@ export const webSkin: BadgeSkin = {
     large: { height: 26, paddingHorizontal: 8, fontSize: 12, lineHeight: 16 },
     // Line 220: `width:22px;height:22px` and `font:600 11px/1 var(--fm)`.
     marker: { height: 22, paddingHorizontal: 0, fontSize: 11, lineHeight: 11 },
+    // The tier pill beside a page title (Component.dc.html line 139): `height:24px;padding:0
+    // 10px;...;font:500 11px/1 var(--fm);letter-spacing:.06em;text-transform:uppercase`.
+    tier: { height: 24, paddingHorizontal: 10, fontSize: 11, lineHeight: 11 },
   },
   // Line 220: `box-shadow:0 0 0 3px var(--bg2),0 4px 12px rgba(0,0,0,.4)`, `--bg2` the
   // stage well's fill (CardMedia reads `surface-sunken`, falling back to `muted` as it does).

@@ -119,13 +119,20 @@ export const GRID_COLUMNS = 12;
  * The px width of a cell spanning `span` of `columns` equal units in a row
  * `width` wide whose cells sit `gap` apart: a multi-column span also swallows
  * the gaps it straddles, so two 6-column cells plus the gap between them fill
- * the row exactly, as do twelve 1-column cells and their eleven gaps. Floored,
- * so rounding can only leave a sub-pixel sliver rather than overflow the row
- * into an extra wrap.
+ * the row exactly, as do twelve 1-column cells and their eleven gaps. Floored to a
+ * hundredth of a pixel (the fraction a browser's `1fr` track keeps: the hand-off's
+ * two pager cards are 576 wide, its anatomy split 724.06 and 425.92), so rounding can
+ * only leave a sub-pixel sliver rather than overflow the row into an extra wrap, and a
+ * whole-pixel floor no longer moves a cell up to a pixel in from where the track sits.
  */
 export function spanWidth(width: number, span: number, gap: number, columns: number = GRID_COLUMNS): number {
   const unit = (width - gap * (columns - 1)) / columns;
-  return Math.max(0, Math.floor(unit * span + gap * (span - 1)));
+  return Math.max(0, floorHundredth(unit * span + gap * (span - 1)));
+}
+
+/** A length floored to a hundredth of a pixel, the finest step a track width keeps. */
+export function floorHundredth(px: number): number {
+  return Math.floor(px * 100) / 100;
 }
 
 /** A span clamped to a whole number of the twelve columns (1..12). */

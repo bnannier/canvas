@@ -78,6 +78,21 @@ export const pageRoles = {
   // cell `font:400 13px/1.55 var(--ft);color:var(--tx2)`.
   specMeta: { fontSize: 12, lineHeight: 18.6, fontWeight: "400" },
   specText: { fontSize: 13, lineHeight: 20.15, fontWeight: "400" },
+  // The previous and next cards' labels (Component.dc.html lines 303 and 304):
+  // `<span style="font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;
+  // color:var(--tx3)">Previous</span>`, the page label's style with no ratio, so the line
+  // is the browser's `normal`: measured in Playwright on the served hand-off page,
+  // JetBrains Mono sets an 11 px label on a 14 px line (the span's line box is 14 px).
+  pagerLabel: { fontSize: 11, lineHeight: 14, fontWeight: "500", letterSpacing: 0.88, textTransform: "uppercase" },
+  // The anatomy legend's part name (Component.dc.html line 222): the row's `font:500 14px
+  // var(--ft)` with no ratio, so the line is the browser's `normal`: measured in
+  // Playwright on the served hand-off page, Instrument Sans sets 14 px on an 18 px line.
+  legendLabel: { fontSize: 14, lineHeight: 18, fontWeight: "500" },
+  // The size and state tiles' caption strip (Component.dc.html lines 199 and 207):
+  // `font:500 12px var(--fm);color:var(--tx2)` with no ratio, so the line is the
+  // browser's `normal`: measured in Playwright on the served hand-off page, JetBrains Mono
+  // sets 12 px on a 16 px line (the strip is 10 + 16 + 10 over its hairline).
+  tileCaption: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
 } as const satisfies Record<string, TextStyle>;
 
 /**

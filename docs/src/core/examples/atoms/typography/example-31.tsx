@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Typography } = scope;
   return (
-<Typography specText>An icon element rendered before the label. It takes the label's ink and size.</Typography>
+<Typography legendLabel>Leading icon</Typography>
   );
 }

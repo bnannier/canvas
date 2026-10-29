@@ -54,6 +54,11 @@ line (the hand-off sets no ratio), in the foreground ink. Two are the reference 
 `mono` for the mono face and `subtle` or `muted` for the ink, as the sheet's cells take
 them) and `specText` (a description cell or an inherited-props note, 400 13/1.55 in the
 secondary ink).
+line the same way: `pagerLabel` (the previous or next card's label over its name, the page
+label's 500 11 tracked .08em in caps and subtle ink on a 14 line; pass `mono`), `legendLabel`
+(a legend row's label beside its numbered disc, 500 14 on an 18 line in the foreground ink)
+and `tileCaption` (a specimen tile's caption strip, 500 12 on a 16 line in the secondary ink;
+pass `mono`).
 
 `code` is the standalone code pill (regular 13px mono on the muted fill, a 6 radius and 2
 by 6 padding). `code inline` is the prose code chip, a word of code inside a sentence: the
@@ -261,6 +266,23 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ```tsx
 <Typography specText>An icon element rendered before the label. It takes the label's ink and size.</Typography>
+
+### Pager label
+
+```tsx
+<Typography pagerLabel mono>Previous</Typography>
+```
+
+### Legend label
+
+```tsx
+<Typography legendLabel>Leading icon</Typography>
+```
+
+### Tile caption
+
+```tsx
+<Typography tileCaption mono>small</Typography>
 ```
 
 ### Semibold

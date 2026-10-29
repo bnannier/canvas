@@ -1,5 +1,6 @@
 import { Children, isValidElement, type ReactNode } from "react";
 import { GRID_CELL_AXIS, LayoutAxisProvider, View, useContainerWidth, useFillStyle, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { floorHundredth } from "../../style/sizing.js";
 import { RaiseCell } from "../../style/hover.js";
 import { type FlexSkin } from "../layout/layout.styles.js";
 import { gapOf, type Gap } from "../layout/layout.shared.js";
@@ -127,9 +128,13 @@ export function gridColumns(width: number, minTileWidth: number, gap: number, co
   return Math.max(1, columns != null ? Math.min(columns, fit) : fit);
 }
 
-/** The px width of one cell when `cols` cells and their gaps split `width`. */
+/** The px width of one cell when `cols` cells and their gaps split `width`: floored to a
+ *  hundredth of a pixel, the fraction the hand-off's `repeat(auto-fill, minmax(...))` and
+ *  `flex: 1 1 200px` tiles keep (Component.dc.html lines 198 and 206: three 378.66 tiles,
+ *  five 221.6), so the row never overflows into an extra wrap and no tile sits a pixel
+ *  in from its track. */
 export function gridCellWidth(width: number, cols: number, gap: number): number {
-  return Math.max(0, Math.floor((width - gap * (cols - 1)) / cols));
+  return Math.max(0, floorHundredth((width - gap * (cols - 1)) / cols));
 }
 
 export function gridRowGapOf(props: Pick<GridProps, "rowsSection" | "rowsCozy">): number | null {
@@ -159,7 +164,7 @@ export function createGrid(skin: FlexSkin) {
           const wide =
             cols > 1 && isValidElement(child) && child.type === GridItem && !!(child.props as GridItemProps).wide;
           const hint = isValidElement(child) && child.type === GridItem ? child.props as GridItemProps : {};
-          const cell: ViewStyle = { minWidth: 0, ...(cellWidth == null ? props.flow ? { width: "100%" } : null : { width: wide ? cellWidth * 2 + gapPx : cellWidth }) };
+          const cell: ViewStyle = { minWidth: 0, ...(cellWidth == null ? props.flow ? { width: "100%" } : null : { width: wide ? floorHundredth(cellWidth * 2 + gapPx) : cellWidth }) };
           if (hint.full) cell.width = "100%";
           if (hint.raised) cell.zIndex = 1;
           if (hint.front) cell.zIndex = 10;

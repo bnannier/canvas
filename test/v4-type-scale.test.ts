@@ -135,6 +135,18 @@ const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string;
   // The props table's row (line 238): its type cell, and its description cell.
   specMeta: { page: "Component", text: ">{{ r.t }}<" },
   specText: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ r.d }}\"" },
+  // The previous card's label, `font:500 11px var(--fm)` with no ratio: its `normal` line
+  // measured the same way with JetBrains Mono loaded, 14 px (the next card's label is the
+  // same style).
+  pagerLabel: { page: "Component", text: ">Previous</span>", normalLineHeight: 14 },
+  // The anatomy legend's row, `font:500 14px var(--ft)` with no ratio (line 222; the text
+  // anchors on the disc the row opens with, since the part's name sits in a bare span):
+  // Instrument Sans's `normal` line at 14 px measured at 18 px.
+  legendLabel: { page: "Component", text: "<span style=\"width:22px;height:22px;flex:none", normalLineHeight: 18 },
+  // The size tile's caption strip, `font:500 12px var(--fm)` with no ratio (line 199, the
+  // first `{{ z.l }}`; the state tile's is the same style): JetBrains Mono's `normal` line
+  // at 12 px measured at 16 px.
+  tileCaption: { page: "Component", text: ">{{ z.l }}</div>", normalLineHeight: 16 },
 };
 
 describe("v4 page roles", () => {

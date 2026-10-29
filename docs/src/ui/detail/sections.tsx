@@ -162,12 +162,14 @@ export function PrevNext({ slug }: { slug: string }) {
         {/* The hand-off's previous and next cards (line 303): `padding:16px 18px;border-radius:16px;
             border:1px solid var(--ln);background:var(--sf);...;gap:4px`, no shadow, the next one
             `align-items:flex-end;text-align:right`; the card owns the rhythm. Its eyebrow is the
-            page label (line 303: `font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)`). */}
-        <Row stacks relaxed>
+            pager label (line 303: `font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)`,
+            on the face's own 14 px line). */}
+        {/* The pager grid's gap is 12 (line 302: `grid-template-columns:1fr 1fr;gap:12px`). */}
+        <Row stacks cozy>
           <Column span={6}>
             {p ? (
               <Card pager outlined onPress={() => router.push(`/components/${p.slug}` as never)} accessibilityLabel={`Previous: ${p.name}`}>
-                <Typography pageLabel mono>Previous</Typography>
+                <Typography pagerLabel mono>Previous</Typography>
                 <Typography pagerName>{p.name}</Typography>
               </Card>
             ) : null}
@@ -175,7 +177,7 @@ export function PrevNext({ slug }: { slug: string }) {
           <Column span={6}>
             {n ? (
               <Card pager outlined onPress={() => router.push(`/components/${n.slug}` as never)} accessibilityLabel={`Next: ${n.name}`}>
-                <Typography pageLabel mono right>Next</Typography>
+                <Typography pagerLabel mono right>Next</Typography>
                 <Typography pagerName right>{n.name}</Typography>
               </Card>
             ) : null}

@@ -51,6 +51,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     // The v4 component page's label (its knob panel's "Props", the rail's group headers,
     // the props table's header cells), an 11 px mono eyebrow in the subtle ink.
     "pageRoles.pageLabel": "caption",
+    // The pager card's label (Previous, Next), the same 11 px mono label on its face's 14 px line.
+    "pageRoles.pagerLabel": "caption",
   },
   // The roles themselves read typeRoles above (their floors are checked on each skin).
   "src/atoms/typography/typography.styles.ts": {
