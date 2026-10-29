@@ -3,7 +3,6 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { colorsFor, type Palette } from "../src/style/tokens.ts";
-import { contrastRatio } from "../src/style/color.ts";
 import { MONO_FONT } from "../src/style/mono.ts";
 import { platformShape } from "../src/style/platform-shape.ts";
 import { CHART_LOOK, axisLabel, title, titleDefault, titleCompact } from "../src/charts/shared/charts.styles.ts";
@@ -35,7 +34,7 @@ describe("v4 chart frame, axes and legend", () => {
     expect([CHART_LOOK.dotRadius, CHART_LOOK.dotStroke]).toEqual([3, 2]);
     expect([CHART_LOOK.areaLead, CHART_LOOK.area, CHART_LOOK.fadeTop]).toEqual([0.28, 0.3, 0.35]);
     expect([CHART_LOOK.swatch, CHART_LOOK.swatchGap, CHART_LOOK.legendRowGap, CHART_LOOK.legendColumnGap]).toEqual([8, 6, 6, 14]);
-    expect([CHART_LOOK.legendSize, CHART_LOOK.legendLine]).toEqual([12, 16]);
+    expect([CHART_LOOK.legendSize, CHART_LOOK.legendLine]).toEqual([12, 15]);
   });
 
   it("the title is 500 14 and the axis labels mono in the subtle ink", () => {
@@ -66,14 +65,17 @@ describe("v4 chart geometry", () => {
     expect(ringDash(100).dasharray).toBe(`${2 * Math.PI * r} ${2 * Math.PI * r}`);
   });
 
-  it("every treemap tile's ink clears 4.5:1 on its tile in every palette and scheme", () => {
+  it("every treemap tile takes the renderer's near-black ink over its 70% mix", () => {
+    // The owner's 2026-10-28 pixel-exact rule: the renderer prints #0a0a0f on every tile.
+    // The tiles where that falls under 4.5:1 are an accessibility note in treemap.shared.tsx.
     const palettes: Palette[] = ["violet", "cyan", "mint", "rose", "amber"];
     for (const p of palettes) {
       for (const scheme of ["light", "dark"] as const) {
         const t = colorsFor(p, scheme);
         for (let i = 1; i <= 8; i++) {
           const { fill, ink } = tileLook(t.card, t[`chart-${i}` as "chart-1"]);
-          expect(contrastRatio(ink, fill)).toBeGreaterThanOrEqual(4.5);
+          expect(ink).toBe("#0a0a0f");
+          expect(fill).toMatch(/^#|^rgb/);
         }
       }
     }

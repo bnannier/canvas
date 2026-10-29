@@ -11,7 +11,7 @@ import { MONO_FONT } from "../../style/mono.js";
 // summary caption (12 px mono, subtle) at the right, a single row of per-period status
 // pills 2 px apart (30 px, 20 compact; operational green, degraded amber, down red,
 // unknown a faded green), oldest on the left, and edge captions below (11 px mono)
-// ("90 days ago" / "Today"), 8 px apart. The strip is a plot: it keeps physical LTR
+// ("90 days ago" / "Today", an optional middle caption between them), 8 px apart. The strip is a plot: it keeps physical LTR
 // ordering, and the edge captions stay pinned to their physical edges, even
 // under native RTL.
 
@@ -28,6 +28,8 @@ export interface UptimeBarProps {
   startLabel?: string;
   /** Caption under the strip's right (latest) edge (e.g. "Today"). */
   endLabel?: string;
+  /** Caption centred under the strip, between the edge captions (e.g. "1 incident · 2 degraded days"). */
+  midLabel?: string;
   // Density (omit for the default pill height).
   compact?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -46,14 +48,15 @@ const DOT = 8;
  * summary caption.
  */
 export function UptimeBar(props: UptimeBarProps) {
-  const { periods, label, caption, startLabel, endLabel, testID, style } = props;
+  const { periods, label, caption, startLabel, endLabel, midLabel, testID, style } = props;
   const { tokens } = useTheme();
   const compact = !!props.compact;
 
   devWarn(periods.length === 0, "[canvas] <UptimeBar />: `periods` is empty; the strip renders with no pills.");
 
   const name = statusSummary(periods, label);
-  const hasEdges = (startLabel != null && startLabel !== "") || (endLabel != null && endLabel !== "");
+  const hasMid = midLabel != null && midLabel !== "";
+  const hasEdges = (startLabel != null && startLabel !== "") || (endLabel != null && endLabel !== "") || hasMid;
   const hasLabel = label != null && label !== "";
   const hasCaption = caption != null && caption !== "";
   const latest = periods.length > 0 ? periodStatus(periods[periods.length - 1]) : "operational";
@@ -84,6 +87,7 @@ export function UptimeBar(props: UptimeBarProps) {
       {hasEdges ? (
         <View style={{ flexDirection: "row", justifyContent: "space-between", direction: "ltr" }}>
           <Text style={{ ...EDGE_CAPTION_TYPE, color: subtle }}>{startLabel ?? ""}</Text>
+          {hasMid ? <Text numberOfLines={1} style={{ ...EDGE_CAPTION_TYPE, flexShrink: 1, textAlign: "center", color: subtle }}>{midLabel}</Text> : null}
           <Text style={{ ...EDGE_CAPTION_TYPE, color: subtle }}>{endLabel ?? ""}</Text>
         </View>
       ) : null}

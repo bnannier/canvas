@@ -54,6 +54,27 @@ The order-book view: cumulative bid and ask step areas mirrored around the sprea
 />
 ```
 
+### Spread guide
+
+`spread` draws a dashed guide midway between the best bid and the best ask, with its label in a pill at the guide's top.
+
+```tsx
+<DepthChart
+  title="OLY order book"
+  spread="spread 0.16%"
+  bids={[
+    { price: 191.3, size: 80 },
+    { price: 191.0, size: 116 },
+    { price: 190.7, size: 176 }
+  ]}
+  asks={[
+    { price: 191.6, size: 90 },
+    { price: 191.9, size: 110 },
+    { price: 192.2, size: 154 }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Both sides of the book

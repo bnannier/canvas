@@ -9,7 +9,7 @@ import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../s
 import { estimateTextWidth, formatCompact, squarify } from "../shared/chart-math.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { MONO_FONT } from "../../style/mono.js";
-import { contrastRatio, inkOn, mixOklab } from "../../style/color.js";
+import { mixOklab } from "../../style/color.js";
 
 // Shared Treemap shell. Squarified value tiles (Bruls layout through the
 // shared chart-math helper): each datum becomes a ramp-colored rectangle
@@ -58,26 +58,21 @@ const PLOT_HEIGHT = { default: 240, compact: 160 } as const;
 const MAX_TILES = 24;
 // The v4 hand-off's tiles (`K.def('treemap')`): each inset 2 px in its cell, at the
 // treemap-tile corner, filled with its series colour mixed 70% over the card, an 8 px
-// inset, the label 600 12 px and the value 500 11 px mono at .75, in the hand-off's
-// near-black ink (or the tile's own best ink where that falls under 4.5:1). A fill on
-// which neither ink reaches 4.5:1 (a mid-lightness series, the amber accent on the dark
-// card) steps its mix back toward the card by TILE_MIX_STEP until one does.
+// inset, the label 600 12 px and the value 500 11 px mono at .75, every tile in the
+// hand-off's near-black ink, as its renderer prints it (the owner's 2026-10-28
+// pixel-exact rule). Accessibility note: where a series fill is dark (the violet lead in
+// the light scheme, the deep ramp steps) that ink falls under 4.5:1 on the tile; the tile
+// still names itself in the chart's accessible name, which carries every label and value.
+// The plot is the renderer's `aspect-ratio: 2/1`: half as tall as it is wide.
 const TILE_INSET = 2;
 const TILE_PAD = 8;
 const TILE_MIX = 0.7;
-const TILE_MIX_STEP = 0.02;
 const TILE_INK = "#0a0a0f";
 const TILE_VALUE_TYPE = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "500" as const };
 
-/** The tile's fill and ink: the series colour mixed over the card, and the ink it carries. */
+/** The tile's fill and ink: the series colour mixed 70% over the card, under the renderer's near-black ink. */
 export function tileLook(card: string, series: string): { fill: string; ink: string } {
-  for (let mix = TILE_MIX; mix > 0; mix -= TILE_MIX_STEP) {
-    const fill = mixOklab(card, series, mix);
-    if (contrastRatio(TILE_INK, fill) >= 4.5) return { fill, ink: TILE_INK };
-    const ink = inkOn(fill);
-    if (contrastRatio(ink, fill) >= 4.5) return { fill, ink };
-  }
-  return { fill: card, ink: inkOn(card) };
+  return { fill: mixOklab(card, series, TILE_MIX), ink: TILE_INK };
 }
 
 export function createTreemap(skin: ChartSkin) {
@@ -89,7 +84,8 @@ export function createTreemap(skin: ChartSkin) {
     const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
-    const height = compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default;
+    const [width, setWidth] = useState(0);
+    const height = width > 0 ? Math.round(width / 2) : compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default;
 
     devWarn(data.length === 0, "[canvas] <Treemap />: `data` is empty; the chart renders with no tiles.");
     devWarn(data.length > MAX_TILES, `[canvas] <Treemap />: more than ${MAX_TILES} tiles read as noise; aggregate the tail.`);
@@ -113,7 +109,6 @@ export function createTreemap(skin: ChartSkin) {
     const toggle = (i: number) => setSelected(selected === i ? null : i);
 
     // The tiles need the measured width (the card is fluid).
-    const [width, setWidth] = useState(0);
     const rects = width > 0 ? squarify(clean, 0, 0, width, height) : [];
 
     return (

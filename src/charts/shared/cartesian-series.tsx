@@ -146,6 +146,7 @@ export function chartShell(
   props: CartesianSeriesProps,
   ctx: ReturnType<typeof useSeriesChart>,
   marks: (layout: CartesianLayout) => ReactNode,
+  opts?: { bands?: boolean },
 ) {
   const { labels, series, title, testID, style } = props;
   const compact = !!props.compact;
@@ -176,7 +177,9 @@ export function chartShell(
           // The hand-off's chart proportion at every density (its compact only tightens the frame).
           plotHeight={PLOT_HEIGHT.default}
           aspect
-          xPoints
+          // Points run edge to edge (the renderer's line x); a chart with bars places its
+          // categories at band centres instead, so no bar hangs off the plot's ends.
+          xPoints={!opts?.bands}
           compact={compact}
           hideGrid={props.hideGrid}
           hideAxes={props.hideAxes}
@@ -185,8 +188,9 @@ export function chartShell(
           onBandScrub={ctx.setSelected}
           overlay={(layout) =>
             ctx.selected != null && layout.band && labels[ctx.selected] != null ? (
+              // With the axis shown, its label names the inspected category in the card ink.
               <ChartValueFlag
-                title={labels[ctx.selected]}
+                title={props.hideAxes ? labels[ctx.selected] : undefined}
                 rows={series.map((sr, i) => ({
                   label: multi ? sr.label : undefined,
                   color: multi ? colorOf(i) : undefined,
@@ -205,7 +209,7 @@ export function chartShell(
       {/* Identity legend for multiple series (a single series is named by the
           title); rendered outside the img subtree so it stays reachable. */}
       {multi && !props.hideLegend ? (
-        <ChartLegend horizontal items={series.map((sr, i) => ({ label: sr.label, color: colorOf(i) }))} />
+        <ChartLegend horizontal items={series.map((sr, i) => ({ label: sr.label, color: colorOf(i), dashed: sr.dashed }))} />
       ) : null}
     </View>
   );

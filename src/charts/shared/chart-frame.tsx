@@ -77,8 +77,13 @@ export interface CartesianFrameProps {
    * whose web path leaks RN responder props onto DOM nodes.
    */
   onBandScrub?: (index: number | null) => void;
-  /** Draw the selection guide through this category band. */
+  /**
+   * The inspected category: its guide is drawn through the plot (unless `noGuide`) and its
+   * x label is set in the card ink, shown even where the axis thins its neighbours out.
+   */
   selectedBand?: number | null;
+  /** Mark the inspected category without the guide line (a bar's own fill marks it). */
+  noGuide?: boolean;
 }
 
 // Space above the plot so the top tick's label (centered on the top gridline)
@@ -100,7 +105,7 @@ const VIEW_RIGHT = 8;
 const MIN_X_SLOT = 44;
 
 export function CartesianFrame(props: CartesianFrameProps) {
-  const { yExtent, xLabels, xDomain, plotHeight, compact, hideGrid, hideAxes, children, overlay, onBandScrub, selectedBand } = props;
+  const { yExtent, xLabels, xDomain, plotHeight, compact, hideGrid, hideAxes, children, overlay, onBandScrub, selectedBand, noGuide } = props;
   const { tokens } = useTheme();
   const [width, setWidth] = useState(0);
 
@@ -151,6 +156,16 @@ export function CartesianFrame(props: CartesianFrameProps) {
     const widestX = xLabels.reduce((m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)), 0);
     xLabelStep = Math.max(1, Math.ceil(Math.max(widestX + 6, xLabels.length > 8 ? MIN_X_SLOT : 0) / band.step));
   }
+  // The inspected category's label is always shown, in the card ink (the section cards set
+  // the selected month in `--tx`); a thinned label it would run into steps aside for it.
+  const selectedLabel = xLabels && band && selectedBand != null && xLabels[selectedBand] != null ? selectedBand : null;
+  const xLabelShown = (i: number): boolean => {
+    if (i === selectedLabel) return true;
+    if (i % xLabelStep !== 0) return false;
+    if (selectedLabel == null || selectedLabel % xLabelStep === 0 || !xLabels || !band) return true;
+    const gap = Math.abs(band.center(i) - band.center(selectedLabel));
+    return gap >= (estimateTextWidth(xLabels[i], LABEL_SIZE) + estimateTextWidth(xLabels[selectedLabel], LABEL_SIZE)) / 2 + 6;
+  };
 
   const ready = width > 0 && plotW > 0;
 
@@ -193,10 +208,10 @@ export function CartesianFrame(props: CartesianFrameProps) {
                 {/* The hand-off draws horizontal gridlines only, on a numeric x axis too. */}
                 {/* Baseline hairline, kept even when the grid is hidden. */}
                 {!hideAxes ? <Line x1={0} y1={plotH - 0.5} x2={plotW} y2={plotH - 0.5} stroke={tokens.border} strokeWidth={1} /> : null}
-                {/* Selection guide through the inspected category. */}
-                {/* The hand-off's guide: a dashed 2 3 line in the muted ink. */}
-                {selectedBand != null && band ? (
-                  <Line x1={band.center(selectedBand)} y1={0} x2={band.center(selectedBand)} y2={plotH} stroke={tokens["muted-foreground"]} strokeWidth={1} strokeDasharray={CHART_LOOK.guideDash} />
+                {/* Selection guide through the inspected category: the section cards' dashed
+                    3 4 line in the third ink. */}
+                {selectedBand != null && band && !noGuide ? (
+                  <Line x1={band.center(selectedBand)} y1={0} x2={band.center(selectedBand)} y2={plotH} stroke={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} strokeWidth={1} strokeDasharray={CHART_LOOK.guideDash} />
                 ) : null}
                 {children(layout)}
               </Svg>
@@ -221,8 +236,8 @@ export function CartesianFrame(props: CartesianFrameProps) {
                 full instead of truncating to one narrow band's width. */}
             {!hideAxes && xLabels && band
               ? xLabels.map((label, i) => {
-                  if (i % xLabelStep !== 0) return null;
-                  const slot = band.step * xLabelStep;
+                  if (!xLabelShown(i)) return null;
+                  const slot = i % xLabelStep === 0 ? band.step * xLabelStep : Math.max(band.step, estimateTextWidth(label, LABEL_SIZE) + 6);
                   return (
                     <Text
                       key={`xl${i}`}
@@ -233,6 +248,7 @@ export function CartesianFrame(props: CartesianFrameProps) {
                         top: TOP_PAD + plotH + 4,
                         textAlign: "center",
                         ...axisInk,
+                        ...(i === selectedLabel ? { color: tokens["card-foreground"] } : null),
                       }}
                       numberOfLines={1}
                     >

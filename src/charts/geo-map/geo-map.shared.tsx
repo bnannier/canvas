@@ -4,7 +4,6 @@ import { PanResponder, StyleSheet } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
-import { Row } from "../../atoms/layout/layout.js";
 import {
   View,
   Text,
@@ -619,32 +618,43 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
             make a mouse press's offsetX relative to the control instead of the
             plot. Disabled at the ends the way Stepper disables its minus at min. */}
         {zoomable ? (
-          <Row snug alignCenter style={s.zoomBar}>
+          // The renderer's zoom control: zoom in over zoom out in one framed column at the
+          // plot's corner, a hairline between them; the reset joins the column once the map
+          // has moved off the world view.
+          <View style={[s.zoomBar, s.zoomStack(tokens)]}>
             <Button
               icon
               ghost
-              disabled={camera.k <= 1}
-              accessibilityLabel="Zoom out"
-              iconLeft={<Icon zoomOut decorative size={16} />}
-              onPress={() => setCamera(geoMapZoomBy(camera, 1 / ZOOM_STEP))}
-            />
-            <Button
-              icon
-              ghost
+              small
               disabled={camera.k >= MAX_ZOOM}
               accessibilityLabel="Zoom in"
-              iconLeft={<Icon zoomIn decorative size={16} />}
+              iconLeft={<Icon plus decorative size={14} />}
               onPress={() => setCamera(geoMapZoomBy(camera, ZOOM_STEP))}
             />
+            <View style={s.zoomRule(tokens)} />
             <Button
               icon
               ghost
-              disabled={camera.k === 1 && camera.tx === 0 && camera.ty === 0}
-              accessibilityLabel="Reset zoom"
-              iconLeft={<Icon maximize decorative size={16} />}
-              onPress={() => setCamera(WORLD_CAMERA)}
+              small
+              disabled={camera.k <= 1}
+              accessibilityLabel="Zoom out"
+              iconLeft={<Icon minus decorative size={14} />}
+              onPress={() => setCamera(geoMapZoomBy(camera, 1 / ZOOM_STEP))}
             />
-          </Row>
+            {camera.k === 1 && camera.tx === 0 && camera.ty === 0 ? null : (
+              <>
+                <View style={s.zoomRule(tokens)} />
+                <Button
+                  icon
+                  ghost
+                  small
+                  accessibilityLabel="Reset zoom"
+                  iconLeft={<Icon maximize decorative size={14} />}
+                  onPress={() => setCamera(WORLD_CAMERA)}
+                />
+              </>
+            )}
+          </View>
         ) : null}
       </View>
     );

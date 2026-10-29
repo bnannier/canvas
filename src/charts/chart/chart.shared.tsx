@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Rect } from "react-native-svg";
+import { Defs, GlowFilter, SelectedBarGradient } from "../shared/chart-glow.js";
 import { View, Text, useControllableState, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
@@ -86,6 +87,8 @@ export interface ChartProps {
   defaultSelected?: number;
   /** Fired when a press selects a category (or clears it with null). */
   onSelect?: (index: number | null) => void;
+  /** Formats the value axis, the inspected value and the accessible values (data formatting, not styling). */
+  formatValue?: (v: number) => string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
@@ -115,6 +118,10 @@ const BAR = {
 // The hand-off's horizontal rows, in its 360-unit viewBox: the label column, the bar's
 // travel (W - 96), the row and its gap, the top inset, the value's offset after the bar.
 const ROW = { label: 86, travel: 264, height: 18, gap: 8, top: 4, valueGap: 4 } as const;
+
+// The selected column's look (the section card's pinned bar): `chart-2` at its top fading
+// to the bar's fill at its foot, over a 24 px glow in the accent's `glow`.
+const SELECTED_GLOW = 24;
 const VIEW_W = 360;
 
 /** One column's bars in data units: each series' [from, to] on the value axis (stacked accumulates). */
@@ -221,6 +228,7 @@ export function createChart(skin: ChartSkin) {
 
     const colorOf = (j: number): string => (grouped ? s.seriesColor(tokens, series[j], j) : s.barFill(tokens, tone));
     const valueOf = (sr: ChartSeries, i: number): number => (Number.isFinite(sr.values[i]) ? (sr.values[i] as number) : 0);
+    const fmt = props.formatValue ?? ((v: number) => String(v));
     // The value axis: a stacked chart is measured against the per-category totals (the
     // column IS the sum), a clustered one against the largest single value.
     const spans = labels.map((_, i) => columnSpans(series, i, stacked));
@@ -230,10 +238,10 @@ export function createChart(skin: ChartSkin) {
     // Each category is announced with every series' value; a stacked column also names
     // its total, which no other channel carries.
     const categoryName = (i: number): string => {
-      if (!grouped) return `${labels[i]}: ${valueOf(series[0], i)}`;
-      const parts = series.map((sr) => `${sr.label} ${valueOf(sr, i)}`).join(", ");
+      if (!grouped) return `${labels[i]}: ${fmt(valueOf(series[0], i))}`;
+      const parts = series.map((sr) => `${sr.label} ${fmt(valueOf(sr, i))}`).join(", ");
       const total = spans[i].reduce((sum, [from, to]) => sum + (to - from), 0);
-      return stacked ? `${labels[i]}: ${parts}, total ${total}` : `${labels[i]}: ${parts}`;
+      return stacked ? `${labels[i]}: ${parts}, total ${fmt(total)}` : `${labels[i]}: ${parts}`;
     };
     const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
     const setSelected = (i: number | null) => {
@@ -253,19 +261,40 @@ export function createChart(skin: ChartSkin) {
     const [rowsWidth, setRowsWidth] = useState(0);
     const k = rowsWidth > 0 ? rowsWidth / VIEW_W : 1;
 
-    const columns = (layout: CartesianLayout) =>
-      barRects(series, labels.length, stacked, layout).map((r) => (
-        <Rect
-          key={`b${r.category}-${series[r.series].id ?? r.series}`}
-          x={r.x}
-          y={r.y}
-          width={r.width}
-          height={r.height}
-          rx={Math.min(skin.barRadius, r.width / 2, r.height / 2)}
-          fill={colorOf(r.series)}
-          opacity={dimmed(r.category)}
-        />
-      ));
+    // A single primary series marks its selected column with the section card's gradient
+    // and glow; a toned or grouped chart keeps its fills and marks it by dimming the rest.
+    const ids = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+    const lit = !grouped && tone === "primary";
+    const columns = (layout: CartesianLayout) => {
+      const rects = barRects(series, labels.length, stacked, layout);
+      const rx = (r: BarRect) => Math.min(skin.barRadius, r.width / 2, r.height / 2);
+      const pick = lit && selected != null ? rects.find((r) => r.category === selected) : undefined;
+      return (
+        <>
+          {pick ? (
+            <>
+              <Defs>
+                <GlowFilter id={`${ids}glow`} length={SELECTED_GLOW} />
+                <SelectedBarGradient id={`${ids}sel`} top={tokens["chart-2"]} bottom={colorOf(0)} />
+              </Defs>
+              <Rect x={pick.x} y={pick.y} width={pick.width} height={pick.height} rx={rx(pick)} fill={tokens.glow ?? tokens.ring} filter={`url(#${ids}glow)`} />
+            </>
+          ) : null}
+          {rects.map((r) => (
+            <Rect
+              key={`b${r.category}-${series[r.series].id ?? r.series}`}
+              x={r.x}
+              y={r.y}
+              width={r.width}
+              height={r.height}
+              rx={rx(r)}
+              fill={r === pick ? `url(#${ids}sel)` : colorOf(r.series)}
+              opacity={dimmed(r.category)}
+            />
+          ))}
+        </>
+      );
+    };
 
     const travel = userMax ?? niceBound(dataMax);
 
@@ -300,8 +329,8 @@ export function createChart(skin: ChartSkin) {
                   accessible
                   accessibilityRole="image"
                   role="img"
-                  accessibilityLabel={`${d.label}: ${d.value}`}
-                  aria-label={`${d.label}: ${d.value}`}
+                  accessibilityLabel={`${d.label}: ${fmt(d.value)}`}
+                  aria-label={`${d.label}: ${fmt(d.value)}`}
                   style={[s.barRow, { height: ROW.height * k }]}
                 >
                   <Text numberOfLines={1} style={[s.rowLabel(tokens), { width: ROW.label * k }]}>
@@ -309,7 +338,7 @@ export function createChart(skin: ChartSkin) {
                   </Text>
                   <View style={s.horizontalBar(colorOf(0), w, skin.barRadius, ROW.height * k)} />
                   <Text numberOfLines={1} style={[s.axisLabel(tokens), { marginLeft: ROW.valueGap * k }]}>
-                    {d.value}
+                    {fmt(d.value)}
                   </Text>
                 </View>
               );
@@ -325,16 +354,18 @@ export function createChart(skin: ChartSkin) {
               aspect
               bandInset={BAR.bandInset}
               compact={compact}
+              formatValue={props.formatValue}
+              noGuide
               selectedBand={selected}
               onBandScrub={setSelected}
               overlay={(layout) =>
                 selected != null && layout.band && labels[selected] != null ? (
+                  // The axis names the inspected category in the card ink, so the pill carries the values.
                   <ChartValueFlag
-                    title={labels[selected]}
                     rows={series.map((sr, j) => ({
                       label: multi ? sr.label : undefined,
                       color: multi ? colorOf(j) : undefined,
-                      value: String(valueOf(sr, selected)),
+                      value: fmt(valueOf(sr, selected)),
                     }))}
                     x={layout.band.center(selected)}
                     plotW={layout.plotW}

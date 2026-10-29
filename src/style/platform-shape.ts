@@ -29,8 +29,11 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  *   timeline); and the chart marks of the v4
  *   hand-off's chart renderers: a bar (3), a compact bar or a box (4), a data cell (2), a
  *   heatmap cell (2.5), a candlestick's body (1.5), a treemap tile (8), a sparkline's
- *   track (6), a funnel stage's bar (6), a bar list's share wash (8) and a service
- *   row's strip bar (1). The kit's own web parts no Dark Factory role covers keep their
+ *   track (6), a funnel stage's bar (6), a bar list's share wash (8), a service
+ *   row's strip bar (1), a sparkline's or a metric spark strip's bar (2, the section
+ *   cards' and MetricBreakdown's `rx="2"`) and the chart value flag (8, the ink pill the
+ *   v4 hand-off's chart cards pin beside an inspected datum, `border-radius:7px` to `9px`)
+ *   and a map's zoom control (8, the renderer's framed zoom column). The kit's own web parts no Dark Factory role covers keep their
  *   corner as a role of their own: the v4 hand-off's table frame, stacked list and grid-list tile (14 each), the ghost a
  *   drag lifts (12), a conversation's composer well (16) and its user bubble (16),
  *   tailed at 4 on the bottom end toward its author (the v4 hand-off's chat), a standalone disclosure's card (14, the v4
@@ -76,7 +79,7 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  * the public table.
  */
 export const platformShape = {
-  web: { insetRow: 10, disclosureCard: 14, codeCard: 14, mediaFrame: 14, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, emblemSmall: 8, emblem: 11, emblemLarge: 16, emblemSoft: 12, dismiss: 6, announcement: 12, referenceCard: 14, referenceSource: 6, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, keySmall: 5, keyTiny: 4, inlineCode: 5, optionChip: 7, optionTile: 8, tooltip: 8, event: 6, bar: 3, mark: 4, cell: 2, candle: 1.5, chartTile: 8, heatCell: 2.5, sparkTrack: 6, funnelBar: 6, listBar: 8, stripBar: 1, tableFrame: 14, listFrame: 14, gridTile: 14, dragGhost: 12, composer: 16, bubble: 16, bubbleTail: 4, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14, lane: 14, laneCard: 10, panel: 18, stage: 20, copyButton: 8, cardSnippet: 10, showcaseCard: 20, heroStage: 24 },
+  web: { insetRow: 10, disclosureCard: 14, codeCard: 14, mediaFrame: 14, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, emblemSmall: 8, emblem: 11, emblemLarge: 16, emblemSoft: 12, dismiss: 6, announcement: 12, referenceCard: 14, referenceSource: 6, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, keySmall: 5, keyTiny: 4, inlineCode: 5, optionChip: 7, optionTile: 8, tooltip: 8, event: 6, bar: 3, mark: 4, cell: 2, candle: 1.5, chartTile: 8, heatCell: 2.5, sparkTrack: 6, funnelBar: 6, listBar: 8, stripBar: 1, sparkBar: 2, chartFlag: 8, zoomControl: 8, tableFrame: 14, listFrame: 14, gridTile: 14, dragGhost: 12, composer: 16, bubble: 16, bubbleTail: 4, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14, lane: 14, laneCard: 10, panel: 18, stage: 20, copyButton: 8, cardSnippet: 10, showcaseCard: 20, heroStage: 24 },
   ios: { actionSheet: 34, groupedList: 26, event: 6, searchField: 10, navRow: 10, alertDialog: 14 },
   android: {
     chip: M3.small,

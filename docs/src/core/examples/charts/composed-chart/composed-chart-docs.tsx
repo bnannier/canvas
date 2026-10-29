@@ -4,6 +4,7 @@ import type { ComponentDocs } from "../../../scope";
 import e_charts_composed_chart_example_0 from "./example-0";
 import e_charts_composed_chart_example_1 from "./example-1";
 import e_charts_composed_chart_example_2 from "./example-2";
+import e_charts_composed_chart_example_3 from "./example-3";
 import e_charts_composed_chart_dont_0_do from "./dont-0-do";
 import e_charts_composed_chart_dont_0_dont from "./dont-0-dont";
 
@@ -17,6 +18,7 @@ export const docs: ComponentDocs = {
     { label: "Default", code: "<ComposedChart\n  title=\"Revenue and margin\"\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  series={[\n    { label: \"Revenue\", values: [420, 510, 480, 620] },\n    { label: \"Margin\", values: [110, 170, 150, 240], line: true }\n  ]}\n/>", render: e_charts_composed_chart_example_0 },
     { label: "Area backdrop", code: "<ComposedChart\n  title=\"Traffic and conversions\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"]}\n  series={[\n    { label: \"Sessions\", values: [1200, 1420, 1310, 1680, 1540], area: true },\n    { label: \"Sign-ups\", values: [240, 310, 280, 420, 380] }\n  ]}\n/>", render: e_charts_composed_chart_example_1 },
     { label: "Dots and inspection", code: "<ComposedChart\n  title=\"Deploys and incidents\"\n  labels={[\"W1\", \"W2\", \"W3\", \"W4\", \"W5\", \"W6\"]}\n  dots\n  defaultSelected={3}\n  series={[\n    { label: \"Deploys\", values: [12, 18, 15, 22, 19, 24] },\n    { label: \"Incidents\", values: [2, 1, 3, 1, 2, 1], line: true }\n  ]}\n/>", render: e_charts_composed_chart_example_2 },
+    { label: "Dashed target line", code: "<ComposedChart\n  title=\"Revenue vs target\"\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  series={[\n    { label: \"Revenue\", values: [420, 510, 480, 620] },\n    { label: \"Target\", values: [450, 500, 550, 600], line: true, dashed: true }\n  ]}\n/>", render: e_charts_composed_chart_example_3, note: ["A `line` series marked `dashed` draws dashed, with a dashed rule as its legend swatch."] },
   ],
   donts: [
     { title: "ComposedChart", do: { caption: "Mix marks when the series mean different things: bars for the magnitude, a line for the derived rate.", code: "<ComposedChart\ntitle=\"Revenue and margin\"\nlabels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\nseries={[\n  { label: \"Revenue\", values: [420, 510, 480, 620] },\n  { label: \"Margin\", values: [110, 170, 150, 240], line: true },\n]}\n/>", render: e_charts_composed_chart_dont_0_do }, dont: { caption: "All-bar composed data belongs on the bar Chart's grouped mode; composed adds nothing but indirection.", code: "<ComposedChart\nlabels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\nseries={[\n  { label: \"Revenue\", values: [420, 510, 480, 620] },\n  { label: \"Costs\", values: [310, 340, 330, 380] },\n]}\n/>", render: e_charts_composed_chart_dont_0_dont } },

@@ -1,5 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { View, Text, devWarn, tabularNums, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Text, devWarn, tabularNums, statusColors, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
@@ -34,6 +34,27 @@ export interface BulletDatum {
   /** Ascending qualitative band bounds (e.g. [150, 250, 350]); each band
    *  paints a fading muted wash behind the measure. */
   ranges?: number[];
+  /**
+   * This row's own tone, colouring its measure and its value: a row whose result means
+   * something (a target met). Pick one; first match wins: success > warning > destructive.
+   * Omit for the chart's tone.
+   */
+  success?: boolean;
+  /** This row's warning tone (a target at risk); see `success` for the precedence. */
+  warning?: boolean;
+  /** This row's destructive tone (a target missed); see `success` for the precedence. */
+  destructive?: boolean;
+}
+
+/**
+ * A row's measure fill and value ink: its own tone first (the solid status colour on the
+ * bar, the status text ink on the value), else the chart's fill under the card ink.
+ */
+export function rowTone(tokens: ColorTokens, d: BulletDatum, chartFill: string): { fill: string; ink: string } {
+  if (d.success) return { fill: statusColors(tokens, "success").dot, ink: statusColors(tokens, "success").ink };
+  if (d.warning) return { fill: statusColors(tokens, "warning").dot, ink: statusColors(tokens, "warning").ink };
+  if (d.destructive) return { fill: statusColors(tokens, "error").dot, ink: statusColors(tokens, "error").ink };
+  return { fill: chartFill, ink: tokens["card-foreground"] };
 }
 
 export interface BulletChartProps {
@@ -178,12 +199,12 @@ export function createBulletChart(skin: ChartSkin) {
                         }}
                       />
                     ))}
-                  <View style={{ position: "absolute", left: 0, top: (trackH - barH) / 2, height: barH, width: `${pctOf(d.value, max)}%`, backgroundColor: fill, borderRadius: skin.barRadius }} />
+                  <View style={{ position: "absolute", left: 0, top: (trackH - barH) / 2, height: barH, width: `${pctOf(d.value, max)}%`, backgroundColor: rowTone(tokens, d, fill).fill, borderRadius: skin.barRadius }} />
                   {d.target != null && Number.isFinite(d.target) ? (
                     <View style={{ position: "absolute", left: `${pctOf(d.target, max)}%`, top: -TARGET_OVERHANG, bottom: -TARGET_OVERHANG, width: 2, marginLeft: -1, backgroundColor: tokens["card-foreground"] }} />
                   ) : null}
                 </View>
-                <Text style={[s.horizontalValue(tokens), { minWidth: VALUE_WIDTH, textAlign: "right", ...tabularNums() }]}>{formatValue(Number.isFinite(d.value) ? d.value : 0)}</Text>
+                <Text style={[s.horizontalValue(tokens), { minWidth: VALUE_WIDTH, textAlign: "right", color: rowTone(tokens, d, fill).ink, ...tabularNums() }]}>{formatValue(Number.isFinite(d.value) ? d.value : 0)}</Text>
               </View>
             );
           })}

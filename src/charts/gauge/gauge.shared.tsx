@@ -1,4 +1,6 @@
+import { useId } from "react";
 import Svg, { Path } from "react-native-svg";
+import { Defs, GlowFilter } from "../shared/chart-glow.js";
 import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
 
@@ -62,6 +64,9 @@ const VALUE_TOP = 96 * SCALE - VALUE_SIZE * 0.92;
 // one path (a single 180 degree top sweep from the left end to the right end);
 // the value arc reveals its share of the track's length through the dash
 // pattern.
+/** The value arc's glow length in px (the renderer's 8 px drop shadow in the tone). */
+const ARC_GLOW = 8;
+
 export function gaugeArc(v: number): { d: string; dasharray: string } {
   return {
     d: `M ${INSET} ${BASE} A ${RADIUS} ${RADIUS} 0 0 1 ${VIEW_W - INSET} ${BASE}`,
@@ -86,6 +91,7 @@ export function Gauge(props: GaugeProps) {
   const pct = Math.round(v);
   const fill = gaugeFill(tokens, props);
   const arc = gaugeArc(v);
+  const glowId = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}glow`;
 
   return (
     <View
@@ -96,7 +102,12 @@ export function Gauge(props: GaugeProps) {
       aria-label={`${label ?? "Gauge"}: ${pct}%`}
     >
       <Svg width={SIZE} height={GRAPHIC_HEIGHT} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
+        <Defs>
+          {/* The arc's glow, in the view's units: the renderer's `drop-shadow(0 0 8px <tone>)`. */}
+          <GlowFilter id={glowId} length={(ARC_GLOW * VIEW_W) / SIZE} />
+        </Defs>
         <Path d={arc.d} fill="none" stroke={tokens["surface-raised"] ?? tokens.muted} strokeWidth={STROKE} strokeLinecap="round" />
+        {v > 0 ? <Path d={arc.d} fill="none" stroke={fill} strokeWidth={STROKE} strokeLinecap="round" strokeDasharray={arc.dasharray} filter={`url(#${glowId})`} /> : null}
         <Path
           d={arc.d}
           fill="none"

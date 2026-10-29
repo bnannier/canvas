@@ -1,20 +1,21 @@
 import { useRef, type ReactNode } from "react";
 import { AccessibilityInfo, StyleSheet } from "react-native";
-import { View, Text, useTheme, shadow, GlassPane, paneStyle, isGlass, type StyleProp, type ViewStyle, type LayoutStyle, shape } from "../../style/index.js";
+import { View, Text, useTheme, GlassPane, paneStyle, isGlass, inverseDenseTint, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { estimateTextWidth } from "./chart-math.js";
+import { MONO_FONT } from "../../style/mono.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Press-to-inspect support shared by the Chart family: the in-plot value flag
-// (a small card pinned to the top of the plot near the pressed datum, clamped
+// (the ink pill the v4 hand-off's section cards pin beside an inspected datum, clamped
 // inside the plot bounds) and the assistive announcement that mirrors it.
 // The flag is presentational (pointer-events none, and the plot's accessible
 // name already carries the full data), so it never traps a press or adds a
 // duplicate accessibility node.
 
 export interface FlagRow {
-  /** Series/datum name; omitted for single-value flags. */
+  /** Series/datum name, printed before the value ("High 24°"); omitted for single-value flags. */
   label?: string;
-  /** Series dot color. */
+  /** Series color. The pill names a series by its label, so the color is not drawn. */
   color?: string;
   /** The formatted value. */
   value: string;
@@ -26,37 +27,55 @@ const styles = StyleSheet.create({
   passthrough: { pointerEvents: "none" },
 });
 
-const TEXT = 12;
-const LINE = 16;
-const PAD = 10;
+/**
+ * The flag's type: the hand-off's `font:500 11px/1.45 var(--fm)` pill lines, the
+ * Typography `tiny` role (11 / 15.95) in the mono face at the medium weight.
+ */
+const FLAG_TYPE = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 15.95, fontWeight: "500" } as const;
+/** The pill's inset: the hand-off's `padding:6px 8px`. */
+const PAD_V = 6;
+const PAD_H = 8;
+/** JetBrains Mono's advance, in ems: every glyph is 0.6 of the size wide. */
+const MONO_ADVANCE = 0.6;
 
-/** Shared material behind a chart's existing, touch-through inspection flag. */
-export function ChartInspectionSurface({ children, radius = shape.web.menu, style }: {
+/**
+ * The chart value flag's surface: the inverse pill (the Tooltip bubble's reading, the
+ * scheme's `foreground` as the fill under `background` ink) at the `chartFlag` corner.
+ * Under glass it takes the dense layer at the inverse fill's own tint
+ * (`inverseDenseTint`), so its text keeps its contrast.
+ */
+export function ChartInspectionSurface({ children, radius = platformShape.web.chartFlag, style }: {
   children: ReactNode;
   radius?: number;
   style?: StyleProp<ViewStyle>;
 }) {
   const theme = useMaterialTheme({ layer: "dense" });
   const { tokens } = theme;
-  const shape: ViewStyle = { borderRadius: radius, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card };
+  const shape: ViewStyle = { borderRadius: radius, backgroundColor: tokens.foreground };
   return (
-    <View style={[styles.passthrough, paneStyle(theme, [shape, shadow("md", theme.tokens), style])]}>
-      {isGlass(theme) ? <GlassPane layer="dense" shape={shape} /> : null}
+    <View style={[styles.passthrough, paneStyle(theme, [shape, style])]}>
+      {isGlass(theme) ? <GlassPane layer="dense" shape={shape} tint={inverseDenseTint(theme)} /> : null}
       {children}
     </View>
   );
 }
 
-/** Estimated flag width so positioning never needs a second layout pass. */
-function flagWidth(title: string | undefined, rows: FlagRow[]): number {
-  const widest = Math.max(
-    title ? estimateTextWidth(title, TEXT) : 0,
-    ...rows.map((r) => (r.color ? 14 : 0) + (r.label ? estimateTextWidth(r.label, TEXT) + 6 : 0) + estimateTextWidth(r.value, TEXT)),
-    24,
-  );
-  // A small margin on top of the estimate: an ellipsized value in the flag is
-  // worse than a few px of slack.
-  return Math.ceil(widest) + PAD * 2 + 6;
+/** The ink every line of the flag is set in: the page colour on the inverse fill. */
+export function flagInk(tokens: { background: string }): string {
+  return tokens.background;
+}
+
+/** The pill's lines: the title (when there is one) over one line per row, each its label then its value. */
+export function flagLines(title: string | undefined, rows: FlagRow[]): string[] {
+  const line = (r: FlagRow) => (r.label ? `${r.label} ${r.value}` : r.value);
+  return [...(title ? [title] : []), ...rows.map(line)];
+}
+
+/** The pill's width from its widest line in the mono face, so positioning never needs a second layout pass. */
+function flagWidth(lines: string[]): number {
+  const widest = Math.max(0, ...lines.map((l) => [...l].length));
+  // A px of slack on top of the exact mono advance: an ellipsized value is worse.
+  return Math.ceil(widest * FLAG_TYPE.fontSize * MONO_ADVANCE) + PAD_H * 2 + 2;
 }
 
 export interface ChartValueFlagProps {
@@ -71,7 +90,8 @@ export interface ChartValueFlagProps {
 
 export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
   const { tokens } = useTheme();
-  const w = flagWidth(title, rows);
+  const lines = flagLines(title, rows);
+  const w = flagWidth(lines);
   // Prefer sitting to the right of the datum; flip left when it would clip,
   // then clamp to the plot as a last resort (narrow plots).
   let left = x + 8;
@@ -85,28 +105,14 @@ export function ChartValueFlag({ title, rows, x, plotW }: ChartValueFlagProps) {
         top: 4,
         left,
         width: w,
-        paddingVertical: PAD - 4,
-        paddingHorizontal: PAD,
-        gap: 2,
+        paddingVertical: PAD_V,
+        paddingHorizontal: PAD_H,
       }}
     >
-      {title ? (
-        <Text numberOfLines={1} style={{ fontSize: TEXT, lineHeight: LINE, fontWeight: "600", color: tokens["card-foreground"] }}>
-          {title}
+      {lines.map((l, i) => (
+        <Text key={i} numberOfLines={1} style={{ ...FLAG_TYPE, color: flagInk(tokens) }}>
+          {l}
         </Text>
-      ) : null}
-      {rows.map((r, i) => (
-        <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          {r.color ? <View style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: r.color }} /> : null}
-          {r.label ? (
-            <Text numberOfLines={1} style={{ flexShrink: 1, fontSize: TEXT, lineHeight: LINE, color: tokens["muted-foreground"] }}>
-              {r.label}
-            </Text>
-          ) : null}
-          <Text numberOfLines={1} style={{ fontSize: TEXT, lineHeight: LINE, fontWeight: "500", color: tokens["card-foreground"] }}>
-            {r.value}
-          </Text>
-        </View>
       ))}
     </ChartInspectionSurface>
   );
@@ -135,8 +141,8 @@ export function pressPoint(e: { nativeEvent: unknown }): { x: number; y: number 
   return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
 }
 
-/** Opacity applied to marks OUTSIDE the current selection. */
-export const DIM_OPACITY = 0.45;
+/** Opacity applied to marks OUTSIDE the current selection: the hand-off's `.55` on the section cards' unselected marks. */
+export const DIM_OPACITY = 0.55;
 
 // ---------------------------------------------------------------------------
 // ScrubSurface: the shared drag-to-inspect hit layer. Built on the core RN

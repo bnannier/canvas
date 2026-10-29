@@ -104,6 +104,23 @@ Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8
 </Column>
 ```
 
+### Formatted values
+
+`formatValue` formats the value axis, the inspected value and the accessible values; it is data formatting, not styling.
+
+```tsx
+<Chart
+  title="Requests"
+  data={[
+    { label: "Mon", value: 12400 },
+    { label: "Tue", value: 15100 },
+    { label: "Wed", value: 13800 },
+    { label: "Thu", value: 16900 }
+  ]}
+  formatValue={(v) => v.toLocaleString("en-US")}
+/>
+```
+
 ## Do & Don't
 
 ### Bar

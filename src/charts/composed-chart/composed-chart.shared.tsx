@@ -56,6 +56,8 @@ export function createComposedChart(skin: ChartSkin) {
     const gradientId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
     const barSeries = props.series.map((sr, i) => ({ sr, i })).filter(({ sr }) => markOf(sr) === "bars");
 
+    // Bars stand in bands (the renderer's `X(i) - 6` bar starts on the plot's edge, never
+    // past it), so every mark takes the band centres.
     return chartShell(skin, props, ctx, (layout) => {
       const band = layout.band;
       // Grouped bar geometry: the bar-kind series split each band with a 2px
@@ -63,8 +65,24 @@ export function createComposedChart(skin: ChartSkin) {
       const cluster = band ? Math.min(band.bandWidth, band.step * BAR_SHARE * Math.max(1, barSeries.length)) : 0;
       const barW = band && barSeries.length > 0 ? Math.max(1, (cluster - 2 * (barSeries.length - 1)) / barSeries.length) : 0;
       const clusterAt = (li: number): number => (band ? band.center(li) - cluster / 2 : 0);
-      // The lead line (the first line or area series) is drawn 2.2 wide, the rest 2.
+      // The lead line (the first line or area series) is drawn 2.2 wide, the rest 2; a
+      // dashed series is the `5 4` dash with no caps.
       const lead = props.series.findIndex((sr) => markOf(sr) !== "bars");
+      const stroke = (sr: ComposedSeries, i: number) => {
+        const pts = seriesPoints(sr, props.labels, layout);
+        return (
+          <Path
+            key={`l${sr.id ?? i}`}
+            d={curved ? monotonePath(pts) : linePath(pts)}
+            stroke={ctx.colorOf(i)}
+            strokeWidth={i === lead ? CHART_LOOK.leadStroke : CHART_LOOK.stroke}
+            strokeDasharray={sr.dashed ? CHART_LOOK.seriesDash : undefined}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap={sr.dashed ? "butt" : "round"}
+          />
+        );
+      };
       return (
         <>
           {/* Area washes first (the backdrop), each with a per-instance
@@ -88,6 +106,8 @@ export function createComposedChart(skin: ChartSkin) {
               />
             ) : null,
           )}
+          {/* Area edges with their washes, under the bars (the section card's paint order). */}
+          {props.series.map((sr, i) => (markOf(sr) === "area" ? stroke(sr, i) : null))}
           {/* Bars, splitting each band. */}
           {band
             ? barSeries.flatMap(({ sr, i }, bi) =>
@@ -111,23 +131,8 @@ export function createComposedChart(skin: ChartSkin) {
                 }),
               )
             : null}
-          {/* Area edges and lines above the bars. */}
-          {props.series.map((sr, i) => {
-            const kind = markOf(sr);
-            if (kind === "bars") return null;
-            const pts = seriesPoints(sr, props.labels, layout);
-            return (
-              <Path
-                key={`l${sr.id ?? i}`}
-                d={curved ? monotonePath(pts) : linePath(pts)}
-                stroke={ctx.colorOf(i)}
-                strokeWidth={i === lead ? CHART_LOOK.leadStroke : CHART_LOOK.stroke}
-                fill="none"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-              />
-            );
-          })}
+          {/* Lines above the bars. */}
+          {props.series.map((sr, i) => (markOf(sr) === "line" ? stroke(sr, i) : null))}
           {/* Dots on line/area data points, width-aware like LineChart's. */}
           {props.dots && band && band.step >= 14
             ? props.series.flatMap((sr, i) => {
@@ -156,6 +161,6 @@ export function createComposedChart(skin: ChartSkin) {
             : null}
         </>
       );
-    });
+    }, { bands: true });
   };
 }

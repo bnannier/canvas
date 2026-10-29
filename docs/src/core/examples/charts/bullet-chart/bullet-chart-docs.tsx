@@ -4,6 +4,7 @@ import type { ComponentDocs } from "../../../scope";
 import e_charts_bullet_chart_example_0 from "./example-0";
 import e_charts_bullet_chart_example_1 from "./example-1";
 import e_charts_bullet_chart_example_2 from "./example-2";
+import e_charts_bullet_chart_example_3 from "./example-3";
 import e_charts_bullet_chart_dont_0_do from "./dont-0-do";
 import e_charts_bullet_chart_dont_0_dont from "./dont-0-dont";
 
@@ -17,6 +18,7 @@ export const docs: ComponentDocs = {
     { label: "Default", code: "<BulletChart\n  title=\"Q3 targets\"\n  data={[\n    { label: \"Revenue\", value: 275, target: 300, ranges: [200, 350, 500] },\n    { label: \"Profit\", value: 42, target: 35, ranges: [30, 50, 70] },\n    { label: \"NPS\", value: 61, target: 70, ranges: [40, 60, 80] },\n  ]}\n/>", render: e_charts_bullet_chart_example_0 },
     { label: "Success tone", code: "<BulletChart\n  success\n  data={[\n    { label: \"Web\", value: 34, target: 30 },\n    { label: \"iOS\", value: 18, target: 24 },\n    { label: \"Android\", value: 21, target: 24 },\n  ]}\n/>", render: e_charts_bullet_chart_example_1 },
     { label: "Compact", code: "<BulletChart\n  compact\n  data={[\n    { label: \"Compute\", value: 8200, target: 10000, ranges: [6000, 10000, 14000] },\n    { label: \"Storage\", value: 4100, target: 5000, ranges: [3000, 5000, 8000] },\n  ]}\n/>", render: e_charts_bullet_chart_example_2 },
+    { label: "Row tones", code: "<BulletChart\n  title=\"SLOs\"\n  max={100}\n  formatValue={(v) => `${v}%`}\n  data={[\n    { label: \"Availability\", value: 99, target: 99, success: true },\n    { label: \"Latency p95\", value: 82, target: 90, warning: true },\n    { label: \"Error budget\", value: 41, target: 75, destructive: true }\n  ]}\n/>", render: e_charts_bullet_chart_example_3, note: ["A datum takes its own `success`, `warning` or `destructive` tone (precedence success > warning > destructive): its measure bar is the solid status colour and its value the status ink."] },
   ],
   donts: [
     { title: "BulletChart", do: { caption: "Give every goal its row, with the target as a tick and the qualitative context as bands.", code: "<BulletChart\ntitle=\"Q3 targets\"\ndata={[\n  { label: \"Revenue\", value: 275, target: 300, ranges: [200, 350, 500] },\n  { label: \"Profit\", value: 42, target: 35, ranges: [30, 50, 70] },\n]}\n/>", render: e_charts_bullet_chart_dont_0_do }, dont: { caption: "A bare progress bar per goal loses the target, the qualitative bands, and the shared scale that makes rows comparable.", code: "<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 20, maxWidth: 480, gap: 8 }}>\n  <View style={{ height: 12, backgroundColor: tokens.muted, borderRadius: 6 }}>\n    <View style={{ height: 12, width: \"60%\", backgroundColor: tokens.primary, borderRadius: 6 }} />\n  </View>\n</View>", render: e_charts_bullet_chart_dont_0_dont } },

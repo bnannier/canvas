@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ScrollView } from "react-native";
 import { View, Text, Pressable, useTheme, alpha, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
-import { announceSelection, ChartInspectionSurface } from "../shared/chart-inspect.js";
+import { announceSelection, ChartInspectionSurface, flagInk } from "../shared/chart-inspect.js";
 import { estimateTextWidth } from "../shared/chart-math.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusRingStyle } from "../../style/pressable.js";
@@ -172,6 +172,9 @@ const CAL_MONTH_H = 15; // month-label row
 const CAL_MONTH_TYPE = { fontFamily: MONO_FONT, fontSize: 10, lineHeight: CAL_MONTH_H };
 const CAL_WEEKDAY_TYPE = { fontFamily: MONO_FONT, fontSize: 10, lineHeight: 11 };
 const FLAG_DETAIL_TYPE = { fontSize: 11, lineHeight: 15 };
+// The detail line on the inverse pill reads a step back, as the hand-off's pinned readouts set
+// their secondary line (the candlestick card's volume at .6).
+const FLAG_DETAIL_OPACITY = 0.7;
 
 function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: HeatmapProps & { cells: HeatmapCell[] }) {
   const { tokens } = useTheme();
@@ -180,7 +183,16 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
   const focusRing = useFocusRingStyle();
 
   const cols = Math.ceil(cells.length / CAL_ROWS);
-  const gridW = cols * CAL_PITCH - CAL_GAP;
+  // The calendar fills its width, as the renderer's `svg width:100%` does: where the frame
+  // is wider than the grid at its own 11 px cells, cells and gaps grow together to span it;
+  // where it is narrower, the grid keeps its cells and scrolls.
+  const [frameW, setFrameW] = useState(0);
+  const natural = cols * CAL_PITCH - CAL_GAP;
+  const k = frameW > CAL_GUTTER + natural ? (frameW - CAL_GUTTER) / natural : 1;
+  const size = CAL_CELL * k;
+  const gap = CAL_GAP * k;
+  const pitch = size + gap;
+  const gridW = cols * pitch - gap;
   const hasDates = cells.some((c) => c.date);
 
   // Place a month abbreviation at each column where the (topmost dated) month changes.
@@ -204,11 +216,11 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
   const flagH = flagSub ? 44 : 26;
   const aCol = active != null ? Math.floor(active / CAL_ROWS) : 0;
   const aRow = active != null ? active % CAL_ROWS : 0;
-  const cellX = aCol * CAL_PITCH;
-  const cellY = aRow * CAL_PITCH;
+  const cellX = aCol * pitch;
+  const cellY = aRow * pitch;
   const flagAbove = aRow >= 3;
-  const flagTop = flagAbove ? cellY - flagH - 4 : cellY + CAL_CELL + 4;
-  const flagLeft = Math.max(0, Math.min(gridW - flagW, cellX + CAL_CELL / 2 - flagW / 2));
+  const flagTop = flagAbove ? cellY - flagH - 4 : cellY + size + 4;
+  const flagLeft = Math.max(0, Math.min(gridW - flagW, cellX + size / 2 - flagW / 2));
 
   // The image role + name summarize the whole grid (a screen reader hears the
   // scope, not 365 individual cells).
@@ -224,7 +236,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
   };
 
   return (
-    <View testID={testID} style={style}>
+    <View testID={testID} style={style} onLayout={(e) => setFrameW(e.nativeEvent.layout.width)}>
       {caption ? (
         <Text style={{ marginBottom: 10, fontSize: 13, lineHeight: 18, fontWeight: "500", color: tokens["card-foreground"] }}>{caption}</Text>
       ) : null}
@@ -237,7 +249,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
             <View style={{ height: CAL_MONTH_H, marginLeft: CAL_GUTTER, width: gridW }}>
               {monthLabels.map((m, c) =>
                 m ? (
-                  <Text key={c} numberOfLines={1} style={{ position: "absolute", left: c * CAL_PITCH, top: 0, ...CAL_MONTH_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>
+                  <Text key={c} numberOfLines={1} style={{ position: "absolute", left: c * pitch, top: 0, ...CAL_MONTH_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>
                     {m}
                   </Text>
                 ) : null,
@@ -246,21 +258,21 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
           ) : null}
           <View style={{ flexDirection: "row" }}>
             {/* Weekday gutter: Mon / Wed / Fri, aligned to the cell rows. */}
-            <View style={{ width: CAL_GUTTER, gap: CAL_GAP, paddingRight: 4 }}>
+            <View style={{ width: CAL_GUTTER, gap: gap, paddingRight: 4 }}>
               {HEATMAP_WEEKDAYS.map((wd, r) => (
-                <View key={r} style={{ height: CAL_CELL, justifyContent: "center" }}>
+                <View key={r} style={{ height: size, justifyContent: "center" }}>
                   {wd ? <Text numberOfLines={1} style={{ ...CAL_WEEKDAY_TYPE, textAlign: "right", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>{wd}</Text> : null}
                 </View>
               ))}
             </View>
             <View>
-              <View style={{ flexDirection: "row", gap: CAL_GAP }}>
+              <View style={{ flexDirection: "row", gap: gap }}>
                 {Array.from({ length: cols }).map((_, c) => (
-                  <View key={c} style={{ gap: CAL_GAP }}>
+                  <View key={c} style={{ gap: gap }}>
                     {Array.from({ length: CAL_ROWS }).map((_, r) => {
                       const idx = c * CAL_ROWS + r;
                       const cell = cells[idx];
-                      if (!cell) return <View key={r} style={{ width: CAL_CELL, height: CAL_CELL }} />;
+                      if (!cell) return <View key={r} style={{ width: size, height: size }} />;
                       const lvl = heatLevel(cell.value);
                       const isActive = active === idx;
                       return (
@@ -273,8 +285,8 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
                           onHoverIn={() => inspect(idx, false)}
                           onHoverOut={() => setActive((prev) => (prev === idx ? null : prev))}
                           style={{
-                            width: CAL_CELL,
-                            height: CAL_CELL,
+                            width: size,
+                            height: size,
                             borderRadius: platformShape.web.heatCell,
                             backgroundColor: levelFill(tokens, lvl),
                             borderWidth: 1,
@@ -288,7 +300,6 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
               </View>
               {activeCell ? (
                 <ChartInspectionSurface
-                  radius={platformShape.web.key}
                   style={{
                     position: "absolute",
                     top: flagTop,
@@ -299,8 +310,8 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
                     gap: 1,
                   }}
                 >
-                  <Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 16, fontWeight: "600", color: tokens["card-foreground"] }}>{flagTitle}</Text>
-                  {flagSub ? <Text numberOfLines={1} style={{ ...FLAG_DETAIL_TYPE, color: tokens["muted-foreground"] }}>{flagSub}</Text> : null}
+                  <Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 16, fontWeight: "600", color: flagInk(tokens) }}>{flagTitle}</Text>
+                  {flagSub ? <Text numberOfLines={1} style={{ ...FLAG_DETAIL_TYPE, color: flagInk(tokens), opacity: FLAG_DETAIL_OPACITY }}>{flagSub}</Text> : null}
                 </ChartInspectionSurface>
               ) : null}
             </View>

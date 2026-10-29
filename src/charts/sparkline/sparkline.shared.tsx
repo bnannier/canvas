@@ -96,6 +96,11 @@ function toneColor(tokens: ColorTokens, tone: Tone): string {
   }
 }
 
+// The bar strip: the lowest value's share of the strip (the section card's lowest bar
+// stands at 18 %), and the de-emphasis wash under the latest period's accent (its .32).
+const FLOOR = 0.18;
+const REST_ALPHA = 0.32;
+
 /** Build a Sparkline from a platform skin. */
 export function createSparkline(skin: SparklineSkin) {
   return function Sparkline(props: SparklineProps) {
@@ -106,7 +111,7 @@ export function createSparkline(skin: SparklineSkin) {
     const base = toneColor(tokens, tone);
     // The series sits in a de-emphasis wash; the latest period carries the
     // accent. Muted stays muted: even its accent is a wash, just a denser one.
-    const rest = alpha(base, tone === "muted" ? 0.25 : 0.35);
+    const rest = alpha(base, tone === "muted" ? 0.25 : REST_ALPHA);
     const accent = tone === "muted" ? alpha(base, 0.75) : base;
     // Always carry an accessible name: the caller's, else a summary of the data.
     const label = accessibilityLabel ?? fallbackLabel(values);
@@ -115,10 +120,18 @@ export function createSparkline(skin: SparklineSkin) {
     // flat trend.
     devWarn(values.length === 0, "[canvas] <Sparkline />: `values` is empty; the strip renders with no bars.");
 
-    // Bar height maps its value against the series max (finite values only), with
-    // a 2px floor so a zero/empty bucket still reads as a bar.
+    // A bar's height spans the series' own range (finite values only), as the section
+    // card's strips do: the lowest value stands at FLOOR of the strip and the highest fills
+    // it, so a trend near its ceiling (an uptime in the 99s) still reads as a shape. A flat
+    // series fills the strip.
     const finite = values.filter((v) => Number.isFinite(v));
-    const max = Math.max(1, ...finite);
+    const lo = finite.length ? Math.min(...finite) : 0;
+    const hi = finite.length ? Math.max(...finite) : 0;
+    const barHeight = (v: number): number => {
+      if (!Number.isFinite(v)) return Math.max(2, Math.round(plot * FLOOR));
+      if (hi <= lo) return plot;
+      return Math.max(2, Math.round(plot * (FLOOR + (1 - FLOOR) * ((v - lo) / (hi - lo)))));
+    };
 
     // The bars grow with `flexGrow`, so the strip needs a definite width or they
     // collapse to 0 and render blank: the strip is FILL (src/style/sizing.ts) and
@@ -194,8 +207,7 @@ export function createSparkline(skin: SparklineSkin) {
         style={[root, style]}
       >
         {values.map((v, i) => {
-          const value = Number.isFinite(v) ? v : 0;
-          const h = Math.max(2, Math.round((value / max) * plot));
+          const h = barHeight(v);
           return (
             <View
               key={i}
@@ -203,9 +215,8 @@ export function createSparkline(skin: SparklineSkin) {
                 flexGrow: 1,
                 flexShrink: 1,
                 flexBasis: "0%",
-                // Rounded at the data end, square at the baseline.
-                borderTopLeftRadius: skin.barRadius,
-                borderTopRightRadius: skin.barRadius,
+                // Rounded all round at the spark bar's corner (the section card's bars).
+                borderRadius: skin.barRadius,
                 backgroundColor: i === accentIndex ? accent : rest,
                 height: h,
               }}

@@ -1,9 +1,11 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { Path } from "react-native-svg";
+import { StyleSheet } from "react-native";
+import { Line, Path } from "react-native-svg";
 import { View, Text, alpha, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
-import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
+import { CartesianFrame, CHART_ROOT, type CartesianLayout } from "../shared/chart-frame.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { cumulativeDepth, formatCompact, stepAreaPath, type DepthLevel } from "../shared/chart-math.js";
 
@@ -32,6 +34,11 @@ export interface DepthChartProps {
   hideAxes?: boolean;
   /** Formats tick labels and accessible values (data formatting, not styling). */
   formatValue?: (v: number) => string;
+  /**
+   * The spread's label ("spread 0.12%"): drawn as a dashed guide midway between the best
+   * bid and the best ask, with this label in a pill at its top. Omit for no guide.
+   */
+  spread?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
@@ -39,6 +46,13 @@ export interface DepthChartProps {
 }
 
 const PLOT_HEIGHT = { default: 180, compact: 120 } as const;
+// The spread pill (the section card): 22 tall, 8 px sides, 6 under the plot's top, its
+// label 500 10 px mono on a 20 px line in the secondary ink.
+const SPREAD = { top: 6, height: 22, padH: 8 } as const;
+const SPREAD_TYPE = { fontFamily: MONO_FONT, fontSize: 10, lineHeight: 20, fontWeight: "500" as const };
+
+// pointerEvents must come from StyleSheet.create on react-native-web.
+const styles = StyleSheet.create({ passthrough: { pointerEvents: "none" } });
 
 /** Build a DepthChart from a platform skin. */
 export function createDepthChart(skin: ChartSkin) {
@@ -61,6 +75,10 @@ export function createDepthChart(skin: ChartSkin) {
       bestBid != null && bestAsk != null && bestBid.price > bestAsk.price,
       "[canvas] <DepthChart />: the best bid is priced above the best ask (crossed book); the sides will overlap.",
     );
+
+    // The spread's midpoint, where its guide stands.
+    const mid = (layout: CartesianLayout): number | null =>
+      bestBid != null && bestAsk != null ? (layout.x(bestBid.price) + layout.x(bestAsk.price)) / 2 : null;
 
     const prices = [...bidDepth, ...askDepth].map((p) => p.price);
     const xDomain: [number, number] = prices.length ? [Math.min(...prices), Math.max(...prices)] : [0, 1];
@@ -100,6 +118,27 @@ export function createDepthChart(skin: ChartSkin) {
             hideGrid={props.hideGrid}
             hideAxes={props.hideAxes}
             formatValue={formatValue}
+            overlay={(layout) =>
+              props.spread && mid(layout) != null ? (
+                // The section card's spread pill, centred on the guide 6 below the plot's top.
+                <View style={[styles.passthrough, { position: "absolute", top: SPREAD.top, left: 0, right: 0, alignItems: "center" }]}>
+                  <View
+                    style={{
+                      height: SPREAD.height,
+                      paddingHorizontal: SPREAD.padH,
+                      borderRadius: 9999,
+                      borderWidth: 1,
+                      borderColor: tokens["field-border"] ?? tokens.border,
+                      backgroundColor: tokens.muted,
+                      justifyContent: "center",
+                      transform: [{ translateX: (mid(layout) as number) - layout.plotW / 2 }],
+                    }}
+                  >
+                    <Text numberOfLines={1} style={{ ...SPREAD_TYPE, color: tokens["muted-foreground"] }}>{props.spread}</Text>
+                  </View>
+                </View>
+              ) : null
+            }
           >
             {(layout) => {
               const toPts = (pts: { price: number; depth: number }[]) =>
@@ -110,8 +149,12 @@ export function createDepthChart(skin: ChartSkin) {
               if (bidPts.length) bidPts.unshift({ x: 0, y: bidPts[0].y });
               const askPts = toPts(askDepth);
               if (askPts.length) askPts.push({ x: layout.plotW, y: askPts[askPts.length - 1].y });
+              const guide = props.spread ? mid(layout) : null;
               return (
                 <>
+                  {guide != null ? (
+                    <Line x1={guide} y1={0} x2={guide} y2={layout.plotH} stroke={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} strokeWidth={1} strokeDasharray={s.CHART_LOOK.guideDash} />
+                  ) : null}
                   {bidPts.length ? (
                     <>
                       <Path d={stepAreaPath(bidPts, layout.plotH, true)} fill={alpha(tokens.success, 0.25)} />

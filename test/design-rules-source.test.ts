@@ -302,7 +302,11 @@ describe("widths come from the parent", () => {
           // measures (Component.dc.html) the page roles carry; the pixel-exact rule makes them
           // win over the scale.
           const pageLead = file === "src/atoms/typography/typography.styles.ts" && /^    page(Lead|Body|Note): \{ \.\.\.pageRoles\.page(Lead|Body|Note), maxWidth: (863|799|746) \},$/.test(line);
-          if (!promoTitle && !referenceDetail && !pageLead && !steps.has(Number(m[1]))) offenders.push(`${file}:${i + 1} maxWidth ${m[1]}`);
+          // The hand-off's radar renderer draws its 220 by 200 web at up to 300 px
+          // (cv-kit-charts.js `radar-chart`); the Charts section's OD-4 records that graphic
+          // measure off the scale rather than moving it.
+          const radarWeb = file === "src/charts/radar-chart/radar-chart.shared.tsx" && /^const VIEW = \{ width: 220, height: 200, radius: 80, maxWidth: 300 \} as const;$/.test(line);
+          if (!promoTitle && !referenceDetail && !pageLead && !radarWeb && !steps.has(Number(m[1]))) offenders.push(`${file}:${i + 1} maxWidth ${m[1]}`);
         }
       });
     }

@@ -94,7 +94,8 @@ plugin({
     // no-op elements (the kit's Icon/Spinner/Popover draw with it, but behavior tests assert
     // logic/interaction, not the rendered vector paths). A name a renderer imports must be
     // here, or that renderer fails to load: react-native-qrcode-svg (QRCode's optional
-    // peer) imports `Image`, and without it every QRCode rendered its missing-peer frame.
+    // peer) imports `Image`, and without it every QRCode rendered its missing-peer frame;
+    // the charts' glows import `Filter` and `FeGaussianBlur`.
     build.module("react-native-svg", () => {
       const React = require("react");
       const stub = (props?: { children?: unknown }) => React.createElement(React.Fragment, null, props?.children ?? null);
@@ -102,7 +103,7 @@ plugin({
         default: stub, Svg: stub, Path: stub, Circle: stub, Ellipse: stub, Line: stub,
         Polygon: stub, Polyline: stub, Rect: stub, G: stub, Defs: stub, ClipPath: stub,
         LinearGradient: stub, RadialGradient: stub, Stop: stub, Mask: stub, Text: stub,
-        Image: stub,
+        Image: stub, Filter: stub, FeGaussianBlur: stub,
       };
       return { exports: svg, loader: "object" };
     });

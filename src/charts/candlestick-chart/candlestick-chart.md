@@ -92,6 +92,26 @@ The trading instrument view: OHLC candles colored by direction from the success/
 />
 ```
 
+### Legend caption
+
+The legend names Up and Down and each overlay; `legendCaption` adds a note at the end of its row, pushed to the right edge. An overlay marked `dashed` draws dashed.
+
+```tsx
+<CandlestickChart
+  title="OLY"
+  labels={["D1", "D2", "D3", "D4", "D5"]}
+  candles={[
+    { open: 64.0, high: 64.3, low: 62.7, close: 63.5 },
+    { open: 63.5, high: 64.6, low: 63.2, close: 63.9 },
+    { open: 63.9, high: 64.9, low: 62.4, close: 63.6 },
+    { open: 63.6, high: 65.2, low: 62.4, close: 64.2 },
+    { open: 64.2, high: 64.4, low: 64.0, close: 64.2 }
+  ]}
+  overlays={[{ label: "MA 3", values: [63.8, 63.7, 63.7, 63.9, 64.0], dashed: true }]}
+  legendCaption="1D candles"
+/>
+```
+
 ## Do & Don't
 
 ### OHLC data

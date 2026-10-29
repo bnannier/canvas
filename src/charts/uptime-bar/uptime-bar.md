@@ -37,6 +37,20 @@ periods={Array.from({ length: 60 }, (_, i) => (i === 40 ? { degraded: true } : {
 />
 ```
 
+### Middle caption
+
+`midLabel` captions the middle of the strip, centred between the edge captions.
+
+```tsx
+<UptimeBar
+  label="API uptime"
+  startLabel="90 days ago"
+  midLabel="45 days"
+  endLabel="Today"
+  periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : {}))}
+/>
+```
+
 ## Do & Don't
 
 ### UptimeBar

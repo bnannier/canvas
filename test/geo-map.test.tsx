@@ -369,10 +369,13 @@ describe("GeoMap zoomable", () => {
     const labels = [...container.querySelectorAll("[aria-label]")].map((n) => n.getAttribute("aria-label"));
     expect(labels).toContain("Zoom in");
     expect(labels).toContain("Zoom out");
-    expect(labels).toContain("Reset zoom");
-    // At 1x there is nothing to zoom out of and nothing to reset.
+    // At 1x there is nothing to zoom out of, and the reset joins the stack only once the
+    // map has moved off the world view.
+    expect(labels).not.toContain("Reset zoom");
     const out = container.querySelector('[aria-label="Zoom out"]')!;
     expect(out.getAttribute("aria-disabled") ?? out.getAttribute("disabled")).toBeTruthy();
+    fireEvent.click(container.querySelector('[aria-label="Zoom in"]')!);
+    expect(container.querySelector('[aria-label="Reset zoom"]')).not.toBeNull();
   });
 
   it("shows no controls at all on a map that is not zoomable", () => {

@@ -118,7 +118,11 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/kbd/kbd.styles.ts": { SEPARATOR_TYPE: "small", SMALL_LABEL_TYPE: "caption", TINY_LABEL_TYPE: "caption" },
   "src/charts/heatmap/heatmap.shared.tsx": { CAL_MONTH_TYPE: "caption", CAL_WEEKDAY_TYPE: "caption", FLAG_DETAIL_TYPE: "tiny", legendText: "caption" },
   // The v4 hand-off's chart axis labels (9 units, set at the 10 px source floor) and the donut center's caption.
-  "src/charts/shared/charts.styles.ts": { "CHART_LOOK.axisSize": "caption" },
+  "src/charts/shared/charts.styles.ts": { "CHART_LOOK.axisSize": "caption", "CHART_LOOK.legendCaptionSize": "caption" },
+  // The chart value flag's lines (the section cards' 11 px mono ink pill), a chart's value annotation.
+  "src/charts/shared/chart-inspect.tsx": { FLAG_TYPE: "tiny" },
+  // The depth chart's spread pill (the section card's 10 px mono label), a chart's value annotation.
+  "src/charts/depth-chart/depth-chart.shared.tsx": { SPREAD_TYPE: "tiny" },
   "src/charts/pie-chart/pie-chart.shared.tsx": { CENTER_LABEL_TYPE: "caption" },
   "src/charts/uptime-bar/uptime-bar.shared.tsx": { EDGE_CAPTION_TYPE: "caption" },
   "src/organisms/calendar/calendar.styles.ts": {

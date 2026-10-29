@@ -76,6 +76,8 @@ const PLOT_HEIGHT = { default: 180, compact: 120 } as const;
 // The hand-off's points: r 3 to 5 (the kit draws the middle, 4) at a .7 wash, no ring.
 const POINT_RADIUS = 4;
 const POINT_OPACITY = 0.7;
+// The inspected point (the section card's pinned point): a solid r 4.5 dot in an r 9 ring 1.5 wide.
+const SELECTED = { dot: 4.5, ring: 9, ringStroke: 1.5 } as const;
 
 /** Build a ScatterPlot from a platform skin. */
 export function createScatterPlot(skin: ChartSkin) {
@@ -200,13 +202,12 @@ export function createScatterPlot(skin: ChartSkin) {
                   style={StyleSheet.absoluteFill}
                 />
                 {selected && selectedPoint && Number.isFinite(selectedPoint.x) && Number.isFinite(selectedPoint.y) ? (
+                  // The section card's readout: the point's x over its y (its own name first when it has one).
                   <ChartValueFlag
-                    title={selectedPoint.label ?? series[selected.series]?.label}
+                    title={selectedPoint.label}
                     rows={[
-                      {
-                        color: multi ? colorOf(selected.series) : undefined,
-                        value: `(${formatValue(selectedPoint.x)}, ${formatValue(selectedPoint.y)})`,
-                      },
+                      { label: "x", value: formatValue(selectedPoint.x) },
+                      { label: "y", value: formatValue(selectedPoint.y) },
                     ]}
                     x={layout.x(selectedPoint.x)}
                     plotW={layout.plotW}
@@ -225,10 +226,11 @@ export function createScatterPlot(skin: ChartSkin) {
                         key={`${sr.id ?? `s${i}`}p${j}`}
                         cx={layout.x(p.x)}
                         cy={layout.y(p.y)}
-                        r={POINT_RADIUS}
+                        r={isSelected(i, j) ? SELECTED.dot : POINT_RADIUS}
                         fill={color}
-                        // The hand-off's points are washed at .7, so overlaps read through.
-                        fillOpacity={selected != null && !isSelected(i, j) ? DIM_OPACITY * POINT_OPACITY : POINT_OPACITY}
+                        // The hand-off's points are washed at .7, so overlaps read through; the
+                        // inspected point is solid.
+                        fillOpacity={isSelected(i, j) ? 1 : selected != null ? DIM_OPACITY * POINT_OPACITY : POINT_OPACITY}
                       />
                     ) : null,
                   );
@@ -238,10 +240,10 @@ export function createScatterPlot(skin: ChartSkin) {
                   <Circle
                     cx={layout.x(selectedPoint.x)}
                     cy={layout.y(selectedPoint.y)}
-                    r={7}
+                    r={SELECTED.ring}
                     fill="none"
                     stroke={colorOf(selected!.series)}
-                    strokeWidth={2}
+                    strokeWidth={SELECTED.ringStroke}
                   />
                 ) : null}
               </>

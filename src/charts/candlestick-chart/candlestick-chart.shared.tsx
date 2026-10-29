@@ -29,7 +29,11 @@ export interface CandlestickChartProps {
   candles: Candle[];
   /** Optional volume per candle, drawn as a docked pane under the price plot. */
   volume?: number[];
-  /** Optional overlay series (e.g. moving averages), colored by the chart-1..8 tokens (or an overlay's own `success`/`destructive` tone). */
+  /**
+   * Optional overlay series (e.g. moving averages), colored from `chart-2` on (the candles
+   * own the status pair and the lead accent), or by an overlay's own `success`/`destructive`
+   * tone. A `dashed` overlay draws dashed.
+   */
   overlays?: ChartSeries[];
   /** Optional heading shown above the plot. */
   title?: string;
@@ -40,8 +44,10 @@ export interface CandlestickChartProps {
   compact?: boolean;
   /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
   plain?: boolean;
-  // Furniture visibility (legend lists the overlays when present).
+  // Furniture visibility (the legend names the up and down candles, then the overlays).
   hideLegend?: boolean;
+  /** A note at the end of the legend's row, pushed to its right edge (what the colours mean, a data source). */
+  legendCaption?: string;
   hideGrid?: boolean;
   hideAxes?: boolean;
   /** Formats tick labels and accessible values (data formatting, not styling). */
@@ -77,6 +83,9 @@ export function createCandlestickChart(skin: ChartSkin) {
     const glass = isGlass(theme);
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
+    // Overlays take the ramp from its second step: the first is the accent the candles'
+    // status pair stands beside, so a moving average reads as its own line.
+    const overlayColor = (sr: ChartSeries, i: number): string => s.seriesColor(tokens, sr, i + 1);
 
     devWarn(candles.length === 0, "[canvas] <CandlestickChart />: `candles` is empty; the chart renders with no candles.");
     devWarn(
@@ -178,8 +187,9 @@ export function createCandlestickChart(skin: ChartSkin) {
             <Path
               key={`o${sr.id ?? i}`}
               d={linePath(labels.slice(0, count).map((_, j) => ({ x: band.center(j), y: layout.y(num(sr.values[j])) })))}
-              stroke={s.seriesColor(tokens, sr, i)}
+              stroke={overlayColor(sr, i)}
               strokeWidth={1.5}
+              strokeDasharray={sr.dashed ? s.CHART_LOOK.seriesDash : undefined}
               fill="none"
               strokeLinejoin="round"
             />
@@ -218,14 +228,13 @@ export function createCandlestickChart(skin: ChartSkin) {
             onBandScrub={setSelected}
             overlay={(layout) =>
               selected != null && selected < count && layout.band ? (
+                // The section card's readout: open and high, low and close, then the volume.
                 <ChartValueFlag
-                  title={labels[selected]}
+                  title={props.hideAxes ? labels[selected] : undefined}
                   rows={[
-                    { label: "Open", value: formatValue(num(candles[selected].open)) },
-                    { label: "High", value: formatValue(num(candles[selected].high)) },
-                    { label: "Low", value: formatValue(num(candles[selected].low)) },
-                    { label: "Close", value: formatValue(num(candles[selected].close)) },
-                    ...(volume ? [{ label: "Vol", value: formatValue(num(volume[selected])) }] : []),
+                    { label: "O", value: `${formatValue(num(candles[selected].open))} · H ${formatValue(num(candles[selected].high))}` },
+                    { label: "L", value: `${formatValue(num(candles[selected].low))} · C ${formatValue(num(candles[selected].close))}` },
+                    ...(volume ? [{ label: "vol", value: formatCompact(num(volume[selected])) }] : []),
                   ]}
                   x={layout.band.center(selected)}
                   plotW={layout.plotW}
@@ -237,8 +246,17 @@ export function createCandlestickChart(skin: ChartSkin) {
           </CartesianFrame>
         </View>
 
-        {overlays.length > 0 && !props.hideLegend ? (
-          <ChartLegend horizontal items={overlays.map((sr, i) => ({ label: sr.label, color: s.seriesColor(tokens, sr, i) }))} />
+        {/* The renderer's legend names the two candle directions; overlays follow as rules. */}
+        {!props.hideLegend ? (
+          <ChartLegend
+            horizontal
+            caption={props.legendCaption}
+            items={[
+              { label: "Up", color: tokens.success },
+              { label: "Down", color: tokens.destructive },
+              ...overlays.map((sr, i) => ({ label: sr.label, color: overlayColor(sr, i), line: true, dashed: sr.dashed })),
+            ]}
+          />
         ) : null}
       </View>
     );

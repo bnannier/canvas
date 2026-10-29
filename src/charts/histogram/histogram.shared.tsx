@@ -143,7 +143,7 @@ export function createHistogram(skin: ChartSkin) {
                   <ScrubSurface indexAt={indexAt} selected={selected} onScrub={setSelected} style={StyleSheet.absoluteFill} />
                   {selected != null && counts[selected] != null ? (
                     <ChartValueFlag
-                      title={`${formatValue(edges[selected])} to ${formatValue(edges[selected + 1])}`}
+                      title={`${formatValue(edges[selected])}–${formatValue(edges[selected + 1])}`}
                       rows={[{ value: String(counts[selected]) }]}
                       x={(layout.x(edges[selected]) + layout.x(edges[selected + 1])) / 2}
                       plotW={layout.plotW}

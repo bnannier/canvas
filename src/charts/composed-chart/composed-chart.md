@@ -47,6 +47,21 @@ The classic "revenue bars with a margin line" chart, on one shared zero-based y 
 />
 ```
 
+### Dashed target line
+
+A `line` series marked `dashed` draws dashed, with a dashed rule as its legend swatch.
+
+```tsx
+<ComposedChart
+  title="Revenue vs target"
+  labels={["Q1", "Q2", "Q3", "Q4"]}
+  series={[
+    { label: "Revenue", values: [420, 510, 480, 620] },
+    { label: "Target", values: [450, 500, 550, 600], line: true, dashed: true }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### ComposedChart

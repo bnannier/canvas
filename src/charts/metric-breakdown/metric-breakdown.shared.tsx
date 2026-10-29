@@ -66,6 +66,8 @@ export interface MetricBreakdownProps {
   spark?: number[];
   /** Unit suffix on the latest-value caption (e.g. "req/s"). */
   sparkUnit?: string;
+  /** Hide the latest-value tag over the trend strip (the strip alone, when the headline already carries the figure). */
+  hideSparkTag?: boolean;
   /** Per-category rows with proportional share bars. */
   breakdown?: BreakdownRow[];
   /** Footer chips rendered with the kit Chip (e.g. top error codes). */
@@ -199,16 +201,18 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
               presentational; the strip's name carries the data. */}
           {spark != null ? (
             <View style={{ width: SPARK_WIDTH, flexShrink: 0 }}>
-              <View
-                aria-hidden
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-                style={{ alignSelf: "flex-end" }}
-              >
-                <Text style={{ ...SPARK_TAG_TYPE, color: tagColor, ...tabularNums() }}>
-                  {sparkUnit != null && sparkUnit !== "" ? `${formatValue(last)} ${sparkUnit}` : formatValue(last)}
-                </Text>
-              </View>
+              {props.hideSparkTag ? null : (
+                <View
+                  aria-hidden
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  style={{ alignSelf: "flex-end" }}
+                >
+                  <Text style={{ ...SPARK_TAG_TYPE, color: tagColor, ...tabularNums() }}>
+                    {sparkUnit != null && sparkUnit !== "" ? `${formatValue(last)} ${sparkUnit}` : formatValue(last)}
+                  </Text>
+                </View>
+              )}
               <Sparkline values={spark} tall={!compact} accessibilityLabel={`${label} trend`} />
             </View>
           ) : null}

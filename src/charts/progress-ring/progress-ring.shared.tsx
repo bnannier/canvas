@@ -1,6 +1,9 @@
+import { useId } from "react";
 import Svg, { Path } from "react-native-svg";
+import { Icon } from "../../atoms/icon/icon.js";
 import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
+import { Defs, GlowFilter } from "../shared/chart-glow.js";
 
 // ProgressRing is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -8,8 +11,9 @@ import { DISPLAY_FONT } from "../../style/mono.js";
 // ProgressRing: the full-circle counterpart to the semicircular Gauge. A
 // muted track ring, a tone-colored value arc revealed clockwise from 12
 // o'clock with rounded caps, the percent readout centered inside the ring,
-// and the optional label below the graphic. The API mirrors Gauge exactly:
-// same value contract, same tone axis, same rounding split.
+// and the optional label beside the graphic (under it with `stacked`). A complete
+// ring (100 %) shows the tone's check in place of the number. The API mirrors Gauge
+// exactly: same value contract, same tone axis, same rounding split.
 
 export interface ProgressRingProps {
   /** The value to display, 0-100. */
@@ -24,6 +28,8 @@ export interface ProgressRingProps {
   destructive?: boolean;
   // Density (omit for the default 168 ring; compact is 106).
   compact?: boolean;
+  /** Set the label under the ring, centred, instead of beside it (a row of rings, each named underneath). */
+  stacked?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
@@ -48,6 +54,13 @@ const SIZE = { default: 168, compact: 106 } as const;
 const STROKE = { default: 14, compact: 9 } as const;
 const VALUE = { default: 28, compact: 18 } as const;
 const LABEL_GAP = 14;
+// A stacked label sits 8 under the ring (the section card's ring over its label).
+const STACKED_GAP = 8;
+// The arc's glow: the renderer's `drop-shadow(0 0 6px <tone>)`.
+const ARC_GLOW = 6;
+// The complete ring's check in the tone: the section card's 22 px check in its 78 px ring,
+// the same 0.28 of the ring at each density.
+const CHECK = { default: 48, compact: 30 } as const;
 
 // Pure ring geometry, exported for tests (not re-exported from the barrel),
 // following the gaugeArc precedent. An SVG circle's dash origin sits at 3
@@ -87,24 +100,35 @@ export function ProgressRing(props: ProgressRingProps) {
   const pct = Math.round(v);
   const fill = ringFill(tokens, props);
   const arc = ringDash(v, size, stroke);
+  const glowId = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}glow`;
 
   return (
     <View
       testID={testID}
-      style={[{ flexDirection: "row", alignItems: "center", gap: LABEL_GAP }, style]}
+      style={[props.stacked ? { alignItems: "center", gap: STACKED_GAP } : { flexDirection: "row", alignItems: "center", gap: LABEL_GAP }, style]}
       accessibilityRole="image"
       accessibilityLabel={`${label ?? "Progress"}: ${pct}%`}
       aria-label={`${label ?? "Progress"}: ${pct}%`}
     >
       <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: "absolute", top: 0, left: 0 }}>
+          <Defs>
+            <GlowFilter id={glowId} length={ARC_GLOW} />
+          </Defs>
           <Path d={arc.d} fill="none" stroke={tokens["surface-raised"] ?? tokens.muted} strokeWidth={stroke} strokeLinecap="round" />
+          {v > 0 ? (
+            <Path d={arc.d} fill="none" stroke={fill} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={arc.dasharray} filter={`url(#${glowId})`} />
+          ) : null}
           <Path d={arc.d} fill="none" stroke={fill} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={arc.dasharray} />
         </Svg>
-        {/* The readout sits in the ring's open center. */}
-        <Text style={{ fontFamily: DISPLAY_FONT, fontSize: VALUE[density], lineHeight: Math.round(VALUE[density] * 1.2), fontWeight: "600", color: tokens.foreground }}>
-          {pct}%
-        </Text>
+        {/* The readout sits in the ring's open center: the tone's check once complete. */}
+        {pct >= 100 ? (
+          <Icon check decorative size={CHECK[density]} color={fill} />
+        ) : (
+          <Text style={{ fontFamily: DISPLAY_FONT, fontSize: VALUE[density], lineHeight: Math.round(VALUE[density] * 1.2), fontWeight: "600", color: tokens.foreground }}>
+            {pct}%
+          </Text>
+        )}
       </View>
       {label ? <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>{label}</Text> : null}
     </View>
