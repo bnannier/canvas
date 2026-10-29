@@ -920,6 +920,9 @@ kit's own Android parts at a step of the same scale.
 | web | `alertDialog` | 24px |
 | web | `emptyState` | 18px |
 | web | `key` | 6px |
+| web | `inlineCode` | 5px |
+| web | `optionChip` | 7px |
+| web | `optionTile` | 8px |
 | web | `tooltip` | 8px |
 | web | `event` | 6px |
 | web | `bar` | 3px |
@@ -946,6 +949,8 @@ kit's own Android parts at a step of the same scale.
 | web | `navBar` | 14px |
 | web | `lane` | 14px |
 | web | `laneCard` | 10px |
+| web | `panel` | 18px |
+| web | `stage` | 20px |
 | ios | `actionSheet` | 34px |
 | ios | `groupedList` | 26px |
 | ios | `event` | 6px |
@@ -1008,10 +1013,13 @@ drawn by those entries' platforms.
 | `menuRow` | `atoms/autocomplete`, `atoms/select`, `organisms/row-menu`, `style` |
 | `commandPanel` | `organisms/command` |
 | `commandRow` | `organisms/command` |
-| `callout` | `molecules/alert` |
+| `callout` | `molecules/alert`, `molecules/card` |
 | `alertDialog` | `molecules/alert-dialog` |
 | `emptyState` | `molecules/empty-state` |
 | `key` | `atoms/badge`, `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `charts/heatmap`, `molecules/code-block`, `molecules/phone-input` |
+| `inlineCode` | `atoms/typography` |
+| `optionChip` | `atoms/chip` |
+| `optionTile` | `atoms/chip` |
 | `tooltip` | `atoms/tooltip` |
 | `event` | `organisms/calendar` |
 | `bar` | `charts/shared` |
@@ -1038,6 +1046,8 @@ drawn by those entries' platforms.
 | `navBar` | `organisms/navbars` |
 | `lane` | `organisms/board`, `organisms/drag-drop` |
 | `laneCard` | `organisms/board` |
+| `panel` | `molecules/card` |
+| `stage` | `molecules/card` |
 | `actionSheet` | `organisms/action-sheet` |
 | `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists` |
 | `searchField` | `atoms/input` |

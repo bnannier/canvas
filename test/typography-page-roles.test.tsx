@@ -99,6 +99,32 @@ test("the chip follows the reading role beside it and is .88 of body when none i
   expect(screen.getByText("b").style.fontSize).toBe(`${Math.round(typeRoles.body.fontSize * 0.88 * 100) / 100}px`);
 });
 
+// The pager card's name (Component.dc.html lines 303 and 304, `font:500 18px var(--fd)`): the
+// display face at 500 18 on the face's own line, which the hand-off leaves to the browser
+// (`normal`, 22 px for Bricolage Grotesque at 18, measured on the served hand-off page).
+test("pagerName is the pager card's 500 18 display name on the face's own 22 line in the foreground ink", () => {
+  const faces = { display: { "500": "BricolageGrotesque_500Medium" } };
+  render(
+    <ThemeProvider dark solid fonts={faces}>
+      <Typography pagerName>ButtonGroup</Typography>
+      <Typography pageLabel mono>Next</Typography>
+    </ThemeProvider>,
+  );
+  const name = screen.getByText("ButtonGroup");
+  expect(name.style.fontSize).toBe("18px");
+  expect(name.style.lineHeight).toBe("22px");
+  expect(name.style.letterSpacing).toBe("");
+  expect(rgb(name.style.color)).toEqual(rgb(dark.foreground));
+  // The display face, as the titles take it (the registered face carries the weight).
+  expect(getComputedStyle(name).fontFamily).toBe("BricolageGrotesque_500Medium");
+  // A name, not a heading: it sits under the card's page label.
+  expect(screen.queryByRole("heading")).toBeNull();
+  // Beside its label the name wins the role when both are passed.
+  cleanup();
+  render(<ThemeProvider dark solid><Typography pagerName pageLabel>Both</Typography></ThemeProvider>);
+  expect(screen.getByText("Both").style.fontSize).toBe("18px");
+});
+
 test("code without inline is the standalone pill it always was, and inline without code does nothing", () => {
   render(
     <ThemeProvider dark solid>

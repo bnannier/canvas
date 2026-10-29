@@ -48,6 +48,7 @@ export type Role =
   | "pageLabel"
   | "guideTitle"
   | "guideBody"
+  | "pagerName"
   | "display"
   | "h1"
   | "h2"
@@ -114,6 +115,9 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     // (the hand-off's `var(--ft)`), so neither takes the display face.
     guideTitle: pageRoles.guideTitle,
     guideBody: pageRoles.guideBody,
+    // The previous/next card's name, `font:500 18px var(--fd)` (Component.dc.html lines
+    // 303 and 304): the display face, as the titles take it.
+    pagerName: d(pageRoles.pagerName),
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -214,6 +218,9 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "lead":
     case "body":
     case "mono":
+    // The previous/next card's name inherits the card's `color:var(--tx)` (Component.dc.html
+    // line 303), the foreground ink.
+    case "pagerName":
       return { color: tokens.foreground };
     case "code":
       return { color: tokens.foreground, backgroundColor: tokens.secondary };

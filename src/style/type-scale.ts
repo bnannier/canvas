@@ -39,8 +39,9 @@ export const typeRoles = {
 // principle-card title, body and the Inputs page's panel title, a component page
 // section's note, a component page's own prose (its usage paragraph and the notes
 // after it), the component page's labels (its knob panel's "Props", the rail's group
-// headers, the props table's header cells and the previous/next eyebrows) and the
-// Usage guidance card's title and paragraph. Converted as `typeRoles` is;
+// headers, the props table's header cells and the previous/next eyebrows), the
+// Usage guidance card's title and paragraph, and the previous/next cards' names.
+// Converted as `typeRoles` is;
 // test/v4-type-scale.test.ts reads each from the page that sets it. Internal, not
 // re-exported.
 export const pageRoles = {
@@ -64,6 +65,13 @@ export const pageRoles = {
   // `<p style="margin:0;font:400 13.5px/1.6 var(--ft);color:var(--tx2)">`.
   guideTitle: { fontSize: 16, lineHeight: 20.8, fontWeight: "600" },
   guideBody: { fontSize: 13.5, lineHeight: 21.6, fontWeight: "400" },
+  // The previous and next cards' names (Component.dc.html lines 303 and 304):
+  // `<span style="font:500 18px var(--fd)">{{ prev.n }}</span>`, the display face with no
+  // ratio, so the line is the browser's `normal`. Measured in Playwright on the hand-off
+  // page served from tools/v4/handoff (Chromium, Bricolage Grotesque loaded):
+  // getComputedStyle(span).lineHeight is "normal" and the span's line box is 22 px, for
+  // both names.
+  pagerName: { fontSize: 18, lineHeight: 22, fontWeight: "500" },
 } as const satisfies Record<string, TextStyle>;
 
 /**

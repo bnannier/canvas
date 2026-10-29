@@ -31,8 +31,11 @@ import { type Layout } from "./description-lists.styles.js";
 //   `twoColumn` puts the term in a fixed 160px label column with the value
 //   beside it (the read-only detail look); the default `stacked` puts a small
 //   uppercase muted label above a full-weight value.
-// - Rows: `divided` draws a hairline (border-b border-border) under every row
-//   but the last, for the two-column detail look.
+// - Rows (pick one; precedence ruled > divided): `divided` draws a hairline
+//   (border-b border-border) under every row but the last, for the two-column
+//   detail look; `ruled` draws the v4 hand-off's accessibility-card rows, a 1 px
+//   top rule on every row including the first, 9 above and below the text, the
+//   term hugging its content with a 120 floor and 14 to the value.
 // - Surface: `card` wraps the whole list in a card surface (border, radius,
 //   padding) so it reads as a self-contained panel. `title`/`subtitle` add a
 //   bordered header band to the card.
@@ -119,8 +122,15 @@ export interface DescriptionListProps {
   inline?: boolean;
   twoColumn?: boolean;
   stacked?: boolean;
-  // Rows: hairline divider beneath every row but the last.
+  // Rows (pick one; precedence ruled > divided): a hairline divider beneath every row
+  // but the last.
   divided?: boolean;
+  /**
+   * Rows: a 1 px top rule on every row, the first included, with the row padded 9 above
+   * and below and the term hugging its content (a 120 floor, 14 to the value), the v4
+   * hand-off's accessibility-card rows. Wins over `divided`.
+   */
+  ruled?: boolean;
   // Surface: wrap the list in a card surface.
   card?: boolean;
   /** Fires when a row's inline editor commits (Enter or Save): the item index and the new value. */
@@ -160,6 +170,8 @@ export interface DescriptionListSkin {
   rowMinHeight?: number;
   /** Divided-row bottom padding beneath the hairline rule. */
   dividedPadBottom: number;
+  /** Ruled-row metrics: the padding above and below the text, the term column's floor, and the term-to-value gap. */
+  ruled: { rowPadY: number; termMinWidth: number; gap: number };
   /** Horizontal-row term type (size / line-height / weight / color / tracking). */
   termType: (t: ColorTokens) => TextStyle;
   /** Horizontal-row value type (size / line-height / weight / color / tracking). */
@@ -192,6 +204,15 @@ export function layoutOf(p: DescriptionListProps): Layout {
   if (p.twoColumn) return "twoColumn";
   if (p.stacked) return "stacked";
   return "stacked";
+}
+
+// Rows precedence when both are passed: `ruled` wins over `divided`; neither is the
+// plain row.
+export type Rows = "ruled" | "divided";
+export function rowsOf(p: Pick<DescriptionListProps, "ruled" | "divided">): Rows | null {
+  if (p.ruled) return "ruled";
+  if (p.divided) return "divided";
+  return null;
 }
 
 // A text value's form, first match wins: the status pill, the metadata badge, the
@@ -287,11 +308,14 @@ export function createDescriptionList(
   }
 
   return function DescriptionList(props: DescriptionListProps) {
-    const { items, title, subtitle, divided, card, onUpdate, onCopy, testID, style } = props;
+    const { items, title, subtitle, card, onUpdate, onCopy, testID, style } = props;
     const { tokens } = useTheme();
     // FILL: the list spans the parent it is given.
     const fill = useFillStyle("DescriptionList");
     const layout = layoutOf(props);
+    const rowsLook = rowsOf(props);
+    const divided = rowsLook === "divided";
+    const ruled = rowsLook === "ruled";
     // The two-column term label narrows when the LIST is phone-narrow (160 -> 120) so
     // the value column keeps room to breathe: a two-column list in a 320px desktop
     // panel narrows too, and one on a wide tablet does not. The list fills its parent,
@@ -333,18 +357,22 @@ export function createDescriptionList(
     // per-OS value type (secondary gray on iOS, full-weight foreground otherwise).
     const valueStyle = stacked ? skin.stackedValueType(tokens) : skin.valueType(tokens);
 
-    // The two-column term's label column, text or node.
-    const termColumn = layout === "twoColumn" ? [s.termColumn, narrowTermColumn ? s.termColumnNarrow : null] : null;
+    // The two-column term's label column, text or node; a ruled list's term hugs its
+    // content over a floor instead (the hand-off's `minmax(120px,auto)`).
+    const termColumn = layout === "twoColumn" ? (ruled ? s.termRuled(skin) : [s.termColumn, narrowTermColumn ? s.termColumnNarrow : null]) : null;
 
     const rows = items.map((item, index) => {
       const last = index === items.length - 1;
       // A divided list draws a hairline under each row except the last, and pads
-      // the row vertically so the rule sits clear of the text.
+      // the row vertically so the rule sits clear of the text. A ruled list draws its
+      // rule over every row, the first included, with its own padding and gap in place
+      // of the inset card's row padding and the layout's gap.
       const row: StyleProp<ViewStyle> = [
         s.rowLayout(layout, skin),
-        inset ? { paddingVertical: inset.rowPadY } : null,
+        inset && !ruled ? { paddingVertical: inset.rowPadY } : null,
         divided ? s.rowDividedPad(skin) : null,
         divided && !last ? s.rowDivider(tokens) : null,
+        ruled ? s.rowRuled(tokens, skin, layout) : null,
       ];
       // The shown value: the consumer's item.value, unless this row committed an
       // inline edit over that exact base (the uncontrolled path, see `edits`).

@@ -14,14 +14,18 @@ const TY: Record<string, string> = Object.fromEntries(
   [...table.matchAll(/(\w+):'([^']*)'/g)].map((m) => [m[1]!, m[2]!]),
 );
 
-function derive(spec: string) {
-  const m = /^(\d+) ([\d.]+)px\/([\d.]+)/.exec(spec);
+// A spec with no ratio (`500 18px var(--fd)`) is the browser's `normal` line, which only
+// the face decides; the caller passes the line box measured on the hand-off page.
+function derive(spec: string, normalLineHeight?: number) {
+  const m = /^(\d+) ([\d.]+)px(?:\/([\d.]+))?/.exec(spec);
   if (!m) throw new Error(`unparsed type spec: ${spec}`);
-  const [weight, size, ratio] = [m[1]!, Number(m[2]), Number(m[3])];
+  const [weight, size] = [m[1]!, Number(m[2])];
+  if (m[3] == null && normalLineHeight == null) throw new Error(`type spec has no ratio and no measured normal line: ${spec}`);
+  const lineHeight = m[3] == null ? normalLineHeight! : Math.round(size * Number(m[3]) * 100) / 100;
   const track = /letter-spacing:(-?[\d.]+)em/.exec(spec);
   return {
     fontSize: size,
-    lineHeight: Math.round(size * ratio * 100) / 100,
+    lineHeight,
     fontWeight: weight,
     letterSpacing: track ? Math.round(Number(track[1]) * size * 100) / 100 : undefined,
     uppercase: spec.includes("text-transform:uppercase"),
@@ -107,7 +111,7 @@ describe("v4 fluid headlines", () => {
 
 // The page roles are the hand-off pages' own `font: <weight> <size>px/<ratio>` styles,
 // read from the element that sets each, converted as the Typography table is.
-const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string }> = {
+const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string; normalLineHeight?: number }> = {
   pageLead: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ summary }}\"" },
   sectionLead: { page: "Controls", text: "Everything here is live." },
   tagline: { page: "Controls", text: "Buttons, toggles and sliders." },
@@ -124,10 +128,14 @@ const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string 
   // The Usage guidance card's h3 and its paragraph.
   guideTitle: { page: "Component", text: ">{{ x.t }}<" },
   guideBody: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ xp }}\"" },
+  // The previous card's name, `font:500 18px var(--fd)` with no ratio: its `normal` line
+  // measured in Chromium on the served hand-off page with Bricolage Grotesque loaded, 22 px
+  // (src/style/type-scale.ts records the measurement; the next card's name is the same style).
+  pagerName: { page: "Component", text: ">{{ prev.n }}<", normalLineHeight: 22 },
 };
 
 describe("v4 page roles", () => {
-  for (const [role, { page, text }] of Object.entries(PAGE_SOURCES) as [keyof typeof pageRoles, { page: string; text: string }][]) {
+  for (const [role, { page, text, normalLineHeight }] of Object.entries(PAGE_SOURCES) as [keyof typeof pageRoles, { page: string; text: string; normalLineHeight?: number }][]) {
     it(`${role} is the ${page} page's own style`, () => {
       const html = readFileSync(new URL(`../tools/v4/handoff/Canvas v4.0.0 ${page}.dc.html`, import.meta.url), "utf8");
       const at = html.indexOf(text);
@@ -138,6 +146,7 @@ describe("v4 page roles", () => {
         /font:(.*?) var/.exec(style)![1]!
         + (/letter-spacing:(-?[\d.]+)em/.test(style) ? ` letter-spacing:${/letter-spacing:(-?[\d.]+)em/.exec(style)![1]}em` : "")
         + (style.includes("text-transform:uppercase") ? " text-transform:uppercase" : ""),
+        normalLineHeight,
       );
       const got = pageRoles[role] as { fontSize: number; lineHeight: number; fontWeight: string; letterSpacing?: number; textTransform?: string };
       expect(got).toEqual({

@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList } = scope;
+  const { DescriptionList, Kbd } = scope;
   return (
 <DescriptionList
   twoColumn
+  ruled
   items={[
-    { term: "Name", value: "Rachel Chen", update: true },
-    { term: "Email", value: "rachel.chen@example.com", update: true }
+    { term: <Kbd>Enter</Kbd>, value: "Activates" },
+    { term: <Kbd>Space</Kbd>, value: "Activates" },
+    { term: <Kbd>Tab</Kbd>, value: "Moves focus to the next control" }
   ]}
 />
   );

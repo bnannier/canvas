@@ -47,7 +47,9 @@ header, a table's header cell, a previous/next eyebrow: 500 11/1 tracked .08em i
 the subtle ink; pass `mono` for the mono face, as the hand-off's page does), `guideTitle` (a
 guidance card's title, 600 16/1.3 in the interface face, a level-3 heading) and `guideBody`
 (a guidance card's paragraph, 400 13.5/1.6 in the secondary ink). `pageLabel` is not the
-`eyebrow`: that is the type table's accent-ink label tracked .1em.
+`eyebrow`: that is the type table's accent-ink label tracked .1em. `pagerName` is the
+previous or next card's name under its label: the display face, 500 18 on the face's own 22
+line (the hand-off sets no ratio), in the foreground ink.
 
 `code` is the standalone code pill (regular 13px mono on the muted fill, a 6 radius and 2
 by 6 padding). `code inline` is the prose code chip, a word of code inside a sentence: the
@@ -237,6 +239,12 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ```tsx
 <Typography guideBody>A button that navigates renders a real link on the web, so middle-click and open-in-new-tab work.</Typography>
+```
+
+### Pager name
+
+```tsx
+<Typography pagerName>ButtonGroup</Typography>
 ```
 
 ### Semibold
