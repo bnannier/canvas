@@ -15,6 +15,12 @@ export default function Example(scope: ExampleScope) {
   <Card outlined stageCorners panel>
     <Typography small medium>stageCorners</Typography>
   </Card>
+  <Card outlined showcaseCorners panel>
+    <Typography small medium>showcaseCorners</Typography>
+  </Card>
+  <Card outlined heroCorners panel>
+    <Typography small medium>heroCorners</Typography>
+  </Card>
 </Column>
   );
 }

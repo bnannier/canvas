@@ -57,6 +57,8 @@ export interface GridProps {
   page?: boolean; // 30
   /** The step between side-by-side panels of one composition (32). */
   apart?: boolean; // 32
+  /** The step between a section page's hero and its body, and between the hero's halves (40). */
+  ample?: boolean; // 40
   /** The gap between the two halves of a page-wide split (48): the hand-off's hero grid. */
   broad?: boolean; // 48
   /** The widest gap step (64), between a page's chapters; wins over every other step. */

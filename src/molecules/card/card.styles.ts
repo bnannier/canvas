@@ -16,12 +16,14 @@ import { type HoverMotion } from "../../style/hover.js";
 // STATIC shared members, so their insets and type are shared (one value across
 // platforms); the main surface and the title face are skin-parameterized.
 //
-// - Web is the hand-off's: the web card corner (or the tile, callout, panel or stage
-//   corner, the Corners axis), the `card` fill under a 1 px `border`
-//   hairline, the small shadow at rest (`--sh-sm`), the large one raised (`--sh-lg`) and
-//   none flat, where the fill steps up to `popover` (the hand-off's sf2), or outlined,
-//   where the fill stays (the component page's cards). A 20 px inset
-//   with an 8 px rhythm between flat children (14 / 8 compact, 28 / 8 comfortable). The
+// - Web is the hand-off's: the web card corner (or the tile, callout, panel, stage,
+//   showcase-card or hero-stage corner, the Corners axis), the `card` fill under a 1 px
+//   `border` hairline, the small shadow at rest (`--sh-sm`), the large one raised
+//   (`--sh-lg`), the medium one on the section hero's stage (`--sh-md`, canvas-hero.js
+//   `.st`) and none flat, where the fill steps up to `popover` (the hand-off's sf2), or
+//   outlined, where the fill stays (the component page's cards). A 20 px inset
+//   with an 8 px rhythm between flat children (14 / 8 compact, 28 / 8 comfortable, and
+//   24 / 20 roomy: the hand-off's section page card, `padding:24px` with `gap:20px`). The
 //   title is 500 21 px in the display face. Selected adds a 4 px ring of the accent's
 //   soft wash outside the primary border. A pressable card takes the hover lift
 //   (`hover`): 2 px up, its resting shade deepening to the raised one.
@@ -33,15 +35,18 @@ import { type HoverMotion } from "../../style/hover.js";
 //   OUTLINED card (1dp outline, elevation 0), `raised` lifts the elevated card to M3
 //   level 3 (6dp). Plus the 12dp medium shape and M3's density steps.
 
-export type Elevation = "raised" | "flat" | "outlined" | "tile" | "row" | "empty" | "default";
-export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "panel" | "guide" | "linkTile" | "pager" | "default";
+export type Elevation = "raised" | "flat" | "outlined" | "hero" | "tile" | "row" | "empty" | "default";
+export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "roomy" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "panel" | "guide" | "linkTile" | "pager" | "default";
 /**
  * The corner steps a card can take (the Corners axis): the card corner by default, the
- * tile corner (`smallCorners`), and the three the v4 hand-off's component page draws
- * (`calloutCorners`, `largeCorners`, `stageCorners`). The web skin draws each from its
- * row; the native skins keep their own card corner on every step but the tile.
+ * tile corner (`smallCorners`), the three the v4 hand-off's component page draws
+ * (`calloutCorners`, `largeCorners`, `stageCorners`) and the two its section pages draw
+ * (`showcaseCorners`, the showcase card at 20; `heroCorners`, the hero stage at 24). The
+ * web skin draws each from its row; the native skins keep their own card corner on every
+ * step but the tile (the hand-off's page corners are the web page's, and the Material 3
+ * card is the platform's own control).
  */
-export type Corner = "small" | "callout" | "large" | "stage" | "default";
+export type Corner = "small" | "callout" | "large" | "stage" | "showcase" | "hero" | "default";
 
 export interface CardSkin {
   /** Corner radius of the card surface. */
@@ -118,6 +123,9 @@ const WEB_DENSITY: Record<Density, ViewStyle> = {
   ...HANDOFF_DENSITY,
   compact: { padding: 14, gap: 8 },
   comfortable: { padding: 28, gap: 8 },
+  // The hand-off's section page card (`Canvas v4.0.0 <Section>.dc.html`, every `c-*`
+  // card: `padding:24px;display:flex;flex-direction:column;gap:20px`).
+  roomy: { padding: 24, gap: 20 },
   // The default density IS the standard padded surface: the hand-off's 20px inset
   // plus its 8px rhythm between flat children (`padded` is the explicit
   // form of this default; `flush` opts out of the whole row).
@@ -129,19 +137,24 @@ const SELECTED_RING = 4;
 const selectedRing = (t: ColorTokens) => `0px 0px 0px ${SELECTED_RING}px ${t["primary-soft"] ?? t.ring}`;
 
 // The hand-off's shadow per elevation: none flat or outlined, the large step raised, the
-// small one at rest (and on the legacy tile, row and empty steps, which the ladder rests at sm).
+// medium one on the section hero's stage (canvas-hero.js `.st{...box-shadow:var(--sh-md)}`),
+// the small one at rest (and on the legacy tile, row and empty steps, which the ladder
+// rests at sm).
 const webElevation = (e: Elevation, t: ColorTokens): ViewStyle =>
-  e === "raised" ? shadow("lg", t) : e === "flat" || e === "outlined" ? shadow("none") : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t);
+  e === "raised" ? shadow("lg", t) : e === "flat" || e === "outlined" ? shadow("none") : e === "hero" ? shadow("md", t) : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t);
 
-// The web corner steps: the card corner, the tile corner (`smallCorners`), and the v4
+// The web corner steps: the card corner, the tile corner (`smallCorners`), the v4
 // hand-off component page's three (its callout at 14, Component.dc.html line 244, which
-// its related tiles share, line 297; its section panel at 18 and its stage at 20).
+// its related tiles share, line 297; its section panel at 18 and its stage at 20) and its
+// section pages' two (the showcase card at 20 and the hero stage at 24).
 const WEB_CORNERS: Record<Corner, number> = {
   default: shape.web.card,
   small: shape.web.tile,
   callout: platformShape.web.callout,
   large: platformShape.web.panel,
   stage: platformShape.web.stage,
+  showcase: platformShape.web.showcaseCard,
+  hero: platformShape.web.heroStage,
 };
 
 // The selected ring joins the elevation's shadow list (one boxShadow per node on the web).
@@ -171,8 +184,9 @@ export const webSkin: CardSkin = {
 export const iosSkin: CardSkin = {
   radius: shape.ios.card,
   // The native card keeps its own corner on every step but the tile: the hand-off's
-  // page corners are the web page's.
-  corners: { default: shape.ios.card, small: shape.ios.tile, callout: shape.ios.card, large: shape.ios.card, stage: shape.ios.card },
+  // page corners (the component page's three and the section pages' two) are the web
+  // page's.
+  corners: { default: shape.ios.card, small: shape.ios.tile, callout: shape.ios.card, large: shape.ios.card, stage: shape.ios.card, showcase: shape.ios.card, hero: shape.ios.card },
   // Apple's superellipse corner curve (an iOS-only RN style prop; device-only
   // visual, a no-op on other platforms and in the web docs preview).
   curve: "continuous",
@@ -192,6 +206,9 @@ const M3_DENSITY: Record<Density, ViewStyle> = {
   ...HANDOFF_DENSITY,
   compact: { padding: 12, gap: 8 },
   comfortable: { padding: 24, gap: 20 },
+  // The hand-off's section page card is the web look on every platform (the docs' showcase
+  // frame), so the step is the web's.
+  roomy: { padding: 24, gap: 20 },
   // The default density IS the standard padded surface: M3's 16dp content
   // padding plus the tighter M3 rhythm between flat children.
   default: { padding: 16, gap: 12 },
@@ -201,7 +218,7 @@ export const androidSkin: CardSkin = {
   // M3 medium shape token (cards).
   radius: shape.android.card,
   // The Material 3 card keeps its medium shape on every step but the tile.
-  corners: { default: shape.android.card, small: shape.android.tile, callout: shape.android.card, large: shape.android.card, stage: shape.android.card },
+  corners: { default: shape.android.card, small: shape.android.tile, callout: shape.android.card, large: shape.android.card, stage: shape.android.card, showcase: shape.android.card, hero: shape.android.card },
   // M3 cards never combine an outline with nonzero elevation, so the default and
   // `raised` cards read as M3 ELEVATED (no visible outline) and `flat` and `outlined`
   // both read as M3 OUTLINED (1dp outline, elevation 0). The non-outlined variants keep
@@ -215,13 +232,16 @@ export const androidSkin: CardSkin = {
   // M3 resting elevation = level 1 (1dp, our shadow-sm exactly); raised = level 3
   // (6dp: shadow("md")'s shade with the Android elevation corrected via
   // customShadow, since shadow("md") carries elevation 4, which matches no M3
-  // level); flat / outlined drops elevation entirely.
+  // level); the section hero's stage sits between them at level 2 (3dp); flat /
+  // outlined drops elevation entirely.
   elevation: (e, t) =>
     e === "raised"
       ? customShadow({ offsetY: 4, radius: 6, opacity: 0.1, elevation: 6 })
-      : e === "flat" || e === "outlined"
-        ? shadow("none")
-        : shadow("sm", t),
+      : e === "hero"
+        ? customShadow({ offsetY: 2, radius: 4, opacity: 0.1, elevation: 3 })
+        : e === "flat" || e === "outlined"
+          ? shadow("none")
+          : shadow("sm", t),
   density: M3_DENSITY,
   // M3 cards use 16dp content padding (gap-free; see the CardSkin.padded doc).
   padded: { padding: 16 },

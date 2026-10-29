@@ -29,15 +29,18 @@ import { type CardSkin, type Corner, type Elevation, type Density, type MediaWel
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf). Axes:
 //
-// - Elevation (pick one): `raised` > `flat` > `outlined` > default. `flat` drops the
-//   shadow and steps the fill up a surface; `outlined` drops the shadow and keeps the
-//   card fill under the hairline (the v4 hand-off component page's cards, `background:
-//   var(--sf);border:1px solid var(--ln)` with no box-shadow); `raised` lifts it. (The
-//   exact resting/raised shadow is per-OS via the skin.)
+// - Elevation (pick one): `raised` > `flat` > `outlined` > `heroShadow` > default. `flat`
+//   drops the shadow and steps the fill up a surface; `outlined` drops the shadow and
+//   keeps the card fill under the hairline (the v4 hand-off component page's cards,
+//   `background:var(--sf);border:1px solid var(--ln)` with no box-shadow); `heroShadow`
+//   is the medium step (the hand-off's `--sh-md`, its section hero's stage), between the
+//   resting card and the raised one; `raised` lifts it. (The exact shadow per step is
+//   per-OS via the skin.)
 // - Corners (pick one): `smallCorners` > `calloutCorners` > `largeCorners` >
-//   `stageCorners` > default, the smaller winning. Each is a step of the skin's
-//   `corners` table (the web row's tile, callout, panel and stage corners; the native
-//   skins keep their own card corner on every step but the tile).
+//   `stageCorners` > `showcaseCorners` > `heroCorners` > default, the smaller winning.
+//   Each is a step of the skin's `corners` table (the web row's tile, callout, panel,
+//   stage, showcase-card and hero-stage corners; the native skins keep their own card
+//   corner on every step but the tile).
 // - Interaction: pass `onPress` to make the whole card pressable; it gains the
 //   pressed affordance (Android ripple, iOS/web pressed dim) and the button role,
 //   and on the web the hover lift (the skin's `hover`).
@@ -126,6 +129,11 @@ export interface CardProps {
   flat?: boolean;
   /** The hairline on the card fill with no shadow (the hand-off component page's cards). */
   outlined?: boolean;
+  /**
+   * The section hero's stage shadow: the medium step of the ladder (the hand-off's
+   * `--sh-md`, canvas-hero.js `.st`), between the resting card and the raised one.
+   */
+  heroShadow?: boolean;
   // Padding (orthogonal booleans). A card with raw children is padded by default,
   // and the data-driven string path (no children) pads through its self-padding
   // sections instead, so neither prop moves the surface inset there.
@@ -161,6 +169,11 @@ export interface CardProps {
   snug?: boolean;
   cozy?: boolean;
   relaxed?: boolean;
+  /**
+   * The showcase card's density: a 24 px inset with a 20 px rhythm between flat children
+   * (the hand-off's section page card). Unlike the other named densities it keeps the gap.
+   */
+  roomy?: boolean;
   spacious?: boolean;
   insetContent?: boolean;
   rail?: boolean;
@@ -188,6 +201,10 @@ export interface CardProps {
   largeCorners?: boolean;
   /** The stage corner (20 on the web): a staging frame, a figure and its legend. */
   stageCorners?: boolean;
+  /** The showcase card's corner (20 on the web): the v4 section page's card. */
+  showcaseCorners?: boolean;
+  /** The hero stage's corner (24 on the web): the v4 section hero's stage (`.st`). */
+  heroCorners?: boolean;
   inset?: boolean;
   /** Original inset human-gate content panel. */
   gatePanel?: boolean;
@@ -222,6 +239,7 @@ export function elevationOf(p: CardProps): Elevation {
   if (p.raised) return "raised";
   if (p.flat) return "flat";
   if (p.outlined) return "outlined";
+  if (p.heroShadow) return "hero";
   if (p.tileShadow) return "tile";
   if (p.rowShadow) return "row";
   if (p.emptyShadow) return "empty";
@@ -234,6 +252,7 @@ export function densityOf(p: CardProps): Density {
   if (p.snug) return "snug";
   if (p.cozy) return "cozy";
   if (p.relaxed) return "relaxed";
+  if (p.roomy) return "roomy";
   if (p.spacious) return "spacious";
   if (p.insetContent) return "insetContent";
   if (p.rail) return "rail";
@@ -250,12 +269,16 @@ export function densityOf(p: CardProps): Density {
   return "default";
 }
 
-// Corner precedence when more than one is passed: the smaller step wins.
+// Corner precedence when more than one is passed: the smaller step wins (the component
+// page's stage and the section page's showcase card are both 20 on the web; the stage,
+// the earlier step, wins the tie).
 export function cornerOf(p: CardProps): Corner {
   if (p.smallCorners) return "small";
   if (p.calloutCorners) return "callout";
   if (p.largeCorners) return "large";
   if (p.stageCorners) return "stage";
+  if (p.showcaseCorners) return "showcase";
+  if (p.heroCorners) return "hero";
   return "default";
 }
 

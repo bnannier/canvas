@@ -11,17 +11,21 @@ The Argus reference adds intermediate spacing steps without rounding its layout:
 `fine` 3, `dense` 5, `compact` 6, `close` 7, `nested` 9, `comfortable` 10,
 `balanced` 11, `roomy` 14, `airy` 18, `spacious` 20, `generous` 22,
 `section` 26, `panel` 28, `page` 30, `apart` 32 (the space between the side-by-side
-panels of one composition), and `broad` 48 (between the two halves of a page-wide split). Existing named steps keep their values.
+panels of one composition), `ample` 40 (between a section page's hero and the body under
+it, and between the hero's halves) and `broad` 48 (between the two halves of a page-wide split). Existing named steps keep their values.
 Larger active steps take precedence.
 
-`chapter` (64) is the widest step: the space between a page's chapters, the major
-sections of a long page (a component detail page's Playground, Props and Examples).
-It wins over every other gap step, so the precedence runs `chapter` > `broad` > `apart` > `page` >
-`panel` > `section` > `loose` and on down the scale to `flush`. Row, Column and
-Grid all take it.
+`ample` (40) is the step between a section page's hero and the body under it, and between
+the hero's halves (the Canvas v4 section pages). `chapter` (64) is the widest step: the
+space between a page's chapters, the major sections of a long page (a component detail
+page's Playground, Props and Examples). It wins over every other gap step, so the
+precedence runs `chapter` > `broad` > `ample` > `apart` > `page` > `panel` > `section` >
+`loose` and on down the scale to `flush`. Row, Column and Grid all take them.
 
-`rowsTight`, `rowsComfortable`, `rowsSnug`, `rowsCozy` and `rowsSection` set a wrapped
-row's vertical gap to 4, 10, 8, 12 and 26 independently of its main gap. Application inset
+`rowsTight`, `rowsComfortable`, `rowsSnug`, `rowsCozy`, `rowsSection` and `rowsPanel` set a
+wrapped or stacked row's vertical gap to 4, 10, 8, 12, 26 and 28 independently of its main
+gap (a stacked `Row stacks` lays its children down that vertical gap, so a hero whose
+halves sit 40 apart beside each other and 28 apart stacked is `ample rowsPanel`). Application inset
 roles preserve identity headers (24 top/horizontal, 18 bottom), action footers
 (16 vertical, 24 horizontal), theme controls (14 top, 26 horizontal), status bands
 (10 vertical, 28 horizontal), and navigation close controls (12 top/horizontal):

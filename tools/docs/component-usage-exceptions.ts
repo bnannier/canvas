@@ -6,7 +6,11 @@ import type { DocsUsageException } from "./component-usage.ts";
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   {
     file: "docs/src/ui/preview-viewport.tsx", owner: "PreviewViewport", tag: "View", attribute: "style", keys: ["height"], occurrences: 1,
-    reason: "Docs-only viewport harness supplies a definite parent height for app-sized previews inside the unbounded page scroller; it paints no control or surface.",
+    reason: "Docs-only viewport harness supplies a definite parent height for app-sized previews inside the unbounded page scroller, and the 300 px of the section hero's stage (the v4 hand-off's canvas-hero.js `.st`); it paints no control or surface.",
+  },
+  {
+    file: "docs/src/ui/showcase/hero.tsx", owner: "StageGround", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "The section hero stage's ground (the v4 hand-off's canvas-hero.js `.st`: two radial washes and an 18 px dot grid fading downward), the one docs-only brand illustration the rules allow: an untouchable layer spread over the stage it sits in, painting only the svg; the stage itself is the kit Card.",
   },
   {
     file: "docs/src/core/photos.ts", owner: "Wrapped", tag: "Loose", attribute: "spread", keys: ["<unresolved props>"], occurrences: 1,
