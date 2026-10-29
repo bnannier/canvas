@@ -46,6 +46,18 @@ const COMFORTABLE_CAP_BOX: ViewStyle = {
   paddingHorizontal: 8,
 };
 
+// The compact caps of the hand-off's section pages, each a fixed-height key with its label
+// on a line 2 px under the cap (so the 1 px edge holds it):
+//   `small`, the 22 px cap (Canvas v4.0.0 Inputs.dc.html, the search field's "⌘K", and
+//     Overlays.dc.html, the command palette's "esc": `height:22px;padding:0 6px;
+//     border-radius:5px;...;font:500 11px/20px var(--fm)`);
+//   `tiny`, the 20 px cap (Navigation.dc.html, the navbar search's "⌘K": `height:20px;
+//     padding:0 5px;border-radius:4px;...;font:500 10px/18px var(--fm)`).
+const SMALL_CAP_BOX: ViewStyle = { ...CAP_BOX, height: 22, minWidth: 22, borderRadius: platformShape.web.keySmall };
+const TINY_CAP_BOX: ViewStyle = { ...CAP_BOX, height: 20, minWidth: 20, borderRadius: platformShape.web.keyTiny, paddingHorizontal: 5 };
+const SMALL_LABEL_TYPE: TextStyle = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 20, fontWeight: "500" };
+const TINY_LABEL_TYPE: TextStyle = { fontFamily: MONO_FONT, fontSize: 10, lineHeight: 18, fontWeight: "500" };
+
 // The key label: the hand-off's 500 12px mono glyph.
 const LABEL_TYPE: TextStyle = { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500" };
 
@@ -59,6 +71,7 @@ const CHORD_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 
 export const webSkin: KbdSkin = {
   capBox: CAP_BOX,
   comfortableCapBox: COMFORTABLE_CAP_BOX,
+  sizes: { small: { capBox: SMALL_CAP_BOX, labelType: SMALL_LABEL_TYPE }, tiny: { capBox: TINY_CAP_BOX, labelType: TINY_LABEL_TYPE } },
   labelType: LABEL_TYPE,
   separatorType: SEPARATOR_TYPE,
   chordRow: CHORD_ROW,

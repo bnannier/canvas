@@ -354,7 +354,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "atoms/emblem": ["emblemSmall", "emblem", "emblemLarge"],
   "atoms/input": ["field", "pill", "searchField"],
   "atoms/input-otp": ["field"],
-  "atoms/kbd": ["key"],
+  "atoms/kbd": ["key", "keySmall", "keyTiny"],
   "atoms/listbox": ["tile"],
   "atoms/pagination": ["pageCell"],
   "atoms/popover": ["menu", "sheet"],

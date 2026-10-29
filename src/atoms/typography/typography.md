@@ -66,6 +66,36 @@ pass `mono`). Three more are the component page's Variants and Tokens sections: 
 foreground ink) and `subsectionTitle` (a section's own sub-heading over a grid of tiles,
 600 16 on the face's own 20 line in the interface face, a level-3 heading).
 
+The section pages' card roles are the hand-off's section cards' own text, one role per
+value set however many pages set it: `cardNote` (a card's foot caption or an in-card note,
+400 12/1.6 in the subtle ink; pass `mono`), `codeLabel` (a code name on its own line, a
+variant row's label or a token's name, 400 12 on a 16 line in the secondary ink; pass
+`mono`), `inlineNote` (a note beside a specimen, 400 12 on a 15 line in the subtle ink),
+`tileTitle` (a tile's title, display 500 15/1.3), `paneTitle` (a pane's title, display 500
+16/1.2 tracked -.01em; pass `level` to announce it), `gridLabel` (a grid widget's label, 500
+10 mono tracked .08em in caps on a 13 line, subtle ink), `tick` (a scale's tick label, 500 10
+mono on a 13 line, secondary ink), `rowLabel` (a stat row's label, 500 11/1 mono tracked
+.06em in caps, subtle ink), `rowValue` (the value beside it, display 500 22/1 tracked
+-.02em), `headlineValue` (a card's headline figure, display 500 26/1 tracked -.02em),
+`bigNumber` (a card's big number, display 500 40/1 tracked -.03em), `unit` (the unit after a
+figure, 400 16 on a 20 line in the subtle ink, nested in the figure's Typography so it shares
+its baseline), `sampleLabel` and `sampleMeta` (a sample's caption and meta line, 400 11 on 14
+and 400 10 on 13 in the subtle ink; pass `mono`) and `base` (the 14 px body in the
+foreground ink, 400 14 on an 18 line). The figures and titles rank with the titles, the
+labels with the page label, and the notes, samples, unit and base with the reading roles.
+
+`natural` sets the text on its face's own normal line at the role's size, the line the
+hand-off's text takes where it sets a size with no ratio: JetBrains Mono 10, 11 and 12 px on
+13, 14 and 16, Instrument Sans 12, 13 and 14 on 15, 16 and 18, Bricolage Grotesque 14 and
+15 on 17 and 18 (measured in Chromium on the faces, 10 to 28 px). The face is the one the
+text is set in: `mono`, a display role, or the interface face. It sits on the leading axis
+after the fixed ratios and before `tightLeading`.
+
+`cyan` and `mint` are two inks on the tone axis that name a fixed series hue whatever the
+palette (the hand-off's `--cyan` and `--mint`, the `chart-2` and `chart-3` tokens), each
+solved to 4.5:1 on the scheme's surfaces. Tone precedence: `destructive`, `warning`,
+`success`, `cyan`, `mint`, `primary`, `subtle`, `muted`.
+
 `code` is the standalone code pill (regular 13px mono on the muted fill, a 6 radius and 2
 by 6 padding). `code inline` is the prose code chip, a word of code inside a sentence: the
 hand-off's inline `<code>`, regular weight at .88 of the surrounding reading role's size
@@ -317,6 +347,60 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ```tsx
 <Typography subsectionTitle>Related components</Typography>
+```
+
+### Card note
+
+```tsx
+<Typography cardNote mono>&lt;Button primary&gt; · &lt;Button outline&gt;</Typography>
+```
+
+### Card figures
+
+```tsx
+<Column>
+  <Typography bigNumber tabular>107<Typography unit> components</Typography></Typography>
+  <Typography headlineValue tabular>1,284</Typography>
+  <Row alignCenter between relaxed>
+    <Typography rowLabel>p95</Typography>
+    <Typography rowValue tabular>212 ms</Typography>
+  </Row>
+</Column>
+```
+
+### Card labels
+
+```tsx
+<Column>
+  <Typography tileTitle natural>Phone</Typography>
+  <Typography paneTitle>Overview</Typography>
+  <Typography gridLabel>Revenue</Typography>
+  <Typography tick>sm 640</Typography>
+  <Typography codeLabel mono>primary</Typography>
+  <Typography inlineNote>Keycaps read as one unit</Typography>
+  <Typography sampleLabel mono>285</Typography>
+  <Typography sampleMeta mono>#0a0a0f</Typography>
+  <Typography base>Design · 24 members</Typography>
+</Column>
+```
+
+### Natural leading
+
+```tsx
+<Column flush>
+  <Typography caption mono natural>container 1164 px</Typography>
+  <Typography small subtle natural>Hugs its content</Typography>
+</Column>
+```
+
+### Hue tones
+
+```tsx
+<Row relaxed>
+  <Typography tiny mono medium mint natural>≤ 640</Typography>
+  <Typography tiny mono medium cyan natural>641 – 1024</Typography>
+  <Typography tiny mono medium primary natural>≥ 1025</Typography>
+</Row>
 ```
 
 ### Semibold

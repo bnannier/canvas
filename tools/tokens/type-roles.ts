@@ -53,6 +53,14 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     "pageRoles.pageLabel": "caption",
     // The pager card's label (Previous, Next), the same 11 px mono label on its face's 14 px line.
     "pageRoles.pagerLabel": "caption",
+    // The section cards' mono labels: a grid widget's label, a scale's tick and a stat
+    // row's label, each an eyebrow or axis label.
+    "pageRoles.gridLabel": "caption",
+    "pageRoles.tick": "caption",
+    "pageRoles.rowLabel": "caption",
+    // The section cards' sample captions and meta lines (a hue number, a hex value).
+    "pageRoles.sampleLabel": "tiny",
+    "pageRoles.sampleMeta": "tiny",
   },
   // The roles themselves read typeRoles above (their floors are checked on each skin).
   "src/atoms/typography/typography.styles.ts": {
@@ -101,7 +109,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   // An emblem's monogram is initials, as an avatar's are; a swatch's value lines are mono metadata.
   "src/atoms/emblem/emblem.styles.ts": { "monogramSize.small": "caption" },
   "src/atoms/swatch/swatch.styles.ts": { "webSkin.value": "tiny", "webSkin.detail": "tiny" },
-  "src/atoms/kbd/kbd.styles.ts": { SEPARATOR_TYPE: "small" },
+  // The compact keycaps' labels (the hand-off's 11 and 10 px mono hint caps).
+  "src/atoms/kbd/kbd.styles.ts": { SEPARATOR_TYPE: "small", SMALL_LABEL_TYPE: "caption", TINY_LABEL_TYPE: "caption" },
   "src/charts/heatmap/heatmap.shared.tsx": { CAL_MONTH_TYPE: "caption", CAL_WEEKDAY_TYPE: "caption", FLAG_DETAIL_TYPE: "tiny", legendText: "caption" },
   // The v4 hand-off's chart axis labels (9 units, set at the 10 px source floor) and the donut center's caption.
   "src/charts/shared/charts.styles.ts": { "CHART_LOOK.axisSize": "caption" },

@@ -2,7 +2,7 @@
 // The v4 text inks solved to their legibility floor, read by ./tokens.ts as literals so no
 // bundle carries the solver. test/solved-inks.test.ts fails when this is stale.
 
-/** The solved text inks, per scheme: the status inks, and the brand inks per palette. */
+/** The solved text inks, per scheme: the status inks, the brand inks per palette, and the hue tones' inks. */
 export const SOLVED_INKS = {
   light: {
     status: {
@@ -24,6 +24,10 @@ export const SOLVED_INKS = {
       "rose": "#ff9798",
       "amber": "#f2af48",
     },
+    hues: {
+      "cyan": "#006b75",
+      "mint": "#00704e",
+    },
   },
   dark: {
     status: {
@@ -44,6 +48,10 @@ export const SOLVED_INKS = {
       "mint": "#005e41",
       "rose": "#a80027",
       "amber": "#724a00",
+    },
+    hues: {
+      "cyan": "#36dcec",
+      "mint": "#56ecb5",
     },
   },
 } as const;

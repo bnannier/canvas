@@ -16,6 +16,7 @@ import { rowSeam } from "../../style/touch-seam.js";
 import { useHover } from "../../style/hover.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
 import { Icon, type IconName } from "../icon/icon.js";
+import { Kbd } from "../kbd/kbd.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
 // Shared Input shell. The structure (bare field vs. grouped addon layout, the
@@ -211,6 +212,14 @@ export interface InputProps extends TextEntryProps, MeasureProps {
    * "" through `onChangeText`.
    */
   clearable?: boolean;
+  /**
+   * A keyboard shortcut hint at the field's end: a compact flat keycap (`<Kbd small flat>`,
+   * the 20 px `tiny` cap on a `small` field) after the value and any inline suffix, before
+   * the trailing glyphs, the hint a search field shows for the key that focuses it
+   * (`shortcut="⌘K"`). Pass the keys as Kbd's `keys` takes them: `"⌘K"` is one cap, `"⌘ K"`
+   * two. A hint only: bind the key yourself.
+   */
+  shortcut?: string;
 
   /**
    * Accessible name for the field when there is no programmatically-associated
@@ -284,6 +293,7 @@ export function createInput(skin: InputSkin) {
       onActionPress,
       passwordToggle,
       clearable,
+      shortcut,
       style,
     } = props;
     const isError = !!(props.error || props.invalid);
@@ -372,7 +382,11 @@ export function createInput(skin: InputSkin) {
     // button shows only while there is text to clear (and the field is editable).
     const hasEye = !!passwordToggle && !!props.secureTextEntry;
     const hasClear = !!clearable && populated && !disabled && !readOnly;
-    const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action || hasEye || !!clearable;
+    const hasShortcut = shortcut != null && shortcut.trim() !== "";
+    const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action || hasEye || !!clearable || hasShortcut;
+    // The shortcut keycap: where it sits for this field size, and the compact cap it is.
+    const shortcutSpec = skin.shortcut(size);
+    const shortcutCap = hasShortcut ? <Kbd keys={shortcut} flat {...{ [shortcutSpec.cap]: true }} /> : null;
     const labelGap: ViewStyle = { gap: skin.labelGap };
     // Under glass the bare field drops its fill and its resting hairline (the pane's
     // material and rim carry them) and keeps the focus ring / error border as its state.
@@ -471,6 +485,7 @@ export function createInput(skin: InputSkin) {
             {!populated ? <Text accessible={false} aria-hidden style={skin.search.placeholder(tokens)}>{placeholder}</Text> : null}
             <TextInput ref={hostRef} style={skin.search.field(tokens)} {...common} placeholder={undefined} />
           </View>
+          {shortcutCap}
         </View>
       </View>;
     }
@@ -590,6 +605,10 @@ export function createInput(skin: InputSkin) {
     // Android), so it, not the value, reserves their gutter; a boxed suffix stays at the
     // edge after them (iOS), and the action suffix is always last.
     const inlineSuffix = suffix != null && !action && !!skin.inlineSuffix;
+    // What sits in the field area after the value, in order: the inline suffix, then the
+    // shortcut keycap. The last of them reserves the trailing glyphs' gutter (or, for the
+    // keycap, its end inset), so the value reserves nothing of its own past its gap.
+    const inflowEnd = inlineSuffix || hasShortcut;
     // The pressable glyphs' slops (the clear glyph first, then the eye). The one-glyph gutter
     // holds the glyph row's end inset, the glyph and the gap to the value (or the inline
     // suffix), so that gap is what is left of it.
@@ -643,8 +662,10 @@ export function createInput(skin: InputSkin) {
           <TextInput
             ref={hostRef}
             style={[
-              skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: trailingGlyphs > 0 && !inlineSuffix, hasPrefix: prefix != null, hasSuffix: suffix != null, action: !!action }),
-              trailingGlyphs > 0 && !inlineSuffix ? { paddingEnd: trailingGutter } : null,
+              skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: trailingGlyphs > 0 && !inflowEnd, hasPrefix: prefix != null, hasSuffix: suffix != null, action: !!action }),
+              trailingGlyphs > 0 && !inflowEnd ? { paddingEnd: trailingGutter } : null,
+              // The value stops the keycap's gap short of it, where no inline suffix sits between.
+              hasShortcut && !inlineSuffix ? { paddingEnd: shortcutSpec.gap } : null,
               text,
               props.systemFocus ? null : FOCUS_RESET,
               glass ? PANE_SIBLING_INPUT : null,
@@ -654,8 +675,14 @@ export function createInput(skin: InputSkin) {
           />
 
           {inlineSuffix ? (
-            <View style={[inkFill(skin.addonBox(tokens, "right", suffixState)), trailingGlyphs > 0 ? { paddingEnd: trailingGutter } : null]}>
+            <View style={[inkFill(skin.addonBox(tokens, "right", suffixState)), hasShortcut ? { paddingEnd: shortcutSpec.gap } : trailingGlyphs > 0 ? { paddingEnd: trailingGutter } : null]}>
               <Text style={[text, skin.addonText(tokens, "right")]}>{suffix}</Text>
+            </View>
+          ) : null}
+
+          {hasShortcut ? (
+            <View style={{ justifyContent: "center", paddingEnd: trailingGlyphs > 0 ? trailingGutter : shortcutSpec.endInset }}>
+              {shortcutCap}
             </View>
           ) : null}
 

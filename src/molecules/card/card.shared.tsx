@@ -29,8 +29,10 @@ import { type CardSkin, type Corner, type Elevation, type Density, type MediaWel
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf). Axes:
 //
-// - Elevation (pick one): `raised` > `flat` > `outlined` > `heroShadow` > default. `flat`
-//   drops the shadow and steps the fill up a surface; `outlined` drops the shadow and
+// - Elevation (pick one): `raised` > `flat` > `sunken` > `outlined` > `heroShadow` >
+//   default. `flat` drops the shadow and steps the fill up a surface; `sunken` drops the
+//   shadow and sinks the fill to the well beneath the page (`surface-sunken`, the
+//   hand-off's `--bg2` tiles and stages) under the hairline; `outlined` drops the shadow and
 //   keeps the card fill under the hairline (the v4 hand-off component page's cards,
 //   `background:var(--sf);border:1px solid var(--ln)` with no box-shadow); `heroShadow`
 //   is the medium step (the hand-off's `--sh-md`, its section hero's stage), between the
@@ -127,6 +129,14 @@ export interface CardProps {
   // Elevation (pick one; default is a soft resting shadow).
   raised?: boolean;
   flat?: boolean;
+  /**
+   * The sunken well: the `surface-sunken` fill under the hairline with no shadow, the
+   * hand-off's `--bg2` tiles, stages and panels set into a card.
+   * <!-- only: web android -->
+   * On Android it is the Material 3 filled card (the well's fill, no outline).
+   * <!-- /only -->
+   */
+  sunken?: boolean;
   /** The hairline on the card fill with no shadow (the hand-off component page's cards). */
   outlined?: boolean;
   /**
@@ -238,6 +248,7 @@ export function panelOf(p: CardProps) {
 export function elevationOf(p: CardProps): Elevation {
   if (p.raised) return "raised";
   if (p.flat) return "flat";
+  if (p.sunken) return "sunken";
   if (p.outlined) return "outlined";
   if (p.heroShadow) return "hero";
   if (p.tileShadow) return "tile";

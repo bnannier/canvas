@@ -19,7 +19,10 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  *
  * - The web is Dark Factory's: its `key` step (6) on a keycap, an inline code chip and the
  *   small inline boxes drawn like one (a compact icon box, a skeleton's text line, a copy
- *   button set in a pane, a heatmap's value flag, a text trigger's press layer); the prose
+ *   button set in a pane, a heatmap's value flag, a text trigger's press layer); the
+ *   compact keycaps of the v4 hand-off's section pages at 5 (the 22 px cap, `small`: the
+ *   Inputs search field's and the Overlays command palette's "⌘K" and "esc") and 4 (the
+ *   20 px cap, `tiny`: the Navigation search field's "⌘K"); the prose
  *   code chip at 5 (the v4 hand-off's inline `<code>` from its Markdown helper, Component.dc.html
  *   `md()`, `border-radius:5px`, a word of code inside a sentence); its `chip`
  *   step (8) on the tooltip bubble; a calendar event at 6 (the v4 hand-off's calendar
@@ -70,7 +73,7 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  * the public table.
  */
 export const platformShape = {
-  web: { insetRow: 10, disclosureCard: 14, codeCard: 14, mediaFrame: 14, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, emblemSmall: 8, emblem: 11, emblemLarge: 16, referenceCard: 14, referenceSource: 6, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, inlineCode: 5, optionChip: 7, optionTile: 8, tooltip: 8, event: 6, bar: 3, mark: 4, cell: 2, candle: 1.5, chartTile: 8, heatCell: 2.5, sparkTrack: 6, funnelBar: 6, listBar: 8, stripBar: 1, tableFrame: 14, listFrame: 14, gridTile: 14, dragGhost: 12, composer: 16, bubble: 16, bubbleTail: 4, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14, lane: 14, laneCard: 10, panel: 18, stage: 20, copyButton: 8, cardSnippet: 10, showcaseCard: 20, heroStage: 24 },
+  web: { insetRow: 10, disclosureCard: 14, codeCard: 14, mediaFrame: 14, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, emblemSmall: 8, emblem: 11, emblemLarge: 16, referenceCard: 14, referenceSource: 6, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, keySmall: 5, keyTiny: 4, inlineCode: 5, optionChip: 7, optionTile: 8, tooltip: 8, event: 6, bar: 3, mark: 4, cell: 2, candle: 1.5, chartTile: 8, heatCell: 2.5, sparkTrack: 6, funnelBar: 6, listBar: 8, stripBar: 1, tableFrame: 14, listFrame: 14, gridTile: 14, dragGhost: 12, composer: 16, bubble: 16, bubbleTail: 4, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14, lane: 14, laneCard: 10, panel: 18, stage: 20, copyButton: 8, cardSnippet: 10, showcaseCard: 20, heroStage: 24 },
   ios: { actionSheet: 34, groupedList: 26, event: 6, searchField: 10, navRow: 10, alertDialog: 14 },
   android: {
     chip: M3.small,

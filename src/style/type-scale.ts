@@ -112,7 +112,77 @@ export const pageRoles = {
   // ratio, so the line is the browser's `normal`: measured the same way, Instrument Sans
   // sets 600 16 px on a 20 px line (the h3's box is 20 px).
   subsectionTitle: { fontSize: 16, lineHeight: 20, fontWeight: "600" },
+  // The section pages' card text (Canvas v4.0.0 <Section>.dc.html), one row per distinct
+  // value set: a role several sections set at the same values is one row, however each
+  // page names it. A size with no ratio sits on its face's `normal` line, measured in
+  // Chromium on the self-hosted faces (NORMAL_LINE below).
+  //
+  // The card's foot caption and its in-card notes (every section's `font:400 12px/1.6
+  // var(--fm);color:var(--tx3)` line): the caller's `mono` sets the face.
+  cardNote: { fontSize: 12, lineHeight: 19.2, fontWeight: "400" },
+  // A code name on its own line (Controls' variant row labels, Foundations' neutral role
+  // names): `font:400 12px var(--fm)`, JetBrains Mono's 16 px normal line; the caller's
+  // `mono` sets the face.
+  codeLabel: { fontSize: 12, lineHeight: 16, fontWeight: "400" },
+  // A note beside a specimen (Controls' Kbd row, "keycaps read as one unit"):
+  // `font:400 12px var(--ft)`, Instrument Sans's 15 px normal line.
+  inlineNote: { fontSize: 12, lineHeight: 15, fontWeight: "400" },
+  // A tile's title (Layout's sizing and tier tiles): `font:500 15px/1.3 var(--fd)`, the
+  // display face.
+  tileTitle: { fontSize: 15, lineHeight: 19.5, fontWeight: "500" },
+  // A grid widget's label (Layout's dashboard tiles, "Revenue" over its chart):
+  // `font:500 10px var(--fm);text-transform:uppercase;letter-spacing:.08em`, the mono
+  // face's 13 px normal line.
+  gridLabel: { fontSize: 10, lineHeight: 13, fontWeight: "500", letterSpacing: 0.8, textTransform: "uppercase" },
+  // A scale's tick label (Layout's window ruler, "sm 640"): `font:500 10px var(--fm)` on
+  // the mono face's 13 px normal line.
+  tick: { fontSize: 10, lineHeight: 13, fontWeight: "500" },
+  // A stat row's label (Charts' sparkline rows): `font:500 11px/1 var(--fm);
+  // letter-spacing:.06em;text-transform:uppercase`.
+  rowLabel: { fontSize: 11, lineHeight: 11, fontWeight: "500", letterSpacing: 0.66, textTransform: "uppercase" },
+  // A stat row's value beside its label (Charts' sparkline rows): `font:500 22px/1
+  // var(--fd);letter-spacing:-.02em`, the display face.
+  rowValue: { fontSize: 22, lineHeight: 22, fontWeight: "500", letterSpacing: -0.44 },
+  // A card's headline figure (Charts' heatmap and gauge totals): `font:500 26px/1
+  // var(--fd);letter-spacing:-.02em`, the display face.
+  headlineValue: { fontSize: 26, lineHeight: 26, fontWeight: "500", letterSpacing: -0.52 },
+  // A card's big number (Data's count card, "107"): `font:500 40px/1 var(--fd);
+  // letter-spacing:-.03em`, the display face.
+  bigNumber: { fontSize: 40, lineHeight: 40, fontWeight: "500", letterSpacing: -1.2 },
+  // The unit after a figure (Data's " components" after "107"): `font:400 16px var(--ft)`
+  // on Instrument Sans's 20 px normal line.
+  unit: { fontSize: 16, lineHeight: 20, fontWeight: "400" },
+  // A pane's title (Navigation's vertical tabs panel): `font:500 16px/1.2 var(--fd);
+  // letter-spacing:-.01em`, the display face.
+  paneTitle: { fontSize: 16, lineHeight: 19.2, fontWeight: "500", letterSpacing: -0.16 },
+  // A sample's caption (Foundations' hue numbers, series and spec captions):
+  // `font:400 11px var(--fm)`, the mono face's 14 px normal line; the caller's `mono`.
+  sampleLabel: { fontSize: 11, lineHeight: 14, fontWeight: "400" },
+  // A sample's meta line (Foundations' hex values, size and ramp captions):
+  // `font:400 10px var(--fm)`, the mono face's 13 px normal line; the caller's `mono`.
+  sampleMeta: { fontSize: 10, lineHeight: 13, fontWeight: "400" },
+  // The 14 px body in the foreground ink (Data's description list value):
+  // `font:400 14px var(--ft)`, Instrument Sans's 18 px normal line.
+  base: { fontSize: 14, lineHeight: 18, fontWeight: "400" },
 } as const satisfies Record<string, TextStyle>;
+
+/** A face the kit sets text in: the interface face, the display face and the mono face. */
+export type TypeFace = "sans" | "display" | "mono";
+
+/**
+ * The browser's `normal` line per face and whole pixel size: the hand-off sets much of its
+ * text with no ratio (`font:500 11px var(--fm)`), so the line is the face's own, which
+ * only the face decides. Measured in Chromium on the docs' self-hosted variable faces
+ * (Instrument Sans, Bricolage Grotesque, JetBrains Mono; the line box of an inline-block
+ * span set `line-height:normal`), the same at every weight. The Typography `natural`
+ * modifier reads it, so a role takes its face's normal line at its own size. A size off the
+ * table (a fractional size, or one past 28) keeps the role's own line.
+ */
+export const NORMAL_LINE: Record<TypeFace, Readonly<Record<number, number>>> = {
+  sans: { 10: 13, 11: 14, 12: 15, 13: 16, 14: 18, 15: 19, 16: 20, 17: 20, 18: 22, 19: 23, 20: 24, 21: 25, 22: 27, 23: 28, 24: 29, 25: 30, 26: 32, 27: 33, 28: 34 },
+  display: { 10: 12, 11: 13, 12: 14, 13: 16, 14: 17, 15: 18, 16: 19, 17: 21, 18: 22, 19: 23, 20: 24, 21: 26, 22: 26, 23: 27, 24: 28, 25: 30, 26: 31, 27: 32, 28: 34 },
+  mono: { 10: 13, 11: 14, 12: 16, 13: 17, 14: 18, 15: 20, 16: 21, 17: 22, 18: 23, 19: 25, 20: 26, 21: 27, 22: 29, 23: 30, 24: 31, 25: 34, 26: 35, 27: 36, 28: 37 },
+};
 
 /**
  * The hand-off's fluid headlines, which its pages set as `font: 500 clamp(min, N vw, max)/ratio`

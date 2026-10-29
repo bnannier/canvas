@@ -72,7 +72,7 @@ import { widthOf as alertDialogWidth } from "../../src/molecules/alert-dialog/al
 import { elevationOf, densityOf as cardDensity, cornerOf as cardCorner, mediaWellOf, contentDensityOf } from "../../src/molecules/card/card.shared.tsx";
 import { variantOf as codeBlockVariant, densityOf as codeBlockDensity } from "../../src/molecules/code-block/code-block.shared.tsx";
 import { layoutOf as descriptionLayout, rowsOf as descriptionRows, densityOf as descriptionDensity, valueFormOf, valueInkOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
-import { densityOf as kbdDensity } from "../../src/atoms/kbd/kbd.shared.tsx";
+import { densityOf as kbdDensity, sizeOf as kbdSize, edgeOf as kbdEdge } from "../../src/atoms/kbd/kbd.shared.tsx";
 import { leadOf } from "../../src/molecules/feeds/feeds.shared.tsx";
 import { columnsOf } from "../../src/molecules/grid-lists/grid-lists.shared.tsx";
 import { alignOf as mediaAlign, directionOf } from "../../src/molecules/media-objects/media-objects.shared.tsx";
@@ -280,12 +280,12 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Chip"],
     pages: ["chip"],
     resolver: "src/atoms/chip/chip.shared.tsx#lookOf",
-    members: ["token", "option"],
+    members: ["token", "option", "link"],
     resolve: chipLook,
     notes: [
       "A ChipGroup's `option` sets the option look on a chip that passes neither.",
       "`square` holds an option to its 30 px tile; it is ignored off the option look.",
-      "Android draws its Material 3 chip for both looks.",
+      "Android draws its Material 3 chip for every look.",
     ],
   }),
   subject({
@@ -402,23 +402,25 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Typography"],
     pages: ["typography"],
     resolver: "src/atoms/typography/typography.shared.tsx#roleOf",
-    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "subsectionTitle", "pagerName", "variantTitle", "linkName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "specText", "specMeta", "lead", "mono", "caption", "small", "tiny", "body", "muted", "pagerLabel", "legendLabel", "tileCaption", "knobLabel"],
+    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "subsectionTitle", "pagerName", "variantTitle", "linkName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "specText", "specMeta", "lead", "mono", "caption", "small", "tiny", "body", "muted", "pagerLabel", "legendLabel", "tileCaption", "knobLabel", "bigNumber", "headlineValue", "rowValue", "paneTitle", "tileTitle", "rowLabel", "gridLabel", "tick", "base", "unit", "cardNote", "codeLabel", "inlineNote", "sampleLabel", "sampleMeta"],
     resolve: roleOf,
     notes: ["`muted` is both a role and a tone."],
   }),
-  subject({ id: "Typography.tone", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#toneOf", members: ["destructive", "warning", "success", "primary", "subtle", "muted"], resolve: typographyTone }),
+  subject({ id: "Typography.tone", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#toneOf", members: ["destructive", "warning", "success", "cyan", "mint", "primary", "subtle", "muted"], resolve: typographyTone }),
   subject({ id: "Typography.weight", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#weightOf", members: ["extraBold", "bold", "semibold", "medium", "regular"], resolve: weightOf }),
-  subject({ id: "Typography.leading", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#leadingOf", members: ["displayLeading", "singleLeading", "lockupLeading", "denseLeading", "compactLeading", "labelLeading", "captionLeading", "smallLeading", "strongLeading", "bodyLeading", "relaxedLeading", "tightLeading"], resolve: leadingOf }),
+  subject({ id: "Typography.leading", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#leadingOf", members: ["displayLeading", "singleLeading", "lockupLeading", "denseLeading", "compactLeading", "labelLeading", "captionLeading", "smallLeading", "strongLeading", "bodyLeading", "relaxedLeading", "natural", "tightLeading"], resolve: leadingOf }),
   subject({ id: "Typography.decoration", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#decorationOf", members: ["underline"], resolve: decorationOf }),
   subject({ id: "Typography.numerals", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#numeralsOf", members: ["tabular"], resolve: numeralsOf }),
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
 
-  subject({ id: "Badge.intent", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeIntentOf", members: ["action", "primary", "reference", "success", "warning", "error", "info"], resolve: badgeIntentOf }),
+  subject({ id: "Badge.intent", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeIntentOf", members: ["action", "primary", "reference", "success", "warning", "error", "info", "cyan", "mint"], resolve: badgeIntentOf }),
   subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "reference", "navigationCount", "count", "tier", "band", "token", "small"], resolve: badgeMetricOf }),
   subject({ id: "Badge.surface", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "neutralFill", "soft", "reference"], resolve: badgeSurfaceOf }),
   subject({ id: "Badge.ink", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeInkOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "foreground"], resolve: badgeInkOf }),
   subject({ id: "Badge.tracking", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeTrackingOf", members: ["reference", "uppercase", "tier"], resolve: badgeTrackingOf, notes: ["A `tier` tag is always in caps at the uppercase tracking (Component.dc.html line 139), so `tier` resolves the tracking axis as `uppercase` does."] }),
   subject({ id: "Kbd.density", components: ["Kbd"], pages: ["kbd"], resolver: "src/atoms/kbd/kbd.shared.tsx#densityOf", members: ["comfortable"], resolve: kbdDensity }),
+  subject({ id: "Kbd.size", components: ["Kbd"], pages: ["kbd"], resolver: "src/atoms/kbd/kbd.shared.tsx#sizeOf", members: ["small", "tiny"], resolve: kbdSize, notes: ["A size step wins over `comfortable`, which shapes the 24 px cap alone."] }),
+  subject({ id: "Kbd.edge", components: ["Kbd"], pages: ["kbd"], resolver: "src/atoms/kbd/kbd.shared.tsx#edgeOf", members: ["flat"], resolve: kbdEdge }),
   subject({ id: "Button.web body", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webBodyOf", members: ["themeChoice", "identityAction", "pageLink", "jumpLink", "referenceLink", "inlineIcon", "scopeTrigger", "filterTrigger", "inlineLink", "plainLink", "utility"], resolve: webBodyOf }),
   subject({ id: "Button.inline ink", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webLinkInkOf", members: ["inverse", "foreground"], resolve: webLinkInkOf }),
   subject({ id: "Button.web hover", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webHoverKindOf", members: ["themeChoice", "identityAction", "utility", "inlineLink", "inverse"], resolve: webHoverKindOf }),
@@ -435,7 +437,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "ActionPanel.layout", components: ["ActionPanel"], pages: ["action-panels"], resolver: "src/molecules/action-panels/action-panels.shared.tsx#layoutOf", members: ["inline"], resolve: actionPanelLayout }),
   subject({ id: "Alert.tone", components: ["Alert"], pages: ["alert"], resolver: "src/molecules/alert/alert.shared.tsx#toneOf", members: ["destructive", "warning", "success", "info"], resolve: alertTone }),
   subject({ id: "AlertDialog.width", components: ["AlertDialog"], pages: ["alert-dialog"], resolver: "src/molecules/alert-dialog/alert-dialog.shared.tsx#widthOf", members: ["narrow", "small", "large"], resolve: alertDialogWidth }),
-  subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat", "outlined", "heroShadow", "tileShadow", "rowShadow", "emptyShadow"], resolve: elevationOf }),
+  subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat", "sunken", "outlined", "heroShadow", "tileShadow", "rowShadow", "emptyShadow"], resolve: elevationOf }),
   subject({ id: "Card.corners", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#cornerOf", members: ["smallCorners", "calloutCorners", "largeCorners", "stageCorners", "showcaseCorners", "heroCorners"], resolve: cardCorner, notes: ["The smaller step wins; the native skins keep their own card corner on every step but the tile."] }),
   subject({ id: "Card.artwork inset", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.brand.tsx#artworkInsetOf", members: ["controls", "illustration"], resolve: artworkInsetOf }),
   subject({ id: "Card.inset panels", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#panelOf", members: ["notePanel", "versionPanel", "gatePanel"], resolve: panelOf }),

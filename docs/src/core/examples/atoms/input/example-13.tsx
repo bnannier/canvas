@@ -3,8 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Input } = scope;
+  const { Input, Column } = scope;
   return (
-<Input label="Card Number" trailingIcon icon="creditCard" placeholder="•••• •••• •••• ••••" keyboardType="number-pad" autoComplete="cc-number" textContentType="creditCardNumber" />
+<Column>
+  <Input leadingIcon icon="search" shortcut="⌘K" placeholder="Search components…" />
+  <Input small shortcut="⌘K" placeholder="Search…" />
+</Column>
   );
 }

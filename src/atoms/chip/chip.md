@@ -135,10 +135,20 @@ matches without threading the color through.
 A chip that names a destination, such as the component chips at the head of a docs
 card. A trailing `<Icon arrowUpRight />` says it leaves the page.
 
+`link` is the look made for it, the link pill of a section card: 26 px tall at the full
+round, 10 px at both sides and 6 px between the label and its arrow, a 500 12 px label in
+the secondary ink on the popover fill inside the field-border edge. A hovering pointer
+turns the label, the arrow and the edge to the accent. A press keeps the resting look, as
+the hand-off draws it.
+Precedence: `token` > `option` > `link`.
+<!-- only: web android -->
+On Android a link is the Material 3 assist chip.
+<!-- /only -->
+
 ```tsx
 <Row wrap compact>
-  <Chip outline href="/components/switch" trailing={<Icon arrowUpRight size={12} />}>Switch</Chip>
-  <Chip outline href="/components/checkbox" trailing={<Icon arrowUpRight size={12} />}>Checkbox</Chip>
+  <Chip link href="/components/switch" trailing={<Icon arrowUpRight size={12} />}>Switch</Chip>
+  <Chip link href="/components/checkbox" trailing={<Icon arrowUpRight size={12} />}>Checkbox</Chip>
 </Row>
 ```
 

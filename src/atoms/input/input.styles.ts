@@ -41,6 +41,13 @@ import { type ColorTokens, FOCUS_RESET, MONO_FONT, activeIndicator, alpha, shape
 
 export type Size = "small" | "base" | "large";
 
+/** Where a field's `shortcut` keycap sits and which compact Kbd it is. */
+export interface ShortcutSpec {
+  endInset: number;
+  gap: number;
+  cap: "small" | "tiny";
+}
+
 /** The interaction state a skin resolves colours for. */
 export interface FieldState {
   focused: boolean;
@@ -135,6 +142,11 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   inlineSuffix?: boolean;
   /** An errored field with no clear or eye button shows a trailing alert glyph (Android). */
   errorGlyph?: boolean;
+  /**
+   * The `shortcut` keycap at the field's end, per field size: the inset from the field's
+   * end, the gap to the value (or to an inline suffix), and the compact Kbd step it takes.
+   */
+  shortcut: (size: Size) => ShortcutSpec;
   /** The placeholder ink. */
   placeholder: (t: ColorTokens) => string;
   /** Opacity applied to the field when disabled. */
@@ -262,6 +274,11 @@ export const webSkin: InputSkin = {
   clearDisc: { size: 20, glyph: 11, fill: (t) => t["surface-raised"] ?? t.muted, ink: (t) => t["muted-foreground"] },
   // The passive suffix is inline mono text before the clear button.
   inlineSuffix: true,
+  // The hand-off's search fields' "⌘K" hint: the 22 px flat cap 8 from the end and 10
+  // from the value (Inputs.dc.html, `padding:0 8px 0 12px;...;gap:10px`), and on the small
+  // field the 20 px cap 8 from the end and 8 from the value (Navigation.dc.html, the navbar
+  // search: `padding:0 8px 0 10px;...;gap:8px`).
+  shortcut: (size) => (size === "small" ? { endInset: 8, gap: 8, cap: "tiny" } : { endInset: 8, gap: 10, cap: "small" }),
   labelGap: 6,
   referenceLabel: fieldEyebrow,
   hover: true,
@@ -401,6 +418,10 @@ export const iosSkin: InputSkin = {
   // 32% under an 11pt x in the `card` ink, in every state. Its box stays the 20pt glyph
   // box, so the clear and eye targets keep their 44pt geometry.
   clearDisc: { size: 17, glyph: 11, fill: (t) => alpha(t.foreground, 0.32), ink: (t) => t.card },
+  // The shortcut keycap (UITextField has none, so the hint is the kit's compact keycap): at
+  // the field's 12pt inset, 8pt from the value as a glyph sits, the 20 px cap on the
+  // small field and the 22 px one otherwise.
+  shortcut: (size) => ({ endInset: IOS_INSET, gap: 8, cap: size === "small" ? "tiny" : "small" }),
   labelGap: 8,
   readOnlyField: () => ({ backgroundColor: "transparent" }),
   placeholder: subtleInk,
@@ -529,6 +550,10 @@ export const androidSkin: InputSkin = {
   // with no clear or eye button shows the 20dp `destructive` circled alert.
   inlineSuffix: true,
   errorGlyph: true,
+  // The shortcut keycap (Material 3's text field has none, so the hint is the kit's compact
+  // keycap): at the glyph inset, 12dp from the value as a glyph sits, the 22 px cap (the
+  // smallest field is 48dp tall).
+  shortcut: () => ({ endInset: ANDROID_GLYPH_INSET, gap: 12, cap: "small" }),
   labelGap: 6,
   // Read-only (the hand-off's cv-kit-code6.js): no fill, a 1dp dashed `field-border` frame
   // around the field and a 1dp subtle underline just inside it. The frame draws the

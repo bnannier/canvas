@@ -2,6 +2,7 @@ import { NotificationBadge } from "./badge.notification.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Linking } from "react-native";
 import { type ReactNode } from "react";
+import { hueToneColors } from "../../style/hue-tone.js";
 import { View, Text, Pressable, alpha, platformMinTarget, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type StatusColorTone, type LayoutStyle, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
 import { useHover } from "../../style/hover.js";
 import { actionFill, actionInk } from "../../style/action.js";
@@ -147,6 +148,14 @@ export interface BadgeProps {
   info?: boolean;
   neutral?: boolean;
   /**
+   * The fixed cyan series hue (the hand-off's `--cyan`, `chart-2`) as a soft pill, whatever
+   * the palette: its 16% wash under its ink, solved to 4.5:1 on the wash. No dot. On the
+   * intent axis, after the status tones.
+   */
+  cyan?: boolean;
+  /** The fixed mint series hue (the hand-off's `--mint`, `chart-3`) as a soft pill, like `cyan`. */
+  mint?: boolean;
+  /**
    * Accessible name for the badge. Most useful for the status family: the bare-dot status
    * form (`<Badge status error />` with no children) is otherwise color-only and silent to
    * screen readers. When omitted on a childless status badge, the status tone word (e.g.
@@ -186,6 +195,8 @@ export function badgeIntentOf(p: BadgeProps) {
   if (p.warning) return "warning";
   if (p.error) return "error";
   if (p.info) return "info";
+  if (p.cyan) return "cyan";
+  if (p.mint) return "mint";
   return "muted";
 }
 export function badgeMetricOf(p: BadgeProps) {
@@ -238,7 +249,7 @@ const CLEAR = "transparent";
 // The tone a metadata pill paints, in the hand-off's order: a solid kind first, then the
 // reference key, then the tone axis (which wins over a status tone, as the hand-off's
 // secondary / outline / destructive override its tone colors), then the intent.
-function lookOf(p: BadgeProps, tokens: ColorTokens): BadgeLook {
+function lookOf(p: BadgeProps, tokens: ColorTokens, dark: boolean): BadgeLook {
   const surface = badgeSurfaceOf(p);
   const tone = toneOf(p);
   const reference = badgeMetricOf(p) === "reference";
@@ -260,6 +271,10 @@ function lookOf(p: BadgeProps, tokens: ColorTokens): BadgeLook {
   const intent = badgeIntentOf(p);
   if (intent === "action") return accent(tokens["action-soft"] ?? alpha(actionFill(tokens), 0.12));
   if (intent === "success" || intent === "warning" || intent === "error" || intent === "info") return wash(intent);
+  if (intent === "cyan" || intent === "mint") {
+    const hue = hueToneColors(tokens, dark, intent);
+    return { fill: hue.wash, border: CLEAR, ink: hue.ink, strong: false, tint: hue.wash };
+  }
   if (intent === "primary") return accent(tokens["primary-soft"] ?? alpha(tokens.primary, 0.12));
   if (neutral) return wash("neutral");
   return accent(tokens["primary-soft"] ?? alpha(tokens.primary, 0.12));
@@ -330,7 +345,7 @@ export function createBadge(skin: BadgeSkin) {
 
     if (props.notification) return <NotificationBadge solid={!!props.solid} halo={!!props.action} style={style} testID={testID}>{children}</NotificationBadge>;
 
-    const look = lookOf(props, tokens);
+    const look = lookOf(props, tokens, theme.dark);
     const inkKind = badgeInkOf(props);
     const ink = inkKind === "foreground" ? tokens.foreground : look.ink;
     const reference = metric === "reference";

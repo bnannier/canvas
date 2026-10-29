@@ -89,6 +89,21 @@ const token: NonNullable<ChipSkin["token"]> = {
   hoverBrightness: undefined,
 };
 
+// The `link` chip (the hand-off's section card link pill, every `c-*` card of
+// `Canvas v4.0.0 <Section>.dc.html`: `height:26px;padding:0 10px;border-radius:999px;
+// display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln2);
+// background:var(--sf2);font:500 12px/1 var(--ft);color:var(--tx2)`, its hover
+// `color:var(--ion-tx);border-color:var(--ion)`): a 26 px full-round pill, 6 between
+// elements, 10 at both sides (beside its trailing arrow too), a 500 12/12 label, no check.
+// The hand-off draws no press state on the web, so a press keeps the resting look there.
+const link: NonNullable<ChipSkin["link"]> = {
+  base: { ...shell, height: 26, gap: 6, borderRadius: shape.web.pill },
+  sidePadding: { text: 10, icon: 10, remove: 6 },
+  labelType: { fontSize: 12, lineHeight: 12, fontWeight: "500" },
+  selectedCheck: null,
+  steadyPress: true,
+};
+
 export const webSkin: ChipSkin = {
   base: pill,
   sidePadding: { text: 12, icon: 8, remove: 6 },
@@ -106,9 +121,10 @@ export const webSkin: ChipSkin = {
   disabledOpacity: 0.4,
   option,
   token,
+  link,
 };
 
-// iOS ships no chip control: the native skin is the web skin.
+// iOS ships no chip control: the native skin is the web skin, the link pill included.
 export const iosSkin: ChipSkin = webSkin;
 
 // Material 3 chips (assist/filter/input/suggestion) share a 32dp container with an
@@ -142,7 +158,7 @@ export const androidSkin: ChipSkin = {
   outlined: true, // M3 idle chips are the bare container inside the 1dp outline
   accentIcon: true, // M3: a neutral chip's leading icon takes the accent ink
   disabledOpacity: 0.38,
-  // No `option` and no `token` look: Android has the real control for both jobs, so an
-  // option pick and a token tag are its Material 3 chip (design-language item 4), and the
-  // shell leaves those props unread here.
+  // No `option`, `token` or `link` look: Android has the real control for each job, so an
+  // option pick, a token tag and a link (the assist chip) are its Material 3 chip
+  // (design-language item 4), and the shell leaves those props unread here.
 };
