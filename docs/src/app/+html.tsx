@@ -1,14 +1,15 @@
 import type { PropsWithChildren } from "react";
 import { ScrollViewStyleReset, useServerDocumentContext } from "expo-router/html";
+import WEB_FONTS from "../ui/web-fonts.json";
 
 // The document every pre-rendered page is written into (app.json `web.output:
 // "static"`). The export writes each route into it, and the dev server does the same
 // per request, so this is where the SITE-WIDE head lives: the description and the Open
-// Graph / Twitter card. The per-page tags, the document title and the canonical link,
-// come from the app (docs/src/ui/docs-head.tsx, through expo-router/head), and the
-// static renderer splices them into <head> as text once this document has rendered,
-// the same way it adds the stylesheet, the registered fonts' @font-face rules and
-// preloads, and the favicon (the exporter adds the bundle's script tags afterwards).
+// Graph / Twitter card, and the three faces the page is set in. The per-page tags, the
+// document title and the canonical link, come from the app (docs/src/ui/docs-head.tsx,
+// through expo-router/head), and the static renderer splices them into <head> as text
+// once this document has rendered, the same way it adds the stylesheet and the favicon
+// (the exporter adds the bundle's script tags afterwards).
 // Nothing provides the server document context in a static render, so `headNodes`,
 // `bodyNodes` and the attribute objects below are empty here; only Expo's streaming
 // renderer fills them. (A public/index.html template is only read for a single-page
@@ -46,7 +47,23 @@ const IMAGE_ALT = "The same Canvas Select component rendered as native iOS, Mate
 // exported look before hydration; the light look follows `html[data-look]` once the docs theme
 // commits it (docs/src/ui/docs-head.tsx). The values are the tokens' `background` per scheme
 // (styles/tokens/colors.css).
+//
+// The faces are the document's too (decision D20): the hand-off's three variable families,
+// self-hosted under public/fonts as the woff2 files docs/scripts/subset-fonts.mjs cuts from
+// Google Fonts' own sources, declared here from the manifest it writes (../ui/web-fonts.json)
+// with each family's `font-weight` range on its rule, so the browser draws every weight the
+// type scale asks for from one file, and preloaded below so they are fetching before the
+// bundle arrives. They do not go through expo-font, whose web rule carries no weight range
+// (docs/src/ui/fonts.ts), and the site's CSP admits no font host but this one
+// (public/_headers `font-src 'self'`). The body rule is the hand-off's: antialiased
+// smoothing and optimizeLegibility, which on its own took the Button header's pixel residue
+// against the hand-off from 2.7% to 1.2%.
+const FONT_CSS =
+  Object.values(WEB_FONTS)
+    .map((font) => `@font-face{font-family:"${font.family}";src:url(${font.path}) format("woff2");font-weight:${font.weight[0]} ${font.weight[1]};font-display:swap}`)
+    .join("") + "body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}";
 const SHELL_CSS =
+  FONT_CSS +
   "html{background:#0a0a0f}html[data-look^=\"light\"]{background:#f2f2f7}" +
   "@media (max-width:759.98px){#root [data-shell-rail]{display:none}#root [data-shell-content]{padding-left:0!important}}";
 
@@ -72,6 +89,9 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="twitter:title" content={TITLE} />
         <meta name="twitter:description" content={DESCRIPTION} />
         <meta name="twitter:image" content="https://canvas.nannier.com/og.png" />
+        {Object.values(WEB_FONTS).map((font) => (
+          <link key={font.path} rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={font.path} />
+        ))}
         {/* The react-native-web root reset: html, body and #root full-height, body scroll off. */}
         <ScrollViewStyleReset />
         <style id="canvas-shell">{SHELL_CSS}</style>

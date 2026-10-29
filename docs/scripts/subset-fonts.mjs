@@ -1,7 +1,11 @@
-// Cut the docs' nine faces down to the glyphs the docs can show, from the full files
-// the @expo-google-fonts packages ship, into docs/assets/fonts (committed, so native
-// builds and the web export read the same bytes; run again after bumping a source
-// package or changing the ranges below).
+// Cut the docs' faces down to the glyphs the docs can show: the static TrueType cuts iOS
+// and Android register (docs/assets/fonts, from the full files the @expo-google-fonts
+// packages ship and from the variable Bricolage Grotesque source) and the three variable
+// woff2 files the web document declares (docs/public/fonts, from the variable sources under
+// assets/fonts/source), with the manifest the web loader and the document read from
+// (docs/src/ui/web-fonts.json). Everything it writes is committed, so native builds and the
+// web export read the same bytes; run it again after bumping a source package, replacing a
+// source file or changing the ranges below.
 //
 // Every one of these faces is on the first paint's critical path: the page preloads
 // them, and Lighthouse's model keeps every preloaded font that finished before the
@@ -13,8 +17,9 @@
 // outside the subset still renders: every platform falls back per glyph to a system
 // face, which is what the flags and other emoji in the examples already do.
 //
-// Usage: node scripts/subset-fonts.mjs      (from docs/)
+// Usage: node scripts/subset-fonts.mjs      (from docs/; also `bun run fonts:subset`)
 
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
@@ -24,17 +29,24 @@ import subsetFont from "subset-font";
 const require = createRequire(import.meta.url);
 const DOCS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(DOCS, "assets", "fonts");
+const SOURCES = path.join(DOCS, "assets", "fonts", "source");
+const WEB_OUT = path.join(DOCS, "public", "fonts");
+const MANIFEST = path.join(DOCS, "src", "ui", "web-fonts.json");
 
-// The display face is cut from Google Fonts' variable Bricolage Grotesque (committed under
-// assets/fonts/source with its OFL licence), not from the @expo-google-fonts statics: those
-// are frozen at one optical size, and the hand-off loads the variable font, whose `opsz`
-// axis the browser sets from the font size (`font-optical-sizing: auto`), so a 64 px title
-// draws its narrower display cut. Each weight is pinned (with the full width) and `opsz`
-// stays variable, so one file per weight keeps the optical sizes.
-const BRICOLAGE = path.join(DOCS, "assets", "fonts", "source", "BricolageGrotesque[opsz,wdth,wght].ttf");
+// The variable sources, Google Fonts' own files (the google/fonts repository's `ofl/`
+// directories, each committed with its OFL licence beside it). The display face is cut from
+// the variable Bricolage Grotesque for native too, not from the @expo-google-fonts statics:
+// those are frozen at one optical size, and the hand-off loads the variable font, whose
+// `opsz` axis the browser sets from the font size (`font-optical-sizing: auto`), so a 64 px
+// title draws its narrower display cut.
+const BRICOLAGE = path.join(SOURCES, "BricolageGrotesque[opsz,wdth,wght].ttf");
+const INSTRUMENT_SANS = path.join(SOURCES, "InstrumentSans[wdth,wght].ttf");
+const JETBRAINS_MONO = path.join(SOURCES, "JetBrainsMono[wght].ttf");
 
-// The faces docs/src/ui/fonts.ts registers, the file each comes from (a package path, or
-// a committed source file), and the variation axes pinned in it.
+// The faces docs/src/ui/fonts.native.ts registers, the file each comes from (a package path, or
+// a committed source file), and the variation axes pinned in it. Each weight of the display
+// face is pinned (with the full width) and `opsz` stays variable, so one file per weight keeps
+// the optical sizes; tools/privacygen sets the baked policy in those two and the sans cuts.
 const FACES = [
   ["InstrumentSans_400Regular", "@expo-google-fonts/instrument-sans/400Regular/InstrumentSans_400Regular.ttf"],
   ["InstrumentSans_500Medium", "@expo-google-fonts/instrument-sans/500Medium/InstrumentSans_500Medium.ttf"],
@@ -59,6 +71,23 @@ for (const [weight, name] of [[500, "500Medium"], [600, "600SemiBold"]]) {
     FACES.push([`BricolageGrotesque_${name}_opsz${opsz}`, BRICOLAGE, { wght: weight, wdth: 100, opsz }]);
   }
 }
+
+// The three variable faces the web document declares (docs/src/app/+html.tsx, from the
+// manifest this writes), decision D20: the hand-off's Google Fonts request made
+// self-hosted (`Bricolage+Grotesque:opsz,wght@12..96,300..800`, `Instrument+Sans:wght@400..700`,
+// `JetBrains+Mono:wght@400..600`, the files Google serves it). One woff2 per family with its
+// weight axis kept as that range, so the browser draws every weight the type scale asks for
+// from the one file (a 300 display weight as 300, a 700 as 700, with no synthetic bold), the
+// width axis pinned at the normal width the hand-off never leaves, and Bricolage's
+// optical-size axis kept whole for the browser to set from the text's size. Each file is
+// named by its content, so it can be cached for ever (docs/public/_headers `/fonts/*`) and
+// a change to a cut is a new name; a file this run did not write is stale and removed. The
+// static cuts above do not change for this: iOS and Android keep them.
+const WEB_FACES = [
+  { role: "sans", family: "Instrument Sans", file: INSTRUMENT_SANS, axes: { wght: { min: 400, max: 700 }, wdth: 100 } },
+  { role: "display", family: "Bricolage Grotesque", file: BRICOLAGE, axes: { wght: { min: 300, max: 800 }, wdth: 100 } },
+  { role: "mono", family: "JetBrains Mono", file: JETBRAINS_MONO, axes: { wght: { min: 400, max: 600 } } },
+];
 
 // What the docs can show: Latin with the Western European accents and the extended
 // set (Latin Extended-A covers the Central European and Turkish letters), the general
@@ -158,6 +187,25 @@ function renameFace(font, family) {
   return out;
 }
 
+// The variation axes a source carries (its `fvar` table), tag to [min, max]. A file that is
+// not an sfnt, or has no axes, fails here rather than becoming a face that cannot vary, and
+// so does a cut asking for an axis the file lacks or a range outside the file's.
+function variationAxes(font) {
+  const tag = font.toString("latin1", 0, 4);
+  if (font.readUInt32BE(0) !== 0x00010000 && tag !== "true" && tag !== "OTTO") throw new Error("not an sfnt font");
+  let fvar = 0;
+  for (let i = 0; i < font.readUInt16BE(4); i++) if (font.toString("latin1", 12 + i * 16, 16 + i * 16) === "fvar") fvar = font.readUInt32BE(20 + i * 16);
+  if (!fvar) throw new Error("no fvar table: not a variable font");
+  const axes = {};
+  const first = fvar + font.readUInt16BE(fvar + 4);
+  const size = font.readUInt16BE(fvar + 10);
+  for (let i = 0; i < font.readUInt16BE(fvar + 8); i++) {
+    const at = first + i * size;
+    axes[font.toString("latin1", at, at + 4)] = [font.readInt32BE(at + 4) / 65536, font.readInt32BE(at + 12) / 65536];
+  }
+  return axes;
+}
+
 fs.mkdirSync(OUT, { recursive: true });
 for (const [name, file, variationAxes] of FACES) {
   const source = fs.readFileSync(path.isAbsolute(file) ? file : require.resolve(file));
@@ -166,3 +214,30 @@ for (const [name, file, variationAxes] of FACES) {
   fs.writeFileSync(target, file === BRICOLAGE ? renameFace(Buffer.from(subset), name) : subset);
   console.log(`${name}: ${source.length} -> ${subset.length} bytes`);
 }
+
+fs.mkdirSync(WEB_OUT, { recursive: true });
+const manifest = {};
+const written = new Set();
+for (const { role, family, file, axes } of WEB_FACES) {
+  const source = fs.readFileSync(file);
+  const carried = variationAxes(source);
+  for (const [tag, want] of Object.entries(axes)) {
+    const [min, max] = typeof want === "number" ? [want, want] : [want.min, want.max];
+    const have = carried[tag];
+    if (!have || min < have[0] || max > have[1]) {
+      throw new Error(`${path.basename(file)}: no ${tag} ${min}..${max} to cut (the file carries ${have ? have.join("..") : "no such axis"})`);
+    }
+  }
+  const woff2 = Buffer.from(await subsetFont(source, text, { targetFormat: "woff2", variationAxes: axes }));
+  const name = `${family.replace(/\s+/g, "")}.${createHash("sha256").update(woff2).digest("hex").slice(0, 12)}.woff2`;
+  fs.writeFileSync(path.join(WEB_OUT, name), woff2);
+  written.add(name);
+  // The CSS family name, the public path, the `font-weight` range of its rule and, where
+  // the axis is kept whole, the optical sizes the browser may set.
+  const entry = { family, path: `/fonts/${name}`, weight: [axes.wght.min, axes.wght.max] };
+  if (carried.opsz && !("opsz" in axes)) entry.opticalSize = carried.opsz;
+  manifest[role] = entry;
+  console.log(`${family}: ${source.length} -> ${woff2.length} bytes, ${name}`);
+}
+for (const stale of fs.readdirSync(WEB_OUT)) if (!written.has(stale)) fs.rmSync(path.join(WEB_OUT, stale));
+fs.writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);

@@ -252,6 +252,19 @@ recorded deviation above. What follows from it:
   Sans, Bricolage Grotesque and JetBrains Mono, and the static cuts rasterise heavier. The owner
   chose to load the hand-off's files on the web (native keeps its static faces), which also
   removes the text residue the pixel compare shows on every section.
+  *As landed (2026-10-29):* `docs/scripts/subset-fonts.mjs` also cuts the three web files from
+  Google Fonts' own variable sources (`docs/assets/fonts/source/`, an OFL beside each) into
+  content-named woff2 files under `docs/public/fonts/` with the hand-off's axis ranges
+  (Instrument Sans wght 400..700, Bricolage Grotesque wght 300..800 with opsz kept whole,
+  JetBrains Mono wght 400..600; 42, 102 and 34 KB) and writes `docs/src/ui/web-fonts.json`, from
+  which `docs/src/app/+html.tsx` declares the three `@font-face` rules with `font-weight` ranges
+  in its own style element and preloads each file, while `docs/src/ui/fonts.ts` hands the kit one
+  family string per role with the hand-off's fallback stack (nothing goes through expo-font on the
+  web, whose rule carries no weight range) and `docs/src/ui/fonts.native.ts` keeps the static cuts
+  for iOS and Android. The document also carries the hand-off's body rule
+  (`-webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility`), which on its own took
+  the Button header's pixel residue against `header.png` from 2.7% to 1.22%; with the variable
+  files the header measures 1.14% and the previous/next strip 0.29% (0.39% before).
 - **D21 The section pages sit at the root (2026-10-29).** `/foundations`, `/layout`,
   `/controls`, `/inputs`, `/navigation`, `/data`, `/charts` and `/overlays`, as the hand-off's
   pages do; `/sections/<section>` redirects there. The owner: "no real point in having the

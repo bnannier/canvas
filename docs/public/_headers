@@ -21,9 +21,12 @@
   # Trusted Types note below).
   #
   # `style-src` DOES need 'unsafe-inline'. React Native Web writes dynamic styles as
-  # inline style attributes (a heading arrives as style="font-family: BricolageGrotesque_500Medium;
-  # font-size: 44px"), so removing it would strip the site's typography and colour. This
-  # is the accepted trade: CSP's XSS protection lives in script-src, which stays strict.
+  # inline style attributes (a heading arrives with an inline font-family of "Bricolage
+  # Grotesque", system-ui, sans-serif, its font-weight and its font-size), so removing it
+  # would strip the site's typography and colour. This is the accepted trade: CSP's XSS
+  # protection lives in script-src, which stays strict. `font-src 'self'` is why the three
+  # faces are self-hosted under /fonts (docs/scripts/subset-fonts.mjs): no font host is
+  # admitted, and the privacy policy promises no third one.
   #
   # `connect-src` names registry.npmjs.org because the version badge fetches the current
   # published version at runtime. It is the only cross-origin request the app makes; the
@@ -93,16 +96,22 @@
   # origin to read these responses. Nothing here needs it: every request is same-origin, and
   # same-origin requests skip the CORS check entirely, including the crossorigin font
   # preloads above (confirmed by serving the whole site locally with no such header and
-  # watching all eight faces still load).
+  # watching all three faces still load).
   ! Access-Control-Allow-Origin
 
-# Every file under these two prefixes carries a 32-character content hash in its name
-# (verified: 405 of 405), so its URL changes whenever its bytes do and it can never go
-# stale. Cloudflare's default of `max-age=0, must-revalidate` was making every repeat
-# visitor pay a revalidation round-trip for the 736 KiB bundle and all seven font files
-# even when nothing had changed. `immutable` also stops a reload from revalidating them.
+# Every file under these three prefixes carries a content hash in its name (32 characters
+# under the first two, verified 458 of 459, the exception being Expo's 21-byte
+# `_expo/.routes.json` manifest, which no bundle fetches; 12 under /fonts, where the three
+# variable faces are named by docs/scripts/subset-fonts.mjs), so its URL changes whenever
+# its bytes do and it can never go stale. Cloudflare's default of `max-age=0, must-revalidate` was making
+# every repeat visitor pay a revalidation round-trip for the bundle, the images and the
+# font files even when nothing had changed. `immutable` also stops a reload from
+# revalidating them.
 /_expo/*
   Cache-Control: public, max-age=31536000, immutable
 
 /assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
   Cache-Control: public, max-age=31536000, immutable

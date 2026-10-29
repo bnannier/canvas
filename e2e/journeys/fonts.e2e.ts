@@ -1,45 +1,52 @@
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
-// The document owns the docs' faces: every pre-rendered page carries the exporter's
-// @font-face rules (in the head's `expo-generated-fonts` style element) and a preload per
-// face, and the client must adopt them rather than declare them again
-// (docs/src/ui/fonts.ts). expo-font 57.0.1 compared a rule's family name with the one it
-// was asked for without dropping quotes, which Firefox's CSSOM keeps, so in Firefox it
-// found none of the faces loaded: right after hydration it moved the style element to
-// the end of the head and appended a second rule for each face, seven times over. Every
-// face was then declared twice and fetched again, and the page's text vanished and came
-// back in a fallback face before its own. Chromium and WebKit drop the quotes and never
-// did it, which is why this runs on all three engines.
+// The document owns the docs' faces: every pre-rendered page declares the hand-off's three
+// variable families in its own style element (`canvas-shell`, docs/src/app/+html.tsx, from
+// the manifest docs/src/ui/web-fonts.json) with a preload per file, and the client declares
+// none (docs/src/ui/fonts.ts registers nothing through expo-font, whose web rule could not
+// carry a weight range). Three things are held on every engine: the declaring style element
+// never leaves the head after the page loads (expo-font 57.0.1 once moved its own element
+// and re-declared every face in Firefox, whose CSSOM keeps the family quoted, so the text
+// vanished and came back in a fallback face), no family is declared twice, and there is one
+// @font-face rule per preloaded file, each a self-hosted woff2 with its weight range, so the
+// browser draws every weight from it rather than synthesizing one.
 //
-// The check is deterministic: expo-font's hook re-declares a face synchronously in the
-// root layout's mount effect, which runs before the commit that marks the document
-// hydrated, so by the time gotoDocs returns a re-declaration has already happened.
-test("the pre-rendered page's font faces are adopted, not declared again", async ({ page }) => {
-  // Watch the faces' style element from the document's first node on.
+// The check is deterministic: anything that re-declared a face would do it in the root
+// layout's mount effect, which runs before the commit that marks the document hydrated, so
+// by the time gotoDocs returns it has already happened.
+test("the pre-rendered page's font faces are the document's, declared once", async ({ page }) => {
+  // Watch the document's style element from the document's first node on.
   await page.addInitScript(() => {
     const scope = window as unknown as { __fontStyleMoves: number };
     scope.__fontStyleMoves = 0;
     new MutationObserver((records) => {
       for (const record of records) {
         for (const node of Array.from(record.removedNodes)) {
-          if (node instanceof HTMLStyleElement && node.id === "expo-generated-fonts") scope.__fontStyleMoves += 1;
+          if (node instanceof HTMLStyleElement && node.id === "canvas-shell") scope.__fontStyleMoves += 1;
         }
       }
     }).observe(document, { childList: true, subtree: true });
   });
   await gotoDocs(page, "/components/carousel/loop");
   const faces = await page.evaluate(() => ({
-    families: Array.from(document.styleSheets)
+    rules: Array.from(document.styleSheets)
       .flatMap((sheet) => Array.from(sheet.cssRules))
       .filter((rule): rule is CSSFontFaceRule => rule instanceof CSSFontFaceRule)
-      // Firefox serializes the family quoted, Chromium and WebKit bare.
-      .map((rule) => rule.style.getPropertyValue("font-family").replace(/^(["'])(.*)\1$/, "$2"))
-      .sort(),
-    preloads: document.querySelectorAll('link[rel="preload"][as="font"]').length,
+      .map((rule) => ({
+        // Firefox serializes the family quoted, Chromium and WebKit bare.
+        family: rule.style.getPropertyValue("font-family").replace(/^(["'])(.*)\1$/, "$2"),
+        weight: rule.style.getPropertyValue("font-weight"),
+      }))
+      .sort((a, b) => a.family.localeCompare(b.family)),
+    preloads: Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="preload"][as="font"]')).map((link) => link.getAttribute("href")),
     moves: (window as unknown as { __fontStyleMoves: number }).__fontStyleMoves,
   }));
   expect(faces.moves, "the faces' style element left the head after the page loaded").toBe(0);
-  expect(faces.families.filter((family, index) => faces.families.indexOf(family) !== index), "faces declared twice").toEqual([]);
-  expect(faces.families, "one @font-face rule per preloaded face").toHaveLength(faces.preloads);
+  const families = faces.rules.map((rule) => rule.family);
+  expect(families.filter((family, index) => families.indexOf(family) !== index), "faces declared twice").toEqual([]);
+  expect(families, "the hand-off's three families, each declared once").toEqual(["Bricolage Grotesque", "Instrument Sans", "JetBrains Mono"]);
+  expect(faces.preloads, "one preload per declared face").toHaveLength(faces.rules.length);
+  for (const href of faces.preloads) expect(href, "a self-hosted, content-named woff2").toMatch(/\/fonts\/[A-Za-z]+\.[0-9a-f]{12}\.woff2$/);
+  for (const rule of faces.rules) expect(rule.weight, `${rule.family} carries its weight range`).toMatch(/^[1-9]00 [1-9]00$/);
 });
