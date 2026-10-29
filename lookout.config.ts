@@ -162,6 +162,12 @@ const reference = (file: string) => (existsSync(`${REFERENCE}/${file}`) ? `${REF
 // The docs scroll an inner view ([data-page-scroll]), not the window, so a full-page
 // screenshot shows one window's worth. The whole page is photographed by growing the
 // window to the scroller's content, as the hand-off's reference pages are whole pages.
+// Chromium paints nothing past 16384 device pixels, and Lookout shoots the web at device
+// scale 2, so the window stops at 8192 CSS px: a taller page (Button is about 11700) is
+// photographed down to there, and its remaining sections are judged by their section
+// routes. (The 2026-10-28 Button run grew the window to the whole 11723 and the shot went
+// blank partway through Accessibility.)
+const WHOLE_PAGE_MAX = 8192;
 const pageViewports = new WeakMap<Page, { width: number; height: number }>();
 states["whole-page"] = {
   description: "The whole page at the same width, the window grown to the page's content",
@@ -170,7 +176,7 @@ states["whole-page"] = {
     if (!viewport) return;
     pageViewports.set(page, viewport);
     const height = await page.locator("[data-page-scroll]").first().evaluate((node) => node.scrollHeight);
-    await page.setViewportSize({ width: viewport.width, height: Math.min(Math.max(height, viewport.height), 16000) });
+    await page.setViewportSize({ width: viewport.width, height: Math.min(Math.max(height, viewport.height), WHOLE_PAGE_MAX) });
     await page.waitForTimeout(1500);
   },
   restore: async (page: Page) => {
@@ -203,17 +209,29 @@ const V4_SECTIONS = ["header", "pg", "var", "sz", "st", "an", "props", "a11y", "
 // (the docs scroll an inner view, so a section below the first window is not painted
 // otherwise), here to hold one section: fitElementForScreenshot scrolls the section clear of
 // the floating navbar and grows the height to fit it, and restore puts the window back.
+// The navbar pill floats over the scroller, so a section scrolled to the top of the window
+// is photographed with the pill across it (the 2026-10-28 Button run filed the pill's
+// clipped left end and the text under it as defects of the section); the state hides the
+// banner for the shot, as tools/v4/capture-references.ts hides the hand-off's nav for its
+// section crops, and restore shows it again.
 const sectionViewports = new WeakMap<Page, { width: number; height: number }>();
+const HIDE_BANNER = "lookout-hide-banner";
 for (const id of V4_SECTIONS) {
   const section = `[data-detail-section=${id}]`;
   states[`fit-section-${id}`] = {
-    description: `The ${id} section of a component page, the window grown to hold it`,
+    description: `The ${id} section of a component page, the window grown to hold it, the navbar hidden`,
     prepare: async (page: Page) => {
       const viewport = page.viewportSize();
       if (viewport) sectionViewports.set(page, viewport);
+      await page.addStyleTag({ content: `#${HIDE_BANNER}, [role="banner"] { visibility: hidden !important; }` });
+      await page.evaluate((marker) => {
+        const style = Array.from(document.querySelectorAll("style")).find((node) => node.textContent?.includes(marker));
+        if (style) style.id = marker;
+      }, HIDE_BANNER);
       await fitElementForScreenshot(page, page.locator(section).first());
     },
     restore: async (page: Page) => {
+      await page.evaluate((marker) => document.getElementById(marker)?.remove(), HIDE_BANNER);
       const viewport = sectionViewports.get(page);
       if (viewport) await page.setViewportSize(viewport);
       sectionViewports.delete(page);
@@ -342,6 +360,7 @@ const config: LookoutConfig = {
     "the Do and Don't section on a component page, which the hand-off does not draw: the owner keeps it (PLAN P3, rule S8), after Usage, in the hand-off's card look (2026-10-28)",
     "the example picker, form-factor switcher and code block above and below the Platform skins cards, which the hand-off does not draw: the owner keeps them for the docs and glass targets and the e2e recipes, and their look is still judged (2026-10-28)",
     "the Platform skins cards rendering the chosen example where the hand-off renders the playground's props: the same owner decision that keeps the example picker, form-factor switcher and code block (2026-10-28)",
+    "which paragraphs, example cards, variants, prop rows, semantics rows, token chips and related tiles a component page shows, and their wording: that content is read from the repository's current .md files and source, while the hand-off carries a snapshot of them (its canvas-docs.js, tools/v4/README.md: the repository wins); how each is drawn is still judged (2026-10-28)",
   ],
 
   // Where a defect gets fixed. This repository IS the kit, so a finding on a docs
