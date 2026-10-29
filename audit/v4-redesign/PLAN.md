@@ -246,6 +246,22 @@ recorded deviation above. What follows from it:
   composes them and never styles at a call site. Content the page reads from the current
   docs (paragraphs, examples, prop rows, semantics, tokens) is settled as content in
   `lookout.config.ts`'s never-file list; only how it is drawn is judged.
+- **D20 The docs web build loads the hand-off's font files (2026-10-29).** Lookout's judge read
+  headings, labels and chips as "bolder than the hand-off" at the same declared weight: the docs
+  render static subset TTF faces where the hand-off loads Google's variable woff2 of Instrument
+  Sans, Bricolage Grotesque and JetBrains Mono, and the static cuts rasterise heavier. The owner
+  chose to load the hand-off's files on the web (native keeps its static faces), which also
+  removes the text residue the pixel compare shows on every section.
+- **D21 The section pages sit at the root (2026-10-29).** `/foundations`, `/layout`,
+  `/controls`, `/inputs`, `/navigation`, `/data`, `/charts` and `/overlays`, as the hand-off's
+  pages do; `/sections/<section>` redirects there. The owner: "no real point in having the
+  sections in the route".
+- **D22 The section pages take the component page's loop (2026-10-29).** The owner: "issues like
+  that are all over the place in every section". Each page's cards (the hand-off's `#c-<id>`,
+  the docs' `showcase-<id>`) and its hero are judged by Lookout against `cards/<id>.png` and
+  `heroes/<section>.png`; the showcase frame (cards at radius 20, padding 24, gap 20; the
+  300 px hero stage at radius 24) is one fix for every page; the heroes' loops are D15 work
+  through the tuning harness, hero by hero, after the geometry.
 
 ## Phases (each committed and pushed on its own, CI run locally first; screenshot
 baselines and tuning evidence land WITH the visual phase that moves them, never at the end)
