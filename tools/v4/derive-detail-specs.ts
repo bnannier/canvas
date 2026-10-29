@@ -113,7 +113,7 @@ const COMPONENT_KNOBS: Record<string, string> = { "row-column": "tag" };
 
 type Raw = Record<string, unknown>;
 interface HandoffKit {
-  spec(slug: string): { k?: string; sz?: string; st?: string; an?: string[]; ap?: Raw; kb?: string };
+  spec(slug: string): { k?: string; sz?: string; st?: string; an?: string[]; ap?: Raw; kb?: string; w?: string };
   KB: Record<string, [string, string][]>;
 }
 interface HandoffDocs {
@@ -257,6 +257,10 @@ function build() {
         ...(s.sz ? { sizes: parseSizes(s.sz) } : {}),
         ...(s.st ? { states: states(slug, s.st, dropped) } : {}),
         anatomy: { parts: [...(s.an ?? [])], props: anatomyProps },
+        // The hand-off's width nature (`w:'fill'` on a K.def spec): a fill component spans
+        // its stage, and the Anatomy figure zooms every other one (Component.dc.html line
+        // 412, `anZoom:fill?'1':'1.6'`; line 366, `const fill=sp.w==='fill'`).
+        fill: s.w === "fill",
         ...(SPECIMEN_PROPS[slug] ? { specimen: SPECIMEN_PROPS[slug] } : {}),
         keyboard,
       };
@@ -334,6 +338,8 @@ export interface DetailSpec {
   states?: readonly SpecOption[];
   /** The Anatomy figure: its numbered parts, and the props its demo renders with. */
   anatomy: { parts: readonly string[]; props: Readonly<Record<string, AnatomyValue>> };
+  /** The hand-off's width nature: true for a component that fills its stage (\`w:'fill'\`), whose Anatomy figure is drawn at its natural size; a hugging component's figure is zoomed. */
+  fill: boolean;
   /** The props that show an overlay open in place on every specimen, and the example props that would undo them. */
   specimen?: { props: Readonly<Record<string, boolean>>; omit?: readonly string[] };
   keyboard: KeyboardPatternKey;

@@ -144,6 +144,13 @@ describe("v4 hand-off detail specs", () => {
     }
   });
 
+  it("carries the hand-off's width nature: `fill` for a spec whose K.def says `w:'fill'`, so the Anatomy figure zooms the others", () => {
+    for (const spec of Object.values(DETAIL_SPECS)) expect(typeof spec.fill).toBe("boolean");
+    // Typography's K.def carries `w:'fill'` (cv-kit-controls.js line 9); Button's carries no `w` (line 53).
+    expect(DETAIL_SPECS.typography.fill).toBe(true);
+    expect(DETAIL_SPECS.button.fill).toBe(false);
+  });
+
   it("names a keyboard table for every component, each a list of [keys, effect] rows", () => {
     for (const spec of Object.values(DETAIL_SPECS)) expect(KEYBOARD_PATTERNS[spec.keyboard]).toBeDefined();
     for (const [key, rows] of Object.entries(KEYBOARD_PATTERNS)) {

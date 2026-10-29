@@ -42,6 +42,8 @@ export interface DetailSpec {
   states?: readonly SpecOption[];
   /** The Anatomy figure: its numbered parts, and the props its demo renders with. */
   anatomy: { parts: readonly string[]; props: Readonly<Record<string, AnatomyValue>> };
+  /** The hand-off's width nature: true for a component that fills its stage (`w:'fill'`), whose Anatomy figure is drawn at its natural size; a hugging component's figure is zoomed. */
+  fill: boolean;
   /** The props that show an overlay open in place on every specimen, and the example props that would undo them. */
   specimen?: { props: Readonly<Record<string, boolean>>; omit?: readonly string[] };
   keyboard: KeyboardPatternKey;
@@ -88,6 +90,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Foundations",
     propsInterface: "TypographyProps",
     anatomy: {"parts":["Text run"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "text": {
@@ -98,6 +101,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Foundations",
     propsInterface: "react-native:TextProps",
     anatomy: {"parts":["Text run"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "icon": {
@@ -110,6 +114,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "IconProps",
     sizes: {"prop":"size","options":["16","24","32"]},
     anatomy: {"parts":["Glyph","Bounding box"],"props":{}},
+    fill: false,
     keyboard: "none",
   },
   "emblem": {
@@ -123,6 +128,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "EmblemProps",
     sizes: {"options":["small",null,"large"]},
     anatomy: {"parts":["Tile","Monogram"],"props":{}},
+    fill: false,
     keyboard: "none",
   },
   "swatch": {
@@ -139,6 +145,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "SwatchProps",
     sizes: {"options":["small",null,"large"]},
     anatomy: {"parts":["Chip","Name","Value"],"props":{}},
+    fill: false,
     keyboard: "button",
   },
   "reveal": {
@@ -151,6 +158,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Foundations",
     propsInterface: "RevealProps",
     anatomy: {"parts":["Entering block"],"props":{}},
+    fill: false,
     keyboard: "none",
   },
   "row-column": {
@@ -164,6 +172,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Layout",
     propsInterface: "FlexProps",
     anatomy: {"parts":["Container","Child"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "container": {
@@ -176,6 +185,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Layout",
     propsInterface: "ContainerProps",
     anatomy: {"parts":["Track","Capped column","Gutter"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "grid": {
@@ -187,6 +197,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Layout",
     propsInterface: "GridProps",
     anatomy: {"parts":["Grid","Tile"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "divider": {
@@ -198,6 +209,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Layout",
     propsInterface: "DividerProps",
     anatomy: {"parts":["Rule","Label"],"props":{"children":"or"}},
+    fill: true,
     keyboard: "none",
   },
   "view": {
@@ -207,6 +219,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Layout",
     propsInterface: "react-native:ViewProps",
     anatomy: {"parts":["View","Child view"],"props":{}},
+    fill: false,
     keyboard: "none",
   },
   "scroll-view": {
@@ -216,6 +229,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Layout",
     propsInterface: "react-native:ScrollViewProps",
     anatomy: {"parts":["Viewport","Content"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "pressable": {
@@ -227,6 +241,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "react-native:PressableProps",
     states: [null,"hover","pressed","focus","disabled"],
     anatomy: {"parts":["Hit area","Content"],"props":{}},
+    fill: false,
     keyboard: "button",
   },
   "app-frame": {
@@ -236,6 +251,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Layout",
     propsInterface: "AppFrameProps",
     anatomy: {"parts":["Frame","Header","Body"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "dashboard-grid": {
@@ -247,6 +263,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "DashboardGridProps",
     states: [null],
     anatomy: {"parts":["Grid","Widget","Drag handle"],"props":{"unlocked":true}},
+    fill: true,
     keyboard: "board",
   },
   "button": {
@@ -268,6 +285,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","pressed","disabled","loading"],
     anatomy: {"parts":["Container","Label","Leading icon","Trailing icon","Count badge"],"props":{"iconLeft":{"icon":"sparkles"},"iconRight":{"icon":"chevronDown"},"count":3,"children":"Save changes"}},
+    fill: false,
     keyboard: "button",
   },
   "button-group": {
@@ -284,6 +302,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"focus","disabled"],
     anatomy: {"parts":["Track","Segment","Active thumb"],"props":{}},
+    fill: false,
     keyboard: "radio",
   },
   "switch": {
@@ -299,6 +318,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","disabled"],
     anatomy: {"parts":["Track","Thumb","Label","Description"],"props":{}},
+    fill: false,
     keyboard: "toggle",
   },
   "checkbox": {
@@ -315,6 +335,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","disabled"],
     anatomy: {"parts":["Box","Check mark","Label","Description"],"props":{}},
+    fill: false,
     keyboard: "toggle",
   },
   "radio": {
@@ -329,6 +350,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","disabled"],
     anatomy: {"parts":["Ring","Dot","Label","Description"],"props":{}},
+    fill: false,
     keyboard: "radio",
   },
   "slider": {
@@ -344,6 +366,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","disabled"],
     anatomy: {"parts":["Track","Fill","Thumb","Label","Value"],"props":{}},
+    fill: false,
     keyboard: "slider",
   },
   "stepper": {
@@ -359,6 +382,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","disabled"],
     anatomy: {"parts":["Decrement","Value","Increment","Label"],"props":{}},
+    fill: false,
     keyboard: "spin",
   },
   "chip": {
@@ -377,6 +401,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "ChipProps",
     states: [null,"hover","focus","selected","disabled"],
     anatomy: {"parts":["Container","Leading icon","Label","Count","Trailing control"],"props":{"icon":{"icon":"tag"},"count":12,"trailing":{"icon":"x"}}},
+    fill: false,
     keyboard: "button",
   },
   "avatar": {
@@ -392,6 +417,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "AvatarProps",
     sizes: {"options":["tiny","small",null,"large"]},
     anatomy: {"parts":["Frame","Image or initials","Ring"],"props":{"ring":true,"uri":"/ada-lovelace.jpg"}},
+    fill: false,
     keyboard: "none",
   },
   "badge": {
@@ -408,6 +434,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "BadgeProps",
     sizes: {"options":["small",null,"large"]},
     anatomy: {"parts":["Container","Status dot","Label"],"props":{"success":true,"dot":true,"children":"Operational"}},
+    fill: false,
     keyboard: "none",
   },
   "kbd": {
@@ -418,6 +445,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Controls",
     propsInterface: "KbdProps",
     anatomy: {"parts":["Keycap","Glyph","Separator"],"props":{"keys":"G C","sequence":true}},
+    fill: false,
     keyboard: "none",
   },
   "input": {
@@ -442,6 +470,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","error","disabled","readOnly"],
     anatomy: {"parts":["Label","Field","Leading icon","Value or placeholder","Trailing action","Helper or error"],"props":{"label":"Workspace URL","icon":{"icon":"globe"},"value":"northwind","clearable":true,"suffix":".canvas.dev"}},
+    fill: false,
     keyboard: "text",
   },
   "text-input": {
@@ -455,6 +484,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     dropped: [{"knob":"disabled","reason":"React Native's TextInput has no `disabled` prop; the repository disables one with `editable={false}` and `aria-disabled` (the TextInput page's Do)."},{"knob":"state.disabled","reason":"React Native's TextInput has no `disabled` prop; the repository disables one with `editable={false}` and `aria-disabled` (the TextInput page's Do)."}],
     states: [null,"focus"],
     anatomy: {"parts":["Native input","Placeholder"],"props":{}},
+    fill: false,
     keyboard: "text",
   },
   "textarea": {
@@ -474,6 +504,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","error","disabled"],
     anatomy: {"parts":["Label","Field","Value or placeholder","Counter"],"props":{}},
+    fill: false,
     keyboard: "text",
   },
   "select": {
@@ -491,6 +522,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","open","disabled"],
     anatomy: {"parts":["Label","Trigger","Value","Chevron","Menu"],"props":{"open":true}},
+    fill: false,
     keyboard: "combobox",
   },
   "input-otp": {
@@ -508,6 +540,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"focus","disabled"],
     anatomy: {"parts":["Cell","Digit","Caret","Group gap"],"props":{"groups":2,"length":6,"value":"482","autoFocus":true}},
+    fill: false,
     keyboard: "otp",
   },
   "autocomplete": {
@@ -526,6 +559,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"focus","disabled"],
     anatomy: {"parts":["Label","Field","Query","Listbox","Match highlight"],"props":{}},
+    fill: false,
     keyboard: "combobox",
   },
   "listbox": {
@@ -541,6 +575,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"focus","disabled"],
     anatomy: {"parts":["Listbox","Option","Selected check","Detail line"],"props":{}},
+    fill: false,
     keyboard: "listbox",
   },
   "phone-input": {
@@ -558,6 +593,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"focus","error","disabled"],
     anatomy: {"parts":["Label","Country trigger","Dial code","Number","Error"],"props":{"error":true}},
+    fill: false,
     keyboard: "combobox",
   },
   "field": {
@@ -571,6 +607,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "FieldProps",
     states: [null,"focus","error"],
     anatomy: {"parts":["Label","Control","Helper or error","Required mark"],"props":{"required":true,"label":"Email","helper":"Release notes only"}},
+    fill: false,
     keyboard: "text",
   },
   "form": {
@@ -583,6 +620,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Inputs",
     propsInterface: "FormProps",
     anatomy: {"parts":["Section","Field","Actions"],"props":{}},
+    fill: true,
     keyboard: "text",
   },
   "filter-panel": {
@@ -594,6 +632,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Inputs",
     propsInterface: "FilterPanelProps",
     anatomy: {"parts":["Panel","Group heading","Option","Count","Clear all"],"props":{}},
+    fill: false,
     keyboard: "toggle",
   },
   "tabs": {
@@ -607,6 +646,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "TabsProps",
     states: [null,"hover","focus"],
     anatomy: {"parts":["Tab list","Tab","Active indicator","Badge"],"props":{}},
+    fill: false,
     keyboard: "tabs",
   },
   "tab-bar": {
@@ -616,6 +656,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Navigation",
     propsInterface: "TabBarProps",
     anatomy: {"parts":["Bar","Item","Active indicator","Label"],"props":{}},
+    fill: true,
     keyboard: "tabs",
   },
   "navbars": {
@@ -628,6 +669,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Navigation",
     propsInterface: "NavbarProps",
     anatomy: {"parts":["Bar","Brand","Links","Active link","Actions"],"props":{}},
+    fill: true,
     keyboard: "link",
   },
   "sidebar": {
@@ -640,6 +682,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Navigation",
     propsInterface: "SidebarProps",
     anatomy: {"parts":["Rail","Section label","Item","Active item","Footer"],"props":{}},
+    fill: true,
     keyboard: "link",
   },
   "breadcrumb": {
@@ -651,6 +694,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Navigation",
     propsInterface: "BreadcrumbProps",
     anatomy: {"parts":["Trail","Crumb","Separator","Current page"],"props":{}},
+    fill: false,
     keyboard: "link",
   },
   "pagination": {
@@ -666,6 +710,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     sizes: {"options":["small",null,"large"]},
     states: [null,"hover","focus","disabled"],
     anatomy: {"parts":["Previous","Page","Current page","Ellipsis","Next"],"props":{}},
+    fill: false,
     keyboard: "link",
   },
   "steps": {
@@ -676,6 +721,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Navigation",
     propsInterface: "StepsProps",
     anatomy: {"parts":["Step","Marker","Connector","Label"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "row-menu": {
@@ -687,6 +733,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Navigation",
     propsInterface: "RowMenuProps",
     anatomy: {"parts":["Trigger","Menu","Item","Destructive item"],"props":{}},
+    fill: false,
     keyboard: "menu",
   },
   "card": {
@@ -705,6 +752,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "CardProps",
     states: [null,"hover","focus","selected"],
     anatomy: {"parts":["Surface","Eyebrow","Title","Description","Badge","Footer"],"props":{}},
+    fill: false,
     keyboard: "button",
   },
   "stats": {
@@ -716,6 +764,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "StatsProps",
     anatomy: {"parts":["Group","Stat","Label","Value","Delta"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "data-table": {
@@ -731,6 +780,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "DataTableProps",
     states: [null,"hover","focus"],
     anatomy: {"parts":["Table","Header row","Sort indicator","Row","Cell","Selection"],"props":{"selectable":true,"sortable":true}},
+    fill: true,
     keyboard: "grid",
   },
   "stacked-lists": {
@@ -743,6 +793,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "StackedListProps",
     states: [null,"hover"],
     anatomy: {"parts":["List","Header","Row","Leading avatar","Trailing"],"props":{}},
+    fill: true,
     keyboard: "link",
   },
   "grid-lists": {
@@ -753,6 +804,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "GridListProps",
     anatomy: {"parts":["Grid","Tile","Media","Caption"],"props":{}},
+    fill: true,
     keyboard: "link",
   },
   "media-objects": {
@@ -768,6 +820,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "MediaObjectProps",
     anatomy: {"parts":["Media","Title","Description","Meta","Action"],"props":{"title":"Grace Hopper","description":"Compilers · Berlin","action":{"element":"Button","children":"Follow"}}},
+    fill: false,
     keyboard: "none",
   },
   "feeds": {
@@ -778,6 +831,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "FeedProps",
     anatomy: {"parts":["Feed","Lead","Connector","Event","Timestamp"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "description-lists": {
@@ -790,6 +844,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "DescriptionListProps",
     anatomy: {"parts":["List","Term","Detail","Action"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
   "action-panels": {
@@ -805,6 +860,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "ActionPanelProps",
     anatomy: {"parts":["Panel","Title","Description","Action"],"props":{}},
+    fill: true,
     keyboard: "button",
   },
   "accordion": {
@@ -817,6 +873,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "AccordionProps",
     states: [null,"hover","focus"],
     anatomy: {"parts":["Item","Header","Chevron","Panel"],"props":{}},
+    fill: true,
     keyboard: "disclosure",
   },
   "collapsible": {
@@ -831,6 +888,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "CollapsibleProps",
     states: [null,"hover","focus"],
     anatomy: {"parts":["Trigger","Chevron","Content"],"props":{}},
+    fill: true,
     keyboard: "disclosure",
   },
   "code-block": {
@@ -845,6 +903,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "CodeBlockProps",
     anatomy: {"parts":["Frame","Filename","Code","Copy button","Line numbers"],"props":{"numbered":true}},
+    fill: true,
     keyboard: "none",
   },
   "carousel": {
@@ -857,6 +916,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "CarouselProps",
     anatomy: {"parts":["Viewport","Slide","Arrow","Dots"],"props":{}},
+    fill: true,
     keyboard: "carousel",
   },
   "image": {
@@ -868,6 +928,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "ImageProps",
     anatomy: {"parts":["Frame","Image"],"props":{}},
+    fill: false,
     keyboard: "none",
   },
   "video": {
@@ -880,6 +941,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "VideoProps",
     anatomy: {"parts":["Frame","Poster","Play control","Scrubber"],"props":{}},
+    fill: false,
     keyboard: "button",
   },
   "qrcode": {
@@ -891,6 +953,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "QRCodeProps",
     sizes: {"options":["small",null,"large"]},
     anatomy: {"parts":["Code","Quiet zone"],"props":{}},
+    fill: false,
     keyboard: "none",
   },
   "calendar": {
@@ -905,6 +968,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "CalendarProps",
     states: [null,"focus"],
     anatomy: {"parts":["Header","Weekday row","Day","Selected day","Event dot"],"props":{}},
+    fill: false,
     keyboard: "grid",
   },
   "chat": {
@@ -915,6 +979,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "ChatMessageProps",
     dropped: [{"knob":"streaming","reason":"ChatMessage takes streaming as a field of its `message` data (ChatMessageData.streaming), not as a prop of its own."}],
     anatomy: {"parts":["Thread","Assistant message","User message","Avatar","Composer"],"props":{}},
+    fill: true,
     keyboard: "text",
   },
   "board": {
@@ -925,6 +990,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Surfaces & data",
     propsInterface: "BoardProps",
     anatomy: {"parts":["Board","Column","Card","Count"],"props":{}},
+    fill: true,
     keyboard: "board",
   },
   "drag-drop": {
@@ -933,6 +999,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "DragDropProviderProps",
     dropped: [{"knob":"locked","reason":"DragDropProvider has no locked mode; the repository locks one item with `disabled` on its Draggable, or a zone with `disabled` on its DropZone."}],
     anatomy: {"parts":["Drop zone","Draggable","Lifted item","Drop indicator"],"props":{}},
+    fill: true,
     keyboard: "board",
   },
   "chart": {
@@ -946,6 +1013,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "ChartProps",
     anatomy: {"parts":["Chart frame","Series","Axis labels","Legend","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "line-chart": {
@@ -958,6 +1026,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "LineChartProps",
     anatomy: {"parts":["Chart frame","Series","Axis labels","Legend","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "area-chart": {
@@ -969,6 +1038,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "AreaChartProps",
     anatomy: {"parts":["Chart frame","Series","Axis labels","Legend","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "range-area-chart": {
@@ -982,6 +1052,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "RangeAreaChartProps",
     anatomy: {"parts":["Chart frame","Series","Axis labels","Legend","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "composed-chart": {
@@ -991,6 +1062,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "ComposedChartProps",
     anatomy: {"parts":["Chart frame","Series","Axis labels","Legend","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "sparkline": {
@@ -1003,6 +1075,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "SparklineProps",
     anatomy: {"parts":["Line","Fill","End marker"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "histogram": {
@@ -1015,6 +1088,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "HistogramProps",
     anatomy: {"parts":["Chart frame","Bins","Axis labels","Baseline","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "box-plot": {
@@ -1026,6 +1100,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "BoxPlotProps",
     anatomy: {"parts":["Chart frame","Box","Axis labels","Median","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "scatter-plot": {
@@ -1038,6 +1113,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "ScatterPlotProps",
     anatomy: {"parts":["Chart frame","Series","Axis labels","Legend","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "waterfall-chart": {
@@ -1048,6 +1124,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "WaterfallChartProps",
     anatomy: {"parts":["Chart frame","Change bar","Axis labels","Total bar","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "pie-chart": {
@@ -1060,6 +1137,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "PieChartProps",
     anatomy: {"parts":["Chart frame","Slice","Center value","Legend"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "treemap": {
@@ -1069,6 +1147,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "TreemapProps",
     anatomy: {"parts":["Chart frame","Tile","Label","Value"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "stacked-bar": {
@@ -1082,6 +1161,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "StackedBarProps",
     anatomy: {"parts":["Strip","Segment","Total","Legend"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "funnel-chart": {
@@ -1092,6 +1172,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "FunnelChartProps",
     anatomy: {"parts":["Chart frame","Stage bar","Stage label","Value"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "gauge": {
@@ -1103,6 +1184,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "GaugeProps",
     anatomy: {"parts":["Track","Fill arc","Value","Scale labels"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "progress-ring": {
@@ -1115,6 +1197,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "ProgressRingProps",
     anatomy: {"parts":["Track","Value arc","Value","Label"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "radial-bar-chart": {
@@ -1125,6 +1208,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "RadialBarChartProps",
     anatomy: {"parts":["Chart frame","Bar","Track","Legend"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "bullet-chart": {
@@ -1135,6 +1219,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "BulletChartProps",
     anatomy: {"parts":["Frame","Measure","Target marker","Ranges"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "radar-chart": {
@@ -1147,6 +1232,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "RadarChartProps",
     anatomy: {"parts":["Chart frame","Series","Axis labels","Legend","Grid"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "metric-breakdown": {
@@ -1161,6 +1247,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "MetricBreakdownProps",
     anatomy: {"parts":["Frame","Value","Rate","Breakdown rows"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "bar-list": {
@@ -1174,6 +1261,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "BarListProps",
     anatomy: {"parts":["Frame","Bar","Value","Label"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "depth-chart": {
@@ -1185,6 +1273,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "DepthChartProps",
     anatomy: {"parts":["Chart frame","Bids","Asks","Legend","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "heatmap": {
@@ -1196,6 +1285,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "HeatmapProps",
     anatomy: {"parts":["Grid","Cell","Title","Legend"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "candlestick-chart": {
@@ -1207,6 +1297,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "CandlestickChartProps",
     anatomy: {"parts":["Chart frame","Series","Axis labels","Legend","Gridlines"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "uptime-bar": {
@@ -1218,6 +1309,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "UptimeBarProps",
     anatomy: {"parts":["Strip","Degraded period","Healthy period","Range labels"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "service-health-list": {
@@ -1229,6 +1321,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "ServiceHealthListProps",
     anatomy: {"parts":["List","Status dot","Service","Uptime"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "geo-map": {
@@ -1239,6 +1332,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Charts",
     propsInterface: "GeoMapProps",
     anatomy: {"parts":["Map","Point","Region outline","Zoom control"],"props":{}},
+    fill: false,
     keyboard: "chart",
   },
   "dialog": {
@@ -1255,6 +1349,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "DialogProps",
     anatomy: {"parts":["Scrim","Panel","Title","Description","Body","Actions","Close"],"props":{}},
+    fill: true,
     specimen: {"props":{"open":true,"embedded":true},"omit":["trigger"]},
     keyboard: "dialog",
   },
@@ -1271,6 +1366,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "AlertDialogProps",
     anatomy: {"parts":["Scrim","Panel","Icon","Title","Description","Actions"],"props":{}},
+    fill: true,
     specimen: {"props":{"open":true,"embedded":true},"omit":["trigger"]},
     keyboard: "dialog",
   },
@@ -1283,6 +1379,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "DrawerProps",
     anatomy: {"parts":["Scrim","Panel","Header","Body","Footer"],"props":{}},
+    fill: true,
     keyboard: "dialog",
   },
   "action-sheet": {
@@ -1294,6 +1391,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "ActionSheetProps",
     anatomy: {"parts":["Scrim","Sheet","Title","Action","Destructive action","Cancel"],"props":{}},
+    fill: true,
     keyboard: "menu",
   },
   "popover": {
@@ -1307,6 +1405,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "PopoverProps",
     anatomy: {"parts":["Trigger","Panel","Arrow","Title","Description","Action"],"props":{}},
+    fill: false,
     specimen: {"props":{"inline":true},"omit":["trigger"]},
     keyboard: "dialog",
   },
@@ -1320,6 +1419,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "TooltipProps",
     anatomy: {"parts":["Trigger","Bubble","Arrow"],"props":{}},
+    fill: false,
     keyboard: "tooltip",
   },
   "dropdown": {
@@ -1333,6 +1433,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "DropdownProps",
     anatomy: {"parts":["Trigger","Menu","Section label","Item","Shortcut","Destructive item"],"props":{}},
+    fill: false,
     keyboard: "menu",
   },
   "command": {
@@ -1345,6 +1446,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "CommandProps",
     anatomy: {"parts":["Panel","Search field","Group label","Item","Active item","Footer hints"],"props":{}},
+    fill: true,
     keyboard: "combobox",
   },
   "wizard": {
@@ -1356,6 +1458,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "WizardProps",
     anatomy: {"parts":["Panel","Steps","Body","Footer actions"],"props":{}},
+    fill: true,
     specimen: {"props":{"open":true,"embedded":true}},
     keyboard: "dialog",
   },
@@ -1370,6 +1473,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "ToastProps",
     anatomy: {"parts":["Toast","Icon","Message","Description","Action"],"props":{}},
+    fill: false,
     keyboard: "toast",
   },
   "alert": {
@@ -1383,6 +1487,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "AlertProps",
     anatomy: {"parts":["Container","Icon","Title","Description","Dismiss","Actions"],"props":{"dismissible":true,"actions":true}},
+    fill: true,
     keyboard: "none",
   },
   "empty-state": {
@@ -1398,6 +1503,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     section: "Overlays & feedback",
     propsInterface: "EmptyStateProps",
     anatomy: {"parts":["Container","Icon","Title","Description","Action"],"props":{}},
+    fill: true,
     keyboard: "button",
   },
   "progress": {
@@ -1414,6 +1520,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "ProgressProps",
     sizes: {"options":["small",null,"large"]},
     anatomy: {"parts":["Label","Track","Fill","Value"],"props":{}},
+    fill: false,
     keyboard: "none",
   },
   "spinner": {
@@ -1428,6 +1535,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "SpinnerProps",
     sizes: {"options":["small",null,"large"]},
     anatomy: {"parts":["Ring","Label"],"props":{}},
+    fill: false,
     keyboard: "none",
   },
   "skeleton": {
@@ -1441,6 +1549,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     propsInterface: "SkeletonProps",
     sizes: {"options":["small",null,"large"]},
     anatomy: {"parts":["Placeholder block"],"props":{}},
+    fill: true,
     keyboard: "none",
   },
 };

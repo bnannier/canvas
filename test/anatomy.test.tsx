@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { AnatomyPart, AnatomyProvider, useAnatomyPart, withPartLayout, type AnatomyRects, type AnatomyTarget } from "../src/style/anatomy.tsx";
+import { ANATOMY_ZOOM, AnatomyPart, AnatomyProvider, useAnatomyPart, withPartLayout, zoomRect, type AnatomyRect, type AnatomyRects, type AnatomyTarget } from "../src/style/anatomy.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 
 // The anatomy part registry (src/style/anatomy.tsx): a component registers the host node
@@ -81,6 +81,53 @@ describe("the registry", () => {
     const first = captured.Label;
     rerender(<AnatomyProvider><Probe name="Label" /></AnatomyProvider>);
     expect(captured.Label).toBe(first);
+  });
+});
+
+describe("the zoom", () => {
+  it("is the hand-off's 1.6 (Component.dc.html line 412)", () => {
+    expect(ANATOMY_ZOOM).toBe(1.6);
+  });
+
+  it("maps a layout-space rectangle about the inner box's centre: x' = cx + (x - cx) * s, w' = w * s", () => {
+    // A 250 wide inner box at x 75 (a 400 wide root over 1.6), 40 tall at y 12: its centre is (200, 32).
+    const inner: AnatomyRect = { x: 75, y: 12, width: 250, height: 40 };
+    // The container fills the inner box: scaled about the centre it spans the root's 400.
+    expect(zoomRect({ x: 75, y: 12, width: 250, height: 40 }, inner, 1.6)).toEqual({ x: 0, y: 0, width: 400, height: 64 });
+    // A label 20 in from the inner's left edge lands 32 in from the root's.
+    expect(zoomRect({ x: 95, y: 22, width: 80, height: 20 }, inner, 1.6)).toEqual({ x: 32, y: 16, width: 128, height: 32 });
+    // At 1 the rectangle is itself.
+    const rect = { x: 95, y: 22, width: 80, height: 20 };
+    expect(zoomRect(rect, inner, 1)).toEqual(rect);
+  });
+
+  it("reports mapped rectangles and the root's box from a zoomed provider, and the raw ones unzoomed", async () => {
+    captured = {};
+    const reports: [AnatomyRects, AnatomyRect][] = [];
+    const { container } = render(<AnatomyProvider zoomed onMeasure={(parts, box) => reports.push([parts, box])}><Probe name="Container" /></AnatomyProvider>);
+    const root = container.firstElementChild as HTMLElement & { __reactLayoutHandler?: (event: unknown) => void };
+    const inner = root.firstElementChild as HTMLElement & { __reactLayoutHandler?: (event: unknown) => void };
+    const node = fakeNode({ x: 75, y: 12, width: 250, height: 40 });
+    act(() => captured.Container!.ref(node));
+    // The stage lays the root out 400 wide at (40, 128) in the well, then the inner box at the root's width over the zoom.
+    act(() => root.__reactLayoutHandler!({ nativeEvent: { layout: { x: 40, y: 128, width: 400, height: 64 } }, timeStamp: 1 }));
+    act(() => inner.__reactLayoutHandler!({ nativeEvent: { layout: { x: 75, y: 12, width: 250, height: 40 } }, timeStamp: 2 }));
+    act(() => captured.Container!.onLayout());
+    expect(reports.at(-1)).toEqual([{ Container: { x: 0, y: 0, width: 400, height: 64 } }, { x: 40, y: 128, width: 400, height: 64 }]);
+    // The inner box is laid out at the root's width over the zoom, and the root reserves the inner height scaled.
+    expect(inner.style.width).toBe("250px");
+    expect(inner.style.transform).toContain("scale(1.6)");
+    expect(root.style.height).toBe("64px");
+
+    cleanup();
+    captured = {};
+    const plain: [AnatomyRects, AnatomyRect][] = [];
+    const flat = render(<AnatomyProvider onMeasure={(parts, box) => plain.push([parts, box])}><Probe name="Container" /></AnatomyProvider>);
+    const flatRoot = flat.container.firstElementChild as HTMLElement & { __reactLayoutHandler?: (event: unknown) => void };
+    act(() => captured.Container!.ref(fakeNode({ x: 10, y: 0, width: 120, height: 40 })));
+    act(() => flatRoot.__reactLayoutHandler!({ nativeEvent: { layout: { x: 40, y: 140, width: 400, height: 40 } }, timeStamp: 1 }));
+    act(() => captured.Container!.onLayout());
+    expect(plain.at(-1)).toEqual([{ Container: { x: 10, y: 0, width: 120, height: 40 } }, { x: 40, y: 140, width: 400, height: 40 }]);
   });
 });
 

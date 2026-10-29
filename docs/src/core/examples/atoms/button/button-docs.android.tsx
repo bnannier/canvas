@@ -94,7 +94,7 @@ export const docs: ComponentDocs = {
     {
       title: "Anatomy",
       blocks: [
-        "A Button registers its parts with an enclosing `AnatomyProvider`, in the hand-off's order: `Container` (the pressable box), `Label`, `Leading icon`, `Trailing icon` and `Count badge`. The provider (`AnatomyProviderProps`) reports each rendered part's rectangle (an `AnatomyRect`, relative to its own box) to its `onMeasure` callback as `AnatomyRects` by part name, so a docs Anatomy section can number the parts with markers drawn over the specimen. Outside a provider the registration costs one context read and adds no node.",
+        "A Button registers its parts with an enclosing `AnatomyProvider`, in the hand-off's order: `Container` (the pressable box), `Label`, `Leading icon`, `Trailing icon` and `Count badge`. The provider (`AnatomyProviderProps`) fills its stage and centres the specimen, and reports each rendered part's rectangle (an `AnatomyRect`, relative to its own box and in the space the specimen is seen in) to its `onMeasure` callback as `AnatomyRects` by part name, with its own box as its parent laid it out, so a docs Anatomy section can number the parts with markers drawn over the specimen. `zoomed` draws the specimen at the hand-off's anatomy zoom (1.6, for a component that hugs its content): the provider lays its inner box out at the stage width over the zoom and scales it back up about its centre, reserves the scaled height so the stage grows with the figure, and maps the rectangles before reporting them. Outside a provider the registration costs one context read and adds no node.",
       ],
     },
     {
