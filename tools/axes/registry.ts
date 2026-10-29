@@ -37,7 +37,7 @@ import { intentOf as buttonIntent, iconBoxOf, sizeOf as buttonSize } from "../..
 import { webEmphasisOf, webHoverKindOf, webLinkInkOf, webBodyOf } from "../../src/atoms/button/button.styles.ts";
 import { kindOf, sizeOf as buttonGroupSize } from "../../src/atoms/button-group/button-group.shared.tsx";
 import { sizeOf as checkboxSize } from "../../src/atoms/checkbox/checkbox.shared.tsx";
-import { colorOf } from "../../src/atoms/chip/chip.shared.tsx";
+import { colorOf, lookOf as chipLook } from "../../src/atoms/chip/chip.shared.tsx";
 import { measureOf, padOf as containerPad } from "../../src/atoms/container/container.shared.tsx";
 import { pageMeasureOf } from "../../src/organisms/app-frame/app-frame.shared.tsx";
 import { orientationOf, emphasisOf } from "../../src/atoms/divider/divider.shared.tsx";
@@ -274,6 +274,19 @@ export const SUBJECTS: readonly AnySubject[] = [
     ],
   }),
   subject({
+    id: "Chip.look",
+    components: ["Chip"],
+    pages: ["chip"],
+    resolver: "src/atoms/chip/chip.shared.tsx#lookOf",
+    members: ["token", "option"],
+    resolve: chipLook,
+    notes: [
+      "A ChipGroup's `option` sets the option look on a chip that passes neither.",
+      "`square` holds an option to its 30 px tile; it is ignored off the option look.",
+      "Android draws its Material 3 chip for both looks.",
+    ],
+  }),
+  subject({
     id: "Container.measure",
     components: ["Container"],
     pages: ["container"],
@@ -368,7 +381,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Spinner.tone", components: ["Spinner"], pages: ["spinner"], resolver: "src/atoms/spinner/spinner.shared.tsx#toneOf", members: ["primary", "muted", "foreground"], resolve: spinnerTone }),
   subject({ id: "Spinner.size", components: ["Spinner"], pages: ["spinner"], resolver: "src/atoms/spinner/spinner.shared.tsx#sizeKeyOf", members: SIZES_LARGE_FIRST, resolve: spinnerSize }),
   subject({ id: "Stepper.size", components: ["Stepper"], pages: ["stepper"], resolver: "src/atoms/stepper/stepper.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: stepperSize }),
-  subject({ id: "Swatch.size", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#sizeOf", members: SIZES, resolve: swatchSize }),
+  subject({ id: "Swatch.size", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#sizeOf", members: ["tiny", "small", "large"], resolve: swatchSize }),
   subject({ id: "Swatch.stretch", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#stretchesOf", rule: true, members: ["block", "circle", "inline"], resolve: stretchesOf }),
   subject({ id: "Switch.size", components: ["Switch"], pages: ["switch"], resolver: "src/atoms/switch/switch.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: switchSize }),
   subject({ id: "Textarea.size", components: ["Textarea"], pages: ["textarea"], resolver: "src/atoms/textarea/textarea.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: textareaSize }),

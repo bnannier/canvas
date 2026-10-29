@@ -13,6 +13,7 @@ import {
   paletteHue,
   requestedPaletteOf,
   useReducedMotion,
+  useHugStyle,
   type LayoutStyle,
   type Palette,
 } from "../../style/index.js";
@@ -36,7 +37,7 @@ import { type SwatchSkin } from "./swatch.styles.js";
 // skin (swatch.styles.ts). The continuous corner curve is drawn only where the platform
 // draws one (iOS).
 
-export type SwatchSize = "small" | "default" | "large";
+export type SwatchSize = "tiny" | "small" | "default" | "large";
 
 export interface SwatchProps {
   /** The fill: any React Native color string. Pass a theme token, not a literal. */
@@ -64,10 +65,19 @@ export interface SwatchProps {
   /** Secondary mono line under the value, for a second notation of the same color (an oklch value, a legacy alias). */
   detail?: string;
   // Size (pick one; default 48). Sets the block's edge, or its height when `block`.
+  // Precedence: `tiny` > `small` > `large`.
+  /** The 20 px disc of a token chip (`<Chip token icon={<Swatch tiny ring circle />}>`). */
+  tiny?: boolean;
   small?: boolean;
   large?: boolean;
   /** Circle instead of the default rounded square. Keeps the 1:1 footprint, so it wins over `block`'s stretch. */
   circle?: boolean;
+  /**
+   * Draws the token chip's hairline INSIDE the sample, a 1 px inset ring in the field
+   * border, in place of the resting hairline edge; a selected sample keeps its selection
+   * ring outside it.
+   */
+  ring?: boolean;
   /** Put the label column beside the block instead of under it. */
   inline?: boolean;
   /** Stretch the block to the parent's width; the size then reads as its height (the full-width ramp bar). */
@@ -107,6 +117,7 @@ const PICKER_DISC = { l: 0.72, c: 0.17 } as const;
 
 // Size precedence when more than one is passed: first match wins.
 export function sizeOf(p: SwatchProps): SwatchSize {
+  if (p.tiny) return "tiny";
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";
@@ -147,8 +158,12 @@ function dataName(name: string | null, value?: string, detail?: string, color?: 
 /** Build a Swatch from a platform skin. */
 export function createSwatch(skin: SwatchSkin) {
   return function Swatch(props: SwatchProps) {
-    const { color, children, value, detail, circle, inline, block, selected, accessibilityLabel, testID, style } = props;
+    const { color, children, value, detail, circle, ring, inline, block, selected, accessibilityLabel, testID, style } = props;
     const { tokens } = useTheme();
+    // HUG (src/style/sizing.ts): the sample keeps its content width inside a stretching
+    // Column and otherwise takes its parent's alignment, so a Chip's centred row centres
+    // the 20 px disc it carries; a static flex-start here pinned it to the chip's top.
+    const hug = useHugStyle();
     const size = sizeOf(props);
     const edge = skin.box[size];
     const palette = paletteOf(props);
@@ -174,6 +189,16 @@ export function createSwatch(skin: SwatchSkin) {
     // The value lines' ink: the hand-off's tertiary `--tx3`.
     const subtle = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
     const hasLabel = children != null || value != null || detail != null;
+    // The edge the sample reads by. `ring` is the token chip's swatch (Component.dc.html
+    // line 294: `box-shadow:inset 0 0 0 1px var(--ln2)`), a 1 px inset ring in the field
+    // border (`--ln2`) that takes over the hairline's job; React Native 0.86 draws an inset
+    // boxShadow on every platform, so it needs no border stand-in. Without it the resting
+    // hairline below stays. A selected sample's ring, the hand-off's 2 px gap then 2 px of
+    // the accent outside the sample, composes with it.
+    const shadows = [
+      ring ? `inset 0 0 0 1px ${tokens["field-border"] ?? tokens.input}` : null,
+      selected ? `0 0 0 2px ${tokens.background}, 0 0 0 4px ${tokens.primary}` : null,
+    ].filter((s): s is string => s != null);
 
     return (
       <View
@@ -182,8 +207,8 @@ export function createSwatch(skin: SwatchSkin) {
         aria-label={label}
         testID={testID}
         style={[
+          block ? { alignSelf: "stretch" } : hug,
           {
-            alignSelf: block ? "stretch" : "flex-start",
             flexDirection: inline ? "row" : "column",
             alignItems: inline ? "center" : "flex-start",
             gap: inline ? skin.inlineGap : skin.gap,
@@ -205,12 +230,12 @@ export function createSwatch(skin: SwatchSkin) {
               // #18181b in dark, so without this hairline those samples have no edge
               // at all and read as blank space. The border token is the same rule the
               // rest of the kit draws its edges with, so it stays legible in both
-              // schemes and never competes with the fill.
-              borderWidth: StyleSheet.hairlineWidth,
+              // schemes and never competes with the fill. `ring` draws that edge as the
+              // inset ring instead (see `shadows` above), so the hairline steps aside.
+              borderWidth: ring ? 0 : StyleSheet.hairlineWidth,
               borderColor: tokens.border,
-              // The hand-off's selection ring: a 2 px gap in the page color, then 2 px of
-              // the accent, drawn outside the chip so the layout never moves.
-              boxShadow: selected ? `0 0 0 2px ${tokens.background}, 0 0 0 4px ${tokens.primary}` : undefined,
+              // The inset ring and the selection ring, drawn so the layout never moves.
+              boxShadow: shadows.length ? shadows.join(", ") : undefined,
             },
             skin.shape,
           ]}

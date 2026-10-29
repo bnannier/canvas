@@ -3,8 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Swatch } = scope;
+  const { tokens, Swatch, Row } = scope;
   return (
-<Swatch inline color={tokens.primary}>primary</Swatch>
+<Row snug alignCenter>
+  <Swatch tiny ring circle color={tokens.card} accessibilityLabel="card" />
+  <Swatch tiny ring circle color={tokens.primary} accessibilityLabel="primary" />
+  <Swatch tiny ring circle color={tokens.background} accessibilityLabel="background" />
+</Row>
   );
 }

@@ -94,7 +94,19 @@ export interface ChipSkin {
    * and the square an icon-only option takes. Omit where the platform's own chip is the
    * option (Material 3's filter chip).
    */
-  option?: Pick<ChipSkin, "base" | "sidePadding" | "labelType" | "selectedCheck" | "hoverBrightness"> & { iconOnly: ViewStyle };
+  option?: Pick<ChipSkin, "base" | "sidePadding" | "labelType" | "selectedCheck" | "hoverBrightness"> & {
+    /** The 30 px square an icon-only option, or a `square` one, takes. */
+    iconOnly: ViewStyle;
+    /** The label type inside that square (the hand-off's "none" pick: 500 10 px mono). */
+    tileLabelType: TextStyle;
+  };
+  /**
+   * The `token` chip's geometry and type over this skin (the hand-off's Tokens chips: a
+   * 32 px pill, 8 between elements, 12 on the text side and 6 beside the 20 px swatch, a
+   * 500 12 px mono label, no check, no hover). Omit where the platform's own chip is the
+   * token tag (Material 3).
+   */
+  token?: Pick<ChipSkin, "base" | "sidePadding" | "labelType" | "selectedCheck" | "hoverBrightness">;
 }
 
 export interface ChipProps {
@@ -198,13 +210,34 @@ export interface ChipProps {
   secondary?: boolean;
   primary?: boolean;
   outline?: boolean;
+  // Look (pick one; omit for the chip itself). Precedence: `token` > `option`.
   /**
    * A compact option in a settings panel, the hand-off playground's knob pick: 26 tall at a
    * small corner, a 500 12px label and no check, idle a bare field-border edge around the
    * muted ink, selected the accent's soft wash inside its edge. An icon-only option is a
    * 30 px square. A ChipGroup's `option` sets it on every chip.
+   * <!-- only: web android -->
+   * On Android an option is the Material 3 chip.
+   * <!-- /only -->
    */
   option?: boolean;
+  /**
+   * A token tag, the hand-off's Tokens chip: a 32 px pill in the card fill inside the
+   * hairline, 8 between elements, a 500 12 px mono label, 12 on the text side and 6 beside
+   * its leading element, which is sized for a 20 px swatch
+   * (`<Chip token icon={<Swatch tiny ring circle color={tokens.primary} />}>`).
+   * <!-- only: web android -->
+   * On Android a token tag is the Material 3 chip.
+   * <!-- /only -->
+   */
+  token?: boolean;
+  /**
+   * Forces an `option` chip to the 30 px square an icon-only option takes, even when it
+   * carries a label and no icon; a label inside the square is set in the tile's own type,
+   * a 500 10 px mono line (the hand-off's "none" pick in an icon knob). Ignored off the
+   * `option` look.
+   */
+  square?: boolean;
   // A chip has ONE compact size, so there is no size axis.
   disabled?: boolean;
   /** Keep resting opacity while pressed, preserving the reference filter treatment. */
@@ -239,6 +272,14 @@ export function colorOf(p: ChipProps): { tone: StatusColorTone | null; hue: Hue 
   for (const h of HUES) if ((p as Record<string, unknown>)[h]) return { tone: null, hue: h, mutedGray: false };
   if (p.gray) return { tone: null, hue: null, mutedGray: true };
   return { tone: null, hue: null, mutedGray: false };
+}
+
+/** The chip's look: `token` wins over `option`; null is the chip itself. */
+export type ChipLook = "token" | "option";
+export function lookOf(p: Pick<ChipProps, "token" | "option">): ChipLook | null {
+  if (p.token) return "token";
+  if (p.option) return "option";
+  return null;
 }
 
 // The hand-off's outline edge, the field border, around whatever ink the chip carries.
@@ -332,10 +373,19 @@ export function createChip(platformSkin: ChipSkin) {
     // roving tab stop.
     const group = useChipGroup();
     const option = group != null && props.value !== undefined ? group : null;
-    // The `option` look (on the chip, or from its group) swaps in the skin's option geometry.
-    const optionLook = (props.option === true || option?.option === true) && platformSkin.option != null ? platformSkin.option : null;
-    const skin: ChipSkin = optionLook ? { ...platformSkin, ...optionLook } : platformSkin;
-    const iconOnly = optionLook != null && icon != null && children == null ? optionLook.iconOnly : null;
+    // The look (on the chip, or `option` from its group) swaps in the skin's geometry for
+    // it, where the skin has one: Android has neither, and keeps its Material chip.
+    const look = lookOf(props) ?? (option?.option === true ? "option" : null);
+    const optionLook = look === "option" && platformSkin.option != null ? platformSkin.option : null;
+    const tokenLook = look === "token" && platformSkin.token != null ? platformSkin.token : null;
+    // The 30 px tile: an icon-only option, or any option asked to be `square`; a label
+    // inside it takes the tile's own type.
+    const iconOnly = optionLook != null && (props.square === true || (icon != null && children == null)) ? optionLook.iconOnly : null;
+    const skin: ChipSkin = optionLook
+      ? { ...platformSkin, ...optionLook, ...(iconOnly ? { labelType: optionLook.tileLabelType } : null) }
+      : tokenLook
+        ? { ...platformSkin, ...tokenLook }
+        : platformSkin;
     const paneShape = iconOnly ? StyleSheet.flatten([skin.base, iconOnly]) : skin.base;
     const disabled = props.disabled === true || option?.disabled === true;
     const selectable =
@@ -406,6 +456,11 @@ export function createChip(platformSkin: ChipSkin) {
       appearance = outline ? outlineOf(tokens, primaryText(tokens)) : solidTint(tokens);
     } else if (optionLook) {
       appearance = { bg: "transparent", border: tokens["field-border"] ?? tokens.input, text: tokens["muted-foreground"] };
+    } else if (tokenLook) {
+      // The hand-off's token chip (Component.dc.html line 294): `background:var(--sf)` is
+      // the card fill, `border:1px solid var(--ln)` the hairline, and its label inherits
+      // the page ink.
+      appearance = { bg: tokens.card, border: tokens.border, text: tokens.foreground };
     } else {
       appearance = neutralTint(tokens, outline, mutedGray ? (props.neutral ? "neutral" : "gray") : null, !!skin.outlined, props.secondary === true, selectable);
     }

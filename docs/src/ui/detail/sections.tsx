@@ -118,7 +118,9 @@ export function TokensSection({ roles, related, tokens, sectionRef }: { roles: r
     <DetailSection id="tok" title="Tokens" note="The colour roles this component's skins read, live from the active scheme and palette." sectionRef={sectionRef}>
       <Row wrap snug>
         {roles.map((role) => (
-          <Chip key={role} outline icon={live[role] ? <Swatch small circle color={live[role]!} accessibilityLabel={role} /> : undefined}>
+          // The hand-off's token chip (Component.dc.html line 294): the 32 px pill with its
+          // 20 px ringed swatch, the role name in mono beside it.
+          <Chip key={role} token icon={live[role] ? <Swatch tiny ring circle color={live[role]!} accessibilityLabel={role} /> : undefined}>
             {role}
           </Chip>
         ))}

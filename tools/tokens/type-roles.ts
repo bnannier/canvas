@@ -83,7 +83,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/molecules/card/card.styles.ts": { eyebrow: "caption" },
   // A reference detail's source chip (the hand-off's 11px label, cv-kit-code3.js).
   "src/molecules/card/card.reference.styles.ts": { source: "small" },
-  "src/atoms/chip/chip.styles.ts": { "webSkin.countType": "tiny" },
+  // The option tile's own label (the hand-off's "none" pick, Component.dc.html line 163: 500 10px mono).
+  "src/atoms/chip/chip.styles.ts": { "webSkin.countType": "tiny", "option.tileLabelType": "tiny" },
   "src/atoms/avatar/avatar.reference.tsx": { "REFERENCE_TYPE.annotation": "annotation" },
   "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", "webMenuSkin.menuPillSecondary": "tiny" },
   "src/molecules/stacked-lists/stacked-lists.styles.ts": { "androidSkin.metaLabel": "tiny" },

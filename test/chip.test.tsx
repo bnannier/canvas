@@ -126,6 +126,91 @@ describe("Chip takes the hand-off's look", () => {
   });
 });
 
+// The Tokens chip (Component.dc.html line 294) and the icon knob's "none" tile (line 163),
+// as the `token` look and `square` draw them.
+import { lookOf } from "../src/atoms/chip/chip.shared.tsx";
+import { ChipGroup } from "../src/atoms/chip/chip-group.tsx";
+import { Icon } from "../src/atoms/icon/icon.tsx";
+
+const labelOf = (c: HTMLElement, text: string) => [...c.querySelectorAll("*")].find((n) => n.textContent === text && (n as HTMLElement).style.fontSize) as HTMLElement;
+
+describe("Chip's token look and square option (the hand-off's Tokens chip and icon tile)", () => {
+  it("web: the token skin is the 32px pill, 8 between elements, 12 beside text and 6 beside the swatch, a 500 12px mono label, no check, no hover", () => {
+    const token = webSkin.token!;
+    const base = StyleSheet.flatten(token.base);
+    expect(base.height).toBe(32);
+    expect(base.borderRadius).toBeGreaterThanOrEqual(999);
+    expect(base.borderWidth).toBe(1);
+    expect(base.gap).toBe(8);
+    expect(token.sidePadding).toEqual({ text: 12, icon: 6, remove: 6 });
+    expect(token.labelType).toMatchObject({ fontSize: 12, lineHeight: 16, fontWeight: "500" });
+    expect(String(token.labelType.fontFamily)).toContain("monospace");
+    expect(token.selectedCheck).toBeNull();
+    expect(token.hoverBrightness).toBeUndefined();
+    expect(iosSkin.token).toBe(webSkin.token);
+  });
+
+  it("`token` wins over `option`; neither is the chip itself", () => {
+    expect(lookOf({ token: true, option: true })).toBe("token");
+    expect(lookOf({ option: true })).toBe("option");
+    expect(lookOf({})).toBeNull();
+  });
+
+  it("a token chip is the card fill inside the hairline in the foreground ink, 32 tall, its label mono", () => {
+    const { container } = ui(<Chip testID="t" token icon={<Icon tag size={14} decorative />}>primary</Chip>);
+    const s = at(container, "t").style;
+    expect(s.height).toBe("32px");
+    expect(rgb(s.backgroundColor)).toEqual(rgb(lightColors.card));
+    expect(channelsOf(s.borderColor)).toEqual(channelsOf(lightColors.border));
+    expect(s.paddingInlineStart || s.paddingLeft).toBe("6px");
+    expect(s.paddingInlineEnd || s.paddingRight).toBe("12px");
+    const label = labelOf(container, "primary");
+    expect(label.style.fontSize).toBe("12px");
+    expect(label.style.fontFamily).toContain("monospace");
+    expect(rgb(label.style.color)).toEqual(rgb(lightColors.foreground));
+  });
+
+  it("Android has no token look: the chip stays the 32dp Material chip at the 8dp corner with its label-large", () => {
+    expect(androidSkin.token).toBeUndefined();
+    const { container } = ui(<AndroidChip testID="a" token>primary</AndroidChip>);
+    const s = at(container, "a").style;
+    expect(s.height).toBe("32px");
+    expect(s.borderTopLeftRadius).toBe("8px");
+    expect(labelOf(container, "primary").style.fontSize).toBe("14px");
+  });
+
+  it("`square` holds an option with a label to the 30px tile and sets the label in the 500 10px mono tile type", () => {
+    const { container } = ui(
+      <ChipGroup option accessibilityLabel="Icon" defaultValue="">
+        <Chip testID="none" value="" square>none</Chip>
+        <Chip testID="plus" value="plus" icon={<Icon plus size={14} decorative />} accessibilityLabel="plus" />
+        <Chip testID="label" value="x">label</Chip>
+      </ChipGroup>,
+    );
+    for (const id of ["none", "plus"]) {
+      const s = at(container, id).style;
+      expect(s.width).toBe("30px");
+      expect(s.height).toBe("30px");
+      expect(s.borderTopLeftRadius).toBe("8px");
+      expect(s.justifyContent).toBe("center");
+    }
+    const none = labelOf(container, "none").style;
+    expect([none.fontSize, none.lineHeight, none.fontWeight]).toEqual(["10px", "12px", "500"]);
+    expect(none.fontFamily).toContain("monospace");
+    // The automatic rule is untouched: a labelled option with no icon is still the 26px pill.
+    const pill = at(container, "label").style;
+    expect(pill.height).toBe("26px");
+    expect(pill.width).toBe("");
+    expect(labelOf(container, "label").style.fontSize).toBe("12px");
+  });
+
+  it("`square` is ignored off the option look", () => {
+    const { container } = ui(<Chip testID="s" square>Design</Chip>);
+    expect(at(container, "s").style.height).toBe("28px");
+    expect(at(container, "s").style.width).toBe("");
+  });
+});
+
 describe("Chip's colour flags and neutral emphases, as the hand-off's override draws them", () => {
   const paint = (el: HTMLElement) => [channelsOf(el.style.backgroundColor), channelsOf(el.style.borderTopColor || el.style.borderColor)];
   it("a free hue is its oklch wash at 16% inside the same colour at 30%, under its solved ink", () => {

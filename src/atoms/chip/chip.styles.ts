@@ -59,7 +59,11 @@ const BODY_HIT_SLOP = 8;
 
 // The `option` chip (the hand-off playground's knob picks, Component.dc.html): 26 tall at a
 // 7 corner, 9 at the sides, a 500 12px label, no check and no hover; an icon-only pick is a
-// 30 px square at an 8 corner.
+// 30 px square at an 8 corner (line 163: `width:30px;height:30px;border-radius:8px;
+// display:grid;place-items:center`). The tile's own label is the hand-off's "none" pick,
+// the empty glyph of its ICONS list (line 319) drawn by the same tile (line 163:
+// `font:500 10px var(--fm)` on the button, which its `<span>none</span>` inherits): a
+// 500 10 px mono line, centred in the square.
 const option: NonNullable<ChipSkin["option"]> = {
   base: { ...shell, height: 26, gap: 6, borderRadius: 7 },
   sidePadding: { text: 9, icon: 9, remove: 6 },
@@ -67,6 +71,22 @@ const option: NonNullable<ChipSkin["option"]> = {
   selectedCheck: null,
   hoverBrightness: undefined,
   iconOnly: { width: 30, height: 30, borderRadius: 8, justifyContent: "center", paddingStart: 0, paddingEnd: 0 },
+  tileLabelType: { fontFamily: MONO_FONT, fontSize: 10, lineHeight: 12, fontWeight: "500" },
+};
+
+// The `token` chip (the hand-off's Tokens section, Component.dc.html line 294:
+// `height:32px;padding:0 12px 0 6px;border-radius:999px;border:1px solid var(--ln);
+// background:var(--sf);display:inline-flex;align-items:center;gap:8px`, its label the
+// `<span style="font:500 12px var(--fm)">`): a 32 px full-round pill, 8 between elements,
+// 12 on the text side and 6 beside the leading element (its 20 px swatch), the label a
+// 500 12 px mono line, no check and no hover. The shell paints it the card fill (`--sf`)
+// inside the hairline (`--ln`) in the foreground ink.
+const token: NonNullable<ChipSkin["token"]> = {
+  base: { ...shell, height: 32, gap: 8, borderRadius: shape.web.pill },
+  sidePadding: { text: 12, icon: 6, remove: 6 },
+  labelType: { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500" },
+  selectedCheck: null,
+  hoverBrightness: undefined,
 };
 
 export const webSkin: ChipSkin = {
@@ -85,6 +105,7 @@ export const webSkin: ChipSkin = {
   hoverBrightness: 1.12,
   disabledOpacity: 0.4,
   option,
+  token,
 };
 
 // iOS ships no chip control: the native skin is the web skin.
@@ -121,4 +142,7 @@ export const androidSkin: ChipSkin = {
   outlined: true, // M3 idle chips are the bare container inside the 1dp outline
   accentIcon: true, // M3: a neutral chip's leading icon takes the accent ink
   disabledOpacity: 0.38,
+  // No `option` and no `token` look: Android has the real control for both jobs, so an
+  // option pick and a token tag are its Material 3 chip (design-language item 4), and the
+  // shell leaves those props unread here.
 };
