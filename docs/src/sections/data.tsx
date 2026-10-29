@@ -116,10 +116,10 @@ function CardRaised() {
     <Card raised testID="showcase-c-card-raised">
       {specimenLabel("Card · raised")}
       <Typography small muted>Canvas v4.0.0</Typography>
-      <Row snug baseline>
-        <Typography statValue tabular>{String(COMPONENTS.length)}</Typography>
-        <Typography small muted>components</Typography>
-      </Row>
+      <Typography bigNumber tabular>
+        {String(COMPONENTS.length)}
+        <Typography unit muted> components</Typography>
+      </Typography>
       <Typography small muted>{PLATFORM_COPY.statFoot}</Typography>
     </Card>
   );
@@ -394,7 +394,7 @@ function DescriptionListCard() {
         items={[
           { term: "Display name", value: "Bobby Nannier", update: true },
           { term: "Email", value: "bobby@nannier.com", update: true },
-          { term: "Workspace", value: <Row snug alignCenter><Typography small>Riskora · 24 members</Typography><Badge status success>Active</Badge></Row> },
+          { term: "Workspace", value: <Row snug alignCenter><Typography base>Riskora · 24 members</Typography><Badge status success>Active</Badge></Row> },
         ]}
       />
       <ActionPanel title="Export workspace" description="Every board, token and asset as one .zip." actionLabel="Export" inline />

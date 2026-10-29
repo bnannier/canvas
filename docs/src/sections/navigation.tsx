@@ -77,7 +77,7 @@ function TabBarCard() {
   return (
     <ShowcaseCard id="c-tab-bar" caption="<TabBar> floats off the edge on the functional glass tint · <Steps current={1}>">
       <Container xs>
-        <Card flat flush clip>
+        <Card sunken flush clip>
           <Column padLoose>
             <TabBar
               defaultActive="home"
@@ -107,7 +107,7 @@ function TabBarCard() {
 function NavbarCard() {
   return (
     <ShowcaseCard id="c-navbar" caption="<Navbar> · <Sidebar> · glass comes from <ThemeProvider glass>, never a prop">
-      <Card flat flush clip>
+      <Card sunken flush clip>
         <Navbar
           bordered
           brand="Canvas"
@@ -115,7 +115,7 @@ function NavbarCard() {
           defaultActive={0}
           actions={
             <Row snug alignCenter>
-              <Input search small xxs placeholder="Search…" accessibilityLabel="Search" />
+              <Input small xxs placeholder="Search…" shortcut="⌘K" accessibilityLabel="Search" />
               <Avatar small src={photo("/liang-bao.jpg")} name="Liang Bao" />
             </Row>
           }
@@ -183,8 +183,8 @@ function TabsVariantsCard() {
       <Row relaxed alignStart>
         <Tabs vertical active={active} onSelect={setActive} tabs={SETTINGS.map((entry) => entry.label)} />
         <Column fill>
-          <Card>
-            <Typography h5 level={2}>{panel.label}</Typography>
+          <Card sunken calloutCorners>
+            <Typography paneTitle level={2}>{panel.label}</Typography>
             <Typography small subtle>{panel.body}</Typography>
           </Card>
         </Column>

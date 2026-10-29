@@ -38,17 +38,22 @@ import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
 // Canvas ships where they differ from the hand-off's; the differences are recorded in the
 // Phase 5 report.
 
-/** A mono caption under a sample (the hand-off's 10 to 11 px mono label). */
-function Mono({ children, right }: { children: ReactNode; right?: boolean }) {
-  return <Typography caption mono subtle right={right}>{children}</Typography>;
+/** A mono caption under a sample (the hand-off's 400 11 px mono label, the `sampleLabel` role). */
+function Mono({ children, right, single }: { children: ReactNode; right?: boolean; single?: boolean }) {
+  return <Typography sampleLabel mono subtle right={right} numberOfLines={single ? 1 : undefined}>{children}</Typography>;
 }
 
-/** A sample over its mono caption. */
-function Labelled({ label, children }: { label: string; children: ReactNode }) {
+/** A sample's mono meta line (the hand-off's 400 10 px mono value, the `sampleMeta` role). */
+function Meta({ children }: { children: ReactNode }) {
+  return <Typography sampleMeta mono subtle>{children}</Typography>;
+}
+
+/** A sample over its mono caption (a meta line where the caption is a bare value). */
+function Labelled({ label, meta, children }: { label: string; meta?: boolean; children: ReactNode }) {
   return (
     <Column tight alignCenter>
       {children}
-      <Mono>{label}</Mono>
+      {meta ? <Meta>{label}</Meta> : <Mono>{label}</Mono>}
     </Column>
   );
 }
@@ -158,7 +163,7 @@ function NeutralsCard() {
         {NEUTRALS.map((role) => (
           <Row key={role} cozy alignCenter>
             <Column fill>
-              <Typography caption mono>{role}</Typography>
+              <Typography codeLabel mono>{role}</Typography>
             </Column>
             <Column fill>
               <Swatch small inline color={dark[role]} value={dark[role]} />
@@ -217,7 +222,7 @@ function TypographyCard() {
                 {/* A specimen of the role, not a heading of the page. */}
                 <Typography {...{ [row.role]: true }} accessibilityRole="text">{row.sample}</Typography>
               </Column>
-              <Mono right>{roleSpec(row.role, row.face)}</Mono>
+              <Mono right single>{roleSpec(row.role, row.face)}</Mono>
             </Row>
           </Column>
         ))}
@@ -333,7 +338,7 @@ function IconCard() {
       </Row>
       <Row relaxed alignEnd>
         {[16, 20, 24, 32].map((size) => (
-          <Labelled key={size} label={String(size)}><Icon rocket size={size} decorative /></Labelled>
+          <Labelled key={size} meta label={String(size)}><Icon rocket size={size} decorative /></Labelled>
         ))}
       </Row>
     </ShowcaseCard>
@@ -379,9 +384,9 @@ function EmblemCard() {
           ))}
         </Row>
         <Row between>
-          <Mono>{String(RAMP[0])}</Mono>
-          <Mono>accent ramp · L in oklch</Mono>
-          <Mono>{String(RAMP[RAMP.length - 1])}</Mono>
+          <Meta>{String(RAMP[0])}</Meta>
+          <Meta>accent ramp · L in oklch</Meta>
+          <Meta>{String(RAMP[RAMP.length - 1])}</Meta>
         </Row>
       </Column>
     </ShowcaseCard>

@@ -131,8 +131,8 @@ export function Cards() {
           {SPARKS.map((spark) => (
             <Row key={spark.label} between alignEnd cozy>
               <Column tight>
-                <Typography eyebrow subtle>{spark.label}</Typography>
-                <Typography metricValue tabular>{spark.value}</Typography>
+                <Typography rowLabel>{spark.label}</Typography>
+                <Typography rowValue tabular>{spark.value}</Typography>
               </Column>
               <Sparkline values={[...spark.values]} {...{ [spark.tone]: true }} />
             </Row>
@@ -216,7 +216,7 @@ export function Cards() {
       <ShowcaseGrid minTileWidth={560}>
         <ShowcaseCard id="c-heatmap" caption="<Heatmap calendar> is the kit's activity calendar · without it, a free cell grid of any density">
           <Row snug baseline>
-            <Typography metricValue tabular>{COMMITS.total.toLocaleString("en-US")}</Typography>
+            <Typography headlineValue tabular>{COMMITS.total.toLocaleString("en-US")}</Typography>
             <Typography small muted>commits to bnannier/canvas</Typography>
           </Row>
           <Heatmap calendar label="Commits" values={COMMITS.cells} />
@@ -235,9 +235,9 @@ export function Cards() {
           <ServiceHealthList plain items={SERVICES} />
         </ShowcaseCard>
         <ShowcaseCard id="c-geo-map" caption="<GeoMap zoomable> · geometry pre-projected at build time · crowded places merge and split as you zoom">
-          <Row snug baseline>
-            <Typography metricValue tabular>18.4k</Typography>
-            <Typography small muted>{`sessions in ${CITY_SESSIONS.length} cities, last 24h`}</Typography>
+          <Row comfortable baseline>
+            <Typography headlineValue tabular>18.4k</Typography>
+            <Typography small subtle>{`sessions in ${CITY_SESSIONS.length} cities, last 24h`}</Typography>
           </Row>
           <GeoMap plain zoomable points={CITY_SESSIONS} formatValue={(v) => `${v.toLocaleString("en-US")} sessions`} />
         </ShowcaseCard>

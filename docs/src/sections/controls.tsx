@@ -86,7 +86,7 @@ function IntentButton({ intent, loading, disabled }: { intent: Intent; loading?:
 }
 
 /** The matrix's row label: the intent's prop name in the mono face. */
-const rowLabel = (intent: Intent) => <Typography caption mono muted>{intent}</Typography>;
+const rowLabel = (intent: Intent) => <Typography codeLabel mono>{intent}</Typography>;
 
 /** The pinned interaction columns: each cell pins its own state (InteractionOverride). */
 function Pinned({ hovered, pressed, children }: { hovered?: boolean; pressed?: boolean; children: ReactNode }) {
@@ -225,7 +225,7 @@ function Identity() {
           <Kbd>esc</Kbd>
           <Kbd>↵</Kbd>
         </Row>
-        <Typography caption subtle right>Kbd · keycaps read as one unit</Typography>
+        <Typography inlineNote right>Kbd · keycaps read as one unit</Typography>
       </Column>
       <Divider />
       <Column snug>

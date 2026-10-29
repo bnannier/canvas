@@ -327,7 +327,7 @@ function WizardCard() {
             </Column>
           </Column>
           <Column span={6}>
-            <Card flat>
+            <Card sunken>
               <Typography eyebrow subtle>Preview</Typography>
               <Row snug alignCenter>
                 <Button primary small>Primary</Button>
