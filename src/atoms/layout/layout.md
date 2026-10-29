@@ -194,6 +194,31 @@ inside.
 </Row>
 ```
 
+### Weights (a share of the free width)
+
+A direct child's `weight` is its share of the Row's width after the gaps, CSS
+grid's `fr`: `weight={1.7}` beside `weight={1}` splits the row 1.7 to 1 whatever
+either side holds, for the ratios twelfths cannot name. A weighted box has no
+content floor, so text inside it wraps rather than pushing its neighbour. It
+replaces `fill` and `grow` on the same box, a box takes a `span` or a `weight`,
+not both, and once a `stacks` Row has stacked every weighted child is the whole
+line.
+
+```tsx
+<Row stacks>
+  <Column weight={1.7}>
+    <Card>
+      <Typography medium>The figure</Typography>
+    </Card>
+  </Column>
+  <Column weight={1}>
+    <Card>
+      <Typography medium>Its legend</Typography>
+    </Card>
+  </Column>
+</Row>
+```
+
 ## Do & Don't
 
 ### Gap

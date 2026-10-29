@@ -70,7 +70,7 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
   return (
     <DetailSection id="an" title="Anatomy" sectionRef={sectionRef}>
       <Row stacks stackBreakpoint="md" roomy>
-        <Column span={7}>
+        <Column weight={1.7}>
           {/* A preview stage like every specimen well (the tooling attribute on a wrapper
               the figure alone sits in): the specimen's own headings are the component's
               sample, not the page's outline. */}
@@ -90,9 +90,10 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
             </Card>
           </View>
         </Column>
-        {/* The span cell is stretched to the figure's height by the Row; the column grows
-            to fill it so the legend card can grow in turn. */}
-        <Column span={5} grow>
+        {/* The hand-off's columns (line 216, `anCols`): `minmax(0,1.7fr) minmax(220px,1fr)`,
+            the figure 1.7 shares of the width to the legend's 1. The Row stretches the legend
+            column to the figure's height so the legend card can grow in turn. */}
+        <Column weight={1}>
           {/* The hand-off's legend (line 221): `padding:18px;border:1px solid var(--ln);
               border-radius:20px;background:var(--sf);...;gap:12px`, no shadow; the card owns the rhythm. */}
           {/* The legend stretches to the figure's height (the grid's `align-items:stretch`,
