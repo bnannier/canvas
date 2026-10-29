@@ -54,7 +54,9 @@ export function VariantsSection({ examples, path, note, scope, selected, section
       {note?.length ? <Prose blocks={note} small subtle /> : null}
       <Grid minTileWidth={340} roomy>
         {examples.map(({ example, index }) => (
-          <Card key={example.label} flush selected={index === selected}>
+          // The hand-off's variant card (line 182): `border:1px solid var(--ln);border-radius:18px;
+          // overflow:hidden;background:var(--sf)`, no shadow.
+          <Card key={example.label} flush clip largeCorners outlined selected={index === selected}>
             <Well code={example.code}>{example.render(scope)}</Well>
             <CardSeparator />
             <CardContent cozy>
@@ -74,7 +76,9 @@ export function VariantsSection({ examples, path, note, scope, selected, section
 /** A Sizes or States cell: the specimen on a compact well over its mono caption. */
 function SpecimenCard({ label, pinsRing, children }: { label: string; pinsRing?: boolean; children: ReactNode }) {
   return (
-    <Card flush>
+    // The hand-off's size and state tile (lines 199 and 207): `border:1px solid var(--ln);
+    // border-radius:16px;overflow:hidden;background:var(--sf)`, no shadow, at the card corner.
+    <Card flush clip outlined>
       <Well compact pinsRing={pinsRing}>{children}</Well>
       <CardSeparator />
       <CardContent dense>

@@ -16,9 +16,11 @@ import { type HoverMotion } from "../../style/hover.js";
 // STATIC shared members, so their insets and type are shared (one value across
 // platforms); the main surface and the title face are skin-parameterized.
 //
-// - Web is the hand-off's: the web card corner, the `card` fill under a 1 px `border`
+// - Web is the hand-off's: the web card corner (or the tile, callout, panel or stage
+//   corner, the Corners axis), the `card` fill under a 1 px `border`
 //   hairline, the small shadow at rest (`--sh-sm`), the large one raised (`--sh-lg`) and
-//   none flat, where the fill steps up to `popover` (the hand-off's sf2). A 20 px inset
+//   none flat, where the fill steps up to `popover` (the hand-off's sf2), or outlined,
+//   where the fill stays (the component page's cards). A 20 px inset
 //   with an 8 px rhythm between flat children (14 / 8 compact, 28 / 8 comfortable). The
 //   title is 500 21 px in the display face. Selected adds a 4 px ring of the accent's
 //   soft wash outside the primary border. A pressable card takes the hover lift
@@ -31,12 +33,21 @@ import { type HoverMotion } from "../../style/hover.js";
 //   OUTLINED card (1dp outline, elevation 0), `raised` lifts the elevated card to M3
 //   level 3 (6dp). Plus the 12dp medium shape and M3's density steps.
 
-export type Elevation = "raised" | "flat" | "tile" | "row" | "empty" | "default";
-export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "default";
+export type Elevation = "raised" | "flat" | "outlined" | "tile" | "row" | "empty" | "default";
+export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "panel" | "guide" | "linkTile" | "pager" | "default";
+/**
+ * The corner steps a card can take (the Corners axis): the card corner by default, the
+ * tile corner (`smallCorners`), and the three the v4 hand-off's component page draws
+ * (`calloutCorners`, `largeCorners`, `stageCorners`). The web skin draws each from its
+ * row; the native skins keep their own card corner on every step but the tile.
+ */
+export type Corner = "small" | "callout" | "large" | "stage" | "default";
 
 export interface CardSkin {
   /** Corner radius of the card surface. */
   radius: number;
+  /** The corner each step of the Corners axis draws; `default` is `radius`. */
+  corners: Record<Corner, number>;
   /** Corner curve; iOS sets "continuous" (Apple superellipse), a no-op elsewhere. */
   curve?: ViewStyle["borderCurve"];
   /** Surface colors (fill + border color), per elevation variant. */
@@ -88,8 +99,23 @@ const REFERENCE_DENSITY = {
   request: { paddingTop: 18, paddingRight: 22, paddingBottom: 18, paddingLeft: 20 },
   menu: { paddingVertical: 12 },
 };
+
+// The v4 hand-off component page's card insets (Component.dc.html), the same on every
+// platform since no platform's card control sets a docs panel's inset: the section panel
+// (`padding:18px;...;gap:12px`, lines 221, 256 and 262: the accessibility cards and the
+// anatomy legend), the guidance card (`padding:18px 20px;...;gap:10px`, lines 269 and 285:
+// the usage guidance and "From the docs" cards), the link tile (`padding:14px 16px;...;
+// gap:6px`, line 297: the related-component tiles) and the pager card (`padding:16px
+// 18px;...;gap:4px`, line 303: the previous and next cards).
+const HANDOFF_DENSITY = {
+  panel: { padding: 18, gap: 12 },
+  guide: { paddingVertical: 18, paddingHorizontal: 20, gap: 10 },
+  linkTile: { paddingVertical: 14, paddingHorizontal: 16, gap: 6 },
+  pager: { paddingVertical: 16, paddingHorizontal: 18, gap: 4 },
+};
 const WEB_DENSITY: Record<Density, ViewStyle> = {
   ...REFERENCE_DENSITY,
+  ...HANDOFF_DENSITY,
   compact: { padding: 14, gap: 8 },
   comfortable: { padding: 28, gap: 8 },
   // The default density IS the standard padded surface: the hand-off's 20px inset
@@ -102,10 +128,21 @@ const WEB_DENSITY: Record<Density, ViewStyle> = {
 const SELECTED_RING = 4;
 const selectedRing = (t: ColorTokens) => `0px 0px 0px ${SELECTED_RING}px ${t["primary-soft"] ?? t.ring}`;
 
-// The hand-off's shadow per elevation: none flat, the large step raised, the small one
-// at rest (and on the legacy tile, row and empty steps, which the ladder rests at sm).
+// The hand-off's shadow per elevation: none flat or outlined, the large step raised, the
+// small one at rest (and on the legacy tile, row and empty steps, which the ladder rests at sm).
 const webElevation = (e: Elevation, t: ColorTokens): ViewStyle =>
-  e === "raised" ? shadow("lg", t) : e === "flat" ? shadow("none") : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t);
+  e === "raised" ? shadow("lg", t) : e === "flat" || e === "outlined" ? shadow("none") : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t);
+
+// The web corner steps: the card corner, the tile corner (`smallCorners`), and the v4
+// hand-off component page's three (its callout at 14, Component.dc.html line 244, which
+// its related tiles share, line 297; its section panel at 18 and its stage at 20).
+const WEB_CORNERS: Record<Corner, number> = {
+  default: shape.web.card,
+  small: shape.web.tile,
+  callout: platformShape.web.callout,
+  large: platformShape.web.panel,
+  stage: platformShape.web.stage,
+};
 
 // The selected ring joins the elevation's shadow list (one boxShadow per node on the web).
 function withRing(style: ViewStyle, t: ColorTokens): ViewStyle {
@@ -115,6 +152,7 @@ function withRing(style: ViewStyle, t: ColorTokens): ViewStyle {
 
 export const webSkin: CardSkin = {
   radius: shape.web.card,
+  corners: WEB_CORNERS,
   surface: lightSurface,
   flatFill: (t) => t.popover,
   elevation: (e, t, selected) => (selected ? withRing(webElevation(e, t), t) : webElevation(e, t)),
@@ -132,6 +170,9 @@ export const webSkin: CardSkin = {
 
 export const iosSkin: CardSkin = {
   radius: shape.ios.card,
+  // The native card keeps its own corner on every step but the tile: the hand-off's
+  // page corners are the web page's.
+  corners: { default: shape.ios.card, small: shape.ios.tile, callout: shape.ios.card, large: shape.ios.card, stage: shape.ios.card },
   // Apple's superellipse corner curve (an iOS-only RN style prop; device-only
   // visual, a no-op on other platforms and in the web docs preview).
   curve: "continuous",
@@ -148,6 +189,7 @@ export const iosSkin: CardSkin = {
 
 const M3_DENSITY: Record<Density, ViewStyle> = {
   ...REFERENCE_DENSITY,
+  ...HANDOFF_DENSITY,
   compact: { padding: 12, gap: 8 },
   comfortable: { padding: 24, gap: 20 },
   // The default density IS the standard padded surface: M3's 16dp content
@@ -158,14 +200,16 @@ const M3_DENSITY: Record<Density, ViewStyle> = {
 export const androidSkin: CardSkin = {
   // M3 medium shape token (cards).
   radius: shape.android.card,
+  // The Material 3 card keeps its medium shape on every step but the tile.
+  corners: { default: shape.android.card, small: shape.android.tile, callout: shape.android.card, large: shape.android.card, stage: shape.android.card },
   // M3 cards never combine an outline with nonzero elevation, so the default and
-  // `raised` cards read as M3 ELEVATED (no visible outline) and `flat` reads as M3
-  // OUTLINED (1dp outline, elevation 0). The non-outlined variants keep the shared
-  // 1px border WIDTH but paint it transparent: content metrics stay identical
+  // `raised` cards read as M3 ELEVATED (no visible outline) and `flat` and `outlined`
+  // both read as M3 OUTLINED (1dp outline, elevation 0). The non-outlined variants keep
+  // the shared 1px border WIDTH but paint it transparent: content metrics stay identical
   // across variants and platforms, and `selected` can still recolor the hairline
   // to primary without shifting content.
   surface: (tokens, e) => ({
-    borderColor: e === "flat" ? tokens.border : "transparent",
+    borderColor: e === "flat" || e === "outlined" ? tokens.border : "transparent",
     backgroundColor: tokens.card,
   }),
   // M3 resting elevation = level 1 (1dp, our shadow-sm exactly); raised = level 3
@@ -175,7 +219,7 @@ export const androidSkin: CardSkin = {
   elevation: (e, t) =>
     e === "raised"
       ? customShadow({ offsetY: 4, radius: 6, opacity: 0.1, elevation: 6 })
-      : e === "flat"
+      : e === "flat" || e === "outlined"
         ? shadow("none")
         : shadow("sm", t),
   density: M3_DENSITY,
@@ -199,14 +243,74 @@ export const cardBase: ViewStyle = { borderWidth: CARD_BORDER };
 // page's staging wells, Component.dc.html. Centered content over the sunken fill, at
 // least the step's height, growing with its content and clipping what overflows it.
 // Variants stage at 160 / 28 x 20, sizes and states at 130 / 24 x 16 (`compact`), the
-// platform skins at 240 / 32 x 20 (`tall`). The fill is the shell's (an inner fill).
-export type MediaWell = "default" | "compact" | "tall";
+// platform skins at 240 / 32 x 20 (`tall`), the anatomy figure at 320 / 80 x 40
+// (`stage`, line 217: `min-height:320px;padding:80px 40px`) and the playground at
+// 340 / 44 x 28 (`playground`, line 156: `min-height:340px;padding:44px 28px`). The
+// hand-off's playground stage is a grid cell beside the knob panel, stretched to the
+// panel's height and taking the width the panel leaves, so that well alone grows along
+// its parent's main axis (and may shrink to the space it is given): the remaining width
+// beside the panel, inert stacked over it. The fill is the shell's (an inner fill).
+export type MediaWell = "default" | "compact" | "tall" | "stage" | "playground";
 const WELL_BASE: ViewStyle = { alignItems: "center", justifyContent: "center", overflow: "hidden", minWidth: 0 };
 export const mediaWell: Record<MediaWell, ViewStyle> = {
   default: { ...WELL_BASE, minHeight: 160, paddingVertical: 28, paddingHorizontal: 20 },
   compact: { ...WELL_BASE, minHeight: 130, paddingVertical: 24, paddingHorizontal: 16 },
   tall: { ...WELL_BASE, minHeight: 240, paddingVertical: 32, paddingHorizontal: 20 },
+  stage: { ...WELL_BASE, minHeight: 320, paddingVertical: 80, paddingHorizontal: 40 },
+  playground: { ...WELL_BASE, minHeight: 340, paddingVertical: 44, paddingHorizontal: 28, flexGrow: 1, flexShrink: 1 },
 };
+
+/** The insets a density style spells, whichever padding shorthand it uses, and its rhythm. */
+function insetsOf(density: ViewStyle): { top: number; right: number; bottom: number; left: number; gap: number } {
+  const n = (v: unknown): number | undefined => (typeof v === "number" ? v : undefined);
+  const all = n(density.padding) ?? 0;
+  const vertical = n(density.paddingVertical) ?? all;
+  const horizontal = n(density.paddingHorizontal) ?? all;
+  return {
+    top: n(density.paddingTop) ?? vertical,
+    right: n(density.paddingRight) ?? horizontal,
+    bottom: n(density.paddingBottom) ?? vertical,
+    left: n(density.paddingLeft) ?? horizontal,
+    gap: n(density.gap) ?? 0,
+  };
+}
+
+/** The section insets a density gives a sectioned card (see `sectionInsets`). */
+export interface SectionInsets {
+  /** The eyebrow row: the inset above and beside. */
+  eyebrow: ViewStyle;
+  /** The title header when it leads the card: the inset above and beside. */
+  header: ViewStyle;
+  /** The title header below the eyebrow row: the rhythm above, the inset beside. */
+  headerBelow: ViewStyle;
+  /** The body when it leads the card: the inset all round, the rhythm between its children. */
+  content: ViewStyle;
+  /** The body below a header: the rhythm above, the inset beside and below. */
+  contentBelow: ViewStyle;
+  /** The footer under its hairline: the rhythm above, the inset beside and below. */
+  footer: ViewStyle;
+}
+
+/**
+ * A density on a SECTIONED card (one with an eyebrow, a title or a footer) moves its
+ * inset onto the self-padding sections, since the surface never pads there: the first
+ * section takes the inset above, every section the inset beside, the last the inset
+ * below, and each section after the first sits the density's rhythm under the one
+ * before it, so the hand-off's panel (an 18 px inset, its eyebrow 12 px over its list,
+ * Component.dc.html line 256) is `<Card panel eyebrow="Keyboard">`.
+ */
+export function sectionInsets(density: ViewStyle): SectionInsets {
+  const { top, right, bottom, left, gap } = insetsOf(density);
+  const beside = { paddingLeft: left, paddingRight: right };
+  return {
+    eyebrow: { ...beside, paddingTop: top },
+    header: { ...beside, paddingTop: top },
+    headerBelow: { ...beside, paddingTop: gap },
+    content: { ...beside, paddingTop: top, paddingBottom: bottom, gap },
+    contentBelow: { ...beside, paddingTop: gap, paddingBottom: bottom, gap },
+    footer: { ...beside, paddingTop: gap, paddingBottom: bottom },
+  };
+}
 
 // The hand-off's CardHeader: the card inset above and beside, none below (the body
 // below brings its own), the title and description 8px apart, the card's rhythm.

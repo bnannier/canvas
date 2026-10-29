@@ -3,16 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardMedia, CardSeparator, Typography } = scope;
+  const { Card, DescriptionList } = scope;
   return (
-<Card flush>
-  <CardMedia compact>
-    <Button small>Save</Button>
-  </CardMedia>
-  <CardSeparator />
-  <CardContent dense>
-    <Typography caption mono medium muted>size small</Typography>
-  </CardContent>
+<Card title="Identity">
+  <DescriptionList
+    items={[
+      { term: "ID", value: "6f1c2a" },
+      { term: "State", value: "Active" },
+    ]}
+  />
 </Card>
   );
 }

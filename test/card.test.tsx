@@ -16,6 +16,8 @@ import {
   CardSeparator,
 } from "../src/molecules/card/card.tsx";
 import * as cardStyles from "../src/molecules/card/card.styles.ts";
+import { elevationOf, mediaWellOf } from "../src/molecules/card/card.shared.tsx";
+import { platformShape } from "../src/style/platform-shape.ts";
 import { shape, lightColors } from "../src/style/tokens.ts";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
 import { mockInPageFrost } from "./fixtures/material-platform.ts";
@@ -532,4 +534,140 @@ it("a data-driven card sets the hand-off's eyebrow row above its title", () => {
   expect(eyebrow.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(title.style.fontSize).toBe("21px");
   expect(title.style.fontWeight).toBe("500");
+});
+
+// The v4 hand-off component page's card geometry (Component.dc.html): the Corners axis,
+// the `outlined` elevation, the page densities (on a plain and on a sectioned card) and
+// the two stage wells.
+describe("Card corners", () => {
+  it("draws each step from the web row, the card corner by default", () => {
+    const radius = (node: ReturnType<typeof ui>) => node.getByTestId("c").style.borderRadius;
+    expect(radius(ui(<Card testID="c"><Text>a</Text></Card>))).toBe(`${shape.web.card}px`);
+    cleanup();
+    expect(radius(ui(<Card smallCorners testID="c"><Text>a</Text></Card>))).toBe(`${shape.web.tile}px`);
+    cleanup();
+    expect(radius(ui(<Card calloutCorners testID="c"><Text>a</Text></Card>))).toBe(`${platformShape.web.callout}px`);
+    cleanup();
+    expect(radius(ui(<Card largeCorners testID="c"><Text>a</Text></Card>))).toBe(`${platformShape.web.panel}px`);
+    cleanup();
+    expect(radius(ui(<Card stageCorners testID="c"><Text>a</Text></Card>))).toBe(`${platformShape.web.stage}px`);
+  });
+
+  it("the smaller step wins when several are passed", () => {
+    const { getByTestId } = ui(<Card stageCorners largeCorners calloutCorners testID="c"><Text>a</Text></Card>);
+    expect(getByTestId("c").style.borderRadius).toBe(`${platformShape.web.callout}px`);
+  });
+
+  it("the native skins keep their own card corner on every step but the tile", () => {
+    for (const skin of [cardStyles.iosSkin, cardStyles.androidSkin]) {
+      expect(skin.corners.callout).toBe(skin.radius);
+      expect(skin.corners.large).toBe(skin.radius);
+      expect(skin.corners.stage).toBe(skin.radius);
+      expect(skin.corners.default).toBe(skin.radius);
+    }
+    expect(cardStyles.iosSkin.corners.small).toBe(shape.ios.tile);
+    expect(cardStyles.androidSkin.corners.small).toBe(shape.android.tile);
+  });
+});
+
+describe("Card outlined", () => {
+  it("keeps the card fill under the hairline with no shadow, where `flat` steps the fill up", () => {
+    const { getByTestId } = ui(
+      <>
+        <Card outlined testID="o"><Text>a</Text></Card>
+        <Card flat testID="f"><Text>a</Text></Card>
+        <Card testID="d"><Text>a</Text></Card>
+      </>,
+    );
+    const outlined = getByTestId("o");
+    const flat = getByTestId("f");
+    const rest = getByTestId("d");
+    expect(outlined.style.boxShadow).toBe("none");
+    expect(flat.style.boxShadow).toBe("none");
+    expect(rest.style.boxShadow).not.toBe("none");
+    expect(outlined.style.backgroundColor).toBe(rest.style.backgroundColor);
+    expect(outlined.style.borderWidth).toBe("1px");
+    // The fills by skin, since the light scheme paints card and popover the same white:
+    // outlined keeps the card fill, flat steps up to the popover (sf2).
+    expect(cardStyles.webSkin.surface(lightColors, "outlined").backgroundColor).toBe(lightColors.card);
+    expect(cardStyles.webSkin.flatFill!(lightColors)).toBe(lightColors.popover);
+  });
+
+  it("sits after `flat` in the elevation precedence", () => {
+    expect(elevationOf({ flat: true, outlined: true })).toBe("flat");
+    expect(elevationOf({ outlined: true, tileShadow: true })).toBe("outlined");
+    // Android's outlined card is the Material 3 outlined card: the hairline shows and the elevation drops.
+    expect(cardStyles.androidSkin.surface(lightColors, "outlined").borderColor).toBe(lightColors.border);
+    expect(cardStyles.androidSkin.elevation("outlined", lightColors)).toEqual(cardStyles.androidSkin.elevation("flat", lightColors));
+  });
+});
+
+describe("Card page densities", () => {
+  it("pad a plain card at the hand-off's insets and rhythm", () => {
+    const cases: [keyof typeof cardStyles.webSkin.density, string, string][] = [
+      ["panel", "18px", "12px"],
+      ["guide", "18px 20px", "10px"],
+      ["linkTile", "14px 16px", "6px"],
+      ["pager", "16px 18px", "4px"],
+    ];
+    for (const [density, padding, gap] of cases) {
+      const { getByTestId } = ui(<Card {...{ [density]: true }} testID="c"><Text>a</Text><Text>b</Text></Card>);
+      const el = getByTestId("c");
+      expect(el.style.padding, density).toBe(padding);
+      expect(el.style.gap, density).toBe(gap);
+      cleanup();
+    }
+  });
+
+  it("on a sectioned card move the inset and rhythm onto the sections, the surface staying bare", () => {
+    const { getByTestId, getByText } = ui(
+      <Card panel eyebrow="Keyboard" testID="c">
+        <Text>Enter</Text>
+      </Card>,
+    );
+    expect(getByTestId("c").style.padding).toBe("");
+    // The eyebrow row takes the inset above and beside.
+    const eyebrow = getByText("Keyboard").parentElement as HTMLElement;
+    expect(eyebrow.style.paddingTop).toBe("18px");
+    expect(eyebrow.style.paddingLeft).toBe("18px");
+    // The body sits the rhythm under it, keeps the inset beside and below, and spaces its children by it.
+    const body = getByText("Enter").parentElement as HTMLElement;
+    expect(body.style.paddingTop).toBe("12px");
+    expect(body.style.paddingLeft).toBe("18px");
+    expect(body.style.paddingBottom).toBe("18px");
+    expect(body.style.gap).toBe("12px");
+  });
+
+  it("leave a sectioned card's standard sections alone at the default density", () => {
+    const { getByText } = ui(<Card eyebrow="Keyboard"><Text>Enter</Text></Card>);
+    const body = getByText("Enter").parentElement as HTMLElement;
+    expect(body.style.paddingTop).toBe(`${cardStyles.content.paddingVertical}px`);
+    expect(body.style.gap).toBe(`${cardStyles.content.gap}px`);
+  });
+});
+
+describe("CardMedia stage wells", () => {
+  it("`stage` is the anatomy figure's well and `playground` the live specimen's, growing beside a panel", () => {
+    const { getByTestId } = ui(
+      <>
+        <CardMedia stage testID="s"><Text>figure</Text></CardMedia>
+        <CardMedia playground testID="p"><Text>live</Text></CardMedia>
+      </>,
+    );
+    const stage = getByTestId("s");
+    expect(stage.style.minHeight).toBe("320px");
+    expect(stage.style.padding).toBe("80px 40px");
+    expect(stage.style.flexGrow).toBe("");
+    const playground = getByTestId("p");
+    expect(playground.style.minHeight).toBe("340px");
+    expect(playground.style.padding).toBe("44px 28px");
+    expect(playground.style.flexGrow).toBe("1");
+    expect(playground.style.flexShrink).toBe("1");
+  });
+
+  it("the specimen wells win over the stages", () => {
+    expect(mediaWellOf({ compact: true, stage: true })).toBe("compact");
+    expect(mediaWellOf({ tall: true, playground: true })).toBe("tall");
+    expect(mediaWellOf({ stage: true, playground: true })).toBe("stage");
+  });
 });

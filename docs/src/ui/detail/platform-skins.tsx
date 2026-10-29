@@ -76,7 +76,9 @@ export function PlatformSkinsSection({ examples, selected, onSelect, tokens, sta
             >
               <Grid minTileWidth={300} roomy>
                 {previews.map((p) => (
-                  <Card key={p.platform} flush>
+                  // The hand-off's platform card (line 275): `border:1px solid var(--ln);
+                  // border-radius:18px;overflow:hidden;background:var(--sf)`, no shadow.
+                  <Card key={p.platform} flush clip largeCorners outlined>
                     <View {...(Platform.OS === "web" ? ({ dataSet: { platformRow: p.platform } } as object) : null)}>
                       <CardMedia tall>
                         <ExampleErrorBoundary key={`${p.platform}:${selected}`}>

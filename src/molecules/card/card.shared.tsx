@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, type ReactNode } from "react";
-import { View, Pressable, Text, shape as shapeTokens, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, isGlass, withInnerFill, LayoutAxisProvider, columnAxis, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, isGlass, withInnerFill, LayoutAxisProvider, columnAxis, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { selectedCard } from "../../style/selected-card.js";
@@ -11,7 +11,7 @@ import { Badge } from "../../atoms/badge/badge.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
 import * as s from "./card.styles.js";
-import { type CardSkin, type Elevation, type Density, type MediaWell } from "./card.styles.js";
+import { type CardSkin, type Corner, type Elevation, type Density, type MediaWell } from "./card.styles.js";
 
 // Shared Card shell. The structure (a surface giving you border, radius, and
 // shadow, composed from the subcomponents below), the boolean-prop axes, the
@@ -29,8 +29,15 @@ import { type CardSkin, type Elevation, type Density, type MediaWell } from "./c
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf). Axes:
 //
-// - Elevation (pick one): `raised` > `flat` > default. `flat` drops the shadow;
-//   `raised` lifts it. (The exact resting/raised shadow is per-OS via the skin.)
+// - Elevation (pick one): `raised` > `flat` > `outlined` > default. `flat` drops the
+//   shadow and steps the fill up a surface; `outlined` drops the shadow and keeps the
+//   card fill under the hairline (the v4 hand-off component page's cards, `background:
+//   var(--sf);border:1px solid var(--ln)` with no box-shadow); `raised` lifts it. (The
+//   exact resting/raised shadow is per-OS via the skin.)
+// - Corners (pick one): `smallCorners` > `calloutCorners` > `largeCorners` >
+//   `stageCorners` > default, the smaller winning. Each is a step of the skin's
+//   `corners` table (the web row's tile, callout, panel and stage corners; the native
+//   skins keep their own card corner on every step but the tile).
 // - Interaction: pass `onPress` to make the whole card pressable; it gains the
 //   pressed affordance (Android ripple, iOS/web pressed dim) and the button role,
 //   and on the web the hover lift (the skin's `hover`).
@@ -47,7 +54,9 @@ import { type CardSkin, type Elevation, type Density, type MediaWell } from "./c
 // - Density (pick one): `compact` > `comfortable`. Sets the card's own content
 //   padding and the gap between flat children, tight (compact) or roomy
 //   (comfortable). A density prop pads the surface on its own, so it needs no
-//   `padded`, and it wins over `padded` and `flush` when both are set.
+//   `padded`, and it wins over `padded` and `flush` when both are set. On a SECTIONED
+//   card (an eyebrow, a title or a footer) the surface never pads, so a density moves
+//   its inset and rhythm onto the sections instead (`sectionInsets` in card.styles.ts).
 //
 // For the docs playground, which maps plain state to props (no JSX children),
 // Card also accepts simple string props (title, description, body, footer):
@@ -115,6 +124,8 @@ export interface CardProps {
   // Elevation (pick one; default is a soft resting shadow).
   raised?: boolean;
   flat?: boolean;
+  /** The hairline on the card fill with no shadow (the hand-off component page's cards). */
+  outlined?: boolean;
   // Padding (orthogonal booleans). A card with raw children is padded by default,
   // and the data-driven string path (no children) pads through its self-padding
   // sections instead, so neither prop moves the surface inset there.
@@ -157,10 +168,26 @@ export interface CardProps {
   metric?: boolean;
   request?: boolean;
   menu?: boolean;
+  /** A section panel: an 18 px inset with a 12 px rhythm (the hand-off's accessibility cards and anatomy legend). */
+  panel?: boolean;
+  /** A guidance card: 18 by 20 with a 10 px rhythm (the hand-off's usage guidance and "From the docs" cards). */
+  guide?: boolean;
+  /** A link tile: 14 by 16 with a 6 px rhythm (the hand-off's related-component tiles). */
+  linkTile?: boolean;
+  /** A pager card: 16 by 18 with a 4 px rhythm (the hand-off's previous and next cards). */
+  pager?: boolean;
   /** Keep the reference inset without the compact density's flat-child gap. */
   gapless?: boolean;
   borderless?: boolean;
+  // Corners (pick one; default is the card corner). The smaller step wins.
+  /** The tile corner. */
   smallCorners?: boolean;
+  /** The callout corner (14 on the web): a note under a table, a compact link tile. */
+  calloutCorners?: boolean;
+  /** The section panel corner (18 on the web): a card framing a section of a page. */
+  largeCorners?: boolean;
+  /** The stage corner (20 on the web): a staging frame, a figure and its legend. */
+  stageCorners?: boolean;
   inset?: boolean;
   /** Original inset human-gate content panel. */
   gatePanel?: boolean;
@@ -194,6 +221,7 @@ export function panelOf(p: CardProps) {
 export function elevationOf(p: CardProps): Elevation {
   if (p.raised) return "raised";
   if (p.flat) return "flat";
+  if (p.outlined) return "outlined";
   if (p.tileShadow) return "tile";
   if (p.rowShadow) return "row";
   if (p.emptyShadow) return "empty";
@@ -213,8 +241,21 @@ export function densityOf(p: CardProps): Density {
   if (p.metric) return "metric";
   if (p.request) return "request";
   if (p.menu) return "menu";
+  if (p.panel) return "panel";
+  if (p.guide) return "guide";
+  if (p.linkTile) return "linkTile";
+  if (p.pager) return "pager";
   if (p.compact) return "compact";
   if (p.comfortable) return "comfortable";
+  return "default";
+}
+
+// Corner precedence when more than one is passed: the smaller step wins.
+export function cornerOf(p: CardProps): Corner {
+  if (p.smallCorners) return "small";
+  if (p.calloutCorners) return "callout";
+  if (p.largeCorners) return "large";
+  if (p.stageCorners) return "stage";
   return "default";
 }
 
@@ -280,17 +321,21 @@ export function createCard(skin: CardSkin) {
     // was (the density gap is inert with one child); a card with several flat
     // children now also gains that gap, the surface's own rhythm.
     const padsSurface = children != null && !hasSections;
-    // `padded` and the density booleans move the SURFACE inset, which a sectioned card
-    // never takes (its sections pad themselves). Silently ignoring a passed prop is the
-    // same class of bug as the dropped header this path fixes, so name it in DEV.
+    // `padded` moves the SURFACE inset, which a sectioned card never takes (its sections
+    // pad themselves, at the standard inset or the density's). Silently ignoring a
+    // passed prop is the same class of bug as the dropped header this path fixes, so
+    // name it in DEV.
     devWarn(
-      hasSections && children != null && (Boolean(props.padded) || dens !== "default"),
-      "[canvas] <Card title>: `padded` / `compact` / `comfortable` set the card's own surface inset, which a card with a header or footer never takes (its sections pad themselves); drop the density prop, or drop the section props for a plain padded card.",
+      hasSections && children != null && Boolean(props.padded),
+      "[canvas] <Card title>: `padded` sets the card's own surface inset, which a card with a header or footer never takes (its sections pad themselves); drop `padded`, or pass a density (`compact`, `panel`) to retune the sections' inset.",
     );
+    // A density on a sectioned card reshapes its sections (card.styles.ts `sectionInsets`);
+    // the default density leaves them at their standard inset.
+    const sections = hasSections && dens !== "default" ? s.sectionInsets(skin.density[dens]) : null;
 
-    // Shape: per-OS radius; iOS adds Apple's continuous (superellipse) corner curve
-    // (an iOS-only RN style prop, omitted entirely on the other skins).
-    const shape: ViewStyle = { borderRadius: props.smallCorners ? shapeTokens.web.tile : skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) };
+    // Shape: the corner step's radius from the skin's own row; iOS adds Apple's continuous
+    // (superellipse) corner curve (an iOS-only RN style prop, omitted entirely on the other skins).
+    const shape: ViewStyle = { borderRadius: skin.corners[cornerOf(props)], ...(skin.curve ? { borderCurve: skin.curve } : null) };
     // The card's visual box WITHOUT the elevation shadow and WITHOUT outer layout: shape, the
     // per-variant surface colors, density padding, and the selected tint.
     const surface: StyleProp<ViewStyle> = [
@@ -351,17 +396,20 @@ export function createCard(skin: CardSkin) {
     // header AND arbitrary children (a table, a form), which the string `body` cannot
     // express.
     const eyebrowNode = hasEyebrow ? (
-      <View style={s.eyebrowRow}>
+      <View style={[s.eyebrowRow, sections?.eyebrow]}>
         {props.eyebrow ? <Text style={[s.eyebrow(tokens), { fontFamily: MONO_FONT }]}>{props.eyebrow}</Text> : <View />}
         {props.badge ? <Badge secondary mono small>{props.badge}</Badge> : null}
       </View>
     ) : null;
+    // The body's section inset: a density's, below a header or leading the card; none at
+    // the default density, where the section pads itself.
+    const bodyInset = sections ? (hasHeader ? sections.contentBelow : sections.content) : null;
     const headerNode = hasHeader ? (
       <>
         {eyebrowNode}
         {hasTitle ? (
           // Below an eyebrow row the title keeps the card's 12px rhythm, not a second inset.
-          <CardHeader style={hasEyebrow ? { paddingTop: 12 } : undefined}>
+          <CardHeader style={sections ? (hasEyebrow ? sections.headerBelow : sections.header) : hasEyebrow ? { paddingTop: 12 } : undefined}>
             <View style={headerStyles.row}>
               <View style={headerStyles.main}>
                 {icon}
@@ -380,7 +428,7 @@ export function createCard(skin: CardSkin) {
     const footerNode = footer ? (
       <>
         <CardSeparator />
-        <CardFooter>
+        <CardFooter style={sections?.footer}>
           <Text style={s.footerText(tokens)}>{footer}</Text>
         </CardFooter>
       </>
@@ -395,7 +443,7 @@ export function createCard(skin: CardSkin) {
       inner = hasSections ? (
         <>
           {headerNode}
-          {hasBody ? flush ? children : <CardContent style={bodyFill}>{children}</CardContent> : null}
+          {hasBody ? flush ? children : <CardContent style={[bodyInset, bodyFill]}>{children}</CardContent> : null}
           {footerNode}
         </>
       ) : (
@@ -406,7 +454,7 @@ export function createCard(skin: CardSkin) {
         <>
           {headerNode}
           {body ? (
-            <CardContent style={bodyFill}>
+            <CardContent style={[bodyInset, bodyFill]}>
               <Text style={s.bodyText(tokens)}>{body}</Text>
             </CardContent>
           ) : null}
@@ -550,6 +598,13 @@ export interface CardMediaProps {
   compact?: boolean;
   /** A taller well: 240 px at least, a 32 x 20 inset (a platform skin specimen). */
   tall?: boolean;
+  /** A figure's stage: 320 px at least, an 80 x 40 inset (an anatomy figure under its marks). */
+  stage?: boolean;
+  /**
+   * A playground's stage: 340 px at least, a 44 x 28 inset, growing to the height and
+   * the remaining width of a panel beside it (a live specimen beside its knobs).
+   */
+  playground?: boolean;
   /** E2E hook forwarded to the image, or to the well. */
   testID?: string;
 }
@@ -558,10 +613,12 @@ export interface CardMediaProps {
 const WELL_AXIS = columnAxis(false, null, true);
 
 // The well's size precedence when more than one is passed: first match wins, the
-// smaller well over the taller one.
-export function mediaWellOf(p: Pick<CardMediaProps, "compact" | "tall">): MediaWell {
+// smaller well over the taller one, the specimen wells over the stages.
+export function mediaWellOf(p: Pick<CardMediaProps, "compact" | "tall" | "stage" | "playground">): MediaWell {
   if (p.compact) return "compact";
   if (p.tall) return "tall";
+  if (p.stage) return "stage";
+  if (p.playground) return "playground";
   return "default";
 }
 

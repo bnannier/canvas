@@ -163,29 +163,17 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   // (the hand-off's 1180 px window, about 900 px of content) and under it below that.
   const { value: stacked, onLayout } = useContainerBreakpoint({ base: false, lg: true });
   const preview = scopeFor(tokens, (PLATFORMS[platform] ?? PLATFORMS[0]!).platform);
-  // The stage is the frame's own ground under the dot grid, not a CardMedia well: a well
-  // is as tall as what it holds and cannot grow to the knob panel's height beside it, so
-  // its sunken fill would stop short of the frame's floor. (A recorded difference: the
-  // hand-off's stage is the sunken bg2, a step darker than its panel.)
   const live = (
     <ExampleErrorBoundary key={`${preview.platform}:${code}`}>
       <FitStage>{renderComponent(preview.scope, component, props, base)}</FitStage>
     </ExampleErrorBoundary>
   );
-  // Beside the knob panel the stage is the frame's own ground under the dot grid, not a
-  // CardMedia well: a well is as tall as what it holds and cannot grow to the panel's
-  // height, so its sunken fill would stop short of the frame's floor (a recorded
-  // difference: the hand-off's stage is the sunken bg2, a step darker than its panel).
-  // Stacked, nothing stands beside it, and it is the tall sunken well.
-  const stage = stacked ? (
-    <View {...(Platform.OS === "web" ? ({ dataSet: stageData(heldOpen(props)) } as object) : null)}>
-      <CardMedia tall>
-        <DotGrid />
-        {live}
-      </CardMedia>
-    </View>
-  ) : (
-    <Column fill center padLoose>
+  // The hand-off's stage (Component.dc.html line 156: `min-height:340px;padding:44px 28px;
+  // ...;background-color:var(--bg2)` under the dot grid, a grid cell that stretches to the
+  // knob panel's height): the playground well, which grows to the panel's height and the
+  // width it leaves beside it, and stands alone over it when stacked.
+  const stage = (
+    <CardMedia playground>
       <DotGrid />
       <View
         // The live render is an example like every other on the page, found by the same
@@ -194,7 +182,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
       >
         {live}
       </View>
-    </Column>
+    </CardMedia>
   );
   const panel = <KnobPanel spec={spec} state={state} onChange={onChange} onReset={onReset} />;
   return (
@@ -208,7 +196,9 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
       ) : null}
     >
       <View onLayout={onLayout}>
-        <Card flush clip>
+        {/* The hand-off's frame (line 155): `border:1px solid var(--ln);border-radius:20px;
+            overflow:hidden;background:var(--sf)`, no shadow. */}
+        <Card flush clip stageCorners outlined>
           {stacked ? (
             <Column flush>
               {stage}
