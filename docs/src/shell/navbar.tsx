@@ -102,8 +102,10 @@ function WebNav() {
             navigation first; they float over the page, which lies under them. */}
         <PillNav onSearch={() => setSearchOpen(true)} />
         {rail && place ? <Rail room={place.room} active={place.active} /> : null}
-        {/* The page content is the main landmark at every width. */}
-        <View role="main" style={{ flex: 1 }}>
+        {/* A landmark-free host: the main landmark is the page body (ui/page.tsx), so the
+            footer that follows it is a top-level contentinfo, as the hand-off's component
+            page puts <main> and <footer> side by side (Component.dc.html lines 131, 307-312). */}
+        <View style={{ flex: 1 }}>
           <OverlayProvider viewport viewportInsets={{ top: PILL_BAND, bottom: 0 }}>
             <Slot />
           </OverlayProvider>
