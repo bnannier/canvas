@@ -42,6 +42,22 @@ summary, 18/1.55, held to the hand-off's 72ch measure), `sectionLead` (a section
 card's description, 14/1.55), `sectionNote` (the note under a section's heading,
 14/1.5), `pageBody` (a page's body paragraph, 15/1.6) and `pageNote` (a page's note paragraph,
 14/1.6), the last six in the secondary ink and the last two held to an 80ch measure.
+Three more are the component page's own: `pageLabel` (a panel's "Props", a rail's group
+header, a table's header cell, a previous/next eyebrow: 500 11/1 tracked .08em in caps, in
+the subtle ink; pass `mono` for the mono face, as the hand-off's page does), `guideTitle` (a
+guidance card's title, 600 16/1.3 in the interface face, a level-3 heading) and `guideBody`
+(a guidance card's paragraph, 400 13.5/1.6 in the secondary ink). `pageLabel` is not the
+`eyebrow`: that is the type table's accent-ink label tracked .1em.
+
+`code` is the standalone code pill (regular 13px mono on the muted fill, a 6 radius and 2
+by 6 padding). `code inline` is the prose code chip, a word of code inside a sentence: the
+hand-off's inline `<code>`, regular weight at .88 of the surrounding reading role's size
+(pass that role beside it, `lead`, `small`, `pageBody`, `pageNote`, `pageLead` or
+`sectionLead`; body when none), a 5 radius, 1 by 5 padding, the surface fill and a 1px
+hairline rim. The chip keeps its regular weight inside a strong run, as the hand-off
+applies bold and code independently. Under glass the fill is the same ink tint the pill
+takes. Natively a Text nested in a Text has no border and no vertical box, so there the
+chip draws its fill and horizontal padding only; `inline` without `code` does nothing.
 
 ## Usage
 
@@ -189,10 +205,38 @@ card's description, 14/1.55), `sectionNote` (the note under a section's heading,
 <Typography code>The quick brown fox</Typography>
 ```
 
+### Inline code
+
+```tsx
+<Typography pageBody>
+  Pass 
+  <Typography code inline pageBody>secondary</Typography>
+   for the next action down.
+</Typography>
+```
+
 ### Mono
 
 ```tsx
 <Typography mono>The quick brown fox</Typography>
+```
+
+### Page label
+
+```tsx
+<Typography pageLabel mono>Props</Typography>
+```
+
+### Guide title
+
+```tsx
+<Typography guideTitle>Real links (href)</Typography>
+```
+
+### Guide body
+
+```tsx
+<Typography guideBody>A button that navigates renders a real link on the web, so middle-click and open-in-new-tab work.</Typography>
 ```
 
 ### Semibold

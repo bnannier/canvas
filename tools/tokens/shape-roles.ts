@@ -362,7 +362,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "atoms/swatch": ["tile"],
   "atoms/textarea": ["field"],
   "atoms/tooltip": ["control", "key", "tooltip"],
-  "atoms/typography": ["key"],
+  "atoms/typography": ["key", "inlineCode"],
   "atoms/video": ["mediaFrame"],
   "charts/box-plot": ["mark"],
   "charts/bullet-chart": ["mark"],

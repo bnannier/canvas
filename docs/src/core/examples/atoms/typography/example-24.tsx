@@ -5,6 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Typography } = scope;
   return (
-<Typography mono>The quick brown fox</Typography>
+<Typography pageBody>
+  Pass 
+  <Typography code inline pageBody>secondary</Typography>
+   for the next action down.
+</Typography>
   );
 }

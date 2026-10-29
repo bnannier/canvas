@@ -43,14 +43,16 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
   return (
     <DetailSection id="a11y" title="Accessibility and keyboard" sectionRef={sectionRef}>
       <Grid minTileWidth={320} columns={2} roomy>
-        <Card eyebrow="Keyboard">
+        <Card>
+          <Typography pageLabel mono>Keyboard</Typography>
           {keys.length ? (
             <DescriptionList twoColumn divided items={keys.map(([k, effect]) => ({ term: <Keys keys={k} />, value: effect }))} />
           ) : (
             <Typography small subtle>Not focusable. It has no interaction of its own and takes the semantics of what it wraps.</Typography>
           )}
         </Card>
-        <Card eyebrow="Semantics">
+        <Card>
+          <Typography pageLabel mono>Semantics</Typography>
           <Column cozy>
             {sem.length ? (
               <DescriptionList twoColumn divided items={sem.map(([label, values]) => ({ term: label, value: <Values values={values} /> }))} />
@@ -69,7 +71,8 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
         </Card>
       </Grid>
       {notes?.length ? (
-        <Card eyebrow="From the docs">
+        <Card>
+          <Typography pageLabel mono>From the docs</Typography>
           <Prose blocks={notes} pageNote />
         </Card>
       ) : null}

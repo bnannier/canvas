@@ -18,6 +18,8 @@ import {
   weightStyle,
   leadingStyle,
   decorationStyle,
+  inlineCodeType,
+  type InlineCodeReading,
   MONO_ROLES,
 } from "./typography.styles.js";
 
@@ -162,6 +164,17 @@ export interface TypographyProps {
   pageBody?: boolean;
   /** A page's note paragraph (a component page's overview and docs notes): 400 14/1.6 in the secondary ink, held to an 80ch measure. */
   pageNote?: boolean;
+  /**
+   * A page's label (a panel's "Props", a rail's group header, a table's header cell, a
+   * previous/next eyebrow): 500 11/1 tracked .08em in caps, in the subtle ink. Pass `mono`
+   * for the mono face, as the other page roles do. Not the `eyebrow`, which is the type
+   * table's accent-ink label tracked .1em.
+   */
+  pageLabel?: boolean;
+  /** A guidance card's title: 600 16/1.3 in the interface face. A level-3 heading. */
+  guideTitle?: boolean;
+  /** A guidance card's paragraph: 400 13.5/1.6 in the secondary ink. */
+  guideBody?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -176,6 +189,14 @@ export interface TypographyProps {
   caption?: boolean;
   code?: boolean;
   mono?: boolean;
+  /**
+   * With `code`: the prose code chip, a word of code inside a sentence. Regular weight at
+   * .88 of the surrounding reading role's size (pass that role beside it, `lead`, `small`,
+   * `pageBody`, `pageNote`, `pageLead` or `sectionLead`; body when none), the chip's own
+   * small corner, 1 by 5 padding, the surface fill and a hairline rim. Natively a Text nested in a Text draws
+   * the fill and horizontal padding only. Without `code` it does nothing.
+   */
+  inline?: boolean;
   // Tone (pick one; orthogonal to role). When omitted, the role's own color is used.
   subtle?: boolean;
   primary?: boolean;
@@ -267,6 +288,7 @@ const HEADING_LEVEL: Partial<Record<Role, number>> = {
   pageTitle: 1,
   sectionTitle: 2,
   cardTitle: 3,
+  guideTitle: 3,
   display: 1,
   h1: 1,
   h2: 2,
@@ -277,7 +299,12 @@ const HEADING_LEVEL: Partial<Record<Role, number>> = {
 
 // Role precedence when more than one is passed: first match wins. Order runs
 // largest-to-smallest, headings before helper styles, so a conflicting pair
-// resolves to the more prominent role.
+// resolves to the more prominent role: the titles and headings (the fluid headlines,
+// the page titles, display and h1 to h5, the guide title) first, then the page label,
+// then `code`, then every reading role (the page's leads, bodies and notes, lead, caption,
+// small, tiny, body). `code` sits above the reading roles so a reading role passed beside
+// `code inline` is the chip's size, not a competing role (the chip reads it through
+// `roleOf` without `code`), as `mono` keeps a reading size and adds its face.
 export function roleOf(p: TypographyProps): Role {
   if (p.subheading) return "subheading";
   if (p.label) return "label";
@@ -296,19 +323,22 @@ export function roleOf(p: TypographyProps): Role {
   if (p.cardTitle) return "cardTitle";
   if (p.panelTitle) return "panelTitle";
   if (p.tagline) return "tagline";
-  if (p.pageLead) return "pageLead";
-  if (p.sectionLead) return "sectionLead";
-  if (p.cardBody) return "cardBody";
-  if (p.sectionNote) return "sectionNote";
-  if (p.pageBody) return "pageBody";
-  if (p.pageNote) return "pageNote";
   if (p.display) return "display";
   if (p.h1) return "h1";
   if (p.h2) return "h2";
   if (p.h3) return "h3";
   if (p.h4) return "h4";
   if (p.h5) return "h5";
+  if (p.guideTitle) return "guideTitle";
+  if (p.pageLabel) return "pageLabel";
   if (p.code) return "code";
+  if (p.pageLead) return "pageLead";
+  if (p.sectionLead) return "sectionLead";
+  if (p.cardBody) return "cardBody";
+  if (p.sectionNote) return "sectionNote";
+  if (p.pageBody) return "pageBody";
+  if (p.pageNote) return "pageNote";
+  if (p.guideBody) return "guideBody";
   // A reading size passed with `mono` keeps its size and takes the mono face
   // (`<Typography caption mono>` is the 12 px mono caption); `mono` alone is its own role.
   if (p.lead) return "lead";
@@ -391,7 +421,18 @@ export function createTypography(skin: TypographySkin) {
     // role holds no window subscription.
     const fluid = role === "hero" || role === "pageTitle" ? role : null;
     const viewportWidth = useViewportWidth(fluid != null);
-    const roleType: TextStyle = fluid ? { ...skin.roleType[role], ...fluidType(fluidRoles[fluid], viewportWidth) } : skin.roleType[role];
+    // The prose code chip sizes itself from the reading role passed beside `code inline`:
+    // the role axis resolved once more without `code`, so the chip follows the paragraph
+    // (`<Typography code inline pageBody>` is .88 of pageBody; body when none is passed,
+    // or when what is passed is no reading role).
+    const inline = role === "code" && props.inline === true;
+    const beside = inline ? roleOf({ ...props, code: false }) : null;
+    const reading: InlineCodeReading = beside != null && beside in inlineCodeType ? (beside as InlineCodeReading) : "body";
+    const roleType: TextStyle = fluid
+      ? { ...skin.roleType[role], ...fluidType(fluidRoles[fluid], viewportWidth) }
+      : inline
+        ? { ...skin.roleType.code, ...inlineCodeType[reading] }
+        : skin.roleType[role];
     const tone = toneOf(props);
     const weight = weightOf(props);
     const textAlign = textAlignOf(props);
@@ -457,6 +498,9 @@ export function createTypography(skin: TypographySkin) {
           // glass its `muted` fill becomes an ink tint that lets the pane it sits on show
           // through (the same translucent emphasis a glass table's header band takes).
           role === "code" ? { backgroundColor: innerFill(theme, "muted", "soft") } : null,
+          // The prose chip's hairline rim: the hand-off's `border:1px solid var(--ln)`
+          // (Component.dc.html `md()`), `--ln` being the `border` token.
+          inline ? { borderColor: tokens.border } : null,
           tone ? toneColor(tokens, dark, tone) : null,
           weight ? weightStyle(weight) : null,
           // After the role, whose line height it overrides; the skin's own scale is the

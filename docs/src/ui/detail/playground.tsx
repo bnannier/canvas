@@ -121,7 +121,7 @@ function KnobPanel({ spec, state, onChange, onReset }: { spec: DetailSpec; state
     <ScrollView style={{ maxHeight: 560 }} contentContainerStyle={KNOB_PAD}>
       <Column relaxed>
         <Row between alignCenter>
-          <Typography eyebrow subtle>Props</Typography>
+          <Typography pageLabel mono>Props</Typography>
           <Button link small onPress={onReset}>Reset</Button>
         </Row>
         {spec.knobs.map((knob) => {

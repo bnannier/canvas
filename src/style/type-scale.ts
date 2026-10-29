@@ -37,8 +37,10 @@ export const typeRoles = {
 // under a component page's title (Component.dc.html), a section page's tagline and lead
 // (Controls.dc.html and its siblings), a component page's section heading, the Library's
 // principle-card title, body and the Inputs page's panel title, a component page
-// section's note, and a component page's own prose (its usage paragraph and the notes
-// after it). Converted as `typeRoles` is;
+// section's note, a component page's own prose (its usage paragraph and the notes
+// after it), the component page's labels (its knob panel's "Props", the rail's group
+// headers, the props table's header cells and the previous/next eyebrows) and the
+// Usage guidance card's title and paragraph. Converted as `typeRoles` is;
 // test/v4-type-scale.test.ts reads each from the page that sets it. Internal, not
 // re-exported.
 export const pageRoles = {
@@ -52,6 +54,16 @@ export const pageRoles = {
   sectionNote: { fontSize: 14, lineHeight: 21, fontWeight: "400" },
   pageBody: { fontSize: 15, lineHeight: 24, fontWeight: "400" },
   pageNote: { fontSize: 14, lineHeight: 22.4, fontWeight: "400" },
+  // The component page's label (Component.dc.html, the knob panel's "Props" label, the
+  // rail's group headers, the props table's header cells and the previous/next eyebrows):
+  // `font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)`.
+  // Not the Typography table's eyebrow, which is tracked .1em and set in the accent ink.
+  pageLabel: { fontSize: 11, lineHeight: 11, fontWeight: "500", letterSpacing: 0.88, textTransform: "uppercase" },
+  // The Usage guidance card's title and paragraph (Component.dc.html, the `secs` cards):
+  // `<h3 style="margin:0;font:600 16px/1.3 var(--ft)">` and
+  // `<p style="margin:0;font:400 13.5px/1.6 var(--ft);color:var(--tx2)">`.
+  guideTitle: { fontSize: 16, lineHeight: 20.8, fontWeight: "600" },
+  guideBody: { fontSize: 13.5, lineHeight: 21.6, fontWeight: "400" },
 } as const satisfies Record<string, TextStyle>;
 
 /**
