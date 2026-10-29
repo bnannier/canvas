@@ -13,14 +13,14 @@ const PAGES = [
   { path: "/templates/activity", title: "Activity" },
   { path: "/patterns/accessibility", title: "Accessibility" },
   // The section pages (docs/src/sections): the room's title is the page's h1.
-  { path: "/sections/foundations", title: "Foundations" },
-  { path: "/sections/layout", title: "Layout" },
-  { path: "/sections/controls", title: "Controls" },
-  { path: "/sections/inputs", title: "Inputs" },
-  { path: "/sections/navigation", title: "Navigation" },
-  { path: "/sections/data", title: "Surfaces & data" },
-  { path: "/sections/charts", title: "Charts" },
-  { path: "/sections/overlays", title: "Overlays & feedback" },
+  { path: "/foundations", title: "Foundations" },
+  { path: "/layout", title: "Layout" },
+  { path: "/controls", title: "Controls" },
+  { path: "/inputs", title: "Inputs" },
+  { path: "/navigation", title: "Navigation" },
+  { path: "/data", title: "Surfaces & data" },
+  { path: "/charts", title: "Charts" },
+  { path: "/overlays", title: "Overlays & feedback" },
 ];
 
 // A component page's Do/Don't section heading (docs/src/ui/detail/sections.tsx), named after the

@@ -49,7 +49,7 @@ describe("the rooms", () => {
   });
 
   it("place a path in its room", () => {
-    expect(roomFor("/sections/controls")).toEqual({ room: SECTION_ROOMS[2]! });
+    expect(roomFor("/controls")).toEqual({ room: SECTION_ROOMS[2]! });
     expect(roomFor("/components/button")?.room.id).toBe("controls");
     expect(roomFor("/components/button")?.active).toBe("button");
     expect(roomFor("/components/button/primary")?.active).toBe("button");
@@ -61,7 +61,7 @@ describe("the rooms", () => {
   });
 
   it("light the pill link of a path's room", () => {
-    expect(pillIndexFor("/sections/data")).toBe(5);
+    expect(pillIndexFor("/data")).toBe(5);
     expect(pillIndexFor("/components/dialog")).toBe(7);
     expect(pillIndexFor("/skins")).toBe(8);
     expect(pillIndexFor("/templates")).toBe(9);

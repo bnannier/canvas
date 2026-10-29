@@ -1,25 +1,15 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { Page } from "../../../ui/page";
-import { SectionHero } from "../../../ui/showcase";
-import { SECTION_PAGES } from "../../../sections";
-import { SECTION_ROOMS, getSectionRoom, type SectionId } from "../../../data/rooms";
+import { SECTION_ROOMS } from "../../../data/rooms";
 
-// A section page (`Canvas v4.0.0 <Section>.dc.html`): the hero (the room's title, lead and
-// paragraph beside the section's still vignette) over the section's cards, each section
-// built in its own module (docs/src/sections).
+// The section pages used to live at /sections/<id>; they are now /<id>
+// (docs/src/app/(components)/[section].tsx). This route keeps old links working: with
+// generateStaticParams the static export emits a page for each old address, and it
+// redirects to the new one.
 export async function generateStaticParams() {
   return SECTION_ROOMS.map((room) => ({ section: room.id }));
 }
 
-export default function SectionScreen() {
+export default function LegacySectionScreen() {
   const { section } = useLocalSearchParams<{ section: string }>();
-  const room = section ? getSectionRoom(section) : undefined;
-  if (!room) return <Redirect href="/" />;
-  const { Vignette, Cards } = SECTION_PAGES[room.id as SectionId];
-  return (
-    <Page>
-      <SectionHero room={room} vignette={<Vignette />} />
-      <Cards />
-    </Page>
-  );
+  return <Redirect href={section ? (`/${section}` as never) : "/"} />;
 }

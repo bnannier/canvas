@@ -106,7 +106,7 @@ export const SECTION_ROOMS: readonly Room[] = SECTIONS.map(({ title, slugs }) =>
     title,
     lead: copy.lead,
     body: copy.body,
-    href: `/sections/${copy.id}`,
+    href: `/${copy.id}`,
     items: slugs
       .filter((slug) => NAME_OF.has(slug))
       .map((slug) => ({ id: slug, label: NAME_OF.get(slug)!, href: `/components/${slug}` })),
@@ -130,7 +130,7 @@ export const GUIDES_ROOM: Room = {
 
 export const ROOMS: readonly Room[] = [...SECTION_ROOMS, GUIDES_ROOM];
 
-/** The section room with this URL id (`/sections/<id>`). */
+/** The section room with this URL id (`/<id>`). */
 export function getSectionRoom(id: string): Room | undefined {
   return SECTION_ROOMS.find((room) => room.id === id);
 }
@@ -168,10 +168,10 @@ function stripTrailingSlash(pathname: string): string {
  */
 export function roomFor(pathname: string): { room: Room; active?: string } | null {
   const path = stripTrailingSlash(pathname);
-  const section = path.match(/^\/sections\/([^/]+)$/);
+  const section = path.match(/^\/([^/]+)$/);
   if (section) {
     const room = getSectionRoom(section[1]);
-    return room ? { room } : null;
+    if (room) return { room };
   }
   const component = path.match(/^\/components\/([^/]+)/);
   if (component) {

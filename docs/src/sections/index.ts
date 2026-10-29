@@ -9,7 +9,7 @@ import * as data from "./data";
 import * as charts from "./charts";
 import * as overlays from "./overlays";
 
-// The section pages (`/sections/<id>`, docs/src/app/(components)/sections/[section].tsx):
+// The section pages (`/<id>`, docs/src/app/(components)/[section].tsx):
 // each section's hero vignette and its cards, from the section's own module, so the pages
 // are built one file each.
 

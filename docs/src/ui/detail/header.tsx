@@ -28,7 +28,8 @@ const REPOSITORY = "https://github.com/bnannier/canvas/tree/main";
 export function sectionHref(section: string): string | undefined {
   const routes = (navConfig as { routes: Record<string, { label: string; href: string }> }).routes;
   const slug = section.toLowerCase().replace(/&/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  return Object.values(routes).find((r) => r.href.startsWith("/sections/") && (r.href === `/sections/${slug}` || r.label === section))?.href;
+  // The section pages are the nav registry's `section-<id>` entries, served at `/<id>`.
+  return Object.entries(routes).find(([key, r]) => key.startsWith("section-") && (r.href === `/${slug}` || r.label === section))?.[1].href;
 }
 
 export interface Jump {
