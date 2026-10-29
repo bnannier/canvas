@@ -90,7 +90,7 @@ export interface ChipSkin {
   disabledOpacity: number;
   /**
    * The `option` chip's geometry and type over this skin (the hand-off playground's knob
-   * picks: 26 tall at a 7 corner, 9 at the sides, a 500 12px label, no check, no hover),
+   * picks: 26 tall at the web row's `optionChip` corner, 9 at the sides, a 500 12px label, no check, no hover),
    * and the square an icon-only option takes. Omit where the platform's own chip is the
    * option (Material 3's filter chip).
    */
