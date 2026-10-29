@@ -3,14 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable, MediaObject } = scope;
+  const { DataTable } = scope;
   return (
 <DataTable
-  columns={["Member", "Role"]}
+  alignTop
+  columns={[
+    { label: "Prop", minWidth: 150 },
+    { label: "Type", grow: 1.2, minWidth: 150 },
+    { label: "Description", grow: 2.2, minWidth: 220 }
+  ]}
   rows={[
-    [<MediaObject compact avatar="AJ" title="Alice Johnson" />, "Admin"],
-    [<MediaObject compact avatar="BS" title="Bob Smith" />, "Editor"],
-    [<MediaObject compact avatar="RC" title="Rachel Chen" />, "Admin"]
+    ["iconLeft", "ReactNode", "An icon before the label. It takes the label's ink and size, and the button keeps its height, so a leading icon never grows a row of buttons."],
+    ["href", "string", "Renders the button as a link to this address on the web, and opens it natively elsewhere."]
   ]}
 />
   );

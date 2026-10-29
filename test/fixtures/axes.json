@@ -5231,6 +5231,42 @@
       "centered + numeric": "numeric"
     }
   },
+  "DataTable.header type": {
+    "kind": "toggle",
+    "components": [
+      "DataTable"
+    ],
+    "pages": [
+      "data-table"
+    ],
+    "resolver": "src/organisms/data-table/data-table.shared.tsx#headerTypeOf",
+    "order": [
+      "eyebrowHeader"
+    ],
+    "none": "label",
+    "single": {
+      "eyebrowHeader": "eyebrow"
+    },
+    "pairs": {}
+  },
+  "DataTable.row align": {
+    "kind": "toggle",
+    "components": [
+      "DataTable"
+    ],
+    "pages": [
+      "data-table"
+    ],
+    "resolver": "src/organisms/data-table/data-table.shared.tsx#rowAlignOf",
+    "order": [
+      "alignTop"
+    ],
+    "none": "center",
+    "single": {
+      "alignTop": "top"
+    },
+    "pairs": {}
+  },
   "Dialog.size": {
     "kind": "axis",
     "components": [

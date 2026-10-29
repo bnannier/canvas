@@ -3,23 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, DataTable } = scope;
+  const { DataTable, Sparkline } = scope;
   return (
-<Stateful initial={[
-  ["/pricing", "12,480"],
-  ["/docs", "8,102"],
-  ["/blog", "5,914"]
-]}>
-  {(rows, setRows) => (
-    <DataTable
-      columns={["Page", "Visits"]}
-      rows={rows}
-      inlineEdit
-      onCellCommit={(i, c, next) =>
-        setRows(rows.map((row, r) => (r === i ? row.map((cell, ci) => (ci === c ? next : cell)) : row)))
-      }
-    />
-  )}
-</Stateful>
+<DataTable
+  columns={["Page", "7D", "Visits"]}
+  rows={[
+    ["/pricing", <Sparkline values={[52, 60, 55, 71, 68, 84, 96]} />, "12,480"],
+    ["/docs", <Sparkline values={[88, 74, 70, 66, 58, 49, 41]} />, "8,102"],
+    ["/blog", <Sparkline values={[34, 42, 39, 51, 60, 66, 78]} />, "5,914"]
+  ]}
+/>
   );
 }
