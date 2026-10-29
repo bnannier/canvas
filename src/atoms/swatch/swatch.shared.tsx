@@ -88,6 +88,12 @@ export interface SwatchProps {
    * name is a node rather than text and there is nothing to read.
    */
   accessibilityLabel?: string;
+  /**
+   * The sample is decoration beside text that already names it (a theme choice's disc
+   * before its label): hidden from assistive tech, so the text carries the name once.
+   * Pass it in place of `accessibilityLabel`.
+   */
+  decorative?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For layout composition only (not styling): the fill, radius, and size come from props. */
@@ -158,7 +164,7 @@ function dataName(name: string | null, value?: string, detail?: string, color?: 
 /** Build a Swatch from a platform skin. */
 export function createSwatch(skin: SwatchSkin) {
   return function Swatch(props: SwatchProps) {
-    const { color, children, value, detail, circle, ring, inline, block, selected, accessibilityLabel, testID, style } = props;
+    const { color, children, value, detail, circle, ring, inline, block, selected, accessibilityLabel, decorative, testID, style } = props;
     const { tokens } = useTheme();
     // HUG (src/style/sizing.ts): the sample keeps its content width inside a stretching
     // Column and otherwise takes its parent's alignment, so a Chip's centred row centres
@@ -174,10 +180,16 @@ export function createSwatch(skin: SwatchSkin) {
     // value. Warn in dev; the caller fixes it with accessibilityLabel.
     const name = textOf(children);
     devWarn(
-      children != null && name == null && accessibilityLabel == null,
+      children != null && name == null && accessibilityLabel == null && !decorative,
       "[canvas] <Swatch />: `children` is a node, not text, so the name cannot be read into the accessible name; pass `accessibilityLabel`.",
     );
     const label = accessibilityLabel ?? dataName(name, value, detail, color, selected);
+    // A decorative sample is hidden from assistive tech, as Icon's `decorative` glyph is
+    // (the adjacent text carries the name); the aria-* aliases cover the web, where
+    // react-native-web drops the RN-only a11y props.
+    const a11y = decorative
+      ? { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const, "aria-hidden": true }
+      : { role: "img" as const, accessibilityLabel: label, "aria-label": label };
 
     // `circle` owns the shape, so it keeps the 1:1 footprint even under `block`: a
     // stretched circle is a pill, not a circle. `inline` puts the label BESIDE the
@@ -202,9 +214,7 @@ export function createSwatch(skin: SwatchSkin) {
 
     return (
       <View
-        role="img"
-        accessibilityLabel={label}
-        aria-label={label}
+        {...a11y}
         testID={testID}
         style={[
           block ? { alignSelf: "stretch" } : hug,

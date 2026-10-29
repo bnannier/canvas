@@ -14,7 +14,9 @@ beside the block), or as a `block` (a full-width ramp bar). `ring` draws the
 edge as a 1px inset ring in the field border instead of the hairline, the token
 chip's swatch. `selected` marks the chosen sample with the selection ring, a
 2px gap in the page color and then a 2px accent band, and adds "selected" to
-its accessible name.
+its accessible name. `decorative` hides a sample from assistive tech when text
+beside it already names it (a theme choice's disc before its label), so the
+name is read once.
 
 A palette picker takes one of the kit's five accent palettes, `violet`, `cyan`,
 `mint`, `rose` or `amber` (ThemeProvider's precedence: cyan, mint, rose, amber,

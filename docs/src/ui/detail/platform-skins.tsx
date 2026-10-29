@@ -58,7 +58,7 @@ export function PlatformSkinsSection({ examples, selected, onSelect, tokens, sta
               <Row between alignCenter wrap snug>
                 <Row snug alignCenter>
                   <Select small xs start accessibilityLabel="Platform example" options={labels} value={example.label} onSelect={(label) => onSelect(Math.max(0, labels.indexOf(label)))} />
-                  {selected > 0 ? <Button link small onPress={() => onSelect(0)}>Reset</Button> : null}
+                  {selected > 0 ? <Button plainLink small onPress={() => onSelect(0)}>Reset</Button> : null}
                 </Row>
                 <FormFactorSwitcher index={factorIndex} onSelect={setFactorIndex} measuredWidth={cardWidth} />
               </Row>

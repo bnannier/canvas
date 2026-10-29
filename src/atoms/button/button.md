@@ -32,6 +32,12 @@ pixels; `large` is 16. `extraBold`, `foreground`, and `inverse` set its weight a
 ink. `external` opens `href` through the system browser on every platform, while
 keeping its browser link semantics.
 
+`plainLink` is a plain accent text action with no box and no underline, still read
+as a button: a panel's Reset, a table's show-all row. On the web it is a 500 13 px
+label in the accent text ink (12 px with `small`) that brightens to the foreground ink
+under the pointer; natively it is the platform's own tint-coloured text button. Among
+the bodies, `inlineLink` wins over `plainLink` when both are passed.
+
 `scopeTrigger ghost steadyPress` is a bare 32 px menu trigger with a 600-weight
 14px label; `filterTrigger ghost steadyPress` the same with a muted 13px label. Both
 take the well's wash on hover. Supply the trailing chevron through `iconRight`, and
@@ -39,8 +45,9 @@ announce the menu with `expanded` and `haspopup`.
 
 `identityAction` is a 28 px hairline pill around a leading avatar and its name;
 `referenceLink` an underlined monospace key in the link ink; `inlineIcon` an unboxed
-22 px icon action; `themeChoice` a 32 px pill whose `selected` state is the accent
-edge with a soft accent halo. `pageLink` is a page header's link, a 34 px hairline box
+22 px icon action; `themeChoice` a 32 px pill around the theme's colour disc, a
+`<Swatch tiny ring circle decorative>` passed through `iconLeft`, whose `selected` state is the
+accent edge with a soft accent halo. `pageLink` is a page header's link, a 34 px hairline box
 around a muted 13 px label (a page's section, its source); add `mono` when the label is a
 path, which sets it in the 400 12 px mono face. `jumpLink` is a page's jump to one of its sections, a 28 px
 hairline pill around a muted 500 12 px label. Both header links brighten their label to the
@@ -82,10 +89,14 @@ or the prop when the required setup is complete.
 
 ### Theme choices
 
+The disc is the theme's own colour, data the example carries rather than a token: the
+hand-off's `THM` table (cv-kit-code.js line 67) gives blush `oklch(.8 .09 10)` and mint
+`oklch(.84 .11 165)`, which are `#f1a6b0` and `#80e2b9` in sRGB.
+
 ```tsx
 <Row snug>
-  <Button themeChoice ghost steadyPress selected>blush</Button>
-  <Button themeChoice ghost steadyPress>mint</Button>
+  <Button themeChoice ghost steadyPress selected iconLeft={<Swatch tiny ring circle decorative color="#f1a6b0" />}>blush</Button>
+  <Button themeChoice ghost steadyPress iconLeft={<Swatch tiny ring circle decorative color="#80e2b9" />}>mint</Button>
 </Row>
 ```
 
@@ -140,6 +151,15 @@ or the prop when the required setup is complete.
 
 ```tsx
 <Button inlineLink link small steadyPress>Save changes</Button>
+```
+
+### Plain link
+
+```tsx
+<Row snug alignCenter>
+  <Button plainLink>Show all 54 props</Button>
+  <Button plainLink small>Reset</Button>
+</Row>
 ```
 
 ### Small

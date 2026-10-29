@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Row } = scope;
+  const { Button, Swatch, Row } = scope;
   return (
 <Row snug>
-  <Button themeChoice ghost steadyPress selected>blush</Button>
-  <Button themeChoice ghost steadyPress>mint</Button>
+  <Button themeChoice ghost steadyPress selected iconLeft={<Swatch tiny ring circle decorative color="#f1a6b0" />}>blush</Button>
+  <Button themeChoice ghost steadyPress iconLeft={<Swatch tiny ring circle decorative color="#80e2b9" />}>mint</Button>
 </Row>
   );
 }
