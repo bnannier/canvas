@@ -82,16 +82,26 @@ export interface DataTableSkin {
    */
   headerCell: (t: ColorTokens) => TextStyle;
   /**
-   * The `eyebrowHeader` look: the column headings as the page's small uppercase mono
-   * label (the v4 hand-off's props-table header) on a header row with no fill of its own.
-   * `row` replaces `headerRow`, `pad` replaces the density's `headerPad`, and `cell`
-   * replaces `headerCell`. Absent on a platform whose own table control draws the heading
-   * (iOS), where the boolean changes nothing.
+   * The `reference` look: the v4 hand-off's reference sheet (its props table,
+   * Component.dc.html lines 233 to 241). Each part replaces the skin's own: `frame` the
+   * standalone frame and the `bordered` outline, `headerRow` the header band and the
+   * density's `headerPad`, `headerCell` the heading type, `dataRow` the row, `cellPad`
+   * the density's cell padding, `groupBand` the band, and `footerRule` is drawn under
+   * every footer. The sheet spaces its columns with the row's own gap and side inset
+   * (`columns` on the header row, every row and a `stacks` table's cell group), so no
+   * cell carries horizontal padding of its own, and each rule sits above what draws it.
+   * Absent on a platform whose own table control draws the table (iOS), where the
+   * boolean changes nothing.
    */
-  eyebrowHeader?: {
-    row: (t: ColorTokens) => ViewStyle;
-    pad: ViewStyle;
-    cell: (t: ColorTokens) => TextStyle;
+  reference?: {
+    frame: (t: ColorTokens) => ViewStyle;
+    columns: ViewStyle;
+    headerRow: (t: ColorTokens) => ViewStyle;
+    headerCell: (t: ColorTokens) => TextStyle;
+    dataRow: (t: ColorTokens) => ViewStyle;
+    cellPad: ViewStyle;
+    groupBand: (t: ColorTokens) => ViewStyle;
+    footerRule: (t: ColorTokens) => ViewStyle;
   };
   /** Size (px) of the sort-direction indicator icon beside a sortable header label. */
   sortIconSize: number;
@@ -248,16 +258,20 @@ export const webSkin: DataTableSkin = {
     fontWeight: "500",
     color: t["muted-foreground"],
   }),
-  // The hand-off's props-table header (Component.dc.html line 235):
-  //   `padding:12px 16px;font:500 11px/1 var(--fm);letter-spacing:.08em;
-  //    text-transform:uppercase;color:var(--tx3)`
-  // with no background of its own; the rule under it is the one the first band or row
-  // draws (`border-top:1px solid var(--ln)` on lines 237 and 238), which the kit keeps as
-  // the header's own bottom rule, so there is still one rule between them.
-  eyebrowHeader: {
-    row: (t) => ({ flexDirection: "row", borderBottomWidth: 1, borderColor: t.border }),
-    pad: { paddingVertical: 12 },
-    cell: (t) => ({
+  // The hand-off's reference sheet, its props table (Component.dc.html lines 233 to 241).
+  reference: {
+    // Line 233: `border:1px solid var(--ln);border-radius:18px;overflow:hidden;
+    // background:var(--sf)`: the panel corner (the shape role Card's `largeCorners` draws,
+    // the page's section panel) on the `border` hairline over the card fill.
+    frame: (t) => ({ borderRadius: platformShape.web.panel, borderWidth: 1, borderColor: t.border, backgroundColor: t.card }),
+    // Lines 235 and 238: `gap:16px;padding:... 16px`, the columns 16 apart and 16 in from
+    // the frame's sides, so the first cell's text starts 16 in.
+    columns: { paddingHorizontal: 16, columnGap: 16 },
+    // Line 235: `padding:12px 16px;font:500 11px/1 var(--fm);letter-spacing:.08em;
+    // text-transform:uppercase;color:var(--tx3)`, with no background and no rule of its
+    // own: the rule under it is the first band's or row's top rule.
+    headerRow: () => ({ flexDirection: "row", paddingVertical: 12 }),
+    headerCell: (t) => ({
       fontFamily: MONO_FONT,
       fontSize: 11,
       lineHeight: 11,
@@ -267,6 +281,14 @@ export const webSkin: DataTableSkin = {
       textTransform: "uppercase",
       color: subtle(t),
     }),
+    // Line 238: `padding:10px 16px;border-top:1px solid var(--ln)`: a row's rule is above it.
+    dataRow: (t) => ({ flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderColor: t.border }),
+    cellPad: { paddingVertical: 10 },
+    // Line 237: `padding:12px 16px 8px;...;background:var(--bg2);border-top:1px solid var(--ln)`.
+    groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, borderTopWidth: 1, borderColor: t.border }),
+    // Line 241: the show-all row's `border-top:1px solid var(--ln)`, drawn by the footer
+    // itself, since the row above it draws no rule beneath.
+    footerRule: (t) => ({ borderTopWidth: 1, borderColor: t.border }),
   },
   sortIconSize: 12,
   // The empty message and the selection count: 400 13 in the subtle ink.
@@ -281,10 +303,13 @@ export const webSkin: DataTableSkin = {
   }),
   // The hand-off's show-all row rule (Component.dc.html line 241): `border-top:1px solid var(--ln)`.
   footerRule: (t) => ({ borderTopWidth: 1, borderColor: t.border }),
-  // The hand-off's props-table band (Component.dc.html, Props): 12 / 16 / 8 padding on
-  // the sunken fill, a solid hairline beneath it, the label 600 13 px.
+  // The hand-off's props-table band (Component.dc.html line 237): 12 / 16 / 8 padding on
+  // the sunken fill, a solid hairline beneath it, the label `font:600 13px var(--ft)` with
+  // no ratio, so its line is the face's own `normal`: 16 px for Instrument Sans at 13,
+  // measured in Chromium on the hand-off page served from tools/v4/handoff (the band's
+  // label box is 16 tall, the band 37 with its rule).
   groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
-  groupLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t.foreground }),
+  groupLabel: (t) => ({ fontSize: 13, lineHeight: 16, fontWeight: "600", color: t.foreground }),
   groupCount,
   // A stripe is the sunken fill (the hand-off's bg2).
   stripeTint: (t) => ({ backgroundColor: t["surface-sunken"] ?? t.muted }),

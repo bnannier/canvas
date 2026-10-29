@@ -49,7 +49,11 @@ guidance card's title, 600 16/1.3 in the interface face, a level-3 heading) and 
 (a guidance card's paragraph, 400 13.5/1.6 in the secondary ink). `pageLabel` is not the
 `eyebrow`: that is the type table's accent-ink label tracked .1em. `pagerName` is the
 previous or next card's name under its label: the display face, 500 18 on the face's own 22
-line (the hand-off sets no ratio), in the foreground ink.
+line (the hand-off sets no ratio), in the foreground ink. Two are the reference sheet's cells
+(the component page's props table): `specMeta` (a type or default cell, 400 12/1.55; pass
+`mono` for the mono face and `subtle` or `muted` for the ink, as the sheet's cells take
+them) and `specText` (a description cell or an inherited-props note, 400 13/1.55 in the
+secondary ink).
 
 `code` is the standalone code pill (regular 13px mono on the muted fill, a 6 radius and 2
 by 6 padding). `code inline` is the prose code chip, a word of code inside a sentence: the
@@ -245,6 +249,18 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ```tsx
 <Typography pagerName>ButtonGroup</Typography>
+```
+
+### Spec meta
+
+```tsx
+<Typography specMeta mono subtle>ReactNode</Typography>
+```
+
+### Spec text
+
+```tsx
+<Typography specText>An icon element rendered before the label. It takes the label's ink and size.</Typography>
 ```
 
 ### Semibold

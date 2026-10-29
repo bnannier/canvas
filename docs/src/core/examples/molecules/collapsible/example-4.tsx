@@ -3,10 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Collapsible } = scope;
+  const { Collapsible, DataTable } = scope;
   return (
-<Collapsible title="Notifications" description="Email, push, and digest frequency.">
-  Choose which events reach your inbox and which stay in the app.
+<Collapsible reference title="AvatarMenuProps" description="3 props" defaultOpen>
+  <DataTable
+    reference
+    attached
+    columns={["Prop", "Type", "Default"]}
+    rows={[
+      ["open", "boolean", "false"],
+      ["onOpenChange", "(open: boolean) => void", "–"],
+      ["items", "AvatarMenuItem[]", "–"]
+    ]}
+  />
 </Collapsible>
   );
 }

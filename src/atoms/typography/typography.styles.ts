@@ -49,6 +49,8 @@ export type Role =
   | "guideTitle"
   | "guideBody"
   | "pagerName"
+  | "specMeta"
+  | "specText"
   | "display"
   | "h1"
   | "h2"
@@ -118,6 +120,10 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     // The previous/next card's name, `font:500 18px var(--fd)` (Component.dc.html lines
     // 303 and 304): the display face, as the titles take it.
     pagerName: d(pageRoles.pagerName),
+    // The reference sheet's cells (Component.dc.html line 238): the meta cells take the
+    // caller's `mono`, as the hand-off's `var(--fm)` does; the text cell is the interface face.
+    specMeta: pageRoles.specMeta,
+    specText: pageRoles.specText,
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -168,6 +174,7 @@ export const inlineCodeType = {
   pageBody: { fontSize: 13.2, lineHeight: 21.12, ...INLINE_CODE_BOX },
   pageNote: { fontSize: 12.32, lineHeight: 19.71, ...INLINE_CODE_BOX },
   guideBody: { fontSize: 11.88, lineHeight: 19.01, ...INLINE_CODE_BOX },
+  specText: { fontSize: 11.44, lineHeight: 17.73, ...INLINE_CODE_BOX },
   caption: { fontSize: 10.56, lineHeight: 15.31, ...INLINE_CODE_BOX },
   small: { fontSize: 11.44, lineHeight: 17.16, ...INLINE_CODE_BOX },
   tiny: { fontSize: 9.68, lineHeight: 14.04, ...INLINE_CODE_BOX },
@@ -200,6 +207,8 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "pageNote":
     // The guidance card's paragraph: `color:var(--tx2)` (Component.dc.html, the `secs` cards).
     case "guideBody":
+    // The reference sheet's description cell: `color:var(--tx2)` (Component.dc.html line 238).
+    case "specText":
       return { color: tokens["muted-foreground"] };
     // The component page's label: `color:var(--tx3)` (Component.dc.html, the knob panel's
     // "Props" label), the subtle ink, where the Typography eyebrow is the accent's.
@@ -221,6 +230,9 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     // The previous/next card's name inherits the card's `color:var(--tx)` (Component.dc.html
     // line 303), the foreground ink.
     case "pagerName":
+    // The reference sheet's meta cells take the caller's tone (`--tx2` on a type, `--tx3`
+    // on a default, Component.dc.html line 238); bare, the foreground.
+    case "specMeta":
       return { color: tokens.foreground };
     case "code":
       return { color: tokens.foreground, backgroundColor: tokens.secondary };

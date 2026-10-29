@@ -132,6 +132,9 @@ const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string;
   // measured in Chromium on the served hand-off page with Bricolage Grotesque loaded, 22 px
   // (src/style/type-scale.ts records the measurement; the next card's name is the same style).
   pagerName: { page: "Component", text: ">{{ prev.n }}<", normalLineHeight: 22 },
+  // The props table's row (line 238): its type cell, and its description cell.
+  specMeta: { page: "Component", text: ">{{ r.t }}<" },
+  specText: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ r.d }}\"" },
 };
 
 describe("v4 page roles", () => {

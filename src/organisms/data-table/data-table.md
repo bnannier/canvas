@@ -276,19 +276,19 @@ Pass `groups` in place of `rows` to title runs of rows: each group draws a band 
 />
 ```
 
-### Eyebrow header
+### Reference sheet
 
-Pass `eyebrowHeader` to set the column headings as the page's small uppercase mono label (the props table's PROP, TYPE, DEFAULT and DESCRIPTION) on a header row with no fill of its own, 12 px above and below whatever the density.
+Pass `reference` for the reference sheet, a component page's props table: the column headings as the page's small uppercase mono label (PROP, TYPE, DEFAULT and DESCRIPTION) on a header row with no fill of its own, 12 px above and below whatever the density; rows 10 px above and below with a rule above each; the columns 16 px apart and 16 px in from the frame's sides; and the frame at the panel corner on the `border` hairline over the card fill. `bordered` only firms the hairline, and `attached` still drops the frame. Pair it with `alignTop` when a cell wraps.
 <!-- only: web -->
-On iOS the table keeps its own column headings and the prop changes nothing.
+On iOS the table keeps its own look and the prop changes nothing.
 <!-- /only -->
 <!-- only: ios -->
-The table keeps its own column headings and the prop changes nothing.
+The table keeps its own look and the prop changes nothing.
 <!-- /only -->
 
 ```tsx
 <DataTable
-  eyebrowHeader
+  reference
   columns={["Prop", "Type", "Default"]}
   rows={[
     ["primary", "boolean", "false"],
