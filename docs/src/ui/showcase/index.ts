@@ -5,3 +5,4 @@ export { ShowcaseCard, type ShowcaseCardProps } from "./card";
 export { ShowcaseGrid, ShowcaseGroup } from "./grid";
 export { SectionHero, VignetteStage } from "./hero";
 export { SectionStage, PagePlaceholder, type GlowBox } from "./stage";
+export { SpecimenRows, RadiusSample, GlassWell } from "./specimen";
