@@ -240,6 +240,14 @@ for (const id of V4_SECTIONS) {
         const after = (await target.boundingBox())?.height;
         if (before === after) break;
       }
+      // The page backdrop fills the shell's safe-area frame, which follows a grown window a
+      // frame late; wait for it to reach the window's foot before the shot.
+      await page
+        .waitForFunction(() => {
+          const backdrop = document.querySelector("[data-page-backdrop]");
+          return backdrop != null && Math.round(backdrop.getBoundingClientRect().bottom) >= window.innerHeight - 1;
+        }, undefined, { timeout: 5000 })
+        .catch(() => undefined);
       await page.waitForTimeout(300);
     },
     restore: async (page: Page) => {
