@@ -6,6 +6,7 @@ import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../st
 import { selectedCard } from "../../style/selected-card.js";
 import { createBrandCard, brandCardModeOf } from "./card.brand.js";
 import { ReferenceCard, referenceModeOf } from "./card.reference.js";
+import { BoardCardContent, type BoardCardProps } from "./card.board.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { MONO_FONT } from "../../style/mono.js";
@@ -79,7 +80,7 @@ const headerStyles = StyleSheet.create({
   stack: { gap: 4 },
 });
 
-export interface CardProps {
+export interface CardProps extends BoardCardProps {
   /** Original illustrated approval banner. */
   featured?: boolean;
   /** Show only the authored artwork, filling bounds supplied by the parent. */
@@ -368,7 +369,7 @@ export function createCard(skin: CardSkin) {
     // A card is SECTIONED when it renders one of the self-padding sections, whether its
     // body is raw children or the data-driven `body` string. That is what moves the
     // inset off the surface and onto the sections.
-    const hasSections = hasHeader || Boolean(footer);
+    const hasSections = !props.board && (hasHeader || Boolean(footer));
     // `{cond && <X/>}` collapses to `false`, not null, so a card whose body renders
     // nothing must not hang a divider over an empty content section: the body wrapper
     // and the divider above it key off a RENDERABLE child, mirroring the string path's
@@ -379,7 +380,7 @@ export function createCard(skin: CardSkin) {
     // plain SINGLE-child card's rendered box is pixel-identical to what it always
     // was (the density gap is inert with one child); a card with several flat
     // children now also gains that gap, the surface's own rhythm.
-    const padsSurface = children != null && !hasSections;
+    const padsSurface = !props.board && children != null && !hasSections;
     // `padded` moves the SURFACE inset, which a sectioned card never takes (its sections
     // pad themselves, at the standard inset or the density's). Silently ignoring a
     // passed prop is the same class of bug as the dropped header this path fixes, so
@@ -496,7 +497,9 @@ export function createCard(skin: CardSkin) {
     ) : null;
 
     let inner: ReactNode;
-    if (children != null) {
+    if (props.board) {
+      inner = <BoardCardContent {...props} cornerRadius={skin.corners[corner]} insets={s.sectionInsets(skin.density[dens])} />;
+    } else if (children != null) {
       // A plain card still renders exactly what the caller passed, byte for byte.
       // A sectioned card wraps those children in the same anatomy the string path
       // uses, so `flush` keeps meaning "run the body edge to edge" rather than

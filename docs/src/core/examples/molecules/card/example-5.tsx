@@ -3,10 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography } = scope;
+  const { Card } = scope;
   return (
-<Card>
-  <Typography lead semibold>Anything goes here</Typography>
-</Card>
+<Card board compact smallCorners tileShadow borderless
+  ticketNumber="ARGUS-123" priorityLabel="High" title="Preserve saved work"
+  description="Keep the current project state when returning to the board."
+  statusLabel="In Progress" typeLabel="Task" aiActive />
   );
 }

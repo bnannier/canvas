@@ -3,15 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardMedia, CardSeparator, Typography } = scope;
+  const { Card, CardContent, CardMedia, Typography } = scope;
   return (
 <Card flush>
-  <CardMedia>
-    <Button primary>Save changes</Button>
-  </CardMedia>
-  <CardSeparator />
+  <CardMedia src="/kira-tanaka.jpg" alt="Portrait of Kira Tanaka" />
   <CardContent>
-    <Typography small medium>Primary</Typography>
+    <Typography h5 semibold>Kira Tanaka</Typography>
   </CardContent>
 </Card>
   );
