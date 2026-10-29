@@ -121,8 +121,15 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // specimen well, DescriptionList node values, the `chapter` gap, Typography `level`,
 // `CodeBlock inline copy`, the Swatch palette picker, Image's point-size tiles and Escape
 // on Tooltip and Toast. Measured on bun 1.4.0 at 256,218 / 256,960 / 257,939B (web / iOS /
-// Android). 264KB keeps 4.8% headroom over Android's figure.
-export const JS_MAX_GZIP = 270_336; // 264 KB
+// Android). 264KB kept 4.8% headroom over Android's figure.
+// The v4 component page's looks (2026-10-28, audit/v4-redesign PLAN D19: the DataTable
+// reference sheet, the Collapsible reference card, the CodeBlock playground density, the
+// ButtonGroup compact density, the Badge disc, tier and marker, the Card corners, densities
+// and wells, the Chip token and square looks, the Swatch tiny disc and ring, the Button's
+// loading arc and plain link, the anatomy zoom and eleven Typography page roles) measured
+// on bun 1.4.0 at 269,055 / 269,946 / 270,859B. 278KB keeps 5.1% headroom over Android's
+// figure.
+export const JS_MAX_GZIP = 284_672; // 278 KB
 
 export interface JavaScriptBudget {
   label: string;
