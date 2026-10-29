@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { type ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 import { type DimensionValue, type Insets } from "react-native";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { leastLine, useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { inlineSide, slopSides, splitSeam } from "../../style/touch-seam.js";
@@ -22,6 +23,12 @@ import { type State, type StepsSkin } from "./steps.styles.js";
 export interface Step {
   label: string;
   description?: string;
+  /**
+   * The step's own progress, 0-100 (clamped): in the vertical layout the step draws a
+   * 6 px bar under its text, its fill running from the accent into the cyan series hue.
+   * Other layouts ignore it.
+   */
+  progress?: number;
 }
 
 export interface StepsProps {
@@ -31,8 +38,14 @@ export interface StepsProps {
   current?: number;
   /** Initial active step for uncontrolled use (pressing a step, with `onStepPress`, moves it). */
   defaultCurrent?: number;
-  // Layout (pick one; default is horizontal).
+  // Layout (pick one; default is horizontal). Precedence: progress, segmented, vertical.
   vertical?: boolean;
+  /**
+   * Equal segments in a row: each step a 4 px bar (the accent once reached, glowing on the
+   * current step) over its label and, from its `description`, a status line inked by the
+   * step's state (the success ink once done, the accent's text ink on the current step).
+   */
+  segmented?: boolean;
   /** Render a labeled percentage progress bar instead of discrete steps. */
   progress?: boolean;
   /**
@@ -58,11 +71,12 @@ export interface StepsProps {
   style?: LayoutStyle;
 }
 
-type Layout = "horizontal" | "vertical" | "progress";
+type Layout = "horizontal" | "vertical" | "segmented" | "progress";
 
 // First match wins when more than one layout flag is passed.
 export function layoutOf(p: StepsProps): Layout {
   if (p.progress) return "progress";
+  if (p.segmented) return "segmented";
   if (p.vertical) return "vertical";
   return "horizontal";
 }
@@ -117,6 +131,33 @@ function seamed(slop: Insets | undefined, seams: CircleSeams): Insets | undefine
 // reaches 8): it sits in a view that takes no touches, since React Native's Android hit test
 // does not read pointerEvents on a Text.
 const PASS_THROUGH: ViewStyle = { pointerEvents: "none" };
+
+/** A vertical step's own progress bar: the track, and the filled share as an SVG gradient. */
+function StepProgress({ value, skin }: { value: number; skin: StepsSkin }) {
+  const { tokens } = useMaterialTheme({ static: true, layer: "control" });
+  const id = `step-progress-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const pct = Math.max(0, Math.min(100, value));
+  const fill = skin.stepProgressFill(tokens);
+  return (
+    <View
+      style={[s.stepProgressTrack, skin.stepProgressTrack(tokens)]}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: 100, now: Math.round(pct) }}
+    >
+      <View style={[s.stepProgressFill, fill.glow, { width: `${pct}%` as DimensionValue }]}>
+        <Svg width="100%" height="100%" viewBox="0 0 1 1" preserveAspectRatio="none">
+          <Defs>
+            <LinearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+              <Stop offset="0" stopColor={fill.from} />
+              <Stop offset="1" stopColor={fill.to} />
+            </LinearGradient>
+          </Defs>
+          <Rect x="0" y="0" width="1" height="1" fill={`url(#${id})`} />
+        </Svg>
+      </View>
+    </View>
+  );
+}
 
 /** Build a Steps component from a platform skin. */
 export function createSteps(skin: StepsSkin) {
@@ -270,16 +311,37 @@ export function createSteps(skin: StepsSkin) {
                     <View style={[s.verticalConnector, skin.connector(tokens, state === "completed"), PASS_THROUGH]} />
                   ) : null}
                 </View>
-                <View style={[s.flex1, s.verticalContent, !isLast ? s.verticalContentSpacing : null]}>
-                  <Text style={[s.labelBase, skin.labelState(tokens, state)]}>{step.label}</Text>
-                  {step.description != null ? (
-                    <Text style={skin.verticalDescription(tokens)}>{step.description}</Text>
-                  ) : null}
+                <View style={[s.flex1, s.verticalContent, !isLast ? s.verticalContentSpacing : null, step.progress != null ? s.verticalStack : null]}>
+                  <View>
+                    <Text style={[s.labelBase, skin.labelState(tokens, state)]}>{step.label}</Text>
+                    {step.description != null ? (
+                      <Text style={skin.verticalDescription(tokens, state)}>{step.description}</Text>
+                    ) : null}
+                  </View>
+                  {step.progress != null ? <StepProgress value={step.progress} skin={skin} /> : null}
                 </View>
               </View>
             );
           })}
         </View>,
+      );
+    }
+
+    if (layout === "segmented") {
+      // Equal segments: each step's bar over its label and its status line.
+      return (
+        <View testID={testID} style={[s.fullWidth, s.segmentedRow, style]}>
+          {steps.map((step, i) => {
+            const state = stateOf(i, current);
+            return (
+              <View key={i} style={s.segmentColumn} aria-current={state === "current" ? "step" : undefined}>
+                <View style={[s.segmentBar, skin.segmentBar(tokens, state)]} />
+                <Text numberOfLines={1} style={[s.segmentTitle, skin.labelState(tokens, state)]}>{step.label}</Text>
+                {step.description != null ? <Text numberOfLines={1} style={[s.segmentStatus, skin.segmentStatus(tokens, state)]}>{step.description}</Text> : null}
+              </View>
+            );
+          })}
+        </View>
       );
     }
 

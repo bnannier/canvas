@@ -30,6 +30,7 @@ import { LayoutAxisProvider, ROW_AXIS } from "../../style/sizing.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Drawer as WebDrawer } from "../drawer/drawer.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
+import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type Density, type Frame } from "./sidebar.styles.js";
 import { SidebarItemBadge, SidebarRowFrame, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
 import { createSidebarDrillDown } from "./sidebar.drilldown.js";
@@ -139,6 +140,13 @@ export interface SidebarSkin {
   header: (t: ColorTokens, collapsed: boolean) => ViewStyle;
   /** The pinned footer block + its divider. */
   footer: (t: ColorTokens, collapsed: boolean) => ViewStyle;
+  /** The `account` card at the column's foot (pushed there by its own auto top margin);
+   *  `collapsed` keeps only the avatar, centred. */
+  account: (t: ColorTokens, collapsed: boolean) => ViewStyle;
+  /** The account card's name line. */
+  accountName: (t: ColorTokens) => TextStyle;
+  /** The account card's detail line under the name. */
+  accountDetail: (t: ColorTokens) => TextStyle;
   /** The scrolling body wrapper ({ flex: 1 }). */
   scroll: ViewStyle;
   /** The scroll body contentContainer inset + inter-section gap. */
@@ -170,6 +178,16 @@ export interface SidebarSkin {
 // module back. Re-exported here because this is where every per-OS file takes the
 // Sidebar's public types from.
 export type { SidebarItem, SidebarSection } from "./sidebar.item.js";
+
+/** The signed-in account the `account` card names at the foot of the column. */
+export interface SidebarAccount {
+  /** The account or workspace name (e.g. "Northwind"). */
+  name: string;
+  /** A short line under the name (e.g. "24 members"). */
+  detail?: string;
+  /** The avatar photo (a URL or a bundled image); the name's initials without one. */
+  src?: string | number;
+}
 
 export interface SidebarProps {
   /** Titled sections of nav rows. Use this or the flat `items` array. */
@@ -269,6 +287,13 @@ export interface SidebarProps {
   /** Optional bottom slot (pinned below the scrolling sections). A render function
    *  receives the collapsed state so it can show a compact (icon-only) footer in the rail. */
   footer?: ReactNode | ((collapsed: boolean) => ReactNode);
+  /**
+   * The signed-in account, drawn as a filled card pinned to the foot of the column: a
+   * small avatar beside the name and a detail line in the third ink. The collapsed rail
+   * keeps the avatar alone. It sits under the groups (above a `footer` slot), and in the
+   * drawer under the drill-down.
+   */
+  account?: SidebarAccount;
 
   /**
    * The name of the sidebar's navigation landmark, a short statement of what it navigates
@@ -341,6 +366,8 @@ function landmarkName(label: string | undefined) {
 // The embedded column and its slots: stretched to the host rail, 16 px between blocks.
 const EMBEDDED_COLUMN: ViewStyle = { gap: 16, alignSelf: "stretch" };
 const EMBEDDED_SLOT: ViewStyle = { alignSelf: "stretch" };
+// The account card's text column: it takes the room beside the avatar and truncates.
+const ACCOUNT_TEXT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0 };
 
 /** Build a Sidebar component from a platform skin. */
 /**
@@ -352,11 +379,14 @@ export interface SidebarParts {
   Drawer?: typeof WebDrawer;
   /** A row's trailing count. */
   Badge?: typeof WebBadge;
+  /** The `account` card's avatar. */
+  Avatar?: typeof WebAvatar;
 }
 
 export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
   const Drawer = parts.Drawer ?? WebDrawer;
   const Badge = parts.Badge ?? WebBadge;
+  const Avatar = parts.Avatar ?? WebAvatar;
   // The rotating disclosure chevron for a collapsible section header (mirrors the
   // kit Accordion: 0deg collapsed -> skin.sectionChevronSpinTo open; Reduce Motion
   // snaps it).
@@ -378,7 +408,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
   const SidebarDrillDown = createSidebarDrillDown(skin, Badge);
 
   return function Sidebar(props: SidebarProps) {
-    const { sections, items, onSelect, header, footer, collapsible, onToggleCollapse, accessibilityLabel, testID, style } = props;
+    const { sections, items, onSelect, header, footer, account, collapsible, onToggleCollapse, accessibilityLabel, testID, style } = props;
     const density = densityOf(props);
     const frame = frameOf(props);
     const { tokens, dark } = useTheme();
@@ -505,6 +535,20 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       onSelect?.(item, index, event);
     };
 
+    // The account card: the avatar beside the name over its detail; the rail keeps the avatar.
+    const accountCard = (railed: boolean) =>
+      account == null ? null : (
+        <View style={skin.account(tokens, railed)} accessibilityLabel={railed ? account.name : undefined}>
+          <Avatar small src={account.src} name={account.name} />
+          {railed ? null : (
+            <View style={ACCOUNT_TEXT}>
+              <Text style={skin.accountName(tokens)} numberOfLines={1}>{account.name}</Text>
+              {account.detail != null ? <Text style={skin.accountDetail(tokens)} numberOfLines={1}>{account.detail}</Text> : null}
+            </View>
+          )}
+        </View>
+      );
+
     // Narrow + responsive: render the start-edge drill-down Drawer instead of the inline rail.
     // The Drawer owns the slide + scrim + hardware-back-to-close; SidebarDrillDown owns the
     // two-level navigation. The header/footer slots pin above/below it (a brand lockup, a
@@ -539,6 +583,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
             contentInsetBottom={props.drawerContentInsetBottom}
             fill={fullHeight}
           />
+          {accountCard(false)}
           {drawerFooter != null ? <View style={skin.footer(tokens, false)}>{drawerFooter}</View> : null}
         </Drawer>
       );
@@ -697,6 +742,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
         <View testID={testID} role="navigation" {...landmarkName(accessibilityLabel)} style={[EMBEDDED_COLUMN, style]}>
           {headerNode != null ? <View style={EMBEDDED_SLOT}>{headerNode}</View> : null}
           {sectionsEl}
+          {accountCard(collapsed)}
           {footerNode != null ? <View style={EMBEDDED_SLOT}>{footerNode}</View> : null}
         </View>
       );
@@ -713,6 +759,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       return (
         <GlassSurface testID={testID} role="navigation" accessibilityLabel={accessibilityLabel} style={column}>
           {sectionsEl}
+          {accountCard(collapsed)}
         </GlassSurface>
       );
     }
@@ -762,6 +809,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
         <ScrollView style={skin.scroll} contentContainerStyle={skin.scrollContent(tokens, collapsed)}>
           {sectionsEl}
         </ScrollView>
+        {account != null ? <View style={skin.scrollContent(tokens, collapsed)}>{accountCard(collapsed)}</View> : null}
         {footer != null ? <View style={skin.footer(tokens, collapsed)}>{footerNode}</View> : null}
       </GlassSurface>
     );

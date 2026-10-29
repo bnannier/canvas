@@ -32,6 +32,13 @@ function cellWash(t: ColorTokens): ViewStyle {
   return { borderRadius: 9999, backgroundColor: softOf(t) };
 }
 
+// The unread dot over a floating cell's glyph (the Navigation card's Inbox: `top:8px;
+// right:22%;width:8px;height:8px;border-radius:50%;background:var(--bad);border:2px solid
+// var(--sf)`), the destructive fill ringed in the card surface so it parts from the glyph.
+function floatingUnread(t: ColorTokens): ViewStyle {
+  return { position: "absolute", top: 8, right: "22%", width: 8, height: 8, borderRadius: 9999, borderWidth: 2, borderColor: t.card, backgroundColor: t.destructive };
+}
+
 export const iosSkin: TabBarSkin = {
   bar: floatingBar,
   fill: floatingFill,
@@ -43,11 +50,14 @@ export const iosSkin: TabBarSkin = {
   pressedOpacity: 0.6,
   pill: cellWash,
   pillCovers: "cell",
+  unread: floatingUnread,
 };
 
-// Web: the same capsule, the browser's own press dim.
+// Web: the same capsule, the browser's own press dim, floating 12 off the container's
+// sides and bottom (the Navigation card's "floats 12px off the edge"); iOS keeps 16 / 8.
 export const webSkin: TabBarSkin = {
   ...iosSkin,
+  floating: { horizontal: 12, bottom: 12, clearance: 12 },
   label: () => ({ fontSize: 10, lineHeight: 13, fontWeight: "500" }),
   pressedOpacity: 0.7,
 };
@@ -75,4 +85,7 @@ export const androidSkin: TabBarSkin = {
     borderRadius: 9999,
     backgroundColor: softOf(t),
   }),
+  // Material 3's small badge: a 6 dp error dot at the top end of the 24 dp icon, which
+  // sits centred in the 64 dp indicator.
+  unread: (t: ColorTokens): ViewStyle => ({ position: "absolute", top: 12, left: "50%", marginLeft: 6, width: 6, height: 6, borderRadius: 9999, backgroundColor: t.destructive }),
 };

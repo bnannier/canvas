@@ -16,7 +16,7 @@ rounded hairline cells at 28, 34 or 40 (small, default, large), the page
 numbers in 13px mono numerals, and the current page in the accent fill with a soft glow
 beneath it. Previous and Next carry a chevron and a "Prev" / "Next" label beside the
 numbers (the chevron alone at the small size and in the compact row), the truncation gap
-is a quiet ellipsis, and the rows-per-page trigger sits on the field edge. A resting page
+is a quiet text ellipsis (…), and the rows-per-page trigger sits on the field edge. A resting page
 or arrow takes the hover wash at once; a disabled pager dims as one, and in an enabled
 pager the arrow at either end dims on its own.
 

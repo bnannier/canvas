@@ -42,8 +42,8 @@ export interface BadgeSize {
 }
 
 export interface BadgeSkin {
-  /** The pill per size step (`small`, the default, `large`), the anatomy `marker` disc (the legend `disc` shares it), the `tier` pill, the group `band` pill and the `token` chip. */
-  sizes: Record<"small" | "default" | "large" | "marker" | "tier" | "band" | "token", BadgeSize>;
+  /** The pill per size step (`tiny`, `small`, the default, `large`), the anatomy `marker` disc (the legend `disc` shares it), the `tier` pill, the group `band` pill and the `token` chip. */
+  sizes: Record<"tiny" | "small" | "default" | "large" | "marker" | "tier" | "band" | "token", BadgeSize>;
   /**
    * The shadow set under an anatomy `marker`, from the theme's tokens: the hand-off's ring
    * of the stage's fill and its drop shadow (Component.dc.html line 220).
@@ -84,6 +84,11 @@ export interface BadgeProps {
   foreground?: boolean;
   /** The small pill: 18 px tall, 11 px label. */
   small?: boolean;
+  /**
+   * The tiny pill: 18 px tall under a 10 px label on the pill's own 18 px line, at the
+   * regular weight even when solid (a navigation row's "New" tag beside its count).
+   */
+  tiny?: boolean;
   /** A count at the small size with the heavier label. */
   count?: boolean;
   /** Solid count used in navigation. */
@@ -209,6 +214,7 @@ export function badgeMetricOf(p: BadgeProps) {
   if (p.tier) return "tier";
   if (p.band) return "band";
   if (p.token) return "token";
+  if (p.tiny) return "tiny";
   if (p.small) return "small";
   return "default";
 }
@@ -296,7 +302,7 @@ export function createBadge(skin: BadgeSkin) {
 
     const metric = badgeMetricOf(props);
     // The legend disc is the marker's size; the tier and band pills their own steps.
-    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" || metric === "band" || metric === "token" ? metric : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
+    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" || metric === "band" || metric === "token" || metric === "tiny" ? metric : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
 
     if (props.status) {
       const tone = statusOf(props);
@@ -375,7 +381,8 @@ export function createBadge(skin: BadgeSkin) {
       lineHeight: size.lineHeight,
       // A disc's number is always the heavier weight (line 222: `font:600 11px/1 var(--fm)`
       // on the quiet disc as on the accent one).
-      fontWeight: look.strong || metric === "count" || disc ? skin.strongWeight : skin.weight,
+      // The tiny pill keeps the regular weight on every surface (the hand-off's `font:500 10px/18px`).
+      fontWeight: metric !== "tiny" && (look.strong || metric === "count" || disc) ? skin.strongWeight : skin.weight,
       letterSpacing: props.uppercase ? size.fontSize * skin.uppercaseTracking : 0,
       textTransform: props.uppercase ? "uppercase" : "none",
       color: ink,

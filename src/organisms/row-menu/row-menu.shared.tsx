@@ -2,8 +2,10 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHover } from "../../style/hover.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useHugStyle, RippleClip, StyleSheet, cornerRadii, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useHugStyle, RippleClip, StyleSheet, cornerRadii, GlassSurface, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
+import { useFillStyle, LayoutAxisProvider, ROW_AXIS } from "../../style/sizing.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { Badge } from "../../atoms/badge/badge.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { useSeamLimit } from "../../style/touch-seam.js";
 import { useRowFocus, type RowFocusProps } from "../../style/use-row-focus.js";
@@ -45,6 +47,13 @@ export interface RowMenuProps {
   onOpenChange?: (open: boolean) => void;
   /** Render rows as navigation links rather than action buttons. */
   links?: boolean;
+  /**
+   * The menu drawn in place, with no ⋯ trigger and no overlay: the action rows in the
+   * menu's own panel, filling the width the parent gives it. With `links` it is a grouped
+   * link list instead: hairline-split rows, each ending in its `badge` or `meta` and a
+   * chevron. `open`, `onOpenChange` and `triggerLabel` do nothing here.
+   */
+  inline?: boolean;
   /** Show a muted section label heading the menu. */
   sectionLabel?: string;
   /** Fired with the selected item and its index when a row is pressed. */
@@ -62,6 +71,12 @@ export interface RowMenuProps {
 // behavior). With a provider, AnchoredOverlay positions the card over the page and
 // adds the outside-tap dismiss backdrop instead. The skin owns the card's
 // shape/fill/shadow and its standoff; this owns the inline anchoring.
+// A row's label grows to push its trailing hints to the row's end.
+const GROW: ViewStyle = { flexGrow: 1, flexShrink: 1 };
+
+/** Whether a row carries a trailing hint (the submenu chevron aside). */
+const trailing = (item: RowMenuItem) => item.badge != null || item.meta != null || item.shortcut != null || !!item.submenu;
+
 const menuAnchor = (gap: number): ViewStyle => ({ position: "absolute", top: "100%", start: 0, zIndex: 50, marginTop: gap });
 
 /** Build a RowMenu component from a platform skin. */
@@ -110,7 +125,53 @@ export function createRowMenu(skin: RowMenuSkin) {
         {item.icon ? (
           <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} color={!item.destructive && !muted && skin.iconColor ? skin.iconColor(tokens) : undefined} size={skin.iconSize} decorative />
         ) : null}
-        <Text style={[skin.rowTextSize, muted ? { color: tokens["muted-foreground"] } : skin.rowTextColor(item, links, tokens, dark)]}>{item.label}</Text>
+        <Text style={[skin.rowTextSize, trailing(item) ? GROW : null, muted ? { color: tokens["muted-foreground"] } : skin.rowTextColor(item, links, tokens, dark)]}>{item.label}</Text>
+        <Trailing item={item} chevron={item.submenu ? skin.submenuSize : null} muted={muted} />
+      </Pressable>
+    );
+  }
+
+  // A row's trailing hints, in order: the badge, the meta, the shortcut, the chevron.
+  function Trailing({ item, chevron, muted }: { item: RowMenuItem; chevron: number | null; muted?: boolean }) {
+    const { tokens } = useMaterialTheme({ layer: "dense" });
+    if (!trailing(item) && chevron == null) return null;
+    // The row is a row: a hugging badge centres on its line instead of pinning to the top.
+    return (
+      <LayoutAxisProvider value={ROW_AXIS}>
+        {item.badge != null ? <Badge band primary>{item.badge}</Badge> : null}
+        {item.meta != null ? <Text style={skin.meta(tokens)}>{item.meta}</Text> : null}
+        {item.shortcut != null ? <Text style={[skin.shortcut(tokens, !!item.destructive && !muted), muted ? { color: tokens["muted-foreground"] } : null]}>{item.shortcut}</Text> : null}
+        {chevron != null ? <Icon chevronRight size={chevron} color={skin.chevronColor(tokens)} decorative /> : null}
+      </LayoutAxisProvider>
+    );
+  }
+
+  // One row of the inline link list: glyph, label, trailing hints and the chevron.
+  function LinkRow({ item, first, onPress }: { item: RowMenuItem; first: boolean; onPress: () => void }) {
+    const theme = useMaterialTheme({ layer: "content" });
+    const { tokens } = theme;
+    const disabled = !!item.disabled;
+    const { hovered, target } = useHover(skin.itemHover != null && !disabled);
+    return (
+      <Pressable
+        {...target}
+        disabled={disabled}
+        onPress={onPress}
+        style={({ pressed }) => [
+          skin.linkRow,
+          first ? null : skin.linkDivider(tokens),
+          hovered && skin.itemHover ? skin.itemHover(tokens) : null,
+          skin.ripple == null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
+          disabled ? { opacity: skin.disabledRow.muted ? 0.4 : skin.disabledRow.opacity } : null,
+        ]}
+        android_ripple={disabled || !skin.ripple ? undefined : skin.ripple(tokens)}
+        accessibilityRole="link"
+        accessibilityState={disabled ? { disabled: true } : undefined}
+        aria-disabled={disabled || undefined}
+      >
+        {item.icon ? <Icon {...{ [item.icon]: true }} size={skin.linkIconSize} color={skin.linkIconColor(tokens)} decorative /> : null}
+        <Text style={skin.linkLabel(tokens)} numberOfLines={1}>{item.label}</Text>
+        <Trailing item={item} chevron={skin.linkChevronSize} />
       </Pressable>
     );
   }
@@ -161,6 +222,42 @@ export function createRowMenu(skin: RowMenuSkin) {
     const enterMenu = () => (links ? focusInto(linkNodes.current[firstEnabled]) : rows.enter(firstEnabled));
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+    const fill = useFillStyle("RowMenu");
+
+    if (props.inline) {
+      // In place: no trigger and no overlay. The link list is a content pane of
+      // hairline-split link rows; the action menu its own panel holding the menu's rows.
+      if (links) {
+        return (
+          <GlassSurface layer="content" testID={testID} style={[skin.linkList(tokens), fill, style]}>
+            {items.map((item, index) => (
+              <LinkRow key={`${item.label}-${index}`} item={item} first={index === 0} onPress={() => onSelect?.(item, index)} />
+            ))}
+          </GlassSurface>
+        );
+      }
+      return (
+        <GlassSurface layer="dense" testID={testID} style={[skin.menuCard(tokens), fill, style]}>
+          {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
+          <View accessibilityRole="menu" role="menu" accessibilityLabel={menuName} aria-label={menuName} style={skin.rowGap ? { gap: skin.rowGap } : undefined}>
+            {items.map((item, index) => (
+              <View key={`${item.label}-${index}`}>
+                {item.separatorBefore ? <View style={skin.separator(tokens)} /> : null}
+                <MenuRow
+                  item={item}
+                  links={false}
+                  onPress={() => onSelect?.(item, index)}
+                  ripple={ripple}
+                  focusProps={rows.rowProps(index, () => {
+                    if (!item.disabled) onSelect?.(item, index);
+                  })}
+                />
+              </View>
+            ))}
+          </View>
+        </GlassSurface>
+      );
+    }
 
     return (
       // Hugs its trigger inside a kit container; relative anchors the inline fallback menu.

@@ -117,6 +117,10 @@ export const selectorCluster: ViewStyle = { flexDirection: "row", alignItems: "c
 // The Prev/Next pair inside the with-size row.
 export const controlPair: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 6 };
 
+// The truncation gap's glyph: the text ellipsis "…" at the page's 400 16 (the renderer's
+// span sets no face of its own, so it takes the page's 16 px interface face).
+export const gapGlyph: TextStyle = { fontSize: 16, lineHeight: 20, fontWeight: "400", textAlign: "center" };
+
 // The truncation gap: the ellipsis centred in a box s / 1.5 wide.
 export const gapBox: Record<Size, ViewStyle> = {
   small: { width: cellStep.small / 1.5, alignItems: "center" },

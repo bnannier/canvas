@@ -118,6 +118,30 @@ exactly like this page's own left nav. `AppShell` is the docs' live app frame (t
 />
 ```
 
+### Accent tag and account
+
+`badgeAccent` draws a row's `badge` as the accent's solid tag (18 px, a 10 px label) for
+something new rather than a count; a row's `meta` is quiet mono text in the third ink.
+`account` pins a filled account card to the foot of the column: a small avatar beside the
+name and a detail line in the third ink (the collapsed rail keeps the avatar).
+
+```tsx
+<Sidebar
+  defaultActive="overview"
+  sections={[
+    {
+      title: "Workspace",
+      items: [
+        { id: "overview", label: "Overview", icon: "layoutDashboard" },
+        { id: "members", label: "Members", icon: "users", meta: "24" },
+        { id: "tokens", label: "Tokens", icon: "palette", badge: "New", badgeAccent: true }
+      ]
+    }
+  ]}
+  account={{ name: "Northwind", detail: "24 members", src: "/grace-hopper.jpg" }}
+/>
+```
+
 ### Markers and the current place
 
 ```tsx

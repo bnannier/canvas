@@ -334,7 +334,7 @@ describe("the states each component's source gives it", () => {
     ]);
     // Where a source disables a control no example asks for: nothing to capture.
     const unshown = coverage.flatMap((c) => c.answers.filter((a) => a.by === "unshown").map((a) => `${c.slug}${a.within ? ` in ${a.within}` : ""}`));
-    expect(unshown.sort()).toEqual(["button-group in SplitButton", "carousel", "chip", "form", "radio", "sidebar", "video"]);
+    expect(unshown.sort()).toEqual(["button-group in SplitButton", "carousel", "chip", "form", "radio", "row-menu", "sidebar", "video"]);
     // The states the web runner can never show and the devices judge: Dialog's Android text
     // buttons, which press with `android_ripple` alone (AlertDialog's Android build renders
     // kit Buttons, the hand-off's Android row).
@@ -437,7 +437,7 @@ describe("the states each component's source gives it", () => {
       "action-sheet: its Disabled action example asks for a disabled control in the overlay in ActionSheet (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:217), with no disabled recipe there",
     ]);
     expect(check("row-menu", without("row-menu"))).toEqual([
-      "row-menu: its Disabled item example asks for a disabled control in the overlay in RowMenu (disabled on <Pressable> at src/organisms/row-menu/row-menu.shared.tsx:91 via MenuRow), with no disabled recipe there",
+      "row-menu: its Disabled item example asks for a disabled control in the overlay in RowMenu (disabled on <Pressable> at src/organisms/row-menu/row-menu.shared.tsx:106 via MenuRow), with no disabled recipe there",
     ]);
     // AlertDialog's confirm stays disabled until the token is typed, only with `withInput`; Present portals the dialog.
     expect(check("alert-dialog", without("alert-dialog"))).toEqual([
@@ -485,7 +485,19 @@ describe("the states each component's source gives it", () => {
     // ActionSheet's rows (a constant, `actionRows`, rendered inside its Modal) read the action's `disabled`.
     expect(disabled("action-sheet")).toEqual(["accessibilityState on <Pressable> by -/disabled in ActionSheet", "disabled on <Pressable> by -/disabled in ActionSheet"]);
     // RowMenu's and Dropdown's rows: a local MenuRow, rendered inside the AnchoredOverlay, reading its item's `disabled`.
-    expect(disabled("row-menu")).toEqual(["accessibilityState on <Pressable> by -/disabled in RowMenu", "aria-disabled on <Pressable> by -/disabled in RowMenu", "disabled on <Pressable> by -/disabled in RowMenu"]);
+    // Its `inline` rows (the menu panel, and the `links` list) sit on the component's own
+    // surface, gated by the props that draw them.
+    expect(disabled("row-menu")).toEqual([
+      "accessibilityState on <Pressable> [inline] by -/disabled",
+      "accessibilityState on <Pressable> [links&inline] by -/disabled",
+      "accessibilityState on <Pressable> by -/disabled in RowMenu",
+      "aria-disabled on <Pressable> [inline] by -/disabled",
+      "aria-disabled on <Pressable> [links&inline] by -/disabled",
+      "aria-disabled on <Pressable> by -/disabled in RowMenu",
+      "disabled on <Pressable> [inline] by -/disabled",
+      "disabled on <Pressable> [links&inline] by -/disabled",
+      "disabled on <Pressable> by -/disabled in RowMenu",
+    ]);
     expect(disabled("dropdown")).toEqual([
       "accessibilityState on <Pressable> [children] by disabled/-",
       "accessibilityState on <Pressable> by -/disabled in Dropdown",
@@ -1337,7 +1349,7 @@ export function createProbe(skin: ProbeSkin) {
     // The rail's recipes, as the table had them at the desktop alone, leave the drawer unanswered.
     const rail = { hover: recipeFor("sidebar", "hover-default"), focus: recipeFor("sidebar", "focus-default"), pressed: recipeFor("sidebar", "pressed-default"), open: recipeFor("sidebar", "open") };
     expect(check("sidebar", rail)).toEqual([
-      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:115 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:128 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
       "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:114 via SidebarDrillDown, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
       "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:122 via SidebarDrillDown, and 5 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);

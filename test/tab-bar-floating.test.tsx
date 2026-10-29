@@ -24,8 +24,9 @@ function insetHostOf(bar: HTMLElement): HTMLElement | null {
 describe("TabBar floating capsule", () => {
   it("keeps a floating capsule's safe-area space under the bar, never inside it", async () => {
     // A phone with a 34pt home-indicator inset: the capsule floats 22pt up (34 - 12),
-    // clear of the indicator; with no inset it keeps its 8pt floor.
-    for (const [inset, expected] of [[34, "22px"], [0, "8px"]] as const) {
+    // clear of the indicator; with no inset the web capsule keeps its 12 px floor (the
+    // Navigation card's "floats 12px off the edge"; iOS keeps 8).
+    for (const [inset, expected] of [[34, "22px"], [0, "12px"]] as const) {
       const { unmount } = render(<ThemeProvider solid><WebBar items={destinations} bottomInset={inset} testID="bar" /></ThemeProvider>);
       await act(async () => {});
       expect(insetHostOf(screen.getByTestId("bar"))?.style.paddingBottom).toBe(expected);

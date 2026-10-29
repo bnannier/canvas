@@ -414,7 +414,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
 
   subject({ id: "Badge.intent", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeIntentOf", members: ["action", "primary", "reference", "success", "warning", "error", "info", "cyan", "mint"], resolve: badgeIntentOf }),
-  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "reference", "navigationCount", "count", "tier", "band", "token", "small"], resolve: badgeMetricOf }),
+  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "reference", "navigationCount", "count", "tier", "band", "token", "tiny", "small"], resolve: badgeMetricOf }),
   subject({ id: "Badge.surface", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "neutralFill", "soft", "reference"], resolve: badgeSurfaceOf }),
   subject({ id: "Badge.ink", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeInkOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "foreground"], resolve: badgeInkOf }),
   subject({ id: "Badge.tracking", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeTrackingOf", members: ["reference", "uppercase", "tier"], resolve: badgeTrackingOf, notes: ["A `tier` tag is always in caps at the uppercase tracking (Component.dc.html line 139), so `tier` resolves the tracking axis as `uppercase` does."] }),
@@ -527,7 +527,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     resolve: drawerEdgeOf,
     notes: ["Applies in drawer mode only.", "The Drawer it renders resolves its own edges `right` > `bottom` > `top`."],
   }),
-  subject({ id: "Steps.layout", components: ["Steps"], pages: ["steps"], resolver: "src/organisms/steps/steps.shared.tsx#layoutOf", members: ["progress", "vertical"], resolve: stepsLayout }),
+  subject({ id: "Steps.layout", components: ["Steps"], pages: ["steps"], resolver: "src/organisms/steps/steps.shared.tsx#layoutOf", members: ["progress", "segmented", "vertical"], resolve: stepsLayout }),
   subject({ id: "Tabs.variant", components: ["Tabs"], pages: ["tabs"], resolver: "src/organisms/tabs/tabs.shared.tsx#variantOf", members: ["pills", "vertical", "underline"], resolve: tabsVariant }),
   subject<TabsProps>({
     id: "Tabs.wrap",

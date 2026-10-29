@@ -88,6 +88,30 @@ function markerDot(size: number) {
 // either end of one row; the skins differ in the inset.
 const HEADING_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 };
 
+// The account card (the hand-off rail's footer, `K.def('sidebar')`: `margin-top:auto;
+// display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;
+// background:var(--sf3)`, a 28 px avatar, the name 500 13 px, the detail 400 11 px in
+// --tx3). No platform ships an account card in its sidebar, so every skin draws this one.
+function accountCard(tokens: ColorTokens, collapsed: boolean): ViewStyle {
+  return {
+    marginTop: "auto",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: collapsed ? "center" : "flex-start",
+    gap: 10,
+    padding: collapsed ? 0 : 8,
+    borderRadius: shape.web.control,
+    backgroundColor: collapsed ? "transparent" : tokens.secondary,
+  };
+}
+function accountName(tokens: ColorTokens): TextStyle {
+  return { fontSize: 13, lineHeight: 16, fontWeight: "500", color: tokens.foreground };
+}
+function accountDetail(tokens: ColorTokens): TextStyle {
+  return { fontSize: 11, lineHeight: 14, fontWeight: "400", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
+}
+const ACCOUNT = { account: accountCard, accountName, accountDetail };
+
 // =============================================================================
 // Web: the Canvas v4 rail.
 // =============================================================================
@@ -209,6 +233,7 @@ export const webSkin: SidebarSkin = {
   footer(tokens) {
     return { padding: 12, borderTopWidth: 1, borderColor: tokens.border };
   },
+  ...ACCOUNT,
   scroll: { flex: 1 },
   scrollContent(_tokens, collapsed) {
     return { padding: 12, paddingBottom: 16, gap: collapsed ? 8 : 16 };
@@ -321,6 +346,7 @@ export const iosSkin: SidebarSkin = {
   footer(tokens) {
     return { padding: 8, borderTopWidth: 1, borderColor: tokens.border };
   },
+  ...ACCOUNT,
   scroll: { flex: 1 },
   scrollContent(_tokens, collapsed) {
     return { padding: 8, paddingBottom: 16, gap: collapsed ? 8 : 16 };
@@ -444,6 +470,7 @@ export const androidSkin: SidebarSkin = {
   footer(tokens) {
     return { paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: 1, borderColor: tokens.border };
   },
+  ...ACCOUNT,
   scroll: { flex: 1 },
   scrollContent(_tokens, collapsed) {
     return { paddingHorizontal: 12, paddingVertical: 8, paddingBottom: 16, gap: collapsed ? 8 : 16 };

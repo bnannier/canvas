@@ -406,7 +406,7 @@ export function createPagination(skin: PaginationSkin) {
         {window.map((p, i) =>
           p === GAP ? (
             <View key={`gap-${i}`} style={s.gapBox[size]}>
-              <Icon moreHorizontal decorative size={s.iconSize[size]} color={skin.gapLabel(tokens).color as string} />
+              <Text style={[s.gapGlyph, skin.gapLabel(tokens)]} accessibilityElementsHidden importantForAccessibility="no" aria-hidden>…</Text>
             </View>
           ) : (
             <Page key={`page-${p}`} page={p} selected={p === current} size={size} disabled={disabled} onPress={() => go(p)} />

@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Tabs } = scope;
   return (
-<Tabs wrap tabs={["General", "Security", "Notifications", "Billing", "Integrations", "Advanced", "Members", "Audit log"]} />
+<Tabs tabs={["General", "Security", "Notifications", "Billing", "Integrations", "Advanced"]} />
   );
 }

@@ -31,6 +31,9 @@ export interface TabBarItem {
   label: string;
   /** Renders the tab's glyph; `active` lets the caller tint it (e.g. primary vs muted). */
   icon: (active: boolean) => ReactNode;
+  /** Something new waits behind the destination: a small destructive dot over the cell's
+   *  glyph, and ", unread" after the tab's accessible name. */
+  unread?: boolean;
 }
 
 export interface TabBarProps {
@@ -93,6 +96,8 @@ export interface TabBarSkin {
    */
   pill: ((tokens: ColorTokens, dark: boolean) => ViewStyle) | null;
   pillCovers?: "icon" | "cell";
+  /** The `unread` dot, positioned in the destination cell over its glyph. */
+  unread: (tokens: ColorTokens) => ViewStyle;
 }
 
 // The glyph's wrapper over an icon pill: positioned, so it paints after the pill.
@@ -142,7 +147,7 @@ export function createTabBar(skin: TabBarSkin) {
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive }}
                 aria-selected={isActive}
-                accessibilityLabel={it.label}
+                accessibilityLabel={it.unread ? `${it.label}, unread` : it.label}
                 onPress={() => setActiveKey(it.key)}
                 // The active indicator's material is a child of this Pressable, which the
                 // borderless ripple, projected onto an ancestor's background, lands beneath:
@@ -174,6 +179,7 @@ export function createTabBar(skin: TabBarSkin) {
                 ) : (
                   it.icon(isActive)
                 )}
+                {it.unread ? <View style={[skin.unread(tokens), { pointerEvents: "none" }]} /> : null}
                 <Text numberOfLines={1} style={[skin.label(isActive), { color: skin.labelColor ? skin.labelColor(tokens, isActive) : isActive ? primaryText(tokens) : tokens["muted-foreground"] }]}>{it.label}</Text>
               </Pressable>
             );

@@ -60,6 +60,22 @@ Android docks the Material 3 bar full-bleed, 80 tall under a hairline, with its 
 </Stateful>
 ```
 
+### Unread
+
+An item with `unread` carries a small destructive dot over its glyph, and its accessible
+name ends in ", unread". On the web the capsule floats 12 px off its container's sides
+and bottom.
+
+```tsx
+<TabBar
+  items={[
+    { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
+    { key: "inbox", label: "Inbox", unread: true, icon: (active) => <Icon inbox size={19} primary={active} muted={!active} /> },
+    { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Tab Bar

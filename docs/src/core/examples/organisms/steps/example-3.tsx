@@ -6,8 +6,12 @@ export default function Example(scope: ExampleScope) {
   const { Steps } = scope;
   return (
 <Steps
-  stacks
-  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]}
+  segmented
+  steps={[
+    { label: "Account", description: "Done" },
+    { label: "Workspace", description: "Current" },
+    { label: "Invite team", description: "Next" }
+  ]}
   defaultCurrent={1}
 />
   );

@@ -67,6 +67,56 @@ does not fire `onSelect`, keeps the menu open, and is announced as disabled.
 <RowMenu items={[{ label: "Edit" }, { label: "Duplicate" }, { label: "Clear column", disabled: true }]} />
 ```
 
+### Trailing hints
+
+A row can end in a keyboard `shortcut` (the mono face in the third ink; a destructive
+row's in its own ink, dimmed), a `submenu` chevron, a soft accent `badge` or a quiet mono
+`meta`.
+
+```tsx
+<RowMenu
+  items={[
+    { label: "Edit details", icon: "pencil", shortcut: "⌘E" },
+    { label: "Move to…", icon: "folderOpen", submenu: true },
+    { label: "Delete", icon: "trash2", destructive: true, separatorBefore: true, shortcut: "⌘⌫" }
+  ]}
+/>
+```
+
+### Inline
+
+`inline` draws the menu in place, with no ··· trigger and no overlay: the rows sit in
+the menu's own panel, filling the width the parent gives them. With `links` it is a
+grouped link list instead (below).
+
+```tsx
+<RowMenu
+  inline
+  items={[
+    { label: "Edit details", icon: "pencil", shortcut: "⌘E" },
+    { label: "Duplicate", icon: "copy", shortcut: "⌘D" },
+    { label: "Archive", icon: "archive", separatorBefore: true }
+  ]}
+/>
+```
+
+### Inline links
+
+`inline links` is a grouped link list: rows split by hairlines, each ending in its
+`badge` or `meta` and a chevron.
+
+```tsx
+<RowMenu
+  inline
+  links
+  items={[
+    { label: "Profile", icon: "userRound" },
+    { label: "Notifications", icon: "bell", badge: "3 new" },
+    { label: "Integrations", icon: "plug", meta: "3" }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### When to use
