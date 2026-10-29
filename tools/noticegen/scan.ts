@@ -79,10 +79,13 @@
  *      to appear in all copies. Attribute the exact package the data is transcribed from.
  *      The same holds for the typefaces: docs/scripts/subset-fonts.mjs cuts the Instrument
  *      Sans, Bricolage Grotesque and JetBrains Mono faces down from the @expo-google-fonts
- *      packages into
- *      docs/assets/fonts, so those packages' JavaScript never ships while their font
+ *      packages into docs/assets/fonts (the static cuts iOS and Android register) and from
+ *      the Google Fonts repository's variable sources committed under
+ *      docs/assets/fonts/source (the woff2 files the web document declares, their OFL
+ *      notices beside them), so those packages' JavaScript never ships while their font
  *      software does, under OFL-1.1, whose condition 2 is exactly that the notice travel
- *      with every copy, modified ones included. Each is located the way its own
+ *      with every copy, modified ones included; the committed sources carry the same
+ *      copyright lines the packages do. Each package is located the way its own
  *      generator finds it, from that generator's directory.
  *
  * Run: bun run notices:scan   (then `bun run notices:gen`, then commit both outputs)
@@ -236,7 +239,9 @@ for (const platform of ["ios", "android"]) {
 // See the header: the lucide glyph geometry ships (in icon.glyphs.ts and the menu-glyph
 // PNGs) even though the package's own code never does, and ISC requires the notice to
 // travel with it. lucide-static, not lucide-react-native, is what tools/icongen reads.
-// The three typeface packages ship as the subset faces in docs/assets/fonts (OFL-1.1).
+// The three typeface packages ship as the subset faces in docs/assets/fonts (OFL-1.1); the
+// web's woff2 files are cut from the same typefaces' variable sources under
+// docs/assets/fonts/source, whose OFL notices sit beside them and name the same holders.
 // `from` is the directory the generator resolves the package from: tools/icongen reads
 // the root's node_modules/lucide-static, docs/scripts/subset-fonts.mjs require.resolves
 // the faces from docs/scripts.
