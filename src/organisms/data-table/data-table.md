@@ -300,7 +300,7 @@ The table keeps its own look and the prop changes nothing.
 
 ### Bare table
 
-Pass `bare` for the hairline table with no frame and no fill: the headings in the reference sheet's small uppercase mono label over a `field-border` rule 10 px below them, a `border` rule under every row, the first column flush with the table's start, the columns 12 px apart, and each cell 12 px above and below whatever the density. `reference` wins when both are passed.
+Pass `bare` for the hairline table with no frame and no fill: the headings in the reference sheet's small uppercase mono label over a `field-border` rule 10 px below them, a `border` rule under every row, the first column flush with the table's start, each cell keeping 12 px clear at its end inside its column's width (so a fixed `width` is the whole column), and 12 px above and below whatever the density. `reference` wins when both are passed.
 <!-- only: web -->
 On iOS the table keeps its own look and the prop changes nothing.
 <!-- /only -->
