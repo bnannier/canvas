@@ -78,6 +78,18 @@ const sizingExamples: DocExample[] = [
 </Row>`,
     render: ({ Row, Column, Card, Typography }) => <Row stacks><Column span={8}><Card><Typography>Main content</Typography></Card></Column><Column span={4}><Card><Typography>Details</Typography></Card></Column></Row>,
   },
+  {
+    label: "Weights",
+    code: `<Row stacks>
+  <Column weight={1.7}>
+    <Card><Typography>The figure</Typography></Card>
+  </Column>
+  <Column weight={1}>
+    <Card><Typography>Its legend</Typography></Card>
+  </Column>
+</Row>`,
+    render: ({ Row, Column, Card, Typography }) => <Row stacks><Column weight={1.7}><Card><Typography>The figure</Typography></Card></Column><Column weight={1}><Card><Typography>Its legend</Typography></Card></Column></Row>,
+  },
 ];
 
 const responsiveExamples: DocExample[] = [
@@ -181,7 +193,7 @@ export default function LayoutScreen() {
           <Playground examples={alignmentExamples} stageAlign="start" />
         </TokenSection>
 
-        <TokenSection title="Sizing" description="A fill component beside a hugging sibling takes the remaining room. Use Container for a shared measure and span on a Row's direct children for proportional columns; the Row includes its gaps in the calculation.">
+        <TokenSection title="Sizing" description="A fill component beside a hugging sibling takes the remaining room. Use Container for a shared measure and span on a Row's direct children for proportional columns; the Row includes its gaps in the calculation. For a ratio twelfths cannot name, weight shares out the width after the gaps, like a grid's fr unit.">
           <Playground examples={sizingExamples} stageAlign="start" />
           <DataTable columns={["Container step", "Maximum width"]} rows={Object.entries(widths).map(([step, value]) => [step, `${value}px`])} />
           <Typography small muted>A named measure centers by default. Add start to pin it to the leading edge. Input and other measure-aware controls accept these same step booleans directly.</Typography>
@@ -215,6 +227,7 @@ export default function LayoutScreen() {
           <DataTable columns={["Job", "Canvas API"]} rows={[
             ["A reading or form measure", "Container sm; add start for leading alignment"],
             ["Two columns that stack", "Row stacks with two Column span={6} children"],
+            ["Columns in a free ratio", "Row with Column weight={1.7} and Column weight={1}"],
             ["Equal tiles that reflow", "Grid minTileWidth={220} columns={3}"],
             ["Content that can wrap", "Row wrap"],
             ["A child that takes spare space", "Column fill"],

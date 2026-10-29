@@ -184,6 +184,17 @@ export interface FlexProps {
    */
   span?: number;
   /**
+   * A share of the parent Row's free width, CSS grid's `minmax(0, Nfr)`: siblings with
+   * `weight={1.7}` and `weight={1}` split the row 1.7 to 1 after the gap, whatever their
+   * content, and neither holds a content floor. It is the split a ratio of twelfths cannot
+   * name (the Canvas v4 component page's anatomy is 1.7 to 1, where `span` gives 7 to 5).
+   * A positive number; it replaces `fill` and `grow` on the same box, and a box takes a
+   * `span` or a `weight`, not both. Only meaningful on a direct child of a Row (DEV warns
+   * elsewhere); once a `stacks` Row has stacked, the box is the whole line and the weight
+   * is ignored.
+   */
+  weight?: number;
+  /**
    * Indent the whole stack by one control gutter (24: a control box plus the row
    * gap), so a nested option group lines up under its parent control's label
    * instead of its box. For nesting checkboxes/radios under a "select all" parent.
@@ -303,6 +314,11 @@ export function padOf(p: FlexProps): Pad | null {
   return null;
 }
 
+/** Whether the box carries a usable weight (a positive, finite number). */
+function weighted(props: FlexProps): props is FlexProps & { weight: number } {
+  return typeof props.weight === "number" && Number.isFinite(props.weight) && props.weight > 0;
+}
+
 /** Whether any direct child declares a `span` (the Row then measures itself). */
 function hasSpans(children: ReactNode): boolean {
   return Children.toArray(children).some((child) => isValidElement(child) && (child.props as FlexProps).span != null);
@@ -341,7 +357,7 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
   // (a Row rendering as a Column), `wrap` is inert: a single column has nothing
   // to wrap, and dropping it keeps the stacked layout byte-identical to the
   // equivalent Column.
-  function flexStyle(props: FlexProps, dir: Direction, stacked: boolean): ViewStyle {
+  function flexStyle(props: FlexProps, dir: Direction, stacked: boolean, parent: LayoutAxis | null): ViewStyle {
     const layout: ViewStyle = {
       flexDirection: dir,
       gap: skin.gap[gapOf(props)],
@@ -354,6 +370,16 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     if (rowGap != null) layout.rowGap = rowGap;
     if (props.grow) layout.flexGrow = 1;
     if (props.shrink) layout.flexShrink = 1;
+    // A weight is a share of a horizontal Row's free width: the basis zeroed so content never
+    // claims a head start (the `fr` unit's `minmax(0, ...)`), shrinking with the Row. In a
+    // Column, or a Row that has stacked, it would split the HEIGHT instead, so it is inert.
+    if (weighted(props) && parent?.axis === "row" && !parent.stacked) {
+      delete layout.flex;
+      layout.flexGrow = props.weight;
+      layout.flexShrink = 1;
+      layout.flexBasis = 0;
+      layout.minWidth = 0;
+    }
     if (props.indent) layout.paddingLeft = 24; // one control gutter: box (16) + row gap (8)
     const pad = padOf(props);
     const inset = insetOf(props);
@@ -365,7 +391,7 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
   // The context value this box publishes: its axis, whether it stretches its
   // children, and whether it is a content-sized cell inside a Row.
   function axisOf(props: FlexProps, dir: Direction, parent: LayoutAxis | null): LayoutAxis {
-    const sized = props.span != null || !!props.fill || !!props.grow;
+    const sized = props.span != null || weighted(props) || !!props.fill || !!props.grow;
     // `stretch` describes the WIDTH of children, so it is a Column fact only: a
     // Row's cross axis is its height.
     return layoutAxis(dir, dir === "column" && alignOf(props) === "stretch", parent, sized);
@@ -383,7 +409,7 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     const { width, onLayout } = useContainerWidth();
     const stacked = !!props.stacks && width > 0 && width <= breakpoints[bp];
     const dir: Direction = stacked ? "column" : "row";
-    const layout = flexStyle(props, dir, stacked);
+    const layout = flexStyle(props, dir, stacked, parent);
     // A span row wraps like Bootstrap's `.row`: spans past twelve go to the next line.
     if (spanning && !stacked) layout.flexWrap = "wrap";
     const gap = skin.gap[gapOf(props)];
@@ -416,11 +442,23 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
       props.span != null && (!Number.isInteger(props.span) || props.span < 1 || props.span > 12),
       `[canvas] <${direction === "row" ? "Row" : "Column"} span={${String(props.span)}}>: \`span\` is a whole number of the twelve columns (1..12); it is clamped.`,
     );
+    devWarn(
+      props.weight != null && parent?.axis !== "row" && !parent?.stacked,
+      `[canvas] <${direction === "row" ? "Row" : "Column"} weight>: \`weight\` shares out a Row's width and does nothing here.`,
+    );
+    devWarn(
+      props.weight != null && !weighted(props),
+      `[canvas] <${direction === "row" ? "Row" : "Column"} weight={${String(props.weight)}}>: \`weight\` is a positive, finite number; it is ignored.`,
+    );
+    devWarn(
+      weighted(props) && (props.span != null || !!props.fill || !!props.grow),
+      `[canvas] <${direction === "row" ? "Row" : "Column"} weight>: \`weight\` replaces \`fill\` and \`grow\`, and a box takes a \`span\` or a \`weight\`, not both.`,
+    );
     if (direction === "row" && (props.stacks || hasSpans(children))) {
       return <MeasuredRow {...props} parent={parent} spanning={hasSpans(children)} />;
     }
     return (
-      <View style={[flexStyle(props, direction, false), style]} testID={testID}>
+      <View style={[flexStyle(props, direction, false, parent), style]} testID={testID}>
         <LayoutAxisProvider value={axisOf(props, direction, parent)}>{children}</LayoutAxisProvider>
       </View>
     );
