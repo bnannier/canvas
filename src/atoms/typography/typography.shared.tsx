@@ -3,6 +3,7 @@ import { sectionDescription, sectionRow, sectionActions } from "./typography.sty
 import { identityTextInk } from "../../style/identity-text.js";
 import { useViewportWidth } from "../../style/responsive.js";
 import { fluidRoles, fluidType } from "../../style/type-scale.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
 import { type ReactNode } from "react";
 import { type AccessibilityRole, type GestureResponderEvent, type TextLayoutEventData, type NativeSyntheticEvent } from "react-native";
 import { View, Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill, tabularNums } from "../../style/index.js";
@@ -207,6 +208,46 @@ export interface TypographyProps {
   linkName?: boolean;
   /** A page section's own sub-heading (the "Related components" title over its tiles): 600 16 on the face's own 20 line in the interface face. A level-3 heading. */
   subsectionTitle?: boolean;
+  /**
+   * A section card's foot caption, or a note inside the card: 400 12/1.6 (19.2) in the
+   * subtle ink. Pass `mono` for the mono face, as the hand-off sets it.
+   */
+  cardNote?: boolean;
+  /**
+   * A code name on its own line (a variant row's label, a token's name): 400 12 on the mono
+   * face's 16 line, in the secondary ink. Pass `mono` for the mono face.
+   */
+  codeLabel?: boolean;
+  /** A short note beside a specimen: 400 12 on the interface face's 15 line, in the subtle ink. */
+  inlineNote?: boolean;
+  /** A tile's title: the display face, 500 15/1.3 (19.5), in the foreground ink. */
+  tileTitle?: boolean;
+  /** A grid widget's label: 500 10 mono tracked .08em in caps on a 13 line, in the subtle ink. */
+  gridLabel?: boolean;
+  /** A scale's tick label: 500 10 mono on a 13 line, in the secondary ink. */
+  tick?: boolean;
+  /** A stat row's label: 500 11/1 mono tracked .06em in caps, in the subtle ink. */
+  rowLabel?: boolean;
+  /** A stat row's value beside its label: the display face, 500 22/1, -.02em, in the foreground ink. */
+  rowValue?: boolean;
+  /** A card's headline figure: the display face, 500 26/1, -.02em, in the foreground ink. */
+  headlineValue?: boolean;
+  /** A card's big number: the display face, 500 40/1, -.03em, in the foreground ink. */
+  bigNumber?: boolean;
+  /**
+   * The unit after a figure: 400 16 on the interface face's 20 line, in the subtle ink. Nest
+   * it inside the figure's Typography so it shares the figure's baseline (`<Typography
+   * bigNumber>107<Typography unit> components</Typography></Typography>`).
+   */
+  unit?: boolean;
+  /** A pane's title: the display face, 500 16/1.2, -.01em, in the foreground ink. Pass `level` to announce it as a heading. */
+  paneTitle?: boolean;
+  /** A sample's caption (a hue number, a series name): 400 11 on the mono face's 14 line, in the subtle ink. Pass `mono`. */
+  sampleLabel?: boolean;
+  /** A sample's meta line (a hex value, a size): 400 10 on the mono face's 13 line, in the subtle ink. Pass `mono`. */
+  sampleMeta?: boolean;
+  /** The 14 px body in the foreground ink: 400 14 on the interface face's 18 line (a description list's value). */
+  base?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -235,6 +276,13 @@ export interface TypographyProps {
   destructive?: boolean;
   success?: boolean;
   warning?: boolean;
+  /**
+   * The fixed cyan series hue (the hand-off's `--cyan`, `chart-2`) as an ink, whatever the
+   * palette, solved to 4.5:1 on the scheme's surfaces.
+   */
+  cyan?: boolean;
+  /** The fixed mint series hue (the hand-off's `--mint`, `chart-3`) as an ink, whatever the palette, solved like `cyan`. */
+  mint?: boolean;
   // Weight (pick one; orthogonal to role). When omitted, the role's own weight is used.
   regular?: boolean;
   medium?: boolean;
@@ -248,6 +296,14 @@ export interface TypographyProps {
    * own line height is the reading value.
    */
   tightLeading?: boolean;
+  /**
+   * Leading: the face's own normal line at the role's size, the line the hand-off's text
+   * takes where it sets a size with no ratio (JetBrains Mono 10, 11 and 12 px on 13, 14 and
+   * 16; Instrument Sans 12, 13 and 14 on 15, 16 and 18; Bricolage Grotesque 14 and 15 on 17
+   * and 18). The face is the one the text is set in (`mono`, a display role, or the
+   * interface face). A size off the measured table (10 to 28 px) keeps the role's line.
+   */
+  natural?: boolean;
   /**
    * Decoration (orthogonal to role / tone / weight). Underlines the text so an inline
    * text link reads as a link, replacing the banned raw `textDecorationLine` style
@@ -334,9 +390,11 @@ const HEADING_LEVEL: Partial<Record<Role, number>> = {
 // largest-to-smallest, headings before helper styles, so a conflicting pair
 // resolves to the more prominent role: the titles and headings (the fluid headlines,
 // the page titles, display and h1 to h5, the guide and subsection titles, the pager name, the
-// variant title and the link name) first, then the page label,
-// then `code`, then every reading role (the page's leads, bodies and notes, lead, caption,
-// small, tiny, body). `code` sits above the reading roles so a reading role passed beside
+// variant title, the link name, then the section cards' figures and titles: bigNumber,
+// headlineValue, rowValue, paneTitle, tileTitle) first, then the labels (the page label,
+// the pager label, then the cards' rowLabel, gridLabel and tick), then `code`, then every
+// reading role (the page's leads, bodies and notes, the cards' base, unit, cardNote,
+// codeLabel, inlineNote, sampleLabel and sampleMeta, lead, caption, small, tiny, body). `code` sits above the reading roles so a reading role passed beside
 // `code inline` is the chip's size, not a competing role (the chip reads it through
 // `roleOf` without `code`), as `mono` keeps a reading size and adds its face.
 export function roleOf(p: TypographyProps): Role {
@@ -368,8 +426,16 @@ export function roleOf(p: TypographyProps): Role {
   if (p.pagerName) return "pagerName";
   if (p.variantTitle) return "variantTitle";
   if (p.linkName) return "linkName";
+  if (p.bigNumber) return "bigNumber";
+  if (p.headlineValue) return "headlineValue";
+  if (p.rowValue) return "rowValue";
+  if (p.paneTitle) return "paneTitle";
+  if (p.tileTitle) return "tileTitle";
   if (p.pageLabel) return "pageLabel";
   if (p.pagerLabel) return "pagerLabel";
+  if (p.rowLabel) return "rowLabel";
+  if (p.gridLabel) return "gridLabel";
+  if (p.tick) return "tick";
   if (p.legendLabel) return "legendLabel";
   if (p.tileCaption) return "tileCaption";
   if (p.knobLabel) return "knobLabel";
@@ -383,6 +449,13 @@ export function roleOf(p: TypographyProps): Role {
   if (p.guideBody) return "guideBody";
   if (p.specText) return "specText";
   if (p.specMeta) return "specMeta";
+  if (p.base) return "base";
+  if (p.unit) return "unit";
+  if (p.cardNote) return "cardNote";
+  if (p.codeLabel) return "codeLabel";
+  if (p.inlineNote) return "inlineNote";
+  if (p.sampleLabel) return "sampleLabel";
+  if (p.sampleMeta) return "sampleMeta";
   // A reading size passed with `mono` keeps its size and takes the mono face
   // (`<Typography caption mono>` is the 12 px mono caption); `mono` alone is its own role.
   if (p.lead) return "lead";
@@ -395,12 +468,15 @@ export function roleOf(p: TypographyProps): Role {
   return "body";
 }
 
-// Tone precedence when more than one is passed: first match wins. Returns null
-// when no tone prop is set, so the role's own color stands.
+// Tone precedence when more than one is passed: first match wins (destructive, warning,
+// success, cyan, mint, primary, subtle, muted). Returns null when no tone prop is set, so
+// the role's own color stands.
 export function toneOf(p: TypographyProps): Tone | null {
   if (p.destructive) return "destructive";
   if (p.warning) return "warning";
   if (p.success) return "success";
+  if (p.cyan) return "cyan";
+  if (p.mint) return "mint";
   if (p.primary) return "primary";
   if (p.subtle) return "subtle";
   // `muted` is also a role; as a tone it layers muted color onto a larger role
@@ -421,8 +497,9 @@ export function weightOf(p: TypographyProps): Weight | null {
   return null;
 }
 
-// Leading: a single-value axis today, so there is no precedence to resolve. Returns
-// null when the prop is absent, so the role's own line height stands.
+// Leading precedence when more than one is passed: first match wins, the fixed ratios in
+// order, then `natural`, then `tightLeading`. Returns null when no leading prop is set, so
+// the role's own line height stands.
 export function leadingOf(p: TypographyProps): Leading | null {
   if (p.displayLeading) return "display";
   if (p.singleLeading) return "single";
@@ -435,6 +512,7 @@ export function leadingOf(p: TypographyProps): Leading | null {
   if (p.strongLeading) return "strong";
   if (p.bodyLeading) return "body";
   if (p.relaxedLeading) return "relaxed";
+  if (p.natural) return "natural";
 
   if (p.tightLeading) return "tight";
   return null;
@@ -549,7 +627,7 @@ export function createTypography(skin: TypographySkin) {
           weight ? weightStyle(weight) : null,
           // After the role, whose line height it overrides; the skin's own scale is the
           // input it clamps against, so this reads the active platform's value.
-          leading ? leadingStyle(roleType, leading) : null,
+          leading ? leadingStyle(roleType, leading, monoStyle ? "mono" : roleType.fontFamily === DISPLAY_FONT ? "display" : "sans") : null,
           // Decoration is orthogonal to color/weight/leading (it sets textDecorationLine),
           // so its placement in the cascade is free; it layers on before the escape hatch.
           decoration ? decorationStyle(decoration) : null,

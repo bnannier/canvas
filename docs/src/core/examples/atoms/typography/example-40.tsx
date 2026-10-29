@@ -3,8 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Row, Column } = scope;
   return (
-<Typography primary>View invoices</Typography>
+<Column>
+  <Typography bigNumber tabular>107<Typography unit> components</Typography></Typography>
+  <Typography headlineValue tabular>1,284</Typography>
+  <Row alignCenter between relaxed>
+    <Typography rowLabel>p95</Typography>
+    <Typography rowValue tabular>212 ms</Typography>
+  </Row>
+</Column>
   );
 }

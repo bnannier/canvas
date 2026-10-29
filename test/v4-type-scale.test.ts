@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
-import { fluidRoles, fluidType, pageRoles, typeRoles } from "../src/style/type-scale";
+import { NORMAL_LINE, fluidRoles, fluidType, pageRoles, typeRoles } from "../src/style/type-scale";
 
 // The kit's type roles are derived from the v4 hand-off, not typed in: each role is the
 // hand-off Typography renderer's `TY` entry (tools/v4/handoff/cv-kit-controls.js), its
@@ -158,7 +158,41 @@ const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string;
   // The Tokens section's "Related components" h3 (line 296), `font:600 16px var(--ft)`
   // with no ratio: Instrument Sans's `normal` line at 600 16 px measured at 20 px.
   subsectionTitle: { page: "Component", text: ">Related components</h3>", normalLineHeight: 20 },
+  // The section pages' card text. A style with no ratio takes its face's `normal` line,
+  // NORMAL_LINE's measurement (checked against the table below).
+  cardNote: { page: "Controls", text: ">&lt;Button primary&gt; · &lt;Button secondary loading&gt;" },
+  codeLabel: { page: "Controls", text: ">primary</div>\n<div><button", normalLineHeight: NORMAL_LINE.mono[12] },
+  inlineNote: { page: "Controls", text: ">Kbd · keycaps read as one unit<", normalLineHeight: NORMAL_LINE.sans[12] },
+  tileTitle: { page: "Layout", text: ">Intrinsic · no JavaScript<" },
+  gridLabel: { page: "Layout", text: "><span>Revenue</span><span style=\"color:var(--ion-tx)\">span 8", normalLineHeight: NORMAL_LINE.mono[10] },
+  tick: { page: "Layout", text: ">sm 640<", normalLineHeight: NORMAL_LINE.mono[10] },
+  rowLabel: { page: "Charts", text: ">{{ sp.n }}<" },
+  rowValue: { page: "Charts", text: ">{{ sp.v }}<" },
+  headlineValue: { page: "Charts", text: ">{{ heatTotal }}<" },
+  bigNumber: { page: "Data", text: ">107<span" },
+  unit: { page: "Data", text: "> components</span>", normalLineHeight: NORMAL_LINE.sans[16] },
+  paneTitle: { page: "Navigation", text: ">{{ vtabTitle }}<" },
+  sampleLabel: { page: "Foundations", text: ">285</span>", normalLineHeight: NORMAL_LINE.mono[11] },
+  sampleMeta: { page: "Foundations", text: ">{{ s.d }}<", normalLineHeight: NORMAL_LINE.mono[10] },
+  base: { page: "Data", text: ">{{ dlVal }}<", normalLineHeight: NORMAL_LINE.sans[14] },
 };
+
+// The normal lines the page roles above were measured at (Chromium, the self-hosted faces):
+// the measurements the earlier page roles record by hand, so the table and they agree.
+describe("NORMAL_LINE", () => {
+  it("agrees with the normal lines measured for the page roles", () => {
+    expect(NORMAL_LINE.display[18]).toBe(22);
+    expect(NORMAL_LINE.mono[11]).toBe(14);
+    expect(NORMAL_LINE.sans[14]).toBe(18);
+    expect(NORMAL_LINE.mono[12]).toBe(16);
+    expect(NORMAL_LINE.sans[16]).toBe(20);
+  });
+  it("covers every whole size from 10 to 28 on every face", () => {
+    for (const face of Object.values(NORMAL_LINE)) {
+      expect(Object.keys(face).map(Number)).toEqual(Array.from({ length: 19 }, (_, i) => i + 10));
+    }
+  });
+});
 
 describe("v4 page roles", () => {
   for (const [role, { page, text, normalLineHeight }] of Object.entries(PAGE_SOURCES) as [keyof typeof pageRoles, { page: string; text: string; normalLineHeight?: number }][]) {

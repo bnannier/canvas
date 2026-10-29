@@ -6,6 +6,8 @@ The tone colors come from `statusColors`, the helper every toned surface in the 
 
 If more than one tone is passed, Badge resolves the highest-precedence one: `default` > `destructive` > `secondary` > `outline` for metadata (the accent's soft pill when none is passed), and `success` > `error` > `warning` > `info` > `neutral` for status (`neutral` when none is passed). The metadata tones win over a status tone's colors; the status tone's dot stays.
 
+`cyan` and `mint` paint a metadata pill in a fixed series hue, the same whatever the palette (the hand-off's `--cyan` and `--mint`, the `chart-2` and `chart-3` tokens): the hue's 16% wash under its ink, solved to 4.5:1 on the wash, with no dot. They sit after the status tones in precedence (`success` > `warning` > `error` > `info` > `cyan` > `mint`), so a section can name three tiers mint, cyan and the accent and keep them apart under every palette.
+
 Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (`tight` / `snug` / `cozy`, default `snug`; the largest gap passed wins: `cozy` > `snug` > `tight`) and centers its badges, so a call site never hand-rolls a flex row around them. Give it an `accessibilityLabel` (say, "Rachel Chen's roles") and it is announced as a named group that keeps its badges' text; without one it is a plain row.
 
 The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label and `large` 26 px. `count` is the small pill with the heavier label, `navigationCount` the small solid count, and `reference` a linked key at the 6 px key corner in the code face, underlined, with an arrow when it has an `href`. `token` is a code token chip, the 22 px pill under the small 11 px label in the code face, for a role, a state or an attribute name listed beside its term; `tier` is a tier tag, a 24 px pill with a 10 px inset under an 11 px mono label in caps on its own line, the tag that names a component's tier beside its title, in whichever tone the tier takes. The metric precedence is `notification` > `reference` > `navigationCount` > `count` > `tier` > `token` > `small`. `primary` and `action` take the accent's wash, `soft` names the soft wash every toned pill already has, `neutralFill` fills with the border color, `foreground` overrides the label ink, `dot` adds the leading dot without a status tone, and `inverse` and `solid` supply branded surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
@@ -77,6 +79,16 @@ status-tone precedence and announces its supplied status label.
   <Badge status error>failed</Badge>
   <Badge status info>syncing</Badge>
   <Badge status neutral>archived</Badge>
+</BadgeGroup>
+```
+
+### Hue tones
+
+```tsx
+<BadgeGroup>
+  <Badge mint mono>compact</Badge>
+  <Badge cyan mono>regular</Badge>
+  <Badge mono>wide</Badge>
 </BadgeGroup>
 ```
 

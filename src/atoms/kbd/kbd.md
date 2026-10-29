@@ -7,6 +7,13 @@ caps of keys pressed one after another. A shortcut reads as one accessible name
 8 px at the sides (25 px tall) for a key set beside what it does, as a reference's
 keyboard table lists it; omit it for the 24 px cap with 6 px sides.
 
+Two compact sizes take the cap down for a hint beside a field or a menu: `small`, the
+22 px cap with 6 px sides at a 5 px corner and a 500 11 px label, and `tiny`, the 20 px cap
+with 5 px sides at a 4 px corner and a 500 10 px label. Size precedence is `small`, then
+`tiny`, and a size step wins over `comfortable`. `flat` is the hint cap's edge: one pixel
+all round instead of the raised 2 px bottom, and the label in the secondary ink. An
+`Input` draws its `shortcut` hint as `<Kbd small flat>` (`tiny` on a small field).
+
 ## Usage
 
 ```tsx
@@ -39,6 +46,16 @@ keyboard table lists it; omit it for the 24 px cap with 6 px sides.
 <Row alignCenter snug>
   <Kbd comfortable>Enter</Kbd>
   <Typography small muted>Activates</Typography>
+</Row>
+```
+
+### Compact hint
+
+```tsx
+<Row alignCenter snug>
+  <Kbd small flat>⌘K</Kbd>
+  <Kbd tiny flat>⌘K</Kbd>
+  <Kbd small flat>esc</Kbd>
 </Row>
 ```
 

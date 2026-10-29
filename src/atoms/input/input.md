@@ -3,8 +3,16 @@
 The Input component is a React Native text field with semantic boolean props
 (`error`, `small`, `large`, `disabled`), plus prefix/suffix addons, overlaid
 icons (`leadingIcon` / `trailingIcon` with any Canvas glyph as `icon`), a
-`passwordToggle` eye for a `secureTextEntry` value, and a `clearable` clear
-button. Input is single-line; for multi-line entry use the dedicated Textarea.
+`passwordToggle` eye for a `secureTextEntry` value, a `clearable` clear
+button, and a `shortcut` keycap. Input is single-line; for multi-line entry use the
+dedicated Textarea.
+
+`shortcut` shows a keyboard shortcut hint at the field's end, the key that focuses a
+search field: a compact flat keycap (`<Kbd small flat>`, the 22 px cap; `tiny`, the 20 px
+cap, on a `small` field) after the value and any inline suffix and before the trailing
+glyphs, 8 px from the field's end and 10 px from the value (8 on a small field). It takes
+the keys as Kbd's `keys` does: `"⌘K"` is one cap, `"⌘ K"` two. It is a hint only; bind
+the key yourself.
 
 Pass `label` (and `required`) to name the field:
 <!-- only: web -->
@@ -179,6 +187,15 @@ focus outline for the borderless editor.
 
 ```tsx
 <Input leadingIcon icon="search" clearable placeholder="Search" defaultValue="example" />
+```
+
+### Shortcut
+
+```tsx
+<Column>
+  <Input leadingIcon icon="search" shortcut="⌘K" placeholder="Search components…" />
+  <Input small shortcut="⌘K" placeholder="Search…" />
+</Column>
 ```
 
 ### Card number

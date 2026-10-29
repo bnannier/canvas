@@ -107,6 +107,15 @@ export interface ChipSkin {
    * token tag (Material 3).
    */
   token?: Pick<ChipSkin, "base" | "sidePadding" | "labelType" | "selectedCheck" | "hoverBrightness">;
+  /**
+   * The `link` chip's geometry and type over this skin (the hand-off's section card link
+   * pill: 26 tall at the full round, 10 at both sides, 6 between elements, a 500 12/12
+   * label, no check), and whether a press keeps the resting look (the hand-off draws no
+   * press state). Its hover is the skin's link hover (the accent ink
+   * inside the accent edge). Omit where the platform's own chip is the link (Material 3's
+   * assist chip).
+   */
+  link?: Pick<ChipSkin, "base" | "sidePadding" | "labelType" | "selectedCheck"> & { steadyPress: boolean };
 }
 
 export interface ChipProps {
@@ -210,7 +219,7 @@ export interface ChipProps {
   secondary?: boolean;
   primary?: boolean;
   outline?: boolean;
-  // Look (pick one; omit for the chip itself). Precedence: `token` > `option`.
+  // Look (pick one; omit for the chip itself). Precedence: `token` > `option` > `link`.
   /**
    * A compact option in a settings panel, the hand-off playground's knob pick: 26 tall at a
    * small corner, a 500 12px label and no check, idle a bare field-border edge around the
@@ -231,6 +240,18 @@ export interface ChipProps {
    * <!-- /only -->
    */
   token?: boolean;
+  /**
+   * A link to another page, the hand-off's section card link pill: 26 tall at the full
+   * round, 10 at both sides, a 500 12 px label in the secondary ink on the popover fill
+   * inside the field-border edge; a hovering pointer turns the label and the edge to the
+   * accent. Pair it with `href` (and a trailing `<Icon arrowUpRight size={12} />`, which
+   * takes the label's ink).
+   * A press keeps the resting look, as the hand-off draws it.
+   * <!-- only: web android -->
+   * On Android a link is the Material 3 assist chip.
+   * <!-- /only -->
+   */
+  link?: boolean;
   /**
    * Forces an `option` chip to the 30 px square an icon-only option takes, even when it
    * carries a label and no icon; a label inside the square is set in the tile's own type,
@@ -274,11 +295,12 @@ export function colorOf(p: ChipProps): { tone: StatusColorTone | null; hue: Hue 
   return { tone: null, hue: null, mutedGray: false };
 }
 
-/** The chip's look: `token` wins over `option`; null is the chip itself. */
-export type ChipLook = "token" | "option";
-export function lookOf(p: Pick<ChipProps, "token" | "option">): ChipLook | null {
+/** The chip's look: `token` wins over `option`, and `option` over `link`; null is the chip itself. */
+export type ChipLook = "token" | "option" | "link";
+export function lookOf(p: Pick<ChipProps, "token" | "option" | "link">): ChipLook | null {
   if (p.token) return "token";
   if (p.option) return "option";
+  if (p.link) return "link";
   return null;
 }
 
@@ -378,6 +400,7 @@ export function createChip(platformSkin: ChipSkin) {
     const look = lookOf(props) ?? (option?.option === true ? "option" : null);
     const optionLook = look === "option" && platformSkin.option != null ? platformSkin.option : null;
     const tokenLook = look === "token" && platformSkin.token != null ? platformSkin.token : null;
+    const linkLook = look === "link" && platformSkin.link != null ? platformSkin.link : null;
     // The 30 px tile: an icon-only option, or any option asked to be `square`; a label
     // inside it takes the tile's own type.
     const iconOnly = optionLook != null && (props.square === true || (icon != null && children == null)) ? optionLook.iconOnly : null;
@@ -385,7 +408,11 @@ export function createChip(platformSkin: ChipSkin) {
       ? { ...platformSkin, ...optionLook, ...(iconOnly ? { labelType: optionLook.tileLabelType } : null) }
       : tokenLook
         ? { ...platformSkin, ...tokenLook }
-        : platformSkin;
+        : linkLook
+          ? { ...platformSkin, ...linkLook }
+          : platformSkin;
+    // A press keeps the resting look where asked, or where the link look says so.
+    const steadyPress = props.steadyPress === true || linkLook?.steadyPress === true;
     const paneShape = iconOnly ? StyleSheet.flatten([skin.base, iconOnly]) : skin.base;
     const disabled = props.disabled === true || option?.disabled === true;
     const selectable =
@@ -461,6 +488,11 @@ export function createChip(platformSkin: ChipSkin) {
       // the card fill, `border:1px solid var(--ln)` the hairline, and its label inherits
       // the page ink.
       appearance = { bg: tokens.card, border: tokens.border, text: tokens.foreground };
+    } else if (linkLook) {
+      // The hand-off's link pill (Controls.dc.html, every card's component links):
+      // `background:var(--sf2)` is the popover fill, `border:1px solid var(--ln2)` the field
+      // border, and `color:var(--tx2)` the secondary ink.
+      appearance = { bg: tokens.popover, border: tokens["field-border"] ?? tokens.input, text: tokens["muted-foreground"] };
     } else {
       appearance = neutralTint(tokens, outline, mutedGray ? (props.neutral ? "neutral" : "gray") : null, !!skin.outlined, props.secondary === true, selectable);
     }
@@ -676,7 +708,7 @@ export function createChip(platformSkin: ChipSkin) {
             accessibilityLabel={accessibilityLabel}
             hitSlop={bodySlop}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: skin.disabledOpacity } : null, props.steadyPress ? null : pressDim(pressed, 0.85)]}
+            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: skin.disabledOpacity } : null, steadyPress ? null : pressDim(pressed, 0.85)]}
           >
             {bodyContent}
           </Pressable>
@@ -714,14 +746,14 @@ export function createChip(platformSkin: ChipSkin) {
             // iOS/web keep the opacity dim. The pill's pane is a child of this Pressable, so
             // where it renders the ripple draws in the foreground, over it (`paneRipple`).
             android_ripple={paneRipple(surfaced ? theme : false, surfaceRipple(tokens))}
-            style={({ pressed }) => [container, !liquid ? props.steadyPress ? null : pressDim(pressed, 0.85) : null]}
+            style={({ pressed }) => [container, !liquid ? steadyPress ? null : pressDim(pressed, 0.85) : null]}
           >
             {({ pressed }) => <>
               {pane}
               <View style={[
                 { flexDirection: "row", alignItems: "center", gap: skin.base.gap, flexShrink: 1 },
                 liquid && disabled ? { opacity: skin.disabledOpacity } : null,
-                liquid ? props.steadyPress ? null : pressDim(pressed, 0.85) : null,
+                liquid ? steadyPress ? null : pressDim(pressed, 0.85) : null,
               ]}>{bodyContent}</View>
             </>}
           </Pressable>

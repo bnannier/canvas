@@ -1,6 +1,10 @@
 # Card
 
-A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface, and `outlined` drops the shadow and keeps the card fill under the hairline (the hand-off's page cards; a platform whose card control draws an outline instead of a shadow draws both the same), and `heroShadow` is the medium shadow (the hand-off's `--sh-md`, its section hero's stage), between the resting card and the raised one. Precedence is `raised`, `flat`, `outlined`, `heroShadow`. A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
+A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface, `sunken` drops the shadow and sinks the fill to the well beneath the page (`surface-sunken`, the hand-off's `--bg2` tiles, stages and panels set into a card) under the hairline, and `outlined` drops the shadow and keeps the card fill under the hairline (the hand-off's page cards; a platform whose card control draws an outline instead of a shadow draws both the same), and `heroShadow` is the medium shadow (the hand-off's `--sh-md`, its section hero's stage), between the resting card and the raised one. Precedence is `raised`, `flat`, `sunken`, `outlined`, `heroShadow`.
+<!-- only: web android -->
+On Android `sunken` is the Material 3 filled card: the well's fill with no outline.
+<!-- /only -->
+A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
 
 Corners (pick one; the smaller step wins): the card corner by default, `smallCorners` for the tile corner (12), and the three steps the hand-off's component page frames with, `calloutCorners` (14: a note under a table, a compact link tile), `largeCorners` (18: a card framing a section of a page) and `stageCorners` (20: a staging frame, a figure and its legend), and the two its section pages frame with, `showcaseCorners` (20: a section page's showcase card) and `heroCorners` (24: the section hero's stage). The web skin draws each from its row; the native skins keep their own card corner on every step but the tile.
 
@@ -135,6 +139,14 @@ source affordance in the detail panel. An `href` opens through the system browse
 ```tsx
 <Card outlined>
   <Typography lead semibold>A hairline and no shadow</Typography>
+</Card>
+```
+
+### Sunken
+
+```tsx
+<Card sunken>
+  <Typography lead semibold>A well beneath the page</Typography>
 </Card>
 ```
 

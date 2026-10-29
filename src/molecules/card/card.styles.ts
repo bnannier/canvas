@@ -35,7 +35,7 @@ import { type HoverMotion } from "../../style/hover.js";
 //   OUTLINED card (1dp outline, elevation 0), `raised` lifts the elevated card to M3
 //   level 3 (6dp). Plus the 12dp medium shape and M3's density steps.
 
-export type Elevation = "raised" | "flat" | "outlined" | "hero" | "tile" | "row" | "empty" | "default";
+export type Elevation = "raised" | "flat" | "sunken" | "outlined" | "hero" | "tile" | "row" | "empty" | "default";
 export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "roomy" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "panel" | "guide" | "linkTile" | "pager" | "default";
 /**
  * The corner steps a card can take (the Corners axis): the card corner by default, the
@@ -90,8 +90,11 @@ export interface CardSkin {
 }
 
 // The shared Light-treatment surface colors (web + iOS, and Android's outlined
-// `flat`): the hairline tokens.border outline on the tokens.card fill.
-const lightSurface = (tokens: ColorTokens): ViewStyle => ({ borderColor: tokens.border, backgroundColor: tokens.card });
+// `flat`): the hairline tokens.border outline on the tokens.card fill; a `sunken` card
+// sinks the fill to the well beneath the page (the hand-off's `--bg2` tiles and stages:
+// `background:var(--bg2);border:1px solid var(--ln)` with no shadow).
+const sunkenFill = (tokens: ColorTokens): string => tokens["surface-sunken"] ?? tokens.background;
+const lightSurface = (tokens: ColorTokens, e?: Elevation): ViewStyle => ({ borderColor: tokens.border, backgroundColor: e === "sunken" ? sunkenFill(tokens) : tokens.card });
 
 // --- web (the hand-off's panel: the card corner, a hairline, the sh ladder) --
 
@@ -136,12 +139,12 @@ const WEB_DENSITY: Record<Density, ViewStyle> = {
 const SELECTED_RING = 4;
 const selectedRing = (t: ColorTokens) => `0px 0px 0px ${SELECTED_RING}px ${t["primary-soft"] ?? t.ring}`;
 
-// The hand-off's shadow per elevation: none flat or outlined, the large step raised, the
+// The hand-off's shadow per elevation: none flat, sunken or outlined, the large step raised, the
 // medium one on the section hero's stage (canvas-hero.js `.st{...box-shadow:var(--sh-md)}`),
 // the small one at rest (and on the legacy tile, row and empty steps, which the ladder
 // rests at sm).
 const webElevation = (e: Elevation, t: ColorTokens): ViewStyle =>
-  e === "raised" ? shadow("lg", t) : e === "flat" || e === "outlined" ? shadow("none") : e === "hero" ? shadow("md", t) : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t);
+  e === "raised" ? shadow("lg", t) : e === "flat" || e === "sunken" || e === "outlined" ? shadow("none") : e === "hero" ? shadow("md", t) : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t);
 
 // The web corner steps: the card corner, the tile corner (`smallCorners`), the v4
 // hand-off component page's three (its callout at 14, Component.dc.html line 244, which
@@ -220,26 +223,27 @@ export const androidSkin: CardSkin = {
   // The Material 3 card keeps its medium shape on every step but the tile.
   corners: { default: shape.android.card, small: shape.android.tile, callout: shape.android.card, large: shape.android.card, stage: shape.android.card, showcase: shape.android.card, hero: shape.android.card },
   // M3 cards never combine an outline with nonzero elevation, so the default and
-  // `raised` cards read as M3 ELEVATED (no visible outline) and `flat` and `outlined`
-  // both read as M3 OUTLINED (1dp outline, elevation 0). The non-outlined variants keep
+  // `raised` cards read as M3 ELEVATED (no visible outline), `flat` and `outlined`
+  // both read as M3 OUTLINED (1dp outline, elevation 0), and `sunken` reads as M3 FILLED
+  // (the sunken well's fill, no outline, elevation 0). The non-outlined variants keep
   // the shared 1px border WIDTH but paint it transparent: content metrics stay identical
   // across variants and platforms, and `selected` can still recolor the hairline
   // to primary without shifting content.
   surface: (tokens, e) => ({
     borderColor: e === "flat" || e === "outlined" ? tokens.border : "transparent",
-    backgroundColor: tokens.card,
+    backgroundColor: e === "sunken" ? sunkenFill(tokens) : tokens.card,
   }),
   // M3 resting elevation = level 1 (1dp, our shadow-sm exactly); raised = level 3
   // (6dp: shadow("md")'s shade with the Android elevation corrected via
   // customShadow, since shadow("md") carries elevation 4, which matches no M3
   // level); the section hero's stage sits between them at level 2 (3dp); flat /
-  // outlined drops elevation entirely.
+  // sunken / outlined drops elevation entirely.
   elevation: (e, t) =>
     e === "raised"
       ? customShadow({ offsetY: 4, radius: 6, opacity: 0.1, elevation: 6 })
       : e === "hero"
         ? customShadow({ offsetY: 2, radius: 4, opacity: 0.1, elevation: 3 })
-        : e === "flat" || e === "outlined"
+        : e === "flat" || e === "sunken" || e === "outlined"
           ? shadow("none")
           : shadow("sm", t),
   density: M3_DENSITY,

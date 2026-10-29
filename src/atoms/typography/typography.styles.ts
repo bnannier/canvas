@@ -1,8 +1,9 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
+import { hueToneColors, type HueTone } from "../../style/hue-tone.js";
 import { type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
-import { fluidRoles, fluidType, pageRoles, typeRoles } from "../../style/type-scale.js";
+import { NORMAL_LINE, fluidRoles, fluidType, pageRoles, typeRoles, type TypeFace } from "../../style/type-scale.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type TypographySkin } from "./typography.shared.js";
@@ -58,6 +59,21 @@ export type Role =
   | "variantTitle"
   | "linkName"
   | "subsectionTitle"
+  | "cardNote"
+  | "codeLabel"
+  | "inlineNote"
+  | "tileTitle"
+  | "gridLabel"
+  | "tick"
+  | "rowLabel"
+  | "rowValue"
+  | "headlineValue"
+  | "bigNumber"
+  | "unit"
+  | "paneTitle"
+  | "sampleLabel"
+  | "sampleMeta"
+  | "base"
   | "display"
   | "h1"
   | "h2"
@@ -148,6 +164,25 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     variantTitle: pageRoles.variantTitle,
     linkName: pageRoles.linkName,
     subsectionTitle: pageRoles.subsectionTitle,
+    // The section pages' card text (src/style/type-scale.ts records each source): the
+    // titles and figures in the display face, the grid label, tick and row label in the
+    // mono face (MONO_ROLES), the notes and sample lines in the caller's face (`mono`
+    // where the hand-off sets `var(--fm)`), and the 14 px base body in the interface face.
+    cardNote: pageRoles.cardNote,
+    codeLabel: pageRoles.codeLabel,
+    inlineNote: pageRoles.inlineNote,
+    tileTitle: d(pageRoles.tileTitle),
+    gridLabel: pageRoles.gridLabel,
+    tick: pageRoles.tick,
+    rowLabel: pageRoles.rowLabel,
+    rowValue: d(pageRoles.rowValue),
+    headlineValue: d(pageRoles.headlineValue),
+    bigNumber: d(pageRoles.bigNumber),
+    unit: pageRoles.unit,
+    paneTitle: d(pageRoles.paneTitle),
+    sampleLabel: pageRoles.sampleLabel,
+    sampleMeta: pageRoles.sampleMeta,
+    base: pageRoles.base,
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -238,12 +273,26 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     // The knob panel's label row: `color:var(--tx2)` (Component.dc.html line 161); its type
     // hint takes the `muted` tone (the third ink), the row's `color:var(--tx3)` span.
     case "knobLabel":
+    // The section cards' secondary-ink lines: a variant row's code label
+    // (`color:var(--tx2)`, Controls) and a scale's tick (`color:var(--tx2)`, Layout).
+    case "codeLabel":
+    case "tick":
       return { color: tokens["muted-foreground"] };
     // The component page's label: `color:var(--tx3)` (Component.dc.html, the knob panel's
     // "Props" label), the subtle ink, where the Typography eyebrow is the accent's.
     case "pageLabel":
     // The pager card's label: `color:var(--tx3)` (Component.dc.html line 303).
     case "pagerLabel":
+    // The section cards' third-ink lines (`color:var(--tx3)`): the foot caption and in-card
+    // notes, the note beside a specimen, a grid widget's label, a stat row's label, the
+    // unit after a figure, and a sample's caption and meta line.
+    case "cardNote":
+    case "inlineNote":
+    case "gridLabel":
+    case "rowLabel":
+    case "unit":
+    case "sampleLabel":
+    case "sampleMeta":
       return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
     case "eyebrow":
     case "eyebrowLg":
@@ -271,6 +320,13 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "variantTitle":
     case "linkName":
     case "subsectionTitle":
+    // The section cards' titles, figures and 14 px body inherit the card's `--tx`.
+    case "tileTitle":
+    case "rowValue":
+    case "headlineValue":
+    case "bigNumber":
+    case "paneTitle":
+    case "base":
       return { color: tokens.foreground };
     case "code":
       return { color: tokens.foreground, backgroundColor: tokens.secondary };
@@ -284,17 +340,24 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
 
 // Roles whose face is monospace; RN has no font-family utility, so the component
 // supplies the cross-platform monospace alias inline (matches Badge's mono).
-export const MONO_ROLES = new Set<Role>(["code", "mono", "eyebrow", "eyebrowLg", "stageLabel", "tag"]);
+// The section cards' grid label, tick and row label are labels the hand-off only sets in
+// the mono face, as it does the eyebrow and the tag.
+export const MONO_ROLES = new Set<Role>(["code", "mono", "eyebrow", "eyebrowLg", "stageLabel", "tag", "gridLabel", "tick", "rowLabel"]);
 
 // Tone axis: an orthogonal color layer over the role's own color. Its names are
 // deliberately collision-free with the roles (so `muted`/`small`/`tiny`/`caption`
 // keep their existing muted color as roles, and tone adds the colored intents).
 // When no tone prop is set the role's own color stands. success/warning read the
 // semantic success/warning tokens (scheme-aware); subtle is a translucent foreground.
-export type Tone = "muted" | "subtle" | "primary" | "destructive" | "success" | "warning";
+export type Tone = "muted" | "subtle" | "primary" | "destructive" | "success" | "warning" | HueTone;
 
 export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextStyle {
   switch (tone) {
+    // The fixed series hues (src/style/hue-tone.ts): the hand-off's `--cyan` and `--mint`
+    // whatever the palette, each ink solved to 4.5:1 on the scheme's surfaces.
+    case "cyan":
+    case "mint":
+      return { color: hueToneColors(tokens, dark, tone).ink };
     // The hand-off's Typography has one dimmed tone, `muted`, in its third ink (`--tx3`);
     // `subtle` is the second ink (`--tx2`) its pages give secondary copy (a hero's lead and
     // eyebrow).
@@ -339,8 +402,8 @@ export function weightStyle(weight: Weight): TextStyle {
 // a `tiny` one is 6px of dead air that no gap prop can remove, because a Column's gap
 // only adds. Since `lineHeight` at a call site is a banned restyle, the tightening has
 // to be a semantic prop, so it is one.
-export type Leading = "tight" | "display" | "single" | "lockup" | "dense" | "compact" | "label" | "caption" | "small" | "strong" | "body" | "relaxed";
-const EXACT_LEADING: Record<Exclude<Leading,"tight">,number> = {"display": 1.1, "single": 1, "lockup": 1.15, "dense": 1.2, "compact": 1.25, "label": 1.3, "caption": 1.35, "small": 1.4, "strong": 1.45, "body": 1.5, "relaxed": 1.55};
+export type Leading = "tight" | "natural" | "display" | "single" | "lockup" | "dense" | "compact" | "label" | "caption" | "small" | "strong" | "body" | "relaxed";
+const EXACT_LEADING: Record<Exclude<Leading,"tight" | "natural">,number> = {"display": 1.1, "single": 1, "lockup": 1.15, "dense": 1.2, "compact": 1.25, "label": 1.3, "caption": 1.35, "small": 1.4, "strong": 1.45, "body": 1.5, "relaxed": 1.55};
 
 // Cap ratio for `tight`: a line box 1.25x the font size. Chosen as the tightest value
 // that still clears Latin descenders + diacritics at every role's size (a 16px line at
@@ -353,10 +416,20 @@ const TIGHT_RATIO = 1.25;
 // 26/30 = 1.15), so `<Typography display tightLeading>` would silently grow its line
 // box to 70. The clamp makes the prop safe on every role, which is what lets it be a
 // free-standing axis rather than one that is only valid on some roles.
-export function leadingStyle(roleType: TextStyle, leading: Leading): TextStyle | null {
+//
+// `natural` is the face's own `normal` line at the role's size (NORMAL_LINE in
+// src/style/type-scale.ts, measured in Chromium on the hand-off's faces): the line the
+// hand-off's text takes where it sets a size with no ratio (`font:500 11px var(--fm)`, a
+// 14 px line in the mono face). The face is the one the text is set in, so the shell
+// passes it; a size off the measured table keeps the role's own line.
+export function leadingStyle(roleType: TextStyle, leading: Leading, face: TypeFace = "sans"): TextStyle | null {
   const fontSize = roleType.fontSize;
   const current = roleType.lineHeight;
   if (typeof fontSize !== "number" || typeof current !== "number") return null;
+  if (leading === "natural") {
+    const lineHeight = NORMAL_LINE[face][fontSize];
+    return lineHeight == null || lineHeight === current ? null : { lineHeight };
+  }
   if (leading !== "tight") return { lineHeight: Math.round(fontSize * EXACT_LEADING[leading] * 100) / 100 };
   const lineHeight = Math.min(current, Math.round(fontSize * (leading === "tight" ? TIGHT_RATIO : 1)));
   return lineHeight === current ? null : { lineHeight };

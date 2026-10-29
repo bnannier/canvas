@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, CardContent, CardMedia, Typography } = scope;
+  const { Card, Icon } = scope;
   return (
-<Card flush>
-  <CardMedia src="/kira-tanaka.jpg" alt="Portrait of Kira Tanaka" />
-  <CardContent>
-    <Typography h5 semibold>Kira Tanaka</Typography>
-  </CardContent>
-</Card>
+<Card
+  title="Identity"
+  icon={<Icon user size={16} />}
+  body="Name, primary email, and sign-in methods."
+  footer="Updated 2 minutes ago"
+/>
   );
 }

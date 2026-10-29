@@ -6,8 +6,8 @@ export default function Example(scope: ExampleScope) {
   const { Icon, Row, Chip } = scope;
   return (
 <Row wrap compact>
-  <Chip outline href="/components/switch" trailing={<Icon arrowUpRight size={12} />}>Switch</Chip>
-  <Chip outline href="/components/checkbox" trailing={<Icon arrowUpRight size={12} />}>Checkbox</Chip>
+  <Chip link href="/components/switch" trailing={<Icon arrowUpRight size={12} />}>Switch</Chip>
+  <Chip link href="/components/checkbox" trailing={<Icon arrowUpRight size={12} />}>Checkbox</Chip>
 </Row>
   );
 }

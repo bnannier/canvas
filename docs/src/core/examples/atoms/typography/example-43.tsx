@@ -3,8 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Row } = scope;
   return (
-<Typography underline>View invoices</Typography>
+<Row relaxed>
+  <Typography tiny mono medium mint natural>≤ 640</Typography>
+  <Typography tiny mono medium cyan natural>641 – 1024</Typography>
+  <Typography tiny mono medium primary natural>≥ 1025</Typography>
+</Row>
   );
 }

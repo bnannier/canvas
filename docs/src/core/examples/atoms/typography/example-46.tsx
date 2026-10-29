@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography, Column } = scope;
+  const { Typography } = scope;
   return (
-<Column chapter>
-  <Typography h3 level={2}>Playground</Typography>
-  <Typography h3 level={2}>Examples</Typography>
-</Column>
+<Typography success>+12.4% this week</Typography>
   );
 }

@@ -3,8 +3,18 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Column } = scope;
   return (
-<Typography success>+12.4% this week</Typography>
+<Column>
+  <Typography tileTitle natural>Phone</Typography>
+  <Typography paneTitle>Overview</Typography>
+  <Typography gridLabel>Revenue</Typography>
+  <Typography tick>sm 640</Typography>
+  <Typography codeLabel mono>primary</Typography>
+  <Typography inlineNote>Keycaps read as one unit</Typography>
+  <Typography sampleLabel mono>285</Typography>
+  <Typography sampleMeta mono>#0a0a0f</Typography>
+  <Typography base>Design · 24 members</Typography>
+</Column>
   );
 }
