@@ -53,6 +53,8 @@ export interface DataTableSheet {
   headerCell: (t: ColorTokens) => TextStyle;
   dataRow: (t: ColorTokens) => ViewStyle;
   cellPad: ViewStyle;
+  /** The header cell's inset (none on either side when absent: the columns space it). */
+  cellInset?: ViewStyle;
   groupBand: (t: ColorTokens) => ViewStyle;
   footerRule: (t: ColorTokens) => ViewStyle;
 }
@@ -309,13 +311,16 @@ export const webSkin: DataTableSkin = {
   // first column starts flush, the columns sit 12 apart and every row rules itself beneath.
   bare: {
     frame: () => ({}),
-    columns: { paddingHorizontal: 0, columnGap: 12 },
+    // A grid with no column gap: every cell, the heading included, keeps 12 clear at its
+    // trailing side inside its column's width (`padding:0 12px 10px 0` on the heading).
+    columns: { paddingHorizontal: 0, columnGap: 0 },
     headerRow: (t) => ({ flexDirection: "row", paddingBottom: 10, borderBottomWidth: 1, borderColor: t["field-border"] ?? t.border }),
     // The heading type is the reference sheet's: the kit's mono table label (the page draws
     // it a pixel smaller, at 10 px).
     headerCell: sheetHeading,
     dataRow: (t) => ({ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderColor: t.border }),
-    cellPad: { paddingVertical: 12 },
+    cellPad: { paddingVertical: 12, paddingLeft: 0, paddingRight: 12 },
+    cellInset: { paddingLeft: 0, paddingRight: 12 },
     groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
     // Every row draws its own rule beneath, so the footer adds none.
     footerRule: () => ({}),

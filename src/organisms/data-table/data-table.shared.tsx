@@ -218,8 +218,9 @@ export interface DataTableProps {
   /**
    * The bare hairline table: no frame and no fill, a `field-border` rule under the
    * headings (the reference sheet's mono uppercase label) and a `border` rule under every
-   * row, the first column flush with the table's start, the columns 12 apart, and each
-   * cell 12 px above and below whatever the density. `reference` wins over it.
+   * row, the first column flush with the table's start, each cell keeping 12 px clear at
+   * its end inside its column's width, and 12 px above and below whatever the density.
+   * `reference` wins over it.
    * <!-- only: web -->
    * On iOS the table keeps its own look and this changes nothing.
    * <!-- /only -->
@@ -604,7 +605,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // for a cell group inside a row that already carries the inset.
     const rowStyle: StyleProp<ViewStyle> = ref ? [ref.dataRow(tokens), ref.columns] : skin.dataRow(tokens);
     const cellPad: ViewStyle = ref ? ref.cellPad : skin.cellPad[density];
-    const cellInset = ref ? NO_CELL_INSET : null;
+    const cellInset = ref ? (ref.cellInset ?? NO_CELL_INSET) : null;
     const cellGap: ViewStyle | null = ref ? { columnGap: ref.columns.columnGap } : null;
     // Under glass the table is a CONTENT-layer pane and its header band, stripes and
     // pressed/selected rows are ink tints over the material (src/style/glass-fill.ts).
