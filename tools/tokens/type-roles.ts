@@ -92,7 +92,10 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
 
   // Pills, tags, badges, meta lines and annotations.
   "src/atoms/badge/badge.notification.tsx": { COUNT_LABEL: "tiny", BADGE_LABEL: "tiny" },
-  "src/organisms/sidebar/sidebar.styles.ts": { webEyebrow: "caption" },
+  // The sidebar's eyebrow, and the account card's detail line (the hand-off's 400 11 px second line).
+  "src/organisms/sidebar/sidebar.styles.ts": { webEyebrow: "caption", accountDetail: "tiny" },
+  // A menu row's keyboard shortcut hint (the hand-off's 400 11 px mono), a keycap's reading.
+  "src/organisms/row-menu/row-menu.styles.ts": { ITEM_SHORTCUT: "caption" },
   "src/atoms/badge/badge.styles.ts": { "webSkin.sizes": "tiny" },
   "src/molecules/card/card.styles.ts": { eyebrow: "caption" },
   // A reference detail's source chip (the hand-off's 11px label, cv-kit-code3.js).

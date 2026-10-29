@@ -3,18 +3,24 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Sidebar } = scope;
+  const { Input, Sidebar, Container } = scope;
   return (
-<Sidebar
-  floating
-  defaultActive="Components"
-  sections={[
-    { title: "Library", items: [
-      { label: "Overview", icon: "layoutDashboard" },
-      { label: "Components", icon: "layers", badge: "107" },
-      { label: "Tokens", icon: "palette" }
-    ] }
-  ]}
-/>
+<Container xxxs start>
+  <Sidebar
+    embedded
+    compact
+    markers
+    defaultActive="button"
+    accessibilityLabel="Controls components"
+    header={<Input small leadingIcon icon="search" placeholder="Filter 3 components" accessibilityLabel="Filter components" />}
+    sections={[
+      { title: "Controls", count: 3, items: [
+        { id: "button", label: "Button" },
+        { id: "switch", label: "Switch" },
+        { id: "checkbox", label: "Checkbox" }
+      ] }
+    ]}
+  />
+</Container>
   );
 }

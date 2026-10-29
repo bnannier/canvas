@@ -54,6 +54,8 @@ starving the panel beside it.
 
 ### Badge counts
 
+On the web a count's numerals take their tab's own ink.
+
 ```tsx
 <Tabs tabs={[{ label: "All", badge: "142" }, { label: "Active", badge: "89" }, { label: "Archived", badge: "53" }]} />
 ```
@@ -64,7 +66,19 @@ starving the panel beside it.
 <Tabs tabs={["Overview", { label: "Billing", disabled: true }, "Settings"]} />
 ```
 
+### Leading glyphs
+
+A tab item takes an `icon`, a kit glyph before its label in the label's ink (15 px on
+the web), as a settings rail names its sections.
+
+```tsx
+<Tabs vertical tabs={[{ label: "General", icon: "settings2" }, { label: "Members", icon: "users" }, { label: "Security", icon: "shieldCheck" }]} />
+```
+
 ### Block
+
+On the web a `block` underline row is equal columns with no gap between them, each
+label centred in its own column under its share of the rule.
 
 ```tsx
 <Tabs block tabs={["Overview", "Activity", "Settings"]} />

@@ -5,6 +5,14 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Steps } = scope;
   return (
-<Steps progress steps={[]} value={68} />
+<Steps
+  vertical
+  steps={[
+    { label: "Create workspace", description: "Northwind · EU Frankfurt" },
+    { label: "Import components", description: "Restyling 72 of 107", progress: 67 },
+    { label: "Invite your team", description: "Optional" }
+  ]}
+  defaultCurrent={1}
+/>
   );
 }

@@ -337,6 +337,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   SidebarItem: { kind: "type", docs: "components/sidebar" },
   SidebarProps: { kind: "type", docs: "components/sidebar" },
   SidebarSection: { kind: "type", docs: "components/sidebar" },
+  SidebarAccount: { kind: "type", docs: "components/sidebar" },
   Step: { kind: "type", docs: "components/steps" },
   Steps: { kind: "component", docs: "components/steps" },
   StepsProps: { kind: "type", docs: "components/steps" },

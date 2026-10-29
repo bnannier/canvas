@@ -27,6 +27,45 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 />
 ```
 
+### Step progress
+
+A vertical step's title sits on an 18.2 px line over its 12 px description in the third
+ink; the current step's description takes the accent's text ink. A step with `progress`
+(0 to 100) draws its own 6 px bar 8 px under its text, the fill running from the accent
+into the cyan series hue with the accent's glow; the other layouts ignore it.
+
+```tsx
+<Steps
+  vertical
+  steps={[
+    { label: "Create workspace", description: "Northwind · EU Frankfurt" },
+    { label: "Import components", description: "Restyling 72 of 107", progress: 67 },
+    { label: "Invite your team", description: "Optional" }
+  ]}
+  defaultCurrent={1}
+/>
+```
+
+### Segmented
+
+`segmented` lays the steps out as equal segments 8 px apart: each a 4 px bar (the
+accent once reached, glowing on the current step, the raised surface ahead) over its
+500 13 px label and, from its `description`, a status line inked by the step's state:
+the success ink once done, the accent's text ink on the current step, the third ink
+ahead. The layout precedence is `progress` > `segmented` > `vertical`.
+
+```tsx
+<Steps
+  segmented
+  steps={[
+    { label: "Account", description: "Done" },
+    { label: "Workspace", description: "Current" },
+    { label: "Invite team", description: "Next" }
+  ]}
+  defaultCurrent={1}
+/>
+```
+
 ### Progress bar
 
 ```tsx

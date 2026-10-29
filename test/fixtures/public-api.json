@@ -301,6 +301,7 @@
   "ServiceHealthListProps": "type",
   "ShapeTokens": "type",
   "Sidebar": "value",
+  "SidebarAccount": "type",
   "SidebarItem": "type",
   "SidebarProps": "type",
   "SidebarSection": "type",

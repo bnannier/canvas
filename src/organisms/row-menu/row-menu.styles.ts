@@ -1,6 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { destructiveText } from "../../style/destructive-text.js";
-import { shadow, alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin, shape } from "../../style/index.js";
+import { shadow, alpha, TOUCH_TARGET, MONO_FONT, type ColorTokens, type TouchTargetSkin, shape } from "../../style/index.js";
 import { MENU_ICON, MENU_ROW_GAP, menuIconColor, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type IconName } from "../../atoms/icon/icon.js";
@@ -27,7 +27,12 @@ import { type IconName } from "../../atoms/icon/icon.js";
 //     wide; rows 34 tall at the menu-row corner, inset 10, a 15px leading glyph in
 //     `subtle-foreground` 8 from a 400 14px label, destructive rows in `destructive-text`;
 //     the panel, rows, eyebrow, rule and washes are the web menu recipe it shares with
-//     Dropdown (src/style/menu-look.ts).
+//     Dropdown (src/style/menu-look.ts). A row's trailing hints (the Navigation card's): a
+//     400 11 px mono `shortcut` and a 14 px `submenu` chevron in the third ink, the
+//     shortcut at .7 in a destructive row's ink. `inline links` is the card's grouped link
+//     list: the list-frame corner on the `border` hairline, rows 48 tall inset 14 and split by the
+//     same hairline, a 17 px glyph in the second ink 12 from a 500 14 label, a trailing
+//     soft accent `badge` or 400 12 mono `meta`, and a 15 px chevron in the third ink.
 
 export interface RowMenuItem {
   label: string;
@@ -39,6 +44,14 @@ export interface RowMenuItem {
   destructive?: boolean;
   /** Draw a hairline separator above this row to start a new group. */
   separatorBefore?: boolean;
+  /** A keyboard shortcut hint at the row's end, in the mono face (e.g. "⌘E"). */
+  shortcut?: string;
+  /** The row opens a submenu: a trailing chevron. */
+  submenu?: boolean;
+  /** A short soft-accent tag at the row's end (e.g. "3 new"). */
+  badge?: string;
+  /** Quiet trailing metadata in the mono face (e.g. a count). */
+  meta?: string;
   /** Make the row inert: it does not fire `onSelect`, does not close the menu, is announced as
    *  disabled, and shows the platform's disabled look (the web's muted ink, a dim on iOS and
    *  Android), for an action that is unavailable in the current context, e.g. "Clear column"
@@ -99,6 +112,21 @@ export interface RowMenuSkin extends TouchTargetSkin {
   iconSize: number;
   /** The per-row text color (destructive red, link foreground, action popover fg). */
   rowTextColor: (item: RowMenuItem, links: boolean, t: ColorTokens, dark: boolean) => TextStyle;
+  /** A row's trailing `shortcut` hint (a destructive row's takes its ink, dimmed). */
+  shortcut: (t: ColorTokens, destructive: boolean) => TextStyle;
+  /** A row's trailing `meta`. */
+  meta: (t: ColorTokens) => TextStyle;
+  /** The trailing chevron (a `submenu` row's, every `inline links` row's): its size in a menu row and in a link row, and its ink. */
+  submenuSize: number;
+  linkChevronSize: number;
+  chevronColor: (t: ColorTokens) => string;
+  /** The `inline links` grouped list: its frame, a row, the rule above every row after the first, the glyph, the label. */
+  linkList: (t: ColorTokens) => ViewStyle;
+  linkRow: ViewStyle;
+  linkDivider: (t: ColorTokens) => ViewStyle;
+  linkIconSize: number;
+  linkIconColor: (t: ColorTokens) => string;
+  linkLabel: (t: ColorTokens) => TextStyle;
   /** iOS/web dim the trigger on press; Android ripples instead (null). */
   triggerPressedOpacity: number | null;
   /** Android ripple over the trigger and rows; null on iOS/web. */
@@ -112,6 +140,12 @@ export interface RowMenuSkin extends TouchTargetSkin {
 // open lifts the whole control — trigger and card together — above everything
 // painted after it. Shared across platforms (the anchor shape is identical).
 export const anchorLifted: ViewStyle = { zIndex: 50 };
+
+// The third ink every trailing hint takes.
+const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
+
+// The web row's shortcut hint: 400 11 px mono (the Navigation card's `font:400 11px var(--fm)`).
+const ITEM_SHORTCUT: TextStyle = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "400" };
 
 // ---------- Web: the v4 hand-off's row menu ----------
 export const webSkin: RowMenuSkin = {
@@ -150,6 +184,17 @@ export const webSkin: RowMenuSkin = {
     if (item.destructive) return { color: destructiveText(t) };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
+  shortcut: (t, destructive) => ({ ...ITEM_SHORTCUT, color: destructive ? destructiveText(t) : subtle(t), opacity: destructive ? 0.7 : 1 }),
+  meta: (t) => ({ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400", color: subtle(t) }),
+  submenuSize: 14,
+  linkChevronSize: 15,
+  chevronColor: subtle,
+  linkList: (t) => ({ borderWidth: 1, borderColor: t.border, borderRadius: platformShape.web.listFrame, overflow: "hidden" }),
+  linkRow: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48, paddingHorizontal: 14 },
+  linkDivider: (t) => ({ borderTopWidth: 1, borderColor: t.border }),
+  linkIconSize: 17,
+  linkIconColor: (t) => t["muted-foreground"],
+  linkLabel: (t) => ({ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 14, lineHeight: 18, fontWeight: "500", color: t.foreground }),
   triggerPressedOpacity: null,
   ripple: null,
 };
@@ -221,6 +266,18 @@ export const iosSkin: RowMenuSkin = {
     if (item.destructive) return { color: destructiveText(t) };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
+  shortcut: (t, destructive) => ({ fontSize: 15, lineHeight: 20, fontWeight: "400", color: destructive ? destructiveText(t) : subtle(t), opacity: destructive ? 0.7 : 1 }),
+  meta: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "400", color: subtle(t) }),
+  submenuSize: 14,
+  linkChevronSize: 14,
+  chevronColor: subtle,
+  // The inset grouped list (the HIG's settings list): the grouped corner on the card fill, hairline-split rows.
+  linkList: (t) => ({ borderRadius: platformShape.ios.groupedList, borderCurve: "continuous", backgroundColor: t.card, overflow: "hidden" }),
+  linkRow: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 44, paddingHorizontal: 16 },
+  linkDivider: (t) => ({ borderTopWidth: 1, borderColor: t.border }),
+  linkIconSize: 20,
+  linkIconColor: (t) => t["muted-foreground"],
+  linkLabel: (t) => ({ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 17, lineHeight: 22, fontWeight: "400", color: t.foreground }),
   triggerPressedOpacity: 0.8,
   ripple: null,
 };
@@ -289,6 +346,18 @@ export const androidSkin: RowMenuSkin = {
     if (item.destructive) return { color: destructiveText(t) };
     return { color: links ? t.foreground : t["popover-foreground"] };
   },
+  shortcut: (t, destructive) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: destructive ? destructiveText(t) : subtle(t), opacity: destructive ? 0.7 : 1 }),
+  meta: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: subtle(t) }),
+  submenuSize: 18,
+  linkChevronSize: 18,
+  chevronColor: subtle,
+  // A Material 3 list on the card surface at the medium corner, divider-split rows.
+  linkList: (t) => ({ borderRadius: shape.android.card, backgroundColor: t.card, overflow: "hidden" }),
+  linkRow: { flexDirection: "row", alignItems: "center", gap: 16, minHeight: 56, paddingHorizontal: 16 },
+  linkDivider: (t) => ({ borderTopWidth: 1, borderColor: t.border }),
+  linkIconSize: 24,
+  linkIconColor: (t) => t["muted-foreground"],
+  linkLabel: (t) => ({ flexGrow: 1, flexShrink: 1, flexBasis: "0%", fontSize: 16, lineHeight: 24, fontWeight: "400", color: t.foreground }),
   triggerPressedOpacity: null,
   ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
 };

@@ -136,11 +136,13 @@ export const webSkin: TabsSkin = {
   hoverLabel: webHover((t: ColorTokens): TextStyle => ({ color: t.foreground })),
 
   // --- underline ---
-  underlineRow(tokens) {
+  // A `block` row is equal columns with no gap (the Navigation card's four-column grid), so
+  // each label centres inside its own column; a hugging row keeps the renderer's 24 apart.
+  underlineRow(tokens, _wrap, block) {
     return {
       flexDirection: "row",
       alignItems: "stretch",
-      columnGap: 24,
+      columnGap: block ? 0 : 24,
       rowGap: 0,
       borderBottomWidth: 1,
       borderColor: tokens.border,
@@ -210,6 +212,10 @@ export const webSkin: TabsSkin = {
 
   countBadgeBox: webBadgeBox,
   countBadgeLabel: webBadgeLabel,
+  // The renderer's badge sets no colour: its numerals take the tab's ink.
+  badgeTakesLabelInk: true,
+  // A tab's leading glyph (the Navigation card's settings rail): 15 px.
+  iconSize: 15,
 };
 
 // =============================================================================
@@ -320,6 +326,8 @@ export const iosSkin: TabsSkin = {
 
   countBadgeBox: nativeBadgeBox,
   countBadgeLabel: (t) => ({ ...nativeBadgeLabel(t), fontWeight: "600" }),
+  // An SF Symbol beside a 15 pt row label.
+  iconSize: 17,
 };
 
 // =============================================================================
@@ -438,4 +446,6 @@ export const androidSkin: TabsSkin = {
 
   countBadgeBox: nativeBadgeBox,
   countBadgeLabel: nativeBadgeLabel,
+  // Material's 18 dp inline tab icon.
+  iconSize: 18,
 };

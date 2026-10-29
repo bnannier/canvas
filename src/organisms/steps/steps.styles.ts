@@ -1,6 +1,7 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { alpha, MONO_FONT, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
+import { pageRoles } from "../../style/type-scale.js";
 
 // The Steps skin, the v4 hand-off's (its `steps` renderer in tools/v4/handoff/cv-kit-inputs.js).
 // Neither iOS nor Material 3 ships a multi-step wizard indicator (PLATFORM-REFERENCES.md:
@@ -15,7 +16,15 @@ import { alpha, MONO_FONT, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin 
 //     step it leaves is complete, `field-border` before;
 //   - vertical: a 28px rail of markers joined by 2px connectors at least 22 tall, each
 //     label 500 14px 14 beside its marker, 4 down and 18 above the next step;
-//   - the labels read `foreground` up to the current step and `subtle-foreground` after;
+//   - the labels read `foreground` up to the current step and `subtle-foreground` after; a
+//     vertical step's title sits on the 18.2 line (the variant title's 1.3) over its 400
+//     12 / 16.8 description in the third ink, the current step's in the accent's text ink,
+//     and a step carrying `progress` draws a 6 px bar 8 under its text, its fill running
+//     from the accent to the cyan series hue with the accent's glow (the Navigation card);
+//   - segmented: equal columns 8 apart, each a 4 px bar (the accent once reached, glowing on
+//     the current step, `surface-raised` ahead) over the 500 13 / 15.6 title and the 400
+//     12 / 15.6 status, 10 apart, the status in the success ink once done, the accent's
+//     text ink on the current step and the third ink ahead (the Navigation tab-bar card);
 //   - progress: the caption 500 13px over a 6px `surface-raised` track whose `primary`
 //     fill carries the accent's 12px glow, the count 400 12px mono in `subtle-foreground`.
 // Only the press feedback and the touch target stay each platform's own: the web and iOS
@@ -52,8 +61,9 @@ export const glyphBase: TextStyle = { fontFamily: MONO_FONT, fontSize: 12, lineH
 /** The completed marker's check glyph size. */
 export const checkSize = 13;
 
-// The vertical layout's label: 500 14px.
-export const labelBase: TextStyle = { fontSize: 14, lineHeight: 20, fontWeight: "500" };
+// The vertical layout's label: 500 14px on the 18.2 line (the variant title's role, the
+// Navigation card's `font:500 14px/1.3`).
+export const labelBase: TextStyle = { ...pageRoles.variantTitle };
 
 // The horizontal layout's label: 500 13px, one line beside its marker.
 export const labelBaseXs: TextStyle = { fontSize: 13, lineHeight: 18, fontWeight: "500" };
@@ -89,6 +99,28 @@ export const verticalContent: ViewStyle = { paddingTop: 4 };
 
 // The space under a content column that has a step after it.
 export const verticalContentSpacing: ViewStyle = { paddingBottom: 18 };
+
+// The text and the in-step progress bar of a vertical step, 8 apart.
+export const verticalStack: ViewStyle = { gap: 8 };
+
+// The in-step progress bar's track: 6 tall, a pill (the hand-off's 3 on a 6 bar), clipping its fill.
+export const stepProgressTrack: ViewStyle = { height: 6, borderRadius: 9999, overflow: "hidden" };
+
+// The in-step fill: the filled share of the track, rounded like it.
+export const stepProgressFill: ViewStyle = { height: "100%", borderRadius: 9999, overflow: "hidden" };
+
+// The segmented layout: equal columns 8 apart, 4 below the row above.
+export const segmentedRow: ViewStyle = { flexDirection: "row", gap: 8, paddingTop: 4 };
+
+// One segment: its bar over its title and status, 10 apart.
+export const segmentColumn: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0, gap: 10 };
+
+// The segment's bar: 4 tall, a pill (the hand-off's 2 on a 4 bar).
+export const segmentBar: ViewStyle = { height: 4, borderRadius: 9999 };
+
+// The segment's title (500 13 / 15.6) and status (400 12 / 15.6).
+export const segmentTitle: TextStyle = { fontSize: 13, lineHeight: 15.6, fontWeight: "500" };
+export const segmentStatus: TextStyle = { fontSize: 12, lineHeight: 15.6, fontWeight: "400" };
 
 // The outer row and each step item: centred on the markers.
 export const horizontalRow: ViewStyle = { flexDirection: "row", alignItems: "center" };
@@ -127,8 +159,15 @@ export interface StepsSkin extends TouchTargetSkin {
   progressTrack: (t: ColorTokens) => ViewStyle;
   /** The filled portion of the progress track (width set inline as %). */
   progressFill: (t: ColorTokens) => ViewStyle;
-  /** The optional description line in the vertical layout. */
-  verticalDescription: (t: ColorTokens) => TextStyle;
+  /** The optional description line in the vertical layout, per state. */
+  verticalDescription: (t: ColorTokens, state?: State) => TextStyle;
+  /** A vertical step's in-step progress bar: its track fill, and its fill's gradient ends and glow. */
+  stepProgressTrack: (t: ColorTokens) => ViewStyle;
+  stepProgressFill: (t: ColorTokens) => { from: string; to: string; glow: ViewStyle };
+  /** The segmented layout's bar, per state. */
+  segmentBar: (t: ColorTokens, state: State) => ViewStyle;
+  /** The segmented layout's status line ink, per state (the title takes `labelState`). */
+  segmentStatus: (t: ColorTokens, state: State) => TextStyle;
   /** iOS/web dim the marker on press; Android uses a ripple (null here). */
   pressedOpacity: number | null;
   /** Android ripple over a pressable marker; null on iOS/web. */
@@ -173,8 +212,27 @@ const look: Omit<StepsSkin, "minTarget" | "pressedOpacity" | "ripple"> = {
   progressFill(t) {
     return { height: "100%", borderRadius: 9999, backgroundColor: t.primary, boxShadow: `0px 0px 12px ${t.glow ?? t.ring}` };
   },
-  verticalDescription(t) {
-    return { fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["muted-foreground"] };
+  verticalDescription(t, state) {
+    return { fontSize: 12, lineHeight: 16.8, fontWeight: "400", color: state === "current" ? primaryText(t) : subtle(t) };
+  },
+  stepProgressTrack(t) {
+    return { backgroundColor: t["surface-raised"] ?? t.secondary };
+  },
+  // The accent into the cyan series hue (the hand-off's `linear-gradient(90deg, var(--ion),
+  // var(--cyan))`), with the accent's 12 px glow.
+  stepProgressFill(t) {
+    return { from: t.primary, to: t["chart-2"], glow: { boxShadow: `0px 0px 12px ${t.glow ?? t.ring}` } };
+  },
+  segmentBar(t, state) {
+    if (state === "upcoming") return { backgroundColor: t["surface-raised"] ?? t.secondary };
+    return { backgroundColor: t.primary, ...(state === "current" ? { boxShadow: `0px 0px 12px ${t.glow ?? t.ring}` } : null) };
+  },
+  segmentStatus(t, state) {
+    switch (state) {
+      case "completed": return { color: t["success-text"] ?? t.success };
+      case "current": return { color: primaryText(t) };
+      case "upcoming": return { color: subtle(t) };
+    }
   },
 };
 

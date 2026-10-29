@@ -111,7 +111,7 @@ describe("the hand-off's pager on every platform", () => {
   });
 });
 
-describe("the pager renders kit icons, not text glyphs", () => {
+describe("the pager renders kit icons for its controls, and the renderer's text ellipsis in a gap", () => {
   // The test DOM stubs react-native-svg (tools/rnw-preload.ts), so an Icon draws nothing
   // there; a spy on the Icon export reads which glyph each one was asked for, in order.
   const glyphs = (ui: React.ReactElement) => {
@@ -124,12 +124,15 @@ describe("the pager renders kit icons, not text glyphs", () => {
     }
   };
 
-  it("draws a chevron in each arrow and an ellipsis in each gap, and no text glyph", () => {
+  it("draws a chevron in each arrow and the text ellipsis in each gap", () => {
     const drawn = glyphs(<ThemeProvider light solid><Pagination total={12} defaultPage={6} testID="pages" /></ThemeProvider>);
-    expect(drawn).toEqual(["chevronLeft", "moreHorizontal", "moreHorizontal", "chevronRight"]);
+    expect(drawn).toEqual(["chevronLeft", "chevronRight"]);
     // The arrows' only text is their label; the chevron is the icon, never a glyph.
     expect(["Previous page", "Next page"].map((name) => screen.getByRole("button", { name }).textContent)).toEqual(["Prev", "Next"]);
-    expect((screen.getByTestId("pages").textContent ?? "")).not.toMatch(/[‹›…▾]/);
+    expect((screen.getByTestId("pages").textContent ?? "")).not.toMatch(/[‹›▾]/);
+    // A gap is the renderer's `<span>…</span>` (cv-kit-inputs.js `pagination`), hidden from
+    // assistive technology: two gaps around the window at page 6 of 12.
+    expect((screen.getByTestId("pages").textContent ?? "").match(/…/g)?.length).toBe(2);
   });
 
   it("draws a chevron-down in the rows-per-page trigger", () => {

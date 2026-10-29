@@ -31,6 +31,9 @@ import { type BadgeSkin } from "./badge.shared.js";
 // root instead of a static alignSelf, which would pin a Row child to the top.
 export const webSkin: BadgeSkin = {
   sizes: {
+    // The navigation row's tag (Navigation.dc.html, the sidebar's "New": `height:18px;padding:0
+    // 6px;...;font:500 10px/18px`): the small pill's box under a 10 px label on its own line.
+    tiny: { height: 18, paddingHorizontal: 6, fontSize: 10, lineHeight: 18 },
     small: { height: 18, paddingHorizontal: 6, fontSize: 11, lineHeight: 14 },
     default: { height: 22, paddingHorizontal: 8, fontSize: 12, lineHeight: 16 },
     large: { height: 26, paddingHorizontal: 8, fontSize: 12, lineHeight: 16 },

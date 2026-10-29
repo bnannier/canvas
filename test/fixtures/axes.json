@@ -5422,6 +5422,7 @@
       "tier",
       "band",
       "token",
+      "tiny",
       "small"
     ],
     "none": "default",
@@ -5435,6 +5436,7 @@
       "tier": "tier",
       "band": "band",
       "token": "token",
+      "tiny": "tiny",
       "small": "small"
     },
     "pairs": {
@@ -5446,6 +5448,7 @@
       "band + reference": "reference",
       "band + small": "band",
       "band + tier": "tier",
+      "band + tiny": "band",
       "band + token": "band",
       "count + disc": "disc",
       "count + marker": "marker",
@@ -5454,6 +5457,7 @@
       "count + reference": "reference",
       "count + small": "count",
       "count + tier": "count",
+      "count + tiny": "count",
       "count + token": "count",
       "disc + marker": "marker",
       "disc + navigationCount": "disc",
@@ -5461,28 +5465,36 @@
       "disc + reference": "disc",
       "disc + small": "disc",
       "disc + tier": "disc",
+      "disc + tiny": "disc",
       "disc + token": "disc",
       "marker + navigationCount": "marker",
       "marker + notification": "notification",
       "marker + reference": "marker",
       "marker + small": "marker",
       "marker + tier": "marker",
+      "marker + tiny": "marker",
       "marker + token": "marker",
       "navigationCount + notification": "notification",
       "navigationCount + reference": "reference",
       "navigationCount + small": "navigationCount",
       "navigationCount + tier": "navigationCount",
+      "navigationCount + tiny": "navigationCount",
       "navigationCount + token": "navigationCount",
       "notification + reference": "notification",
       "notification + small": "notification",
       "notification + tier": "notification",
+      "notification + tiny": "notification",
       "notification + token": "notification",
       "reference + small": "reference",
       "reference + tier": "reference",
+      "reference + tiny": "reference",
       "reference + token": "reference",
       "small + tier": "tier",
+      "small + tiny": "tiny",
       "small + token": "token",
-      "tier + token": "tier"
+      "tier + tiny": "tier",
+      "tier + token": "tier",
+      "tiny + token": "token"
     }
   },
   "Badge.surface": {
@@ -7429,15 +7441,19 @@
     "resolver": "src/organisms/steps/steps.shared.tsx#layoutOf",
     "order": [
       "progress",
+      "segmented",
       "vertical"
     ],
     "none": "horizontal",
     "single": {
       "progress": "progress",
+      "segmented": "segmented",
       "vertical": "vertical"
     },
     "pairs": {
-      "progress + vertical": "progress"
+      "progress + segmented": "progress",
+      "progress + vertical": "progress",
+      "segmented + vertical": "segmented"
     }
   },
   "Tabs.variant": {

@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { useHover } from "../../style/hover.js";
+import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
 
@@ -86,8 +87,9 @@ export interface TabsSkin {
   // light mode, a lifted lighter-gray thumb in dark mode, matching Apple's
   // segmented control's tertiary/secondary system-fill layering).
   /** The track behind the triggers; `wrap` is the multi-line row (TabsProps.wrap),
-   *  where a capsule track squares off to the corner concentric with its pills. */
-  underlineRow: (t: ColorTokens, wrap: boolean) => ViewStyle;
+   *  where a capsule track squares off to the corner concentric with its pills, and
+   *  `block` the row of equal columns. */
+  underlineRow: (t: ColorTokens, wrap: boolean, block?: boolean) => ViewStyle;
   underlineTrigger: (t: ColorTokens, selected: boolean, dark: boolean) => ViewStyle;
   underlineIndicator: (t: ColorTokens, selected: boolean) => ViewStyle;
   underlineLabel: (t: ColorTokens, selected: boolean) => TextStyle;
@@ -106,12 +108,25 @@ export interface TabsSkin {
   // --- count badge ---
   countBadgeBox: (t: ColorTokens) => ViewStyle;
   countBadgeLabel: (t: ColorTokens, muted: boolean) => TextStyle;
+  /** The count's numerals take their tab label's ink (the web renderer's badge sets no
+   *  colour of its own) instead of `countBadgeLabel`'s. */
+  badgeTakesLabelInk?: boolean;
+
+  // --- leading glyph ---
+  /** The size of a tab's leading glyph (`{ icon }`), drawn in its label's ink. */
+  iconSize: number;
 }
 
 /** A tab is either a bare label or a label paired with a count badge and/or an
  *  individual disabled flag (a disabled trigger dims, ignores presses, and is
  *  skipped by keyboard navigation). */
-export type TabItem = string | { label: string; badge?: string; disabled?: boolean };
+export type TabItem = string | {
+  label: string;
+  badge?: string;
+  disabled?: boolean;
+  /** A leading Canvas glyph before the label, in the label's ink (a settings rail's section icons). */
+  icon?: IconName;
+};
 
 export interface TabsProps {
   /** Triggers, left to right. Strings, or `{ label, badge }` for a count. */
@@ -181,6 +196,10 @@ function badgeOf(item: TabItem): string | undefined {
   return typeof item === "string" ? undefined : item.badge;
 }
 
+function iconOf(item: TabItem): IconName | undefined {
+  return typeof item === "string" ? undefined : item.icon;
+}
+
 function disabledOf(item: TabItem): boolean {
   return typeof item === "string" ? false : !!item.disabled;
 }
@@ -233,19 +252,26 @@ export function tabScrollTarget(
 export function createTabs(skin: TabsSkin) {
   const ripple = skin.ripple;
 
-  // A small secondary count pill shown after a trigger label.
-  function CountBadge({ children, muted }: { children: string; muted: boolean }) {
+  // A small secondary count pill shown after a trigger label; `ink` is the label's colour,
+  // which the numerals take where the skin says so.
+  function CountBadge({ children, muted, ink }: { children: string; muted: boolean; ink?: string }) {
     const { tokens } = useTheme();
     return (
       <View style={skin.countBadgeBox(tokens)}>
-        <Text style={skin.countBadgeLabel(tokens, muted)}>{children}</Text>
+        <Text style={[skin.countBadgeLabel(tokens, muted), skin.badgeTakesLabelInk && ink != null ? { color: ink } : null]}>{children}</Text>
       </View>
     );
   }
 
+  // A tab's leading glyph in its label's ink.
+  const inkOfLabel = (label: StyleProp<TextStyle>): string | undefined => (StyleSheet.flatten(label) as TextStyle).color as string | undefined;
+  const TabIcon = ({ name, ink }: { name: IconName | undefined; ink: string | undefined }) =>
+    name != null ? <Icon {...{ [name]: true }} size={skin.iconSize} color={ink} decorative /> : null;
+
   interface TriggerProps {
     label: string;
     badge?: string;
+    icon?: IconName;
     selected: boolean;
     variant: Variant;
     block?: boolean;
@@ -258,7 +284,7 @@ export function createTabs(skin: TabsSkin) {
     onLayout?: (event: LayoutChangeEvent) => void;
   }
 
-  function Trigger({ label, badge, selected, variant, block, disabled, onPress, itemProps, onLayout }: TriggerProps) {
+  function Trigger({ label, badge, icon, selected, variant, block, disabled, onPress, itemProps, onLayout }: TriggerProps) {
     const theme = useMaterialTheme({ layer: "control" });
     // Only a resting underline tab answers the pointer (the skin's hover label, web only).
     const hoverLabel = variant === "underline" && !selected ? skin.hoverLabel : null;
@@ -303,6 +329,7 @@ export function createTabs(skin: TabsSkin) {
         skin.focusRing,
         disabled ? s.disabledDim(skin.disabledOpacity) : null,
       ];
+      const verticalLabel: StyleProp<TextStyle> = [skin.verticalLabel(tokens, selected), inkOf(container)];
       return (
         // Round the vertical trigger's bounded Android ripple to its corners via this
         // RippleClip parent (Android only). The rail stretches its children (alignItems
@@ -322,10 +349,11 @@ export function createTabs(skin: TabsSkin) {
             style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           >
             {puckOf(container)}
+            <TabIcon name={icon} ink={inkOfLabel(verticalLabel)} />
             {/* One line: when the rail flexes down in a narrow container the label
                 truncates instead of wrapping the rail taller. */}
-            <Text numberOfLines={1} style={[skin.verticalLabel(tokens, selected), inkOf(container)]}>{label}</Text>
-            {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
+            <Text numberOfLines={1} style={verticalLabel}>{label}</Text>
+            {badge != null ? <CountBadge muted={!selected} ink={inkOfLabel(verticalLabel)}>{badge}</CountBadge> : null}
           </Pressable>
         </RippleClip>
       );
@@ -341,6 +369,7 @@ export function createTabs(skin: TabsSkin) {
         skin.focusRing,
         disabled ? s.disabledDim(skin.disabledOpacity) : null,
       ];
+      const pillsLabel: StyleProp<TextStyle> = [skin.pillsLabel(tokens, selected), inkOf(container)];
       return (
         // Round the pill trigger's bounded Android ripple to its capsule corners via this
         // RippleClip parent (Android only). Block-mode flex moves here so the tab still shares
@@ -359,8 +388,9 @@ export function createTabs(skin: TabsSkin) {
             style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           >
             {puckOf(container)}
-            <Text style={[skin.pillsLabel(tokens, selected), inkOf(container)]}>{label}</Text>
-            {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
+            <TabIcon name={icon} ink={inkOfLabel(pillsLabel)} />
+            <Text style={pillsLabel}>{label}</Text>
+            {badge != null ? <CountBadge muted={!selected} ink={inkOfLabel(pillsLabel)}>{badge}</CountBadge> : null}
           </Pressable>
         </RippleClip>
       );
@@ -378,6 +408,7 @@ export function createTabs(skin: TabsSkin) {
       disabled ? s.disabledDim(skin.disabledOpacity) : null,
     ];
     const puck = puckOf(container);
+    const underlineLabel: StyleProp<TextStyle> = [skin.underlineLabel(tokens, selected), hovered && !disabled && hoverLabel ? hoverLabel(tokens) : null, inkOf(container)];
     return (
       // Round the underline trigger's bounded Android ripple to its corners via this
       // RippleClip parent (Android only; iOS draws a capsule pill instead), and is the hover target, which never moves. Block-mode flex
@@ -397,8 +428,9 @@ export function createTabs(skin: TabsSkin) {
           style={({ pressed }) => [triggerStyle(container), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
         >
           {puck}
-          <Text style={[skin.underlineLabel(tokens, selected), hovered && !disabled && hoverLabel ? hoverLabel(tokens) : null, inkOf(container)]}>{label}</Text>
-          {badge != null ? <CountBadge muted={!selected}>{badge}</CountBadge> : null}
+          <TabIcon name={icon} ink={inkOfLabel(underlineLabel)} />
+          <Text style={underlineLabel}>{label}</Text>
+          {badge != null ? <CountBadge muted={!selected} ink={inkOfLabel(underlineLabel)}>{badge}</CountBadge> : null}
           <View style={skin.underlineIndicator(tokens, selected)} />
         </Pressable>
       </RippleClip>
@@ -555,6 +587,7 @@ export function createTabs(skin: TabsSkin) {
           key={`${labelOf(item)}-${i}`}
           label={labelOf(item)}
           badge={badgeOf(item)}
+          icon={iconOf(item)}
           selected={i === active}
           variant={rowVariant}
           block={props.block}
@@ -575,6 +608,7 @@ export function createTabs(skin: TabsSkin) {
               key={`${labelOf(item)}-${i}`}
               label={labelOf(item)}
               badge={badgeOf(item)}
+              icon={iconOf(item)}
               selected={i === active}
               variant="vertical"
               block={props.block}
@@ -618,7 +652,7 @@ export function createTabs(skin: TabsSkin) {
     // Underline: the row sits on a hairline bottom border (Android) or a gray
     // segmented track (iOS and web). Block shares the row equally (never
     // overflows); otherwise the row wraps or rides the overflow scroller.
-    const underlineTrack = skin.underlineRow(tokens, wrapping);
+    const underlineTrack = skin.underlineRow(tokens, wrapping, !!props.block);
     if (props.block) {
       return withResponsiveProbe(
         <View accessibilityRole="tablist" testID={testID} style={[trackStyle(underlineTrack), s.blockWidth(true), style]}>

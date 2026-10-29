@@ -6,21 +6,18 @@ export default function Example(scope: ExampleScope) {
   const { Sidebar } = scope;
   return (
 <Sidebar
-  bordered
-  compact
-  markers
-  defaultActive="button"
+  defaultActive="overview"
   sections={[
-    { title: "Controls", count: 3, current: true, items: [
-      { id: "button", label: "Button" },
-      { id: "switch", label: "Switch" },
-      { id: "checkbox", label: "Checkbox" }
-    ] },
-    { title: "Inputs", count: 2, items: [
-      { id: "input", label: "Input" },
-      { id: "select", label: "Select", marked: true }
-    ] }
+    {
+      title: "Workspace",
+      items: [
+        { id: "overview", label: "Overview", icon: "layoutDashboard" },
+        { id: "members", label: "Members", icon: "users", meta: "24" },
+        { id: "tokens", label: "Tokens", icon: "palette", badge: "New", badgeAccent: true }
+      ]
+    }
   ]}
+  account={{ name: "Northwind", detail: "24 members", src: "/grace-hopper.jpg" }}
 />
   );
 }

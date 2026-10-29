@@ -40,6 +40,10 @@ export interface SidebarItem {
    *  reports a problem rather than a volume (e.g. account lockouts). Ignored when the
    *  row carries no `badge`. */
   badgeError?: boolean;
+  /** Render `badge` as the accent's solid tag (the 18 px pill under a 10 px label, the
+   *  accent fill and its ink) for a row that announces something new rather than a
+   *  count. `badgeError` wins when both are set. Ignored when the row carries no `badge`. */
+  badgeAccent?: boolean;
   /** Trailing quiet metadata in the mono face, after any `badge`: an ordinal ("04"), a
    *  shortcut or a short status, set as text rather than a pill. */
   meta?: string;
@@ -82,16 +86,25 @@ export interface SidebarSection {
   defaultOpen?: boolean;
 }
 
-/** A row's trailing count and metadata. Two Badge families: the default secondary
- *  metadata pill, and `badgeError`'s error status pill (`status` is Badge's family switch,
- *  `error` its tone within that family) for a count that reports a problem; then `meta`,
- *  quiet mono text rather than a pill. Lives here once
+/** A row's trailing count and metadata. Three Badge looks: the default secondary
+ *  metadata pill, `badgeError`'s error status pill (`status` is Badge's family switch,
+ *  `error` its tone within that family) for a count that reports a problem, and
+ *  `badgeAccent`'s solid accent tag; then `meta`, quiet mono text in the third ink
+ *  rather than a pill. Lives here once
  *  so the rail row and the narrow drill-down leaf cannot drift apart. `Badge` is the
  *  platform's build, a Sidebar part. */
 export function SidebarItemBadge({ item, Badge, small }: { item: SidebarItem; Badge: typeof WebBadge; small?: boolean }) {
-  const meta = item.meta != null ? <Typography tiny mono subtle>{item.meta}</Typography> : null;
+  const meta = item.meta != null ? <Typography tiny mono muted>{item.meta}</Typography> : null;
   if (item.badge == null) return meta;
-  const badge = item.badgeError ? <Badge status error>{item.badge}</Badge> : small ? <Badge secondary count>{item.badge}</Badge> : <Badge secondary>{item.badge}</Badge>;
+  const badge = item.badgeError ? (
+    <Badge status error>{item.badge}</Badge>
+  ) : item.badgeAccent ? (
+    <Badge solid tiny>{item.badge}</Badge>
+  ) : small ? (
+    <Badge secondary count>{item.badge}</Badge>
+  ) : (
+    <Badge secondary>{item.badge}</Badge>
+  );
   return meta ? <>{badge}{meta}</> : badge;
 }
 

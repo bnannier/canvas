@@ -124,6 +124,14 @@ export const SHARED_PARTS: SharedPart[] = [
     site: "src/organisms/filter-panel/filter-panel.styles.ts androidSkin",
     why: "the Material 3 side sheet FilterPanel's Android row cites is the Drawer the panel moves into at a phone's width; the docked panel is the kit's own rail, at the v4 hand-off's 14 rail corner",
   },
+  {
+    site: "src/organisms/sidebar/sidebar.styles.ts iosSkin",
+    why: "the iOS sidebar Sidebar's iOS row cites draws no account card at its foot: the account card is the kit's own part, the v4 hand-off rail's footer at its 10 control corner",
+  },
+  {
+    site: "src/organisms/sidebar/sidebar.styles.ts androidSkin",
+    why: "the Material 3 navigation drawer Sidebar's Android row cites draws no account card at its foot: the account card is the kit's own part, the v4 hand-off rail's footer at its 10 control corner",
+  },
 ];
 
 /** A skin's corner: a hand-off token of SKIN_FAMILIES, or a module's own reader. */
@@ -409,7 +417,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "organisms/drawer": ["sheet", "navigationDrawer"],
   "organisms/filter-panel": ["floatingRail"],
   "organisms/navbars": ["control", "card", "pill", "navBar"],
-  "organisms/row-menu": ["control", "menu", "menuRow"],
+  "organisms/row-menu": ["control", "card", "menu", "menuRow", "listFrame", "groupedList"],
   "organisms/sidebar": ["control", "card", "navigationDrawer", "navRow", "navRowCompact", "rail", "floatingRail"],
   "organisms/tabs": ["pill", "tile", "navRow", "tabIndicator"],
   "organisms/toast": ["control", "card", "snackbar"],
