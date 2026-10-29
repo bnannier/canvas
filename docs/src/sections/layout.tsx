@@ -7,7 +7,6 @@ import {
   Button,
   ButtonGroup,
   Card,
-  CodeBlock,
   Column,
   Container,
   DashboardGrid,
@@ -56,8 +55,9 @@ import { GAP_SCALE, RESIZE_PRESETS, SAMPLED_STEPS, SIZING, SIZING_MODES, type Si
 /** A bundled sample photo, resolved for the platform (docs/src/core/photos.ts). */
 const photo = (path: string) => resolvePhoto(path) as string | undefined;
 
+/** An in-card mono note: the section card's note line (400 12px/1.6 mono in the third ink). */
 function Mono({ children, right }: { children: ReactNode; right?: boolean }) {
-  return <Typography caption mono subtle right={right}>{children}</Typography>;
+  return <Typography cardNote mono right={right}>{children}</Typography>;
 }
 
 /** The hero's still frame: a desktop window's twelve-column grid. */
@@ -85,9 +85,9 @@ export function Vignette() {
 
 /** The window's form factors, each with the range of widths it covers. */
 const FORM_FACTORS = [
-  { name: "Phone", range: `≤ ${breakpoints.sm}`, items: [{ term: "Overlays", value: "bottom sheets" }, { term: "Shells", value: "drawer" }, { term: "Row stacks", value: "stacked" }] },
-  { name: "Tablet", range: `${breakpoints.sm + 1} – ${breakpoints.lg}`, items: [{ term: "Overlays", value: "anchored" }, { term: "Shells", value: "drawer" }, { term: "Row spans", value: "by measure" }] },
-  { name: "Desktop", range: `> ${breakpoints.lg}`, items: [{ term: "Overlays", value: "anchored" }, { term: "Shells", value: "rail" }, { term: "Page", value: `capped at page ${widths.page}` }] },
+  { name: "Phone", hue: "mint" as const, range: `≤ ${breakpoints.sm}`, items: [{ term: "Overlays", value: "bottom sheets" }, { term: "Shells", value: "drawer" }, { term: "Row stacks", value: "stacked" }] },
+  { name: "Tablet", hue: "cyan" as const, range: `${breakpoints.sm + 1} – ${breakpoints.lg}`, items: [{ term: "Overlays", value: "anchored" }, { term: "Shells", value: "drawer" }, { term: "Row spans", value: "by measure" }] },
+  { name: "Desktop", hue: "primary" as const, range: `> ${breakpoints.lg}`, items: [{ term: "Overlays", value: "anchored" }, { term: "Shells", value: "rail" }, { term: "Page", value: `capped at page ${widths.page}` }] },
 ];
 
 /** Breakpoints · form factors: the breakpoint ruler, this window's bucket, the three tiers. */
@@ -119,11 +119,11 @@ function BreakpointsCard() {
       </Column>
       <Grid minTileWidth={240} columns={3} relaxed>
         {FORM_FACTORS.map((tier) => (
-          <Card key={tier.name} flat>
+          <Card key={tier.name} sunken>
             <Column snug>
               <Row between alignCenter>
-                <Typography label>{tier.name}</Typography>
-                <Typography caption mono primary>{tier.range}</Typography>
+                <Typography tileTitle natural>{tier.name}</Typography>
+                <Typography tiny mono medium natural {...{ [tier.hue]: true }}>{tier.range}</Typography>
               </Row>
               <DescriptionList inline items={tier.items} />
             </Column>
@@ -174,7 +174,7 @@ function MiniApp({ sizing, tier }: { sizing: boolean; tier: string }) {
             {note("fill · the field Grid measures itself")}
             <Card>
               <Form submitLabel="Send invite" cancelLabel="Cancel" accessibilityLabel="Invite people">
-                <Typography h5 level={3}>Invite people</Typography>
+                <Typography tileTitle natural level={3}>Invite people</Typography>
                 {/* The fields pair up where two fit and stack where they do not: the Grid
                     measures its own width. */}
                 <Grid minTileWidth={200} columns={2} relaxed>
@@ -190,14 +190,19 @@ function MiniApp({ sizing, tier }: { sizing: boolean; tier: string }) {
             {note("fill · rows stack when narrow")}
             <StackedList
               card
-              title="Members 24"
+              title={
+                <Row snug baseline>
+                  <Typography tileTitle natural>Members</Typography>
+                  <Typography tiny mono medium muted natural>24</Typography>
+                </Row>
+              }
               items={MEMBERS.map((member) => ({
                 name: member.name,
                 detail: member.detail,
                 avatar: photo(member.photo),
                 badge: member.badge,
                 [member.tone]: true,
-                trailing: <Typography small mono>{member.spend}</Typography>,
+                trailing: <Typography specMeta mono medium natural>{member.spend}</Typography>,
               }))}
             />
           </Column>
@@ -237,9 +242,10 @@ function ResponsiveCard() {
           items={RESIZE_PRESETS.map((entry) => ({ label: entry.label, icon: entry.icon }))}
         />
         <Row between wrap cozy alignCenter>
-          <Row snug alignCenter>
-            <Typography caption mono subtle>{`container ${width}px`}</Typography>
-            <Badge soft>{tier}</Badge>
+          <Row comfortable alignCenter>
+            <Typography caption mono medium muted natural>container</Typography>
+            <Typography specMeta mono medium natural>{`${width}px`}</Typography>
+            {tier === "sm" ? <Badge mint>{tier}</Badge> : tier === "lg" ? <Badge cyan>{tier}</Badge> : <Badge soft>{tier}</Badge>}
           </Row>
           <Switch checked={sizing} onValueChange={setSizing}>Show sizing</Switch>
         </Row>
@@ -264,8 +270,8 @@ function ResponsiveCard() {
 /** A sizing mode's pill. */
 function ModeBadge({ mode }: { mode: SizingMode }) {
   if (mode === "fill") return <Badge soft mono>fill</Badge>;
-  if (mode === "hug") return <Badge info mono>hug</Badge>;
-  if (mode === "fixed") return <Badge success mono>fixed</Badge>;
+  if (mode === "hug") return <Badge cyan mono>hug</Badge>;
+  if (mode === "fixed") return <Badge mint mono>fixed</Badge>;
   return <Badge warning mono>tiles</Badge>;
 }
 
@@ -280,7 +286,7 @@ function SizingCard() {
         {SIZING_MODES.map((entry) => (
           <Row key={entry.mode} snug alignCenter>
             <ModeBadge mode={entry.mode} />
-            <Typography small subtle>{entry.note}</Typography>
+            <Typography small subtle natural>{entry.note}</Typography>
           </Row>
         ))}
       </Row>
@@ -319,19 +325,19 @@ function ResolutionCard() {
         icon={step(1)}
         title="Intrinsic · no JavaScript"
         description="Fill or hug inside the parent's bounds, a minWidth floor, wrapping. Correct on the first frame and on the server."
-        body={<CodeBlock inline code="<Grid minTileWidth={240}> · <Row wrap> · <Row stacks>" />}
+        body={<Typography tiny mono muted natural>{"<Grid minTileWidth={240}> · <Row wrap> · <Row stacks>"}</Typography>}
       />
       <MediaObject
         icon={step(2)}
         title="Container measurement · its own width"
         description="A component that changes shape measures itself against the shared breakpoints, so every family flips at the same widths."
-        body={<CodeBlock inline code="useContainerBreakpoint({ base, md, sm }) · first frame renders base" />}
+        body={<Typography tiny mono muted natural>{"useContainerBreakpoint({ base, md, sm }) · first frame renders base"}</Typography>}
       />
       <MediaObject
         icon={step(3)}
         title="Viewport · chrome only"
         description="Only window-level chrome reads the window: Sidebar and FilterPanel drawers, phone sheets, app shells."
-        body={<CodeBlock inline code="useBreakpoint() · useFormFactor() · BreakpointOverride for previews" />}
+        body={<Typography tiny mono muted natural>{"useBreakpoint() · useFormFactor() · BreakpointOverride for previews"}</Typography>}
       />
       <Row wrap snug>
         <Badge destructive>no width at a call site</Badge>
@@ -378,8 +384,8 @@ function DashboardGridCard() {
             <Card flat compact>
               <Column snug>
                 <Row between alignCenter>
-                  <Typography eyebrow subtle>{widget.title}</Typography>
-                  <Mono>{`span ${widget.span}`}</Mono>
+                  <Typography gridLabel muted>{widget.title}</Typography>
+                  <Typography gridLabel primary>{`span ${widget.span}`}</Typography>
                 </Row>
                 {widget.content}
               </Column>

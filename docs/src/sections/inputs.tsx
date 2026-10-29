@@ -59,7 +59,7 @@ function InputStates() {
       <InteractionOverride focused>
         <Input label="Focused" defaultValue="Canvas v4.0.0" />
       </InteractionOverride>
-      <Input label="With icon and shortcut" leadingIcon icon="search" placeholder="Search components…" />
+      <Input label="With icon and shortcut" leadingIcon icon="search" placeholder="Search components…" shortcut="⌘K" />
       <Field label="Email" error="Enter a complete address.">
         <Input error defaultValue="bobby@nannier" accessibilityLabel="Email" />
       </Field>

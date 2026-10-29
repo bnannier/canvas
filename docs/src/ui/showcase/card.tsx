@@ -9,8 +9,9 @@ import { showcaseCard } from "../../data/showcase";
 // padding:24px;display:flex;flex-direction:column;gap:20px`): the kit Card at the showcase
 // corner (`showcaseCorners`, 20) with the `roomy` density (a 24 px inset, its parts 20 apart),
 // the 11 px mono header row (title left, meta right), a row of link chips to the components
-// the card shows, the live composition, and the mono JSX caption pinned to the card's foot
-// (the hand-off's `margin-top:auto`). The header and the chips
+// the card shows (the kit's `Chip link`), the live composition, and the mono JSX caption
+// pinned to the card's foot (the hand-off's `margin-top:auto`, 400 12px/1.6 mono in --tx3:
+// the kit's `cardNote` role). The header and the chips
 // come from the hand-off's card manifest (docs/src/data/showcase.ts) by the card's id; a
 // prop given here wins. A specimen card (one the hand-off draws with no header row) takes no
 // title or meta, so it shows its chips over its body.
@@ -24,7 +25,7 @@ function ComponentChip({ slug }: { slug: string }) {
   const href = componentHref(slug);
   return (
     <Chip
-      outline
+      link
       href={href}
       onPress={(event) => {
         // The chip is an anchor on the web: route on the client instead of loading the page.
@@ -96,7 +97,7 @@ export function ShowcaseCard({ id, title, meta, links, caption, split, children 
         </Column>
       ) : null}
       <Column grow spacious>{children}</Column>
-      {caption != null ? <Typography caption mono subtle>{caption}</Typography> : null}
+      {caption != null ? <Typography cardNote mono>{caption}</Typography> : null}
     </Card>
   );
 }
