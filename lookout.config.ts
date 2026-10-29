@@ -215,6 +215,8 @@ const V4_SECTIONS = ["header", "pg", "var", "sz", "st", "an", "props", "a11y", "
 // section crops, and restore shows it again.
 const sectionViewports = new WeakMap<Page, { width: number; height: number }>();
 const HIDE_BANNER = "lookout-hide-banner";
+/** The attribute that keeps an element's own transform while a fit state nudges it onto whole pixels. */
+const NUDGE_MARKER = "data-lookout-nudge";
 const SECTION_TOP = 100;
 const SECTION_HEADROOM = 200;
 /** The section's box, measured twice a few frames apart until it holds still. */
@@ -270,8 +272,33 @@ function fitState(description: string, selector: string): StateRecipe {
         }, undefined, { timeout: 5000 })
         .catch(() => undefined);
       await page.waitForTimeout(300);
+      // Land the element on whole pixels. The scroll offset is whole pixels, so after the
+      // scroll above the element's own offset in the page (the fractional line boxes above
+      // it, 30.8 px for a section title) is what remains; an element screenshot clips to
+      // the box rounded outward, so a 215.8 px section at y .31 came out 217 rows here
+      // against the 216 of the hand-off's crop at y .19, with every row below the title
+      // reported 1 px lower (the 2026-10-29 Button Sizes and States compare, where the two
+      // pages measured the same to the hundredth). The fraction is moved off with a
+      // transform on the element, and tools/v4/capture-references.ts does the same to the
+      // hand-off's element before its crop, so both sit on the pixel grid.
+      await page.locator(selector).first().evaluate((node, marker) => {
+        const element = node as HTMLElement;
+        const box = element.getBoundingClientRect();
+        const dx = box.left - Math.round(box.left);
+        const dy = box.top - Math.round(box.top);
+        if (dx === 0 && dy === 0) return;
+        element.setAttribute(marker, element.style.transform);
+        element.style.transform = `translate(${-dx}px, ${-dy}px)`;
+      }, NUDGE_MARKER);
+      await page.waitForTimeout(100);
     },
     restore: async (page: Page) => {
+      await page.evaluate((marker) => {
+        for (const node of Array.from(document.querySelectorAll<HTMLElement>(`[${marker}]`))) {
+          node.style.transform = node.getAttribute(marker) ?? "";
+          node.removeAttribute(marker);
+        }
+      }, NUDGE_MARKER);
       await page.evaluate((marker) => document.getElementById(marker)?.remove(), HIDE_BANNER);
       const viewport = sectionViewports.get(page);
       if (viewport) await page.setViewportSize(viewport);

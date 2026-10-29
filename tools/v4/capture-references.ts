@@ -81,10 +81,31 @@ async function setScheme(page: Page, scheme: "dark" | "light") {
   await page.waitForTimeout(700);
 }
 
+/**
+ * Shoots the page, or one element of it. An element is first landed on whole pixels: an
+ * element screenshot clips to the element's box rounded outward, so a box at a fractional
+ * offset (the line boxes above it are fractional, 30.8 px for a section title) comes out a
+ * row taller or shorter than the same box at another fraction, with its text on another
+ * sub-pixel. The fraction is moved off with a transform for the shot, as lookout.config.ts's
+ * fit states do to the docs' element, so the two crops compared sit on the same pixel grid.
+ */
 async function shoot(page: Page, file: string, selector?: string) {
   mkdirSync(resolve(file, ".."), { recursive: true });
-  if (selector) await page.locator(selector).first().screenshot({ path: file, animations: "disabled" });
-  else await page.screenshot({ path: file, fullPage: true, animations: "disabled" });
+  if (selector) {
+    const element = page.locator(selector).first();
+    await element.scrollIntoViewIfNeeded();
+    const own = await element.evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      const dx = box.left - Math.round(box.left);
+      const dy = box.top - Math.round(box.top);
+      if (dx === 0 && dy === 0) return null;
+      const before = (node as HTMLElement).style.transform;
+      (node as HTMLElement).style.transform = `translate(${-dx}px, ${-dy}px)`;
+      return before;
+    });
+    await element.screenshot({ path: file, animations: "disabled" });
+    if (own !== null) await element.evaluate((node, before) => ((node as HTMLElement).style.transform = before), own);
+  } else await page.screenshot({ path: file, fullPage: true, animations: "disabled" });
 }
 
 const browser = await chromium.launch();
