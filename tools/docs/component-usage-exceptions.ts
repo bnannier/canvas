@@ -390,4 +390,175 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     keys: ["flexGrow", "paddingBottom", "paddingHorizontal", "paddingTop"], occurrences: 1,
     reason: "Template app frame scaffolding: the hand-off's screen insets (28 on the web, 16 on phones, 96 under the iOS floating tab bar).",
   },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "Hatch", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "The Layout page's hatch (the hand-off's `repeating-linear-gradient(135deg, ...)` gutters, staging ground and gap strips, Layout owner decision OD-1): an untouchable layer spread over the box it hatches, painting only the svg pattern; diagram scenery.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "Anchor", tag: "View", attribute: "style", keys: ["alignItems", "left", "marginLeft", "pointerEvents", "position", "top", "width"], occurrences: 1,
+    reason: "The window ruler's tick and readout labels centred on a point of the ruler (the hand-off's `left:N%;transform:translateX(-50%)`), Layout OD-1: an untouchable box wide enough for the label; it paints nothing, the labels are kit Typography and Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowRuler", tag: "View", attribute: "style", keys: ["paddingBottom", "paddingTop"], occurrences: 1,
+    reason: "The breakpoints card's window-width ruler (the hand-off's 46 px strip at radius 12, its mint, cyan and accent segments to scale over 0 to 1800 px, the dashed md, xl and 2xl guides and the marker at this window's width), Layout OD-1: an explanatory drawing no kit component makes, hidden from assistive tech; its labels are kit Typography and the readout the kit Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowRuler", tag: "View", attribute: "style", keys: ["borderColor", "borderRadius", "borderWidth", "flexDirection", "height", "overflow"], occurrences: 1,
+    reason: "The breakpoints card's window-width ruler (the hand-off's 46 px strip at radius 12, its mint, cyan and accent segments to scale over 0 to 1800 px, the dashed md, xl and 2xl guides and the marker at this window's width), Layout OD-1: an explanatory drawing no kit component makes, hidden from assistive tech; its labels are kit Typography and the readout the kit Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowRuler", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderLeftWidth", "flexBasis", "flexGrow", "flexShrink", "justifyContent", "paddingHorizontal", "paddingVertical", "width"], occurrences: 1,
+    reason: "The breakpoints card's window-width ruler (the hand-off's 46 px strip at radius 12, its mint, cyan and accent segments to scale over 0 to 1800 px, the dashed md, xl and 2xl guides and the marker at this window's width), Layout OD-1: an explanatory drawing no kit component makes, hidden from assistive tech; its labels are kit Typography and the readout the kit Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowRuler", tag: "View", attribute: "style", keys: ["height", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,
+    reason: "The breakpoints card's window-width ruler (the hand-off's 46 px strip at radius 12, its mint, cyan and accent segments to scale over 0 to 1800 px, the dashed md, xl and 2xl guides and the marker at this window's width), Layout OD-1: an explanatory drawing no kit component makes, hidden from assistive tech; its labels are kit Typography and the readout the kit Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowRuler", tag: "View", attribute: "style", keys: ["backgroundColor", "borderRadius", "height", "left", "marginLeft", "position", "top", "width"], occurrences: 1,
+    reason: "The breakpoints card's window-width ruler (the hand-off's 46 px strip at radius 12, its mint, cyan and accent segments to scale over 0 to 1800 px, the dashed md, xl and 2xl guides and the marker at this window's width), Layout OD-1: an explanatory drawing no kit component makes, hidden from assistive tech; its labels are kit Typography and the readout the kit Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "ColumnStrip", tag: "View", attribute: "style", keys: ["backgroundColor", "borderRadius", "flexDirection", "gap", "height", "paddingHorizontal"], occurrences: 1,
+    reason: "A form factor's column strip (the hand-off's 52 px `--sf` strip of 4, 8 or 12 columns in the tier's wash, radius 9), Layout OD-1: a diagram of the page grid, hidden from assistive tech; no control.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "ColumnStrip", tag: "View", attribute: "style", keys: ["backgroundColor", "flexBasis", "flexGrow", "flexShrink"], occurrences: 1,
+    reason: "A form factor's column strip (the hand-off's 52 px `--sf` strip of 4, 8 or 12 columns in the tier's wash, radius 9), Layout OD-1: a diagram of the page grid, hidden from assistive tech; no control.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "StagingGround", tag: "View", attribute: "style", keys: ["paddingBottom", "paddingLeft", "paddingRight", "paddingTop"], occurrences: 1,
+    reason: "The responsive card's staging ground inset (the hand-off's `padding:22px 26px 22px 22px` inside the hatched stage), Layout OD-1; the stage itself is the kit Card `sunken`, the inset paints nothing.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "StageFrame", tag: "View", attribute: "style", keys: ["<unresolved style>", "backgroundColor", "borderColor", "borderRadius", "borderWidth"], occurrences: 1,
+    expression: "{{ borderRadius: 14, backgroundColor: tokens.background, borderWidth: 1, borderColor: tokens[\"field-border\"] ?? tokens.input, ...shadow(\"lg\", tokens) }}",
+    reason: "The staged mini app's frame (the hand-off's radius 14 window on `--bg` inside `--ln2` with `--sh-lg`, its content clipped at 13), Layout OD-1: the window the live kit components sit in, a diagram of a browser frame that no kit component draws and an example never adds to the kit.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "StageFrame", tag: "View", attribute: "style", keys: ["borderRadius", "overflow"], occurrences: 1,
+    reason: "The staged mini app's frame (the hand-off's radius 14 window on `--bg` inside `--ln2` with `--sh-lg`, its content clipped at 13), Layout OD-1: the window the live kit components sit in, a diagram of a browser frame that no kit component draws and an example never adds to the kit.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "SizingOutline", tag: "View", attribute: "style", keys: ["borderColor", "borderRadius", "borderStyle", "borderWidth", "bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,
+    reason: "The responsive card's Show sizing layer (the hand-off's `outline:1.5px dashed` N px outside a part, its tag pinned over it), Layout OD-1: an untouchable overlay that marks how a live kit part sizes without moving it; the tag is the kit Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "SizingOutline", tag: "View", attribute: "style", keys: ["bottom", "justifyContent", "marginRight", "position", "right", "top"], occurrences: 2,
+    reason: "The Show sizing tag set beside a part too small to carry it (the hugging Last 30 days button), centred on it at its start, Layout OD-1: an untouchable placement box; the tag is the kit Badge and the box paints nothing.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "TierBar", tag: "View", attribute: "style", keys: ["borderRadius", "flexDirection", "height", "overflow"], occurrences: 1,
+    reason: "The resolution card's container tier bar (the hand-off's 26 px bar, radius 8, its three tiers in the mint, cyan and accent washes at their shares), Layout OD-1: a diagram of the container breakpoints, hidden from assistive tech; its labels are kit Typography.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "TierBar", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderLeftWidth", "flexBasis", "flexGrow", "flexShrink", "justifyContent", "minWidth", "paddingHorizontal"], occurrences: 1,
+    reason: "The resolution card's container tier bar (the hand-off's 26 px bar, radius 8, its three tiers in the mint, cyan and accent washes at their shares), Layout OD-1: a diagram of the container breakpoints, hidden from assistive tech; its labels are kit Typography.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "ColumnGuides", tag: "View", attribute: "style", keys: ["padding"], occurrences: 1,
+    reason: "The dashboard card's twelve column guides (the hand-off's `--ion-soft` columns 8 apart at radius 4, inset 10, behind the grid), Layout OD-1: an untouchable diagram layer behind the live DashboardGrid inside the kit Card `sunken`.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "ColumnGuides", tag: "View", attribute: "style", keys: ["bottom", "flexDirection", "gap", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "The dashboard card's twelve column guides (the hand-off's `--ion-soft` columns 8 apart at radius 4, inset 10, behind the grid), Layout OD-1: an untouchable diagram layer behind the live DashboardGrid inside the kit Card `sunken`.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "ColumnGuides", tag: "View", attribute: "style", keys: ["backgroundColor", "borderRadius", "flexBasis", "flexGrow", "flexShrink"], occurrences: 1,
+    reason: "The dashboard card's twelve column guides (the hand-off's `--ion-soft` columns 8 apart at radius 4, inset 10, behind the grid), Layout OD-1: an untouchable diagram layer behind the live DashboardGrid inside the kit Card `sunken`.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "GapTile", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderRadius", "borderWidth", "height", "width"], occurrences: 1,
+    reason: "A gap-scale row's 34 by 22 tile (the hand-off's radius 6 `--sf3` box in `--ln2`), Layout OD-1: a blank sample the live kit Row spaces apart, hidden from assistive tech; no control.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "GapRow", tag: "View", attribute: "style", keys: ["width"], occurrences: 1,
+    reason: "A gap-scale row's 60 px name column and its hatched strip (the hand-off's radius 7 `--ion-soft` hatch round the live kit Row), Layout OD-1: diagram scenery; the gap itself is the kit Row's.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "GapRow", tag: "View", attribute: "style", keys: ["borderRadius", "overflow"], occurrences: 1,
+    reason: "A gap-scale row's 60 px name column and its hatched strip (the hand-off's radius 7 `--ion-soft` hatch round the live kit Row), Layout OD-1: diagram scenery; the gap itself is the kit Row's.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "StepBar", tag: "View", attribute: "style", keys: ["flexBasis", "flexGrow", "flexShrink", "minWidth"], occurrences: 1,
+    reason: "A Container step's bar (the hand-off's 20 px bar at the step's share of the page width, min 40, radius 6, the accent wash in its ring; the page step solid with the accent's glow) and its 44 px name column, Layout OD-1: a to-scale diagram of the width scale, hidden from assistive tech; its values are kit Typography and Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "StepBar", tag: "View", attribute: "style", keys: ["alignItems", "backgroundColor", "borderColor", "borderRadius", "borderWidth", "boxShadow", "height", "justifyContent", "minWidth", "paddingHorizontal", "width"], occurrences: 2,
+    reason: "A Container step's bar (the hand-off's 20 px bar at the step's share of the page width, min 40, radius 6, the accent wash in its ring; the page step solid with the accent's glow) and its 44 px name column, Layout OD-1: a to-scale diagram of the width scale, hidden from assistive tech; its values are kit Typography and Badge.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "PlaceholderTile", tag: "View", attribute: "style", keys: ["alignItems", "backgroundColor", "borderColor", "borderRadius", "borderStyle", "borderWidth", "height", "justifyContent", "opacity"], occurrences: 1,
+    reason: "The Grid block's placeholder tile (the hand-off's 58 px `--sf3` tile, radius 12, `--ln2`, the reflowing one dashed at .6), Layout OD-1: a blank tile the live kit Grid places, hidden from assistive tech; no control.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "Bar", tag: "View", attribute: "style", keys: ["backgroundColor", "borderRadius", "height", "width"], occurrences: 1,
+    reason: "A placeholder heading bar in the app-frame drawing (the hand-off's `--sf4` bar at its share of the column), Layout OD-1: diagram scenery, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "Block", tag: "View", attribute: "style", keys: ["<unresolved style>", "backgroundColor", "borderColor", "borderRadius", "borderWidth", "flexBasis", "flexGrow", "flexShrink", "height", "minWidth"], occurrences: 1,
+    expression: "{{\n        height,\n        borderRadius: radius,\n        backgroundColor: tokens.card,\n        borderWidth: 1,\n        borderColor: tokens.border,\n        ...(lifted ? shadow(\"sm\", tokens) : null),\n        ...(grow ? { flexGrow: 1, flexShrink: 1, flexBasis: \"0%\", minWidth: 0 } : null),\n      }}",
+    reason: "A placeholder card in the app-frame drawing (the hand-off's `--sf` block in `--ln`, radius 14 or 12, the window's lifted with `--sh-sm`), Layout OD-1: an untouchable diagram of page content; no surface a user reads or acts on.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowFrame", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderRadius", "borderWidth", "flexBasis", "flexGrow", "flexShrink", "height", "minWidth", "overflow"], occurrences: 1,
+    reason: "The app-frame card's desktop window (the hand-off's 320 px `--bg2` window, radius 16, `--ln2`, its hatched 28 px gutters and its capped column dashed in the accent's ring, Container md), Layout OD-1: a diagram of the frame round the live kit Navbar, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowFrame", tag: "View", attribute: "style", keys: ["flexGrow", "overflow", "paddingVertical"], occurrences: 1,
+    reason: "The app-frame card's desktop window (the hand-off's 320 px `--bg2` window, radius 16, `--ln2`, its hatched 28 px gutters and its capped column dashed in the accent's ring, Container md), Layout OD-1: a diagram of the frame round the live kit Navbar, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowFrame", tag: "View", attribute: "style", keys: ["bottom", "left", "position", "top", "width"], occurrences: 1,
+    reason: "The app-frame card's desktop window (the hand-off's 320 px `--bg2` window, radius 16, `--ln2`, its hatched 28 px gutters and its capped column dashed in the accent's ring, Container md), Layout OD-1: a diagram of the frame round the live kit Navbar, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowFrame", tag: "View", attribute: "style", keys: ["bottom", "position", "right", "top", "width"], occurrences: 1,
+    reason: "The app-frame card's desktop window (the hand-off's 320 px `--bg2` window, radius 16, `--ln2`, its hatched 28 px gutters and its capped column dashed in the accent's ring, Container md), Layout OD-1: a diagram of the frame round the live kit Navbar, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowFrame", tag: "View", attribute: "style", keys: ["borderColor", "borderLeftWidth", "borderRightWidth", "borderStyle", "gap", "paddingHorizontal"], occurrences: 1,
+    reason: "The app-frame card's desktop window (the hand-off's 320 px `--bg2` window, radius 16, `--ln2`, its hatched 28 px gutters and its capped column dashed in the accent's ring, Container md), Layout OD-1: a diagram of the frame round the live kit Navbar, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowFrame", tag: "View", attribute: "style", keys: ["flexDirection", "gap"], occurrences: 1,
+    reason: "The app-frame card's desktop window (the hand-off's 320 px `--bg2` window, radius 16, `--ln2`, its hatched 28 px gutters and its capped column dashed in the accent's ring, Container md), Layout OD-1: a diagram of the frame round the live kit Navbar, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "WindowFrame", tag: "View", attribute: "style", keys: ["alignItems"], occurrences: 1,
+    reason: "The app-frame card's desktop window (the hand-off's 320 px `--bg2` window, radius 16, `--ln2`, its hatched 28 px gutters and its capped column dashed in the accent's ring, Container md), Layout OD-1: a diagram of the frame round the live kit Navbar, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "SafeBand", tag: "View", attribute: "style", keys: ["alignItems", "height", "justifyContent"], occurrences: 1,
+    reason: "The phone's safe-area band (the hand-off's hatched `--warn-soft` inset), Layout OD-1: diagram scenery, hidden from assistive tech.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "PhoneFrame", tag: "View", attribute: "style", keys: ["<unresolved style>", "backgroundColor", "borderColor", "borderRadius", "borderWidth", "height", "overflow", "width"], occurrences: 1,
+    expression: "{{ width: 200, height: 400, borderRadius: 36, borderWidth: 1, borderColor: tokens[\"field-border\"] ?? tokens.input, backgroundColor: tokens[\"surface-sunken\"] ?? tokens.muted, overflow: \"hidden\", ...shadow(\"md\", tokens) }}",
+    reason: "The app-frame card's phone (the hand-off's 200 by 400 frame, radius 36, `--sh-md`, its 44 px bar, hatched 16 px gutters and home indicator), Layout OD-1: a diagram of the safe areas and gutters, hidden from assistive tech; its text is kit Typography and Icon.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "PhoneFrame", tag: "View", attribute: "style", keys: ["alignItems", "backgroundColor", "borderBottomWidth", "borderColor", "flexDirection", "gap", "height", "paddingHorizontal"], occurrences: 1,
+    reason: "The app-frame card's phone (the hand-off's 200 by 400 frame, radius 36, `--sh-md`, its 44 px bar, hatched 16 px gutters and home indicator), Layout OD-1: a diagram of the safe areas and gutters, hidden from assistive tech; its text is kit Typography and Icon.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "PhoneFrame", tag: "View", attribute: "style", keys: ["flexGrow", "gap", "paddingHorizontal", "paddingVertical"], occurrences: 2,
+    reason: "The app-frame card's phone (the hand-off's 200 by 400 frame, radius 36, `--sh-md`, its 44 px bar, hatched 16 px gutters and home indicator), Layout OD-1: a diagram of the safe areas and gutters, hidden from assistive tech; its text is kit Typography and Icon.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "PhoneFrame", tag: "View", attribute: "style", keys: ["bottom", "left", "position", "top", "width"], occurrences: 1,
+    reason: "The app-frame card's phone (the hand-off's 200 by 400 frame, radius 36, `--sh-md`, its 44 px bar, hatched 16 px gutters and home indicator), Layout OD-1: a diagram of the safe areas and gutters, hidden from assistive tech; its text is kit Typography and Icon.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "PhoneFrame", tag: "View", attribute: "style", keys: ["bottom", "position", "right", "top", "width"], occurrences: 1,
+    reason: "The app-frame card's phone (the hand-off's 200 by 400 frame, radius 36, `--sh-md`, its 44 px bar, hatched 16 px gutters and home indicator), Layout OD-1: a diagram of the safe areas and gutters, hidden from assistive tech; its text is kit Typography and Icon.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "PhoneFrame", tag: "View", attribute: "style", keys: ["backgroundColor", "borderRadius", "height", "width"], occurrences: 1,
+    reason: "The app-frame card's phone (the hand-off's 200 by 400 frame, radius 36, `--sh-md`, its 44 px bar, hatched 16 px gutters and home indicator), Layout OD-1: a diagram of the safe areas and gutters, hidden from assistive tech; its text is kit Typography and Icon.",
+  },
+  {
+    file: "docs/src/ui/showcase/layout-diagrams.tsx", owner: "LegendSwatch", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderRadius", "borderWidth", "height", "overflow", "width"], occurrences: 1,
+    reason: "The app-frame legend's 14 px swatch (the hand-off's radius 4 banner wash or hatch), Layout OD-1: a key to the diagram's fills, hidden from assistive tech.",
+  },
 ];
