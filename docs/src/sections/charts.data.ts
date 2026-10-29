@@ -50,7 +50,7 @@ export const REVENUE_COMPOSED = {
   labels: months(8),
   series: [
     { label: "Revenue", values: [60, 72, 58, 84, 90, 76, 98, 110] },
-    { label: "Target", values: above(140, [70, 66, 62, 58, 54, 50, 46, 42]), line: true },
+    { label: "Target", values: above(140, [70, 66, 62, 58, 54, 50, 46, 42]), line: true, dashed: true },
     { label: "Last year", values: above(140, [100, 90, 96, 84, 80, 82, 76, 70]), area: true },
   ],
 };
@@ -146,8 +146,8 @@ export const INSTALLS_BY_PLATFORM = [
 /** c-bullet-chart: three measures against their targets. */
 export const TARGETS = [
   { label: "Revenue", value: 72, target: 85, ranges: [50, 75, 100] },
-  { label: "Retention", value: 91, target: 88, ranges: [50, 75, 100] },
-  { label: "NPS", value: 48, target: 60, ranges: [30, 60, 100] },
+  { label: "Retention", value: 91, target: 88, ranges: [50, 75, 100], success: true },
+  { label: "NPS", value: 48, target: 60, ranges: [30, 60, 100], warning: true },
 ];
 
 /** c-radar-chart: v4 against the v1 skin on six axes (the hand-off's polygons, out of 10). */

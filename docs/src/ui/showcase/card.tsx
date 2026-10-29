@@ -9,7 +9,7 @@ import { showcaseCard } from "../../data/showcase";
 // `background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);
 // padding:24px;display:flex;flex-direction:column;gap:20px`): the kit Card at the showcase
 // corner (`showcaseCorners`, 20) with the `roomy` density (a 24 px inset, its parts 20 apart),
-// the 11 px mono header row (title left, meta right), a row of link chips to the components
+// the 11 px mono header row (title left, meta right, the `pageLabel` role in the third ink), a row of link chips to the components
 // the card shows (the kit's `Chip link`), the live composition, and the mono JSX caption
 // pinned to the card's foot (the hand-off's `margin-top:auto`, 400 12px/1.6 mono in --tx3:
 // the kit's `cardNote` role). The header and the chips
@@ -91,6 +91,11 @@ export interface ShowcaseCardProps {
   /** The mono line at the card's foot, usually the JSX the card demonstrates. */
   caption?: ReactNode;
   /**
+   * The caption in the 11 px `tiny` role instead of the 12 px card note: the Charts page's
+   * `font:400 11px/1.5 var(--fm)` foot (15.95 against its 16.5 line, decision 3's residual).
+   */
+  tinyCaption?: boolean;
+  /**
    * The hand-off's split card (`c-chart`): no header row, and the chips take the first cell
    * of a grid whose other cells are the children (each carrying its own header), 320 px
    * tiles 32 apart.
@@ -147,7 +152,7 @@ function Stage({ id, spec, chips, caption, children }: { id: string; spec: Stage
   );
 }
 
-export function ShowcaseCard({ id, title, meta, links, caption, split, stage, children }: ShowcaseCardProps) {
+export function ShowcaseCard({ id, title, meta, links, caption, tinyCaption, split, stage, children }: ShowcaseCardProps) {
   const spec = showcaseCard(id);
   const head = { title: title ?? spec?.title, meta: meta ?? spec?.meta };
   const chips = links ?? spec?.links ?? [];
@@ -174,8 +179,8 @@ export function ShowcaseCard({ id, title, meta, links, caption, split, stage, ch
             // Both lines shrink and wrap when the row runs out of room, as the hand-off's
             // flex items do; a React Native box would otherwise keep its text's width.
             <Row between cozy alignStart>
-              <Column shrink><Typography eyebrow subtle>{head.title ?? ""}</Typography></Column>
-              {head.meta != null ? <Column shrink><Typography eyebrow subtle right>{head.meta}</Typography></Column> : null}
+              <Column shrink><Typography pageLabel mono muted>{head.title ?? ""}</Typography></Column>
+              {head.meta != null ? <Column shrink><Typography pageLabel mono muted right>{head.meta}</Typography></Column> : null}
             </Row>
           ) : null}
           {chips.length > 0 ? (
@@ -186,7 +191,7 @@ export function ShowcaseCard({ id, title, meta, links, caption, split, stage, ch
         </Column>
       ) : null}
       <Column grow spacious>{children}</Column>
-      {caption != null ? <Typography cardNote mono>{caption}</Typography> : null}
+      {caption == null ? null : tinyCaption ? <Typography tiny mono muted>{caption}</Typography> : <Typography cardNote mono>{caption}</Typography>}
     </Card>
   );
 }
