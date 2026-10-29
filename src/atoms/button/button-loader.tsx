@@ -9,11 +9,11 @@ import { LoopView, createLoopChannel, shape, type LoopChannel, type LoopTrack } 
 // so each loader passes those props through to the node it draws.
 
 /** What the shell hands a loader: the label's ink, and the props that hide it from assistive tech. */
-export interface ButtonLoaderProps extends Pick<ViewProps, "aria-hidden" | "accessibilityElementsHidden" | "importantForAccessibility"> {
+export interface ButtonLoaderArgs extends Pick<ViewProps, "aria-hidden" | "accessibilityElementsHidden" | "importantForAccessibility"> {
   color: string;
 }
 
-export type ButtonLoader = ComponentType<ButtonLoaderProps>;
+export type ButtonLoader = ComponentType<ButtonLoaderArgs>;
 
 // The hand-off's loading arc (`K.btn`, tools/v4/handoff/cv-kit.js line 44):
 //   `width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;
@@ -39,7 +39,7 @@ function arcTrack(): { channel: LoopChannel; turn: LoopTrack } {
 }
 
 /** The web's loader: the hand-off's open arc in the label's ink. */
-export function LoadingArc({ color, ...hidden }: ButtonLoaderProps) {
+export function LoadingArc({ color, ...hidden }: ButtonLoaderArgs) {
   const { channel, turn } = arcTrack();
   useEffect(() => {
     if (turning++ === 0) channel.play();
@@ -66,6 +66,6 @@ export function LoadingArc({ color, ...hidden }: ButtonLoaderProps) {
 }
 
 /** The iOS and Android loader: the platform's own activity indicator, in the label's ink, at its default `small` size. */
-export function PlatformLoader(props: ButtonLoaderProps) {
+export function PlatformLoader(props: ButtonLoaderArgs) {
   return <ActivityIndicator {...props} />;
 }

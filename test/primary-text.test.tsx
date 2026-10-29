@@ -127,12 +127,11 @@ describe("primary-text compatibility", () => {
 
   it("keeps a loading link indicator in the same foreground as its label", () => {
     render(<ThemeProvider dark tokens={{ primary: "#123456", "primary-text": "#abcdef" }}><Button link loading>Loading action</Button></ThemeProvider>);
-    // The spinner is decorative (the busy button announces the wait), so it is found
-    // among the nodes hidden from assistive tech.
-    const progress = screen.getByRole("progressbar", { hidden: true });
-    const indicator = progress.querySelector("circle:last-child");
-    expect(indicator).not.toBeNull();
-    expect(cssColor((indicator as SVGElement).style.stroke)).toBe(cssColor("#abcdef"));
+    // The web Button draws its own arc (button-loader.tsx), decorative and hidden from
+    // assistive tech (the busy button announces the wait), stroked in the label's ink.
+    const arc = screen.getByRole("button", { name: "Loading action" }).querySelector('[aria-hidden="true"]') as HTMLElement | null;
+    expect(arc).not.toBeNull();
+    expect(cssColor(arc!.style.borderTopColor)).toBe(cssColor("#abcdef"));
     expect(cssColor(screen.getByText("Loading action").style.color)).toBe(cssColor("#abcdef"));
   });
 
