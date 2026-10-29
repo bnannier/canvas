@@ -241,7 +241,7 @@ recorded deviation above. What follows from it:
   `reference`, `alignTop` and `footer`, Collapsible `reference`, Typography `specMeta` and `specText`; Card `calloutCorners`, `largeCorners`,
   `stageCorners`, `outlined`, `panel`, `guide`, `linkTile`, `pager`, and CardMedia `stage`
   and `playground`; Button `plainLink`, its own 14 px loading arc on the web and the
-  theme-choice disc; Badge `marker`; AnatomyProvider `zoomed` (the 1.6 scale transform with
+  theme-choice disc, and its icon slots take its label ink through the kit's ink context (`src/style/ink.tsx`, read by Icon when no tone is set); Badge `marker`, `disc`, `tier` and `band`; DescriptionList `ruled` and `compact`; ButtonGroup `compact`; CodeBlock `playground`; AnatomyProvider `zoomed` (the 1.6 scale transform with
   the part rectangles mapped) and DetailSpec `fill`; DescriptionList `ruled`. The docs page
   composes them and never styles at a call site. Content the page reads from the current
   docs (paragraphs, examples, prop rows, semantics, tokens) is settled as content in
