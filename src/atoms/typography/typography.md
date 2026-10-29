@@ -277,6 +277,7 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ```tsx
 <Typography specText>An icon element rendered before the label. It takes the label's ink and size.</Typography>
+```
 
 ### Pager label
 

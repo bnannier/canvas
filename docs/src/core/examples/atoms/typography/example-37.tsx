@@ -3,17 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography, Row, Column } = scope;
+  const { Typography } = scope;
   return (
-<Column tight>
-  <Row alignCenter between relaxed>
-    <Typography small>Requests</Typography>
-    <Typography tabular>1,204,118</Typography>
-  </Row>
-  <Row alignCenter between relaxed>
-    <Typography small>Errors</Typography>
-    <Typography tabular>11,407</Typography>
-  </Row>
-</Column>
+<Typography primary>View invoices</Typography>
   );
 }
