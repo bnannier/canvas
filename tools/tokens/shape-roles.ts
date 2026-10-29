@@ -344,7 +344,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "atoms/button": ["control", "pill"],
   "atoms/button-group": ["control", "menu", "pill"],
   "atoms/checkbox": ["checkbox"],
-  "atoms/chip": ["pill", "chip"],
+  "atoms/chip": ["pill", "chip", "optionChip", "optionTile"],
   "atoms/dropdown": ["menu"],
   "atoms/emblem": ["emblemSmall", "emblem", "emblemLarge"],
   "atoms/input": ["field", "pill", "searchField"],

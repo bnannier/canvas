@@ -57,20 +57,20 @@ const removeHitSlop = MIN_TARGET == null
 // the 44pt minimum around the 28pt pill (the web drops hitSlop).
 const BODY_HIT_SLOP = 8;
 
-// The `option` chip (the hand-off playground's knob picks, Component.dc.html): 26 tall at a
-// 7 corner, 9 at the sides, a 500 12px label, no check and no hover; an icon-only pick is a
-// 30 px square at an 8 corner (line 163: `width:30px;height:30px;border-radius:8px;
+// The `option` chip (the hand-off playground's knob picks, Component.dc.html): 26 tall at the
+// web row's `optionChip` corner, 9 at the sides, a 500 12px label, no check and no hover; an icon-only pick is a
+// 30 px square at the web row's `optionTile` corner (line 163: `width:30px;height:30px;border-radius:8px;
 // display:grid;place-items:center`). The tile's own label is the hand-off's "none" pick,
 // the empty glyph of its ICONS list (line 319) drawn by the same tile (line 163:
 // `font:500 10px var(--fm)` on the button, which its `<span>none</span>` inherits): a
 // 500 10 px mono line, centred in the square.
 const option: NonNullable<ChipSkin["option"]> = {
-  base: { ...shell, height: 26, gap: 6, borderRadius: 7 },
+  base: { ...shell, height: 26, gap: 6, borderRadius: platformShape.web.optionChip },
   sidePadding: { text: 9, icon: 9, remove: 6 },
   labelType: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
   selectedCheck: null,
   hoverBrightness: undefined,
-  iconOnly: { width: 30, height: 30, borderRadius: 8, justifyContent: "center", paddingStart: 0, paddingEnd: 0 },
+  iconOnly: { width: 30, height: 30, borderRadius: platformShape.web.optionTile, justifyContent: "center", paddingStart: 0, paddingEnd: 0 },
   tileLabelType: { fontFamily: MONO_FONT, fontSize: 10, lineHeight: 12, fontWeight: "500" },
 };
 

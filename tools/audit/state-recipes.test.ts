@@ -454,7 +454,7 @@ describe("the states each component's source gives it", () => {
     ]);
     // An own-surface recipe a disabled example asks for (Button's `disabled`, one of the two ways `disabled || loading` is true).
     expect(check("button", without("button"))).toEqual([
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:285), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:291), with no disabled recipe there",
     ]);
   });
 
@@ -463,7 +463,7 @@ describe("the states each component's source gives it", () => {
     const item = recipeFor("dropdown", "disabled-disableditem");
     expect(check("button", { ...(STATE_RECIPES.button as object), disabled: { ...item, variant: "disabled" } } as ComponentStates)).toEqual([
       "button: its disabled recipe on the disabled example is applied inside an overlay, and its source renders none",
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:285), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:291), with no disabled recipe there",
     ]);
     const dropdown = STATE_RECIPES.dropdown as Record<string, unknown>;
     expect(check("dropdown", { ...dropdown, disabled: [recipeFor("dropdown", "disabled-disabledtrigger"), { ...item, opens: "Popover" }] } as ComponentStates)[0]).toBe(
@@ -1179,9 +1179,9 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // DataTable's cell editor: the web build's under its glass pane (`skin.liquidTextEntry`), the
     // others' bare; its scroller only where the skin does not collapse to the primary column.
     expect(builds("data-table", "focus").filter((line) => !line.endsWith("every build"))).toEqual([
-      "data-table.shared.tsx:516 TextInput: ios and android",
-      "data-table.shared.tsx:520 TextInput: web",
-      "data-table.shared.tsx:948 ScrollView: web and android",
+      "data-table.shared.tsx:1021 ScrollView: web and android",
+      "data-table.shared.tsx:563 TextInput: ios and android",
+      "data-table.shared.tsx:567 TextInput: web",
     ]);
     // The rows each page shows, and the build each renders: Toast's iOS row is the web build,
     // the docs registry injecting no iOS Toast; Sidebar's page shows one preview, the web build.
@@ -1214,7 +1214,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     ]);
     // DataTable's native cell editor is on the iOS and Android rows alone.
     expect(check("data-table", { ...table["data-table"], focus: onWeb("data-table", "focus") })).toEqual([
-      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:516 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
+      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:563 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // As the table has them, each on the rows its own controls are on: nothing is left, and the
     // answers say which rows they are.

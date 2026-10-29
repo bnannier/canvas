@@ -63,6 +63,7 @@
   "CandlestickChartProps": "type",
   "Card": "value",
   "CardContent": "value",
+  "CardContentProps": "type",
   "CardDescription": "value",
   "CardFooter": "value",
   "CardHeader": "value",
