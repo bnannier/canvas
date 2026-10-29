@@ -73,6 +73,19 @@ without a slide or fade. Existing drawers retain their animated default.
 </Drawer>
 ```
 
+### Open in place
+
+`embedded` draws the drawer open inside its parent (the panel at its edge over the parent's
+own dim) for a specimen or a preview: it is a labelled region, not a modal, so it traps no
+focus, takes no Escape or hardware back, and its dim passes touches through. It needs no
+trigger and fills the parent it is given.
+
+```tsx
+<Drawer embedded open right accessibilityLabel="Invite people" header={<Typography h5>Invite people</Typography>}>
+  <Input label="Email" placeholder="name@company.com" />
+</Drawer>
+```
+
 ### Bottom sheet
 
 ```tsx

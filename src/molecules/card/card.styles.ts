@@ -36,7 +36,7 @@ import { type HoverMotion } from "../../style/hover.js";
 //   level 3 (6dp). Plus the 12dp medium shape and M3's density steps.
 
 export type Elevation = "raised" | "flat" | "sunken" | "outlined" | "hero" | "tile" | "row" | "empty" | "default";
-export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "roomy" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "panel" | "guide" | "linkTile" | "pager" | "default";
+export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "roomy" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "panel" | "guide" | "linkTile" | "pager" | "well" | "default";
 /**
  * The corner steps a card can take (the Corners axis): the card corner by default, the
  * tile corner (`smallCorners`), the three the v4 hand-off's component page draws
@@ -114,12 +114,15 @@ const REFERENCE_DENSITY = {
 // anatomy legend), the guidance card (`padding:18px 20px;...;gap:10px`, lines 269 and 285:
 // the usage guidance and "From the docs" cards), the link tile (`padding:14px 16px;...;
 // gap:6px`, line 297: the related-component tiles) and the pager card (`padding:16px
-// 18px;...;gap:4px`, line 303: the previous and next cards).
+// 18px;...;gap:4px`, line 303: the previous and next cards); and the section pages' well
+// (`padding:16px;...;gap:12px`, Overlays.dc.html: the skeleton card and the wizard's
+// preview).
 const HANDOFF_DENSITY = {
   panel: { padding: 18, gap: 12 },
   guide: { paddingVertical: 18, paddingHorizontal: 20, gap: 10 },
   linkTile: { paddingVertical: 14, paddingHorizontal: 16, gap: 6 },
   pager: { paddingVertical: 16, paddingHorizontal: 18, gap: 4 },
+  well: { padding: 16, gap: 12 },
 };
 const WEB_DENSITY: Record<Density, ViewStyle> = {
   ...REFERENCE_DENSITY,

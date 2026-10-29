@@ -76,6 +76,18 @@ with `trigger`, which always opens a live modal.
 ```
 
 
+### Banded with an icon
+
+`banded` draws a form dialog in three bands: the header (the `icon`, the title row with
+the close and any `workspaceHeader`) over a rule, the body, and the footer under a rule.
+`icon` draws its glyph in the accent's soft tile above the title.
+
+```tsx
+<Dialog form banded icon={<Icon arrowUpRight decorative />} trigger="Publish" title="Publish release" description="Ship the changes to everyone in the workspace." footer={<Button primary>Publish</Button>}>
+  <Input label="Release name" defaultValue="Canvas 4.0" />
+</Dialog>
+```
+
 ### Dismissible
 
 ```tsx

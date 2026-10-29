@@ -197,6 +197,8 @@ export interface CardProps {
   guide?: boolean;
   /** A link tile: 14 by 16 with a 6 px rhythm (the hand-off's related-component tiles). */
   linkTile?: boolean;
+  /** A well: a 16 px inset with a 12 px rhythm (the section pages' skeleton card and wizard preview). */
+  well?: boolean;
   /** A pager card: 16 by 18 with a 4 px rhythm (the hand-off's previous and next cards). */
   pager?: boolean;
   /** Keep the reference inset without the compact density's flat-child gap. */
@@ -275,6 +277,7 @@ export function densityOf(p: CardProps): Density {
   if (p.guide) return "guide";
   if (p.linkTile) return "linkTile";
   if (p.pager) return "pager";
+  if (p.well) return "well";
   if (p.compact) return "compact";
   if (p.comfortable) return "comfortable";
   return "default";

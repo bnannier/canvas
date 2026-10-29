@@ -13,7 +13,7 @@ import { platformShape } from "../../style/platform-shape.js";
 // v4 hand-off's palette (its `command` renderer, tools/v4/handoff/cv-kit-overlays.js):
 // a 520 panel at the command panel corner in the overlay material (the `popover` fill, the
 // `field-border` hairline, the lg shadow), a 48 search row (15px type, a 17px subtle
-// glyph, an `esc` cap) over a hairline, 6-inset groups under 11px mono eyebrows, 38px
+// glyph, the compact flat `esc` hint cap) over a hairline, 6-inset groups under 11px mono eyebrows, 38px
 // rows (14px labels, 15px subtle icons, 11px mono shortcuts) whose active row takes the
 // accent's soft wash and an accent-ink icon, and a 36 footer of mono hints.
 //
@@ -95,9 +95,11 @@ export function card(tokens: ColorTokens): ViewStyle {
 }
 
 // Embedded palettes inherit the containing overlay's surface and width. The
-// scrollport caps long result sets and may shrink further with its parent.
+// scrollport caps long result sets at the hand-off's 340 (Overlays.dc.html, the palette's
+// list) and may shrink further with its parent; the footer sits below it in the column,
+// so a row never runs under the footer.
 export const embedded: ViewStyle = { width: "100%", minWidth: 0, minHeight: 0, flexShrink: 1 };
-export const results: ViewStyle = { maxHeight: 320, minHeight: 0 };
+export const results: ViewStyle = { maxHeight: 340, minHeight: 0, flexShrink: 1 };
 // The groups' inset inside the scrollport (the hand-off's 6).
 export const resultsContent: ViewStyle = { padding: 6 };
 export const rowText: ViewStyle = { flex: 1, minWidth: 0 };

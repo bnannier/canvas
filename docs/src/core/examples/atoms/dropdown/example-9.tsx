@@ -3,16 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Dropdown } = scope;
+  const { Avatar, Dropdown } = scope;
   return (
 <Dropdown
-  trigger="Account"
-  alignEnd
   items={[
     { label: "Profile" },
     { label: "Settings" },
     { label: "Log out" }
   ]}
-/>
+>
+  <Avatar name="Rachel Chen" />
+</Dropdown>
   );
 }

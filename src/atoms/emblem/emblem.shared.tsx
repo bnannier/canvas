@@ -35,6 +35,13 @@ export interface EmblemProps {
   large?: boolean;
   /** Circle instead of the default rounded square. */
   circle?: boolean;
+  /**
+   * The plain soft tile: the tone's own soft wash (`primary-soft`, `destructive-soft`, ...)
+   * with no ring and no lit top edge, at the soft tile's own corner. The tone tile a dialog
+   * draws over its title (the v4 hand-off's AlertDialog renderer, `--ion-soft` /
+   * `--bad-soft`). Composes with the tone and size axes.
+   */
+  soft?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For layout composition only (not styling): the tint, radius, and size come from props. */
@@ -89,12 +96,14 @@ function labelColor(tokens: ColorTokens, tone: Tone): string {
 /** Build an Emblem from a platform skin. */
 export function createEmblem(skin: EmblemSkin) {
   return function Emblem(props: EmblemProps) {
-    const { children, label, circle, testID, style } = props;
+    const { children, label, circle, soft, testID, style } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const base = toneBase(tokens, toneOf(props));
-    const wash = alpha(base, skin.washAlpha);
     const tone = toneOf(props);
+    // The soft tile takes the tone's own soft wash token; the default tile mixes its wash
+    // and ring from the tone's base colour.
+    const wash = soft ? (tone === "muted" ? tokens.secondary : statusColors(tokens, STATUS_TONE[tone]).wash) : alpha(base, skin.washAlpha);
     const size = sizeOf(props);
     const box = skin.box[size];
     const glyph = skin.iconSize[size];
@@ -104,11 +113,10 @@ export function createEmblem(skin: EmblemSkin) {
       justifyContent: "center",
       width: box,
       height: box,
-      borderRadius: circle ? 9999 : skin.radius[size],
+      borderRadius: circle ? 9999 : soft ? skin.softRadius : skin.radius[size],
       backgroundColor: wash,
-      borderWidth: 1,
-      borderColor: alpha(base, skin.ringAlpha),
-      ...(tokens.highlight ? { boxShadow: `inset 0px 1px 0px ${tokens.highlight}` } : null),
+      ...(soft ? null : { borderWidth: 1, borderColor: alpha(base, skin.ringAlpha) }),
+      ...(!soft && tokens.highlight ? { boxShadow: `inset 0px 1px 0px ${tokens.highlight}` } : null),
       ...skin.shape,
     };
 
@@ -130,9 +138,9 @@ export function createEmblem(skin: EmblemSkin) {
         testID={testID}
         // The tone's ring is part of the tile, not a resting hairline, so under glass it
         // stays a border over the pane (the state-border form of paneStyle).
-        style={[paneStyle(theme, tileShape, true), style]}
+        style={[paneStyle(theme, tileShape, !soft), style]}
       >
-        <GlassPane static layer="control" shape={tileShape} tint={wash} stateBorder />
+        <GlassPane static layer="control" shape={tileShape} tint={wash} stateBorder={!soft} />
         {inner}
       </View>
     );

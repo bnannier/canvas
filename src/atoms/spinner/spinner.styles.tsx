@@ -34,7 +34,7 @@ function label(tokens: ColorTokens): TextStyle {
   return { color: tokens.foreground, fontSize: 14, lineHeight: 18, fontWeight: "500" };
 }
 function description(tokens: ColorTokens): TextStyle {
-  return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"], fontSize: 12, lineHeight: 18, fontWeight: "400" };
+  return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"], fontSize: 12, lineHeight: 17.4, fontWeight: "400" };
 }
 
 // react-native-svg's shapes aren't Animated components. Each natively spinning skin wraps

@@ -2377,13 +2377,24 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
 
   // Organisms
   "action-sheet": {
-    focus: focus("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
-    pressed: pressed("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
+    // The live sheet's rows inside the overlay a trigger opens, and the `embedded` sheet's
+    // rows on its own surface (the Open in place example, drawn open in the page).
+    focus: [
+      focus("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
+      focus("openinplace", byRole("button", "Copy Link")),
+    ],
+    pressed: [
+      pressed("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
+      pressed("openinplace", byRole("button", "Copy Link")),
+    ],
     open: open("default", overlay("action-sheet"), ALL_ROWS, viaRecipe("action-sheet")),
-    disabled: disabled("disabledaction", byRole("button", "Save As…"), {
-      within: openedFrom(overlay("action-sheet"), "File options"),
-      how: "the sheet opens from the Disabled action example's File options, then its Save As… action, which the example disables",
-    }),
+    disabled: [
+      disabled("disabledaction", byRole("button", "Save As…"), {
+        within: openedFrom(overlay("action-sheet"), "File options"),
+        how: "the sheet opens from the Disabled action example's File options, then its Save As… action, which the example disables",
+      }),
+      disabled("openinplace", byRole("button", "Print")),
+    ],
   },
   board: {
     focus: focus("cardmenusandpress", byRole("button", /^Rotate webhook/)),

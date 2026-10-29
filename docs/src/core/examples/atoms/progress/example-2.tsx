@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Progress } = scope;
   return (
-<Progress accessibilityLabel="Connecting" indeterminate />
+<Progress indeterminate status="indexing">Indexing components</Progress>
   );
 }

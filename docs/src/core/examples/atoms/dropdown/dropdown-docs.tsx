@@ -11,6 +11,7 @@ import e_atoms_dropdown_example_6 from "./example-6";
 import e_atoms_dropdown_example_7 from "./example-7";
 import e_atoms_dropdown_example_8 from "./example-8";
 import e_atoms_dropdown_example_9 from "./example-9";
+import e_atoms_dropdown_example_10 from "./example-10";
 import e_atoms_dropdown_dont_0_do from "./dont-0-do";
 import e_atoms_dropdown_dont_0_dont from "./dont-0-dont";
 import e_atoms_dropdown_dont_1_do from "./dont-1-do";
@@ -41,8 +42,9 @@ export const docs: ComponentDocs = {
     { label: "Section label", code: "<Dropdown\n  trigger=\"Actions\"\n  label=\"Actions\"\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_5 },
     { label: "Identity header", code: "<Dropdown\n  trigger=\"Account\"\n  title=\"Rachel Chen\"\n  description=\"rachel@nannier.com\"\n  items={[\n    { label: \"Profile\" },\n    { label: \"Settings\" },\n    { label: \"Log out\" }\n  ]}\n/>", render: e_atoms_dropdown_example_6 },
     { label: "Keyboard shortcuts", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\", shortcut: \"⌘E\" },\n    { label: \"Duplicate\", shortcut: \"⌘D\" },\n    { label: \"Settings\", shortcut: \"⌘,\" }\n  ]}\n/>", render: e_atoms_dropdown_example_7 },
-    { label: "Custom trigger", code: "<Dropdown\n  items={[\n    { label: \"Profile\" },\n    { label: \"Settings\" },\n    { label: \"Log out\" }\n  ]}\n>\n  <Avatar name=\"Rachel Chen\" />\n</Dropdown>", render: e_atoms_dropdown_example_8 },
-    { label: "End alignment", code: "<Dropdown\n  trigger=\"Account\"\n  alignEnd\n  items={[\n    { label: \"Profile\" },\n    { label: \"Settings\" },\n    { label: \"Log out\" }\n  ]}\n/>", render: e_atoms_dropdown_example_9 },
+    { label: "Choices and submenus", code: "<Dropdown\n  trigger=\"View\"\n  items={[\n    { label: \"Grid\", selected: true },\n    { label: \"List\" },\n    { label: \"Sort by\", submenu: true }\n  ]}\n/>", render: e_atoms_dropdown_example_8, note: ["A `selected` item is the menu's current choice: on the web it takes the accent's soft wash and a leading check, and the menu keeps the check's column on its other rows. A `submenu` item draws a trailing chevron, the hint that its `onSelect` opens another menu."] },
+    { label: "Custom trigger", code: "<Dropdown\n  items={[\n    { label: \"Profile\" },\n    { label: \"Settings\" },\n    { label: \"Log out\" }\n  ]}\n>\n  <Avatar name=\"Rachel Chen\" />\n</Dropdown>", render: e_atoms_dropdown_example_9 },
+    { label: "End alignment", code: "<Dropdown\n  trigger=\"Account\"\n  alignEnd\n  items={[\n    { label: \"Profile\" },\n    { label: \"Settings\" },\n    { label: \"Log out\" }\n  ]}\n/>", render: e_atoms_dropdown_example_10 },
   ],
   donts: [
     { title: "Trigger", do: { caption: "Click Actions to open; click outside to dismiss.", code: "<Dropdown trigger=\"Actions\" items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]} />", render: e_atoms_dropdown_dont_0_do }, dont: { caption: "Always open: it clutters the page and there's no way to dismiss it.", code: "<Column style={{ minHeight: 190 }}>\n  <Dropdown trigger=\"Actions\" open items={[\n      { label: \"Edit profile\" },\n      { label: \"Duplicate\" },\n      { label: \"Settings\" }\n    ]} />\n</Column>", render: e_atoms_dropdown_dont_0_dont } },
@@ -58,6 +60,6 @@ export const docs: ComponentDocs = {
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["button","group","menu","menuitem","radio"],"states":["checked","disabled","expanded"],"aria":["aria-checked","aria-disabled","aria-expanded","aria-haspopup","aria-label"],"touchTarget":[]},
-  tokens: ["action","border","foreground","muted-foreground","popover","popover-foreground","primary","secondary"],
+  tokens: ["accent","action","border","foreground","muted-foreground","popover","popover-foreground","primary","primary-soft","secondary"],
   related: ["avatar","dialog","alert-dialog","drawer","action-sheet","popover","tooltip","command"],
 };

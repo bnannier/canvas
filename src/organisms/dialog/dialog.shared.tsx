@@ -9,6 +9,7 @@ import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
 import { type Size, type DialogSkin } from "./dialog.styles.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { Emblem } from "../../atoms/emblem/emblem.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { scrimFill } from "../../style/scrim.js";
@@ -49,6 +50,17 @@ export interface DialogProps {
   workspaceHeader?: ReactNode;
   /** Custom actions after the form body; fixed below the body in workspace mode. */
   footer?: ReactNode;
+  /**
+   * Draw the form's panel as three bands split by hairline rules: the header (title,
+   * close and `workspaceHeader`) over its rule, the body, and the footer under its rule,
+   * the panel itself unpadded. The Wizard's panel.
+   */
+  banded?: boolean;
+  /**
+   * A leading glyph for the panel, drawn as the accent's soft tone tile (`Emblem primary
+   * soft`) above the title. Pass an `<Icon />`; the tile tints and sizes it.
+   */
+  icon?: ReactNode;
   /** Maximum form panel width in pixels; defaults to 560. */
   panelWidth?: number;
   children?: ReactNode;
@@ -206,6 +218,14 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     // An embedded dialog is a specimen, not a live modal; a trigger always opens a live one.
     const modal = !(props.embedded === true && trigger == null);
 
+    const banded = form && props.banded === true;
+    const ruleColor = { borderColor: tokens.border };
+    const iconTile = props.icon != null ? (
+      <View style={{ marginBottom: skin.iconGap, alignItems: "flex-start" }}>
+        <Emblem primary soft>{props.icon}</Emblem>
+      </View>
+    ) : null;
+
     const confirm = () => {
       onConfirm?.();
       setOpen(false);
@@ -316,6 +336,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
       skin.backdrop(tokens),
       trigger != null && !overlay ? s.backdropTriggerGap : null,
       overlay ? s.backdropOverlay : s.backdropLayout,
+      !modal && !overlay ? s.embeddedFill : null,
       form ? { backgroundColor: "transparent", paddingTop: 20 + (insets?.top ?? 0), paddingBottom: 20 + (insets?.bottom ?? 0), paddingLeft: 20 + (insets?.left ?? 0), paddingRight: 20 + (insets?.right ?? 0) } : null,
     ];
     // Under glass on the web the dim moves onto the scrim's blur layer (useHeldScrim).
@@ -355,7 +376,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
             ) : null}
             <View style={[s.cardSizing, workspace && hydrated ? s.workspaceSizing(workspaceHeight, compactWorkspace) : null, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
-            <GlassSurface floating style={[s.cardLayout, workspace ? compactWorkspace ? s.compactWorkspaceContent : s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null]}>
+            <GlassSurface floating style={[s.cardLayout, workspace ? compactWorkspace ? s.compactWorkspaceContent : s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null, banded ? s.bandedCard : null]}>
               {/* The panel content region wraps the content in a
                   KeyboardAvoidingView so the iOS keyboard never
                   covers a form field (padding behavior on iOS; a plain passthrough
@@ -364,23 +385,31 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={workspace ? workspaceContent : s.contentSizing}>
                   {form ? (
                     <>
-                      <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+                      <View style={banded ? [s.bandedHeader, ruleColor] : null}>
+                      {iconTile}
+                      <View style={{ flexDirection: "row", gap: 12, alignItems: banded ? "center" : "flex-start" }}>
                         <View style={{ flex: 1, gap: 4 }}>
                           {title != null ? <Text nativeID={titleId} role="heading" style={skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
                           {description ? <Text nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
                         </View>
-                        <Button icon mediumIcon circle ghost inset steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x muted heavyStroke size={15} />} />
+                        {skin.close != null ? (
+                          <Button icon compactIcon ghost steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x color={skin.close.color(tokens)} size={skin.close.iconSize} decorative />} />
+                        ) : (
+                          <Button icon mediumIcon circle ghost inset steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x muted heavyStroke size={15} />} />
+                        )}
+                      </View>
+                      {banded && props.workspaceHeader != null ? props.workspaceHeader : null}
                       </View>
                       {workspace ? (
                         <>
-                          {props.workspaceHeader != null ? <View style={s.workspaceHeader}>{props.workspaceHeader}</View> : null}
-                          <View style={[s.workspaceBody, compactWorkspace ? s.compactWorkspaceContent : null]}>{children}</View>
-                          {props.footer ? <View style={s.workspaceFooter}>{props.footer}</View> : null}
+                          {!banded && props.workspaceHeader != null ? <View style={s.workspaceHeader}>{props.workspaceHeader}</View> : null}
+                          <View style={[banded ? s.bandedBody : s.workspaceBody, compactWorkspace ? s.compactWorkspaceContent : null]}>{children}</View>
+                          {props.footer ? <View style={banded ? [s.bandedFooter, ruleColor] : s.workspaceFooter}>{props.footer}</View> : null}
                         </>
                       ) : (
-                        <OverlayScrollView style={{ marginTop: 18 }} contentContainerStyle={{ gap: 18, paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
-                          {children}
-                          {props.footer}
+                        <OverlayScrollView style={banded ? null : { marginTop: 18 }} contentContainerStyle={banded ? null : { gap: 18, paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
+                          {banded ? <View style={s.bandedBody}>{children}</View> : children}
+                          {banded ? (props.footer ? <View style={[s.bandedFooter, ruleColor]}>{props.footer}</View> : null) : props.footer}
                         </OverlayScrollView>
                       )}
                     </>
@@ -388,6 +417,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                     children
                   ) : (
                     <>
+                      {iconTile}
                       {title != null ? (
                         <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
                           {title}
@@ -426,7 +456,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     // backdrop: a centered scrim with presence in the preview (explicit
     // minHeight) so the panel reads as a modal within the area.
     return (
-      <View testID={testID} style={s.root}>
+      <View testID={testID} style={[s.root, !modal ? s.embeddedFill : null]}>
         {trigger != null ? (
           <View style={s.triggerWrap}>
             <Button outline small onPress={() => setOpen(true)}>

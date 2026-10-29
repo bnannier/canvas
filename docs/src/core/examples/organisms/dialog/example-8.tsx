@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Dialog } = scope;
   return (
-<Dialog trigger="Delete workspace" title="Delete workspace" destructive confirmLabel="Delete" />
+<Dialog trigger="Open dialog" title="Refund payment" wide />
   );
 }

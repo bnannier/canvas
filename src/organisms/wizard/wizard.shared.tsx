@@ -1,9 +1,7 @@
 import { type ReactNode } from "react";
-import { ScrollView, View, breakpoints, useContainerWidth } from "../../style/index.js";
+import { ScrollView, View, useContainerWidth, widths } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
-import { Icon } from "../../atoms/icon/icon.js";
-import { Row, Column } from "../../atoms/layout/layout.js";
-import { Divider } from "../../atoms/divider/divider.js";
+import { Row } from "../../atoms/layout/layout.js";
 import { Typography } from "../../atoms/typography/typography.js";
 import { Dialog as WebDialog } from "../dialog/dialog.js";
 import { Steps as WebSteps, type Step } from "../steps/steps.js";
@@ -22,13 +20,14 @@ export interface WizardProps {
   current: number;
   /** Called when the close action, Escape or native back requests dismissal. */
   onOpenChange: (open: boolean) => void;
-  /** Maximum panel width; defaults to 960 and shrinks to the available viewport. */
+  /** Maximum panel width; defaults to the width scale's xxl step (672, the step nearest
+   *  the hand-off's 700) and shrinks to the available viewport. */
   panelWidth?: number;
-  /** Named previous stage action in the left footer cell. */
+  /** Named previous stage action, before the application actions at the footer's end. */
   previous?: { label: string; onPress: () => void; disabled?: boolean };
-  /** Application actions in the right footer cell. */
+  /** Application actions at the footer's end. */
   actions?: ReactNode;
-  /** Centered save/progress status; above the button row when space is narrow. */
+  /** Save/progress status at the footer's start; above the button row when space is narrow. */
   status?: string;
   children?: ReactNode;
   /** Scroll the body (default true). Set false when a child, such as Chat, owns its scroll. */
@@ -49,25 +48,30 @@ type WizardParts = { Dialog: typeof WebDialog; Steps: typeof WebSteps; Button: t
 
 /** A wizard delegates modal behavior and platform controls to their existing components. */
 export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = WebSteps, Button = WebButton }: Partial<WizardParts> = {}) {
-  return function Wizard({ open, title, description, steps, current, onOpenChange, panelWidth = 960, previous, actions, status, children, scrollBody = true, embedded, testID }: WizardProps) {
+  return function Wizard({ open, title, description, steps, current, onOpenChange, panelWidth = widths.xxl, previous, actions, status, children, scrollBody = true, embedded, testID }: WizardProps) {
     const hook = (part: string) => testID ? `${testID}-${part}` : undefined;
     const { width, onLayout } = useContainerWidth();
-    const narrowFooter = width <= breakpoints.sm;
-    // The hand-off's status: 12px mono meta in the subtle ink.
-    const saveStatus = status ? <Typography caption mono subtle>{status}</Typography> : null;
+    // The footer stacks its status over the buttons only when the row cannot hold the status,
+    // Back and the actions side by side: under the narrowest step of the width scale.
+    const narrowFooter = width < widths.xs;
+    // The hand-off's status: 12px mono meta in the third ink, on the face's own line.
+    const saveStatus = status ? <Typography caption mono muted natural>{status}</Typography> : null;
     // A specimen is the Dialog's contained form, in the flow of the page that shows it,
     // hugging its stage; a live wizard teleports into the nearest OverlayProvider and fills it.
-    return <Dialog form workspace overlay={!embedded} compact={embedded} embedded={embedded} open={open} title={title} description={description}
+    // The panel is banded (the header with the segmented steps over its rule, the body, the
+    // footer under its rule), and the footer reads status first, then Back and the
+    // application actions together at its end.
+    return <Dialog form workspace banded overlay={!embedded} compact={embedded} embedded={embedded} open={open} title={title} description={description}
       panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID}
-      workspaceHeader={<Steps stacks steps={steps} current={current} testID={hook("steps")} />}
-      footer={<Column comfortable><Divider /><View onLayout={onLayout} testID={hook("footer")} style={skin.footer}>
-        {narrowFooter && status ? <Row center>{saveStatus}</Row> : null}
-        <Row alignCenter testID={hook("footer-buttons")}>
-          <Row fill start>{previous ? <Button shrink ghost iconLeft={<Icon chevronLeft decorative size={14} />} disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}</Row>
-          {!narrowFooter && status ? <Row center alignCenter>{saveStatus}</Row> : null}
-          <Row fill end>{actions}</Row>
+      workspaceHeader={<Steps segmented steps={steps} current={current} testID={hook("steps")} />}
+      footer={<View onLayout={onLayout} testID={hook("footer")} style={skin.footer}>
+        {narrowFooter && status ? <Row>{saveStatus}</Row> : null}
+        <Row alignCenter snug testID={hook("footer-buttons")}>
+          {!narrowFooter && status ? <Row fill start alignCenter>{saveStatus}</Row> : <Row fill />}
+          {previous ? <Button shrink ghost disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}
+          {actions}
         </Row>
-      </View></Column>}>
+      </View>}>
       {scrollBody ? <ScrollView testID={hook("body-scroll")} style={s.bodyScroll} contentContainerStyle={skin.bodyContent} keyboardShouldPersistTaps="handled">{children}</ScrollView> : children}
     </Dialog>;
   };

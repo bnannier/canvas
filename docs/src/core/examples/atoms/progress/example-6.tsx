@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Progress } = scope;
   return (
-<Progress danger value={1}>Over the WIP limit</Progress>
+<Progress warning value={0.85}>Storage used</Progress>
   );
 }

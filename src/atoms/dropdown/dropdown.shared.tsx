@@ -62,6 +62,8 @@ export interface DropdownItem {
   disabled?: boolean;
   /** Draw a hairline separator above this row to start a new group. */
   separatorBefore?: boolean;
+  /** The row opens a submenu: a trailing chevron hint (the row's `onSelect` opens it). */
+  submenu?: boolean;
 }
 
 export interface DropdownProps {
@@ -161,24 +163,29 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     focusProps: RowFocusProps;
     onSelect: () => void;
     ripple: { color: string; borderless: boolean } | undefined;
+    /** The menu holds a selected choice, so a glyphless row keeps the check's column. */
+    choiceColumn: boolean;
   }
 
   // One menu row, its own component so the web's hover wash has a hook per row. A
   // disabled row is inert and takes the skin's disabled look: the web's muted ink, or
   // the platform's dim.
-  function MenuRow({ item, compact, steadyPress, focusProps, onSelect, ripple }: MenuRowProps) {
+  function MenuRow({ item, compact, steadyPress, focusProps, onSelect, ripple, choiceColumn }: MenuRowProps) {
     const theme = useMaterialTheme({ layer: "dense" });
     const { tokens, dark } = theme;
     const disabled = !!item.disabled;
     const muted = disabled && skin.disabledRow.muted;
     const name = item.description != null || item.detail != null ? [item.label, item.detail, item.description].filter(Boolean).join(", ") : undefined;
     const { hovered, target } = useHover(skin.itemHover != null && !disabled);
+    const mark = skin.selectedMark;
+    const checked = mark != null && !!item.selected && !muted;
     return (
       <Pressable
         {...(focusProps as object)}
         {...target}
         style={({ pressed }) => [
           skin.itemRow,
+          checked ? withInnerFill(theme, mark!.wash(tokens), "firm") : null,
           compact ? skin.reference?.row : null,
           compact && item.description ? { paddingVertical: 7 } : null,
           hovered && skin.itemHover ? withInnerFill(theme, skin.itemHover(tokens), "firm") : null,
@@ -198,12 +205,16 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
         aria-label={name}
         aria-disabled={item.disabled}
       >
-        {item.icon ? (
+        {checked ? (
+          <Icon check color={mark!.color(tokens)} size={mark!.size} decorative />
+        ) : item.icon ? (
           <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} color={skin.iconColor && !item.destructive && !muted ? skin.iconColor(tokens) : undefined} size={skin.iconSize} decorative />
+        ) : mark != null && choiceColumn ? (
+          <View style={{ width: mark.size }} />
         ) : null}
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Text style={[compact ? skin.reference!.label : skin.itemTextType, { flex: 1 }, muted ? { color: tokens["muted-foreground"] } : item.selected ? { color: tokens.action ?? tokens.primary } : skin.itemTextColor(tokens, dark, !!item.destructive)]}>{item.label}</Text>
+            <Text style={[compact ? skin.reference!.label : skin.itemTextType, { flex: 1 }, muted ? { color: tokens["muted-foreground"] } : item.selected && mark == null ? { color: tokens.action ?? tokens.primary } : skin.itemTextColor(tokens, dark, !!item.destructive)]}>{item.label}</Text>
             {item.detail ? <Text style={compact ? skin.reference!.detail(tokens) : skin.shortcut(tokens)}>{item.detail}</Text> : null}
           </View>
           {item.description ? <Text style={compact ? skin.reference!.description(tokens) : skin.menuHeaderDescription(tokens)}>{item.description}</Text> : null}
@@ -213,6 +224,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
             {item.shortcut}
           </Text>
         ) : null}
+        {item.submenu ? <Icon chevronRight color={(skin.shortcut(tokens).color as string | undefined) ?? tokens["muted-foreground"]} size={skin.submenuSize} decorative /> : null}
       </Pressable>
     );
   }
@@ -283,6 +295,8 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
+    // A menu holding a selected choice keeps the check's column on its glyphless rows.
+    const choiceColumn = items.some((item) => !!item.selected);
     const menuBody = (
             <RippleClip shape={cornerRadii(panelShape)} style={{ alignSelf: "stretch" }}>
             {/* An unnamed menu is announced as a bare "menu"; naming it from the
@@ -314,7 +328,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
                 {item.separatorBefore && skin.separator ? (
                   <View style={skin.separator(tokens)} />
                 ) : null}
-                <MenuRow item={item} compact={compact} steadyPress={props.steadyPress} focusProps={rows.rowProps(index, () => { if (!item.disabled) selectItem(); })} onSelect={selectItem} ripple={ripple} />
+                <MenuRow item={item} compact={compact} steadyPress={props.steadyPress} focusProps={rows.rowProps(index, () => { if (!item.disabled) selectItem(); })} onSelect={selectItem} ripple={ripple} choiceColumn={choiceColumn} />
               </View>
               );
             })}
@@ -396,7 +410,18 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
             {children}
           </Pressable>
         ) : (
-          <Button ref={controlRef} outline small expanded={open} haspopup="menu" disabled={disabled} onPress={() => setOpen(!open)}>
+          <Button
+            ref={controlRef}
+            outline={skin.trigger.outline}
+            secondary={skin.trigger.secondary}
+            small
+            selected={skin.trigger.chevron ? open : undefined}
+            iconRight={skin.trigger.chevron ? <Icon chevronDown decorative size={14} /> : undefined}
+            expanded={open}
+            haspopup="menu"
+            disabled={disabled}
+            onPress={() => setOpen(!open)}
+          >
             {trigger}
           </Button>
         )}

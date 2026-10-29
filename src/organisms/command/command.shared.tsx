@@ -10,6 +10,7 @@ import { usePinnedFocus } from "../../style/interaction-override.js";
 import { focusFieldInto } from "../../style/accessibility-focus.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
+import { LayoutAxisProvider, ROW_AXIS } from "../../style/sizing.js";
 import { type CommandSkin } from "./command.styles.js";
 import * as s from "./command.styles.js";
 
@@ -284,6 +285,9 @@ export function createCommand(skin: CommandSkin) {
     const cardContent = (
       <>
         <View accessibilityRole="search" style={skin.searchRow(tokens, searchFocused)}>
+          {/* The row publishes its axis, so the `esc` cap (a HUG component) centres on the
+              row's cross axis instead of pinning to its top in a stretching column. */}
+          <LayoutAxisProvider value={ROW_AXIS}>
           <Icon search color={skin.searchGlyphColor(tokens)} decorative size={skin.searchGlyphSize} />
           <TextInput
             ref={searchRef}
@@ -309,7 +313,8 @@ export function createCommand(skin: CommandSkin) {
             // The search input drives the listbox highlight; point AT to the active row.
             {...({ "aria-activedescendant": activeId } as object)}
           />
-          <Kbd>esc</Kbd>
+          <Kbd small flat>esc</Kbd>
+          </LayoutAxisProvider>
         </View>
 
         <OverlayScrollView testID={testID ? `${testID}-results` : undefined} style={s.results} ref={results.listRef} onLayout={results.onLayout} onScroll={results.onScroll} onContentSizeChange={results.scrollActiveIntoView} scrollEventThrottle={16}>

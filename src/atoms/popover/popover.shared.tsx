@@ -127,7 +127,8 @@ export interface PopoverProps {
   /**
    * Static mode: render the card on its own with no trigger button (an
    * always-visible inline panel). When set, the card is always shown and
-   * `open` is ignored.
+   * `open` is ignored. With `top` or `bottom` it points its beak at what it belongs to
+   * (below it with `top`, above it with `bottom`), from the end edge with `alignEnd`.
    */
   inline?: boolean;
   /** Controlled open state. Omit for uncontrolled (the trigger toggles it). */
@@ -236,6 +237,7 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
         <View testID={testID}>
           <View style={style}>
             <GlassSurface floating style={skin.card(tokens)}>{panelBody}</GlassSurface>
+            {(props.top || props.bottom) && skin.arrow != null && (surface !== "glass" || skin.arrowUnderGlass) ? skin.arrow(tokens, placement, undefined, props.alignEnd) : null}
           </View>
         </View>
       );
@@ -253,10 +255,10 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
           above={placement === "top"}
           // At the phone form factor the card is a sheet (a card that can close).
           sheetStyle={props.anchored ? undefined : skin.sheet(tokens)}
-          gap={compact ? 8 : skin.arrow != null && surface !== "glass" ? skin.arrowGap ?? 4 : 4}
+          gap={compact ? 8 : skin.arrow != null && (surface !== "glass" || skin.arrowUnderGlass) ? skin.arrowGap ?? 4 : 4}
           cardStyle={[panelStyle, props.panelWidth == null ? { minWidth: triggerWidth } : null]}
           inlineStyle={s.cardFloating}
-          decoration={skin.arrow != null && surface !== "glass" ? <PopoverArrow skin={skin} tokens={tokens} /> : null}
+          decoration={skin.arrow != null && (surface !== "glass" || skin.arrowUnderGlass) ? <PopoverArrow skin={skin} tokens={tokens} /> : null}
           // A card pinned open skips the hosted dismiss backdrop (it would only block the page).
           dismissable={dismissable}
           onCardMount={() => moveAccessibilityFocus(firstLineRef.current)}

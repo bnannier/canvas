@@ -52,6 +52,18 @@ hand-composes `borderRadius` + `backgroundColor` to build an icon background.
 </Emblem>
 ```
 
+### Soft
+
+`soft` is the plain tone tile a dialog draws over its title: the tone's own soft wash,
+with no ring and no lit edge, at a 12 px corner. It composes with every tone and size.
+
+```tsx
+<Row snug>
+  <Emblem primary soft><Icon arrowUpRight /></Emblem>
+  <Emblem destructive soft><Icon trash2 /></Emblem>
+</Row>
+```
+
 ## Do & Don't
 
 ### Surface

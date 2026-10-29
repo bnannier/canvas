@@ -3,12 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Alert, Typography } = scope;
+  const { Alert } = scope;
   return (
-<Alert title="Design token renamed">
-  <Typography small muted>
-    The field underline now reads from <Typography code>--p-field-underline</Typography> instead of a raw hex value; update any local overrides before upgrading.
-  </Typography>
-</Alert>
+<Alert
+  announcement
+  dismissible
+  title="Canvas 4.0 is live: every component on lit glass."
+  action={{ label: "See what moved" }}
+/>
   );
 }

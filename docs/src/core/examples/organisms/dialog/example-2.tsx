@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Dialog } = scope;
+  const { Button, Dialog, Icon, Input } = scope;
   return (
-<Dialog trigger="Open details" title="Workspace details" dismissible />
+<Dialog form banded icon={<Icon arrowUpRight decorative />} trigger="Publish" title="Publish release" description="Ship the changes to everyone in the workspace." footer={<Button primary>Publish</Button>}>
+  <Input label="Release name" defaultValue="Canvas 4.0" />
+</Dialog>
   );
 }

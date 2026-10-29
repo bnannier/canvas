@@ -227,10 +227,12 @@ describe("SplitButton's overflow menu is dense glass under glass", () => {
   });
 });
 
-// The dense surfaces that are not anchored cards: the dialog panel inside its scrim,
-// the toast capsule inside its live region, the tooltip bubble beside its trigger.
-describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
-  it("AlertDialog renders its card through the material under the dense tint; the scrim is unaffected", async () => {
+// The overlays that are not anchored cards: the dialog panel inside its scrim and the toast
+// card inside its live region float on the web's functional layer (the v4 Overlays page draws
+// both in `--gl`, decision D13); the tooltip bubble and the snackbar keep the dense inverse
+// fill.
+describe("AlertDialog and Toast float on the functional layer; the inverse surfaces stay dense", () => {
+  it("AlertDialog renders its card through the material under the functional tint; the scrim is unaffected", async () => {
     const { container } = render(
       <ThemeProvider glass>
         <AlertDialog open destructive title="Delete project?" description="This cannot be undone." />
@@ -242,10 +244,10 @@ describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
     expect(dialog.style.backgroundColor).not.toBe("");
     // The panel's own material, and the tone tile's (an Emblem is a control surface).
     expect(materialLayers(dialog)).toBe(2);
-    expect(rgbaOf(underFillOf(dialog))).toEqual(DENSE);
+    expect(rgbaOf(underFillOf(dialog))).toEqual(FUNCTIONAL);
   });
 
-  it("Toast renders the v4 card through the material at the dense tint", async () => {
+  it("Toast renders the v4 card through the material at the functional tint", async () => {
     const { container } = render(
       <ThemeProvider light glass>
         <Toast success message="Project saved" description="All changes are live." />
@@ -254,8 +256,8 @@ describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
     await waitFor(() => expect(container.querySelector('[role="status"]')).not.toBeNull());
     const region = container.querySelector('[role="status"]') as HTMLElement;
     expect(materialLayers(region)).toBe(1);
-    // The card is no inverse surface: the dense layer's own tint.
-    expect(rgbaOf(underFillOf(region))).toEqual(rgbaOf(WEB_TINTS.light["glass-tint-dense"]));
+    // The card is no inverse surface: the functional layer's own tint.
+    expect(rgbaOf(underFillOf(region))).toEqual(FUNCTIONAL);
   });
 
   it("the M3 snackbar and the Tooltip bubble are INVERSE surfaces: their own fill at the dense alpha, so their inverse text stays legible", async () => {

@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Progress, Column, Container } = scope;
+  const { Ticker, Progress } = scope;
   return (
-<Column snug>
-  <Progress xs start value={0.6}>xs step, pinned to the start (320)</Progress>
-  <Progress lg start value={0.6}>lg step, pinned to the start (512)</Progress>
-  <Container lg start><Progress value={0.6}>Bare, in an lg Container: fills it (512)</Progress></Container>
-</Column>
+<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>
+  {(value) => (
+    <Progress showValue value={value}>Uploading…</Progress>
+  )}
+</Ticker>
   );
 }
