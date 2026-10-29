@@ -234,7 +234,7 @@ export function SizingOutline({ on, kind, offset = 2, radius = 0, tag, beside, c
 /**
  * The resolution card's container tier bar (`display:flex;height:26px;border-radius:8px;
  * overflow:hidden`): three segments in the mint, cyan and accent washes at 16%, split by
- * `--ln2`, each named in 500 10 px mono in its own ink.
+ * `--ln2`, each named in 500 10 px mono in its own ink and never narrower than its name.
  */
 export function TierBar({ tiers }: { tiers: readonly { label: string; share: number }[] }) {
   const { tokens } = useTheme();
@@ -248,9 +248,9 @@ export function TierBar({ tiers }: { tiers: readonly { label: string; share: num
       {tiers.map((tier, index) => (
         <View
           key={tier.label}
-          style={{ flexGrow: tier.share, flexShrink: 1, flexBasis: "0%", minWidth: 0, paddingHorizontal: 8, justifyContent: "center", backgroundColor: looks[index]!.fill, borderLeftWidth: index > 0 ? 1 : 0, borderColor: tokens["field-border"] ?? tokens.input }}
+          style={{ flexGrow: tier.share, flexShrink: 1, flexBasis: "0%", minWidth: Math.ceil(monoWidth(tier.label.length, 10)) + 22, paddingHorizontal: 8, justifyContent: "center", backgroundColor: looks[index]!.fill, borderLeftWidth: index > 0 ? 1 : 0, borderColor: tokens["field-border"] ?? tokens.input }}
         >
-          <Typography tick mono {...{ [looks[index]!.hue]: true }}>{tier.label}</Typography>
+          <Typography tick mono numberOfLines={1} {...{ [looks[index]!.hue]: true }}>{tier.label}</Typography>
         </View>
       ))}
     </View>
