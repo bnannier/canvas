@@ -74,12 +74,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The overlay host wraps scroll content rather than using its app-root flex default, which would collapse the scroll child, and is the v4 hand-off's page frame: full width, capped at its 1440 px (off the kit's widths scale, design-language item 8).",
   },
   {
-    file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["width"], occurrences: 1,
-    reason: "A lead section (the Library hero) sits above the capped page frame at the scroll content's full width, so its backdrop reaches the window's edges as the hand-off's does; it paints nothing itself.",
-  },
-  {
-    file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["alignItems", "width"], occurrences: 1,
-    reason: "The main landmark holds the lead and the capped page frame at the scroll content's full width and centres the frame, so the footer can follow it as a sibling contentinfo (the hand-off's main then footer); it paints nothing itself.",
+    file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["alignItems", "width"], occurrences: 2,
+    reason: "The main landmark holds the lead and the capped page frame at the scroll content's full width and centres the frame, so the footer can follow it as a sibling contentinfo (the hand-off's main then footer), and a lead section (the Library hero) sits inside it at that full width so its backdrop reaches the window's edges as the hand-off's does; neither paints anything itself.",
   },
   {
     file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["paddingLeft"], occurrences: 1,
