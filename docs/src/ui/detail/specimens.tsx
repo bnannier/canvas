@@ -82,7 +82,8 @@ function SpecimenCard({ label, pinsRing, children }: { label: string; pinsRing?:
       <Well compact pinsRing={pinsRing}>{children}</Well>
       <CardSeparator />
       <CardContent dense>
-        <Typography caption mono medium muted>{label}</Typography>
+        {/* The caption strip's label (line 199): `font:500 12px var(--fm);color:var(--tx2)` on the face's own 16 px line. */}
+        <Typography tileCaption mono>{label}</Typography>
       </CardContent>
     </Card>
   );

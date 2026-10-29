@@ -51,6 +51,9 @@ export type Role =
   | "pagerName"
   | "specMeta"
   | "specText"
+  | "pagerLabel"
+  | "legendLabel"
+  | "tileCaption"
   | "display"
   | "h1"
   | "h2"
@@ -124,6 +127,13 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     // caller's `mono`, as the hand-off's `var(--fm)` does; the text cell is the interface face.
     specMeta: pageRoles.specMeta,
     specText: pageRoles.specText,
+    // The pager card's label, the legend row's label and the specimen tile's caption: the
+    // hand-off sets each with no ratio, so each sits on its face's own normal line
+    // (src/style/type-scale.ts records the measurements); the caller's `mono` sets the
+    // face where the hand-off's `var(--fm)` does.
+    pagerLabel: pageRoles.pagerLabel,
+    legendLabel: pageRoles.legendLabel,
+    tileCaption: pageRoles.tileCaption,
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -209,10 +219,14 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "guideBody":
     // The reference sheet's description cell: `color:var(--tx2)` (Component.dc.html line 238).
     case "specText":
+    // The specimen tile's caption strip: `color:var(--tx2)` (Component.dc.html line 199).
+    case "tileCaption":
       return { color: tokens["muted-foreground"] };
     // The component page's label: `color:var(--tx3)` (Component.dc.html, the knob panel's
     // "Props" label), the subtle ink, where the Typography eyebrow is the accent's.
     case "pageLabel":
+    // The pager card's label: `color:var(--tx3)` (Component.dc.html line 303).
+    case "pagerLabel":
       return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
     case "eyebrow":
     case "eyebrowLg":
@@ -233,6 +247,8 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     // The reference sheet's meta cells take the caller's tone (`--tx2` on a type, `--tx3`
     // on a default, Component.dc.html line 238); bare, the foreground.
     case "specMeta":
+    // The legend row's label inherits the legend's foreground ink (Component.dc.html line 222).
+    case "legendLabel":
       return { color: tokens.foreground };
     case "code":
       return { color: tokens.foreground, backgroundColor: tokens.secondary };

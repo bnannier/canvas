@@ -17,6 +17,10 @@ status-tone precedence and announces its supplied status label.
 
 `marker` is an anatomy figure's numbered disc: a 22 px pill with no inset, its number 600 11 px in the code face on the accent (the solid call-to-action fill under its ink), set off from the stage by a 3 px ring of the stage well's fill (`surface-sunken`) and a drop shadow, the way the component page's Anatomy section numbers a specimen's parts. It wins over the other metrics but `notification`.
 
+`disc` is the same 22 px numbered disc in a legend: the marker's disc and 600 11 px code-face number, in the tone axis's fill (`default` the solid accent for a part the figure draws, `secondary` the quiet surface for one it does not) with no ring and no shadow, the way the Anatomy legend numbers its rows. It sits below `marker` in precedence and above the pills.
+
+`tier` is the tier pill beside a page title (Atom, Molecule, Organism): 24 px tall with a 10 px inset and a 500 11 px label on its own line, tracked in caps with `uppercase` and in the code face with `mono`, in the tone axis's fill. It sits above `small` in precedence.
+
 ## Usage
 
 ```tsx
@@ -97,6 +101,26 @@ status-tone precedence and announces its supplied status label.
   <Badge marker>1</Badge>
   <Badge marker>2</Badge>
   <Badge marker>3</Badge>
+</BadgeGroup>
+```
+
+### Legend disc
+
+```tsx
+<BadgeGroup>
+  <Badge disc default>1</Badge>
+  <Badge disc default>2</Badge>
+  <Badge disc secondary>3</Badge>
+</BadgeGroup>
+```
+
+### Tier pill
+
+```tsx
+<BadgeGroup>
+  <Badge tier mono uppercase secondary>Atom</Badge>
+  <Badge tier mono uppercase soft>Molecule</Badge>
+  <Badge tier mono uppercase outline>Organism</Badge>
 </BadgeGroup>
 ```
 

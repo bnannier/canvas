@@ -78,7 +78,10 @@ describe("gridColumns / gridCellWidth (pure)", () => {
   });
 
   it("splits the width minus gaps into equal cells", () => {
-    expect(gridCellWidth(1280, 3, 8)).toBe(421); // floor((1280-16)/3)
+    // (1280-16)/3 = 421.333..., kept to a hundredth of a pixel (the fraction a browser
+    // track keeps) and floored there, so three cells and two gaps never exceed the width.
+    expect(gridCellWidth(1280, 3, 8)).toBe(421.33);
+    expect(gridCellWidth(1280, 3, 8) * 3 + 16).toBeLessThanOrEqual(1280);
     expect(gridCellWidth(375, 1, 8)).toBe(375);
   });
 });
@@ -96,7 +99,7 @@ describe("Grid rendering", () => {
     );
     const cells = Array.from(rootOf("g").children) as HTMLElement[];
     expect(cells.length).toBe(3);
-    for (const cell of cells) expect(cell.style.width).toBe("421px"); // floor((1280-16)/3)
+    for (const cell of cells) expect(cell.style.width).toBe("421.33px"); // (1280-16)/3 to a hundredth
   });
 
   it("collapses to one full-width column at phone widths", () => {
@@ -120,8 +123,8 @@ describe("Grid rendering", () => {
       </Grid>,
     );
     const cells = Array.from(rootOf("g").children) as HTMLElement[];
-    expect(cells[0]!.style.width).toBe("850px"); // 2*421 + 8
-    expect(cells[1]!.style.width).toBe("421px");
+    expect(cells[0]!.style.width).toBe("850.66px"); // 2*421.33 + 8
+    expect(cells[1]!.style.width).toBe("421.33px");
   });
 
   // The grid is a FILL component: its root spans the parent's bounds, so the

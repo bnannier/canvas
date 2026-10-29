@@ -59,7 +59,8 @@ export function DetailHeader({ comp, description, sourcePath, exports, jumps }: 
         <Row roomy alignCenter wrap>
           {/* The hand-off's fluid title (`clamp(40px, 5vw, 64px)/1`), the kit pageTitle role. */}
           <Typography pageTitle>{comp.name}</Typography>
-          <Badge mono uppercase secondary={tier.badge === "secondary"} soft={tier.badge === "soft"} outline={tier.badge === "outline"}>{tier.label}</Badge>
+          {/* The tier pill (line 139): 24 tall, `padding:0 10px`, `font:500 11px/1 var(--fm);letter-spacing:.06em;text-transform:uppercase`. */}
+          <Badge tier mono uppercase secondary={tier.badge === "secondary"} soft={tier.badge === "soft"} outline={tier.badge === "outline"}>{tier.label}</Badge>
         </Row>
         <Typography pageLead><InlineMarkdown text={description} pageLead /></Typography>
         <Row snug wrap alignCenter>

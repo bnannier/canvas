@@ -41,8 +41,8 @@ export interface BadgeSize {
 }
 
 export interface BadgeSkin {
-  /** The pill per size step (`small`, the default, `large`), and the anatomy `marker` disc. */
-  sizes: Record<"small" | "default" | "large" | "marker", BadgeSize>;
+  /** The pill per size step (`small`, the default, `large`), the anatomy `marker` disc (the legend `disc` shares it) and the `tier` pill. */
+  sizes: Record<"small" | "default" | "large" | "marker" | "tier", BadgeSize>;
   /**
    * The shadow set under an anatomy `marker`, from the theme's tokens: the hand-off's ring
    * of the stage's fill and its drop shadow (Component.dc.html line 220).
@@ -99,6 +99,19 @@ export interface BadgeProps {
    * (Component.dc.html line 220).
    */
   marker?: boolean;
+  /**
+   * A legend's numbered disc: the marker's 22 px disc with its number in the code face,
+   * in the tone axis's fill (the solid accent as `default`, the quiet surface as
+   * `secondary`) with no ring and no shadow (Component.dc.html line 222, the anatomy
+   * legend's part numbers).
+   */
+  disc?: boolean;
+  /**
+   * A tier pill (Atom, Molecule, Organism beside a page title): 24 px tall with a 10 px
+   * inset and a 500 11 px label on its own line (Component.dc.html line 139), tracked in
+   * caps with `uppercase` and in the code face with `mono`, as the page sets it.
+   */
+  tier?: boolean;
   /** Show the intent dot without switching to the status family. */
   dot?: boolean;
   /** Standalone 10px signal marker, retaining its status label. */
@@ -166,9 +179,11 @@ export function badgeIntentOf(p: BadgeProps) {
 export function badgeMetricOf(p: BadgeProps) {
   if (p.notification) return "notification";
   if (p.marker) return "marker";
+  if (p.disc) return "disc";
   if (p.reference) return "reference";
   if (p.navigationCount) return "navigationCount";
   if (p.count) return "count";
+  if (p.tier) return "tier";
   if (p.small) return "small";
   return "default";
 }
@@ -250,7 +265,8 @@ export function createBadge(skin: BadgeSkin) {
     if (props.signal) return <View testID={testID} accessibilityRole="image" accessibilityLabel={accessibilityLabel ?? statusOf(props)} aria-label={accessibilityLabel ?? statusOf(props)} style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: statusColors(tokens, statusOf(props)).dot }} />;
 
     const metric = badgeMetricOf(props);
-    const size = skin.sizes[metric === "marker" ? "marker" : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
+    // The legend disc is the marker's size; the tier pill its own step.
+    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" ? "tier" : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
 
     if (props.status) {
       const tone = statusOf(props);
@@ -304,6 +320,8 @@ export function createBadge(skin: BadgeSkin) {
     const ink = inkKind === "foreground" ? tokens.foreground : look.ink;
     const reference = metric === "reference";
     const marker = metric === "marker";
+    // The legend disc: the marker's disc and number, in the tone's fill, with no ring or shadow.
+    const disc = marker || metric === "disc";
     const toned = !!(props.success || props.warning || props.error || props.info || props.neutral);
     const base: ViewStyle = {
       flexDirection: "row",
@@ -311,17 +329,23 @@ export function createBadge(skin: BadgeSkin) {
       gap: reference ? skin.referenceGap : skin.gap,
       height: size.height,
       paddingHorizontal: size.paddingHorizontal,
-      borderWidth: 1,
+      // The tier pill draws no border (line 139 sets none), so its 24 px box is the fill
+      // alone; every other pill keeps the hand-off's 1 px border, transparent until a tone
+      // draws it.
+      borderWidth: metric === "tier" ? 0 : 1,
       borderRadius: reference ? skin.referenceRadius : skin.radius,
-      // The marker is a disc: as wide as it is tall, its number centred (the hand-off's
-      // `width:22px;height:22px;...;display:grid;place-items:center`, line 220).
-      ...(marker ? { width: size.height, justifyContent: "center" as const } : null),
+      // The marker and the legend disc are discs: as wide as they are tall, the number
+      // centred (the hand-off's `width:22px;height:22px;...;display:grid;place-items:center`,
+      // lines 220 and 222).
+      ...(disc ? { width: size.height, justifyContent: "center" as const } : null),
     };
     const fill: ViewStyle = { backgroundColor: look.fill, borderColor: look.border };
     const label: TextStyle = {
       fontSize: size.fontSize,
       lineHeight: size.lineHeight,
-      fontWeight: look.strong || metric === "count" ? skin.strongWeight : skin.weight,
+      // A disc's number is always the heavier weight (line 222: `font:600 11px/1 var(--fm)`
+      // on the quiet disc as on the accent one).
+      fontWeight: look.strong || metric === "count" || disc ? skin.strongWeight : skin.weight,
       letterSpacing: props.uppercase ? size.fontSize * skin.uppercaseTracking : 0,
       textTransform: props.uppercase ? "uppercase" : "none",
       color: ink,
@@ -329,10 +353,10 @@ export function createBadge(skin: BadgeSkin) {
     };
     // An outline badge is deliberately unfilled metadata, so it inherits its host.
     const surfaced = look.fill !== CLEAR;
-    // The mono modifier (a reference key and a marker too) asks for a monospace face; RN
+    // The mono modifier (a reference key and a disc too) asks for a monospace face; RN
     // has no font-family utility, so request the cross-platform monospace alias via inline
     // style.
-    const monoStyle = mono || reference || marker ? { fontFamily: MONO_FONT } : null;
+    const monoStyle = mono || reference || disc ? { fontFamily: MONO_FONT } : null;
     // The marker's ring and shadow, the skin's, from the theme's tokens.
     const markerShadow = marker ? { boxShadow: skin.markerShadow(tokens) } : null;
 

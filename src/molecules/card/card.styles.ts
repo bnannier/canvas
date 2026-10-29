@@ -256,7 +256,9 @@ export const mediaWell: Record<MediaWell, ViewStyle> = {
   default: { ...WELL_BASE, minHeight: 160, paddingVertical: 28, paddingHorizontal: 20 },
   compact: { ...WELL_BASE, minHeight: 130, paddingVertical: 24, paddingHorizontal: 16 },
   tall: { ...WELL_BASE, minHeight: 240, paddingVertical: 32, paddingHorizontal: 20 },
-  stage: { ...WELL_BASE, minHeight: 320, paddingVertical: 80, paddingHorizontal: 40 },
+  // The hand-off's `min-height:320px` is the bordered figure's whole box (line 217, the
+  // page's `box-sizing:border-box`), so the well inside the frame's two hairlines is 318.
+  stage: { ...WELL_BASE, minHeight: 318, paddingVertical: 80, paddingHorizontal: 40 },
   playground: { ...WELL_BASE, minHeight: 340, paddingVertical: 44, paddingHorizontal: 28, flexGrow: 1, flexShrink: 1 },
 };
 

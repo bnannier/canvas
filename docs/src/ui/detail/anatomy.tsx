@@ -90,20 +90,34 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
             </Card>
           </View>
         </Column>
-        <Column span={5}>
+        {/* The span cell is stretched to the figure's height by the Row; the column grows
+            to fill it so the legend card can grow in turn. */}
+        <Column span={5} grow>
           {/* The hand-off's legend (line 221): `padding:18px;border:1px solid var(--ln);
               border-radius:20px;background:var(--sf);...;gap:12px`, no shadow; the card owns the rhythm. */}
-          <Card panel stageCorners outlined>
-            {parts.map((part, i) => {
-              const shown = rects[part] != null;
-              return (
-                <Row key={part} cozy alignCenter>
-                  {shown ? <Badge default mono small>{i + 1}</Badge> : <Badge secondary mono small>{i + 1}</Badge>}
-                  <Typography muted={!shown}>{part}</Typography>
-                </Row>
-              );
-            })}
-            <Typography caption muted>Dimmed parts appear only in some states or variants.</Typography>
+          {/* The legend stretches to the figure's height (the grid's `align-items:stretch`,
+              line 216) and its footnote is pinned to its foot (line 223, `margin-top:auto`):
+              the card grows into its span cell and a spreading column holds the rows
+              apart from the footnote. A row is the hand-off's 22 px disc (line 222, the
+              Badge `disc`: the accent for a part the figure draws, the quiet surface for
+              one it does not) beside the legend label on the face's own 18 px line; the
+              footnote is `400 12px/1.5 var(--ft);color:var(--tx3)`, the caption role on
+              the 1.5 body leading in its own subtle ink. */}
+          <Card panel stageCorners outlined grow>
+            <Column between fill>
+              <Column cozy>
+                {parts.map((part, i) => {
+                  const shown = rects[part] != null;
+                  return (
+                    <Row key={part} cozy alignCenter>
+                      {shown ? <Badge disc default>{i + 1}</Badge> : <Badge disc secondary>{i + 1}</Badge>}
+                      <Typography legendLabel muted={!shown}>{part}</Typography>
+                    </Row>
+                  );
+                })}
+              </Column>
+              <Typography caption bodyLeading>Dimmed parts appear only in some states or variants.</Typography>
+            </Column>
           </Card>
         </Column>
       </Row>

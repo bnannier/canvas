@@ -655,7 +655,9 @@ describe("CardMedia stage wells", () => {
       </>,
     );
     const stage = getByTestId("s");
-    expect(stage.style.minHeight).toBe("320px");
+    // The hand-off's 320 is the bordered figure's box (line 217, `box-sizing:border-box`):
+    // the well inside the frame's two hairlines is 318.
+    expect(stage.style.minHeight).toBe("318px");
     expect(stage.style.padding).toBe("80px 40px");
     expect(stage.style.flexGrow).toBe("");
     const playground = getByTestId("p");
