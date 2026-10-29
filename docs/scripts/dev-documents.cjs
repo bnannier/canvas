@@ -45,18 +45,21 @@
 // took the dev server to a 4 GB heap overflow in under an hour. The first reload after
 // an edit pays for its render; every reload after it is served from the cache.
 //
-// The fonts get the same treatment. Metro serves the nine preloaded faces as bare
-// TrueType with no encoding and `no-store`, 558 KB against the 297 KB their gzipped
-// copies weigh, and every one of them sits on the largest paint's critical path
-// (Lighthouse's model charges each request that finished before the paint to it): with
-// the seven faces of the time, the dev home page's largest paint read 2.6 s where the
-// export's read 2.1 s. So a font is gzipped too, once, and kept in the same cache.
+// A TrueType face from Metro's asset route gets the same treatment: Metro serves it bare,
+// with no encoding and `no-store`, so it is gzipped once and kept in the same cache. The
+// web document no longer asks that route for a face: its faces are the three variable
+// woff2 files under public/fonts (docs/src/app/+html.tsx), already compressed, which Expo
+// serves from the root and this middleware leaves alone. When the web's nine static faces
+// did come from the asset route, 558 KB bare against the 297 KB their gzipped copies
+// weighed and every one on the largest paint's critical path (Lighthouse's model charges
+// each request that finished before the paint to it), the dev home page's largest paint
+// read 2.6 s where the export's read 2.1 s.
 
 const { gzipSync } = require("node:zlib");
 const { paintFirstHtml } = require("./paint-first-html.cjs");
 
-// Enough for a browsing session across the docs (plus the nine faces) without holding
-// hundreds of pages.
+// Enough for a browsing session across the docs (plus any faces from the asset route)
+// without holding hundreds of pages.
 const CACHE_LIMIT = 64;
 
 const isDocumentRequest = (req) => {

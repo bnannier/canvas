@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { Dimensions, type NativeSyntheticEvent, type TextLayoutEventData, type View as NativeView } from "react-native";
 import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from "react-native-svg";
-import { Typography, View, useTheme, type FontFaces } from "@nannier/canvas";
+import { Typography, View, useTheme, type FontFaces, type FontWeightKey } from "@nannier/canvas";
 import { GRADIENT_TEXT, baselineOffset, heroType } from "./library-hero-look";
 
 // A brand illustration: one word in the display role filled by the brand artwork's
@@ -28,17 +28,22 @@ import { GRADIENT_TEXT, baselineOffset, heroType } from "./library-hero-look";
 // (Typography `accessibilityLabel`). The values are the table in ./library-hero-look.ts.
 
 /**
- * The face the display role is drawn in, at the role's weight and, where the app registers
- * optical cuts (iOS and Android), the cut nearest the word's size, as the kit's text does.
+ * The face the display role is drawn in, as the kit's text resolves it: a family that
+ * carries every weight (the web's variable file, docs/src/ui/fonts.ts) is drawn at the
+ * role's weight, which the svg text must then name itself; a face registered per weight
+ * (iOS and Android) carries its weight, so none is named, and where the weight maps to
+ * optical cuts the cut nearest the word's size is taken.
  */
-function displayFace(faces: FontFaces | undefined, fontSize: number): string | undefined {
+function displayFace(faces: FontFaces | undefined, fontSize: number, fontWeight: FontWeightKey): { fontFamily: string; fontWeight?: FontWeightKey } | undefined {
   if (!faces) return undefined;
-  if (typeof faces === "string") return faces;
-  const face = faces["500"] ?? Object.values(faces)[0];
-  if (typeof face !== "object") return face;
+  if (typeof faces === "string") return { fontFamily: faces, fontWeight };
+  const face = faces[fontWeight] ?? Object.values(faces)[0];
+  if (!face) return undefined;
+  if (typeof face !== "object") return { fontFamily: face };
   const sizes = Object.keys(face).map(Number);
   const nearest = sizes.reduce((best, size) => (Math.abs(size - fontSize) <= Math.abs(best - fontSize) ? size : best), sizes[0]!);
-  return face[nearest];
+  const cut = face[nearest];
+  return cut ? { fontFamily: cut } : undefined;
 }
 
 // The window's width as the kit's Typography `hero` reads it (src/style/responsive.ts
@@ -56,7 +61,7 @@ export function GradientText({ children, anchor, testID }: { children: string; a
   const id = `sweep${useId().replace(/[^A-Za-z0-9]/g, "")}`;
   // The hero role sizes the word by the window, as the headline around it does.
   const type = heroType(useSyncExternalStore(subscribeWindow, windowWidth, noWidth));
-  const family = displayFace(fonts.display, type.fontSize) ?? displayFace(fonts.sans, type.fontSize);
+  const face = displayFace(fonts.display, type.fontSize, type.fontWeight) ?? displayFace(fonts.sans, type.fontSize, type.fontWeight);
   const box = useRef<NativeView>(null);
   const shift = useLineShift(anchor, box, type.lineHeight);
   const [glyphBaseline, setGlyphBaseline] = useState<number | null>(null);
@@ -87,7 +92,8 @@ export function GradientText({ children, anchor, testID }: { children: string; a
             x={0}
             y={glyphBaseline ?? baselineOffset(type.fontSize, type.lineHeight)}
             fill={`url(#${id})`}
-            fontFamily={family}
+            fontFamily={face?.fontFamily}
+            fontWeight={face?.fontWeight}
             fontSize={type.fontSize}
             letterSpacing={type.letterSpacing}
           >

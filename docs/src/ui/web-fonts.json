@@ -1,0 +1,30 @@
+{
+  "sans": {
+    "family": "Instrument Sans",
+    "path": "/fonts/InstrumentSans.72ea38a499d4.woff2",
+    "weight": [
+      400,
+      700
+    ]
+  },
+  "display": {
+    "family": "Bricolage Grotesque",
+    "path": "/fonts/BricolageGrotesque.59416ea982b9.woff2",
+    "weight": [
+      300,
+      800
+    ],
+    "opticalSize": [
+      12,
+      96
+    ]
+  },
+  "mono": {
+    "family": "JetBrains Mono",
+    "path": "/fonts/JetBrainsMono.cf635e93c6e7.woff2",
+    "weight": [
+      400,
+      600
+    ]
+  }
+}

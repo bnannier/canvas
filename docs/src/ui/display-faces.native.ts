@@ -5,7 +5,8 @@ import type { FontFaces } from "@nannier/canvas";
 // wide, tight 96 pt cut where the browser draws the 22 pt one. Each weight is registered as
 // the cuts scripts/subset-fonts.mjs pins at the display roles' sizes, and the kit's font
 // resolver (ThemeFonts optical cuts) takes the cut nearest the text's size. The web
-// registers the variable files (./display-faces.ts).
+// registers none of these: its document declares one variable file for every weight, whose
+// optical-size axis the browser sets from the text's size (./fonts.ts).
 export const DISPLAY: FontFaces = {
   "500": {
     17: "BricolageGrotesque_500Medium_opsz17",

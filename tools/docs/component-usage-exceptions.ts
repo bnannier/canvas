@@ -18,6 +18,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     occurrences: tag === "meta" ? 17 : 1,
     reason: "Expo Router's web document and metadata surround the React Native app; these are not rendered app controls.",
   })),
+  {
+    file: "docs/src/app/+html.tsx", owner: "Root", tag: "link", attribute: "html", keys: ["link"], occurrences: 1,
+    reason: "The web document preloads the three self-hosted variable faces it declares (decision D20): one JSX link mapped over docs/src/ui/web-fonts.json, so the faces are fetching before the bundle arrives; a head resource hint, not app UI.",
+  },
   ...["html", "body"].map(tag => ({
     file: "docs/src/app/+html.tsx", owner: "Root", tag, attribute: "spread", keys: ["<unresolved props>"], occurrences: 1,
     expression: `${tag}Attributes`,
