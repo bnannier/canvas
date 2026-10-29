@@ -37,6 +37,70 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The placeholder page's 80 px tiles (radius 14, --sf3), diagram scenery, decision OD-1.",
   },
   {
+    file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["alignItems", "height", "justifyContent", "minHeight", "paddingHorizontal", "paddingVertical"], occurrences: 1,
+    reason: "An Overlays stage card's body inside the kit Card (decision OD-1): the hand-off's fixed stage height (`height:460px`), or its growing and centred stages (`min-height:540px` / `560px;display:grid;place-items:center;padding:48px 24px`); it paints nothing.",
+  },
+  {
+    file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["alignItems", "alignSelf", "left", "marginTop", "position", "right", "top"], occurrences: 1,
+    reason: "The stage's chip row placed as the hand-off places it (in the flow at `margin-top:-6px`, or centred at the top of a grid stage), under the scene and the scrim; the chips themselves are kit Chips.",
+  },
+  {
+    file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["backgroundColor", "bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,
+    reason: "The stage's two untouchable pinned layers: the full-bleed `--scrim` (the `scrim` token) over the faux page, for an open overlay that draws no dim of its own (the bare Command palette), and the label at the hand-off's `left:16px;top:14px` (kit Typography inside); scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["flexGrow"], occurrences: 1,
+    reason: "A growing stage's overlay layer: the embedded overlay fills the stage in the flow, so its own dim covers it; it paints nothing.",
+  },
+  {
+    file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["bottom", "left", "paddingBottom", "paddingLeft", "paddingRight", "paddingTop", "position", "right", "top"], occurrences: 1,
+    reason: "A fixed stage's overlay layer spread over the stage at the hand-off's inset (the popover stage's `inset:0;padding:22px 20px 24px`), holding the kit overlays; it paints nothing.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "Bar", tag: "View", attribute: "style", keys: ["backgroundColor", "borderRadius", "flexBasis", "flexGrow", "flexShrink", "height", "minWidth", "width"], occurrences: 1,
+    reason: "A stage scene's placeholder bar or tile of the faux app page (the hand-off's `--sf3` blocks at their widths, heights and radii), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "Tiles", tag: "View", attribute: "style", keys: ["flexDirection", "gap"], occurrences: 1,
+    reason: "A stage scene's row of equal placeholder tiles (the hand-off's `grid-template-columns:repeat(n,1fr)`), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "Layer", tag: "View", attribute: "style", keys: ["bottom", "left", "opacity", "padding", "paddingBottom", "paddingLeft", "paddingRight", "paddingTop", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "A stage scene's untouchable layer spread over the stage at the hand-off's inset, padding and opacity (`position:absolute;inset:0;padding:24px;opacity:.9`), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "RailPage", tag: "View", attribute: "style", keys: ["flexDirection", "gap"], occurrences: 1,
+    reason: "A stage scene's rail beside its body (the hand-off's `grid-template-columns:160px 1fr`), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "RailPage", tag: "View", attribute: "style", keys: ["gap", "width"], occurrences: 1,
+    reason: "A stage scene's rail of bars at the hand-off's rail width, diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "RailPage", tag: "View", attribute: "style", keys: ["flexBasis", "flexGrow", "flexShrink", "minWidth"], occurrences: 1,
+    reason: "A stage scene's page body beside the rail taking the rest (`1fr`), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "DialogScene", tag: "View", attribute: "style", keys: ["gap"], occurrences: 1,
+    reason: "The dialog stage's tiles over its block (the hand-off's 14 px grid gap), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "TilePage", tag: "View", attribute: "style", keys: ["gap"], occurrences: 1,
+    reason: "A stage page's heading, tiles and block (the hand-off's `gap:14px` column), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "ActionSheetScene", tag: "View", attribute: "style", keys: ["gap"], occurrences: 1,
+    reason: "The action sheet stage's photo over two bars (the hand-off's `gap:12px`), diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "ActionSheetScene", tag: "View", attribute: "style", keys: ["borderRadius", "height", "overflow"], occurrences: 1,
+    reason: "The action sheet stage's 160 px photo frame at radius 16 (the hand-off's `height:160px;border-radius:16px;overflow:hidden`), clipping the kit Image; diagram scenery, decision OD-1.",
+  },
+  {
+    file: "docs/src/ui/showcase/stage-scene.tsx", owner: "CommandScene", tag: "View", attribute: "style", keys: ["gap"], occurrences: 1,
+    reason: "The command stage's tiles over its block (the hand-off's 16 px grid gap), diagram scenery, decision OD-1.",
+  },
+  {
     file: "docs/src/core/photos.ts", owner: "Wrapped", tag: "Loose", attribute: "spread", keys: ["<unresolved props>"], occurrences: 1,
     expression: "createElement(Loose, next ?? rec)",
     reason: "The example-scope adapter forwards the existing Canvas component's props after resolving bundled sample-photo paths; it authors no control or style.",

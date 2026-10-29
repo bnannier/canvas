@@ -18,6 +18,8 @@ export interface GlowBox {
   height: `${number}%`;
   /** The glow's opacity (the hand-off's `opacity`). */
   opacity: number;
+  /** The glow's colour role; the accent (`primary`) by default. */
+  color?: "primary" | "destructive" | "chart-2" | "chart-3";
 }
 
 /**
@@ -26,10 +28,11 @@ export interface GlowBox {
  * folded into the gradient: the accent falls off along a smooth curve to nothing at the
  * box's edge instead of at 65 %, which is what the blurred stop paints.
  */
-function StageGlow({ box }: { box: GlowBox }) {
+export function StageGlow({ box }: { box: GlowBox }) {
   const { tokens } = useTheme();
   const id = `glow${useId().replace(/[^A-Za-z0-9]/g, "")}`;
   const { left, top, width, height, opacity } = box;
+  const color = tokens[box.color ?? "primary"] ?? tokens.primary;
   const falloff = [
     [0, 0.8],
     [0.25, 0.62],
@@ -43,7 +46,7 @@ function StageGlow({ box }: { box: GlowBox }) {
       <Svg width="100%" height="100%">
         <Defs>
           <RadialGradient id={id} cx="50%" cy="50%" r="50%">
-            {falloff.map(([at, alpha]) => <Stop key={at} offset={at} stopColor={tokens.primary} stopOpacity={alpha} />)}
+            {falloff.map(([at, alpha]) => <Stop key={at} offset={at} stopColor={color} stopOpacity={alpha} />)}
           </RadialGradient>
         </Defs>
         <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
