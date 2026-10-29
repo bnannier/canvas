@@ -13,6 +13,22 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The section hero stage's ground (the v4 hand-off's canvas-hero.js `.st`: two radial washes and an 18 px dot grid fading downward), the one docs-only brand illustration the rules allow: an untouchable layer spread over the stage it sits in, painting only the svg; the stage itself is the kit Card.",
   },
   {
+    file: "docs/src/ui/showcase/specimen.tsx", owner: "SpecimenRows", tag: "View", attribute: "style", keys: ["paddingVertical"], occurrences: 1,
+    reason: "The Foundations type card's specimen table (the hand-off's rows at `padding:12px 0` with a hairline between): the 12 px above the first row and below the last that the kit's gap scale cannot put outside a Column; the rows, the hairlines and their rhythm are the kit Column and Divider.",
+  },
+  {
+    file: "docs/src/ui/showcase/specimen.tsx", owner: "RadiusSample", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderRadius", "borderWidth", "height", "pointerEvents", "width"], occurrences: 1,
+    reason: "The Foundations shape card's blank radius samples (the hand-off's `--sf3` boxes inside `--ln2`, Foundations owner decision 2): a diagram of the kit's corner table at its own radii, which no kit component draws and an example never adds to the kit; untouchable, hidden from assistive tech, the caption beside it names it.",
+  },
+  {
+    file: "docs/src/ui/showcase/specimen.tsx", owner: "GlassWell", tag: "View", attribute: "style", keys: ["height"], occurrences: 1,
+    reason: "The Foundations depth card's glass well (the hand-off's 120 px `overflow:hidden` box, Foundations owner decision 3): the well's height inside the kit Card's hairline, so the orbs and the floating pane have a definite box; it paints nothing.",
+  },
+  {
+    file: "docs/src/ui/showcase/specimen.tsx", owner: "GlassWell", tag: "View", attribute: "style", keys: ["bottom", "left", "position", "right", "top"], occurrences: 1,
+    reason: "The Foundations depth card's floating pane placement (the hand-off's `left:24px;right:24px;top:24px;bottom:24px` over the orbs): the box the kit `Card floating` fills; it paints nothing.",
+  },
+  {
     file: "docs/src/ui/showcase/stage.tsx", owner: "StageGlow", tag: "View", attribute: "style", keys: ["height", "left", "opacity", "pointerEvents", "position", "top", "width"], occurrences: 1,
     reason: "A Navigation section stage's blurred accent glow (the hand-off's `radial-gradient(circle,var(--ion),transparent 65%);filter:blur(...)` box behind the navbar and the tab bar, decision OD-1): an untouchable layer at the hand-off's box in the well, painting only the svg; the well itself is the kit Card.",
   },

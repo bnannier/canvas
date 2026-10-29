@@ -46,6 +46,8 @@ export interface DerivedCard {
   gap?: number;
   /** A framed card's header-to-chips distance: its gap plus the header's own margin, less the chips' 6 px pull. */
   headGap?: number;
+  /** A framed card's body-to-caption distance where the caption pads itself: its gap plus that `padding-top`. */
+  footGap?: number;
   group?: string;
 }
 
@@ -115,6 +117,10 @@ export function deriveSection(page: string): DerivedSection {
       // the chip row's `margin-top:-6px` pulls it up into the space above it.
       const headMargin = body.match(/text-transform:uppercase;color:var\(--tx3\);margin-bottom:(\d+)px"><span>/);
       if (head && links.length > 0) out.headGap = Math.max(0, out.gap + (headMargin ? Number(headMargin[1]) : 0) - 6);
+      // The foot caption may pad itself away from the body (`padding-top:16px` on Type, whose
+      // gap is 4): the body and the caption then sit the gap plus that padding apart.
+      const footPad = body.match(/font:400 1[12]px\/1\.[56] var\(--fm\);color:var\(--tx3\);padding-top:(\d+)px/);
+      if (footPad) out.footGap = out.gap + Number(footPad[1]);
     }
     if (head && !bound(head[1])) out.title = decode(head[1]);
     if (head && !bound(head[2])) out.meta = decode(head[2]);
@@ -163,6 +169,8 @@ export function renderShowcase(): string {
     "  gap?: number;",
     "  /** A framed card's header-to-chips distance (its gap plus the header's margin, less the chips' 6 px pull). */",
     "  headGap?: number;",
+    "  /** A framed card's body-to-caption distance where the caption pads itself (its gap plus that padding). */",
+    "  footGap?: number;",
     "  /** The Data subsection the card sits under. */",
     "  group?: string;",
     "}",

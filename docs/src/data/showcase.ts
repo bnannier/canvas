@@ -26,6 +26,8 @@ export interface ShowcaseCardSpec {
   gap?: number;
   /** A framed card's header-to-chips distance (its gap plus the header's margin, less the chips' 6 px pull). */
   headGap?: number;
+  /** A framed card's body-to-caption distance where the caption pads itself (its gap plus that padding). */
+  footGap?: number;
   /** The Data subsection the card sits under. */
   group?: string;
 }
@@ -76,6 +78,7 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "inset": 24,
         "gap": 4,
         "headGap": 10,
+        "footGap": 20,
         "title": "Type · Scale",
         "meta": "Bricolage Grotesque · Instrument Sans · JetBrains Mono"
       },

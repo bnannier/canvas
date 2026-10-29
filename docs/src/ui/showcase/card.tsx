@@ -196,13 +196,26 @@ export function ShowcaseCard({ id, title, meta, links, caption, tinyCaption, spl
       ) : null}
     </GapColumn>
   ) : null;
+  const body = <Column grow spacious>{children}</Column>;
+  const foot = caption == null ? null : tinyCaption ? <Typography tiny mono muted>{caption}</Typography> : <Typography cardNote mono>{caption}</Typography>;
   return (
     // The composition takes the slack a grid row hands the card, so the caption sits at the foot.
     <FrameCard inset={spec?.inset ?? 24} testID={`showcase-${id}`}>
       <GapColumn gap={spec?.gap ?? 20} grow>
         {header}
-        <Column grow spacious>{children}</Column>
-        {caption == null ? null : tinyCaption ? <Typography tiny mono muted>{caption}</Typography> : <Typography cardNote mono>{caption}</Typography>}
+        {spec?.footGap != null && caption != null ? (
+          // A caption that pads itself away from the body (the Type card's `padding-top:16px`
+          // under its 4 px gap) sits the derived foot gap below it.
+          <GapColumn gap={spec.footGap} grow>
+            {body}
+            {foot}
+          </GapColumn>
+        ) : (
+          <>
+            {body}
+            {foot}
+          </>
+        )}
       </GapColumn>
     </FrameCard>
   );
