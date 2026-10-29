@@ -3,16 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList, Kbd } = scope;
+  const { Badge, DescriptionList, Row } = scope;
   return (
 <DescriptionList
   twoColumn
-  divided
-  muted
+  ruled
+  compact
   items={[
-    { term: <Kbd comfortable>Enter</Kbd>, value: "Activates" },
-    { term: <Kbd comfortable>Space</Kbd>, value: "Activates" },
-    { term: <Kbd comfortable>Tab</Kbd>, value: "Moves focus on" }
+    { term: "Roles", value: <Row compact wrap><Badge mono small>button</Badge></Row> },
+    { term: "States", value: <Row compact wrap><Badge mono small>disabled</Badge><Badge mono small>busy</Badge><Badge mono small>loading</Badge><Badge mono small>pressed</Badge><Badge mono small>focused</Badge><Badge mono small>hovered</Badge></Row> },
+    { term: "ARIA on web", value: <Row compact wrap><Badge mono small>aria-busy</Badge><Badge mono small>aria-disabled</Badge></Row> }
   ]}
 />
   );

@@ -145,6 +145,7 @@ export interface DescriptionListProps {
    * compact step; a plain or divided list is unchanged by it.
    */
   compact?: boolean;
+  /**
    * The values as notes beside their terms: a text value in the small type and the muted
    * ink (400 13/19) instead of the full-weight foreground data, for a list that explains
    * each term (a key and its effect). A node value renders as given, and a platform skin

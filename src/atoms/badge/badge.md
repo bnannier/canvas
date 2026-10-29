@@ -132,6 +132,7 @@ status-tone precedence and announces its supplied status label.
 <BadgeGroup>
   <Badge band mono>pick one</Badge>
   <Badge band mono secondary>stacks</Badge>
+</BadgeGroup>
 ```
 
 ### Token chips
@@ -141,8 +142,6 @@ status-tone precedence and announces its supplied status label.
   <Badge token>busy</Badge>
   <Badge token>disabled</Badge>
   <Badge token>aria-expanded</Badge>
-</BadgeGroup>
-```
 </BadgeGroup>
 ```
 

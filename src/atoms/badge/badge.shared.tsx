@@ -96,11 +96,6 @@ export interface BadgeProps {
    * the code face, for a role, a state or an attribute name beside its term.
    */
   token?: boolean;
-  /**
-   * A tier tag: a 24 px pill with a 10 px inset under an 11 px mono label in caps on its
-   * own line, the tag that names a component's tier beside its title.
-   */
-  tier?: boolean;
   /** The large pill: 26 px tall. */
   large?: boolean;
   /**
