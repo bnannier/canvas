@@ -77,7 +77,7 @@ export function Vignette() {
 
 /** Color · Ion spectrum: the five accent hues, the status fills and washes, the chart series. */
 function ColorCard() {
-  const { tokens, scheme } = useTheme();
+  const { tokens } = useTheme();
   // Each tone's fill under its on-fill ink, and its wash under its text ink (the accent's
   // `--ion-tx`, the status inks solved to 4.5:1 on their washes).
   const status = [
@@ -87,11 +87,10 @@ function ColorCard() {
     { name: "destructive", fill: tokens.destructive, onFill: tokens["destructive-foreground"], soft: tokens["destructive-soft"], ink: statusColors(tokens, "error").ink },
   ];
   const series = ([1, 2, 3, 4, 5, 6, 7, 8] as const).map((n) => tokens[`chart-${n}`]);
-  const violet = colorsFor("violet", scheme).primary;
   return (
     <ShowcaseCard
       id="c-color"
-      caption={`primary: oklch(.74 .17 var(--hue))  dark\nprimary: oklch(.5 .22 var(--hue))  light\ncolorsFor("violet", "${scheme}").primary → ${violet}`}
+      caption={`primary: oklch(.74 .17 var(--hue))  dark\nprimary: oklch(.5 .22 var(--hue))  light\ncolorsFor(palette, scheme).primary → ${tokens.primary}`}
     >
       {/* The five hues as the hand-off draws them, `oklch(.72 .17 hue)` in both schemes. */}
       <Row cozy>
@@ -372,6 +371,9 @@ function IconCard() {
 /** The accent ramp's steps (the hand-off's Swatch block ramp): lightness and chroma in oklch. */
 const RAMP: readonly (readonly [number, number])[] = [[0.32, 0.1], [0.42, 0.14], [0.52, 0.19], [0.62, 0.19], [0.74, 0.17], [0.84, 0.11], [0.93, 0.05]];
 
+/** An oklch lightness as the hand-off writes it, without the leading zero (`.32`). */
+const lightness = (l: number) => String(l).replace(/^0\./, ".");
+
 /** Emblem · Swatch: the emblem tones, a monogram, named samples and the accent ramp. */
 function EmblemCard() {
   const { tokens, palette } = useTheme();
@@ -399,9 +401,9 @@ function EmblemCard() {
       <Column compact>
         <Swatch small steps={RAMP.map(([l, c]) => oklchHex(l, c, hue))} accessibilityLabel="The accent ramp, lightness 0.32 to 0.93" />
         <Row between>
-          <Meta>{String(RAMP[0][0])}</Meta>
+          <Meta>{lightness(RAMP[0][0])}</Meta>
           <Meta>accent ramp · L in oklch</Meta>
-          <Meta>{String(RAMP[RAMP.length - 1][0])}</Meta>
+          <Meta>{lightness(RAMP[RAMP.length - 1][0])}</Meta>
         </Row>
       </Column>
     </ShowcaseCard>
