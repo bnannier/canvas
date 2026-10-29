@@ -1,4 +1,5 @@
 import { createElement, isValidElement, useId, type ReactNode, type Ref } from "react";
+import { Platform } from "react-native";
 import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg";
 import { View, Row, Column, Typography, useTheme } from "@nannier/canvas";
 import type { ExampleRender, ExampleScope } from "../../core/scope";
@@ -8,12 +9,23 @@ import type { PropDescriptors, PropValue } from "./knobs";
 // staging ground, and the one place a knob state becomes a live element.
 
 /**
+ * The hand-off's section ids: its `#cv-<id>` sections, its unlabelled header and its
+ * previous/next grid, plus `dodont` for the repository's own section. On the web a section's
+ * root carries `data-detail-section="<id>"` so tooling can photograph one section at a time:
+ * lookout.config.ts's per-section parity routes read it, and tools/v4/capture-references.ts
+ * writes the hand-off's crop of the same section under the same id.
+ */
+export type DetailSectionId = "header" | "pg" | "var" | "sz" | "st" | "an" | "props" | "a11y" | "pf" | "use" | "dodont" | "tok" | "prevnext";
+
+/**
  * One section of the detail page (the hand-off's `<section>`): its heading, drawn at the
  * h3 size and announced as a level-2 heading, a muted note under it, an optional control
  * opposite (the playground's platform switch), then the body a section's gap below. The
- * outer view is the node the jump strip scrolls to (`sectionRef`).
+ * outer view is the node the jump strip scrolls to (`sectionRef`) and, on the web, carries
+ * the section's tooling id.
  */
-export function DetailSection({ title, note, actions, sectionRef, children }: {
+export function DetailSection({ id, title, note, actions, sectionRef, children }: {
+  id: DetailSectionId;
   title: string;
   note?: ReactNode;
   actions?: ReactNode;
@@ -21,7 +33,7 @@ export function DetailSection({ title, note, actions, sectionRef, children }: {
   children: ReactNode;
 }) {
   return (
-    <View ref={sectionRef} collapsable={false}>
+    <View ref={sectionRef} collapsable={false} {...(Platform.OS === "web" ? ({ dataSet: { detailSection: id } } as object) : null)}>
       <Column relaxed>
         <Row between alignEnd wrap relaxed>
           <Column compact shrink>

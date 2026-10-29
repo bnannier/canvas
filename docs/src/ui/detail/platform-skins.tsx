@@ -42,6 +42,7 @@ export function PlatformSkinsSection({ examples, selected, onSelect, tokens, sta
   const labels = examples.map((e) => e.label);
   return (
     <DetailSection
+      id="pf"
       title="Platform skins"
       note={PLATFORMS_SHOWN.length > 1 ? "Each example on each platform: same tree, native shapes, type and touch sizes." : "Each example in this platform's skin: its native shapes, type and touch sizes."}
       sectionRef={sectionRef}

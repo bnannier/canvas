@@ -8,7 +8,9 @@
 // Chromium, and writes, per scheme:
 //   pages/<page>.png               the whole page (Library, the eight sections, Skins)
 //   cards/<card-id>.png            every section card (`#c-*`), as the section page draws it
-//   components/<slug>.png          a component's detail page down to its Platforms section
+//   components/<slug>.png          a component's whole detail page
+//   components/<slug>/<id>.png     one section of it (`DETAIL_SECTIONS` below): the crop
+//                                  Lookout judges against the docs page's same section
 //   components/<slug>-platforms.png  the detail page's three-platform skins row
 //   templates/<template>-<platform>.png  every template in every device frame
 //
@@ -29,6 +31,25 @@ const schemes = args.includes("--light-only")
     : (["dark"] as const);
 
 const SECTIONS = ["Library", "Foundations", "Layout", "Controls", "Inputs", "Navigation", "Data", "Charts", "Overlays", "Skins"];
+
+// The component page's sections, by the id the docs page's `data-detail-section` markers
+// and lookout.config.ts's section routes share: the hand-off's `#cv-*` sections, its
+// unlabelled <header> and the previous/next grid after Tokens. A section the hand-off
+// skips for a component (no variants, sizes, states, anatomy or usage) yields no file.
+const DETAIL_SECTIONS: Record<string, string> = {
+  header: "main header",
+  pg: "#cv-pg",
+  var: "#cv-var",
+  sz: "#cv-sz",
+  st: "#cv-st",
+  an: "#cv-an",
+  props: "#cv-props",
+  a11y: "#cv-a11y",
+  pf: "#cv-pf",
+  use: "#cv-use",
+  tok: "#cv-tok",
+  prevnext: "#cv-tok + div",
+};
 
 const server = Bun.serve({
   port: 0,
@@ -95,6 +116,13 @@ for (const scheme of schemes) {
     await setScheme(page, scheme);
     await shoot(page, join(dir, "components", `${slug}.png`));
     if (await page.locator("#cv-pf").count()) await shoot(page, join(dir, "components", `${slug}-platforms.png`), "#cv-pf");
+    // The navbar pill floats over whatever scrolls under it, so the section crops hide it
+    // (the nav is `height: 0`; nothing moves), as the docs' section shots scroll a section
+    // out from under their navbar. The reload at the top of the loop drops the style.
+    await page.addStyleTag({ content: "nav { visibility: hidden }" });
+    for (const [id, selector] of Object.entries(DETAIL_SECTIONS)) {
+      if (await page.locator(selector).count()) await shoot(page, join(dir, "components", slug, `${id}.png`), selector);
+    }
   }
   console.log(`${scheme} components: ${slugs.length}`);
 

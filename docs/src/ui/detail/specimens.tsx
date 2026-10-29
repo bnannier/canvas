@@ -46,6 +46,7 @@ export function VariantsSection({ examples, path, note, scope, selected, section
 }) {
   return (
     <DetailSection
+      id="var"
       title="Variants"
       note={`${examples.length} examples from ${path}, each rendered live from its own JSX.`}
       sectionRef={sectionRef}
@@ -87,7 +88,7 @@ export function SizesSection({ spec, component, props, base, scope, sectionRef }
   const sizes = spec.sizes;
   if (!sizes || sizes.options.length === 0) return null;
   return (
-    <DetailSection title="Sizes" sectionRef={sectionRef}>
+    <DetailSection id="sz" title="Sizes" sectionRef={sectionRef}>
       {/* The hand-off's sizes share the row (each `flex: 1 1 200px`), so the grid takes as many columns as there are sizes. */}
       <Grid minTileWidth={200} columns={sizes.options.length} roomy>
         {sizes.options.map((option) => (
@@ -105,6 +106,7 @@ export function StatesSection({ spec, component, props, base, scope, sectionRef 
   if (!states || states.length === 0) return null;
   return (
     <DetailSection
+      id="st"
       title="States"
       note="Hover, focus and press are pinned so they can be compared side by side; the rest are real props."
       sectionRef={sectionRef}

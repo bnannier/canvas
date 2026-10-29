@@ -46,7 +46,7 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
   // The demo's own props replace the example's too.
   const demoBase = base && { ...base, controlled: new Set([...base.controlled, ...Object.keys(spec.anatomy.props)]) };
   return (
-    <DetailSection title="Anatomy" sectionRef={sectionRef}>
+    <DetailSection id="an" title="Anatomy" sectionRef={sectionRef}>
       <Row stacks stackBreakpoint="md" roomy>
         <Column span={7}>
           <Card flush clip>
