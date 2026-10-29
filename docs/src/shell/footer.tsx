@@ -4,7 +4,7 @@ import { View, Row, Column, Container, Divider, Typography, Button } from "@nann
 import { CanvasMark } from "../brand/canvas-mark";
 import { GUIDES_ROOM } from "../data/rooms";
 import { useLatestVersion } from "../ui/use-latest-version";
-import { FOOTER } from "./page-look";
+import { FOOTER, SHELL } from "./page-look";
 
 // The docs' footer, the hand-off's (`Canvas v4.0.0 Controls.dc.html`, its <footer>): a
 // hairline, then the brand line over a short paragraph, and a mono column of meta lines
@@ -22,7 +22,10 @@ export function Footer() {
   return (
     <View
       role="contentinfo"
-      style={{ paddingTop: FOOTER.top, paddingHorizontal: FOOTER.side, paddingBottom: FOOTER.bottom, gap: FOOTER.ruleGap }}
+      // The footer sits beside the page's main landmark, not inside its frame, so it carries
+      // the hand-off's page frame itself (`max-width:1440px;margin:0 auto`, Component.dc.html
+      // line 310), centred by the scroll content around it.
+      style={{ width: "100%", maxWidth: SHELL.frameMax, paddingTop: FOOTER.top, paddingHorizontal: FOOTER.side, paddingBottom: FOOTER.bottom, gap: FOOTER.ruleGap }}
     >
       <Divider />
       {/* No cross-axis alignment: stacked, the Row is a Column whose stretch gives the
