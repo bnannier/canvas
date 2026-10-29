@@ -104,14 +104,17 @@ source affordance in the detail panel. An `href` opens through the system browse
 
 `board` owns the ticket anatomy while retaining Card's existing surface, corner,
 elevation and press behavior. It reads `ticketNumber`, `priorityLabel`, `title`,
-`description`, `statusLabel` and `typeLabel`. Priority, status, reason and type
-carry their field labels. Pass the Board render callback's
+`description`, `statusLabel` and `typeLabel`. Metadata shows the values without
+visible field-name prefixes; accessible names retain their field context. High
+and Critical priorities use the destructive text ink, Medium uses warning, and
+other priorities use muted text. Pass the Board render callback's
 `moveHandle` unchanged; Card places it at the top right beside the ticket number.
-`blocked` displays “Blocked” and reveals `blockedReason`. `aiActive` reveals
+`blocked` displays “Blocked by Discovery” when `blockedReason` is “Discovery”,
+or just “Blocked” when there is no reason. `aiActive` reveals
 “AI work in progress” with a shimmer in the text and cycling dots. Reduced motion
 keeps that label static. Title and description clamp to two lines; each other
-text row has one line. Reason and progress retain their empty slots when absent,
-so short and long tickets have the same text height.
+text row has one line. The metadata spacer and optional progress keep their
+reserved slots, so short and long tickets have the same text height.
 
 `imageSource` accepts an actual React Native image source (including authentication
 headers), with `imageLabel` for its accessible name. It adds a taller, full-bleed

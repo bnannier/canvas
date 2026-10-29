@@ -19,16 +19,16 @@ describe("Card board anatomy", () => {
     const baseline = ui({ title: "Short", description: "Short" });
     const shape = bodyShape(baseline.getByTestId);
     expect(shape).toEqual(["40px", "36px", "18px", "18px", "18px", "18px"]);
-    expect(baseline.getByTestId("ticket-priority").textContent).toBe("Priority: High");
-    expect(baseline.getByTestId("ticket-type").textContent).toBe("Type: Task");
+    expect(baseline.getByTestId("ticket-priority").textContent).toBe("High");
+    expect(baseline.getByTestId("ticket-type").textContent).toBe("Task");
     expect(baseline.getByTestId("ticket-text").style.gap).toBe("6px");
     expect(baseline.getByTestId("ticket-reason").textContent).toBe("");
     expect(baseline.getByTestId("ticket-progress").textContent).toBe("");
     baseline.unmount();
-    const active = ui({ blocked: true, blockedReason: "Actual saved blocker", aiActive: true });
+    const active = ui({ blocked: true, blockedReason: "Discovery", aiActive: true });
     expect(bodyShape(active.getByTestId)).toEqual(shape);
-    expect(active.getByTestId("ticket-status").textContent).toBe("Status: Blocked");
-    expect(active.getByTestId("ticket-reason").textContent).toBe("Reason: Actual saved blocker");
+    expect(active.getByTestId("ticket-status").textContent).toBe("Blocked by Discovery");
+    expect(active.getByTestId("ticket-reason").textContent).toBe("");
     expect(active.getByTestId("ticket-progress").getAttribute("aria-hidden")).toBeNull();
   });
 
