@@ -13,7 +13,7 @@ export interface BoardCardProps {
   ticketNumber?: string;
   priorityLabel?: string;
   statusLabel?: string;
-  /** Display Blocked as the status, and show the supplied reason in its reserved line. */
+  /** Display Blocked, or Blocked by the supplied reason, as the status. */
   blocked?: boolean;
   blockedReason?: string;
   typeLabel?: string;
@@ -72,12 +72,14 @@ export function BoardCardContent(props: CardProps & { cornerRadius: number; inse
   const [failed, setFailed] = useState<string>();
   const withImage = props.imageSource != null && failed !== sourceKey;
   const id = (part: string) => props.testID ? `${props.testID}-${part}` : undefined;
+  const reason = props.blockedReason?.trim();
+  const status = props.blocked ? (reason ? `Blocked by ${reason}` : "Blocked") : props.statusLabel;
   const metadata = <View style={s.header}>
     <View style={s.numberRow}>
       <View style={s.number}><Text testID={id("number")} numberOfLines={1} ellipsizeMode="tail" style={[s.key(tokens), { fontFamily: MONO_FONT }]}>{props.ticketNumber}</Text></View>
       <View testID={id("move")} style={s.move}>{props.moveHandle}</View>
     </View>
-    <View style={s.single}><Text testID={id("priority")} numberOfLines={1} ellipsizeMode="tail" style={s.label(tokens)}>Priority: {props.priorityLabel}</Text></View>
+    <View style={s.single}><Text testID={id("priority")} accessibilityLabel={props.priorityLabel ? `Priority: ${props.priorityLabel}` : undefined} numberOfLines={1} ellipsizeMode="tail" style={s.priority(tokens, props.priorityLabel)}>{props.priorityLabel}</Text></View>
   </View>;
   return <>
     <View testID={id("header")} style={withImage ? [s.imageHeader, { borderTopLeftRadius: props.cornerRadius, borderTopRightRadius: props.cornerRadius, backgroundColor: tokens.muted }] : props.insets.header}>
@@ -89,9 +91,9 @@ export function BoardCardContent(props: CardProps & { cornerRadius: number; inse
     <View testID={id("text")} style={[props.insets.contentBelow, s.body]}>
       <View style={s.titleSlot}><Text testID={id("title")} numberOfLines={2} ellipsizeMode="tail" style={s.title(tokens)}>{props.title}</Text></View>
       <View style={s.descriptionSlot}><Text testID={id("description")} numberOfLines={2} ellipsizeMode="tail" style={s.description(tokens)}>{props.description}</Text></View>
-      <View style={s.single}><Text testID={id("status")} numberOfLines={1} ellipsizeMode="tail" style={s.label(tokens)}>Status: {props.blocked ? "Blocked" : props.statusLabel}</Text></View>
-      <View testID={id("reason")} style={s.single}>{props.blocked ? <Text numberOfLines={1} ellipsizeMode="tail" style={s.reason(tokens)}>Reason: {props.blockedReason}</Text> : null}</View>
-      <View style={s.single}><Text testID={id("type")} numberOfLines={1} ellipsizeMode="tail" style={s.label(tokens)}>Type: {props.typeLabel}</Text></View>
+      <View style={s.single}><Text testID={id("status")} accessibilityLabel={status ? `Status: ${status}` : undefined} numberOfLines={1} ellipsizeMode="tail" style={props.blocked ? s.reason(tokens) : s.label(tokens)}>{status}</Text></View>
+      <View testID={id("reason")} style={s.single} />
+      <View style={s.single}><Text testID={id("type")} accessibilityLabel={props.typeLabel ? `Type: ${props.typeLabel}` : undefined} numberOfLines={1} ellipsizeMode="tail" style={s.label(tokens)}>{props.typeLabel}</Text></View>
       <View testID={id("progress")} style={s.single}>{props.aiActive ? <ProgressText /> : null}</View>
     </View>
   </>;

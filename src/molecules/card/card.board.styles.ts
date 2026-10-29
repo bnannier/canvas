@@ -1,7 +1,7 @@
 import type { ImageStyle } from "react-native";
 import type { ColorTokens, TextStyle, ViewStyle } from "../../style/index.js";
 
-// One fixed body for every board ticket; optional reason/progress keep their slots.
+// One fixed body for every board ticket; the metadata spacer and progress keep their slots.
 export const body: ViewStyle = { gap: 6, minWidth: 0 };
 export const header: ViewStyle = { gap: 4, minWidth: 0 };
 export const numberRow: ViewStyle = { height: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 };
@@ -19,6 +19,12 @@ export const highlight: ViewStyle = { position: "absolute", top: 0, left: 0 };
 export const dots: ViewStyle = { width: 15, height: 18 };
 
 export const label = (t: ColorTokens): TextStyle => ({ fontSize: 12, lineHeight: 18, color: t["muted-foreground"] });
+export const priority = (t: ColorTokens, value?: string): TextStyle => {
+  const name = value?.trim().toLowerCase();
+  const color = name === "critical" || name === "high" ? t["destructive-text"] ?? t.destructive
+    : name === "medium" ? t["warning-text"] ?? t.warning : t["muted-foreground"];
+  return { ...label(t), color, fontWeight: "600" };
+};
 export const key = (t: ColorTokens): TextStyle => ({ ...label(t), fontWeight: "600", color: t["card-foreground"] });
 export const title = (t: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, fontWeight: "600", color: t["card-foreground"] });
 export const description = (t: ColorTokens): TextStyle => ({ fontSize: 12, lineHeight: 18, color: t["muted-foreground"] });
