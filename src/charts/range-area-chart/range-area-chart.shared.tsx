@@ -1,5 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { Path } from "react-native-svg";
+import { useId } from "react";
+import { Circle, Path } from "react-native-svg";
+import { Defs, GlowFilter } from "../shared/chart-glow.js";
 import { View, Text, useControllableState, alpha, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
@@ -75,6 +77,11 @@ export function toneOf(p: RangeAreaChartProps): Tone {
 
 const fin = (v: number | undefined): number => (Number.isFinite(v) ? (v as number) : 0);
 
+// The inspected range's marks (the section card): the high and low marks 10 px across
+// with a 1.5 px edge over the card fill, the mid mark a 10 px disc in a 3 px card ring
+// over a 12 px glow.
+const MARK = { edge: 5, edgeStroke: 1.5, mid: 5, ring: 3, glow: 12 } as const;
+
 /** Build a RangeAreaChart from a platform skin. */
 export function createRangeAreaChart(skin: ChartSkin) {
   return function RangeAreaChart(props: RangeAreaChartProps) {
@@ -87,6 +94,7 @@ export function createRangeAreaChart(skin: ChartSkin) {
     const curved = !!props.curved;
     const formatValue = props.formatValue ?? formatCompact;
     const fill = s.barFill(tokens, toneOf(props));
+    const glowId = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}glow`;
 
     devWarn(data.length === 0 || labels.length === 0, "[canvas] <RangeAreaChart />: `labels` or `data` is empty; the chart renders with no band.");
     devWarn(
@@ -148,6 +156,9 @@ export function createRangeAreaChart(skin: ChartSkin) {
           <CartesianFrame
             yExtent={yExtent}
             xLabels={labels}
+            // The renderer's band runs point to point, the first label on the plot's left
+            // edge and the last on its right, with no half-step inset.
+            xPoints
             plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
             compact={compact}
             hideGrid={props.hideGrid}
@@ -158,7 +169,7 @@ export function createRangeAreaChart(skin: ChartSkin) {
             overlay={(layout) =>
               selected != null && layout.band && labels[selected] != null ? (
                 <ChartValueFlag
-                  title={labels[selected]}
+                  title={props.hideAxes ? labels[selected] : undefined}
                   rows={[
                     { label: "High", value: formatValue(ranges[selected].high) },
                     ...(ranges[selected].mid != null ? [{ label: "Mid", value: formatValue(ranges[selected].mid as number) }] : []),
@@ -191,6 +202,24 @@ export function createRangeAreaChart(skin: ChartSkin) {
                       strokeLinejoin="round"
                       strokeLinecap="round"
                     />
+                  ) : null}
+                  {/* The inspected range (the section card's pinned markers): hollow high
+                      and low marks, the mid mark solid in a card ring over its glow. */}
+                  {selected != null && ranges[selected] ? (
+                    <>
+                      {ranges[selected].mid != null ? (
+                        <>
+                          <Defs>
+                            <GlowFilter id={glowId} length={MARK.glow} />
+                          </Defs>
+                          <Circle cx={band.center(selected)} cy={layout.y(ranges[selected].mid as number)} r={MARK.mid} fill={tokens.glow ?? tokens.ring} filter={`url(#${glowId})`} />
+                          <Circle cx={band.center(selected)} cy={layout.y(ranges[selected].mid as number)} r={MARK.mid + MARK.ring / 2} fill={fill} stroke={tokens.card} strokeWidth={MARK.ring} />
+                        </>
+                      ) : null}
+                      {[ranges[selected].high, ranges[selected].low].map((v, k) => (
+                        <Circle key={k} cx={band.center(selected)} cy={layout.y(v)} r={MARK.edge - MARK.edgeStroke / 2} fill={tokens.card} stroke={fill} strokeWidth={MARK.edgeStroke} />
+                      ))}
+                    </>
                   ) : null}
                 </>
               );

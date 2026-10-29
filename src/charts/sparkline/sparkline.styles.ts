@@ -27,8 +27,8 @@ export interface SparklineSkin {
 export const SPARK_STRIP_HEIGHT = 24;
 
 export const webSkin: SparklineSkin = {
-  // A bar is a compact chart mark: the web's mark corner.
-  barRadius: platformShape.web.mark,
+  // A bar is the spark bar, rounded all round (the section cards' and MetricBreakdown's `rx="2"`).
+  barRadius: platformShape.web.sparkBar,
   trackRadius: platformShape.web.sparkTrack,
   gap: 2,
   height: { compact: 16, default: SPARK_STRIP_HEIGHT, tall: 32 },

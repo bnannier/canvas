@@ -29,7 +29,7 @@ export interface LineChartProps extends CartesianSeriesProps {
    * gain/loss idiom.
    */
   baseline?: number;
-  /** Soft gradient fade under each line (the price-chart look). */
+  /** Soft gradient fade under the lead (first) series' line (the price-chart look). */
   fade?: boolean;
 }
 
@@ -50,30 +50,24 @@ export function createLineChart(skin: ChartSkin) {
     const curved = !!props.curved;
     const dots = !!props.dots;
     const gradientId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+    // The fade sits under the lead series only (the renderer's `lgf` under its first line).
+    const lead = props.series[0];
 
     return chartShell(skin, props, ctx, (layout) => (
       <>
-        {/* Soft fade under each line (defs ids are unique per chart instance:
+        {/* Soft fade under the lead line (defs ids are unique per chart instance:
             SVG ids are document-global on the web). */}
-        {props.fade ? (
+        {lead && props.fade ? (
           <Defs>
-            {props.series.map((sr, i) => (
-              <LinearGradient key={`g${sr.id ?? i}`} id={`${gradientId}f${i}`} x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor={ctx.colorOf(i)} stopOpacity={CHART_LOOK.fadeTop} />
-                <Stop offset="1" stopColor={ctx.colorOf(i)} stopOpacity={0} />
-              </LinearGradient>
-            ))}
+            <LinearGradient id={`${gradientId}f`} x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={ctx.colorOf(0)} stopOpacity={CHART_LOOK.fadeTop} />
+              <Stop offset="1" stopColor={ctx.colorOf(0)} stopOpacity={0} />
+            </LinearGradient>
           </Defs>
         ) : null}
-        {props.fade
-          ? props.series.map((sr, i) => (
-              <Path
-                key={`fade${sr.id ?? i}`}
-                d={areaPath(seriesPoints(sr, props.labels, layout), layout.plotH, curved)}
-                fill={`url(#${gradientId}f${i})`}
-              />
-            ))
-          : null}
+        {lead && props.fade ? (
+          <Path d={areaPath(seriesPoints(lead, props.labels, layout), layout.plotH, curved)} fill={`url(#${gradientId}f)`} />
+        ) : null}
         {/* Dashed reference line (e.g. previous close). */}
         {baseline != null ? (
           <SvgLine
@@ -95,9 +89,10 @@ export function createLineChart(skin: ChartSkin) {
               d={curved ? monotonePath(pts) : linePath(pts)}
               stroke={color}
               strokeWidth={i === 0 ? CHART_LOOK.leadStroke : CHART_LOOK.stroke}
+              strokeDasharray={sr.dashed ? CHART_LOOK.seriesDash : undefined}
               fill="none"
               strokeLinejoin="round"
-              strokeLinecap="round"
+              strokeLinecap={sr.dashed ? "butt" : "round"}
             />
           );
         })}

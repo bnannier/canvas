@@ -308,8 +308,11 @@ describe("ProgressRing", () => {
     // The readout and the name round; the arc keeps the fraction.
     expect(getByText("73%")).toBeTruthy();
     expect(container.querySelector('[aria-label="Complete: 73%"]')).toBeTruthy();
+    // A clamped (complete) ring shows the tone's check in place of the number; its name
+    // still reads the percent.
     const clamped = ui(<ProgressRing value={140} />);
-    expect(clamped.getByText("100%")).toBeTruthy();
+    expect(clamped.queryByText("100%")).toBeNull();
+    expect(clamped.container.querySelector('[aria-label="Progress: 100%"]')).toBeTruthy();
   });
 
   it("ringDash starts the reveal at 12 o'clock and scales with the value", () => {

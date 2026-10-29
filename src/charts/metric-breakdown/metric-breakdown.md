@@ -51,6 +51,19 @@ It holds a preformatted headline `value` with its caption, an optional secondary
 </Card>
 ```
 
+### Trend strip without its tag
+
+`hideSparkTag` drops the latest-value tag over the trend strip, when the headline already carries the figure.
+
+```tsx
+<MetricBreakdown
+  value="$48,210"
+  label="Revenue"
+  spark={[31, 34, 33, 38, 41, 40, 46, 48]}
+  hideSparkTag
+/>
+```
+
 ## Do & Don't
 
 ### MetricBreakdown

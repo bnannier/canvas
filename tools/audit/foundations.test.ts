@@ -270,8 +270,9 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(consumer("BreakpointOverride", "dialog")?.through).toEqual(["`Portal` (src/style/portal.tsx)"]);
     for (const slug of ["avatar", "field", "board"]) expect(consumer("BreakpointOverride", slug)?.tier).toBe("component");
     // Chat reaches it through DataTable (its Markdown tables), Wizard through `useContainerWidth`
-    // and AppFrame through its overlay hosts.
-    expect(override.captureThrough.components).toHaveLength(33);
+    // and AppFrame through its overlay hosts. GeoMap left the list when its zoom control
+    // became a stacked column of its own (it renders no Row, whose `stacks` reads the override).
+    expect(override.captureThrough.components).toHaveLength(32);
     expect(consumer("BreakpointOverride", "chat")?.tier).toBe("component");
     expect(consumer("BreakpointOverride", "wizard")?.tier).toBe("shared");
     // Every kit overlay publishes through the layer, so it is no foundation's seam, and a seam

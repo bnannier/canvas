@@ -43,6 +43,13 @@ export interface StackedBarProps {
    *  strip under a metric's value), where a solid bar outweighs everything
    *  around it. */
   subtle?: boolean;
+  /**
+   * The capacity the segments are shares of (100 GB of storage): each segment is its value
+   * over `max`, and the room left is drawn as one remainder segment on the raised surface
+   * fill, left out of the legend. Omit to split the strip by the segments' own total. A
+   * `max` under the segments' total is ignored.
+   */
+  max?: number;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
@@ -50,17 +57,23 @@ export interface StackedBarProps {
 }
 
 /** One proportional bar split into colored segments, with a legend of shares. */
-export function StackedBar({ segments, label, hideLegend, track, tall, subtle, testID, style }: StackedBarProps) {
+export function StackedBar({ segments, label, hideLegend, track, tall, subtle, max, testID, style }: StackedBarProps) {
   const { tokens } = useTheme();
   const rawTotal = segments.reduce((sum, seg) => sum + Math.max(0, Number.isFinite(seg.value) ? seg.value : 0), 0);
+  const capacity = max != null && Number.isFinite(max) && max > rawTotal ? max : null;
   // Floor the divisor at 1 so an all-zero (or empty) bar divides cleanly to 0%
   // widths rather than producing NaN.
-  const total = Math.max(1, rawTotal);
+  const total = Math.max(1, capacity ?? rawTotal);
+  const remainder = capacity != null ? ((capacity - rawTotal) / total) * 100 : 0;
   const pct = (v: number) => (Math.max(0, Number.isFinite(v) ? v : 0) / total) * 100;
 
   // No segments, or every segment zero, both render an empty bar: warn so the
   // developer sees the degenerate input instead of a silently blank strip.
   devWarn(segments.length === 0, "[canvas] <StackedBar />: `segments` is empty; the bar renders empty.");
+  devWarn(
+    max != null && Number.isFinite(max) && max < rawTotal,
+    "[canvas] <StackedBar />: `max` is under the segments' total; the strip splits by the total instead.",
+  );
   // An all-zero bar is a mistake when nothing is drawn for it, and a deliberate
   // state once `track` is set: the rail is there to show a composition of
   // nothing. So the warning speaks only for the trackless case.
@@ -109,6 +122,9 @@ export function StackedBar({ segments, label, hideLegend, track, tall, subtle, t
             />
           )
         )}
+        {remainder > 0 ? (
+          <View style={{ flexBasis: `${remainder}%`, flexShrink: 1, backgroundColor: tokens["surface-raised"] ?? tokens.muted }} />
+        ) : null}
       </View>
       {hideLegend ? null : (
         <ChartLegend

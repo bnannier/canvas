@@ -28,6 +28,14 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 <ProgressRing value={72} compact />
 ```
 
+### Stacked label
+
+`stacked` sets the label under the ring, centred, for a row of rings each named underneath.
+
+```tsx
+<ProgressRing value={64} label="Storage" stacked />
+```
+
 ## Do & Don't
 
 ### ProgressRing

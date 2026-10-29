@@ -29,6 +29,12 @@ export interface ChartSeries {
   // (sign-ins granted vs denied), never to hand-pick a color.
   success?: boolean;
   destructive?: boolean;
+  /**
+   * Draw this series' line dashed (`5 4`, no caps), a target or a forecast, and its legend
+   * swatch as a dashed 12 px rule. Applies to line marks (LineChart, a ComposedChart `line`
+   * series, a CandlestickChart overlay).
+   */
+  dashed?: boolean;
 }
 
 /** One StackedBar segment / PieChart slice: a label and its magnitude. */

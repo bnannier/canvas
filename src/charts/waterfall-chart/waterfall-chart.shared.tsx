@@ -123,11 +123,12 @@ export function createWaterfallChart(skin: ChartSkin) {
             hideAxes={props.hideAxes}
             formatValue={formatValue}
             selectedBand={selected}
+            noGuide
             onBandScrub={setSelected}
             overlay={(layout) =>
               selected != null && layout.band && bars[selected] != null ? (
                 <ChartValueFlag
-                  title={labels[selected]}
+                  title={props.hideAxes ? labels[selected] : undefined}
                   rows={
                     bars[selected].kind === "total"
                       ? [{ label: "Total", value: formatValue(bars[selected].end) }]

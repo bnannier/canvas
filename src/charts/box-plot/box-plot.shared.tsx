@@ -138,11 +138,12 @@ export function createBoxPlot(skin: ChartSkin) {
             hideAxes={props.hideAxes}
             formatValue={formatValue}
             selectedBand={selected}
+            noGuide
             onBandScrub={setSelected}
             overlay={(layout) =>
               selected != null && layout.band && stats[selected] != null ? (
                 <ChartValueFlag
-                  title={labels[selected]}
+                  title={props.hideAxes ? labels[selected] : undefined}
                   rows={[
                     { label: "Max", value: formatValue(stats[selected].max) },
                     { label: "Q3", value: formatValue(stats[selected].q3) },
@@ -166,10 +167,15 @@ export function createBoxPlot(skin: ChartSkin) {
                   {stats.map((st, i) => {
                     const cx = band.center(i);
                     const dim = selected != null && selected !== i ? DIM_OPACITY : 1;
+                    const picked = selected === i;
+                    const cap = boxW / 2;
                     return (
                       <G key={data[i].id ?? i} opacity={dim}>
-                        {/* The whisker spine (the hand-off draws no caps). */}
+                        {/* The whisker spine, ended by a cap half the box wide at each end (the
+                            section card's whiskers; the renderer draws the spine alone). */}
                         <Line x1={cx} y1={layout.y(st.max)} x2={cx} y2={layout.y(st.min)} stroke={fill} strokeWidth={1.5} />
+                        <Line x1={cx - cap / 2} y1={layout.y(st.max)} x2={cx + cap / 2} y2={layout.y(st.max)} stroke={fill} strokeWidth={1.5} />
+                        <Line x1={cx - cap / 2} y1={layout.y(st.min)} x2={cx + cap / 2} y2={layout.y(st.min)} stroke={fill} strokeWidth={1.5} />
                         {/* The interquartile box over the spine. */}
                         <Rect
                           x={cx - boxW / 2}
@@ -177,9 +183,10 @@ export function createBoxPlot(skin: ChartSkin) {
                           width={boxW}
                           height={Math.max(1, layout.y(st.q1) - layout.y(st.q3))}
                           rx={Math.min(platformShape.web.mark, boxW / 4)}
-                          fill={alpha(fill, 0.25)}
+                          // The inspected box reads denser under a heavier edge (the section card's .38 / 2).
+                          fill={alpha(fill, picked ? 0.38 : 0.25)}
                           stroke={fill}
-                          strokeWidth={1}
+                          strokeWidth={picked ? 2 : 1}
                         />
                         {/* Median line. */}
                         <Line x1={cx - boxW / 2} y1={layout.y(st.median)} x2={cx + boxW / 2} y2={layout.y(st.median)} stroke={fill} strokeWidth={2} />

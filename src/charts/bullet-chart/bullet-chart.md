@@ -58,6 +58,23 @@ Following the classic bullet-graph anatomy each row carries its own scale, since
 />
 ```
 
+### Row tones
+
+A datum takes its own `success`, `warning` or `destructive` tone (precedence success > warning > destructive): its measure bar is the solid status colour and its value the status ink.
+
+```tsx
+<BulletChart
+  title="SLOs"
+  max={100}
+  formatValue={(v) => `${v}%`}
+  data={[
+    { label: "Availability", value: 99, target: 99, success: true },
+    { label: "Latency p95", value: 82, target: 90, warning: true },
+    { label: "Error budget", value: 41, target: 75, destructive: true }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### BulletChart

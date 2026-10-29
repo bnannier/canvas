@@ -131,6 +131,21 @@ Categorical-x series lines with nice y ticks, gridlines, and a legend for multip
 />
 ```
 
+### Dashed series
+
+A series marked `dashed` draws its line dashed with flat ends, and its legend swatch is a dashed rule: a target or a forecast beside the measured line.
+
+```tsx
+<LineChart
+  title="Signups vs target"
+  labels={["Mon", "Tue", "Wed", "Thu", "Fri"]}
+  series={[
+    { label: "Signups", values: [42, 48, 45, 61, 58] },
+    { label: "Target", values: [50, 50, 50, 50, 50], dashed: true }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Line

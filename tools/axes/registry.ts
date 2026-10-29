@@ -91,7 +91,7 @@ import { variantOf as tabsVariant, wrapsOf, type TabsProps } from "../../src/org
 import { intentOf as toastIntent } from "../../src/organisms/toast/toast.shared.tsx";
 import { toneOf as barListTone } from "../../src/charts/bar-list/bar-list.shared.tsx";
 import { toneOf as boxPlotTone } from "../../src/charts/box-plot/box-plot.shared.tsx";
-import { toneOf as bulletTone } from "../../src/charts/bullet-chart/bullet-chart.shared.tsx";
+import { toneOf as bulletTone, rowTone as bulletRowTone, type BulletDatum } from "../../src/charts/bullet-chart/bullet-chart.shared.tsx";
 import { toneOf as chartTone } from "../../src/charts/chart/chart.shared.tsx";
 import { markOf } from "../../src/charts/composed-chart/composed-chart.shared.tsx";
 import { gaugeFill, type GaugeProps } from "../../src/charts/gauge/gauge.shared.tsx";
@@ -573,6 +573,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Breakdown row.slot", components: ["BarList", "MetricBreakdown"], pages: ["bar-list", "metric-breakdown"], resolver: "src/charts/shared/breakdown-rows.tsx#slotOf", members: SLOTS, resolve: slotOf }),
   subject({ id: "BoxPlot.tone", components: ["BoxPlot"], pages: ["box-plot"], resolver: "src/charts/box-plot/box-plot.shared.tsx#toneOf", members: CHART_TONES, resolve: boxPlotTone }),
   subject({ id: "BulletChart.tone", components: ["BulletChart"], pages: ["bullet-chart"], resolver: "src/charts/bullet-chart/bullet-chart.shared.tsx#toneOf", members: CHART_TONES, resolve: bulletTone }),
+  subject<BulletDatum>({ id: "BulletChart.row tone", components: ["BulletChart"], pages: ["bullet-chart"], resolver: "src/charts/bullet-chart/bullet-chart.shared.tsx#rowTone", members: ["success", "warning", "destructive"], resolve: (d) => bulletRowTone(NAMED_TOKENS, d, "chart").fill }),
   subject({
     id: "Chart.tone",
     components: ["Chart"],

@@ -10,6 +10,7 @@ import e_charts_line_chart_example_5 from "./example-5";
 import e_charts_line_chart_example_6 from "./example-6";
 import e_charts_line_chart_example_7 from "./example-7";
 import e_charts_line_chart_example_8 from "./example-8";
+import e_charts_line_chart_example_9 from "./example-9";
 import e_charts_line_chart_dont_0_do from "./dont-0-do";
 import e_charts_line_chart_dont_0_dont from "./dont-0-dont";
 
@@ -29,13 +30,14 @@ export const docs: ComponentDocs = {
     { label: "Price vs previous close", code: "<LineChart\n  title=\"OLY · today\"\n  labels={[\"9:30\", \"10:00\", \"10:30\", \"11:00\", \"11:30\", \"12:00\", \"12:30\", \"1:00\"]}\n  series={[{ label: \"Price\", values: [186.1, 187.5, 186.8, 187.4, 188.1, 188.9, 190.5, 191.7] }]}\n  baseline={188}\n  fade\n/>", render: e_charts_line_chart_example_6 },
     { label: "Formatted values", code: "<LineChart\n  title=\"Monthly recurring revenue\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[{ label: \"MRR\", values: [112, 118, 127, 125, 138, 151] }]}\n  formatValue={(v) => `$${v}k`}\n/>", render: e_charts_line_chart_example_7 },
     { label: "Press to inspect", code: "<LineChart\n  title=\"Active users\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\", \"Jul\", \"Aug\"]}\n  series={[\n    { label: \"Web\", values: [204, 229, 252, 254, 271, 275, 272, 274] },\n    { label: \"Mobile\", values: [128, 155, 167, 183, 185, 199, 220, 228] }\n  ]}\n  defaultSelected={5}\n/>", render: e_charts_line_chart_example_8 },
+    { label: "Dashed series", code: "<LineChart\n  title=\"Signups vs target\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"]}\n  series={[\n    { label: \"Signups\", values: [42, 48, 45, 61, 58] },\n    { label: \"Target\", values: [50, 50, 50, 50, 50], dashed: true }\n  ]}\n/>", render: e_charts_line_chart_example_9, note: ["A series marked `dashed` draws its line dashed with flat ends, and its legend swatch is a dashed rule: a target or a forecast beside the measured line."] },
   ],
   donts: [
     { title: "Line", do: { caption: "Compare series that share one scale, and let the legend plus the fixed series colors carry identity.", code: "<LineChart\ntitle=\"Signups\"\nlabels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\nseries={[\n  { label: \"Web\", values: [120, 180, 150, 240, 300, 280] },\n  { label: \"Mobile\", values: [60, 90, 140, 160, 220, 260] }\n]}\ncurved\n/>\n", render: e_charts_line_chart_dont_0_do }, dont: { caption: "Mix measures of different scales on one axis: the smaller series flatlines against the baseline and reads as noise. Normalize, or use two charts.", code: "<LineChart\ntitle=\"Revenue vs conversion\"\nlabels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\nseries={[\n  { label: \"Revenue\", values: [12000, 18000, 15000, 24000, 30000, 28000] },\n  { label: \"Conversion rate\", values: [2.1, 2.4, 2.2, 2.8, 3.1, 3] }\n]}\n/>\n", render: e_charts_line_chart_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
-  props: [{"name":"LineChartProps","props":[{"name":"dots","type":"boolean","required":false,"description":"Mark each datum with a dot.","default":"false"},{"name":"baseline","type":"number","required":false,"description":"Reference value (e.g. previous close) drawn as a dashed line. A single series with no explicit tone auto-tones success/destructive by whether its last value sits above or below the baseline - the trading-app gain/loss idiom."},{"name":"fade","type":"boolean","required":false,"description":"Soft gradient fade under each line (the price-chart look).","default":"false"}],"groups":[],"inherits":["CartesianSeriesProps"]}],
+  props: [{"name":"LineChartProps","props":[{"name":"dots","type":"boolean","required":false,"description":"Mark each datum with a dot.","default":"false"},{"name":"baseline","type":"number","required":false,"description":"Reference value (e.g. previous close) drawn as a dashed line. A single series with no explicit tone auto-tones success/destructive by whether its last value sits above or below the baseline - the trading-app gain/loss idiom."},{"name":"fade","type":"boolean","required":false,"description":"Soft gradient fade under the lead (first) series' line (the price-chart look).","default":"false"}],"groups":[],"inherits":["CartesianSeriesProps"]}],
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":[],"states":[],"aria":[],"touchTarget":[]},

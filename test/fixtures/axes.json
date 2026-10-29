@@ -7767,6 +7767,32 @@
       "destructive + success": "success"
     }
   },
+  "BulletChart.row tone": {
+    "kind": "axis",
+    "components": [
+      "BulletChart"
+    ],
+    "pages": [
+      "bullet-chart"
+    ],
+    "resolver": "src/charts/bullet-chart/bullet-chart.shared.tsx#rowTone",
+    "order": [
+      "success",
+      "warning",
+      "destructive"
+    ],
+    "none": "chart",
+    "single": {
+      "success": "success",
+      "warning": "warning",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success",
+      "destructive + warning": "warning",
+      "success + warning": "success"
+    }
+  },
   "Chart.tone": {
     "kind": "axis",
     "components": [

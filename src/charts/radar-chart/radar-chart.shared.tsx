@@ -62,6 +62,10 @@ export function toneOf(p: RadarChartProps): Tone {
 
 // The graphic's height, ring radius, and the label margin around the rings.
 const PLOT = { default: { height: 240, radius: 88 }, compact: { height: 180, radius: 62 } } as const;
+// The renderer's web (cv-kit-charts.js `radar-chart`): R 80 in a 220 by 200 view, drawn at
+// up to 300 px; its rings at the quarters.
+const VIEW = { width: 220, height: 200, radius: 80, maxWidth: 300 } as const;
+const RING_FRACTIONS = [0.25, 0.5, 0.75, 1] as const;
 const MIN_AXES = 3;
 const MAX_SERIES = 4;
 const LABEL_W = 84;
@@ -95,8 +99,9 @@ export function createRadarChart(skin: ChartSkin) {
     const finite = (v: number | undefined): number => (Number.isFinite(v) ? (v as number) : 0);
     const dataMax = Math.max(1, ...series.flatMap((sr) => axes.map((_, i) => finite(sr.values[i]))));
     // A nice outer bound so the outer ring reads as a round number.
-    const { niceMax, ticks } = niceTicks(0, props.max != null && props.max > 0 ? props.max : dataMax, compact ? 3 : 4);
-    const rOf = (v: number): number => Math.max(0, Math.min(1, v / niceMax)) * plot.radius;
+    const { niceMax } = niceTicks(0, props.max != null && props.max > 0 ? props.max : dataMax, compact ? 3 : 4);
+    // The renderer's four rings, at the quarters of the outer bound.
+    const ticks = RING_FRACTIONS.map((f) => f * niceMax);
     const angleOf = (i: number): number => (i / Math.max(1, axes.length)) * 2 * Math.PI;
 
     // A series' own tone wins; a single series then takes the chart-level
@@ -109,8 +114,14 @@ export function createRadarChart(skin: ChartSkin) {
     // The polygons need the measured center (the card is fluid); the labels
     // position from the same coordinates.
     const [width, setWidth] = useState(0);
+    // The default web scales with the frame as the renderer's SVG does (R 80 in its 220 by
+    // 200 view, drawn at the frame's width up to 300 px); compact keeps its fixed plot.
+    const k = !compact && width > 0 ? Math.min(width, VIEW.maxWidth) / VIEW.width : null;
+    const radius = k != null ? VIEW.radius * k : plot.radius;
+    const plotHeight = k != null ? Math.round(VIEW.height * k) : plot.height;
+    const rOf = (v: number): number => Math.max(0, Math.min(1, v / niceMax)) * radius;
     const cx = width / 2;
-    const cy = plot.height / 2;
+    const cy = plotHeight / 2;
 
     return (
       <View
@@ -134,11 +145,11 @@ export function createRadarChart(skin: ChartSkin) {
           accessibilityLabel={name}
           aria-label={name}
           onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-          style={{ height: plot.height }}
+          style={{ height: plotHeight }}
         >
           {width > 0 && axes.length >= MIN_AXES ? (
             <>
-              <Svg width={width} height={plot.height} style={{ position: "absolute" }}>
+              <Svg width={width} height={plotHeight} style={{ position: "absolute" }}>
                 {/* Concentric polygon rings at each tick fraction, and a
                     spoke per axis. */}
                 {!props.hideGrid
@@ -173,7 +184,7 @@ export function createRadarChart(skin: ChartSkin) {
               {/* Spoke labels: real RN Text just beyond the outer ring,
                   centered on the spoke's direction. */}
               {axes.map((axis, i) => {
-                const p = polarPoint(cx, cy, plot.radius + 12, angleOf(i));
+                const p = polarPoint(cx, cy, radius + 12, angleOf(i));
                 // Shift the label box along the spoke direction so top labels
                 // sit above, bottom labels below, and side labels beside.
                 const dx = Math.sin(angleOf(i));

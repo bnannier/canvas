@@ -71,9 +71,10 @@ export function RadialBarChart(props: RadialBarChartProps) {
   // The hand-off's rings sit 16 apart at a 10 stroke: a 6 px gap.
   const gap = 6;
   const center = size / 2;
-  // Rings grow outward from an inner hole; the outermost ring hugs the disc.
+  // The first series is the outermost ring, hugging the disc, and each next ring steps
+  // inward (the renderer's `r = 74 - i * 16`).
   const rOuter = center - stroke / 2;
-  const radiusOf = (i: number): number => rOuter - (data.length - 1 - i) * (stroke + gap);
+  const radiusOf = (i: number): number => rOuter - i * (stroke + gap);
 
   // Press-to-inspect: nearest ring by press radius, cleared elsewhere.
   const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);

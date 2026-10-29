@@ -1,7 +1,6 @@
 import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, tabularNums, type ColorTokens } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
-import { estimateTextWidth } from "./chart-math.js";
 import { deltaTone } from "../../molecules/stats/stats.styles.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { MONO_FONT } from "../../style/mono.js";
@@ -111,7 +110,11 @@ const LIST_WASH = 0.22;
 /** The shared renderer. Each row is one accessible item; the bar is decorative. */
 // A row's share and its delta beside the value: value annotations.
 const SHARE_TYPE = { fontSize: 11, lineHeight: 16 };
-const DELTA_TYPE = { fontSize: 11, lineHeight: 16, fontWeight: "500" as const };
+// The delta: the section's bar list sets it in the mono face, 500 11 px on the face's 14 px
+// normal line, right-aligned in a 38 px slot (wider only for a longer delta).
+const DELTA_TYPE = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "500" as const };
+const DELTA_SLOT = 38;
+const MONO_ADVANCE = 0.6;
 
 export function BreakdownRows({ rows, share, percent, tone, compact, formatValue, onPressRow, bars }: BreakdownRowsProps) {
   const { tokens } = useTheme();
@@ -124,7 +127,7 @@ export function BreakdownRows({ rows, share, percent, tone, compact, formatValue
   // column aligns by layout; tabular figures are inconsistent across Android
   // fonts and stay a progressive enhancement.
   const deltas = rows.filter((r) => r.delta != null && r.delta !== "");
-  const deltaWidth = deltas.length > 0 ? Math.ceil(Math.max(...deltas.map((r) => estimateTextWidth(r.delta as string, 11)))) + 2 : 0;
+  const deltaWidth = deltas.length > 0 ? Math.max(DELTA_SLOT, Math.ceil(Math.max(...deltas.map((r) => [...(r.delta as string)].length * 11 * MONO_ADVANCE))) + 2) : 0;
 
   return (
     <View style={{ gap: bars ? (compact ? 4 : 6) : 8 }}>

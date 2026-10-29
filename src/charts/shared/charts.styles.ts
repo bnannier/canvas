@@ -51,8 +51,13 @@ export const CHART_LOOK = {
   axisLine: 14,
   /** Gridlines: a dotted `2 4` hairline, the baseline (the 0 line) solid. */
   gridDash: "2,4",
-  /** The selection guide: a dashed `2 3` line in the muted ink. */
-  guideDash: "2,3",
+  /**
+   * The selection guide: a dashed `3 4` line in the third ink (the section cards' pinned
+   * guides; the renderers draw no selection).
+   */
+  guideDash: "3,4",
+  /** A dashed series (a target or forecast line): the section cards' `5 4` dash, no caps. */
+  seriesDash: "5,4",
   /** The first series' line is 2.2 wide, every other 2. */
   leadStroke: 2.2,
   stroke: 2,
@@ -63,13 +68,21 @@ export const CHART_LOOK = {
   areaLead: 0.28,
   area: 0.3,
   fadeTop: 0.35,
-  /** Legend: 8 px squares at the data-cell corner, a 6 px swatch gap, 6 / 14 px row / column gaps, 12 px label. */
+  /**
+   * Legend: 8 px squares at the data-cell corner, a 6 px swatch gap, 6 / 14 px row / column
+   * gaps, the 400 12 px label on Instrument Sans's 15 px normal line (the renderer's `leg`
+   * sets no ratio); a line mark's swatch is a 12 by 2 rule (dashed `4 2` for a dashed series);
+   * a legend's trailing note is 11 px mono.
+   */
   swatch: 8,
   swatchGap: 6,
   legendRowGap: 6,
   legendColumnGap: 14,
   legendSize: 12,
-  legendLine: 16,
+  legendLine: 15,
+  legendCaptionSize: 11,
+  ruleSwatch: 12,
+  ruleDash: "4,2",
 } as const;
 
 // Surface padding by density (the hand-off's frame: 12 compact, 16 default).
@@ -202,8 +215,8 @@ export function horizontalBar(fill: string, width: number, radius: number, heigh
 // byte-identical.
 
 /**
- * The zoom control bar, laid OVER a zoomable chart's plot at its bottom-right, the
- * corner every map puts its controls in.
+ * The zoom control, laid OVER a zoomable chart's plot 8 px in from its bottom-right
+ * corner, the corner every map puts its controls in.
  *
  * Absolutely positioned rather than stacked under the plot, for two reasons: it
  * takes no layout space, so the map keeps its full height, and it stays a SIBLING
@@ -216,7 +229,26 @@ export function horizontalBar(fill: string, width: number, radius: number, heigh
  * A kit-internal constant: the placement is the chart's decision, never a
  * call-site style.
  */
-export const zoomBar: ViewStyle = { position: "absolute", right: 0, bottom: 0, flexDirection: "row" };
+export const zoomBar: ViewStyle = { position: "absolute", right: 8, bottom: 8, flexDirection: "column" };
+
+/**
+ * The zoom control's frame (the renderer's `geo-map` stack): the card fill inside the
+ * field-border hairline at the zoom control's corner, clipping its buttons.
+ */
+export function zoomStack(tokens: ColorTokens): ViewStyle {
+  return {
+    borderRadius: platformShape.web.zoomControl,
+    borderWidth: 1,
+    borderColor: tokens["field-border"] ?? tokens.border,
+    backgroundColor: tokens.card,
+    overflow: "hidden",
+  };
+}
+
+/** The hairline between the zoom control's buttons. */
+export function zoomRule(tokens: ColorTokens): ViewStyle {
+  return { height: 1, backgroundColor: tokens.border };
+}
 
 export const webSkin: ChartSkin = {
   surfaceRadius: shape.web.card,
