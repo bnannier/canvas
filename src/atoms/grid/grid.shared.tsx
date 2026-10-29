@@ -145,6 +145,9 @@ export function gridRowGapOf(props: Pick<GridProps, "rowsSection" | "rowsCozy">)
   return null;
 }
 
+/** The most a whole-px measure can overstate the box it measured. */
+const MEASURE_ROUNDING = 0.5;
+
 /** Build a Grid component from a platform skin (the shared layout scale). */
 export function createGrid(skin: FlexSkin) {
   return function Grid(props: GridProps) {
@@ -154,9 +157,15 @@ export function createGrid(skin: FlexSkin) {
     // clamped into the viewport bucket) as the pre-measurement guess (the
     // docs-catalog precedent: onLayout alone hides everything on the first web
     // paint).
-    const { width, onLayout } = useContainerWidth();
+    const { width, measured, onLayout } = useContainerWidth();
     const cols = gridColumns(width, minTileWidth, gapPx, columns);
-    const cellWidth = width > 0 ? gridCellWidth(width - (props.flow ? 1 : 0), cols, gapPx) : undefined;
+    // A measure is whole px (react-native-web reports the rounded box, and
+    // useMeasuredWidth rounds), so a 324.66 px row reads as 325: several cells split
+    // the width less the half pixel the rounding may have added, or three 103 px cells
+    // overflow the real row and the last one wraps. The seed (the window) and a lone
+    // cell need no allowance.
+    const slack = props.flow ? 1 : measured && cols > 1 ? MEASURE_ROUNDING : 0;
+    const cellWidth = width > 0 ? gridCellWidth(width - slack, cols, gapPx) : undefined;
     // The root spans its parent (FILL), so the measured width is the parent's
     // and not the cells' own; `style` stays last so a `maxWidth` still bounds it.
     const fill = useFillStyle("Grid");
