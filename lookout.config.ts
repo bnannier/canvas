@@ -219,6 +219,8 @@ const HIDE_BANNER = "lookout-hide-banner";
 const NUDGE_MARKER = "data-lookout-nudge";
 const SECTION_TOP = 100;
 const SECTION_HEADROOM = 200;
+/** Grow rounds before a fit state gives up on a section that keeps growing. */
+const FIT_ROUNDS = 10;
 /** The section's box, measured twice a few frames apart until it holds still. */
 async function settledSectionHeight(page: Page, selector: string): Promise<number> {
   let last = -1;
@@ -252,8 +254,14 @@ function fitState(description: string, selector: string): StateRecipe {
       // backdrop settle: a crop past the painted window showed the document under the last
       // cards (the 2026-10-28 rulings on Variants and Usage), and growing to the element's
       // exact height left no room for a late layout pass.
+      // A tall section keeps growing as the window reveals it (at tablet and phone width the
+      // Variants examples mount as they come into view, so each taller window adds cards: the
+      // 2026-10-29 Button run stopped after three rounds and photographed 6498 of its 7114
+      // px), so grow until the height holds, and refuse to shoot a section the window still
+      // does not hold rather than hand the judge a clipped crop.
       const width = viewport?.width ?? 1440;
-      for (let round = 0; round < 3; round++) {
+      let held = false;
+      for (let round = 0; round < FIT_ROUNDS && !held; round++) {
         const height = await settledSectionHeight(page, selector);
         await page.setViewportSize({ width, height: Math.min(height + SECTION_TOP + SECTION_HEADROOM, 16000) });
         await page.waitForTimeout(400);
@@ -262,8 +270,12 @@ function fitState(description: string, selector: string): StateRecipe {
           if (scroller) scroller.scrollTop += node.getBoundingClientRect().top - top;
         }, SECTION_TOP);
         await page.waitForTimeout(400);
-        const after = await settledSectionHeight(page, selector);
-        if (after === height) break;
+        held = (await settledSectionHeight(page, selector)) === height;
+      }
+      const box = await page.locator(selector).first().boundingBox();
+      const grown = page.viewportSize();
+      if (!held || !box || !grown || box.y + box.height > grown.height) {
+        throw new Error(`${selector} did not settle inside the grown window (${box ? Math.round(box.y + box.height) : "no box"} past ${grown?.height ?? "?"} px)`);
       }
       await page
         .waitForFunction(() => {
