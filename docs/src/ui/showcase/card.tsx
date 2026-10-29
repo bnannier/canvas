@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useRouter } from "expo-router";
 import { Card, Chip, Column, Grid, Icon, Row, Typography, View, useTheme } from "@nannier/canvas";
 import { CARD_BORDER } from "../../../../src/molecules/card/card.styles.js";
+import { pageRoles } from "../../../../src/style/type-scale.js";
 import { getComponent } from "../../core/data/components";
 import { showcaseCard } from "../../data/showcase";
 
@@ -169,29 +170,80 @@ export function ShowcaseCard({ id, title, meta, links, caption, tinyCaption, spl
       </Card>
     );
   }
-  return (
-    // The card's own density spaces its three parts 20 apart; the composition takes the
-    // slack a grid row hands the card, so the caption sits at the foot.
-    <Card showcaseCorners roomy grow testID={`showcase-${id}`}>
-      {head.title != null || head.meta != null || chips.length > 0 ? (
-        <Column roomy>
-          {head.title != null || head.meta != null ? (
-            // Both lines shrink and wrap when the row runs out of room, as the hand-off's
-            // flex items do; a React Native box would otherwise keep its text's width.
-            <Row between cozy alignStart>
-              <Column shrink><Typography pageLabel mono muted>{head.title ?? ""}</Typography></Column>
-              {head.meta != null ? <Column shrink><Typography pageLabel mono muted right>{head.meta}</Typography></Column> : null}
-            </Row>
-          ) : null}
-          {chips.length > 0 ? (
-            <Row wrap compact>
-              {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
-            </Row>
-          ) : null}
-        </Column>
+  // The hand-off's own inset and gap for this card (docs/src/data/showcase.ts, derived from
+  // its inline style): most cards are 24 and 20, the Charts cards 20 and 14, the Data cards 24
+  // and 16, the DataTable card unpadded. The inset is the Card's density; one Column carries the
+  // gap between the header, the composition and the caption, from the layout gap scale. The
+  // header and the chips sit the card's gap plus the header's own margin apart, less the chip
+  // row's `margin-top:-6px` (14 on a 20 card, 8 on a Charts card, 22 on the Form card).
+  const header = head.title != null || head.meta != null || chips.length > 0 ? (
+    <GapColumn gap={spec?.headGap ?? 14}>
+      {head.title != null || head.meta != null ? (
+        // Both lines shrink and wrap when the row runs out of room, as the hand-off's
+        // flex items do; a React Native box would otherwise keep its text's width.
+        // A CSS flex item never shrinks below its longest word (`min-width:auto`), where a
+        // React Native box shrinks to nothing and breaks the word ("CANDLESTICKCH ART" at 375).
+        // The label is monospaced, so that floor is exact: the longest word's advance.
+        <Row between cozy alignStart>
+          <Column shrink style={{ minWidth: wordFloor(head.title ?? "") }}><Typography pageLabel mono muted>{head.title ?? ""}</Typography></Column>
+          {head.meta != null ? <Column shrink style={{ minWidth: wordFloor(head.meta) }}><Typography pageLabel mono muted right>{head.meta}</Typography></Column> : null}
+        </Row>
       ) : null}
-      <Column grow spacious>{children}</Column>
-      {caption == null ? null : tinyCaption ? <Typography tiny mono muted>{caption}</Typography> : <Typography cardNote mono>{caption}</Typography>}
-    </Card>
+      {chips.length > 0 ? (
+        <Row wrap compact>
+          {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
+        </Row>
+      ) : null}
+    </GapColumn>
+  ) : null;
+  return (
+    // The composition takes the slack a grid row hands the card, so the caption sits at the foot.
+    <FrameCard inset={spec?.inset ?? 24} testID={`showcase-${id}`}>
+      <GapColumn gap={spec?.gap ?? 20} grow>
+        {header}
+        <Column grow spacious>{children}</Column>
+        {caption == null ? null : tinyCaption ? <Typography tiny mono muted>{caption}</Typography> : <Typography cardNote mono>{caption}</Typography>}
+      </GapColumn>
+    </FrameCard>
   );
+}
+
+/** JetBrains Mono's advance, 600 units of its 1000 em: every glyph is 0.6 em wide. */
+const MONO_ADVANCE = 0.6;
+
+/** The header label's longest word, the width a CSS flex item keeps (`min-width:auto`). */
+function wordFloor(text: string): number {
+  const { fontSize, letterSpacing } = pageRoles.pageLabel;
+  const longest = Math.max(0, ...text.split(/\s+/).map((word) => [...word].length));
+  return Math.ceil(longest * (fontSize * MONO_ADVANCE + letterSpacing));
+}
+
+/** The frame card at the hand-off card's inset: 24 the `roomy` density, 20 the default, 0 flush. */
+function FrameCard({ inset, testID, children }: { inset: number; testID: string; children: ReactNode }) {
+  switch (inset) {
+    case 24: return <Card showcaseCorners roomy grow testID={testID}>{children}</Card>;
+    case 20: return <Card showcaseCorners grow testID={testID}>{children}</Card>;
+    case 0: return <Card showcaseCorners flush grow testID={testID}>{children}</Card>;
+    default: throw new Error(`ShowcaseCard: no Card density for a ${inset} px inset`);
+  }
+}
+
+/** A Column at one of the hand-off card gaps, as the layout gap step that draws it. */
+function GapColumn({ gap, grow, children }: { gap: number; grow?: boolean; children: ReactNode }) {
+  switch (gap) {
+    case 0: return <Column flush grow={grow}>{children}</Column>;
+    case 4: return <Column tight grow={grow}>{children}</Column>;
+    case 8: return <Column snug grow={grow}>{children}</Column>;
+    case 10: return <Column comfortable grow={grow}>{children}</Column>;
+    case 12: return <Column cozy grow={grow}>{children}</Column>;
+    case 14: return <Column roomy grow={grow}>{children}</Column>;
+    case 16: return <Column relaxed grow={grow}>{children}</Column>;
+    case 18: return <Column airy grow={grow}>{children}</Column>;
+    case 20: return <Column spacious grow={grow}>{children}</Column>;
+    case 22: return <Column generous grow={grow}>{children}</Column>;
+    case 24: return <Column loose grow={grow}>{children}</Column>;
+    case 26: return <Column section grow={grow}>{children}</Column>;
+    case 32: return <Column apart grow={grow}>{children}</Column>;
+    default: throw new Error(`ShowcaseCard: no layout gap step for ${gap} px`);
+  }
 }
