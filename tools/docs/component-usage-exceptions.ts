@@ -78,6 +78,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "A lead section (the Library hero) sits above the capped page frame at the scroll content's full width, so its backdrop reaches the window's edges as the hand-off's does; it paints nothing itself.",
   },
   {
+    file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["alignItems", "width"], occurrences: 1,
+    reason: "The main landmark holds the lead and the capped page frame at the scroll content's full width and centres the frame, so the footer can follow it as a sibling contentinfo (the hand-off's main then footer); it paints nothing itself.",
+  },
+  {
     file: "docs/src/ui/page.tsx", owner: "content", tag: "View", attribute: "style", keys: ["paddingLeft"], occurrences: 1,
     reason: "The page content clears the web shell's room rail at the frame's start edge (the rail and its 28 px gap, decision S9); docs scaffolding, zero where no rail stands.",
   },
@@ -150,8 +154,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The hand-off rail's own scroll padding (`padding:4px 6px 32px 0` on its aside), around the kit Sidebar it scrolls.",
   },
   {
-    file: "docs/src/shell/footer.tsx", owner: "Footer", tag: "View", attribute: "style", keys: ["gap", "paddingBottom", "paddingHorizontal", "paddingTop"], occurrences: 1,
-    reason: "The v4 hand-off's footer frame (FOOTER in page-look.ts: 96 px over, 48 px beside, 64 px under, 32 px under its hairline); everything inside it is a kit component.",
+    file: "docs/src/shell/footer.tsx", owner: "Footer", tag: "View", attribute: "style", keys: ["gap", "maxWidth", "paddingBottom", "paddingHorizontal", "paddingTop", "width"], occurrences: 1,
+    reason: "The v4 hand-off's footer frame (FOOTER in page-look.ts: 96 px over, 48 px beside, 64 px under, 32 px under its hairline), capped at the hand-off's 1440 px page frame since it sits beside the main landmark rather than inside the page frame; everything inside it is a kit component.",
   },
   {
     file: "docs/src/ui/detail/frame.tsx", owner: "DotGrid", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,

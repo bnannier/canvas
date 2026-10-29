@@ -113,9 +113,7 @@ export function Page({ children, lead, viewportOverlays = false }: {
             </View>
           </ContentHost>
         </View>
-        <View style={{ width: "100%", maxWidth: SHELL.frameMax }}>
-          <Footer />
-        </View>
+        <Footer />
       </ScrollView>
   );
   return (
