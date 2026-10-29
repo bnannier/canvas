@@ -27,7 +27,38 @@ test("every prose chip row is .88 of its reading role in the chip's box", () => 
     const reading = readings[role as keyof typeof readings];
     expect(row, role).toEqual({ fontSize: scale(reading.fontSize), lineHeight: scale(reading.lineHeight), ...INLINE_CODE_BOX });
   }
-  expect(Object.keys(inlineCodeType).sort()).toEqual(["body", "caption", "cardBody", "guideBody", "lead", "pageBody", "pageLead", "pageNote", "sectionLead", "sectionNote", "small", "tiny"]);
+  expect(Object.keys(inlineCodeType).sort()).toEqual(["body", "caption", "cardBody", "guideBody", "lead", "pageBody", "pageLead", "pageNote", "sectionLead", "sectionNote", "small", "specText", "tiny"]);
+});
+
+// The reference sheet's cells (Component.dc.html line 238): the type and default cells
+// `font:400 12px/1.55 var(--fm)` in `--tx2` and `--tx3`, the description `font:400 13px/1.55
+// var(--ft);color:var(--tx2)`.
+test("specMeta is the sheet's 400 12/1.55 meta cell in the caller's face and ink, specText its 400 13/1.55 secondary text cell", () => {
+  render(
+    <ThemeProvider dark solid>
+      <Typography specMeta mono subtle>ReactNode</Typography>
+      <Typography specMeta mono muted>false</Typography>
+      <Typography specMeta>bare</Typography>
+      <Typography specText>An icon before the label.</Typography>
+    </ThemeProvider>,
+  );
+  const type = screen.getByText("ReactNode");
+  expect(type.style.fontSize).toBe("12px");
+  expect(type.style.lineHeight).toBe("18.6px");
+  expect(type.style.fontWeight).toBe("400");
+  expect(type.style.fontFamily).toContain("mono");
+  expect(rgb(type.style.color)).toEqual(rgb(dark["muted-foreground"]));
+  expect(rgb(screen.getByText("false").style.color)).toEqual(rgb(dark["subtle-foreground"]!));
+  const bare = screen.getByText("bare");
+  expect(bare.style.fontFamily).not.toContain("mono");
+  expect(rgb(bare.style.color)).toEqual(rgb(dark.foreground));
+  const text = screen.getByText("An icon before the label.");
+  expect(text.style.fontSize).toBe("13px");
+  expect(text.style.lineHeight).toBe("20.15px");
+  expect(text.style.fontWeight).toBe("400");
+  expect(text.style.fontFamily).not.toContain("mono");
+  expect(rgb(text.style.color)).toEqual(rgb(dark["muted-foreground"]));
+  expect(screen.queryByRole("heading")).toBeNull();
 });
 
 test("pageLabel is the page's 500 11/1 mono label tracked .08em in the subtle ink", () => {

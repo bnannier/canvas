@@ -238,7 +238,7 @@ recorded deviation above. What follows from it:
   the hand-off draws it: Typography `code inline` (the prose chip), `pageLabel`, `guideTitle`,
   `guideBody` and `pagerName`; Chip `token` and `square`; Swatch `tiny`, `ring` and
   `decorative`; CodeBlock `unbadged` and the jsx grammar of the hand-off's `hl()`; DataTable
-  `eyebrowHeader`, `alignTop` and `footer`; Card `calloutCorners`, `largeCorners`,
+  `reference`, `alignTop` and `footer`, Collapsible `reference`, Typography `specMeta` and `specText`; Card `calloutCorners`, `largeCorners`,
   `stageCorners`, `outlined`, `panel`, `guide`, `linkTile`, `pager`, and CardMedia `stage`
   and `playground`; Button `plainLink`, its own 14 px loading arc on the web and the
   theme-choice disc; Badge `marker`; AnatomyProvider `zoomed` (the 1.6 scale transform with

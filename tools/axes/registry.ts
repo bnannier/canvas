@@ -79,7 +79,7 @@ import { sizeOf as phoneInputSize } from "../../src/molecules/phone-input/phone-
 import { variantOf as stackedListVariant, badgeToneOf } from "../../src/molecules/stacked-lists/stacked-lists.shared.tsx";
 import { surfaceOf as statsSurface, accentOf, deltaOf } from "../../src/molecules/stats/stats.shared.tsx";
 import { densityOf as calendarDensity, viewOf } from "../../src/organisms/calendar/calendar.shared.tsx";
-import { densityOf as dataTableDensity, columnAlignOf, headerTypeOf, rowAlignOf } from "../../src/organisms/data-table/data-table.shared.tsx";
+import { densityOf as dataTableDensity, columnAlignOf, lookOf as dataTableLook, rowAlignOf } from "../../src/organisms/data-table/data-table.shared.tsx";
 import { sizeOf as dialogSize } from "../../src/organisms/dialog/dialog.shared.tsx";
 import { edgeOf } from "../../src/organisms/drawer/drawer.shared.tsx";
 import { densityOf as filterPanelDensity } from "../../src/organisms/filter-panel/filter-panel.shared.tsx";
@@ -400,7 +400,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Typography"],
     pages: ["typography"],
     resolver: "src/atoms/typography/typography.shared.tsx#roleOf",
-    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "pagerName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "lead", "mono", "caption", "small", "tiny", "body", "muted"],
+    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "pagerName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "specText", "specMeta", "lead", "mono", "caption", "small", "tiny", "body", "muted"],
     resolve: roleOf,
     notes: ["`muted` is both a role and a tone."],
   }),
@@ -493,7 +493,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Calendar.view", components: ["Calendar"], pages: ["calendar"], resolver: "src/organisms/calendar/calendar.shared.tsx#viewOf", members: ["day", "week"], resolve: viewOf }),
   subject({ id: "DataTable.density", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#densityOf", members: ["compact", "comfortable"], resolve: dataTableDensity }),
   subject({ id: "DataTable.column align", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#columnAlignOf", members: ["numeric", "centered"], resolve: columnAlignOf }),
-  subject({ id: "DataTable.header type", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#headerTypeOf", members: ["eyebrowHeader"], resolve: headerTypeOf, notes: ["Where the platform skin draws no eyebrow header, the table keeps its own column headings."] }),
+  subject({ id: "DataTable.look", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#lookOf", members: ["reference"], resolve: dataTableLook, notes: ["Where the platform skin draws no reference sheet (iOS), the table keeps its own look."] }),
   subject({ id: "DataTable.row align", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#rowAlignOf", members: ["alignTop"], resolve: rowAlignOf, notes: ["A `stacks` table holds its cells at the top once stacked, whatever this says."] }),
   subject({ id: "Dialog.size", components: ["Dialog"], pages: ["dialog"], resolver: "src/organisms/dialog/dialog.shared.tsx#sizeOf", members: ["xs", "small", "medium", "large", "wide"], resolve: dialogSize }),
   subject({ id: "Drawer.edge", components: ["Drawer"], pages: ["drawer"], resolver: "src/organisms/drawer/drawer.shared.tsx#edgeOf", members: ["right", "bottom", "top", "left"], resolve: edgeOf }),

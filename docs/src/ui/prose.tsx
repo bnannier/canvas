@@ -14,7 +14,7 @@ export function Rule() { return <Divider />; }
 // The reading role a line of prose is set in. A strong run repeats it at semibold, so a
 // bold word keeps its paragraph's size; a heading is set strong already, so a strong run
 // in one is its plain text. A code span takes the same role so its chip sizes from it.
-type ReadingRole = { lead?: boolean; pageLead?: boolean; sectionLead?: boolean; pageBody?: boolean; pageNote?: boolean; small?: boolean };
+type ReadingRole = { lead?: boolean; pageLead?: boolean; sectionLead?: boolean; pageBody?: boolean; pageNote?: boolean; specText?: boolean; small?: boolean };
 type ProseRole = ReadingRole & { subtle?: boolean; heading?: boolean };
 
 /**
@@ -23,8 +23,8 @@ type ProseRole = ReadingRole & { subtle?: boolean; heading?: boolean };
  * role it sits in. The chip keeps its regular weight and its own foreground ink inside a
  * strong or subtle run, as the hand-off applies bold and code independently.
  */
-export function InlineCode({ children, lead, pageLead, sectionLead, pageBody, pageNote, small }: { children: ReactNode } & ReadingRole) {
-  return <Typography code inline lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} small={small}>{children}</Typography>;
+export function InlineCode({ children, lead, pageLead, sectionLead, pageBody, pageNote, specText, small }: { children: ReactNode } & ReadingRole) {
+  return <Typography code inline lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} specText={specText} small={small}>{children}</Typography>;
 }
 
 /**
@@ -33,12 +33,12 @@ export function InlineCode({ children, lead, pageLead, sectionLead, pageBody, pa
  * its strong runs at semibold, nothing printed with its Markdown syntax
  * (docs/src/lib/inline-markdown.ts, the grammar the generator holds every page to).
  */
-export function InlineMarkdown({ text, lead, pageLead, sectionLead, pageBody, pageNote, small, subtle, heading }: { text: string } & ProseRole) {
+export function InlineMarkdown({ text, lead, pageLead, sectionLead, pageBody, pageNote, specText, small, subtle, heading }: { text: string } & ProseRole) {
   return (
     <>
       {parseInline(text).map((run, i) => {
-        if (run.code) return <InlineCode key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} small={small}>{run.text}</InlineCode>;
-        if (run.strong && !heading) return <Typography key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} small={small} subtle={subtle} semibold>{run.text}</Typography>;
+        if (run.code) return <InlineCode key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} specText={specText} small={small}>{run.text}</InlineCode>;
+        if (run.strong && !heading) return <Typography key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} specText={specText} small={small} subtle={subtle} semibold>{run.text}</Typography>;
         return run.text;
       })}
     </>

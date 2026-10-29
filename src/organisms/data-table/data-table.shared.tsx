@@ -201,18 +201,20 @@ export interface DataTableProps {
   /** Looser vertical padding on header and data cells. */
   comfortable?: boolean;
   /**
-   * Set the column headings as the page's small uppercase mono label (the props table's
-   * PROP, TYPE, DEFAULT and DESCRIPTION) on a header row with no fill of its own, 12 px
-   * above and below whatever the density, in place of the header band's sentence-case
-   * labels.
+   * The reference sheet (a component page's props table): the column headings as the
+   * page's small uppercase mono label on a header row with no fill of its own, 12 px above
+   * and below whatever the density; rows 10 px above and below with a rule above each;
+   * the columns 16 px apart and 16 px in from the frame's sides; and the frame at the
+   * panel corner on the `border` hairline over the card fill, so `bordered` only firms the
+   * hairline and `attached` still drops the frame.
    * <!-- only: web -->
-   * On iOS the table keeps its own column headings and this changes nothing.
+   * On iOS the table keeps its own look and this changes nothing.
    * <!-- /only -->
    * <!-- only: ios -->
-   * The table keeps its own column headings and this changes nothing.
+   * The table keeps its own look and this changes nothing.
    * <!-- /only -->
    */
-  eyebrowHeader?: boolean;
+  reference?: boolean;
   /**
    * Align every cell to the top of its row rather than its middle, so a row whose
    * description wraps keeps its name, type and default beside the description's first
@@ -363,10 +365,10 @@ export function densityOf(p: DataTableProps): Density {
   return "regular";
 }
 
-// The header's type: the page label (`eyebrowHeader`) or the band's own label.
-export function headerTypeOf(p: Pick<DataTableProps, "eyebrowHeader">): "eyebrow" | "label" {
-  if (p.eyebrowHeader) return "eyebrow";
-  return "label";
+// The table's look: the reference sheet (`reference`) or the skin's own table.
+export function lookOf(p: Pick<DataTableProps, "reference">): "reference" | "table" {
+  if (p.reference) return "reference";
+  return "table";
 }
 
 // Where a row holds its cells: the top (`alignTop`) or the middle.
@@ -423,6 +425,9 @@ const HEADER_CELL_BOX: ViewStyle = {
   gap: 4,
   paddingHorizontal: 16,
 };
+// A reference sheet's cell carries no horizontal padding: the row's own gap and side inset
+// space the columns (the skin's `reference.columns`).
+const NO_CELL_INSET: ViewStyle = { paddingHorizontal: 0 };
 
 // A group band's one cell: the label, adornment and count in a row (the skin's band
 // carries the padding and the fill).
@@ -572,12 +577,19 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   return function DataTable(props: DataTableProps) {
     const { columns, striped, bordered, attached, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, footer, testID, style } = props;
     const density = densityOf(props);
-    // The eyebrow header is the skin's where the skin draws one (web, Android); iOS keeps
-    // its own column headings (design-language item 4).
-    const eyebrow = headerTypeOf(props) === "eyebrow" ? skin.eyebrowHeader : undefined;
+    // The reference sheet is the skin's where the skin draws one (web, Android); iOS keeps
+    // its own table (design-language item 4).
+    const ref = lookOf(props) === "reference" ? skin.reference : undefined;
     const topAligned = rowAlignOf(props) === "top";
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
+    // The parts the reference sheet replaces, resolved once: the row (with the sheet's side
+    // inset and column gap), the cell padding, the header cell's inset, and the gap alone
+    // for a cell group inside a row that already carries the inset.
+    const rowStyle: StyleProp<ViewStyle> = ref ? [ref.dataRow(tokens), ref.columns] : skin.dataRow(tokens);
+    const cellPad: ViewStyle = ref ? ref.cellPad : skin.cellPad[density];
+    const cellInset = ref ? NO_CELL_INSET : null;
+    const cellGap: ViewStyle | null = ref ? { columnGap: ref.columns.columnGap } : null;
     // Under glass the table is a CONTENT-layer pane and its header band, stripes and
     // pressed/selected rows are ink tints over the material (src/style/glass-fill.ts).
     const fill = useFillStyle("DataTable");
@@ -857,8 +869,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // remeasure at true container width stays below sm.
       stacked || (measuredWidth > 0 && measuredWidth < breakpoints.sm) ? { minWidth: 0 } : null,
       // RN has no ring; a rounded 1px border is the bordered outline. Without it a
-      // standalone table draws the skin's own frame, which a parent's frame replaces.
-      bordered ? skin.borderedOutline(tokens) : !attached && skin.frame ? skin.frame(tokens) : null,
+      // standalone table draws the skin's own frame, which a parent's frame replaces. A
+      // reference sheet draws its own frame on the `border` hairline, firmed by `bordered`.
+      ref
+        ? attached ? null : [ref.frame(tokens), bordered ? { borderColor: tokens["field-border"] ?? tokens.border } : null]
+        : bordered ? skin.borderedOutline(tokens) : !attached && skin.frame ? skin.frame(tokens) : null,
       style,
     ];
 
@@ -885,7 +900,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // Without `stacks` the cells stay the row's own children, as they always were.
     // Side by side, the group holds its cells where the row does (the top under `alignTop`).
     const cellGroup = (cells: ReactNode) =>
-      props.stacks ? <View style={stacked ? STACKED_CELLS : [ROW_PRESS_AREA, rowAlign]}>{cells}</View> : cells;
+      props.stacks ? <View style={stacked ? STACKED_CELLS : [ROW_PRESS_AREA, cellGap, rowAlign]}>{cells}</View> : cells;
     // Stacked, the header row is drawn only while it holds a control.
     const header = !stacked || selectable || cols.some(sortableAt);
     // In a top-aligned row the selection box and the row actions center on the row's
@@ -894,13 +909,17 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // cell text tall inside the cell's own vertical padding, and centers in it.
     // A control taller than the band overflows it evenly, so it stays centered.
     const firstLineBand: ViewStyle | null = rowAlign
-      ? { height: 2 * Number(skin.cellPad[density].paddingVertical ?? 0) + Number(skin.cellText(tokens).lineHeight ?? 0) }
+      ? { height: 2 * Number(cellPad.paddingVertical ?? 0) + Number(skin.cellText(tokens).lineHeight ?? 0) }
       : null;
     // Whether the `footer` draws its own top rule: nothing above it draws one when the
     // pagination bar sits there, when the empty message does, or when the header alone
     // does and its band carries no bottom rule of its own (iOS).
-    const headerRowStyle = eyebrow ? eyebrow.row(tokens) : skin.headerRow(tokens);
-    const footerDrawsRule = paginated
+    // A reference sheet's rules sit above what draws them, so nothing above the footer
+    // draws one beneath itself and the footer always draws its own, as the pagination
+    // bar does there.
+    const headerRowStyle = ref ? ref.headerRow(tokens) : skin.headerRow(tokens);
+    const footerRule = ref ? ref.footerRule(tokens) : skin.footerRule(tokens);
+    const footerDrawsRule = ref || paginated
       ? true
       : loading || rows.length > 0
         ? false
@@ -911,10 +930,10 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // default). The header row above stays fixed either way.
     const body = loading ? (
       Array.from({ length: paginated ? Math.min(pageSize, 10) : 5 }, (_, r) => (
-        <View key={`sk-${r}`} style={[skin.dataRow(tokens), rowAlign]} role="row">
-          {selectable ? <View style={[skin.selectCell, skin.cellPad[density]]} role="cell" /> : null}
+        <View key={`sk-${r}`} style={[rowStyle, rowAlign]} role="row">
+          {selectable ? <View style={[skin.selectCell, cellPad]} role="cell" /> : null}
           {cellGroup(visibleColumns.map((col, c) => (
-            <View key={`skc-${c}`} style={[skin.dataCell, skin.cellPad[density], cellLayout(col, c)]} role="cell">
+            <View key={`skc-${c}`} style={[skin.dataCell, cellPad, cellLayout(col, c)]} role="cell">
               <Skeleton text small animate {...SKELETON_LENGTHS[(r + c) % SKELETON_LENGTHS.length]} />
             </View>
           )))}
@@ -953,12 +972,13 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         {/* A framed table (its own outline, or an `attached` parent frame) squares the
             band's corners: the frame's clipped corners are the rounded ones. */}
         {header ? (
-          // The eyebrow header has no fill, so there is nothing for the inner fill to tint.
+          // The reference sheet's header has no fill, so there is nothing for the inner
+          // fill to tint; its row carries the padding and the sheet's column gap.
           <View
             style={[
-              eyebrow ? eyebrow.row(tokens) : withInnerFill(theme, skin.headerRow(tokens), "soft"),
+              ref ? [ref.headerRow(tokens), ref.columns] : withInnerFill(theme, skin.headerRow(tokens), "soft"),
               bordered || attached ? skin.headerRowAttached : null,
-              eyebrow ? eyebrow.pad : skin.headerPad[density],
+              ref ? null : skin.headerPad[density],
               stacked ? STACKED_HEADER : null,
             ]}
             role="row"
@@ -1035,7 +1055,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           table
         )}
         {paginated ? (
-          <View style={FOOTER_BAR}>
+          <View style={[FOOTER_BAR, ref ? footerRule : null]}>
             {selectable ? (
               <Text style={skin.captionText(tokens)}>{`${selected.length} of ${rows.length} selected`}</Text>
             ) : (
@@ -1065,7 +1085,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           // separator), so the footer draws none there; the pagination bar and the empty
           // message draw none, and a header band's rule is the skin's, so under those
           // the footer draws its own.
-          <View style={[FOOTER_SLOT, footerDrawsRule ? skin.footerRule(tokens) : null]}>{footer}</View>
+          <View style={[FOOTER_SLOT, footerDrawsRule ? footerRule : null]}>{footer}</View>
         ) : null}
         {attached ? panFrame.innerRing(wrap) ?? bodyFrame.innerRing(wrap) : null}
       </GlassSurface>
@@ -1084,7 +1104,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // spans the row there; natively the band is read as its text.
       const spanA11y = { "aria-colspan": visibleColumns.length + +!!selectable + +hasActions } as unknown as ViewProps;
       return (
-        <View style={withInnerFill(theme, skin.groupBand(tokens), "soft")} role="row">
+        <View style={withInnerFill(theme, ref ? ref.groupBand(tokens) : skin.groupBand(tokens), "soft")} role="row">
           <View style={GROUP_CELL} role="cell" {...spanA11y}>
             {typeof group.label === "string" ? <Text style={skin.groupLabel(tokens)}>{group.label}</Text> : group.label}
             {group.adornment}
@@ -1109,8 +1129,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       const label = (
         <Text
           style={[
-            // The eyebrow label where the skin draws one and `eyebrowHeader` asks for it.
-            eyebrow ? eyebrow.cell(tokens) : skin.headerCell(tokens),
+            // The sheet's page label where the skin draws one and `reference` asks for it.
+            ref ? ref.headerCell(tokens) : skin.headerCell(tokens),
             { flexShrink: 1 },
             stacked ? null : align === "end" ? { textAlign: "right" } : align === "center" ? { textAlign: "center" } : null,
           ]}
@@ -1120,7 +1140,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       );
       if (!sortableAt(col)) {
         return (
-          <View key={`h-${col.key}`} style={[HEADER_CELL_BOX, layout]} role="columnheader">
+          <View key={`h-${col.key}`} style={[HEADER_CELL_BOX, cellInset, layout]} role="columnheader">
             {label}
           </View>
         );
@@ -1144,6 +1164,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           {...sortA11y}
           style={({ pressed }) => [
             HEADER_CELL_BOX,
+            cellInset,
             layout,
             // Android ripples; iOS/web dim the pressed header label.
             skin.ripple == null && pressed ? { opacity: 0.6 } : null,
@@ -1195,7 +1216,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // a stray row press under the field would fight the editor.
       const editingHere = rowEditing || (cellEdit != null && cellEdit.row === r);
       const selectCell = selectable ? (
-        <View style={[skin.selectCell, skin.cellPad[density], firstLineBand]} role="cell">
+        <View style={[skin.selectCell, cellPad, firstLineBand]} role="cell">
           {/* The row selector: its own Pressable, so a tap on the box toggles
               selection while a tap elsewhere on the row still reaches the
               row's press behavior (the responder system grants the innermost
@@ -1259,6 +1280,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             focusable={false}
             style={({ pressed }) => [
               ROW_PRESS_AREA,
+              cellGap,
               rowAlign,
               // Android ripples; iOS/web tint the pressed area fill.
               skin.ripple == null && pressed ? withInnerFill(theme, skin.pressTint(tokens), "firm") : null,
@@ -1268,7 +1290,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             {dataCells}
           </Pressable>
         ) : (
-          <View style={[ROW_PRESS_AREA, rowAlign]}>
+          <View style={[ROW_PRESS_AREA, cellGap, rowAlign]}>
             {selectCell}
             {dataCells}
           </View>
@@ -1277,7 +1299,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           <View
             role="row"
             style={[
-              skin.dataRow(tokens),
+              rowStyle,
               rowAlign,
               // Hold the platform minimum tap target (iOS 44pt / M3 48dp).
               skin.pressableMinHeight != null && pressRow ? { minHeight: skin.pressableMinHeight } : null,
@@ -1313,7 +1335,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           accessible={false}
           focusable={false}
           style={({ pressed }) => [
-            skin.dataRow(tokens),
+            rowStyle,
             rowAlign,
             // Hold the platform minimum tap target (iOS 44pt / M3 48dp) so a
             // compact pressable row is not sub-minimum; web omits it.
@@ -1327,7 +1349,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           {cells}
         </Pressable>
       ) : (
-        <View style={[skin.dataRow(tokens), rowAlign, stripe, selectedTint, editWash]} role="row">
+        <View style={[rowStyle, rowAlign, stripe, selectedTint, editWash]} role="row">
           {cells}
         </View>
       );
@@ -1470,7 +1492,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       return (
         <View
           key={`c-${rowId}-${c}`}
-          style={[skin.dataCell, skin.cellPad[density], cellLayout(col, index), alignCell]}
+          style={[skin.dataCell, cellPad, cellLayout(col, index), alignCell]}
           role="cell"
         >
           {stackedLabel}

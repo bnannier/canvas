@@ -69,6 +69,40 @@ On iOS the default Collapsible already renders as the inset-grouped card, so `ca
 </Collapsible>
 ```
 
+### Reference card
+
+<!-- only: web -->
+`reference` is the reference-sheet disclosure, a component page's sub-component props: the
+card corner on a hairline over the card fill, a 46 px toggle with the title in 600 14 and
+the `description` inline after it in the mono meta ink, and the content flush to the card's
+edges, so a `reference attached` DataTable's rows meet the card. On iOS the default
+Collapsible already renders as the inset-grouped card, so `reference` changes nothing there.
+<!-- /only -->
+<!-- only: ios -->
+On iOS the default Collapsible already renders as the inset-grouped card, so `reference` changes nothing there (a documented no-op).
+<!-- /only -->
+<!-- only: android -->
+`reference` is the reference-sheet disclosure, a component page's sub-component props: the
+card corner on a hairline over the card fill, a 46 px toggle with the title in 600 14 and
+the `description` inline after it in the mono meta ink, and the content flush to the card's
+edges, so a `reference attached` DataTable's rows meet the card.
+<!-- /only -->
+
+```tsx
+<Collapsible reference title="AvatarMenuProps" description="3 props" defaultOpen>
+  <DataTable
+    reference
+    attached
+    columns={["Prop", "Type", "Default"]}
+    rows={[
+      ["open", "boolean", "false"],
+      ["onOpenChange", "(open: boolean) => void", "–"],
+      ["items", "AvatarMenuItem[]", "–"]
+    ]}
+  />
+</Collapsible>
+```
+
 ### With descriptions
 
 ```tsx

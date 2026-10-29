@@ -4,16 +4,20 @@ import { render, cleanup, screen, within } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
 import { lightColors } from "../src/style/tokens.ts";
+import { platformShape } from "../src/style/platform-shape.ts";
 import { MONO_FONT } from "../src/style/mono.ts";
+import { channelsOf } from "../src/style/color.ts";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { DataTable as AndroidDataTable } from "../src/organisms/data-table/data-table.android.tsx";
 import { DataTable as IosDataTable } from "../src/organisms/data-table/data-table.ios.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 
 // The three looks the v4 props table adds to DataTable (Component.dc.html lines 233-241):
-// `eyebrowHeader`, the column headings as the page's small uppercase mono label on an
-// unfilled header row; `alignTop`, every cell at the top of its row; and `footer`, a 44 px
-// row inside the frame under the last row with its content centered.
+// `reference`, the reference sheet (the column headings as the page's small uppercase mono
+// label on an unfilled header row, rows 10 above and below ruled above, the columns 16
+// apart and 16 in, the panel corner on the `border` hairline); `alignTop`, every cell at
+// the top of its row; and `footer`, a 44 px row inside the frame under the last row with
+// its content centered.
 
 let warnSpy: ReturnType<typeof spyOn>;
 beforeEach(() => {
@@ -38,19 +42,26 @@ const rgb = (hex: string) => {
 };
 const headerRow = () => screen.getByText("Prop").closest('[role="row"]') as HTMLElement;
 const headerLabel = () => screen.getByText("Prop") as HTMLElement;
+const headerCell = () => screen.getByText("Prop").closest('[role="columnheader"]') as HTMLElement;
 const dataRow = (text: string) => screen.getByText(text).closest('[role="row"]') as HTMLElement;
+const dataCell = (text: string) => screen.getByText(text).closest('[role="cell"]') as HTMLElement;
 const bg = (el: HTMLElement) => el.style.backgroundColor.replace(/\s/g, "");
 
-describe("DataTable eyebrowHeader", () => {
-  it("keeps the band's sentence-case label on the popover fill by default", () => {
+describe("DataTable reference", () => {
+  it("keeps the band's sentence-case label on the popover fill, 16 px cell insets and the table frame by default", () => {
     ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} />);
     expect(headerLabel().style.fontSize).toBe("12px");
     expect(headerLabel().style.textTransform).toBe("");
     expect(bg(headerRow())).toBe(rgb(lightColors.popover));
+    expect(headerCell().style.paddingLeft).toBe("16px");
+    expect(dataCell("primary").style.paddingLeft).toBe("16px");
+    expect(dataCell("primary").style.paddingTop).toBe("12px");
+    expect(dataRow("primary").style.borderBottomWidth).toBe("1px");
+    expect(screen.getByTestId("table").style.borderRadius).toBe(`${platformShape.web.tableFrame}px`);
   });
 
-  it("sets the headings as the 11 px uppercase letter-spaced mono label in the subtle ink, on a row with no fill", () => {
-    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} eyebrowHeader />);
+  it("sets the headings as the 11 px uppercase letter-spaced mono label in the subtle ink, on a row with no fill and no rule", () => {
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference />);
     const label = headerLabel();
     expect(label.style.fontFamily).toContain(MONO_FONT.split(",")[0]!.trim());
     expect(label.style.fontSize).toBe("11px");
@@ -60,27 +71,79 @@ describe("DataTable eyebrowHeader", () => {
     expect(label.style.textTransform).toBe("uppercase");
     expect(label.style.color.replace(/\s/g, "")).toBe(rgb(lightColors["subtle-foreground"]!));
     expect(bg(headerRow())).toBe("");
-    // One rule between the header and the first row: the header's own, as the band's.
-    expect(headerRow().style.borderBottomWidth).toBe("1px");
+    // The rule between the header and the first row is the row's own, above it.
+    expect(headerRow().style.borderBottomWidth).toBe("");
+    expect(dataRow("primary").style.borderTopWidth).toBe("1px");
+    expect(dataRow("primary").style.borderBottomWidth).toBe("");
   });
 
-  it("pads the header 12 px above and below whatever the density", () => {
-    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} eyebrowHeader compact />);
+  it("pads the header 12 px above and below whatever the density, and the rows 10", () => {
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference compact />);
     expect(headerRow().style.paddingTop).toBe("12px");
     expect(headerRow().style.paddingBottom).toBe("12px");
+    expect(dataCell("primary").style.paddingTop).toBe("10px");
+    expect(dataCell("primary").style.paddingBottom).toBe("10px");
   });
 
-  it("draws the same header on Android, the web table in Roboto", () => {
-    ui(<AndroidDataTable testID="table" columns={COLUMNS} rows={ROWS} eyebrowHeader />);
+  it("spaces the columns with the row's 16 px gap and 16 px side inset, so no cell carries an inset of its own", () => {
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference />);
+    expect(headerRow().style.paddingLeft).toBe("16px");
+    expect(headerRow().style.columnGap).toBe("16px");
+    // The header cell zeroes its own inset; a data cell carries none.
+    expect(headerCell().getAttribute("style")).toContain("padding-left: 0px");
+    expect(dataRow("primary").style.paddingLeft).toBe("16px");
+    expect(dataRow("primary").style.columnGap).toBe("16px");
+    expect(dataCell("primary").style.paddingLeft).toBe("");
+  });
+
+  it("carries the gap on a `stacks` table's cell group while it is side by side", () => {
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference stacks />);
+    const group = dataCell("primary").parentElement as HTMLElement;
+    expect(group).not.toBe(dataRow("primary"));
+    expect(group.style.columnGap).toBe("16px");
+    expect(group.style.paddingLeft).toBe("");
+  });
+
+  it("frames the sheet at the panel corner on the border hairline over the card fill, firmed by bordered and dropped by attached", () => {
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference />);
+    const table = screen.getByTestId("table");
+    expect(table.style.borderRadius).toBe(`${platformShape.web.panel}px`);
+    expect(table.style.borderTopWidth).toBe("1px");
+    expect(channelsOf(table.style.borderTopColor)).toEqual(channelsOf(lightColors.border));
+    expect(bg(table)).toBe(rgb(lightColors.card));
+    cleanup();
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference bordered />);
+    expect(screen.getByTestId("table").style.borderRadius).toBe(`${platformShape.web.panel}px`);
+    expect(channelsOf(screen.getByTestId("table").style.borderTopColor)).toEqual(channelsOf(lightColors["field-border"]!));
+    cleanup();
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference attached />);
+    expect(screen.getByTestId("table").style.borderTopWidth).toBe("");
+    expect(screen.getByTestId("table").style.borderRadius).toBe("");
+  });
+
+  it("rules a group band above itself and never beneath", () => {
+    ui(<DataTable testID="table" columns={COLUMNS} rows={[]} groups={[{ label: "Intent", rows: ROWS }]} reference />);
+    const band = screen.getByText("Intent").closest('[role="row"]') as HTMLElement;
+    expect(band.style.borderTopWidth).toBe("1px");
+    expect(band.style.borderBottomWidth).toBe("");
+    expect(band.style.paddingTop).toBe("12px");
+    expect(band.style.paddingBottom).toBe("8px");
+    expect((screen.getByText("Intent") as HTMLElement).style.lineHeight).toBe("16px");
+  });
+
+  it("draws the same sheet on Android, the web table in Roboto", () => {
+    ui(<AndroidDataTable testID="table" columns={COLUMNS} rows={ROWS} reference />);
     expect(headerLabel().style.textTransform).toBe("uppercase");
     expect(headerLabel().style.fontSize).toBe("11px");
+    expect(screen.getByTestId("table").style.borderRadius).toBe(`${platformShape.web.panel}px`);
   });
 
-  it("changes nothing on iOS, whose table keeps its own column headings", () => {
-    ui(<IosDataTable testID="table" columns={COLUMNS} rows={ROWS} eyebrowHeader />);
+  it("changes nothing on iOS, whose table keeps its own look", () => {
+    ui(<IosDataTable testID="table" columns={COLUMNS} rows={ROWS} reference />);
     expect(headerLabel().style.textTransform).toBe("");
     expect(headerLabel().style.fontSize).toBe("13px");
     expect(headerRow().style.paddingTop).toBe("8px");
+    expect(dataCell("primary").style.paddingLeft).toBe("16px");
   });
 });
 
@@ -105,6 +168,12 @@ describe("DataTable alignTop", () => {
     expect(cells[cells.length - 1]!.style.height).toBe("42px");
     // The data cells keep their own height.
     expect(cells[1]!.style.height).toBe("");
+  });
+
+  it("centers them on the sheet's 10 px rows", () => {
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference alignTop selectable />);
+    const cells = within(dataRow("primary")).getAllByRole("cell");
+    expect(cells[0]!.style.height).toBe("38px");
   });
 
   it("holds a `stacks` table's cell group at the top while it is side by side (the docs' props table)", () => {
@@ -147,6 +216,12 @@ describe("DataTable footer", () => {
     // The last row draws the rule already.
     expect(dataRow("small").style.borderBottomWidth).toBe("1px");
     expect(slot().style.borderTopWidth).toBe("");
+  });
+
+  it("draws its own rule on the sheet, whose rows rule above themselves (the hand-off's show-all row)", () => {
+    ui(<DataTable testID="table" columns={COLUMNS} rows={ROWS} reference footer={<Button testID="footer" link small>Show all 58 props</Button>} />);
+    expect(dataRow("small").style.borderBottomWidth).toBe("");
+    expect(slot().style.borderTopWidth).toBe("1px");
   });
 
   it("draws its own rule under the pagination bar, which draws none", () => {

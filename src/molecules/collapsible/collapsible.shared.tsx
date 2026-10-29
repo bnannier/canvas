@@ -90,6 +90,23 @@ export interface CollapsibleSkin {
   cardHeaderInset: ViewStyle;
   /** The extra content inset applied in `card` mode (idempotent, as above). */
   cardContentInset: ViewStyle;
+  /**
+   * The `reference` look: the v4 hand-off's reference-sheet disclosure (a sub-component's
+   * props card, Component.dc.html lines 245 to 250). `container` replaces the card
+   * container, `header` is layered over the header row, `hover` replaces the header's
+   * wash, `title` and `description` are layered over the skin's type with the description
+   * set inline after the title, and `content` is layered over the panel. Absent on a
+   * platform whose own disclosure control draws the card (iOS), where the boolean
+   * changes nothing.
+   */
+  reference?: {
+    container: (t: ColorTokens) => ViewStyle;
+    header: ViewStyle;
+    hover: (t: ColorTokens) => ViewStyle;
+    title: (t: ColorTokens) => TextStyle;
+    description: (t: ColorTokens) => TextStyle;
+    content: ViewStyle;
+  };
   /** The header trigger row layout/insets. */
   header: (t: ColorTokens) => ViewStyle;
   /** The header's wash while a pointer rests on it (web); omit for none. Its fill is an
@@ -134,6 +151,25 @@ export interface CollapsibleProps {
    * <!-- /only -->
    */
   card?: boolean;
+  /**
+   * The reference-sheet card (a component page's sub-component props):
+   * <!-- only: web -->
+   * the card corner on a hairline over the card fill, a 46 px toggle with the title in
+   * 600 14 and the `description` inline after it in the mono meta ink, and the content
+   * flush to the card's edges, for a `reference attached` DataTable (web/Android). On iOS
+   * the default Collapsible already renders as the inset-grouped card, so `reference`
+   * changes nothing there.
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * on iOS the default Collapsible already renders as the inset-grouped card, so `reference` changes nothing there.
+   * <!-- /only -->
+   * <!-- only: android -->
+   * the card corner on a hairline over the card fill, a 46 px toggle with the title in
+   * 600 14 and the `description` inline after it in the mono meta ink, and the content
+   * flush to the card's edges, for a `reference attached` DataTable.
+   * <!-- /only -->
+   */
+  reference?: boolean;
   /** The collapsible content. A string renders in the skin's content type; a
    *  ReactNode renders as-is. */
   children: ReactNode;
@@ -158,7 +194,11 @@ enableAndroidLayoutAnimations();
 /** Build a Collapsible component from a platform skin. */
 export function createCollapsible(skin: CollapsibleSkin) {
   return function Collapsible(props: CollapsibleProps) {
-    const { title, description, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, card, testID, style } = props;
+    const { title, description, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, card, reference, testID, style } = props;
+    // The reference sheet's card is the skin's where the skin draws one (web, Android);
+    // iOS keeps its own disclosure group (design-language item 4).
+    const sheet = reference ? skin.reference : undefined;
+    const framed = card || sheet != null;
     const theme = useTheme();
     const { tokens } = theme;
     const { hovered, target } = useHover(!disabled && skin.headerHover != null);
@@ -196,25 +236,28 @@ export function createCollapsible(skin: CollapsibleSkin) {
 
     // The container is a CONTENT-layer pane under glass when it paints a surface of its
     // own (the card variant, the iOS inset group); a borderless list stays bare.
-    const surfaced = (StyleSheet.flatten([skin.container(tokens), card ? skin.cardContainer(tokens) : null]) as ViewStyle | undefined)?.backgroundColor != null;
+    // The sheet's container replaces the card's; a card, or a sheet, is a framed surface.
+    const containerStyle: StyleProp<ViewStyle> = [skin.container(tokens), sheet ? sheet.container(tokens) : card ? skin.cardContainer(tokens) : null];
+    const surfaced = (StyleSheet.flatten(containerStyle) as ViewStyle | undefined)?.backgroundColor != null;
     const Root = surfaced ? GlassSurface : View;
 
     const headerStyle: StyleProp<ViewStyle> = [
       skin.header(tokens),
       // Card mode insets the header to the card's own edge inset (a per-key
-      // override on top of the base header, never a sum).
-      card ? skin.cardHeaderInset : null,
+      // override on top of the base header, never a sum); the sheet's toggle sits over it.
+      framed ? skin.cardHeaderInset : null,
+      sheet ? sheet.header : null,
       // Inside a surfaced container the ring moves inside the header, which the
       // container's clip would otherwise cut; a bare header keeps it around itself.
       surfaced ? skin.focusRing : null,
-      hovered && skin.headerHover ? withInnerFill(theme, skin.headerHover(tokens)) : null,
+      hovered && skin.headerHover ? withInnerFill(theme, sheet ? sheet.hover(tokens) : skin.headerHover(tokens)) : null,
       disabled ? { opacity: skin.disabledOpacity } : null,
     ];
 
     // A sensible accessibility label when only a custom trigger is given.
     const a11yLabel = title ?? "Toggle section";
     return (
-      <Root testID={testID} style={[skin.container(tokens), card ? skin.cardContainer(tokens) : null, fill, style]} {...(surfaced ? { layer: "content" as const } : null)}>
+      <Root testID={testID} style={[containerStyle, fill, style]} {...(surfaced ? { layer: "content" as const } : null)}>
         <Pressable
           {...target}
           onPress={disabled ? undefined : toggle}
@@ -235,6 +278,13 @@ export function createCollapsible(skin: CollapsibleSkin) {
         >
           {trigger !== undefined ? (
             <View style={TRIGGER_SLOT}>{trigger}</View>
+          ) : sheet ? (
+            // The sheet's toggle (Component.dc.html line 246): the name, then its count
+            // inline in the mono meta ink, one run.
+            <Text style={[skin.title(tokens), sheet.title(tokens)]} numberOfLines={2}>
+              {title}
+              {description ? <Text style={[skin.description(tokens), sheet.description(tokens)]}>{` ${description}`}</Text> : null}
+            </Text>
           ) : description ? (
             // Title over its muted secondary line. The column shrinks (not the
             // texts individually) so the chevron stays trailing and the title's
@@ -256,7 +306,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
           </Animated.View>
         </Pressable>
         {open ? (
-          <View style={[skin.content(tokens), card ? skin.cardContentInset : null]}>
+          <View style={[skin.content(tokens), framed ? skin.cardContentInset : null, sheet ? sheet.content : null]}>
             {typeof children === "string" ? (
               <Text style={skin.contentText(tokens)}>{children}</Text>
             ) : (

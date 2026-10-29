@@ -1,6 +1,7 @@
 import { surfaceRipple, shape, type ColorTokens } from "../../style/index.js";
 import { INSET_FOCUS_RING } from "../../style/pressable.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { type ViewStyle } from "react-native";
 import { type CollapsibleSkin } from "./collapsible.shared.js";
 
@@ -60,6 +61,35 @@ export const webSkin: CollapsibleSkin = {
   // Card mode insets the header 14 by 16 and the content 16 from the card's edge.
   cardHeaderInset: { paddingHorizontal: 16, paddingVertical: 14 },
   cardContentInset: { paddingHorizontal: 16, paddingBottom: 16 },
+  // The hand-off's reference-sheet disclosure, a sub-component's props card
+  // (Component.dc.html lines 245 to 250).
+  reference: {
+    // Line 245: `border:1px solid var(--ln);border-radius:16px;overflow:hidden;
+    // background:var(--sf)`: the card corner on the `border` hairline over the card fill.
+    container(t) {
+      return { borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
+    },
+    // Line 246: `width:100%;height:46px;padding:0 16px`, the toggle; a floor rather than a
+    // fixed height, so a wrapped name is never clipped, and at one line it is exactly 46.
+    header: { minHeight: 46, paddingHorizontal: 16, paddingVertical: 0 },
+    // Line 246: `style-hover="background:var(--sf3)"`, the whole toggle, square to the card's clip.
+    hover(t) {
+      return { backgroundColor: t.secondary };
+    },
+    // Line 246: `font:600 14px var(--ft)` with no ratio, so its line is the face's own
+    // `normal`: 18 px for Instrument Sans at 14, measured in Chromium on the hand-off page
+    // served from tools/v4/handoff.
+    title(t) {
+      return { fontSize: 14, lineHeight: 18, fontWeight: "600", color: t.foreground };
+    },
+    // Line 246: `font:400 12px var(--fm);color:var(--tx3)`, the count inline after the
+    // name, on the mono face's own 16 px line at 12 (measured as above).
+    description(t) {
+      return { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["subtle-foreground"] };
+    },
+    // Lines 247 to 249: the sub-table sits flush inside the card, its rows ruled above.
+    content: { paddingHorizontal: 0, paddingBottom: 0 },
+  },
   // The header trigger row: full width, space-between, 10 by 2, 12 apart.
   header() {
     return {

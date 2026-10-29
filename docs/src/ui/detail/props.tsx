@@ -10,12 +10,20 @@ import { DetailSection } from "./frame";
 // axis marked), cut after 28 rows behind a "Show all" toggle; the shared interfaces it
 // inherits as callouts under it; and a sub-component's props in a collapsible of its own.
 
-/** The hand-off's column weights: `minmax(150px,1fr) minmax(150px,1.2fr) 100px minmax(220px,2.2fr)`. */
+/** The hand-off's column weights (Component.dc.html line 238): `minmax(150px,1fr) minmax(150px,1.2fr) 100px minmax(220px,2.2fr)`. */
 const COLUMNS: DataTableColumn[] = [
   { label: "Prop", grow: 1, minWidth: 150 },
   { label: "Type", grow: 1.2, minWidth: 150 },
   { label: "Default", width: 100 },
   { label: "Description", grow: 2.2, minWidth: 220 },
+];
+
+/** A sub-component's table (line 248): `minmax(150px,1fr) minmax(150px,1.2fr) 100px minmax(200px,2fr)`. */
+const SUB_COLUMNS: DataTableColumn[] = [
+  { label: "Prop", grow: 1, minWidth: 150 },
+  { label: "Type", grow: 1.2, minWidth: 150 },
+  { label: "Default", width: 100 },
+  { label: "Description", grow: 2, minWidth: 200 },
 ];
 
 /** The rows the table shows before "Show all". */
@@ -38,6 +46,12 @@ function descriptionOf(p: PropDoc, group: PropGroup): string {
   return p.description;
 }
 
+/**
+ * A row's cells (Component.dc.html line 238): the name `font:500 13px/1.5 var(--fm);color:
+ * var(--ion-tx)` with its required mark in `--bad`, the type `400 12px/1.55 var(--fm)` in
+ * `--tx2` (the kit's `subtle` tone), the default the same in `--tx3` (`muted`), and the
+ * description `400 13px/1.55 var(--ft)` in `--tx2`, its code spans on the prose chip.
+ */
 function row(p: PropDoc, group: PropGroup): ReactNode[] {
   const description = descriptionOf(p, group);
   return [
@@ -45,9 +59,9 @@ function row(p: PropDoc, group: PropGroup): ReactNode[] {
       {p.name}
       {p.required ? <Typography small mono destructive> *</Typography> : null}
     </Typography>,
-    <Typography caption mono subtle>{p.type.length > 140 ? `${p.type.slice(0, 140)}…` : p.type}</Typography>,
-    <Typography caption mono muted>{defaultOf(p)}</Typography>,
-    description ? <Typography small subtle><InlineMarkdown text={description} small subtle /></Typography> : null,
+    <Typography specMeta mono subtle>{p.type.length > 140 ? `${p.type.slice(0, 140)}…` : p.type}</Typography>,
+    <Typography specMeta mono muted>{defaultOf(p)}</Typography>,
+    description ? <Typography specText><InlineMarkdown text={description} specText /></Typography> : null,
   ];
 }
 
@@ -80,13 +94,16 @@ function bands(group: PropGroup, limit: number): { bands: DataTableGroup[]; tota
 }
 
 /**
- * The hand-off's props table (Component.dc.html lines 233-241): the page's eyebrow header
- * (`eyebrowHeader`), every cell at the top of its row (`alignTop`) and, when the table is
- * cut, the show-all row inside the frame (`footer`).
+ * The hand-off's props table (Component.dc.html lines 233-241): the reference sheet
+ * (`reference`: the page's eyebrow header, 10 px rows ruled above, the columns 16 apart
+ * and 16 in, the panel corner on the `border` hairline), every cell at the top of its row
+ * (`alignTop`) and, when the table is cut, the show-all row inside the frame (`footer`). A
+ * sub-component's table (lines 245-250) sits flush inside its disclosure card (`attached`)
+ * on the sub-table's own column weights.
  */
-function PropTable({ group, limit = Infinity, footer }: { group: PropGroup; limit?: number; footer?: ReactNode }) {
+function PropTable({ group, limit = Infinity, footer, sub }: { group: PropGroup; limit?: number; footer?: ReactNode; sub?: boolean }) {
   const { bands: groups } = bands(group, limit);
-  return <DataTable testID="prop-table" bordered eyebrowHeader alignTop columns={COLUMNS} rows={[]} groups={groups} stacks stackBreakpoint="md" footer={footer} />;
+  return <DataTable testID="prop-table" reference alignTop attached={sub} columns={sub ? SUB_COLUMNS : COLUMNS} rows={[]} groups={groups} stacks stackBreakpoint="md" footer={footer} />;
 }
 
 /**
@@ -137,13 +154,14 @@ export function PropsSection({ groups, propsInterface, sectionRef }: { groups: r
           // The hand-off's inherited-props callout (line 244): `padding:14px 16px;border-radius:14px;
           // border:1px solid var(--ln);background:var(--sf2);display:flex;gap:10px;align-items:
           // flex-start;font:400 13px/1.55 var(--ft);color:var(--tx2)`, a 15 px layers glyph in the
-          // accent ink, then one run: the name in 600 weight in the text ink, a middle dot, the note.
-          // `flat` is the sf2 fill under the hairline with no shadow; `summary` the 14 by 16 inset.
+          // accent ink, then one run in the sheet's text role: the name in 600 weight in the
+          // text ink, a middle dot, the note. `flat` is the sf2 fill under the hairline with no
+          // shadow; `summary` the 14 by 16 inset.
           <Card key={heritage} flat calloutCorners summary>
             <Row comfortable alignStart>
               <Icon layers primary size={15} decorative />
               <Column fill>
-                <Typography small subtle>
+                <Typography specText>
                   <Typography small semibold>{heritage}</Typography> · {inheritedNote(name)}
                 </Typography>
               </Column>
@@ -152,8 +170,10 @@ export function PropsSection({ groups, propsInterface, sectionRef }: { groups: r
         );
       })}
       {subs.map((sub) => (
-        <Collapsible key={sub.name} card title={sub.name} description={`${sub.props.length} props`}>
-          <PropTable group={sub} />
+        // The hand-off's sub-component card (lines 245-250): the reference disclosure, its
+        // name and count on the 46 px toggle, the sub-table flush inside it.
+        <Collapsible key={sub.name} reference title={sub.name} description={`${sub.props.length} props`}>
+          <PropTable group={sub} sub />
         </Collapsible>
       ))}
     </DetailSection>

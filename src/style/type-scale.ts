@@ -72,6 +72,12 @@ export const pageRoles = {
   // getComputedStyle(span).lineHeight is "normal" and the span's line box is 22 px, for
   // both names.
   pagerName: { fontSize: 18, lineHeight: 22, fontWeight: "500" },
+  // The reference sheet's cells (Component.dc.html line 238, the props table's row): the
+  // type and default cells `font:400 12px/1.55 var(--fm)` (the caller sets the mono face
+  // and the ink, `--tx2` for the type and `--tx3` for the default) and the description
+  // cell `font:400 13px/1.55 var(--ft);color:var(--tx2)`.
+  specMeta: { fontSize: 12, lineHeight: 18.6, fontWeight: "400" },
+  specText: { fontSize: 13, lineHeight: 20.15, fontWeight: "400" },
 } as const satisfies Record<string, TextStyle>;
 
 /**

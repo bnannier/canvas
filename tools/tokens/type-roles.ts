@@ -59,6 +59,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     // takes the role one step down from its paragraph's (the tiny paragraph's chip sits
     // at the caption floor).
     "inlineCodeType.guideBody": "small",
+    "inlineCodeType.specText": "small",
     "inlineCodeType.small": "small",
     "inlineCodeType.caption": "tiny",
     "inlineCodeType.tiny": "caption",
@@ -73,7 +74,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/radio/radio.styles.ts": { "NATIVE_DESCRIPTION.small": "small" },
   "src/organisms/command/command.styles.ts": { groupHeading: "caption", footerText: "tiny", "webSkin.shortcut": "tiny" },
   // The props-table header's page label (the hand-off's 500 11px mono, Component.dc.html line 235), at the caption floor.
-  "src/organisms/data-table/data-table.styles.ts": { "webSkin.stackedLabel": "small", "iosSkin.stackedLabel": "small", "webSkin.eyebrowHeader.cell": "caption" },
+  "src/organisms/data-table/data-table.styles.ts": { "webSkin.stackedLabel": "small", "iosSkin.stackedLabel": "small", "webSkin.reference.headerCell": "caption" },
   // A message's author line, and the provider, notice and failure lines beside and under it.
   "src/organisms/chat/chat.styles.ts": { "webSkin.label": "small", "webSkin.muted": "small" },
 

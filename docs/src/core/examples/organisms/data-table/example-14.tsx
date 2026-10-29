@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { DataTable } = scope;
   return (
 <DataTable
-  eyebrowHeader
+  reference
   columns={["Prop", "Type", "Default"]}
   rows={[
     ["primary", "boolean", "false"],

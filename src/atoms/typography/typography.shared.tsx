@@ -177,6 +177,14 @@ export interface TypographyProps {
   guideBody?: boolean;
   /** A pager card's name (the previous or next page under its label): the display face, 500 18 on the face's own 22 line, in the foreground ink. */
   pagerName?: boolean;
+  /**
+   * A reference sheet's meta cell (a props table's type or default): 400 12/1.55 in the
+   * foreground ink. Pass `mono` for the mono face and `subtle` or `muted` for the ink, as
+   * the sheet's cells take them.
+   */
+  specMeta?: boolean;
+  /** A reference sheet's text cell (a props table's description, an inherited-props note): 400 13/1.55 in the secondary ink. */
+  specText?: boolean;
   display?: boolean;
   h1?: boolean;
   h2?: boolean;
@@ -342,6 +350,8 @@ export function roleOf(p: TypographyProps): Role {
   if (p.pageBody) return "pageBody";
   if (p.pageNote) return "pageNote";
   if (p.guideBody) return "guideBody";
+  if (p.specText) return "specText";
+  if (p.specMeta) return "specMeta";
   // A reading size passed with `mono` keeps its size and takes the mono face
   // (`<Typography caption mono>` is the 12 px mono caption); `mono` alone is its own role.
   if (p.lead) return "lead";
