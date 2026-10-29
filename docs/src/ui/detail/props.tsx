@@ -1,5 +1,5 @@
 import { useState, type ReactNode, type Ref } from "react";
-import { View, Column, Typography, Badge, Button, DataTable, Alert, Collapsible, Icon, widths, type DataTableColumn, type DataTableGroup } from "@nannier/canvas";
+import { View, Typography, Badge, Button, DataTable, Alert, Collapsible, Icon, widths, type DataTableColumn, type DataTableGroup } from "@nannier/canvas";
 import type { PropDoc, PropGroup } from "../../core/scope";
 import { INHERITED_PROPS } from "../../core/examples/inherited-props";
 import { InlineMarkdown } from "../prose";
@@ -79,9 +79,14 @@ function bands(group: PropGroup, limit: number): { bands: DataTableGroup[]; tota
   return { bands: out, total };
 }
 
-function PropTable({ group, limit = Infinity }: { group: PropGroup; limit?: number }) {
+/**
+ * The hand-off's props table (Component.dc.html lines 233-241): the page's eyebrow header
+ * (`eyebrowHeader`), every cell at the top of its row (`alignTop`) and, when the table is
+ * cut, the show-all row inside the frame (`footer`).
+ */
+function PropTable({ group, limit = Infinity, footer }: { group: PropGroup; limit?: number; footer?: ReactNode }) {
   const { bands: groups } = bands(group, limit);
-  return <DataTable testID="prop-table" bordered compact columns={COLUMNS} rows={[]} groups={groups} stacks stackBreakpoint="md" />;
+  return <DataTable testID="prop-table" bordered compact eyebrowHeader alignTop columns={COLUMNS} rows={[]} groups={groups} stacks stackBreakpoint="md" footer={footer} />;
 }
 
 /** What an inherited interface adds, by its members (the measure steps, the series props). */
@@ -111,12 +116,13 @@ export function PropsSection({ groups, propsInterface, sectionRef }: { groups: r
       note={`${total} props on ${main.name}, grouped as they are declared in source. Required props are marked *.`}
       sectionRef={sectionRef}
     >
-      <Column snug>
-        <PropTable group={main} limit={all ? Infinity : ROW_LIMIT} />
-        {total > ROW_LIMIT ? (
-          <Button link small onPress={() => setAll(!all)}>{all ? "Show fewer" : `Show all ${total} props`}</Button>
-        ) : null}
-      </Column>
+      <PropTable
+        group={main}
+        limit={all ? Infinity : ROW_LIMIT}
+        // The hand-off's `morePropsLabel` (Component.dc.html line 415):
+        // `s.allProps?'Show fewer':'Show all '+total+' props'`.
+        footer={total > ROW_LIMIT ? <Button link small onPress={() => setAll(!all)}>{all ? "Show fewer" : `Show all ${total} props`}</Button> : undefined}
+      />
       {main.inherits.map((heritage) => {
         const name = heritage.match(/\w+Props/)?.[0] ?? heritage;
         return <Alert key={heritage} icon={<Icon layers primary size={16} decorative />} title={heritage} description={inheritedNote(name)} />;

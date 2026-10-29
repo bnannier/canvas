@@ -81,6 +81,18 @@ export interface DataTableSkin {
    * indicator without each skin re-declaring the layout.
    */
   headerCell: (t: ColorTokens) => TextStyle;
+  /**
+   * The `eyebrowHeader` look: the column headings as the page's small uppercase mono
+   * label (the v4 hand-off's props-table header) on a header row with no fill of its own.
+   * `row` replaces `headerRow`, `pad` replaces the density's `headerPad`, and `cell`
+   * replaces `headerCell`. Absent on a platform whose own table control draws the heading
+   * (iOS), where the boolean changes nothing.
+   */
+  eyebrowHeader?: {
+    row: (t: ColorTokens) => ViewStyle;
+    pad: ViewStyle;
+    cell: (t: ColorTokens) => TextStyle;
+  };
   /** Size (px) of the sort-direction indicator icon beside a sortable header label. */
   sortIconSize: number;
   /**
@@ -94,6 +106,12 @@ export interface DataTableSkin {
   selectCell: ViewStyle;
   /** A data row (flex row, vertically centered, with a hairline beneath it). */
   dataRow: (t: ColorTokens) => ViewStyle;
+  /**
+   * The hairline the `footer` row draws above itself when nothing above it draws one
+   * (the pagination bar, the empty message, a header with no rule): the platform's row
+   * rule.
+   */
+  footerRule: (t: ColorTokens) => ViewStyle;
   /**
    * A group band (`groups`): the row spanning every column above a group's rows, on
    * the sunken fill, with its padding and the row layout. The shell turns the fill into
@@ -230,6 +248,26 @@ export const webSkin: DataTableSkin = {
     fontWeight: "500",
     color: t["muted-foreground"],
   }),
+  // The hand-off's props-table header (Component.dc.html line 235):
+  //   `padding:12px 16px;font:500 11px/1 var(--fm);letter-spacing:.08em;
+  //    text-transform:uppercase;color:var(--tx3)`
+  // with no background of its own; the rule under it is the one the first band or row
+  // draws (`border-top:1px solid var(--ln)` on lines 237 and 238), which the kit keeps as
+  // the header's own bottom rule, so there is still one rule between them.
+  eyebrowHeader: {
+    row: (t) => ({ flexDirection: "row", borderBottomWidth: 1, borderColor: t.border }),
+    pad: { paddingVertical: 12 },
+    cell: (t) => ({
+      fontFamily: MONO_FONT,
+      fontSize: 11,
+      lineHeight: 11,
+      fontWeight: "500",
+      // .08em of 11 px.
+      letterSpacing: 0.88,
+      textTransform: "uppercase",
+      color: subtle(t),
+    }),
+  },
   sortIconSize: 12,
   // The empty message and the selection count: 400 13 in the subtle ink.
   captionText: (t) => ({ fontSize: 13, lineHeight: 18, color: subtle(t) }),
@@ -241,6 +279,8 @@ export const webSkin: DataTableSkin = {
     borderBottomWidth: 1,
     borderColor: t.border,
   }),
+  // The hand-off's show-all row rule (Component.dc.html line 241): `border-top:1px solid var(--ln)`.
+  footerRule: (t) => ({ borderTopWidth: 1, borderColor: t.border }),
   // The hand-off's props-table band (Component.dc.html, Props): 12 / 16 / 8 padding on
   // the sunken fill, a solid hairline beneath it, the label 600 13 px.
   groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
@@ -320,6 +360,8 @@ export const iosSkin: DataTableSkin = {
     // The hairline is a separate inset element (skin.separator), not a full-bleed
     // borderBottom, so it aligns with the content leading edge (iOS list idiom).
   }),
+  // The footer's rule is the iOS separator's thin hairline, full-bleed as a section edge.
+  footerRule: (t) => ({ borderTopWidth: 0.5, borderColor: t.border }),
   // No iOS table control draws a group band, so it is the web's band in the platform
   // face, at the 13 pt footnote size with SF tracking; the inset separators stay the rows'.
   groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8 }),

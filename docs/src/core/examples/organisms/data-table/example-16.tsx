@@ -3,22 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, DataTable } = scope;
+  const { Button, DataTable } = scope;
   return (
-<Stateful initial={[
-  ["Alice Johnson", "alice@example.com", "Admin"],
-  ["Bob Smith", "bob@example.com", "Editor"],
-  ["Rachel Chen", "rachel@example.com", "Viewer"]
-]}>
-  {(rows, setRows) => (
-    <DataTable
-      columns={["Name", "Email", "Role"]}
-      rows={rows}
-      onRowEdit={() => {}}
-      onRowCommit={(i, cells) => setRows(rows.map((row, r) => (r === i ? cells.map(String) : row)))}
-      onRowDelete={(i) => setRows(rows.filter((_row, r) => r !== i))}
-    />
-  )}
-</Stateful>
+<DataTable
+  columns={["Prop", "Type", "Default"]}
+  rows={[
+    ["primary", "boolean", "false"],
+    ["small", "boolean", "false"],
+    ["loading", "boolean", "false"]
+  ]}
+  footer={<Button link small>Show all 58 props</Button>}
+/>
   );
 }

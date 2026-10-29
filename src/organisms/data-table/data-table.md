@@ -276,6 +276,63 @@ Pass `groups` in place of `rows` to title runs of rows: each group draws a band 
 />
 ```
 
+### Eyebrow header
+
+Pass `eyebrowHeader` to set the column headings as the page's small uppercase mono label (the props table's PROP, TYPE, DEFAULT and DESCRIPTION) on a header row with no fill of its own, 12 px above and below whatever the density.
+<!-- only: web -->
+On iOS the table keeps its own column headings and the prop changes nothing.
+<!-- /only -->
+<!-- only: ios -->
+The table keeps its own column headings and the prop changes nothing.
+<!-- /only -->
+
+```tsx
+<DataTable
+  eyebrowHeader
+  columns={["Prop", "Type", "Default"]}
+  rows={[
+    ["primary", "boolean", "false"],
+    ["small", "boolean", "false"],
+    ["loading", "boolean", "false"]
+  ]}
+/>
+```
+
+### Top-aligned cells
+
+Pass `alignTop` when a cell may wrap to several lines: every cell sits at the top of its row, so a row's name, type and default stay beside the first line of its description instead of drifting to the row's middle. The selection box and the row actions center on that first line, as they do in a stacked row.
+
+```tsx
+<DataTable
+  alignTop
+  columns={[
+    { label: "Prop", minWidth: 150 },
+    { label: "Type", grow: 1.2, minWidth: 150 },
+    { label: "Description", grow: 2.2, minWidth: 220 }
+  ]}
+  rows={[
+    ["iconLeft", "ReactNode", "An icon before the label. It takes the label's ink and size, and the button keeps its height, so a leading icon never grows a row of buttons."],
+    ["href", "string", "Renders the button as a link to this address on the web, and opens it natively elsewhere."]
+  ]}
+/>
+```
+
+### Footer row
+
+Pass `footer` to draw a row inside the table's frame under the last row, and under the pagination bar when the table is `paginated`: 44 px tall with its content centered, for a "Show all" control or a note. One hairline separates it from what sits above it.
+
+```tsx
+<DataTable
+  columns={["Prop", "Type", "Default"]}
+  rows={[
+    ["primary", "boolean", "false"],
+    ["small", "boolean", "false"],
+    ["loading", "boolean", "false"]
+  ]}
+  footer={<Button link small>Show all 58 props</Button>}
+/>
+```
+
 ### Sparkline trend column
 
 ```tsx
