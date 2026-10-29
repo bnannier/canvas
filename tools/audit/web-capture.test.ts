@@ -99,13 +99,13 @@ describe("the web capture filters", () => {
 });
 
 describe("the web capture plan", () => {
-  it("captures 18 cells per variant: button's 22 variants are 396 cells in 6 tests", () => {
+  it("captures 18 cells per variant: button's 23 variants are 414 cells in 6 tests", () => {
     const plan = planWebCapture(inventory, parseWebFilters({ [AUDIT_ENV.only]: "button" }));
-    expect(button.variants.length).toBe(22);
+    expect(button.variants.length).toBe(23);
     expect(plan.cells).toBe(button.variants.length * WEB_CELLS_PER_VARIANT);
-    expect(plan.cells).toBe(396);
+    expect(plan.cells).toBe(414);
     expect(plan.groups.length).toBe(6);
-    expect(plan.groups.every((g) => g.examples === 22 && g.widths.length === 3)).toBe(true);
+    expect(plan.groups.every((g) => g.examples === 23 && g.widths.length === 3)).toBe(true);
   });
 
   it("covers the whole inventory when nothing is filtered", () => {
