@@ -3,10 +3,12 @@ import {
   Autocomplete,
   Card,
   Column,
+  Divider,
   Field,
   FilterPanel,
   Form,
   FormSection,
+  Grid,
   GridItem,
   Input,
   InputOTP,
@@ -63,7 +65,7 @@ function InputStates() {
       <Field label="Email" error="Enter a complete address.">
         <Input error defaultValue="bobby@nannier" accessibilityLabel="Email" />
       </Field>
-      <Input label="Disabled" disabled placeholder="Managed by SSO" />
+      <Input label="Disabled" disabled defaultValue="Managed by SSO" />
     </ShowcaseCard>
   );
 }
@@ -79,7 +81,10 @@ function SelectTextarea() {
         <Textarea rows={3} maxLength={500} showCount placeholder="Anything the reviewer should know…" accessibilityLabel="Notes" />
       </Field>
       <Field label="One-time code">
-        <InputOTP length={6} defaultValue="481" />
+        {/* Held focused: the active cell and its caret, the hand-off's focus state. */}
+        <InteractionOverride focused>
+          <InputOTP length={6} defaultValue="481" />
+        </InteractionOverride>
       </Field>
     </ShowcaseCard>
   );
@@ -105,26 +110,40 @@ function Addons() {
   );
 }
 
-const RUNTIMES = ["Expo", "React Native", "React Native Web", "Next.js", "Remix", "Vite", "Metro", "Electron"];
+const RUNTIMES = [
+  { label: "Expo", detail: "SDK 57" },
+  { label: "React Native", detail: "0.86" },
+  { label: "React Native Web", detail: "web" },
+  { label: "Next.js", detail: "App Router" },
+  { label: "Remix", detail: "web" },
+  { label: "Vite", detail: "web" },
+  { label: "Metro", detail: "bundler" },
+  { label: "Electron", detail: "desktop" },
+];
 
 /** Autocomplete · Listbox. */
 function AutocompleteListbox() {
   return (
     <ShowcaseCard id="c-autocomplete" caption="<Autocomplete> searchable single-select · <Listbox> rich rows that stay on screen, single or multi">
-      <Autocomplete label="Runtime" options={RUNTIMES} defaultQuery="re" />
-      <Field label="Notify me about">
-        <Listbox
-          multi
-          bordered
-          accessibilityLabel="Notify me about"
-          defaultSelected={[0, 2]}
-          items={[
-            { label: "Mentions", detail: "Someone tags you in a comment or on a board." },
-            { label: "Token changes", detail: "Any value in src/style/tokens.ts moves." },
-            { label: "Releases", detail: "A new version of the kit reaches npm." },
-          ]}
-        />
-      </Field>
+      <InteractionOverride focused>
+        <Autocomplete label="Runtime" options={RUNTIMES} defaultQuery="re" />
+      </InteractionOverride>
+      <Column relaxed>
+        <Divider />
+        <Field label="Notify me about">
+          <Listbox
+            multi
+            bordered
+            accessibilityLabel="Notify me about"
+            defaultSelected={[0, 2]}
+            items={[
+              { label: "Mentions", detail: "Someone tags you in a comment or on a board." },
+              { label: "Token changes", detail: "Any value in src/style/tokens.ts moves." },
+              { label: "Releases", detail: "A new version of the kit reaches npm." },
+            ]}
+          />
+        </Field>
+      </Column>
     </ShowcaseCard>
   );
 }
@@ -134,9 +153,12 @@ function PhoneField() {
   return (
     <ShowcaseCard id="c-phone-input" caption="<PhoneInput> flag · caret · dial code · <Field> adds the one message line no control owns">
       <PhoneInput label="Mobile" defaultCountry="US" defaultValue="(415) 555-0132" />
-      <Field label="Region" helper="Where tokens and assets are stored.">
-        <Select accessibilityLabel="Region" options={["EU · Frankfurt", "US · Virginia", "AP · Tokyo"]} defaultValue="EU · Frankfurt" />
-      </Field>
+      <Column relaxed>
+        <Divider />
+        <Field label="Region" helper="Where tokens and assets are stored.">
+          <Select accessibilityLabel="Region" options={["EU · Frankfurt", "US · Virginia", "AP · Tokyo"]} defaultValue="EU · Frankfurt" />
+        </Field>
+      </Column>
       <Field label="Contact email" error="Add the domain, e.g. team@riskora.com">
         <Input error defaultValue="team@" accessibilityLabel="Contact email" />
       </Field>
@@ -162,9 +184,9 @@ function Filters() {
 /** A keyboard hint: the keycap and what it does. */
 function Hint({ keys, children }: { keys: string; children: ReactNode }) {
   return (
-    <Row tight alignCenter>
+    <Row snug alignCenter>
       <Kbd>{keys}</Kbd>
-      <Typography caption subtle>{children}</Typography>
+      <Typography small subtle>{children}</Typography>
     </Row>
   );
 }
@@ -178,29 +200,37 @@ function FormCard() {
       meta="↵ submits"
       caption="<Form> + <FormSection> · stacked or two-column · titled sections · submit and cancel row · ↵ submits · you stitch the fields inside"
     >
-      {/* Form twoColumn is the hand-off's two-up field grid: the fields pair into two
-          equal columns, a FormSection takes the whole row, and under 512 px the rows stack
-          in one column. The kit's FormSection stacks its own rows, so the Workspace
-          heading is a section of its own above the paired fields, and the Description
-          that spans both columns sits in an untitled section that closes the group. */}
-      <Form twoColumn submitLabel="Save changes" cancelLabel="Cancel" accessibilityLabel="Workspace settings">
-        <FormSection title="Workspace" description="Shown to everyone you invite, on invoices and in the sidebar." />
-        <Input label="Name" placeholder="Riskora" />
-        <Input label="URL" prefix="canvas.app/" defaultValue="riskora" />
-        <Select label="Region" options={["EU · Frankfurt", "US · Virginia", "AP · Tokyo"]} defaultValue="EU · Frankfurt" />
-        <Input label="Fiscal year starts" trailingIcon icon="calendar" defaultValue="January" />
-        <FormSection>
-          <Textarea label="Description" rows={2} placeholder="What this workspace is for…" />
+      {/* Each FormSection is an aside section: its heading in a rail beside its rows, the
+          rail stacking over the rows in a narrow card. The Workspace fields pair in a Grid
+          of 240 px tiles (the hand-off's auto-fit grid), the Description spanning both. The
+          keyboard hints lead the actions row. */}
+      <Form
+        submitLabel="Save changes"
+        cancelLabel="Cancel"
+        accessibilityLabel="Workspace settings"
+        hints={
+          <Row relaxed wrap alignCenter>
+            <Hint keys="↵">to save</Hint>
+            <Hint keys="esc">to discard</Hint>
+          </Row>
+        }
+      >
+        <FormSection aside title="Workspace" description="Shown to everyone you invite, on invoices and in the sidebar.">
+          <Grid relaxed minTileWidth={240} columns={2}>
+            <Input label="Name" placeholder="Riskora" />
+            <Input label="URL" prefix="canvas.app/" defaultValue="riskora" />
+            <Select label="Region" options={["EU · Frankfurt", "US · Virginia", "AP · Tokyo"]} defaultValue="EU · Frankfurt" />
+            <Input label="Fiscal year starts" trailingIcon icon="calendar" defaultValue="January" />
+            <GridItem full>
+              <Textarea label="Description" rows={2} placeholder="What this workspace is for…" />
+            </GridItem>
+          </Grid>
         </FormSection>
-        <FormSection title="Members" description="Defaults for people who join from an invite link.">
+        <FormSection aside title="Members" description="Defaults for people who join from an invite link.">
           <Switch defaultChecked description="Guests see only the boards they are added to.">Allow guests</Switch>
           <Select label="Default role" options={["Admin", "Editor", "Viewer"]} defaultValue="Editor" />
         </FormSection>
       </Form>
-      <Row wrap relaxed>
-        <Hint keys="↵">to save</Hint>
-        <Hint keys="esc">to discard</Hint>
-      </Row>
     </ShowcaseCard>
   );
 }
