@@ -3,15 +3,21 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, DescriptionList } = scope;
+  const { Card, Typography, Column } = scope;
   return (
-<Card title="Identity">
-  <DescriptionList
-    items={[
-      { term: "ID", value: "6f1c2a" },
-      { term: "State", value: "Active" },
-    ]}
-  />
-</Card>
+<Column cozy>
+  <Card outlined largeCorners guide>
+    <Typography h5 level={3}>Guide</Typography>
+    <Typography small subtle>18 by 20, a 10 px rhythm.</Typography>
+  </Card>
+  <Card outlined calloutCorners linkTile>
+    <Typography semibold>Link tile</Typography>
+    <Typography caption subtle>14 by 16, a 6 px rhythm.</Typography>
+  </Card>
+  <Card outlined pager>
+    <Typography eyebrow subtle>Pager</Typography>
+    <Typography lead semibold>16 by 18, a 4 px rhythm.</Typography>
+  </Card>
+</Column>
   );
 }

@@ -41,19 +41,19 @@ function GuidanceCard({ section, scope }: { section: DocGuidance; scope: Example
     else runs.push([block]);
   }
   return (
-    <Card>
-      <Column cozy>
-        <Typography h5 level={3}><InlineMarkdown text={section.title} heading /></Typography>
-        {runs.map((run, i) =>
-          Array.isArray(run) ? (
-            <Prose key={i} blocks={run} small subtle />
-          ) : "heading" in run ? (
-            <Typography key={i} small semibold><InlineMarkdown text={run.heading} heading /></Typography>
-          ) : (
-            <GuidanceExample key={i} code={run.code} render={run.render} scope={scope} />
-          ),
-        )}
-      </Column>
+    // The hand-off's guidance card (line 285): `padding:18px 20px;border:1px solid var(--ln);
+    // border-radius:18px;background:var(--sf);...;gap:10px`, no shadow; the card owns the rhythm.
+    <Card guide largeCorners outlined>
+      <Typography h5 level={3}><InlineMarkdown text={section.title} heading /></Typography>
+      {runs.map((run, i) =>
+        Array.isArray(run) ? (
+          <Prose key={i} blocks={run} small subtle />
+        ) : "heading" in run ? (
+          <Typography key={i} small semibold><InlineMarkdown text={run.heading} heading /></Typography>
+        ) : (
+          <GuidanceExample key={i} code={run.code} render={run.render} scope={scope} />
+        ),
+      )}
     </Card>
   );
 }
@@ -130,16 +130,16 @@ export function TokensSection({ roles, related, tokens, sectionRef }: { roles: r
           <Typography h5 level={3}>Related components</Typography>
           <Grid minTileWidth={220} comfortable>
             {links.map((c) => (
-              // The hand-off's related link is a compact tile (a 15 px name over its
-              // section), not a Card header's title type, so the name is the card's body.
-              <Card key={c.slug} onPress={() => router.push(`/components/${c.slug}` as never)} accessibilityLabel={`${c.name}, ${c.section}`}>
-                <Column tight>
-                  <Row between alignCenter snug>
-                    <Typography semibold>{c.name}</Typography>
-                    <Icon arrowRight muted size={14} decorative />
-                  </Row>
-                  <Typography caption subtle>{c.section}</Typography>
-                </Column>
+              // The hand-off's related link (line 297) is a compact tile (`padding:14px 16px;
+              // border-radius:14px;border:1px solid var(--ln);background:var(--sf);...;gap:6px`,
+              // no shadow; a 15 px name over its section), not a Card header's title type, so
+              // the name is the card's body and the tile owns the rhythm.
+              <Card key={c.slug} linkTile calloutCorners outlined onPress={() => router.push(`/components/${c.slug}` as never)} accessibilityLabel={`${c.name}, ${c.section}`}>
+                <Row between alignCenter snug>
+                  <Typography semibold>{c.name}</Typography>
+                  <Icon arrowRight muted size={14} decorative />
+                </Row>
+                <Typography caption subtle>{c.section}</Typography>
               </Card>
             ))}
           </Grid>
@@ -159,24 +159,24 @@ export function PrevNext({ slug }: { slug: string }) {
     <View {...(Platform.OS === "web" ? ({ dataSet: { detailSection: "prevnext" } } as object) : null)}>
       <Column loose>
         <Divider />
+        {/* The hand-off's previous and next cards (line 303): `padding:16px 18px;border-radius:16px;
+            border:1px solid var(--ln);background:var(--sf);...;gap:4px`, no shadow, the next one
+            `align-items:flex-end;text-align:right`; the card owns the rhythm. Its eyebrow is the
+            page label (line 303: `font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)`). */}
         <Row stacks relaxed>
           <Column span={6}>
             {p ? (
-              <Card onPress={() => router.push(`/components/${p.slug}` as never)} accessibilityLabel={`Previous: ${p.name}`}>
-                <Column tight>
-                  <Typography pageLabel mono>Previous</Typography>
-                  <Typography lead semibold>{p.name}</Typography>
-                </Column>
+              <Card pager outlined onPress={() => router.push(`/components/${p.slug}` as never)} accessibilityLabel={`Previous: ${p.name}`}>
+                <Typography pageLabel mono>Previous</Typography>
+                <Typography lead semibold>{p.name}</Typography>
               </Card>
             ) : null}
           </Column>
           <Column span={6}>
             {n ? (
-              <Card onPress={() => router.push(`/components/${n.slug}` as never)} accessibilityLabel={`Next: ${n.name}`}>
-                <Column tight alignEnd>
-                  <Typography pageLabel mono>Next</Typography>
-                  <Typography lead semibold>{n.name}</Typography>
-                </Column>
+              <Card pager outlined onPress={() => router.push(`/components/${n.slug}` as never)} accessibilityLabel={`Next: ${n.name}`}>
+                <Typography pageLabel mono right>Next</Typography>
+                <Typography lead semibold right>{n.name}</Typography>
               </Card>
             ) : null}
           </Column>

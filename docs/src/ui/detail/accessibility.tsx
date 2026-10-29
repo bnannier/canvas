@@ -43,7 +43,10 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
   return (
     <DetailSection id="a11y" title="Accessibility and keyboard" sectionRef={sectionRef}>
       <Grid minTileWidth={320} columns={2} roomy>
-        <Card>
+        {/* The hand-off's accessibility cards (lines 256 and 262): `padding:18px;border:1px
+            solid var(--ln);border-radius:18px;background:var(--sf);...;gap:12px`, no shadow; their
+            label is the page label in the subtle ink, not the Card's accent eyebrow. */}
+        <Card panel largeCorners outlined>
           <Typography pageLabel mono>Keyboard</Typography>
           {keys.length ? (
             <DescriptionList twoColumn divided items={keys.map(([k, effect]) => ({ term: <Keys keys={k} />, value: effect }))} />
@@ -51,7 +54,7 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
             <Typography small subtle>Not focusable. It has no interaction of its own and takes the semantics of what it wraps.</Typography>
           )}
         </Card>
-        <Card>
+        <Card panel largeCorners outlined>
           <Typography pageLabel mono>Semantics</Typography>
           <Column cozy>
             {sem.length ? (
@@ -71,7 +74,10 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
         </Card>
       </Grid>
       {notes?.length ? (
-        <Card>
+        // The hand-off's "From the docs" card (line 269): `padding:18px 20px;border:1px solid
+        // var(--ln);border-radius:18px;background:var(--sf2);...;gap:10px`, no shadow: `flat`
+        // is the sf2 fill under the hairline with no shadow; its prose is the page note role.
+        <Card guide largeCorners flat>
           <Typography pageLabel mono>From the docs</Typography>
           <Prose blocks={notes} pageNote />
         </Card>

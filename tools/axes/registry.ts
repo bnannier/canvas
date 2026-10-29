@@ -69,7 +69,7 @@ import { fitOf as videoFit } from "../../src/atoms/video/video.shared.tsx";
 import { toneOf as actionPanelTone, layoutOf as actionPanelLayout } from "../../src/molecules/action-panels/action-panels.shared.tsx";
 import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx";
 import { widthOf as alertDialogWidth } from "../../src/molecules/alert-dialog/alert-dialog.shared.tsx";
-import { elevationOf, densityOf as cardDensity, mediaWellOf, contentDensityOf } from "../../src/molecules/card/card.shared.tsx";
+import { elevationOf, densityOf as cardDensity, cornerOf as cardCorner, mediaWellOf, contentDensityOf } from "../../src/molecules/card/card.shared.tsx";
 import { variantOf as codeBlockVariant } from "../../src/molecules/code-block/code-block.shared.tsx";
 import { layoutOf as descriptionLayout, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
 import { leadOf } from "../../src/molecules/feeds/feeds.shared.tsx";
@@ -432,21 +432,22 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "ActionPanel.layout", components: ["ActionPanel"], pages: ["action-panels"], resolver: "src/molecules/action-panels/action-panels.shared.tsx#layoutOf", members: ["inline"], resolve: actionPanelLayout }),
   subject({ id: "Alert.tone", components: ["Alert"], pages: ["alert"], resolver: "src/molecules/alert/alert.shared.tsx#toneOf", members: ["destructive", "warning", "success", "info"], resolve: alertTone }),
   subject({ id: "AlertDialog.width", components: ["AlertDialog"], pages: ["alert-dialog"], resolver: "src/molecules/alert-dialog/alert-dialog.shared.tsx#widthOf", members: ["narrow", "small", "large"], resolve: alertDialogWidth }),
-  subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat", "tileShadow", "rowShadow", "emptyShadow"], resolve: elevationOf }),
+  subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat", "outlined", "tileShadow", "rowShadow", "emptyShadow"], resolve: elevationOf }),
+  subject({ id: "Card.corners", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#cornerOf", members: ["smallCorners", "calloutCorners", "largeCorners", "stageCorners"], resolve: cardCorner, notes: ["The smaller step wins."] }),
   subject({ id: "Card.artwork inset", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.brand.tsx#artworkInsetOf", members: ["controls", "illustration"], resolve: artworkInsetOf }),
   subject({ id: "Card.inset panels", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#panelOf", members: ["notePanel", "versionPanel", "gatePanel"], resolve: panelOf }),
   subject({ id: "Card.brand artwork", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.brand.tsx#brandCardModeOf", members: ["featured", "promo"], resolve: brandCardModeOf }),
   subject({ id: "Card.reference", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.reference.tsx#referenceModeOf", members: ["referenceDetail", "referenceTile", "referenceStacked", "referenceInline"], resolve: referenceModeOf }),
-  subject({ id: "CardMedia.well", components: ["CardMedia"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#mediaWellOf", members: ["compact", "tall"], resolve: mediaWellOf }),
+  subject({ id: "CardMedia.well", components: ["CardMedia"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#mediaWellOf", members: ["compact", "tall", "stage", "playground"], resolve: mediaWellOf }),
   subject({ id: "CardContent.density", components: ["CardContent"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#contentDensityOf", members: ["dense", "compact", "cozy"], resolve: contentDensityOf }),
   subject({
     id: "Card.density",
     components: ["Card"],
     pages: ["card"],
     resolver: "src/molecules/card/card.shared.tsx#densityOf",
-    members: ["dense", "snug", "cozy", "relaxed", "spacious", "insetContent", "rail", "summary", "metric", "request", "menu", "compact", "comfortable"],
+    members: ["dense", "snug", "cozy", "relaxed", "spacious", "insetContent", "rail", "summary", "metric", "request", "menu", "panel", "guide", "linkTile", "pager", "compact", "comfortable"],
     resolve: cardDensity,
-    notes: ["A density pads the surface on its own and wins over `padded` and `flush`."],
+    notes: ["A density pads the surface on its own and wins over `padded` and `flush`; on a sectioned card it reshapes the sections' inset and rhythm."],
   }),
   subject({ id: "CodeBlock.variant", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#variantOf", members: ["terminal", "numbered", "inline"], resolve: codeBlockVariant }),
   subject({ id: "DescriptionList.layout", components: ["DescriptionList"], pages: ["description-lists"], resolver: "src/molecules/description-lists/description-lists.shared.tsx#layoutOf", members: ["inline", "twoColumn", "stacked"], resolve: descriptionLayout }),

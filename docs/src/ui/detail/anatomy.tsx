@@ -49,8 +49,11 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
     <DetailSection id="an" title="Anatomy" sectionRef={sectionRef}>
       <Row stacks stackBreakpoint="md" roomy>
         <Column span={7}>
-          <Card flush clip>
-            <CardMedia tall>
+          {/* The hand-off's anatomy stage (line 217): `min-height:320px;padding:80px 40px;
+              border-radius:20px;border:1px solid var(--ln);background-color:var(--bg2)` under
+              the dot grid, no shadow: the stage well in a stage-cornered outlined frame. */}
+          <Card flush clip stageCorners outlined>
+            <CardMedia stage>
               <DotGrid />
               {/* A preview stage like every specimen well: the specimen's own headings are the
                   component's sample, not the page's outline. */}
@@ -73,19 +76,19 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
           </Card>
         </Column>
         <Column span={5}>
-          <Card>
-            <Column cozy>
-              {parts.map((part, i) => {
-                const shown = rects[part] != null;
-                return (
-                  <Row key={part} cozy alignCenter>
-                    {shown ? <Badge default mono small>{i + 1}</Badge> : <Badge secondary mono small>{i + 1}</Badge>}
-                    <Typography muted={!shown}>{part}</Typography>
-                  </Row>
-                );
-              })}
-              <Typography caption muted>Dimmed parts appear only in some states or variants.</Typography>
-            </Column>
+          {/* The hand-off's legend (line 221): `padding:18px;border:1px solid var(--ln);
+              border-radius:20px;background:var(--sf);...;gap:12px`, no shadow; the card owns the rhythm. */}
+          <Card panel stageCorners outlined>
+            {parts.map((part, i) => {
+              const shown = rects[part] != null;
+              return (
+                <Row key={part} cozy alignCenter>
+                  {shown ? <Badge default mono small>{i + 1}</Badge> : <Badge secondary mono small>{i + 1}</Badge>}
+                  <Typography muted={!shown}>{part}</Typography>
+                </Row>
+              );
+            })}
+            <Typography caption muted>Dimmed parts appear only in some states or variants.</Typography>
           </Card>
         </Column>
       </Row>

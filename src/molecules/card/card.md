@@ -1,20 +1,25 @@
 # Card
 
-A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface. A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
+A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface, and `outlined` drops the shadow and keeps the card fill under the hairline (the hand-off's page cards; a platform whose card control draws an outline instead of a shadow draws both the same). Precedence is `raised`, `flat`, `outlined`. A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
+
+Corners (pick one; the smaller step wins): the card corner by default, `smallCorners` for the tile corner (12), and the three steps the hand-off's component page frames with, `calloutCorners` (14: a note under a table, a compact link tile), `largeCorners` (18: a card framing a section of a page) and `stageCorners` (20: a staging frame, a figure and its legend). The web skin draws each from its row; the native skins keep their own card corner on every step but the tile.
 
 A card with content is padded by default, and a padded surface also spaces its flat children (the card owns the vertical rhythm, so a stack of Typography lines needs no layout wrapper); pass `flush` to opt out of both, the inset and the spacing, for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`.
 
 The section props (`eyebrow` / `badge` / `title` / `description` / `icon` / `actions` / `footer`) render self-padding sections, so a sectioned card needs no `padded`: a tracked mono eyebrow with a badge opposite, the 20 px title in the display face over its muted description, the body, and a footer under a hairline in the subtle ink. They compose with a string `body` OR with raw children, so a panel can carry a titled header above a table or a form; children win when both are passed. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below.
 
-Density: the card's own inset is 20 px with a 12 px rhythm; pass `compact` (14 / 8) or `comfortable` (24 / 12) to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own). `grow` fills the height a parent Row or Column hands the card (the body takes the slack, so a footer stays on its floor); inside a `Grid` cell it is implied, so the tiles of one row are equal-height without being asked.
+Density: the card's own inset is 20 px with an 8 px rhythm; pass `compact` (14 / 8) or `comfortable` (28 / 8) to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own). On a sectioned card (an eyebrow, a title or a footer) the surface never pads, so a density moves its inset and rhythm onto the sections instead: the first section takes the inset above, every section the inset beside, the last the inset below, and each section sits the rhythm under the one before it. `grow` fills the height a parent Row or Column hands the card (the body takes the slack, so a footer stays on its floor); inside a `Grid` cell it is implied, so the tiles of one row are equal-height without being asked.
+
+The hand-off's component page insets are their own density steps, the same on every platform: `panel` (18 with a 12 px rhythm: a section panel, an accessibility card, a figure's legend), `guide` (18×20 with 10: a guidance card), `linkTile` (14×16 with 6: a link tile) and `pager` (16×18 with 4: a previous or next card).
 
 Gap-free content densities preserve dense application layouts: `dense` (12),
 `snug` (18), `cozy` (20), `relaxed` (22×24), `spacious` (28), `insetContent` (14),
 `rail` (12×14), `summary` (14×16), `metric` (14×18), `request` (18/22/18/20),
-and `menu` (12 vertical). Precedence follows that order before compact/comfortable.
-`gapless` removes flat-child spacing; `borderless`, `smallCorners`, `inset`,
+and `menu` (12 vertical). Precedence follows that order, then the page steps
+(`panel`, `guide`, `linkTile`, `pager`), before compact/comfortable.
+`gapless` removes flat-child spacing; `borderless`, `inset`,
 `dimmed` and `clip` control surface anatomy. `tileShadow`, `rowShadow`, and
-`emptyShadow` extend the elevation axis after raised/flat. Accessible names and
+`emptyShadow` extend the elevation axis after raised/flat/outlined. Accessible names and
 hover-lift reporting are supported on interactive cards.
 
 `interactiveContents` keeps a clickable card from nesting a button role around its
@@ -123,6 +128,66 @@ source affordance in the detail panel. An `href` opens through the system browse
 </Card>
 ```
 
+### Outlined
+
+```tsx
+<Card outlined>
+  <Typography lead semibold>A hairline and no shadow</Typography>
+</Card>
+```
+
+### Corners
+
+```tsx
+<Column cozy>
+  <Card outlined calloutCorners summary>
+    <Typography small medium>calloutCorners</Typography>
+  </Card>
+  <Card outlined largeCorners panel>
+    <Typography small medium>largeCorners</Typography>
+  </Card>
+  <Card outlined stageCorners panel>
+    <Typography small medium>stageCorners</Typography>
+  </Card>
+</Column>
+```
+
+### Page densities
+
+```tsx
+<Column cozy>
+  <Card outlined largeCorners guide>
+    <Typography h5 level={3}>Guide</Typography>
+    <Typography small subtle>18 by 20, a 10 px rhythm.</Typography>
+  </Card>
+  <Card outlined calloutCorners linkTile>
+    <Typography semibold>Link tile</Typography>
+    <Typography caption subtle>14 by 16, a 6 px rhythm.</Typography>
+  </Card>
+  <Card outlined pager>
+    <Typography eyebrow subtle>Pager</Typography>
+    <Typography lead semibold>16 by 18, a 4 px rhythm.</Typography>
+  </Card>
+</Column>
+```
+
+### Sectioned panel
+
+A density on a sectioned card reshapes the sections: here the eyebrow sits 18 px in and the list 12 px under it.
+
+```tsx
+<Card outlined largeCorners panel eyebrow="Keyboard">
+  <DescriptionList
+    twoColumn
+    divided
+    items={[
+      { term: "Enter", value: "Activates" },
+      { term: "Space", value: "Activates" },
+    ]}
+  />
+</Card>
+```
+
 ### Density
 
 ```tsx
@@ -181,7 +246,7 @@ source affordance in the detail panel. An `href` opens through the system browse
 
 ### Specimen well
 
-Given children instead of `src`, `CardMedia` is a sunken well that stages live content: the page's sunken fill (an ink tint under glass), the content centered, at least 160 px tall with a 28 x 20 inset, growing with what it holds. `compact` takes the 130 px well with a 24 x 16 inset and `tall` the 240 px one with a 32 x 20 inset (`compact` wins when both are passed). `height` sizes the image band only. Children win over `src`.
+Given children instead of `src`, `CardMedia` is a sunken well that stages live content: the page's sunken fill (an ink tint under glass), the content centered, at least 160 px tall with a 28 x 20 inset, growing with what it holds. `compact` takes the 130 px well with a 24 x 16 inset and `tall` the 240 px one with a 32 x 20 inset; `stage` is a figure's stage, 320 px with an 80 x 40 inset, and `playground` a live specimen's, 340 px with a 44 x 28 inset that also grows to the height and the remaining width of a panel beside it (precedence `compact`, `tall`, `stage`, `playground`). `height` sizes the image band only. Children win over `src`.
 
 ```tsx
 <Card flush>

@@ -1,5 +1,5 @@
 import { useState, type ReactNode, type Ref } from "react";
-import { View, Typography, Badge, Button, DataTable, Alert, Collapsible, Icon, widths, type DataTableColumn, type DataTableGroup } from "@nannier/canvas";
+import { View, Row, Column, Card, Typography, Badge, Button, DataTable, Collapsible, Icon, widths, type DataTableColumn, type DataTableGroup } from "@nannier/canvas";
 import type { PropDoc, PropGroup } from "../../core/scope";
 import { INHERITED_PROPS } from "../../core/examples/inherited-props";
 import { InlineMarkdown } from "../prose";
@@ -89,13 +89,21 @@ function PropTable({ group, limit = Infinity, footer }: { group: PropGroup; limi
   return <DataTable testID="prop-table" bordered compact eyebrowHeader alignTop columns={COLUMNS} rows={[]} groups={groups} stacks stackBreakpoint="md" footer={footer} />;
 }
 
-/** What an inherited interface adds, by its members (the measure steps, the series props). */
+/**
+ * What an inherited interface adds, in one sentence after its name (the hand-off's
+ * `inherits`, Component.dc.html line 391): the measure's width steps on the kit's scale
+ * and what `start` does, the text-entry props' summary, or another interface's members.
+ */
 function inheritedNote(name: string): string {
   const inherited = INHERITED_PROPS[name];
-  if (!inherited) return "Shared props defined elsewhere in the kit.";
-  // A measure step names its width on the kit's scale (MeasureProps).
-  const scale = widths as Readonly<Record<string, number>>;
-  return inherited.props.map((p) => (scale[p.name] ? `${p.name} ${scale[p.name]}` : p.name)).join(" · ");
+  if (name === "MeasureProps" && inherited) {
+    const scale = widths as Readonly<Record<string, number>>;
+    const steps = inherited.props.filter((p) => scale[p.name]).map((p) => `${p.name} ${scale[p.name]}`).join(" · ");
+    return `width steps ${steps}, plus start to pin to the leading edge.`;
+  }
+  if (name === "TextEntryProps") return "the shared text-entry props (value, placeholder, keyboard, autocomplete and change handlers) common to Input and Textarea.";
+  if (inherited) return `the shared ${inherited.props.map((p) => p.name).join(" · ")} props.`;
+  return "shared props defined elsewhere in the kit.";
 }
 
 /**
@@ -125,7 +133,23 @@ export function PropsSection({ groups, propsInterface, sectionRef }: { groups: r
       />
       {main.inherits.map((heritage) => {
         const name = heritage.match(/\w+Props/)?.[0] ?? heritage;
-        return <Alert key={heritage} icon={<Icon layers primary size={16} decorative />} title={heritage} description={inheritedNote(name)} />;
+        return (
+          // The hand-off's inherited-props callout (line 244): `padding:14px 16px;border-radius:14px;
+          // border:1px solid var(--ln);background:var(--sf2);display:flex;gap:10px;align-items:
+          // flex-start;font:400 13px/1.55 var(--ft);color:var(--tx2)`, a 15 px layers glyph in the
+          // accent ink, then one run: the name in 600 weight in the text ink, a middle dot, the note.
+          // `flat` is the sf2 fill under the hairline with no shadow; `summary` the 14 by 16 inset.
+          <Card key={heritage} flat calloutCorners summary>
+            <Row comfortable alignStart>
+              <Icon layers primary size={15} decorative />
+              <Column fill>
+                <Typography small subtle>
+                  <Typography small semibold>{heritage}</Typography> · {inheritedNote(name)}
+                </Typography>
+              </Column>
+            </Row>
+          </Card>
+        );
       })}
       {subs.map((sub) => (
         <Collapsible key={sub.name} card title={sub.name} description={`${sub.props.length} props`}>
