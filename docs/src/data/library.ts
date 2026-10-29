@@ -26,7 +26,7 @@ export const LIBRARY_HERO = {
   headline: { plain: "Made of", accent: "light." },
   /** Names the platforms, so it is per build (./platform-copy). */
   body: PLATFORM_COPY.heroBody,
-  primary: { label: "Explore components", href: "/sections/controls" },
+  primary: { label: "Explore components", href: "/controls" },
   secondary: { label: "bnannier/canvas", url: REPO_URL },
 } as const;
 

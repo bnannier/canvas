@@ -67,42 +67,42 @@
     },
     "section-foundations": {
       "label": "Foundations",
-      "href": "/sections/foundations",
+      "href": "/foundations",
       "icon": "layout-grid"
     },
     "section-layout": {
       "label": "Layout",
-      "href": "/sections/layout",
+      "href": "/layout",
       "icon": "layout-grid"
     },
     "section-controls": {
       "label": "Controls",
-      "href": "/sections/controls",
+      "href": "/controls",
       "icon": "layout-grid"
     },
     "section-inputs": {
       "label": "Inputs",
-      "href": "/sections/inputs",
+      "href": "/inputs",
       "icon": "layout-grid"
     },
     "section-navigation": {
       "label": "Navigation",
-      "href": "/sections/navigation",
+      "href": "/navigation",
       "icon": "layout-grid"
     },
     "section-data": {
       "label": "Surfaces & data",
-      "href": "/sections/data",
+      "href": "/data",
       "icon": "layout-grid"
     },
     "section-charts": {
       "label": "Charts",
-      "href": "/sections/charts",
+      "href": "/charts",
       "icon": "layout-grid"
     },
     "section-overlays": {
       "label": "Overlays & feedback",
-      "href": "/sections/overlays",
+      "href": "/overlays",
       "icon": "layout-grid"
     },
     "skins": {
