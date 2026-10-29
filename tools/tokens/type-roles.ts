@@ -72,7 +72,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/button-group/button-group.styles.ts": { WEB_CELL_TYPE: "small" },
   "src/atoms/radio/radio.styles.ts": { "NATIVE_DESCRIPTION.small": "small" },
   "src/organisms/command/command.styles.ts": { groupHeading: "caption", footerText: "tiny", "webSkin.shortcut": "tiny" },
-  "src/organisms/data-table/data-table.styles.ts": { "webSkin.stackedLabel": "small", "iosSkin.stackedLabel": "small" },
+  // The props-table header's page label (the hand-off's 500 11px mono, Component.dc.html line 235), at the caption floor.
+  "src/organisms/data-table/data-table.styles.ts": { "webSkin.stackedLabel": "small", "iosSkin.stackedLabel": "small", "webSkin.eyebrowHeader.cell": "caption" },
   // A message's author line, and the provider, notice and failure lines beside and under it.
   "src/organisms/chat/chat.styles.ts": { "webSkin.label": "small", "webSkin.muted": "small" },
 
