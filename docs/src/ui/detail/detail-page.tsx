@@ -20,7 +20,7 @@ import { AccessibilitySection } from "./accessibility";
 import { PlatformSkinsSection } from "./platform-skins";
 import { UsageSection, DoDontSection, TokensSection, PrevNext } from "./sections";
 import { componentName, controlledProps, initialKnobs, jsxCode, knobProps, type KnobState, type KnobValue } from "./knobs";
-import { withIconTones, type SpecimenBase } from "./frame";
+import { type SpecimenBase } from "./frame";
 
 // The v4 component detail page (Component.dc.html, audit/v4-redesign/PLAN.md decisions P1
 // to P3), behind the pilot gate in ./gate.ts. Everything on it is generated data: the
@@ -98,7 +98,7 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   };
 
   const name = componentName(spec, knobs);
-  const props = withIconTones(name, knobProps(spec.knobs, knobs));
+  const props = knobProps(spec.knobs, knobs);
   const code = jsxCode(name, props);
   const web = scopeFor(tokens, "web").scope;
   const dir = comp.dir ?? comp.slug;

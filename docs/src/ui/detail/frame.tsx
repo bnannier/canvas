@@ -72,31 +72,13 @@ export function DotGrid() {
   );
 }
 
-/** A filled default-intent Button paints its icon in the primary's contrast ink, as its docs examples do. */
-const BUTTON_INTENTS = ["secondary", "outline", "ghost", "destructive", "link", "inverse", "quiet"];
-
 /**
- * The tone an icon slot's glyph takes on the component the playground renders: the
- * caller colours an icon (Button's `iconLeft` docs), so on a filled default Button it is
- * `primaryForeground` and anywhere else the glyph's own foreground.
+ * An icon slot's or element slot's descriptor as the element it describes. An icon slot's
+ * glyph carries no tone: the host colours it (a Button hands its icon slots its label
+ * ink, src/style/ink.tsx), so the knob's intent choice recolours the glyph with the label.
  */
-export function iconTone(component: string, props: PropDescriptors): string | undefined {
-  if (component !== "Button") return undefined;
-  return BUTTON_INTENTS.some((intent) => props[intent] === true) ? undefined : "primaryForeground";
-}
-
-/** The descriptors with each icon slot's tone filled in, as the JSX prints and the element renders them. */
-export function withIconTones(component: string, props: PropDescriptors): PropDescriptors {
-  const tone = iconTone(component, props);
-  if (!tone) return props;
-  const out: Record<string, PropValue> = {};
-  for (const [key, value] of Object.entries(props)) out[key] = typeof value === "object" && "icon" in value ? { ...value, tone } : value;
-  return out;
-}
-
-/** An icon slot's or element slot's descriptor as the element it describes. */
 function slotElement(scope: ExampleScope, value: Exclude<PropValue, string | number | boolean>): ReactNode {
-  if ("icon" in value) return createElement(scope.Icon, { [value.icon]: true, ...(value.tone ? { [value.tone]: true } : null), size: 16 });
+  if ("icon" in value) return createElement(scope.Icon, { [value.icon]: true, size: 16 });
   const element = (scope as unknown as Record<string, Parameters<typeof createElement>[0]>)[value.element];
   return element ? createElement(element, null, value.children) : null;
 }

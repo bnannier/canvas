@@ -13,6 +13,7 @@ import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.
 import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, type ViewStyle, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
 import { AnatomyPart, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
+import { InkProvider } from "../../style/ink.js";
 import { CountBadge } from "../badge/badge.notification.js";
 import { ButtonAttention } from "./button-attention.js";
 import { shrinkButton, shrinkLabel, type ButtonSkin, type Intent, type Size } from "./button.styles.js";
@@ -28,8 +29,10 @@ export interface ButtonProps extends MeasureProps {
    * An icon element rendered before the label (e.g. a lucide or Canvas `Icon`).
    * It renders directly (not wrapped in the label `Text`, which cannot host an
    * SVG), spaced from the label by the skin's gap. Pass `iconLeft` alone with
-   * the `icon` size prop for an icon-only square button. The caller sizes and
-   * colors the icon (use the intent's foreground for non-ghost intents).
+   * the `icon` size prop for an icon-only square button. The caller sizes the
+   * icon; a Canvas `Icon` with no tone of its own takes the button's label ink
+   * (the primary's contrast ink on a primary button, the muted ink on a quiet
+   * one, dimmed with the label while disabled), and an explicit tone keeps it.
    */
   iconLeft?: ReactNode;
   /** An icon element rendered after the label (e.g. a trailing chevron/arrow). */
@@ -254,7 +257,14 @@ export function createButton(skin: ButtonSkin) {
     // there is no layout shift on any platform. The slop is seeded from the least box the
     // skin gives (an icon square's size, or a text button's padding and border around one
     // label line), so it is in place before the first layout (src/style/touch-target-seed.ts).
-    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(container, children != null ? skin.label(tokens, intent, size, opts).lineHeight : undefined));
+    const label = skin.label(tokens, intent, size, opts);
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(container, children != null ? label.lineHeight : undefined));
+    // The ink the icon slots inherit: the label's own colour for this intent, emphasis,
+    // body and state, as the hand-off draws a button's glyphs in its label colour (`K.btn`,
+    // tools/v4/handoff/cv-kit.js: `background:'+bg+';color:'+fg+'`, its `<cv-icon>`
+    // "painted with currentColor"). A disabled or loading button dims the whole box (the
+    // skin's 0.4 or 0.38), so the glyph fades with the label it matches.
+    const labelInk = typeof label.color === "string" ? label.color : undefined;
 
     // The skin's hover lift for this intent, read on the <RippleClip> wrapper (which never
     // moves) and applied to the Pressable inside it. A disabled or loading button stays put.
@@ -343,9 +353,14 @@ export function createButton(skin: ButtonSkin) {
                   importantForAccessibility="no-hide-descendants"
                 />
               ) : null}
-              {!loading && iconLeft != null ? <AnatomyPart name="Leading icon">{iconLeft}</AnatomyPart> : null}
-              {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[skin.label(tokens, intent, size, opts), live ? hoverLabel : null, props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
-              {!loading && iconRight != null ? <AnatomyPart name="Trailing icon">{iconRight}</AnatomyPart> : null}
+              {/* The icon slots (and the icon-only body, which is `iconLeft` alone) read the
+                  label ink, the hover label's where the skin names one; an Icon carrying its
+                  own tone keeps it (src/style/ink.tsx). */}
+              <InkProvider ink={live && typeof hoverLabel?.color === "string" ? hoverLabel.color : labelInk}>
+                {!loading && iconLeft != null ? <AnatomyPart name="Leading icon">{iconLeft}</AnatomyPart> : null}
+                {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[label, live ? hoverLabel : null, props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
+                {!loading && iconRight != null ? <AnatomyPart name="Trailing icon">{iconRight}</AnatomyPart> : null}
+              </InkProvider>
             </View>
             {props.count !== undefined && props.count !== "" ? <View ref={countPart?.ref} onLayout={countPart?.onLayout} style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View> : null}
           </>}

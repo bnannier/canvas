@@ -1,6 +1,6 @@
 # Icon
 
-Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to the theme foreground token and tracks light and dark automatically; pick other hues with the semantic color booleans (`primary`, `destructive`, `success`, `warning`, `muted`).
+Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to the theme foreground token and tracks light and dark automatically; pick other hues with the semantic color booleans (`primary`, `destructive`, `success`, `warning`, `muted`). Inside a control that owns a label ink (a Button's `iconLeft` and `iconRight` slots) a glyph with no tone takes that ink instead, the way the hand-off's icons inherit `currentColor`: the primary's contrast ink on a primary button, the muted ink on a quiet one. The precedence is the explicit tone, then the host's ink, then the foreground, so a toned glyph keeps its tone anywhere.
 
 ## Usage
 
