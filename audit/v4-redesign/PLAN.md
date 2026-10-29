@@ -233,6 +233,19 @@ recorded deviation above. What follows from it:
   section (P3), and the Platform skins' example picker, form-factor switcher and code block,
   whose cards keep rendering the chosen example. The anatomy's 1.6 zoom is a cross-platform
   scale transform with the marker maths scaled, never a web `zoom`.
+- **D19 The component page's looks are kit capabilities (2026-10-28).** The first Lookout
+  run on Button (check-20261028-201446) filed the page's divergences, and each is fixed where
+  the hand-off draws it: Typography `code inline` (the prose chip), `pageLabel`, `guideTitle`,
+  `guideBody` and `pagerName`; Chip `token` and `square`; Swatch `tiny`, `ring` and
+  `decorative`; CodeBlock `unbadged` and the jsx grammar of the hand-off's `hl()`; DataTable
+  `eyebrowHeader`, `alignTop` and `footer`; Card `calloutCorners`, `largeCorners`,
+  `stageCorners`, `outlined`, `panel`, `guide`, `linkTile`, `pager`, and CardMedia `stage`
+  and `playground`; Button `plainLink`, its own 14 px loading arc on the web and the
+  theme-choice disc; Badge `marker`; AnatomyProvider `zoomed` (the 1.6 scale transform with
+  the part rectangles mapped) and DetailSpec `fill`; DescriptionList `ruled`. The docs page
+  composes them and never styles at a call site. Content the page reads from the current
+  docs (paragraphs, examples, prop rows, semantics, tokens) is settled as content in
+  `lookout.config.ts`'s never-file list; only how it is drawn is judged.
 
 ## Phases (each committed and pushed on its own, CI run locally first; screenshot
 baselines and tuning evidence land WITH the visual phase that moves them, never at the end)
