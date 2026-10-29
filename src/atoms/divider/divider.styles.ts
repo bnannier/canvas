@@ -9,7 +9,8 @@ import { type DividerSkin } from "./divider.shared.js";
 // and the label in the hand-off's mono caption, 500 11px uppercase tracked +0.08em (0.88px)
 // in the subtle ink (the shell paints the colour); the iOS and Android skins reference it
 // directly so there is one look everywhere. The line height is the mono face's normal line
-// box (1.32) rounded up to a whole pixel, as the type roles round theirs.
+// at 11 px, 14, as Chromium lays JetBrains Mono out on the served hand-off page (the
+// renderer sets no line ratio).
 
 export const webSkin: DividerSkin = {
   ruleThickness: 1,
@@ -17,7 +18,7 @@ export const webSkin: DividerSkin = {
   labelType: {
     fontFamily: MONO_FONT,
     fontSize: 11,
-    lineHeight: 15,
+    lineHeight: 14,
     fontWeight: "500",
     letterSpacing: 0.88,
     textTransform: "uppercase",

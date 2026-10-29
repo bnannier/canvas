@@ -11,7 +11,8 @@ import { type BadgeSkin } from "./badge.shared.js";
 // The pill is fully round and 22 px tall (18 small, 26 large) with an 8 px inset (6
 // small) inside a 1 px border that stays transparent unless a tone draws it, and its
 // label is 500 12 px (11 small) in the interface face. A toned pill leads with a 6 px dot
-// in its ink. A reference key is the same height at the 6 px key corner. The status
+// in its ink. A reference key is the same height at the key cap's corner, as is any pill
+// passing `keyCorners`, and a `step` mark is a 32 px square at its own corner. The status
 // family has no pill: a 7 px dot inside a 3 px ring of its wash, beside the label. The
 // colors live in badge.shared.tsx.
 //
@@ -51,11 +52,21 @@ export const webSkin: BadgeSkin = {
     // The Semantics chip (line 264): the pill's 1 px edge sits inside the 8 px inset, so the
     // chip is the template's width; the 14 px line is JetBrains Mono's normal at 11 px.
     token: { height: 22, paddingHorizontal: 7, fontSize: 11, lineHeight: 14 },
+    // The Layout ruler's "this window" readout (Layout.dc.html: `height:20px;padding:0 8px;
+    // border-radius:999px;...;font:500 10px/20px var(--fm)`).
+    tick: { height: 20, paddingHorizontal: 8, fontSize: 10, lineHeight: 20 },
+    // The Layout page's numbered steps (`width:32px;height:32px;border-radius:10px;...;
+    // font:600 13px var(--fm)`): a square, the number centred on the face's normal line.
+    step: { height: 32, paddingHorizontal: 0, fontSize: 13, lineHeight: 17 },
   },
   // Line 220: `box-shadow:0 0 0 3px var(--bg2),0 4px 12px rgba(0,0,0,.4)`, `--bg2` the
   // stage well's fill (CardMedia reads `surface-sunken`, falling back to `muted` as it does).
   markerShadow: (tokens) => `0px 0px 0px 3px ${tokens["surface-sunken"] ?? tokens.muted}, 0px 4px 12px rgba(0,0,0,0.4)`,
   radius: shape.web.pill,
+  keyRadius: platformShape.web.key,
+  stepRadius: platformShape.web.stepMark,
+  // The solid step's glow (`box-shadow:0 8px 18px -8px var(--ion-glow)`).
+  stepGlow: (tokens) => `0px 8px 18px -8px ${tokens.glow ?? tokens.ring}`,
   referenceRadius: platformShape.web.key,
   gap: 6,
   referenceGap: 4,

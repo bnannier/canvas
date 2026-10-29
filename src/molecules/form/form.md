@@ -42,6 +42,16 @@ On the web a Form is a form landmark. Name it with `accessibilityLabel`, a brief
 </Form>
 ```
 
+### Block actions
+
+`block` gives both actions `block`, so the cancel and submit buttons split the actions row equally, the compact form's full-width buttons.
+
+```tsx
+<Form block submitLabel="Send invite" cancelLabel="Cancel">
+  <Input label="Email" placeholder="kira@ionize.io" />
+</Form>
+```
+
 ### Measure
 
 ```tsx

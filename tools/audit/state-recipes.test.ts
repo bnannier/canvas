@@ -1195,9 +1195,9 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // DataTable's cell editor: the web build's under its glass pane (`skin.liquidTextEntry`), the
     // others' bare; its scroller only where the skin does not collapse to the primary column.
     expect(builds("data-table", "focus").filter((line) => !line.endsWith("every build"))).toEqual([
-      "data-table.shared.tsx:1041 ScrollView: web and android",
-      "data-table.shared.tsx:568 TextInput: ios and android",
-      "data-table.shared.tsx:572 TextInput: web",
+      "data-table.shared.tsx:1057 ScrollView: web and android",
+      "data-table.shared.tsx:583 TextInput: ios and android",
+      "data-table.shared.tsx:587 TextInput: web",
     ]);
     // The rows each page shows, and the build each renders: Toast's iOS row is the web build,
     // the docs registry injecting no iOS Toast; Sidebar's page shows one preview, the web build.
@@ -1230,7 +1230,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     ]);
     // DataTable's native cell editor is on the iOS and Android rows alone.
     expect(check("data-table", { ...table["data-table"], focus: onWeb("data-table", "focus") })).toEqual([
-      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:568 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
+      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:583 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // As the table has them, each on the rows its own controls are on: nothing is left, and the
     // answers say which rows they are.

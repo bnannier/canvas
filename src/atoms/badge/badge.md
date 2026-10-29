@@ -4,13 +4,15 @@ Two families on one Badge component, picked by boolean props. The metadata badge
 
 The tone colors come from `statusColors`, the helper every toned surface in the kit reads, so a warning badge and a warning alert are the same state, and every ink is the solved text role that keeps 4.5:1 on its wash.
 
-If more than one tone is passed, Badge resolves the highest-precedence one: `default` > `destructive` > `secondary` > `outline` for metadata (the accent's soft pill when none is passed), and `success` > `error` > `warning` > `info` > `neutral` for status (`neutral` when none is passed). The metadata tones win over a status tone's colors; the status tone's dot stays.
+`contrast` is the most prominent neutral: the scheme's ink (`foreground`) as the fill under the page colour as the label (under glass, the ink at the dense alpha, as the Tooltip bubble's). `dashed` is the placeholder outline: no fill inside a dashed `field-border` edge, the label in the second ink.
+
+If more than one tone is passed, Badge resolves the highest-precedence one: `default` > `contrast` > `destructive` > `secondary` > `outline` > `dashed` for metadata (the accent's soft pill when none is passed), and `success` > `error` > `warning` > `info` > `neutral` for status (`neutral` when none is passed). The metadata tones win over a status tone's colors; the status tone's dot stays.
 
 `cyan` and `mint` paint a metadata pill in a fixed series hue, the same whatever the palette (the hand-off's `--cyan` and `--mint`, the `chart-2` and `chart-3` tokens): the hue's 16% wash under its ink, solved to 4.5:1 on the wash, with no dot. They sit after the status tones in precedence (`success` > `warning` > `error` > `info` > `cyan` > `mint`), so a section can name three tiers mint, cyan and the accent and keep them apart under every palette.
 
 Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (`tight` / `snug` / `cozy`, default `snug`; the largest gap passed wins: `cozy` > `snug` > `tight`) and centers its badges, so a call site never hand-rolls a flex row around them. Give it an `accessibilityLabel` (say, "Rachel Chen's roles") and it is announced as a named group that keeps its badges' text; without one it is a plain row.
 
-The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label and `large` 26 px. `count` is the small pill with the heavier label, `navigationCount` the small solid count, and `reference` a linked key at the 6 px key corner in the code face, underlined, with an arrow when it has an `href`. `token` is a code token chip, the 22 px pill under the small 11 px label in the code face, for a role, a state or an attribute name listed beside its term; `tier` is a tier tag, a 24 px pill with a 10 px inset under an 11 px mono label in caps on its own line, the tag that names a component's tier beside its title, in whichever tone the tier takes. `tiny` is the 18 px pill under a 10 px label on its own line, at the regular weight even when `solid` (a navigation row's "New" tag). The metric precedence is `notification` > `reference` > `navigationCount` > `count` > `tier` > `token` > `tiny` > `small`. `primary` and `action` take the accent's wash, `soft` names the soft wash every toned pill already has, `neutralFill` fills with the border color, `foreground` overrides the label ink, `dot` adds the leading dot without a status tone, and `inverse` and `solid` supply branded surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
+The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label and `large` 26 px. `count` is the small pill with the heavier label, `navigationCount` the small solid count, and `reference` a linked key at the 6 px key corner in the code face, underlined, with an arrow when it has an `href`. `token` is a code token chip, the 22 px pill under the small 11 px label in the code face, for a role, a state or an attribute name listed beside its term; `tier` is a tier tag, a 24 px pill with a 10 px inset under an 11 px mono label in caps on its own line, the tag that names a component's tier beside its title, in whichever tone the tier takes. `tiny` is the 18 px pill under a 10 px label on its own line, at the regular weight even when `solid` (a navigation row's "New" tag). The metric precedence is `notification` > `marker` > `disc` > `step` > `reference` > `navigationCount` > `count` > `tier` > `band` > `tick` > `token` > `tiny` > `small`. `primary` and `action` take the accent's wash, `soft` names the soft wash every toned pill already has, `neutralFill` fills with the border color, `foreground` overrides the label ink, `dot` adds the leading dot without a status tone, and `inverse` and `solid` supply branded surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
 
 `notification` is a destructive count: a 20 px pill with a 600 11 px label, soft by default and solid with `solid`, set off from the page by a ring of the background; `action` adds a halo of the destructive wash. Button carries its own count when passed a `count`.
 
@@ -23,7 +25,13 @@ status-tone precedence and announces its supplied status label.
 
 `tier` is the tier pill beside a page title (Atom, Molecule, Organism): 24 px tall with a 10 px inset and a 500 11 px label on its own line, tracked in caps with `uppercase` and in the code face with `mono`, in the tone axis's fill. It sits above `small` in precedence.
 
-`band` is a group band's pill, the "pick one" beside an axis's title in a props table: 20 px tall with a 7 px inset, no border, and a 500 11 px label, in the code face with `mono`, in the tone axis's fill (the accent's soft pill with none). It sits between `tier` and `small` in precedence.
+`band` is a group band's pill, the "pick one" beside an axis's title in a props table: 20 px tall with a 7 px inset, no border, and a 500 11 px label, in the code face with `mono`, in the tone axis's fill (the accent's soft pill with none). It sits between `tier` and `small` in precedence; like `tick`, it never leads with a tone's dot.
+
+`tick` is a ruler tick's readout: 20 px tall with an 8 px inset, no border and a 500 10 px label in the code face on the pill's own 20 px line, usually `contrast` (the Layout page's "this window" pill under its marker).
+
+`step` is a numbered step mark: a 32 px square at the 10 px step corner with its number 600 13 px in the code face, centred, in the tone axis's fill: `default` the solid accent with the accent's glow beneath, none the accent's soft wash, `secondary` the quiet surface inside the `field-border` edge in the second ink. Pass it as a MediaObject's `icon` with `bareIcon` to number a list of steps.
+
+`keyCorners` sets any pill at the key cap's 6 px corner in place of the round one (the corner axis has this one member); `reference` and `step` keep their own corners.
 
 ## Usage
 
@@ -156,6 +164,33 @@ text that names it. Give it an `accessibilityLabel` when it carries meaning of i
 <BadgeGroup>
   <Badge band mono>pick one</Badge>
   <Badge band mono secondary>stacks</Badge>
+</BadgeGroup>
+```
+
+### Contrast tick
+
+```tsx
+<Badge tick contrast>this window · 1440px</Badge>
+```
+
+### Step marks
+
+```tsx
+<BadgeGroup>
+  <Badge step default>1</Badge>
+  <Badge step>2</Badge>
+  <Badge step secondary>3</Badge>
+</BadgeGroup>
+```
+
+### Key corners and the dashed outline
+
+```tsx
+<BadgeGroup>
+  <Badge band mono keyCorners>fill</Badge>
+  <Badge band mono keyCorners cyan>hug</Badge>
+  <Badge mono keyCorners dashed>View</Badge>
+  <Badge mono keyCorners dashed>ScrollView</Badge>
 </BadgeGroup>
 ```
 

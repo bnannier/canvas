@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Badge, BadgeGroup } = scope;
+  const { Badge } = scope;
   return (
-<BadgeGroup tight>
-  <Badge token>busy</Badge>
-  <Badge token>disabled</Badge>
-  <Badge token>aria-expanded</Badge>
-</BadgeGroup>
+<Badge tick contrast>this window · 1440px</Badge>
   );
 }

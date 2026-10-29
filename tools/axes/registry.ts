@@ -31,7 +31,7 @@ import { requestedPaletteOf, requestedSchemeOf, requestedSurfaceOf, type ThemePr
 import { sizeOf as autocompleteSize } from "../../src/atoms/autocomplete/autocomplete.shared.tsx";
 import { sizeOf as avatarSize, shapeOf as avatarShape, overlapOf } from "../../src/atoms/avatar/avatar.shared.tsx";
 import { alignEndOf } from "../../src/atoms/avatar/avatar-menu.shared.tsx";
-import { toneOf as badgeTone, statusOf as badgeStatus, badgeGapOf, badgeIntentOf, badgeMetricOf, badgeSurfaceOf, badgeInkOf, badgeTrackingOf } from "../../src/atoms/badge/badge.shared.tsx";
+import { toneOf as badgeTone, statusOf as badgeStatus, badgeGapOf, badgeIntentOf, badgeMetricOf, badgeSurfaceOf, badgeInkOf, badgeTrackingOf, badgeCornerOf } from "../../src/atoms/badge/badge.shared.tsx";
 import { separatorOf } from "../../src/atoms/breadcrumb/breadcrumb.shared.tsx";
 import { intentOf as buttonIntent, iconBoxOf, sizeOf as buttonSize } from "../../src/atoms/button/button.shared.tsx";
 import { webEmphasisOf, webHoverKindOf, webLinkInkOf, webBodyOf } from "../../src/atoms/button/button.styles.ts";
@@ -219,7 +219,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Badge"],
     pages: ["badge"],
     resolver: "src/atoms/badge/badge.shared.tsx#toneOf",
-    members: ["default", "destructive", "secondary", "outline"],
+    members: ["default", "contrast", "destructive", "secondary", "outline", "dashed"],
     resolve: badgeTone,
     notes: ["`status` switches the badge to its status form, where this axis is ignored."],
   }),
@@ -415,7 +415,8 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
 
   subject({ id: "Badge.intent", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeIntentOf", members: ["action", "primary", "reference", "success", "warning", "error", "info", "cyan", "mint"], resolve: badgeIntentOf }),
-  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "reference", "navigationCount", "count", "tier", "band", "token", "tiny", "small"], resolve: badgeMetricOf }),
+  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "step", "reference", "navigationCount", "count", "tier", "band", "tick", "token", "tiny", "small"], resolve: badgeMetricOf }),
+  subject({ id: "Badge.corners", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeCornerOf", members: ["keyCorners"], resolve: badgeCornerOf, notes: ["`reference` and `step` keep their own corners."] }),
   subject({ id: "Badge.surface", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "neutralFill", "soft", "reference"], resolve: badgeSurfaceOf }),
   subject({ id: "Badge.ink", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeInkOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "foreground"], resolve: badgeInkOf }),
   subject({ id: "Badge.tracking", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeTrackingOf", members: ["reference", "uppercase", "tier"], resolve: badgeTrackingOf, notes: ["A `tier` tag is always in caps at the uppercase tracking (Component.dc.html line 139), so `tier` resolves the tracking axis as `uppercase` does."] }),
@@ -510,7 +511,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Calendar.view", components: ["Calendar"], pages: ["calendar"], resolver: "src/organisms/calendar/calendar.shared.tsx#viewOf", members: ["day", "week"], resolve: viewOf }),
   subject({ id: "DataTable.density", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#densityOf", members: ["compact", "comfortable"], resolve: dataTableDensity }),
   subject({ id: "DataTable.column align", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#columnAlignOf", members: ["numeric", "centered"], resolve: columnAlignOf }),
-  subject({ id: "DataTable.look", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#lookOf", members: ["reference"], resolve: dataTableLook, notes: ["Where the platform skin draws no reference sheet (iOS), the table keeps its own look."] }),
+  subject({ id: "DataTable.look", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#lookOf", members: ["reference", "bare"], resolve: dataTableLook, notes: ["Where the platform skin draws no reference sheet (iOS), the table keeps its own look."] }),
   subject({ id: "DataTable.row align", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#rowAlignOf", members: ["alignTop"], resolve: rowAlignOf, notes: ["A `stacks` table holds its cells at the top once stacked, whatever this says."] }),
   subject({ id: "Dialog.size", components: ["Dialog"], pages: ["dialog"], resolver: "src/organisms/dialog/dialog.shared.tsx#sizeOf", members: ["xs", "small", "medium", "large", "wide"], resolve: dialogSize }),
   subject({ id: "Drawer.edge", components: ["Drawer"], pages: ["drawer"], resolver: "src/organisms/drawer/drawer.shared.tsx#edgeOf", members: ["right", "bottom", "top", "left"], resolve: edgeOf }),

@@ -216,6 +216,19 @@ export interface DataTableProps {
    */
   reference?: boolean;
   /**
+   * The bare hairline table: no frame and no fill, a `field-border` rule under the
+   * headings (the reference sheet's mono uppercase label) and a `border` rule under every
+   * row, the first column flush with the table's start, the columns 12 apart, and each
+   * cell 12 px above and below whatever the density. `reference` wins over it.
+   * <!-- only: web -->
+   * On iOS the table keeps its own look and this changes nothing.
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * The table keeps its own look and this changes nothing.
+   * <!-- /only -->
+   */
+  bare?: boolean;
+  /**
    * Align every cell to the top of its row rather than its middle, so a row whose
    * description wraps keeps its name, type and default beside the description's first
    * line. The selection box and the row actions center on that first line, as they do in
@@ -365,9 +378,11 @@ export function densityOf(p: DataTableProps): Density {
   return "regular";
 }
 
-// The table's look: the reference sheet (`reference`) or the skin's own table.
-export function lookOf(p: Pick<DataTableProps, "reference">): "reference" | "table" {
+// The table's look: the reference sheet (`reference`), the bare hairline table (`bare`) or
+// the skin's own table.
+export function lookOf(p: Pick<DataTableProps, "reference" | "bare">): "reference" | "bare" | "table" {
   if (p.reference) return "reference";
+  if (p.bare) return "bare";
   return "table";
 }
 
@@ -579,7 +594,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const density = densityOf(props);
     // The reference sheet is the skin's where the skin draws one (web, Android); iOS keeps
     // its own table (design-language item 4).
-    const ref = lookOf(props) === "reference" ? skin.reference : undefined;
+    const look = lookOf(props);
+    const ref = look === "reference" ? skin.reference : look === "bare" ? skin.bare : undefined;
     const topAligned = rowAlignOf(props) === "top";
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;

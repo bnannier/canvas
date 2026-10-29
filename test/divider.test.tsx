@@ -138,7 +138,7 @@ describe("Divider rule (the hand-off renderer)", () => {
       for (const [dark, t] of [[true, darkColors], [false, lightColors]] as const) {
         render(<ThemeProvider scheme={dark ? "dark" : "light"}><D>or</D></ThemeProvider>);
         const s = screen.getByText("or").style;
-        expect([s.fontSize, s.lineHeight, s.fontWeight, s.letterSpacing, s.textTransform]).toEqual(["11px", "15px", "500", "0.88px", "uppercase"]);
+        expect([s.fontSize, s.lineHeight, s.fontWeight, s.letterSpacing, s.textTransform]).toEqual(["11px", "14px", "500", "0.88px", "uppercase"]);
         expect(s.fontFamily).toContain("monospace");
         const hex = t["subtle-foreground"]!;
         const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));

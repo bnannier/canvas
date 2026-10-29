@@ -114,6 +114,11 @@ export interface FormProps extends MeasureProps {
   /** Renders a ghost cancel button before the submit button. */
   cancelLabel?: string;
   /**
+   * The actions take `block`: the cancel and submit buttons split the actions row equally
+   * (the Layout page's compact invite form, where the buttons go full width).
+   */
+  block?: boolean;
+  /**
    * Fired when the submit button is pressed, and on the web when Enter is
    * pressed inside one of the form's single-line text fields. Form owns no field
    * state, so the caller reads its own values (no payload).
@@ -252,12 +257,12 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
       cancelLabel != null || submitLabel != null ? (
         <>
           {cancelLabel != null ? (
-            <Button ghost disabled={disabled} onPress={onCancel}>
+            <Button ghost block={props.block} disabled={disabled} onPress={onCancel}>
               {cancelLabel}
             </Button>
           ) : null}
           {submitLabel != null ? (
-            <Button primary disabled={disabled} onPress={onSubmit}>
+            <Button primary block={props.block} disabled={disabled} onPress={onSubmit}>
               {submitLabel}
             </Button>
           ) : null}

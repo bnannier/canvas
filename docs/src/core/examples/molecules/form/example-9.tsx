@@ -3,22 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Form, Input, Select, Row } = scope;
+  const { Form, Input, Select, Row } = scope;
   return (
 <Form submitLabel="Save address">
-  <Field label="Street address" error="Street address is required.">
-    <Input placeholder="123 Main Street" />
-  </Field>
-  <Field label="Apartment, suite, unit (optional)" error="Street address is required.">
-    <Input placeholder="Apt 5B" />
-  </Field>
-  <Row relaxed alignStart>
-    <Field label="City" error="City is required.">
-      <Input placeholder="San Francisco" />
-    </Field>
-    <Field label="ZIP code" error="Invalid postal code.">
-      <Input defaultValue="101" keyboardType="number-pad" />
-    </Field>
+  <Input label="Street address" placeholder="123 Main Street" autoComplete="street-address" textContentType="streetAddressLine1" />
+  <Input label="Apartment, suite, unit (optional)" placeholder="Apt 5B" textContentType="streetAddressLine2" />
+  <Row relaxed>
+    <Input label="City" placeholder="San Francisco" textContentType="addressCity" />
+    <Input label="ZIP code" placeholder="94105" keyboardType="number-pad" autoComplete="postal-code" textContentType="postalCode" />
   </Row>
   <Select
     label="Country"
@@ -27,6 +19,8 @@ export default function Example(scope: ExampleScope) {
       { value: "US", label: "United States", leading: "🇺🇸" },
       { value: "CA", label: "Canada", leading: "🇨🇦" },
       { value: "GB", label: "United Kingdom", leading: "🇬🇧" },
+      { value: "DE", label: "Germany", leading: "🇩🇪" },
+      { value: "JP", label: "Japan", leading: "🇯🇵" },
     ]}
   />
 </Form>

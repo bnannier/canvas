@@ -118,6 +118,11 @@ export interface MediaObjectProps {
   src?: string | number;
   /** A leading icon glyph rendered in a tinted square box (stands in for an SVG icon). */
   icon?: ReactNode;
+  /**
+   * Draw the `icon` node as it is, with no tinted box around it: a lead that is its own
+   * mark, such as a numbered `<Badge step>` (the Layout page's "try in this order" list).
+   */
+  bareIcon?: boolean;
   /** A trailing action node (e.g. a <Button>), pinned to the right edge. */
   action?: ReactNode;
   /** Make the whole row a tappable target (navigate to a detail, select a row).
@@ -173,6 +178,9 @@ function borderedColors(tokens: ColorTokens, skin: MediaObjectSkin): ViewStyle {
   };
 }
 
+/** A bare lead keeps its own size beside the content column. */
+const BARE_LEAD: ViewStyle = { flexShrink: 0 };
+
 /**
  * Build a MediaObject from a platform skin and the platform-correct leading Avatar
  * atom. The Avatar is passed in by each platform's thin `.tsx`/`.ios`/`.android`
@@ -220,6 +228,8 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       media = <Avatar small={isCompact} src={src} name={avatar ?? title} accessibilityLabel={title} />;
     } else if (avatar) {
       media = <Avatar small={isCompact} name={avatar}>{avatar}</Avatar>;
+    } else if (icon != null && props.bareIcon) {
+      media = <View style={BARE_LEAD}>{icon}</View>;
     } else if (icon != null) {
       media = (
         <View style={[skin.iconBox, density?.iconBox, { backgroundColor: tokens["primary-soft"] }]}>
@@ -244,7 +254,13 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
               {description}
             </Text>
           ) : null}
-          {body != null ? <Text style={[skin.body, { color: tokens.foreground }]}>{body}</Text> : null}
+          {/* A text body takes the skin's body type; a node (a figure, a Typography line) is
+              laid out as a block of its own, never nested inside a text run. */}
+          {body == null ? null : typeof body === "string" || typeof body === "number" ? (
+            <Text style={[skin.body, { color: tokens.foreground }]}>{body}</Text>
+          ) : (
+            <View>{body}</View>
+          )}
         </View>
         {meta != null ? <Text style={[skin.meta, { color: subtle }]}>{meta}</Text> : null}
         {action != null ? <View style={skin.actionBox}>{action}</View> : null}

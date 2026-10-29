@@ -5,9 +5,8 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Form, Input } = scope;
   return (
-<Form sm start submitLabel="Sign in">
-  <Input label="Email" placeholder="sm step, pinned to the start (384)" />
-  <Input label="Password" />
+<Form block submitLabel="Send invite" cancelLabel="Cancel">
+  <Input label="Email" placeholder="kira@ionize.io" />
 </Form>
   );
 }

@@ -3,15 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable, Sparkline } = scope;
+  const { Button, DataTable } = scope;
   return (
 <DataTable
-  columns={["Page", "7D", "Visits"]}
+  columns={["Prop", "Type", "Default"]}
   rows={[
-    ["/pricing", <Sparkline values={[52, 60, 55, 71, 68, 84, 96]} />, "12,480"],
-    ["/docs", <Sparkline values={[88, 74, 70, 66, 58, 49, 41]} />, "8,102"],
-    ["/blog", <Sparkline values={[34, 42, 39, 51, 60, 66, 78]} />, "5,914"]
+    ["primary", "boolean", "false"],
+    ["small", "boolean", "false"],
+    ["loading", "boolean", "false"]
   ]}
+  footer={<Button link small>Show all 58 props</Button>}
 />
   );
 }

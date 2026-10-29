@@ -45,6 +45,18 @@ export type Density = "compact" | "regular" | "comfortable";
 // band + flex-row grid, the selection column, the striped/pressable rows); the
 // skin maps tokens and density to RN style objects and declares its press mode
 // (iOS/web tint the row fill, Android ripples).
+/** A sheet look's parts (`reference`, `bare`): each replaces the skin's own part. */
+export interface DataTableSheet {
+  frame: (t: ColorTokens) => ViewStyle;
+  columns: ViewStyle;
+  headerRow: (t: ColorTokens) => ViewStyle;
+  headerCell: (t: ColorTokens) => TextStyle;
+  dataRow: (t: ColorTokens) => ViewStyle;
+  cellPad: ViewStyle;
+  groupBand: (t: ColorTokens) => ViewStyle;
+  footerRule: (t: ColorTokens) => ViewStyle;
+}
+
 export interface DataTableSkin {
   /** Web cell editors use clear Liquid Glass without changing field geometry. */
   liquidTextEntry?: boolean;
@@ -93,16 +105,13 @@ export interface DataTableSkin {
    * Absent on a platform whose own table control draws the table (iOS), where the
    * boolean changes nothing.
    */
-  reference?: {
-    frame: (t: ColorTokens) => ViewStyle;
-    columns: ViewStyle;
-    headerRow: (t: ColorTokens) => ViewStyle;
-    headerCell: (t: ColorTokens) => TextStyle;
-    dataRow: (t: ColorTokens) => ViewStyle;
-    cellPad: ViewStyle;
-    groupBand: (t: ColorTokens) => ViewStyle;
-    footerRule: (t: ColorTokens) => ViewStyle;
-  };
+  reference?: DataTableSheet;
+  /**
+   * The `bare` look: the v4 Layout page's sizing table (Layout.dc.html, `c-sizing`), a
+   * hairline table with no frame and no fill. The same parts as `reference`, each replacing
+   * the skin's own; absent where the platform's own table control draws the table (iOS).
+   */
+  bare?: DataTableSheet;
   /** Size (px) of the sort-direction indicator icon beside a sortable header label. */
   sortIconSize: number;
   /**
@@ -236,6 +245,19 @@ const frameAt = (t: ColorTokens, edge: string): ViewStyle => ({
 });
 const subtle = (t: ColorTokens): string => t["subtle-foreground"] ?? t["muted-foreground"];
 
+// A sheet's column heading (the reference sheet's and the bare table's): `font:500 11px/1
+// var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)`.
+const sheetHeading = (t: ColorTokens): TextStyle => ({
+  fontFamily: MONO_FONT,
+  fontSize: 11,
+  lineHeight: 11,
+  fontWeight: "500",
+  // .08em of 11 px.
+  letterSpacing: 0.88,
+  textTransform: "uppercase",
+  color: subtle(t),
+});
+
 export const webSkin: DataTableSkin = {
   liquidTextEntry: true,
   wrap: WRAP,
@@ -271,16 +293,7 @@ export const webSkin: DataTableSkin = {
     // text-transform:uppercase;color:var(--tx3)`, with no background and no rule of its
     // own: the rule under it is the first band's or row's top rule.
     headerRow: () => ({ flexDirection: "row", paddingVertical: 12 }),
-    headerCell: (t) => ({
-      fontFamily: MONO_FONT,
-      fontSize: 11,
-      lineHeight: 11,
-      fontWeight: "500",
-      // .08em of 11 px.
-      letterSpacing: 0.88,
-      textTransform: "uppercase",
-      color: subtle(t),
-    }),
+    headerCell: sheetHeading,
     // Line 238: `padding:10px 16px;border-top:1px solid var(--ln)`: a row's rule is above it.
     dataRow: (t) => ({ flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderColor: t.border }),
     cellPad: { paddingVertical: 10 },
@@ -289,6 +302,23 @@ export const webSkin: DataTableSkin = {
     // Line 241: the show-all row's `border-top:1px solid var(--ln)`, drawn by the footer
     // itself, since the row above it draws no rule beneath.
     footerRule: (t) => ({ borderTopWidth: 1, borderColor: t.border }),
+  },
+  // The Layout page's sizing table (Layout.dc.html, `c-sizing`): no frame and no fill;
+  // `padding:0 12px 10px 0;border-bottom:1px solid var(--ln2)` under each heading and
+  // `padding:12px 12px 12px 0;border-bottom:1px solid var(--ln)` round each cell, so the
+  // first column starts flush, the columns sit 12 apart and every row rules itself beneath.
+  bare: {
+    frame: () => ({}),
+    columns: { paddingHorizontal: 0, columnGap: 12 },
+    headerRow: (t) => ({ flexDirection: "row", paddingBottom: 10, borderBottomWidth: 1, borderColor: t["field-border"] ?? t.border }),
+    // The heading type is the reference sheet's: the kit's mono table label (the page draws
+    // it a pixel smaller, at 10 px).
+    headerCell: sheetHeading,
+    dataRow: (t) => ({ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderColor: t.border }),
+    cellPad: { paddingVertical: 12 },
+    groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
+    // Every row draws its own rule beneath, so the footer adds none.
+    footerRule: () => ({}),
   },
   sortIconSize: 12,
   // The empty message and the selection count: 400 13 in the subtle ink.
