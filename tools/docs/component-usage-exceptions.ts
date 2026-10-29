@@ -37,6 +37,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The placeholder page's 80 px tiles (radius 14, --sf3), diagram scenery, decision OD-1.",
   },
   {
+    file: "docs/src/ui/showcase/card.tsx", owner: "header", tag: "Column", attribute: "style", keys: ["minWidth"], occurrences: 2,
+    reason: "The section card header's title and meta cells floor at their longest word, the width a CSS flex item keeps (`min-width:auto`) and React Native's boxes do not, so a label like CANDLESTICKCHART never breaks mid-word at 375; the floor is computed from the pageLabel role's own metrics and paints nothing.",
+  },
+  {
     file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["alignItems", "height", "justifyContent", "minHeight", "paddingHorizontal", "paddingVertical"], occurrences: 1,
     reason: "An Overlays stage card's body inside the kit Card (decision OD-1): the hand-off's fixed stage height (`height:460px`), or its growing and centred stages (`min-height:540px` / `560px;display:grid;place-items:center;padding:48px 24px`); it paints nothing.",
   },

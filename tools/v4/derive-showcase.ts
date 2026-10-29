@@ -40,6 +40,12 @@ export interface DerivedCard {
   links: string[];
   tile: number;
   full: boolean;
+  /** A framed card's inset (its `padding`), when the card is a framed surface and not a stage. */
+  inset?: number;
+  /** A framed card's gap between its header, body and caption (its flex `gap`). */
+  gap?: number;
+  /** A framed card's header-to-chips distance: its gap plus the header's own margin, less the chips' 6 px pull. */
+  headGap?: number;
   group?: string;
 }
 
@@ -89,13 +95,27 @@ export function deriveSection(page: string): DerivedSection {
     seen.add(card.id);
     const end = index + 1 < starts.length ? starts[index + 1].at : html.length;
     const body = html.slice(card.at, end);
-    const head = body.match(/text-transform:uppercase;color:var\(--tx3\)"><span>([^<]*)<\/span><span>([^<]*)<\/span>/);
+    const head = body.match(/text-transform:uppercase;color:var\(--tx3\)(?:;margin-bottom:\d+px)?"><span>([^<]*)<\/span><span>([^<]*)<\/span>/);
     const links = [...new Set([...body.matchAll(/Component\.dc\.html#([a-z0-9-]+)"/g)].map((m) => m[1]))];
     const depth = depthAt(html, card.at);
     const grid = grids.filter((g) => g.at < card.at && g.depth === depth - 1).at(-1);
     if (!grid) throw new Error(`${page}: ${card.id} sits in no card grid`);
     const group = groups.filter((g) => g.at < card.at).at(-1);
     const out: DerivedCard = { id: card.id, links, tile: grid.tile, full: card.style.includes("grid-column:1/-1") };
+    // A framed card (`background:var(--sf);...;padding:24px;display:flex;flex-direction:column;
+    // gap:20px`) carries its own inset and gap: the Charts cards are 20 and 14, the Data cards
+    // 24 and 16, and so on. A stage card (`background:var(--bg2)`) lays its scene out itself.
+    if (card.style.includes("background:var(--sf)")) {
+      const inset = card.style.match(/(?:^|;)padding:(\d+)px;/);
+      const gap = card.style.match(/(?:^|;)gap:(\d+)(?:px)?(?:;|$)/);
+      // No padding or gap is the CSS default, 0 (the flush DataTable card).
+      out.inset = inset ? Number(inset[1]) : 0;
+      out.gap = gap ? Number(gap[1]) : 0;
+      // The header row may carry its own `margin-bottom` (28 on the Form card, 12 on Type), and
+      // the chip row's `margin-top:-6px` pulls it up into the space above it.
+      const headMargin = body.match(/text-transform:uppercase;color:var\(--tx3\);margin-bottom:(\d+)px"><span>/);
+      if (head && links.length > 0) out.headGap = Math.max(0, out.gap + (headMargin ? Number(headMargin[1]) : 0) - 6);
+    }
     if (head && !bound(head[1])) out.title = decode(head[1]);
     if (head && !bound(head[2])) out.meta = decode(head[2]);
     if (group) out.group = group.id;
@@ -137,6 +157,12 @@ export function renderShowcase(): string {
     "  tile: number;",
     "  /** The card spans the whole row (`grid-column: 1 / -1`). */",
     "  full: boolean;",
+    "  /** A framed card's inset (its `padding`); none on a stage card. */",
+    "  inset?: number;",
+    "  /** A framed card's gap between its header, body and caption; none on a stage card. */",
+    "  gap?: number;",
+    "  /** A framed card's header-to-chips distance (its gap plus the header's margin, less the chips' 6 px pull). */",
+    "  headGap?: number;",
     "  /** The Data subsection the card sits under. */",
     "  group?: string;",
     "}",

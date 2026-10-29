@@ -20,6 +20,12 @@ export interface ShowcaseCardSpec {
   tile: number;
   /** The card spans the whole row (`grid-column: 1 / -1`). */
   full: boolean;
+  /** A framed card's inset (its `padding`); none on a stage card. */
+  inset?: number;
+  /** A framed card's gap between its header, body and caption; none on a stage card. */
+  gap?: number;
+  /** A framed card's header-to-chips distance (its gap plus the header's margin, less the chips' 6 px pull). */
+  headGap?: number;
   /** The Data subsection the card sits under. */
   group?: string;
 }
@@ -44,6 +50,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
         "title": "Color · Ion spectrum",
         "meta": "oklch"
       },
@@ -52,6 +60,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
         "title": "Color · Neutrals",
         "meta": "dark / light"
       },
@@ -62,13 +72,20 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
           "text"
         ],
         "tile": 340,
-        "full": true
+        "full": true,
+        "inset": 24,
+        "gap": 4,
+        "headGap": 10,
+        "title": "Type · Scale",
+        "meta": "Bricolage Grotesque · Instrument Sans · JetBrains Mono"
       },
       {
         "id": "c-shape",
         "links": [],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
         "title": "Shape · Radius",
         "meta": "nested ≤ container"
       },
@@ -77,6 +94,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
         "title": "Depth · Elevation",
         "meta": "ambient, no offset"
       },
@@ -87,6 +106,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Motion · Spring",
         "meta": "transform + opacity only"
       },
@@ -97,6 +119,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Icon · 414 glyphs",
         "meta": "outline · 1.75 stroke"
       },
@@ -108,6 +133,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Emblem · Swatch",
         "meta": "32 · 40 · 48"
       }
@@ -121,6 +149,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 440,
         "full": true,
+        "inset": 24,
+        "gap": 24,
         "title": "Breakpoints · form factors · page grid"
       },
       {
@@ -128,6 +158,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 440,
         "full": true,
+        "inset": 24,
+        "gap": 18,
         "title": "Live · resize the container",
         "meta": "drag the handle or pick a width"
       },
@@ -136,6 +168,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 440,
         "full": true,
+        "inset": 24,
+        "gap": 18,
         "title": "Sizing contract · every family",
         "meta": "v4.0.0 rules"
       },
@@ -144,6 +178,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 440,
         "full": false,
+        "inset": 24,
+        "gap": 18,
         "title": "How a component finds its size",
         "meta": "try in this order"
       },
@@ -154,6 +190,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 440,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "DashboardGrid",
         "meta": "12 columns · spans in twelfths"
       },
@@ -170,6 +209,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 440,
         "full": true,
+        "inset": 24,
+        "gap": 24,
+        "headGap": 18,
         "title": "Layout · Row & Column · Container · Grid · Divider",
         "meta": "no raw flex at a call site"
       },
@@ -180,6 +222,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 440,
         "full": true,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "AppFrame · Page",
         "meta": "safe areas · banner · capped page"
       }
@@ -195,6 +240,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": true,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Button · Intents × states",
         "meta": "hover the default column"
       },
@@ -203,6 +251,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
         "title": "Button · Sizes & shapes",
         "meta": "32 · 40 · 48"
       },
@@ -214,6 +264,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Switch · Checkbox · Radio",
         "meta": "live"
       },
@@ -225,6 +278,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Slider · Stepper",
         "meta": "drag it"
       },
@@ -238,6 +294,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Avatar · Badge · Chip",
         "meta": "24 · 32 · 40 · 56"
       },
@@ -248,6 +307,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "ButtonGroup · segmented · split",
         "meta": "live"
       },
@@ -258,6 +320,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Radio · card style · inline",
         "meta": "same state as the list"
       }
@@ -273,6 +338,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Input · States",
         "meta": "type in the first"
       },
@@ -285,6 +353,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Select · Textarea",
         "meta": "live"
       },
@@ -295,6 +366,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 18,
+        "headGap": 12,
         "title": "Input · addons · affordances",
         "meta": "live"
       },
@@ -306,6 +380,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 18,
+        "headGap": 12,
         "title": "Autocomplete · Listbox",
         "meta": "type to filter"
       },
@@ -317,6 +394,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 18,
+        "headGap": 12,
         "title": "PhoneInput · Field",
         "meta": "label · control · message"
       },
@@ -327,6 +407,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 18,
+        "headGap": 12,
         "title": "FilterPanel",
         "meta": "rail · sheet on phone"
       },
@@ -336,7 +419,12 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
           "form"
         ],
         "tile": 340,
-        "full": true
+        "full": true,
+        "inset": 24,
+        "gap": 0,
+        "headGap": 22,
+        "title": "Form · two-column · titled sections · actions",
+        "meta": "↵ submits"
       }
     ],
     "groups": []
@@ -352,6 +440,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 24,
+        "headGap": 18,
         "title": "Tabs · Segmented",
         "meta": "live"
       },
@@ -362,6 +453,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Tab bar · Steps",
         "meta": "phone width"
       },
@@ -373,6 +467,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": true,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Navbar · Sidebar",
         "meta": "glass-tint shells"
       },
@@ -381,6 +478,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "links": [],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
         "title": "Tabs · pill · vertical · badges",
         "meta": "live"
       },
@@ -391,6 +490,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Steps · vertical · with progress",
         "meta": "3 of 4"
       },
@@ -401,6 +503,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "RowMenu",
         "meta": "actions · links"
       }
@@ -415,13 +520,17 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
           "card"
         ],
         "tile": 300,
-        "full": false
+        "full": false,
+        "inset": 24,
+        "gap": 12
       },
       {
         "id": "c-card-anatomy",
         "links": [],
         "tile": 300,
         "full": true,
+        "inset": 24,
+        "gap": 20,
         "title": "Card · anatomy · modes",
         "meta": "sub-components and special modes"
       },
@@ -439,7 +548,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
           "data-table"
         ],
         "tile": 300,
-        "full": true
+        "full": true,
+        "inset": 0,
+        "gap": 0
       },
       {
         "id": "c-stacked-list",
@@ -448,6 +559,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "StackedList",
         "meta": "avatar · two lines · meta",
         "group": "g-lists"
@@ -459,6 +573,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "GridList",
         "meta": "directory · collections",
         "group": "g-lists"
@@ -470,6 +587,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "MediaObject",
         "meta": "media leads, text owns the rest",
         "group": "g-lists"
@@ -481,6 +601,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "Feed",
         "meta": "activity · audit log",
         "group": "g-lists"
@@ -493,6 +616,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "DescriptionList · ActionPanel",
         "meta": "update in place",
         "group": "g-lists"
@@ -505,6 +631,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "Accordion · Collapsible",
         "meta": "live",
         "group": "g-lists"
@@ -516,6 +645,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "CodeBlock",
         "meta": "tabs · emphasis · diff · copy",
         "group": "g-content"
@@ -527,6 +659,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "Carousel",
         "meta": "swipe · arrows · dots",
         "group": "g-content"
@@ -540,6 +675,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 340,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "Image · Video · QRCode",
         "meta": "media atoms",
         "group": "g-content"
@@ -551,6 +689,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 440,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "Calendar",
         "meta": "month · week · day · pick a day",
         "group": "g-workspace"
@@ -562,6 +703,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 440,
         "full": false,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "Chat",
         "meta": "live · type and send",
         "group": "g-workspace"
@@ -574,6 +718,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 440,
         "full": true,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
         "title": "Board · Drag & drop",
         "meta": "DropZone · Draggable · DragHandle",
         "group": "g-workspace"
@@ -627,6 +774,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": true,
+        "inset": 24,
+        "gap": 32,
+        "headGap": 26,
         "title": "Bar chart · weekly signups",
         "meta": "chart-1"
       },
@@ -637,6 +787,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "AreaChart",
         "meta": "stacked"
       },
@@ -647,6 +800,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "RangeAreaChart",
         "meta": "low · mid · high"
       },
@@ -657,6 +813,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "ComposedChart",
         "meta": "bars · line · area"
       },
@@ -667,6 +826,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "Sparkline",
         "meta": "soft wash · latest in full"
       },
@@ -677,6 +839,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "Histogram",
         "meta": "auto-binned · Sturges"
       },
@@ -687,6 +852,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "BoxPlot",
         "meta": "five-number summary"
       },
@@ -697,6 +865,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "ScatterPlot",
         "meta": "press near a point"
       },
@@ -707,6 +878,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "WaterfallChart",
         "meta": "running-total bridge"
       },
@@ -717,6 +891,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "PieChart",
         "meta": "donut · total centered"
       },
@@ -727,6 +904,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "Treemap",
         "meta": "squarified"
       },
@@ -737,6 +917,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "StackedBar",
         "meta": "one bar · fixed order"
       },
@@ -747,6 +930,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "FunnelChart",
         "meta": "stage conversion"
       },
@@ -757,6 +943,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "Gauge",
         "meta": "level · 0–100"
       },
@@ -767,6 +956,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "ProgressRing",
         "meta": "completion"
       },
@@ -777,6 +969,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "RadialBarChart",
         "meta": "attainment vs. max"
       },
@@ -787,6 +982,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "BulletChart",
         "meta": "measure · ranges · target"
       },
@@ -797,6 +995,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "RadarChart",
         "meta": "multi-axis"
       },
@@ -807,6 +1008,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "MetricBreakdown",
         "meta": "installs"
       },
@@ -817,6 +1021,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "BarList",
         "meta": "top pages · 7d"
       },
@@ -827,6 +1034,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 300,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "DepthChart",
         "meta": "order book"
       },
@@ -837,6 +1047,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 560,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "Heatmap · calendar",
         "meta": "34 weeks · hover a day"
       },
@@ -847,6 +1060,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 560,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "CandlestickChart",
         "meta": "OHLC · volume pane · MA 20"
       },
@@ -858,6 +1074,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 560,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "UptimeBar · ServiceHealthList",
         "meta": "status page"
       },
@@ -868,6 +1087,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 560,
         "full": false,
+        "inset": 20,
+        "gap": 14,
+        "headGap": 8,
         "title": "GeoMap",
         "meta": "Natural Earth I · area ∝ count"
       }
@@ -899,6 +1121,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 420,
         "full": false,
+        "inset": 24,
+        "gap": 20,
+        "headGap": 14,
         "title": "Toast · stack + intents",
         "meta": "bottom-right, 3 max"
       },
@@ -909,7 +1134,12 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
           "empty-state"
         ],
         "tile": 420,
-        "full": false
+        "full": false,
+        "inset": 24,
+        "gap": 12,
+        "headGap": 14,
+        "title": "Alert · Empty state · Progress",
+        "meta": "inline"
       },
       {
         "id": "c-alert-dialog",
@@ -946,6 +1176,9 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         ],
         "tile": 420,
         "full": false,
+        "inset": 24,
+        "gap": 18,
+        "headGap": 12,
         "title": "Skeleton · Spinner · Progress",
         "meta": "loading states"
       },
@@ -953,7 +1186,11 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "id": "c-alert-variants",
         "links": [],
         "tile": 420,
-        "full": false
+        "full": false,
+        "inset": 24,
+        "gap": 12,
+        "title": "Alert · intents · announcement",
+        "meta": "inline"
       },
       {
         "id": "c-wizard",
