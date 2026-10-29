@@ -162,7 +162,7 @@ export function PrevNext({ slug }: { slug: string }) {
             {p ? (
               <Card onPress={() => router.push(`/components/${p.slug}` as never)} accessibilityLabel={`Previous: ${p.name}`}>
                 <Column tight>
-                  <Typography eyebrow subtle>Previous</Typography>
+                  <Typography pageLabel mono>Previous</Typography>
                   <Typography lead semibold>{p.name}</Typography>
                 </Column>
               </Card>
@@ -172,7 +172,7 @@ export function PrevNext({ slug }: { slug: string }) {
             {n ? (
               <Card onPress={() => router.push(`/components/${n.slug}` as never)} accessibilityLabel={`Next: ${n.name}`}>
                 <Column tight alignEnd>
-                  <Typography eyebrow subtle>Next</Typography>
+                  <Typography pageLabel mono>Next</Typography>
                   <Typography lead semibold>{n.name}</Typography>
                 </Column>
               </Card>

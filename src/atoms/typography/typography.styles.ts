@@ -45,6 +45,9 @@ export type Role =
   | "sectionNote"
   | "pageBody"
   | "pageNote"
+  | "pageLabel"
+  | "guideTitle"
+  | "guideBody"
   | "display"
   | "h1"
   | "h2"
@@ -104,6 +107,13 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
     // is 799px at 15px and 746px at 14px.
     pageBody: { ...pageRoles.pageBody, maxWidth: 799 },
     pageNote: { ...pageRoles.pageNote, maxWidth: 746 },
+    // The component page's label, 500 11px/1 tracked .08em in caps; the caller's `mono`
+    // sets its face, as the hand-off's `var(--fm)` does.
+    pageLabel: pageRoles.pageLabel,
+    // The Usage guidance card's title and paragraph, both in the interface face
+    // (the hand-off's `var(--ft)`), so neither takes the display face.
+    guideTitle: pageRoles.guideTitle,
+    guideBody: pageRoles.guideBody,
     display: d(typeRoles.display),
     h1: d(typeRoles.h1),
     h2: d(typeRoles.h2),
@@ -124,6 +134,44 @@ const roleTypeOf = (display: TextStyle): Record<Role, TextStyle> => {
   };
 };
 
+// The prose code chip, `<Typography code inline>`: the v4 hand-off's inline `<code>` from
+// its Markdown helper (Component.dc.html `md()`):
+// `font:400 .88em var(--fm);padding:1px 5px;border-radius:5px;background:var(--sf3);border:1px solid var(--ln);color:var(--tx)`.
+// `.88em` is relative to the paragraph the chip sits in, so the chip is sized from the
+// reading role passed beside `code inline`, one row per reading role (the paragraph
+// roles, the page's leads, bodies and notes, and the small steps; body when none is
+// passed): .88 of the role's size, and its line height at the same ratio so the chip
+// never grows the line it sits on, each to a hundredth of a pixel as the browser
+// resolves the em. The rows are written out so each size is its own place for the
+// reading floors (tools/tokens/type-roles.ts declares the rows under 12 by the role they
+// serve); test/typography-page-roles.test.tsx derives every row from its role and fails
+// on a hand edit. The labels (tag, eyebrow) are not paragraph text and have no row. The
+// weight is the chip's own 400 (the hand-off applies `<b>` and `<code>` independently,
+// and the chip keeps the regular weight inside a strong run). The fill (`--sf3`, the
+// `secondary` token) and the hairline (`--ln`, the `border` token) are added in the
+// shell with the ink, since they read tokens. Natively a Text nested in a Text draws its
+// fill and horizontal padding only (a virtual text node has no border or vertical box),
+// so there the chip is the fill behind the word.
+export const INLINE_CODE_SCALE = 0.88;
+/** The chip's box: `padding:1px 5px;border-radius:5px;border:1px solid var(--ln)`, at the hand-off's 400 weight; the corner is the web row's `inlineCode` role. */
+export const INLINE_CODE_BOX = { fontWeight: "400", borderRadius: platformShape.web.inlineCode, paddingHorizontal: 5, paddingVertical: 1, borderWidth: 1 } as const satisfies TextStyle;
+export const inlineCodeType = {
+  lead: { fontSize: 16.72, lineHeight: 25.08, ...INLINE_CODE_BOX },
+  pageLead: { fontSize: 15.84, lineHeight: 24.55, ...INLINE_CODE_BOX },
+  sectionLead: { fontSize: 14.96, lineHeight: 23.19, ...INLINE_CODE_BOX },
+  cardBody: { fontSize: 12.32, lineHeight: 19.1, ...INLINE_CODE_BOX },
+  sectionNote: { fontSize: 12.32, lineHeight: 18.48, ...INLINE_CODE_BOX },
+  pageBody: { fontSize: 13.2, lineHeight: 21.12, ...INLINE_CODE_BOX },
+  pageNote: { fontSize: 12.32, lineHeight: 19.71, ...INLINE_CODE_BOX },
+  guideBody: { fontSize: 11.88, lineHeight: 19.01, ...INLINE_CODE_BOX },
+  caption: { fontSize: 10.56, lineHeight: 15.31, ...INLINE_CODE_BOX },
+  small: { fontSize: 11.44, lineHeight: 17.16, ...INLINE_CODE_BOX },
+  tiny: { fontSize: 9.68, lineHeight: 14.04, ...INLINE_CODE_BOX },
+  body: { fontSize: 13.2, lineHeight: 20.46, ...INLINE_CODE_BOX },
+} as const satisfies Partial<Record<Role, TextStyle>>;
+/** The reading roles the prose code chip sizes itself from. */
+export type InlineCodeReading = keyof typeof inlineCodeType;
+
 // One scale on every platform: Typography is a Shared treatment with no native type-scale
 // control to diverge toward. The titles and big numbers ask for the display face
 // (DISPLAY_FONT), which the themed Text swaps for the app's registered `display` face and
@@ -135,8 +183,8 @@ export const androidSkin: TypographySkin = webSkin;
 
 // Text color (and the `code` role's fill) per role. RN text does not cascade, so every
 // role names its color token explicitly, as the hand-off's renderer does: the eyebrow in
-// the accent text, the label and the muted role in the secondary ink, the caption in the
-// tertiary ink, everything else in `foreground`.
+// the accent text, the label and the muted role in the secondary ink, the caption and
+// the page label in the tertiary ink, everything else in `foreground`.
 export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
   switch (role) {
     case "label":
@@ -146,7 +194,13 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "sectionNote":
     case "pageBody":
     case "pageNote":
+    // The guidance card's paragraph: `color:var(--tx2)` (Component.dc.html, the `secs` cards).
+    case "guideBody":
       return { color: tokens["muted-foreground"] };
+    // The component page's label: `color:var(--tx3)` (Component.dc.html, the knob panel's
+    // "Props" label), the subtle ink, where the Typography eyebrow is the accent's.
+    case "pageLabel":
+      return { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
     case "eyebrow":
     case "eyebrowLg":
     case "stageLabel":

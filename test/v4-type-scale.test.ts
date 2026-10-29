@@ -118,6 +118,12 @@ const PAGE_SOURCES: Record<keyof typeof pageRoles, { page: string; text: string 
   sectionNote: { page: "Component", text: ">Every control sets a real prop" },
   pageBody: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ up }}\"" },
   pageNote: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ ip }}\"" },
+  // The knob panel's "Props" label; the rail's group headers, the props table's header
+  // cells and the previous/next eyebrows set the same style.
+  pageLabel: { page: "Component", text: ">Props</span>" },
+  // The Usage guidance card's h3 and its paragraph.
+  guideTitle: { page: "Component", text: ">{{ x.t }}<" },
+  guideBody: { page: "Component", text: "dangerouslySetInnerHTML=\"{{ xp }}\"" },
 };
 
 describe("v4 page roles", () => {
@@ -128,9 +134,19 @@ describe("v4 page roles", () => {
       expect(at).toBeGreaterThan(-1);
       const tag = html.slice(html.lastIndexOf("<", at - (text.startsWith(">") ? 0 : 1)), at);
       const style = /style="([^"]*)"/.exec(tag)?.[1] ?? "";
-      const want = derive(/font:(.*?) var/.exec(style)![1]! + (/letter-spacing:(-?[\d.]+)em/.test(style) ? ` letter-spacing:${/letter-spacing:(-?[\d.]+)em/.exec(style)![1]}em` : ""));
-      const got = pageRoles[role] as { fontSize: number; lineHeight: number; fontWeight: string; letterSpacing?: number };
-      expect(got).toEqual({ fontSize: want.fontSize, lineHeight: want.lineHeight, fontWeight: want.fontWeight, ...(want.letterSpacing != null ? { letterSpacing: want.letterSpacing } : {}) });
+      const want = derive(
+        /font:(.*?) var/.exec(style)![1]!
+        + (/letter-spacing:(-?[\d.]+)em/.test(style) ? ` letter-spacing:${/letter-spacing:(-?[\d.]+)em/.exec(style)![1]}em` : "")
+        + (style.includes("text-transform:uppercase") ? " text-transform:uppercase" : ""),
+      );
+      const got = pageRoles[role] as { fontSize: number; lineHeight: number; fontWeight: string; letterSpacing?: number; textTransform?: string };
+      expect(got).toEqual({
+        fontSize: want.fontSize,
+        lineHeight: want.lineHeight,
+        fontWeight: want.fontWeight,
+        ...(want.letterSpacing != null ? { letterSpacing: want.letterSpacing } : {}),
+        ...(want.uppercase ? { textTransform: "uppercase" } : {}),
+      });
     });
   }
 });

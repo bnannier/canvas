@@ -48,10 +48,20 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     "typeRoles.tiny": "tiny",
     "typeRoles.eyebrow": "caption",
     "typeRoles.tag": "caption",
+    // The v4 component page's label (its knob panel's "Props", the rail's group headers,
+    // the props table's header cells), an 11 px mono eyebrow in the subtle ink.
+    "pageRoles.pageLabel": "caption",
   },
   // The roles themselves read typeRoles above (their floors are checked on each skin).
   "src/atoms/typography/typography.styles.ts": {
     sectionDescription: "small",
+    // The prose code chip's rows under 12: .88 of the reading role each sits in, so each
+    // takes the role one step down from its paragraph's (the tiny paragraph's chip sits
+    // at the caption floor).
+    "inlineCodeType.guideBody": "small",
+    "inlineCodeType.small": "small",
+    "inlineCodeType.caption": "tiny",
+    "inlineCodeType.tiny": "caption",
   },
   "src/style/menu-look.ts": {
     menuSection: "caption",

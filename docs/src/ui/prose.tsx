@@ -9,25 +9,35 @@ export function H2({ children }: { children: ReactNode }) { return <Typography h
 export function H3({ children }: { children: ReactNode }) { return <Typography h3>{children}</Typography>; }
 export function P({ children, muted }: { children: ReactNode; muted?: boolean }) { return <Typography subtle={muted}>{children}</Typography>; }
 export function Lead({ children }: { children: ReactNode }) { return <Container xxl start><Typography lead subtle>{children}</Typography></Container>; }
-export function InlineCode({ children, strong }: { children: ReactNode; strong?: boolean }) { return <Typography mono semibold={strong}>{children}</Typography>; }
 export function Rule() { return <Divider />; }
 
-// The role a line of prose is set in. A strong run repeats it at semibold, so a bold word
-// keeps its paragraph's size; a heading is set strong already, so a strong run in one is
-// its plain text.
-type ProseRole = { lead?: boolean; pageLead?: boolean; sectionLead?: boolean; pageBody?: boolean; pageNote?: boolean; small?: boolean; subtle?: boolean; heading?: boolean };
+// The reading role a line of prose is set in. A strong run repeats it at semibold, so a
+// bold word keeps its paragraph's size; a heading is set strong already, so a strong run
+// in one is its plain text. A code span takes the same role so its chip sizes from it.
+type ReadingRole = { lead?: boolean; pageLead?: boolean; sectionLead?: boolean; pageBody?: boolean; pageNote?: boolean; small?: boolean };
+type ProseRole = ReadingRole & { subtle?: boolean; heading?: boolean };
+
+/**
+ * A word of code inside a sentence: the kit's prose code chip (`<Typography code inline>`,
+ * the hand-off's inline `<code>` from its Markdown helper), sized at .88 of the reading
+ * role it sits in. The chip keeps its regular weight and its own foreground ink inside a
+ * strong or subtle run, as the hand-off applies bold and code independently.
+ */
+export function InlineCode({ children, lead, pageLead, sectionLead, pageBody, pageNote, small }: { children: ReactNode } & ReadingRole) {
+  return <Typography code inline lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} small={small}>{children}</Typography>;
+}
 
 /**
  * A line of a component's .md prose (a description, a note, a Do/Don't caption or title)
- * as the children of the Typography it sits in: its code spans in the mono face, its
- * strong runs at semibold, nothing printed with its Markdown syntax
+ * as the children of the Typography it sits in: its code spans on the prose code chip,
+ * its strong runs at semibold, nothing printed with its Markdown syntax
  * (docs/src/lib/inline-markdown.ts, the grammar the generator holds every page to).
  */
 export function InlineMarkdown({ text, lead, pageLead, sectionLead, pageBody, pageNote, small, subtle, heading }: { text: string } & ProseRole) {
   return (
     <>
       {parseInline(text).map((run, i) => {
-        if (run.code) return <InlineCode key={i} strong={run.strong && !heading}>{run.text}</InlineCode>;
+        if (run.code) return <InlineCode key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} small={small}>{run.text}</InlineCode>;
         if (run.strong && !heading) return <Typography key={i} lead={lead} pageLead={pageLead} sectionLead={sectionLead} pageBody={pageBody} pageNote={pageNote} small={small} subtle={subtle} semibold>{run.text}</Typography>;
         return run.text;
       })}
