@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Autocomplete, Column, Container } = scope;
+  const { Stateful, Autocomplete } = scope;
   return (
-<Column snug>
-  <Autocomplete xs start options={["Ada Lovelace", "Grace Hopper"]} placeholder="xs step, pinned to the start (320)" />
-  <Autocomplete lg start options={["Ada Lovelace", "Grace Hopper"]} placeholder="lg step, pinned to the start (512)" />
-  <Container lg start><Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="Bare, in an lg Container: fills it (512)" /></Container>
-</Column>
+<Stateful initial="Grace Hopper">
+  {(value, setValue) => (
+    <Autocomplete label="Assigned to" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} value={value} onValueChange={setValue} />
+  )}
+</Stateful>
   );
 }

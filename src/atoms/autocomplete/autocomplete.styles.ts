@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { shadow, alpha, activeIndicator, shape, type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
+import { shadow, alpha, activeIndicator, shape, MONO_FONT, type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
 import { fieldBorder, focusHaloColor } from "../../style/field-colors.js";
 import { primaryText } from "../../style/primary-text.js";
 import { platformShape } from "../../style/platform-shape.js";
@@ -83,6 +83,8 @@ export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
   rowPressed: (t: ColorTokens) => ViewStyle;
   /** The option label. */
   optionText: (t: ColorTokens, size: Size) => TextStyle;
+  /** An option's trailing detail (an `AutocompleteOption`'s `detail`), at the row's end. */
+  optionDetail: (t: ColorTokens) => TextStyle;
   /** The letters of an option that match the query. */
   highlight: (t: ColorTokens) => TextStyle;
   /** Helper line below the field. */
@@ -118,6 +120,9 @@ const HANDOFF_TEXT: Record<Size, TextStyle> = {
   large: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
 };
 const ROW_TEXT: TextStyle = { fontSize: 14, lineHeight: 20, fontWeight: "400" };
+// An option's trailing detail: the hand-off's 400 11px mono note in the subtle ink, 8 from
+// the label (Inputs.dc.html `#c-autocomplete`, "0.86", "web").
+const OPTION_DETAIL: TextStyle = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "400", flexShrink: 0, marginStart: 8 };
 // The panel's inset around its rows.
 const PANEL_INSET = 4;
 
@@ -153,7 +158,7 @@ function handoffRow(corner: number): ViewStyle {
 }
 
 // The parts the web and iOS skins share outright.
-const HANDOFF: Pick<AutocompleteSkin, "text" | "label" | "hover" | "focusHalo" | "searchIcon" | "fieldText" | "disclosure" | "popoverGap" | "emptyRow" | "emptyText" | "rowSelected" | "rowPressed" | "optionText" | "highlight" | "helper" | "disabledOpacity" | "ripple" | "floatingLabel"> = {
+const HANDOFF: Pick<AutocompleteSkin, "text" | "label" | "hover" | "focusHalo" | "searchIcon" | "fieldText" | "disclosure" | "popoverGap" | "emptyRow" | "emptyText" | "rowSelected" | "rowPressed" | "optionText" | "optionDetail" | "highlight" | "helper" | "disabledOpacity" | "ripple" | "floatingLabel"> = {
   text: (size) => HANDOFF_TEXT[size],
   label: (t) => ({ ...typeRoles.label, color: t["muted-foreground"], marginBottom: 6 }),
   hover: true,
@@ -168,6 +173,7 @@ const HANDOFF: Pick<AutocompleteSkin, "text" | "label" | "hover" | "focusHalo" |
   rowSelected: (t) => ({ backgroundColor: t.muted }),
   rowPressed: (t) => ({ backgroundColor: t.muted }),
   optionText: (t) => ({ ...ROW_TEXT, color: t.foreground }),
+  optionDetail: (t) => ({ ...OPTION_DETAIL, color: subtleInk(t) }),
   // The matched letters: the accent's soft wash under its ink.
   highlight: (t) => ({ backgroundColor: t["primary-soft"] ?? alpha(t.primary, 0.14), color: primaryText(t) }),
   helper: (t) => ({ marginTop: 6, fontSize: 12, lineHeight: 17, fontWeight: "400", color: subtleInk(t) }),
@@ -178,12 +184,20 @@ const HANDOFF: Pick<AutocompleteSkin, "text" | "label" | "hover" | "focusHalo" |
 
 // ---------- Web ----------
 const WEB_FIELD_BOX: Record<Size, number> = { small: 32, default: 40, large: 48 };
+// The hand-off's Autocomplete card (Inputs.dc.html `#c-autocomplete`, the only source: the
+// renderer draws no trailing glyph) ends the field in a 15 px chevrons-up-down, 10 px from
+// the field's end. The toggle keeps its 24 px target and holds the glyph at its end edge,
+// so the glyph lands on that inset while the target reaches back toward the value.
 export const webSkin: AutocompleteSkin = {
   ...HANDOFF,
   liquid: true,
-  field: (t, size, active, hovered) => handoffField(t, shape.web.field, WEB_FIELD_BOX[size], active, hovered),
+  field: (t, size, active, hovered) => {
+    const { paddingHorizontal, ...box } = handoffField(t, shape.web.field, WEB_FIELD_BOX[size], active, hovered);
+    return { ...box, paddingStart: paddingHorizontal, paddingEnd: 10 };
+  },
+  disclosure: { glyph: "chevronsUpDown", size: (size) => (size === "small" ? 14 : 15), color: (t) => subtleInk(t), flips: false },
   chevronTarget: () => ({
-    alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
+    alignSelf: "stretch", alignItems: "flex-end", justifyContent: "center", flexShrink: 0,
     width: 24, minHeight: 24,
   }),
   popover: (t) => handoffPanel(t, shape.web.menu),
@@ -276,6 +290,8 @@ export const androidSkin: AutocompleteSkin = {
   rowSelected: (t) => ({ backgroundColor: alpha(t.foreground, 0.1) }),
   rowPressed: (t) => ({ backgroundColor: alpha(t.foreground, 0.1) }),
   optionText: (t) => ({ ...ANDROID_ROW_TEXT, color: t.foreground }),
+  // The M3 menu item's trailing supporting text: the row's type in the muted ink.
+  optionDetail: (t) => ({ ...ANDROID_ROW_TEXT, flexShrink: 0, marginStart: 12, color: t["muted-foreground"] }),
   highlight: (t) => ({ backgroundColor: t["primary-soft"] ?? alpha(t.primary, 0.14), color: primaryText(t) }),
   helper: (t) => ({ marginTop: 4, paddingHorizontal: 16, fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
   disabledOpacity: 0.38,

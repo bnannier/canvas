@@ -4,7 +4,8 @@ A phone number field: the Input's box with a country segment at its start (the
 chosen country and a caret, which open a list of countries with their names and
 dial codes) and that country's dial code inline before the number. On the web the
 segment is a small chip inside the field naming the country by its ISO code, and
-the dial code and the number are set in the mono face;
+the dial code and the number are set in the mono face, and in the country list each
+row is a 16px flag 10px from the name with the dial code a 12px mono note at its end;
 <!-- only: web -->
 on iOS and Android it is the
 country's flag.

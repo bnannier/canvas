@@ -85,7 +85,10 @@ describe("the FilterPanel option rows", () => {
       const active = screen.getByRole("checkbox", { name: "Active, 128" });
       expect(trailingCheck(active)).toBeNull();
       expect(active.firstElementChild?.getAttribute("aria-hidden")).toBe("true");
-      expect(active.firstElementChild?.textContent).toContain("Active");
+      // The web row sets its own 400 label beside the bare box (the hand-off's option
+      // label); Android's label is the Checkbox's own, inside the hidden indicator.
+      if (platform === "web") expect(active.children[1]?.textContent).toBe("Active");
+      else expect(active.firstElementChild?.textContent).toContain("Active");
     });
   }
 });

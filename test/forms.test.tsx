@@ -335,3 +335,43 @@ describe("Form twoColumn flow", () => {
     expect(field.style.width).toBe("100%");
   });
 });
+
+describe("FormSection aside and Form hints (the Inputs section's Form card)", () => {
+  it("sets the heading in a rail beside the rows, the first section with no inset above it", () => {
+    const { container } = ui(
+      <Form submitLabel="Save">
+        <FormSection aside title="Workspace" description="Shown to everyone you invite." testID="first">
+          <Input label="Name" />
+        </FormSection>
+        <FormSection aside title="Members" testID="second">
+          <Input label="Role" />
+        </FormSection>
+      </Form>,
+    );
+    const first = screen.getByTestId("first");
+    const second = screen.getByTestId("second");
+    expect(first.style.flexDirection).toBe("row");
+    expect(first.style.paddingTop).toBe("0px");
+    expect(second.style.paddingTop).toBe("12px");
+    expect(screen.getByText("Workspace").style.fontSize).toBe("20px");
+    expect(screen.getByText("Shown to everyone you invite.").style.fontSize).toBe("14px");
+    expect(screen.getByRole("group", { name: "Workspace" })).toBe(first);
+    expect(container.textContent).toContain("Save");
+  });
+
+  it("drops the actions row's rule after a closing aside section, and leads it with the hints", () => {
+    ui(
+      <Form submitLabel="Save" hints={<Input accessibilityLabel="hint" />}>
+        <FormSection aside title="Workspace">
+          <Input label="Name" />
+        </FormSection>
+      </Form>,
+    );
+    let actions: HTMLElement = screen.getByRole("button", { name: "Save" });
+    while (actions.style.justifyContent !== "space-between" && actions.parentElement) actions = actions.parentElement;
+    expect(actions.style.justifyContent).toBe("space-between");
+    expect(["", "0px"]).toContain(actions.style.borderTopWidth);
+    expect(actions.style.paddingTop).toBe("0px");
+    expect(actions.firstElementChild!.contains(screen.getByLabelText("hint"))).toBe(true);
+  });
+});

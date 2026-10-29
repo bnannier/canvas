@@ -75,9 +75,10 @@ export interface SwitchSkin extends TouchTargetSkin {
 
 // The hand-off's switch row: a 500 14px title over a 12px description in the subtle ink,
 // the same type at every size (only the track scales), and the whole row at 0.4 when
-// disabled. Line heights are the hand-off's ratios (1.3, 1.45) rounded up to a pixel.
-const LABEL_TYPE = { fontSize: 14, lineHeight: 19, fontWeight: "500" } as const;
-const DESCRIPTION_TYPE = { fontSize: 12, lineHeight: 18, fontWeight: "400" } as const;
+// disabled. Line heights are the hand-off's ratios exactly (cv-kit-controls.js `switch`
+// 1.3 on the title, `K.sub` 1.45 on the description): 18.2 and 17.4.
+const LABEL_TYPE = { fontSize: 14, lineHeight: 18.2, fontWeight: "500" } as const;
+const DESCRIPTION_TYPE = { fontSize: 12, lineHeight: 17.4, fontWeight: "400" } as const;
 const DISABLED_OPACITY = 0.4;
 // The label takes the space left by the fixed-size track and wraps within it.
 // Without shrink, a long description makes the whole switch wider than its parent.

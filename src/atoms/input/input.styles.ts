@@ -4,6 +4,7 @@ import { fieldBorder, fieldErrorFill, focusHaloColor } from "../../style/field-c
 import { typeRoles } from "../../style/type-scale.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type ViewStyle, type TextStyle } from "react-native";
+import { type IconName } from "../icon/icon.js";
 import { type ColorTokens, FOCUS_RESET, MONO_FONT, activeIndicator, alpha, shape, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Input skins, one per platform, drawn to the Canvas v4 hand-off
@@ -147,6 +148,17 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
    * end, the gap to the value (or to an inline suffix), and the compact Kbd step it takes.
    */
   shortcut: (size: Size) => ShortcutSpec;
+  /**
+   * The password toggle's glyph while the value is masked and once it is revealed. Without
+   * it the toggle is the iOS reference's order: eye.slash while masked, eye once revealed.
+   */
+  revealGlyph?: { masked: IconName; revealed: IconName };
+  /**
+   * The caret a field held focused by an InteractionOverride draws after its value (the
+   * bar's box and fill), since a pinned field is not the platform's focused input and shows
+   * no native caret. Without it a pinned field draws none (iOS, Android).
+   */
+  pinnedCaret?: (t: ColorTokens) => ViewStyle;
   /** The placeholder ink. */
   placeholder: (t: ColorTokens) => string;
   /** Opacity applied to the field when disabled. */
@@ -281,6 +293,12 @@ export const webSkin: InputSkin = {
   shortcut: (size) => (size === "small" ? { endInset: 8, gap: 8, cap: "tiny" } : { endInset: 8, gap: 10, cap: "small" }),
   labelGap: 6,
   referenceLabel: fieldEyebrow,
+  // The hand-off's focused-field caret (Inputs.dc.html `.caret`, the renderer's focus
+  // state): a 1.5 x 16 accent bar one pixel after the value.
+  pinnedCaret: (t) => ({ width: 1.5, height: 16, marginStart: 1, backgroundColor: t.primary }),
+  // The hand-off's toggle shows what pressing it does: the eye while masked, eye-off once
+  // revealed (cv-kit-inputs.js `input`, the card's `pwIcon`).
+  revealGlyph: { masked: "eye", revealed: "eyeOff" },
   hover: true,
   focusHalo: (t, error) => ({ boxShadow: `0 0 0 4px ${error ? (t["destructive-soft"] ?? alpha(t.destructive, 0.14)) : focusHaloColor(t)}` }),
   readOnlyField: () => ({ borderStyle: "dashed", backgroundColor: "transparent" }),

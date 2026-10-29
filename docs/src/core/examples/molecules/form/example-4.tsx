@@ -3,14 +3,25 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form, Input, PhoneInput } = scope;
+  const { Form, FormSection, Input, Kbd, Switch, Typography, Row } = scope;
   return (
-<Form submitLabel="Create account">
-  <Input label="Email address" leadingIcon icon="mail" placeholder="example@domain.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
-  <Input label="Password" leadingIcon icon="lock" secureTextEntry passwordToggle placeholder="••••••••" autoComplete="new-password" />
-  <Input label="Username" leadingIcon icon="user" placeholder="yourname" autoCapitalize="none" autoComplete="username" />
-  <PhoneInput label="Phone number" placeholder="Add your phone number" />
-  <Input label="Date of birth" leadingIcon icon="calendar" placeholder="MM/DD/YYYY" keyboardType="numbers-and-punctuation" autoComplete="birthdate-full" />
+<Form
+  submitLabel="Save changes"
+  cancelLabel="Cancel"
+  hints={
+    <Row snug alignCenter>
+      <Kbd>↵</Kbd>
+      <Typography small subtle>to save</Typography>
+    </Row>
+  }
+>
+  <FormSection aside title="Workspace" description="Shown to everyone you invite, on invoices and in the sidebar.">
+    <Input label="Name" placeholder="Northwind" />
+    <Input label="URL" prefix="canvas.app/" defaultValue="northwind" />
+  </FormSection>
+  <FormSection aside title="Members" description="Defaults for people who join from an invite link.">
+    <Switch defaultChecked description="Guests see only the boards they are added to.">Allow guests</Switch>
+  </FormSection>
 </Form>
   );
 }

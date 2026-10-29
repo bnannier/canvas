@@ -12,7 +12,7 @@ import { type ListboxSkin, type Size } from "./listbox.shared.js";
 // A bordered list is the hand-off's box: the `popover` fill (its sf2) behind the
 // `field-border` hairline at the tile corner, with a 4px inset; the rows are concentric
 // inside it. A row is 10px in, 9px tall either side of its text (6 small, 12 large), with
-// a 500 14px label (13 small) over a 400 12px detail in the subtle ink. Every chosen row,
+// a 500 14/18.2 label (13 small) over a 400 12/16.2 detail in the subtle ink. Every chosen row,
 // in single and multi select alike, sits on the accent's soft wash with a trailing 16px
 // check in the accent ink; the check's slot is kept on every row so a choice never reflows
 // a label. A pressed row takes the `muted` wash and, on the web, a resting row under the
@@ -40,11 +40,12 @@ const rowSize: Record<Size, ViewStyle> = {
   large: { paddingHorizontal: 10, paddingVertical: 12 },
 };
 
-// The hand-off's label: 500 14px, 13px on the small list.
+// The hand-off's label: 500 14px on its 1.3 leading (18.2), 13px on the small list
+// (Inputs.dc.html `#c-autocomplete`, the Listbox rows).
 const LABEL_TYPE: Record<Size, TextStyle> = {
-  small: { fontSize: 13, lineHeight: 18, fontWeight: "500" },
-  medium: { fontSize: 14, lineHeight: 20, fontWeight: "500" },
-  large: { fontSize: 14, lineHeight: 20, fontWeight: "500" },
+  small: { fontSize: 13, lineHeight: 16.9, fontWeight: "500" },
+  medium: { fontSize: 14, lineHeight: 18.2, fontWeight: "500" },
+  large: { fontSize: 14, lineHeight: 18.2, fontWeight: "500" },
 };
 
 export const webSkin: ListboxSkin = {
@@ -59,7 +60,8 @@ export const webSkin: ListboxSkin = {
   check: { size: 16, color: primaryText },
   textStack: { flexGrow: 1, flexShrink: 1, flexBasis: "0%" },
   label: (tokens, size) => ({ color: tokens.foreground, ...LABEL_TYPE[size] }),
-  detail: (tokens) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }),
+  // The detail: 400 12px on its 1.35 leading (16.2), in the subtle ink.
+  detail: (tokens) => ({ fontSize: 12, lineHeight: 16.2, fontWeight: "400", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }),
   ripple: (tokens) => surfaceRipple(tokens),
   pressedOpacity: null,
   disabledOpacity: 0.45,

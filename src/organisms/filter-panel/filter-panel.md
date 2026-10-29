@@ -1,7 +1,8 @@
 # FilterPanel
 
 Sidebar filter rail: grouped checkbox options under mono group headings, each
-with its count, and a "Clear N" action in the header while any filter is on.
+with its count, and a "Clear N" action in the header while any filter is on (a plain
+accent text action). On the web an option's label is the 400 14px row label, 10px from its box.
 
 Add `responsive` and at and below `drawerBreakpoint` (default `sm` = 640) the
 docked panel collapses to a small secondary "Filters" button, carrying the live

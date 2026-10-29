@@ -65,9 +65,10 @@ export interface FilterPanelSkin {
   /**
    * How an option row marks its selection: the platform's selection Checkbox beside
    * the label (the web and Android), or the label alone with a trailing check after
-   * its count (iOS lists).
+   * its count (iOS lists). An indicator row with a `label` sets the label in that type
+   * beside the bare box (the web); without one the label is the Checkbox's own (Android).
    */
-  optionMark: { kind: "indicator" } | { kind: "trailing"; label: (tokens: ColorTokens) => TextStyle; check: (tokens: ColorTokens) => TextStyle };
+  optionMark: { kind: "indicator"; label?: (tokens: ColorTokens) => TextStyle } | { kind: "trailing"; label: (tokens: ColorTokens) => TextStyle; check: (tokens: ColorTokens) => TextStyle };
   /** iOS dims the row on press; the web takes none and Android uses a ripple instead (null). */
   rowPressedOpacity: number | null;
   /** Android ripple over the option row; null on iOS/web. */
@@ -131,7 +132,10 @@ export const webSkin: FilterPanelSkin = {
   ...PANEL,
   optionGap: GROUP_GAP,
   optionRow: OPTION_ROW,
-  optionMark: { kind: "indicator" },
+  // The hand-off's option label (Inputs.dc.html `#c-filter-panel` and the FilterPanel
+  // renderer agree): 400 14px in the foreground, 10 from the box, not the Checkbox's own
+  // 500 label.
+  optionMark: { kind: "indicator", label: (tokens) => ({ fontSize: 14, lineHeight: 18, fontWeight: "400", color: tokens.foreground }) },
   rowPressedOpacity: null,
   rowRipple: null,
 };

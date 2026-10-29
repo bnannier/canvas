@@ -156,7 +156,16 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
         aria-checked={checked}
         accessibilityLabel={option.count != null ? `${option.label}, ${option.count}` : option.label}
       >
-        {optionMark.kind === "indicator" ? (
+        {optionMark.kind === "indicator" && optionMark.label ? (
+          // The skin sets the option's label itself: the bare box (decorative, the row is the
+          // only control), then the label at the row's gap.
+          <>
+            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
+              <CheckboxVisual checked={checked} />
+            </View>
+            <Text style={[optionMark.label(tokens), TRAILING_LABEL]}>{option.label}</Text>
+          </>
+        ) : optionMark.kind === "indicator" ? (
           // This row owns the only control. Shared Checkbox content preserves the
           // indicator, label typography and alignment without another tab stop.
           <View style={INDICATOR_CELL} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
@@ -247,7 +256,7 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
         <View style={skin.headerRow}>
           <Text style={skin.titleText(tokens)}>Filters</Text>
           {shownCount > 0 ? (
-            <Button link small onPress={clearAll}>
+            <Button plainLink onPress={clearAll}>
               {`Clear ${shownCount}`}
             </Button>
           ) : null}

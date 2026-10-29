@@ -3,26 +3,23 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Form, Input, Select, Row } = scope;
+  const { Field, Form, Input, Row } = scope;
   return (
-<Form submitLabel="Save address">
-  <Input label="Street address" placeholder="123 Main Street" autoComplete="street-address" textContentType="streetAddressLine1" />
-  <Input label="Apartment, suite, unit (optional)" placeholder="Apt 5B" textContentType="streetAddressLine2" />
-  <Row relaxed>
-    <Input label="City" placeholder="San Francisco" textContentType="addressCity" />
-    <Input label="ZIP code" placeholder="94105" keyboardType="number-pad" autoComplete="postal-code" textContentType="postalCode" />
+<Form submitLabel="Pay">
+  <Field label="Card Number" error="Invalid card number.">
+    <Input trailingIcon icon="creditCard" defaultValue="•••• •••• 1478" keyboardType="number-pad" />
+  </Field>
+  <Row relaxed alignStart>
+    <Field label="Expiry Date" error="Invalid expiration date.">
+      <Input defaultValue="13/26" keyboardType="number-pad" />
+    </Field>
+    <Field label="CVV" error="CVV must be 3 digits.">
+      <Input defaultValue="66" keyboardType="number-pad" maxLength={4} />
+    </Field>
   </Row>
-  <Select
-    label="Country"
-    defaultValue="US"
-    options={[
-      { value: "US", label: "United States", leading: "🇺🇸" },
-      { value: "CA", label: "Canada", leading: "🇨🇦" },
-      { value: "GB", label: "United Kingdom", leading: "🇬🇧" },
-      { value: "DE", label: "Germany", leading: "🇩🇪" },
-      { value: "JP", label: "Japan", leading: "🇯🇵" },
-    ]}
-  />
+  <Field label="Cardholder name" error="Name can only contain letters.">
+    <Input defaultValue="Daniel Smith 87" autoCapitalize="words" />
+  </Field>
 </Form>
   );
 }

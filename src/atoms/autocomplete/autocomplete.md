@@ -32,7 +32,7 @@ Container step sets its measure.
 
 On web the field is the Canvas v4 search field: 40px tall (32 small, 48 large) on
 the sunken fill behind the `field-border` hairline, a leading 16px search glyph, a
-400 14px value (13 small) and a chevron that turns over while the list is open. The
+400 14px value (13 small) and a 15px chevrons-up-down 10px from its end. The
 pointer darkens the edge to the subtle ink, and focus rings it in the accent with a
 4px halo. The suggestions are a card 6px under the field with a 4px inset and 34px
 rows; the typed letters are marked in each suggestion on the accent's soft wash, and
@@ -69,6 +69,15 @@ The disclosure button has a real target of at least 48dp.
 The small iOS field keeps a 44pt height so its touch target fits inside the field; its typography remains compact.
 <!-- /only -->
 
+An option can carry a short `detail` (a version, a platform, a count): pass
+`{ label, detail }` objects in place of strings, and the detail sits at the row's end
+in the 11px mono face in the subtle ink.
+<!-- only: web android -->
+Android sets it in the row's type and muted ink.
+<!-- /only -->
+The label is what the query matches and what `value` holds; the row is announced as
+"label, detail".
+
 ## Usage
 
 ```tsx
@@ -93,6 +102,12 @@ The small iOS field keeps a 44pt height so its touch target fits inside the fiel
 
 ```tsx
 <Autocomplete label="Assigned to" placeholder="Search a person…" disabled options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} />
+```
+
+### Option details
+
+```tsx
+<Autocomplete label="Runtime" placeholder="Search runtimes…" options={[{ label: "Expo", detail: "SDK 57" }, { label: "React Native", detail: "0.86" }, { label: "React Native Web", detail: "web" }, { label: "Remix", detail: "web" }]} />
 ```
 
 ### Controlled selection

@@ -6,6 +6,15 @@ The actions row sits under a hairline rule, a ghost cancel before the primary su
 
 `twoColumn` lays the rows out in exactly two equal columns 16px apart, however wide the form: the fields fill their columns left to right, an odd last field keeps its half, and a FormSection takes the whole row, after which the next field starts a new one. The form measures itself, and at 512px or narrower (the `lg` width step) the rows stack in one full-width column instead.
 
+`FormSection aside` sets the section's heading in a rail beside its rows, the layout of a
+settings page: the rail at the `xs` width step (320px), 48px from the rows, a 20px title
+over a 14px description, the rows 18px apart, 28px above and below the rows and a rule
+closing the section. The section measures itself, and at 512px or narrower (the `lg`
+width step) the rail stacks over the rows. A form whose last row is an aside section
+drops the actions row's rule (the section's closes the rows). `hints` puts leading
+content in the actions row, before the buttons (the keyboard hints "↵ to save"), and the
+row then spreads the two to its ends.
+
 ## Usage
 
 On the web, Enter confirms an active Autocomplete suggestion before it can submit the form. A subsequent Enter submits after the list closes. Enter used to confirm an input-method candidate never submits, and holding Enter does not repeat submission. Multiline fields retain Enter for newlines. On native platforms, each field's `onSubmitEditing` owns the return-key action.
@@ -53,6 +62,29 @@ On the web a Form is a form landmark. Name it with `accessibilityLabel`, a brief
   <FormSection title="Notifications" description="Choose how you'd like to be notified.">
     <Checkbox defaultChecked>Email notifications</Checkbox>
     <Checkbox>SMS alerts</Checkbox>
+  </FormSection>
+</Form>
+```
+
+### Aside sections
+
+```tsx
+<Form
+  submitLabel="Save changes"
+  cancelLabel="Cancel"
+  hints={
+    <Row snug alignCenter>
+      <Kbd>↵</Kbd>
+      <Typography small subtle>to save</Typography>
+    </Row>
+  }
+>
+  <FormSection aside title="Workspace" description="Shown to everyone you invite, on invoices and in the sidebar.">
+    <Input label="Name" placeholder="Northwind" />
+    <Input label="URL" prefix="canvas.app/" defaultValue="northwind" />
+  </FormSection>
+  <FormSection aside title="Members" description="Defaults for people who join from an invite link.">
+    <Switch defaultChecked description="Guests see only the boards they are added to.">Allow guests</Switch>
   </FormSection>
 </Form>
 ```
