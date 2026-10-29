@@ -289,17 +289,21 @@ export const CONCENTRIC_CORNERS: ConcentricCorner[] = [
     name: "CardMedia's top corners inside the card's border",
     site: "src/molecules/card/card.shared.tsx createCardMedia.radius",
     module: "molecules/card/card",
-    corners: (styles, platform) => [num(styles[`${platform}Skin`] as Skin, "radius") - num(styles.cardBase as Skin, "borderWidth")],
+    // The card's corner at each step of its Corners axis, less its border.
+    corners: (styles, platform) => Object.values((styles[`${platform}Skin`] as Skin).corners as Record<string, number>).map((corner) => corner - num(styles.cardBase as Skin, "borderWidth")),
     on: ALL,
   },
   {
     name: "CodeBlock's expander inside the code card's border",
     site: "src/molecules/code-block/code-block.styles.ts expanderClip",
     module: "molecules/code-block/code-block",
-    corners: (styles, platform, tokens) => {
-      const surface = styleAt(styles[`${platform}Skin`] as Skin, "surface", tokens);
-      return [num(surface, "borderRadius") - num(surface, "borderWidth")];
-    },
+    // The card's corner at each density: the code-card corner, and the card corner of
+    // the `playground` density.
+    corners: (styles, platform, tokens) =>
+      ["default", "playground"].map((density) => {
+        const surface = styleAt(styles[`${platform}Skin`] as Skin, "surface", tokens, density);
+        return num(surface, "borderRadius") - num(surface, "borderWidth");
+      }),
     on: ALL,
   },
   {
@@ -381,7 +385,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "molecules/alert": ["control", "callout"],
   "molecules/alert-dialog": ["dialog", "alertDialog"],
   "molecules/card": ["card", "tile", "control", "referenceCard", "referenceSource", "insetRow", "callout", "panel", "stage"],
-  "molecules/code-block": ["control", "key", "codeCard"],
+  "molecules/code-block": ["control", "card", "key", "codeCard", "copyButton"],
   "molecules/collapsible": ["card", "disclosureCard", "insetRow"],
   "molecules/description-lists": ["card", "groupedList"],
   "molecules/empty-state": ["card", "emptyState"],

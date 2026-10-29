@@ -48,7 +48,10 @@ Reduce Transparency and Increase Contrast use the
 shared material's opaque fallbacks.
 
 A web segment is 8 px shorter than its track, padded 14 px a side (8 px for an icon
-alone) with a 500 label of 12 px at the small size and 13 px otherwise. `steadyPress` preserves the resting opacity of a
+alone) with a 500 label of 12 px at the small size and 13 px otherwise. `compact` is the
+hand-off component page's platform switch: the segments keep their size's height and take
+the 12 px label on a 12 px inset, on the web alone (a platform that ships the control keeps
+its one density; the split, stepper and spaced kinds ignore it). `steadyPress` preserves the resting opacity of a
 segment while pressed; `start` pins the group in an app-owned host arrangement.
 
 ## Usage
@@ -69,6 +72,12 @@ segment while pressed; `start` pins the group in an app-owned host arrangement.
 
 ```tsx
 <ButtonGroup items={["Day", "Week", "Month"]} large />
+```
+
+### Compact
+
+```tsx
+<ButtonGroup compact items={["Day", "Week", "Month"]} defaultActive={0} accessibilityLabel="Range" />
 ```
 
 ### Disabled

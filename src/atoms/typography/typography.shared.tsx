@@ -171,6 +171,12 @@ export interface TypographyProps {
    * table's accent-ink label tracked .1em.
    */
   pageLabel?: boolean;
+  /**
+   * A knob panel's label row (a knob's name, and the type hint beside it with `muted`, the
+   * third ink): 500 12/1 in the secondary ink. Pass `mono` for the mono face, as the
+   * hand-off's page does.
+   */
+  knobLabel?: boolean;
   /** A guidance card's title: 600 16/1.3 in the interface face. A level-3 heading. */
   guideTitle?: boolean;
   /** A guidance card's paragraph: 400 13.5/1.6 in the secondary ink. */
@@ -355,6 +361,7 @@ export function roleOf(p: TypographyProps): Role {
   if (p.pagerLabel) return "pagerLabel";
   if (p.legendLabel) return "legendLabel";
   if (p.tileCaption) return "tileCaption";
+  if (p.knobLabel) return "knobLabel";
   if (p.code) return "code";
   if (p.pageLead) return "pageLead";
   if (p.sectionLead) return "sectionLead";

@@ -60,6 +60,11 @@ export const pageRoles = {
   // `font:500 11px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)`.
   // Not the Typography table's eyebrow, which is tracked .1em and set in the accent ink.
   pageLabel: { fontSize: 11, lineHeight: 11, fontWeight: "500", letterSpacing: 0.88, textTransform: "uppercase" },
+  // The knob panel's label row (Component.dc.html line 161, the name of each knob and its
+  // type hint beside it): `font:500 12px/1 var(--fm);color:var(--tx2)`, the hint in
+  // `color:var(--tx3)`. A 12 px line box, so a knob's rhythm is its label's 12, the 7 gap
+  // and its control.
+  knobLabel: { fontSize: 12, lineHeight: 12, fontWeight: "500" },
   // The Usage guidance card's title and paragraph (Component.dc.html, the `secs` cards):
   // `<h3 style="margin:0;font:600 16px/1.3 var(--ft)">` and
   // `<p style="margin:0;font:400 13.5px/1.6 var(--ft);color:var(--tx2)">`.

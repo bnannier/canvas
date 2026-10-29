@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Typography } = scope;
   return (
-<Typography primary>View invoices</Typography>
+<Typography destructive>Payment failed</Typography>
   );
 }

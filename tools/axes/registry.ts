@@ -35,7 +35,7 @@ import { toneOf as badgeTone, statusOf as badgeStatus, badgeGapOf, badgeIntentOf
 import { separatorOf } from "../../src/atoms/breadcrumb/breadcrumb.shared.tsx";
 import { intentOf as buttonIntent, iconBoxOf, sizeOf as buttonSize } from "../../src/atoms/button/button.shared.tsx";
 import { webEmphasisOf, webHoverKindOf, webLinkInkOf, webBodyOf } from "../../src/atoms/button/button.styles.ts";
-import { kindOf, sizeOf as buttonGroupSize } from "../../src/atoms/button-group/button-group.shared.tsx";
+import { kindOf, sizeOf as buttonGroupSize, densityOf as buttonGroupDensity } from "../../src/atoms/button-group/button-group.shared.tsx";
 import { sizeOf as checkboxSize } from "../../src/atoms/checkbox/checkbox.shared.tsx";
 import { colorOf, lookOf as chipLook } from "../../src/atoms/chip/chip.shared.tsx";
 import { measureOf, padOf as containerPad } from "../../src/atoms/container/container.shared.tsx";
@@ -70,7 +70,7 @@ import { toneOf as actionPanelTone, layoutOf as actionPanelLayout } from "../../
 import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx";
 import { widthOf as alertDialogWidth } from "../../src/molecules/alert-dialog/alert-dialog.shared.tsx";
 import { elevationOf, densityOf as cardDensity, cornerOf as cardCorner, mediaWellOf, contentDensityOf } from "../../src/molecules/card/card.shared.tsx";
-import { variantOf as codeBlockVariant } from "../../src/molecules/code-block/code-block.shared.tsx";
+import { variantOf as codeBlockVariant, densityOf as codeBlockDensity } from "../../src/molecules/code-block/code-block.shared.tsx";
 import { layoutOf as descriptionLayout, rowsOf as descriptionRows, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
 import { leadOf } from "../../src/molecules/feeds/feeds.shared.tsx";
 import { columnsOf } from "../../src/molecules/grid-lists/grid-lists.shared.tsx";
@@ -247,6 +247,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Button.size", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.shared.tsx#sizeOf", members: SIZES, resolve: buttonSize }),
   subject({ id: "ButtonGroup.kind", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#kindOf", members: ["segmented", "split", "stepper", "spaced"], resolve: kindOf }),
   subject({ id: "ButtonGroup.size", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#sizeOf", members: SIZES, resolve: buttonGroupSize }),
+  subject({ id: "ButtonGroup.density", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#densityOf", members: ["compact"], resolve: buttonGroupDensity, notes: ["The segmented kind's attached segments on the web; the other kinds and the native skins keep their one density."] }),
   subject({
     id: "Checkbox.size",
     components: ["Checkbox"],
@@ -400,7 +401,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Typography"],
     pages: ["typography"],
     resolver: "src/atoms/typography/typography.shared.tsx#roleOf",
-    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "pagerName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "specText", "specMeta", "lead", "mono", "caption", "small", "tiny", "body", "muted", "pagerLabel", "legendLabel", "tileCaption"],
+    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "hero", "pageTitle", "sectionTitle", "cardTitle", "panelTitle", "tagline", "display", "h1", "h2", "h3", "h4", "h5", "guideTitle", "pagerName", "pageLabel", "code", "pageLead", "sectionLead", "cardBody", "sectionNote", "pageBody", "pageNote", "guideBody", "specText", "specMeta", "lead", "mono", "caption", "small", "tiny", "body", "muted", "pagerLabel", "legendLabel", "tileCaption", "knobLabel"],
     resolve: roleOf,
     notes: ["`muted` is both a role and a tone."],
   }),
@@ -450,6 +451,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     notes: ["A density pads the surface on its own and wins over `padded` and `flush`; on a sectioned card it reshapes the sections' inset and rhythm."],
   }),
   subject({ id: "CodeBlock.variant", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#variantOf", members: ["terminal", "numbered", "inline"], resolve: codeBlockVariant }),
+  subject({ id: "CodeBlock.density", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#densityOf", members: ["compact", "playground"], resolve: codeBlockDensity }),
   subject({ id: "DescriptionList.layout", components: ["DescriptionList"], pages: ["description-lists"], resolver: "src/molecules/description-lists/description-lists.shared.tsx#layoutOf", members: ["inline", "twoColumn", "stacked"], resolve: descriptionLayout }),
   subject({
     id: "DescriptionList.rows",

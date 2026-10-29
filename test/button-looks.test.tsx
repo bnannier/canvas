@@ -79,9 +79,11 @@ describe("the plain accent link", () => {
     expect(box.padding).toBe(0);
     expect(box.backgroundColor).toBe("transparent");
     const label = webSkin.label(t, "primary", "base", plain);
-    expect(label).toMatchObject({ fontSize: 13, lineHeight: 18, fontWeight: "500", color: primaryText(t) });
+    // The hand-off sets no ratio on either link, so each line is the face's `normal` at its
+    // size, measured on the served hand-off page: 16 px at 13 px, 15 px at 12 px.
+    expect(label).toMatchObject({ fontSize: 13, lineHeight: 16, fontWeight: "500", color: primaryText(t) });
     expect(label.textDecorationLine).toBeUndefined();
-    expect(webSkin.label(t, "primary", "small", plain)).toMatchObject({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: primaryText(t) });
+    expect(webSkin.label(t, "primary", "small", plain)).toMatchObject({ fontSize: 12, lineHeight: 15, fontWeight: "500", color: primaryText(t) });
     expect(webSkin.surface("primary", plain)).toBe(false);
     expect(webSkin.lift?.("primary", plain)).toBeNull();
   });

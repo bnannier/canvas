@@ -15,10 +15,10 @@ describe("the v4 code block", () => {
   it("sets 13 / 1.7 code (12 compact), 14 above and below (8), rows 16 in (12)", () => {
     expect(s.codeType).toEqual({ fontSize: 13, lineHeight: 22.1 });
     expect(s.codeTypeCompact).toEqual({ fontSize: 12, lineHeight: 20.4 });
-    expect(s.bodyPad(false)).toEqual({ paddingVertical: 14 });
-    expect(s.bodyPad(true)).toEqual({ paddingVertical: 8 });
-    expect(s.rowPad(false, false)).toMatchObject({ paddingStart: 16, paddingEnd: 16 });
-    expect(s.gutterRow(false)).toMatchObject({ paddingEnd: 14 });
+    expect(s.bodyPad("default")).toEqual({ paddingVertical: 14 });
+    expect(s.bodyPad("compact")).toEqual({ paddingVertical: 8 });
+    expect(s.rowPad("default", false)).toMatchObject({ paddingStart: 16, paddingEnd: 16 });
+    expect(s.gutterRow("default")).toMatchObject({ paddingEnd: 14 });
     expect(s.gutterText(t).color).toBe(t["subtle-foreground"]);
   });
   it("heads it with a 36 px row, 14 / 12 in, of 12 px mono labels in the subtle ink", () => {
@@ -28,6 +28,18 @@ describe("the v4 code block", () => {
     expect(s.copyText(t, false)).toMatchObject({ fontSize: 12, fontWeight: "500", color: t["muted-foreground"] });
     expect(s.tabLabel(t, true, false)).toMatchObject({ fontSize: 12, fontWeight: "500", color: t.foreground });
     expect(s.tabItem(t, true, false)).toMatchObject({ paddingHorizontal: 10, borderBottomWidth: 2, borderBottomColor: t.primary });
+  });
+  it("draws the playground card as the hand-off page's JSX card: the card corner, a 40 px bar on the card fill 16 / 8 in, a 28 px Copy, code 16 by 18", () => {
+    // Component.dc.html lines 171 to 174: the page's own card around the playground's JSX.
+    expect(platformShape.web.copyButton).toBe(8);
+    expect(s.surface(t, "playground")).toMatchObject({ borderRadius: 16, borderWidth: 1, borderColor: t.border, backgroundColor: t["surface-sunken"] });
+    expect(s.headerBar(t, "playground")).toMatchObject({ minHeight: 40, paddingStart: 16, paddingEnd: 8, backgroundColor: t.card, borderTopStartRadius: 16 });
+    expect(s.copyButton(t, false, false, "playground")).toMatchObject({ minHeight: 28, paddingHorizontal: 10, borderRadius: 8, gap: 6, borderColor: t["field-border"] });
+    expect(s.bodyPad("playground")).toEqual({ paddingVertical: 16 });
+    expect(s.rowPad("playground", false)).toMatchObject({ paddingStart: 18, paddingEnd: 18 });
+    expect(s.expanderClip("playground")).toEqual({ borderBottomStartRadius: 15, borderBottomEndRadius: 15 });
+    // The code keeps the default ramp; the compact ramp is compact's alone.
+    expect(s.codeType).toEqual({ fontSize: 13, lineHeight: 22.1 });
   });
   it("washes a highlighted row in the accent and a diff row in its status", () => {
     expect(s.highlightRow(t, false)).toEqual({ backgroundColor: t["primary-soft"] });

@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Typography } = scope;
   return (
-<Typography guideBody>A button that navigates renders a real link on the web, so middle-click and open-in-new-tab work.</Typography>
+<Typography guideTitle>Real links (href)</Typography>
   );
 }
