@@ -348,6 +348,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
                       {...(rows.rowProps(i, () => pick(c)) as object)}
                       style={({ pressed }) => [
                         skin.menu.optionRow(tokens, isSelected),
+                        skin.row ? { gap: skin.row.gap } : null,
                         i > 0 && skin.menu.rowSeparator ? skin.menu.rowSeparator(tokens) : null,
                         skin.menu.ripple == null && pressed ? skin.menu.optionPressed(tokens) : null,
                       ]}
@@ -362,7 +363,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
                       {skin.menu.selectedSide === "leading" ? (
                         <Text style={[skin.menu.indicator(tokens, menuSize), { width: 14 }]}>{isSelected ? "✓" : " "}</Text>
                       ) : null}
-                      <Text style={skin.menu.optionText(tokens, menuSize)}>{c.flag ?? flagOf(c.code)}</Text>
+                      <Text style={[skin.menu.optionText(tokens, menuSize), skin.row?.flag]}>{c.flag ?? flagOf(c.code)}</Text>
                       <Text style={[skin.menu.optionText(tokens, menuSize), { flexShrink: 1 }]}>{c.name}</Text>
                       <Text style={[skin.menu.optionText(tokens, menuSize), skin.rowDial(tokens)]}>{c.dialCode}</Text>
                       {skin.menu.selectedSide === "trailing" ? (

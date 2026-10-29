@@ -7,6 +7,11 @@ icons (`leadingIcon` / `trailingIcon` with any Canvas glyph as `icon`), a
 button, and a `shortcut` keycap. Input is single-line; for multi-line entry use the
 dedicated Textarea.
 
+On the web the eye shows what pressing it does: the open eye while the value is masked,
+the struck-through eye once it is revealed. A field held
+focused by an `InteractionOverride` (a docs specimen) draws the web's 1.5px accent caret,
+blinking once a second, just after its value, since no real caret shows there.
+
 `shortcut` shows a keyboard shortcut hint at the field's end, the key that focuses a
 search field: a compact flat keycap (`<Kbd small flat>`, the 22 px cap; `tiny`, the 20 px
 cap, on a `small` field) after the value and any inline suffix and before the trailing

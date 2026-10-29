@@ -23,7 +23,7 @@ export const docs: ComponentDocs = {
   overview: [
     "The list fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.",
     "Material 3 ships no listbox, so Android draws the Canvas v4 list, in its own face: a chosen row sits on the accent's soft wash with a 16px check at its end in the accent ink, in single and multi select alike, and the check's slot is kept on every row so a choice never reflows a label.",
-    "The rows are 10px in with a 500 14px label (13px small) over a 400 12px detail in the subtle ink, rounded concentric inside a bordered list, which is the `popover` fill behind the `field-border` hairline at the tile corner with a 4px inset. A pressed row takes the `muted` wash, and on the web a row under the pointer takes the hover wash at once.",
+    "The rows are 10px in with a 500 14/18.2px label (13px small) over a 400 12/16.2px detail in the subtle ink, rounded concentric inside a bordered list, which is the `popover` fill behind the `field-border` hairline at the tile corner with a 4px inset. A pressed row takes the `muted` wash, and on the web a row under the pointer takes the hover wash at once.",
     "Single-select exposes a list of selectable options. With `multi`, it exposes a checkbox group: each row owns its label, checked state, and tap target. Give either mode a meaningful `accessibilityLabel`; the fallback is \"Options\". Arrow keys and Home/End move focus within one tab stop. Single-select follows focus, while multi-select keeps the current selection until Enter or Space toggles the focused row.",
   ],
   examples: [

@@ -68,8 +68,11 @@ export interface PhoneInputSkin {
   dial: (t: ColorTokens) => TextStyle;
   /** The number's inset after the dial code. */
   numberGap: number;
-  /** The row's trailing dial-code column. */
+  /** The row's trailing dial-code column, applied over the list row's type. */
   rowDial: (t: ColorTokens) => TextStyle;
+  /** The country row's own anatomy where it differs from the Select row it is: the gap
+   *  between the row's parts and the flag's type. Without it the row is the Select row's. */
+  row?: { gap: number; flag: TextStyle };
 }
 
 const FLAG_SIZE: Record<Size, TextStyle> = {
@@ -102,7 +105,11 @@ export const webSkin: PhoneInputSkin = {
   dial: (t) => ({ color: t["subtle-foreground"] ?? t["muted-foreground"], paddingStart: 8 }),
   numberFace: { fontFamily: MONO_FONT },
   numberGap: 8,
-  rowDial: (t) => ({ color: t["muted-foreground"], marginStart: "auto" }),
+  // The hand-off's country list (Inputs.dc.html `#c-phone-input`, the only source: no
+  // renderer draws it): a 16px flag 10 from the name, the dial code a 400 12px mono note in
+  // the subtle ink at the row's end.
+  rowDial: (t) => ({ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["subtle-foreground"] ?? t["muted-foreground"], marginStart: "auto" }),
+  row: { gap: 10, flag: { fontSize: 16, lineHeight: 20 } },
 };
 
 // ---------- iOS: the reference's phone field ----------

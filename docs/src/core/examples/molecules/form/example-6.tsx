@@ -3,23 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Field, Form, Input, Row } = scope;
+  const { Form, Input, Row } = scope;
   return (
 <Form submitLabel="Pay">
-  <Field label="Card Number" error="Invalid card number.">
-    <Input trailingIcon icon="creditCard" defaultValue="•••• •••• 1478" keyboardType="number-pad" />
-  </Field>
-  <Row relaxed alignStart>
-    <Field label="Expiry Date" error="Invalid expiration date.">
-      <Input defaultValue="13/26" keyboardType="number-pad" />
-    </Field>
-    <Field label="CVV" error="CVV must be 3 digits.">
-      <Input defaultValue="66" keyboardType="number-pad" maxLength={4} />
-    </Field>
+  <Input label="Card Number" trailingIcon icon="creditCard" placeholder="•••• •••• •••• ••••" keyboardType="number-pad" autoComplete="cc-number" textContentType="creditCardNumber" />
+  <Row relaxed>
+    <Input label="Expiry Date" placeholder="MM/YY" keyboardType="number-pad" autoComplete="cc-exp" textContentType="creditCardExpiration" />
+    <Input label="CVV" placeholder="•••" secureTextEntry keyboardType="number-pad" maxLength={4} autoComplete="cc-csc" textContentType="creditCardSecurityCode" />
   </Row>
-  <Field label="Cardholder name" error="Name can only contain letters.">
-    <Input defaultValue="Daniel Smith 87" autoCapitalize="words" />
-  </Field>
+  <Input label="Cardholder name" placeholder="Name on card" autoCapitalize="words" autoComplete="cc-name" textContentType="creditCardName" />
 </Form>
   );
 }

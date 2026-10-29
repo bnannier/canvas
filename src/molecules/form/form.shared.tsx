@@ -1,4 +1,4 @@
-import { Children, isValidElement, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
+import { Children, createContext, isValidElement, useContext, useEffect, useId, useRef, type ComponentType, type ElementRef, type ReactNode } from "react";
 import { type Role } from "react-native";
 import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type TextStyle, type ViewStyle, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -32,6 +32,9 @@ export type ButtonComponent = ComponentType<ButtonProps>;
 
 const FORM: Role = "form";
 
+// Read a numeric style value, 0 when absent.
+const asNum = (v: unknown): number => (typeof v === "number" ? v : 0);
+
 // The per-OS-varying style pieces the Form's own surface contributes. Everything
 // else (the layouts, the responsive collapse, the composed Button) is shared.
 export interface FormSkin {
@@ -45,6 +48,23 @@ export interface FormSkin {
   stack: ViewStyle;
   /** A section: its internal rhythm (header block to rows, row to row) and its closing rule. */
   section: (t: ColorTokens) => ViewStyle;
+  /** The `aside` section: its heading rail beside its rows, stacking below `stackAt`. */
+  aside: {
+    /** The section box: the rail and rows side by side or stacked, its insets and closing rule. */
+    section: (t: ColorTokens, place: { side: boolean; first: boolean }) => ViewStyle;
+    /** The heading rail's box. */
+    rail: (side: boolean) => ViewStyle;
+    /** The rows' column. */
+    rows: (side: boolean) => ViewStyle;
+    title: (t: ColorTokens) => TextStyle;
+    description: (t: ColorTokens) => TextStyle;
+    /** The section width (px) at and below which the rail stacks over the rows. */
+    stackAt: number;
+  };
+  /** What the actions row changes after a closing aside section (the section's rule closes the form). */
+  actionsAfterAside: ViewStyle;
+  /** What the actions row changes when it carries `hints`. */
+  actionsWithHints: ViewStyle;
   /** The whole form's opacity while `disabled`. */
   disabledOpacity: number;
 }
@@ -54,6 +74,14 @@ export interface FormSectionProps {
   title?: string;
   /** Muted supporting line under the heading. */
   description?: ReactNode;
+  /**
+   * Sets the heading in a rail beside the section's rows (a settings page's layout): the
+   * rail at the `xs` width step, 48 from the rows, with a 20 px display title over a
+   * 14 px description, the rows 18 apart, and 28 above and below the rows closed by a
+   * rule. In a section 512 px wide or narrower (the `lg` step, measured on the section
+   * itself) the rail stacks over the rows. Omit for the stacked default.
+   */
+  aside?: boolean;
   /** The section's stitched controls. */
   children?: ReactNode;
   /** E2E hook forwarded to the root element. */
@@ -76,6 +104,11 @@ export interface FormProps extends MeasureProps {
    * Omit for the stacked default.
    */
   twoColumn?: boolean;
+  /**
+   * Leading content of the actions row, before the buttons (keyboard hints such as
+   * "↵ to save"). The row then spreads the hints and the buttons to its two ends.
+   */
+  hints?: ReactNode;
   /** Label for the primary submit button. Passing it (or `cancelLabel`) renders the actions row. */
   submitLabel?: string;
   /** Renders a ghost cancel button before the submit button. */
@@ -108,9 +141,17 @@ export interface FormProps extends MeasureProps {
  * of stitched controls inside a Form (the composition successor to a fieldset
  * legend).
  */
+// Whether a row is the form's first: an aside section takes no inset above the first row.
+const FirstRow = createContext(false);
+
 export function createFormSection(skin: FormSkin) {
-  function FormSection({ title, description, children, testID, style }: FormSectionProps) {
+  function FormSection({ title, description, aside, children, testID, style }: FormSectionProps) {
     const { tokens } = useTheme();
+    const first = useContext(FirstRow);
+    // The aside rail stands beside the rows in a section wider than the stacking step; the
+    // unmeasured frame is the desktop (side by side) variant.
+    const { width, onLayout } = useContainerWidth();
+    const side = width <= 0 || width > skin.aside.stackAt;
     // Programmatic grouping: a screen reader hears the title as the group's name
     // and the controls as members of it. Both the RN accessibilityLabel and the
     // aria-label alias are set because RNW forwards neither on its own.
@@ -118,6 +159,21 @@ export function createFormSection(skin: FormSkin) {
       title != null
         ? ({ role: "group" as const, accessibilityLabel: title, "aria-label": title } as const)
         : {};
+    if (aside) {
+      return (
+        <View testID={testID} {...nameProps} onLayout={onLayout} style={[skin.aside.section(tokens, { side, first }), style]}>
+          {title != null || description != null ? (
+            <View style={skin.aside.rail(side)}>
+              {title != null ? <Text style={skin.aside.title(tokens)}>{title}</Text> : null}
+              {description != null ? <Text style={skin.aside.description(tokens)}>{description}</Text> : null}
+            </View>
+          ) : null}
+          <View style={skin.aside.rows(side)}>
+            <FirstRow.Provider value={false}>{children}</FirstRow.Provider>
+          </View>
+        </View>
+      );
+    }
     return (
       <View testID={testID} {...nameProps} style={[skin.section(tokens), style]}>
         {title != null || description != null ? (
@@ -138,11 +194,12 @@ export function createFormSection(skin: FormSkin) {
 type SectionMarked = { formSection?: boolean };
 const isSection = (child: ReactNode): boolean =>
   isValidElement(child) && typeof child.type === "function" && (child.type as SectionMarked).formSection === true;
+const isAsideSection = (child: ReactNode): boolean => isSection(child) && isValidElement<FormSectionProps>(child) && !!child.props.aside;
 
 /** Build a Form component from a platform skin (plus the platform-correct Button its actions row composes; defaults to the web base when omitted). */
 export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) {
   return function Form(props: FormProps) {
-    const { children, twoColumn, submitLabel, cancelLabel, onSubmit, onCancel, disabled, accessibilityLabel, testID, style } = props;
+    const { children, twoColumn, hints, submitLabel, cancelLabel, onSubmit, onCancel, disabled, accessibilityLabel, testID, style } = props;
     // The landmark's name, set as both the RN prop and its aria alias (FormSection's
     // dual-alias precedent). An unnamed form renders exactly the markup it did before.
     const nameProps = accessibilityLabel != null ? { accessibilityLabel, "aria-label": accessibilityLabel } : null;
@@ -166,9 +223,12 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     // cells keep one element type and position in either flow, so crossing the threshold
     // restyles them without remounting a field.
     let column = 0;
+    const kids = Children.toArray(children);
+    // The first row learns it is first (an aside section then takes no inset above it).
+    const marked = (child: ReactNode, i: number) => (i === 0 ? <FirstRow.Provider key="first" value>{child}</FirstRow.Provider> : child);
     const rows = twoColumn ? (
       <View onLayout={onRowsLayout} style={twoUp ? s.twoUpRows : s.stackedRows}>
-        {Children.toArray(children).map((child, i) => {
+        {kids.map((child, i) => {
           let cell: ViewStyle = s.stackedCell;
           if (twoUp && isSection(child)) {
             cell = s.fullRowCell;
@@ -179,18 +239,18 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
           }
           return (
             <View key={i} style={cell}>
-              {child}
+              {marked(child, i)}
             </View>
           );
         })}
       </View>
     ) : (
-      children
+      kids.map(marked)
     );
 
-    const actions =
-      submitLabel != null || cancelLabel != null ? (
-        <View style={skin.actions(tokens)}>
+    const buttons =
+      cancelLabel != null || submitLabel != null ? (
+        <>
           {cancelLabel != null ? (
             <Button ghost disabled={disabled} onPress={onCancel}>
               {cancelLabel}
@@ -201,6 +261,21 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
               {submitLabel}
             </Button>
           ) : null}
+        </>
+      ) : null;
+    // After a closing aside section its rule closes the rows, so the actions row draws none.
+    const afterAside = kids.length > 0 && isAsideSection(kids[kids.length - 1]);
+    const actions =
+      buttons != null || hints != null ? (
+        <View style={[skin.actions(tokens), afterAside ? skin.actionsAfterAside : null, hints != null ? skin.actionsWithHints : null]}>
+          {hints != null ? (
+            <>
+              <View>{hints}</View>
+              {buttons != null ? <View style={{ flexDirection: "row", gap: asNum(skin.actions(tokens).gap) }}>{buttons}</View> : null}
+            </>
+          ) : (
+            buttons
+          )}
         </View>
       ) : null;
 

@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Autocomplete } = scope;
+  const { Autocomplete } = scope;
   return (
-<Stateful initial="Grace Hopper">
-  {(value, setValue) => (
-    <Autocomplete label="Assigned to" options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]} value={value} onValueChange={setValue} />
-  )}
-</Stateful>
+<Autocomplete label="Runtime" placeholder="Search runtimes…" options={[{ label: "Expo", detail: "SDK 57" }, { label: "React Native", detail: "0.86" }, { label: "React Native Web", detail: "web" }, { label: "Remix", detail: "web" }]} />
   );
 }

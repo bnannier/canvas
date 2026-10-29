@@ -100,8 +100,16 @@ describe("pinned focus", () => {
     expect(rings.filter(([disabled]) => disabled).every(([, width]) => width !== `${FOCUS_RING_WIDTH}px`)).toBe(true);
   });
 
-  it("gives an Input its own focused look, the one real focus gives", () => {
-    const pinned = markup(<InteractionOverride focused><Input label="Name" /></InteractionOverride>);
+  it("gives an Input its own focused look, the one real focus gives, plus the caret a real focus draws natively", () => {
+    // A pinned field is not the browser's focused input, so it draws the caret the browser
+    // would (a 1.5 px accent bar after the value, in an aria-hidden overlay); apart from that
+    // overlay its markup is the real focus's.
+    const pinnedRender = render(light(<InteractionOverride focused><Input label="Name" /></InteractionOverride>));
+    const bars = [...pinnedRender.container.querySelectorAll("div")].filter((d) => d.style.width === "1.5px");
+    expect(bars).toHaveLength(1);
+    bars[0]!.parentElement!.remove();
+    const pinned = html(pinnedRender.container);
+    pinnedRender.unmount();
     const { container } = render(light(<Input label="Name" />));
     const rest = html(container);
     fireEvent.focus(container.querySelector("input")!);

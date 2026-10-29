@@ -1,7 +1,7 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
-import { forwardRef, useId, useRef, useState } from "react";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import {
   StyleSheet,
   type GestureResponderEvent,
@@ -9,7 +9,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneHost, paneStyle, paneRipple, isGlass, legibleWash, PANE_SIBLING_INPUT, shape } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneHost, paneStyle, paneRipple, isGlass, legibleWash, PANE_SIBLING_INPUT, shape, LoopView, createLoopChannel, useReducedMotion } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
@@ -32,8 +32,9 @@ import { type InputSkin, type Size } from "./input.styles.js";
 // the Icon atom's flat boolean prop, so the playground stays serializable (a name
 // string, not a React element).
 
-// The trailing action glyphs: the password eye (eye-off while the value is masked,
-// eye once revealed, the iOS reference's eye.slash) and the clear button (the
+// The trailing action glyphs: the password eye (by default eye-off while the value is
+// masked and eye once revealed, the iOS reference's eye.slash; the web skin swaps them,
+// `revealGlyph`) and the clear button (the
 // reference's xmark.circle.fill). Hit slop widens each glyph to a 44pt target.
 const ACTION_HIT_SLOP = 12;
 // The gap between two trailing glyphs when both the clear button and the eye show.
@@ -74,6 +75,44 @@ export function actionSlops(count: number, textGap: number): Array<Insets | unde
 export function actionOverhang(iconSize: number, boxHeight: number): Insets | undefined {
   const v = Math.max(0, (iconSize + 2 * ACTION_HIT_SLOP - boxHeight) / 2);
   return v > 0 ? { top: v, bottom: v, left: 0, right: 0 } : undefined;
+}
+
+// The pinned-focus caret. A field held focused by an InteractionOverride (a docs specimen)
+// is not the platform's focused input, so no native caret shows; where the skin declares a
+// `pinnedCaret` the shell draws the hand-off's caret after the value instead (the
+// renderer's focus state, cv-kit-inputs.js). The bar sits in an overlay over the editor
+// with the editor's own start inset: a hidden copy of the value in the value's type holds
+// its width, so the bar lands one step after the last glyph without measuring anything.
+// It blinks on the hand-off's `1s steps(1)` (half on, half off) on one shared loop channel
+// (src/style/loop.tsx: the native driver natively, a compositor CSS animation on the web),
+// running only while a pinned caret is mounted; Reduce Motion holds it solid.
+const caretBlink = createLoopChannel({ period: 1000 });
+const CARET_BLINK = { channel: caretBlink, inputRange: [0, 0.5, 0.501, 1], outputRange: [1, 1, 0, 0] };
+let blinkingCarets = 0;
+
+// The start inset of an editor's text: its start border and its start padding.
+function startInset(style: StyleProp<ViewStyle>): number {
+  const f = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+  const border = asNum(f.borderStartWidth ?? f.borderLeftWidth ?? f.borderWidth, 0);
+  const pad = asNum(f.paddingStart ?? f.paddingLeft ?? f.paddingHorizontal ?? f.padding, 0);
+  return border + pad;
+}
+
+function PinnedCaret({ inset, value, text, bar }: { inset: number; value: string; text: StyleProp<TextStyle>; bar: ViewStyle }) {
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    if (reduced) return;
+    if (blinkingCarets++ === 0) caretBlink.play();
+    return () => {
+      if (--blinkingCarets === 0) caretBlink.stop();
+    };
+  }, [reduced]);
+  return (
+    <View style={[StyleSheet.absoluteFill, { flexDirection: "row", alignItems: "center", paddingStart: inset, overflow: "hidden", pointerEvents: "none" }]} aria-hidden accessible={false}>
+      <Text numberOfLines={1} style={[text, { opacity: 0, flexShrink: 1 }]}>{value}</Text>
+      {reduced ? <View style={bar} /> : <LoopView style={bar} opacity={CARET_BLINK} />}
+    </View>
+  );
 }
 
 // react-native-web paints a default focus outline on the field; in the grouped
@@ -300,7 +339,8 @@ export function createInput(skin: InputSkin) {
     const size = sizeOf(props);
     const [focusedState, setFocused] = useState(false);
     // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
-    const focused = usePinnedFocus(!disabled) || focusedState;
+    const pinnedFocus = usePinnedFocus(!disabled);
+    const focused = pinnedFocus || focusedState;
     // The password toggle's own state: masked until the eye is pressed.
     const [revealed, setRevealed] = useState(false);
     const { theme, paneProps, stateSurface, inkFill } = useTextEntryMaterial(!!skin.liquid);
@@ -330,10 +370,12 @@ export function createInput(skin: InputSkin) {
     // when the field is focused OR populated. Seeded from value/defaultValue so a
     // prefilled field starts floated; for a controlled field the value is the
     // source of truth, otherwise the wrapped onChangeText keeps it in sync.
-    const [hasText, setHasText] = useState(() => (((value ?? props.defaultValue) ?? "") + "").length > 0);
+    // The uncontrolled text is kept too, for the pinned-focus caret's place after it.
+    const [ownText, setOwnText] = useState(() => ((value ?? props.defaultValue) ?? "") + "");
+    const hasText = ownText.length > 0;
     const populated = value != null ? value.length > 0 : hasText;
     const handleChangeText = (next: string) => {
-      setHasText(next.length > 0);
+      setOwnText(next);
       onChangeText?.(next);
     };
 
@@ -369,6 +411,15 @@ export function createInput(skin: InputSkin) {
       </View>
     ) : null;
     const text = skin.text(tokens, size);
+    // The pinned-focus caret over an editor whose style is `editorStyle` (see PinnedCaret):
+    // only while the field is pinned focused and not really focused, where the platform
+    // draws its own caret. A masked value is measured as the bullets the editor shows.
+    const caretAfter = (editorStyle: StyleProp<ViewStyle>) => {
+      if (!pinnedFocus || focusedState || !skin.pinnedCaret) return null;
+      const shown = value ?? ownText;
+      const masked = (props.secureTextEntry && !(passwordToggle && revealed)) ? "\u2022".repeat(shown.length) : shown;
+      return <PinnedCaret inset={startInset(editorStyle)} value={masked} text={text} bar={skin.pinnedCaret(tokens)} />;
+    };
     // The trailing glyph gutter: the glyph row's end inset, one glyph and the gap to the value.
     const gutter = asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0);
     // An errored field's trailing alert glyph, where the skin draws one (Android).
@@ -559,6 +610,7 @@ export function createInput(skin: InputSkin) {
             <View style={paneHost(theme)} {...hover.target}>
               {barePane}
               <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
+              {caretAfter(bareStyle)}
               {bareTrailing}
               {readOnlyFrame}
             </View>
@@ -572,6 +624,7 @@ export function createInput(skin: InputSkin) {
         <View style={[disabledDim, widthCap, style, paneHost(theme)]} {...hover.target}>
           {barePane}
           <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
+          {caretAfter(bareStyle)}
           {bareTrailing}
           {readOnlyFrame}
         </View>
@@ -623,6 +676,8 @@ export function createInput(skin: InputSkin) {
       handleChangeText("");
       fieldRef.current?.focus();
     };
+    // The editor's own box in the field area (its insets place the pinned-focus caret).
+    const groupEditor = skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: trailingGlyphs > 0 && !inflowEnd, hasPrefix: prefix != null, hasSuffix: suffix != null, action: !!action });
     const groupShape = { ...skin.groupContainer(tokens, borderColor, focused, isError), ...(props.soft && skin.softFill ? { backgroundColor: skin.softFill(tokens) } : null), ...readOnlyLook };
     // The trailing addon's state: the action suffix is a box of its own on some skins.
     const suffixState = { ...state, action: !!action };
@@ -659,10 +714,11 @@ export function createInput(skin: InputSkin) {
             </View>
           ) : null}
 
+          {caretAfter(groupEditor)}
           <TextInput
             ref={hostRef}
             style={[
-              skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: trailingGlyphs > 0 && !inflowEnd, hasPrefix: prefix != null, hasSuffix: suffix != null, action: !!action }),
+              groupEditor,
               trailingGlyphs > 0 && !inflowEnd ? { paddingEnd: trailingGutter } : null,
               // The value stops the keycap's gap short of it, where no inline suffix sits between.
               hasShortcut && !inlineSuffix ? { paddingEnd: shortcutSpec.gap } : null,
@@ -720,7 +776,7 @@ export function createInput(skin: InputSkin) {
                   android_ripple={actionRipple}
                   style={({ pressed }) => (skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null)}
                 >
-                  <Icon {...(revealed ? { eye: true } : { eyeOff: true })} color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />
+                  <Icon {...{ [revealed ? (skin.revealGlyph?.revealed ?? "eye") : (skin.revealGlyph?.masked ?? "eyeOff")]: true }} color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />
                 </Pressable>
               ) : null}
               {hasAlert ? alertGlyph : null}

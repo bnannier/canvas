@@ -4,12 +4,12 @@ import { textEntryState } from "../../style/text-entry-state.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
 import { LISTBOX } from "../../style/listbox-role.js";
-import { usePinnedFocus } from "../../style/interaction-override.js";
+import { InteractionOverride, usePinnedFocus } from "../../style/interaction-override.js";
 import { useHover } from "../../style/hover.js";
 import { Icon } from "../icon/icon.js";
 import { Disclosure } from "../select/select.shared.js";
@@ -39,6 +39,14 @@ import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
 // select closes it. The selected option carries a leading "✓" and an accent
 // surface; an empty filtered list shows a muted "No results" row.
 
+/** An Autocomplete option with a short trailing detail (a version, a platform, a count). */
+export interface AutocompleteOption {
+  /** The option's text: what the field shows once it is chosen and what the query matches. */
+  label: string;
+  /** A short muted detail at the row's end, in the mono face ("0.86", "web"). Content, not styling. */
+  detail?: string;
+}
+
 export interface AutocompleteProps extends MeasureProps {
   /**
    * The text typed into the field (controlled). Filters the option list. Omit
@@ -53,8 +61,12 @@ export interface AutocompleteProps extends MeasureProps {
    * resets the filter (both modes).
    */
   onQueryChange?: (query: string) => void;
-  /** The full list of selectable option labels. */
-  options?: string[];
+  /**
+   * The full list of selectable options: bare labels, or `{ label, detail }` objects whose
+   * `detail` sits muted at the row's end (a version, a platform). The label is what the
+   * query matches and what `value` holds.
+   */
+  options?: Array<string | AutocompleteOption>;
   /** The selected option label (CONTROLLED), or "" for no selection. Omit for uncontrolled use. */
   value?: string;
   /** Initial selected option for uncontrolled use (selecting a row updates it). */
@@ -129,7 +141,7 @@ export function sizeOf(p: AutocompleteProps): Size {
 }
 
 /** An option's label with the letters that match the query set apart. */
-function Highlighted({ text, query, style, mark }: { text: string; query: string; style: TextStyle; mark: TextStyle }) {
+function Highlighted({ text, query, style, mark }: { text: string; query: string; style: StyleProp<TextStyle>; mark: TextStyle }) {
   const at = query === "" ? -1 : text.toLowerCase().indexOf(query.toLowerCase());
   if (at < 0) return <Text style={style}>{text}</Text>;
   return (
@@ -167,7 +179,7 @@ const optionScroll: ViewStyle = { flexShrink: 1 };
 export function createAutocomplete(skin: AutocompleteSkin) {
   const Autocomplete = forwardRef<RNTextInput, AutocompleteProps>(function Autocomplete(props, ref) {
     const {
-      options = [],
+      options: optionItems = [],
       label,
       required,
       helperText,
@@ -180,6 +192,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
       style,
     } = props;
     const size = sizeOf(props);
+    // The options as labels, with each option's detail beside it (by index).
+    const options = optionItems.map((item) => (typeof item === "string" ? item : item.label));
+    const details = optionItems.map((item) => (typeof item === "string" ? undefined : item.detail));
     const entryMaterial = useTextEntryMaterial(!!skin.liquid);
     const { theme } = entryMaterial;
     const menuTheme = useMaterialTheme({ layer: "dense" });
@@ -256,7 +271,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const matches = options.map((option, index) => {
       const occurrence = occurrences.get(option) ?? 0;
       occurrences.set(option, occurrence + 1);
-      return { option, key: JSON.stringify([option, occurrence]), id: `${listboxId}-option-${index}` };
+      return { option, detail: details[index], key: JSON.stringify([option, occurrence]), id: `${listboxId}-option-${index}` };
     })
       .filter(({ option }) => !hasQuery || option.toLowerCase().includes(q));
     const activeIndex = open ? matches.findIndex(({ key }) => key === activeKey) : -1;
@@ -440,6 +455,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             accessibilityLabel={fieldName}
             aria-label={fieldName}
           />
+          {/* A pinned focus is the field's (its own active edge), so the toggle inside it
+              is unpinned and never draws a ring of its own. */}
+          <InteractionOverride>
           <Pressable
             style={({ pressed }) => [
               skin.chevronTarget(size),
@@ -460,6 +478,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           >
             <Disclosure spec={skin.disclosure} size={skin.disclosure.size(size)} color={skin.disclosure.color(tokens, open)} open={open} />
           </Pressable>
+          </InteractionOverride>
           {floating ? (
             <FloatingLabel
               styles={skin}
@@ -527,7 +546,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                       <View style={skin.emptyRow}>
                         <Text style={skin.emptyText(tokens, size)}>No results</Text>
                       </View>
-                    ) : matches.map(({ option, key, id }, index) => {
+                    ) : matches.map(({ option, detail, key, id }, index) => {
                       const selected = option === value;
                       return (
                         <Pressable
@@ -550,14 +569,15 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                           // Keep browser editing focus on the input. Native -1
                           // would remove Android Pressable's click/hover support.
                           tabIndex={Platform.select({ web: -1, default: undefined })}
-                          accessibilityLabel={option}
-                          aria-label={option}
+                          accessibilityLabel={detail ? `${option}, ${detail}` : option}
+                          aria-label={detail ? `${option}, ${detail}` : option}
                           // accessibilityState carries the native selected trait;
                           // aria-selected supplies RNW's corresponding DOM state.
                           accessibilityState={{ selected }}
                           aria-selected={selected}
                         >
-                          <Highlighted text={option} query={query} style={skin.optionText(tokens, size)} mark={skin.highlight(tokens)} />
+                          <Highlighted text={option} query={query} style={[skin.optionText(tokens, size), detail ? { flexGrow: 1, flexShrink: 1 } : null]} mark={skin.highlight(tokens)} />
+                          {detail ? <Text style={skin.optionDetail(tokens)} numberOfLines={1}>{detail}</Text> : null}
                         </Pressable>
                       );
                     })}

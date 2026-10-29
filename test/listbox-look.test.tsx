@@ -44,10 +44,10 @@ describe("the Listbox, the hand-off's option list", () => {
     expect(webSkin.rowGap).toBe(0);
   });
 
-  it("sets a 500 14/20 label (13/18 small) over a 400 12/16 detail in the subtle ink, and dims disabled to 0.45", () => {
-    expect(webSkin.label(lightColors, "small")).toMatchObject({ fontSize: 13, lineHeight: 18, fontWeight: "500" });
-    expect(webSkin.label(lightColors, "medium")).toMatchObject({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: lightColors.foreground });
-    expect(webSkin.detail(lightColors)).toEqual({ fontSize: 12, lineHeight: 16, fontWeight: "400", color: lightColors["subtle-foreground"] });
+  it("sets a 500 14/18.2 label (13/16.9 small) over a 400 12/16.2 detail in the subtle ink, and dims disabled to 0.45", () => {
+    expect(webSkin.label(lightColors, "small")).toMatchObject({ fontSize: 13, lineHeight: 16.9, fontWeight: "500" });
+    expect(webSkin.label(lightColors, "medium")).toMatchObject({ fontSize: 14, lineHeight: 18.2, fontWeight: "500", color: lightColors.foreground });
+    expect(webSkin.detail(lightColors)).toEqual({ fontSize: 12, lineHeight: 16.2, fontWeight: "400", color: lightColors["subtle-foreground"] });
     expect(webSkin.disabledOpacity).toBe(0.45);
   });
 

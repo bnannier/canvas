@@ -20,7 +20,10 @@ describe("the web Autocomplete, the hand-off's search field", () => {
     it(`draws the field 32/40/48 on the sunken fill, edged by state, in ${scheme}`, () => {
       expect(["small", "default", "large"].map((s) => webSkin.field(t, s as never, false).height)).toEqual([32, 40, 48]);
       const rest = webSkin.field(t, "default", false);
-      expect([rest.borderRadius, rest.borderWidth, rest.backgroundColor, rest.borderColor, rest.paddingHorizontal, rest.gap]).toEqual([shape.web.field, 1, t["surface-sunken"], t["field-border"], 12, 8]);
+      // 12 in at the start; 10 at the end, where the 15px chevrons-up-down sits (the Inputs card).
+      expect([rest.borderRadius, rest.borderWidth, rest.backgroundColor, rest.borderColor, rest.paddingStart, rest.paddingEnd, rest.gap]).toEqual([shape.web.field, 1, t["surface-sunken"], t["field-border"], 12, 10, 8]);
+      expect(webSkin.disclosure).toMatchObject({ glyph: "chevronsUpDown", flips: false });
+      expect(webSkin.disclosure.size("default")).toBe(15);
       expect(webSkin.field(t, "default", true).borderColor).toBe(t.ring);
       expect(webSkin.field(t, "default", false, true).borderColor).toBe(t["subtle-foreground"]);
       expect(String(webSkin.focusHalo!(t).boxShadow)).toMatch(/^0 0 0 4px rgba\(/);
@@ -77,5 +80,21 @@ describe("the Android Autocomplete, the Material 3 exposed dropdown", () => {
     expect(androidSkin.popoverGap).toBe(4);
     expect([androidSkin.row.minHeight, androidSkin.row.paddingHorizontal]).toEqual([48, 12]);
     expect(androidSkin.disabledOpacity).toBe(0.38);
+  });
+});
+
+describe("Autocomplete option details", () => {
+  it("sets an option's detail at the row's end in the 11px mono note and names the row with it", () => {
+    render(
+      <ThemeProvider light>
+        <Autocomplete label="Runtime" defaultOpen options={[{ label: "React Native", detail: "0.86" }, "Expo"]} />
+      </ThemeProvider>,
+    );
+    const row = screen.getByRole("option", { name: "React Native, 0.86" });
+    const detail = screen.getByText("0.86");
+    expect(row.contains(detail)).toBe(true);
+    expect(detail.style.fontSize).toBe("11px");
+    expect(webSkin.optionDetail(lightColors)).toMatchObject({ fontSize: 11, lineHeight: 14, fontWeight: "400", color: lightColors["subtle-foreground"] });
+    expect(screen.getByRole("option", { name: "Expo" })).toBeDefined();
   });
 });
