@@ -218,6 +218,21 @@ recorded deviation above. What follows from it:
   component detail page and every template against its `.v4-reference` image; the whole
   loop runs (map, check with every panel, ask, verify, backlog, skills improve), and only
   `verify-fix`, from a session that did not make the fix, closes a finding.
+- **D18 Parity evidence is cut per section (2026-10-28).** A whole component page is about
+  9000 px tall; Lookout hands anything over 8000 px to the judge in pieces and the judge's
+  image reading scales a piece down about five times, so a 2 px radius or a 13 against 14 px
+  label cannot be seen. So the hand-off's component page is photographed per section
+  (`tools/v4/capture-references.ts`, `components/<slug>/<id>.png` for `header`, `pg`, `var`,
+  `sz`, `st`, `an`, `props`, `a11y`, `pf`, `use`, `tok`, `prevnext`), the docs page marks each
+  section `data-detail-section="<id>"` on the web (`docs/src/ui/detail/frame.tsx`), and the
+  `v4` target carries one route per component and section (`/components/<slug>?section=<id>`,
+  a `fit-section-<id>` state growing the window to the section) beside the whole-page route,
+  which stays for presence and order. Parity runs use the design-parity and geometry panels
+  on the `opus` judge, with the Codex challenger on a phase's acceptance run, web first. The
+  owner settled three presences the hand-off lacks, as `neverFile` lines: the Do and Don't
+  section (P3), and the Platform skins' example picker, form-factor switcher and code block,
+  whose cards keep rendering the chosen example. The anatomy's 1.6 zoom is a cross-platform
+  scale transform with the marker maths scaled, never a web `zoom`.
 
 ## Phases (each committed and pushed on its own, CI run locally first; screenshot
 baselines and tuning evidence land WITH the visual phase that moves them, never at the end)

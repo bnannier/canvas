@@ -194,6 +194,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   const panel = <KnobPanel spec={spec} state={state} onChange={onChange} onReset={onReset} />;
   return (
     <DetailSection
+      id="pg"
       title="Playground"
       note={`Every control sets a real prop of ${spec.propsInterface.replace(/^react-native:/, "")}. The JSX below updates as you go.`}
       sectionRef={sectionRef}

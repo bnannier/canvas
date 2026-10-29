@@ -1,5 +1,6 @@
+import { Platform } from "react-native";
 import { useRouter } from "expo-router";
-import { Column, Row, Typography, Badge, Breadcrumb, Button, CodeBlock, Divider, Icon } from "@nannier/canvas";
+import { View, Column, Row, Typography, Badge, Breadcrumb, Button, CodeBlock, Divider, Icon } from "@nannier/canvas";
 import navConfig from "../../data/nav.config.json";
 import type { ComponentDoc } from "../../core/data/types";
 import { InlineMarkdown } from "../prose";
@@ -44,35 +45,37 @@ export function DetailHeader({ comp, description, sourcePath, exports, jumps }: 
   const section = sectionHref(comp.section);
   const importLine = `import { ${exports.join(", ")} } from "@nannier/canvas";`;
   return (
-    <Column airy>
-      <Breadcrumb
-        slash
-        subtle
-        items={["Library", comp.section, comp.name]}
-        onItemPress={(_, index) => {
-          if (index === 0) router.push("/components" as never);
-          else if (index === 1 && section) router.push(section as never);
-        }}
-      />
-      <Row roomy alignCenter wrap>
-        {/* The hand-off's fluid title (`clamp(40px, 5vw, 64px)/1`), the kit pageTitle role. */}
-        <Typography pageTitle>{comp.name}</Typography>
-        <Badge mono uppercase secondary={tier.badge === "secondary"} soft={tier.badge === "soft"} outline={tier.badge === "outline"}>{tier.label}</Badge>
-      </Row>
-      <Typography pageLead><InlineMarkdown text={description} pageLead /></Typography>
-      <Row snug wrap alignCenter>
-        <CodeBlock inline copy language="tsx" code={importLine} />
-        <Button pageLink mono external href={`${REPOSITORY}/${sourcePath}`} iconLeft={<Icon code size={14} decorative />}>{sourcePath}</Button>
-        {section ? (
-          <Button pageLink href={section} onPress={() => router.push(section as never)} iconRight={<Icon arrowUpRight size={14} decorative />}>{`View in ${comp.section}`}</Button>
-        ) : null}
-      </Row>
-      <Column relaxed>
-        <Divider />
-        <Row wrap compact>
-          {jumps.map((jump) => <Button key={jump.label} jumpLink onPress={jump.onPress}>{jump.label}</Button>)}
+    <View {...(Platform.OS === "web" ? ({ dataSet: { detailSection: "header" } } as object) : null)}>
+      <Column airy>
+        <Breadcrumb
+          slash
+          subtle
+          items={["Library", comp.section, comp.name]}
+          onItemPress={(_, index) => {
+            if (index === 0) router.push("/components" as never);
+            else if (index === 1 && section) router.push(section as never);
+          }}
+        />
+        <Row roomy alignCenter wrap>
+          {/* The hand-off's fluid title (`clamp(40px, 5vw, 64px)/1`), the kit pageTitle role. */}
+          <Typography pageTitle>{comp.name}</Typography>
+          <Badge mono uppercase secondary={tier.badge === "secondary"} soft={tier.badge === "soft"} outline={tier.badge === "outline"}>{tier.label}</Badge>
         </Row>
+        <Typography pageLead><InlineMarkdown text={description} pageLead /></Typography>
+        <Row snug wrap alignCenter>
+          <CodeBlock inline copy language="tsx" code={importLine} />
+          <Button pageLink mono external href={`${REPOSITORY}/${sourcePath}`} iconLeft={<Icon code size={14} decorative />}>{sourcePath}</Button>
+          {section ? (
+            <Button pageLink href={section} onPress={() => router.push(section as never)} iconRight={<Icon arrowUpRight size={14} decorative />}>{`View in ${comp.section}`}</Button>
+          ) : null}
+        </Row>
+        <Column relaxed>
+          <Divider />
+          <Row wrap compact>
+            {jumps.map((jump) => <Button key={jump.label} jumpLink onPress={jump.onPress}>{jump.label}</Button>)}
+          </Row>
+        </Column>
       </Column>
-    </Column>
+    </View>
   );
 }

@@ -41,7 +41,7 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
   const keys = KEYBOARD_PATTERNS[keyboard];
   const sem = ([["Roles", semantics.roles], ["States", semantics.states], ["ARIA on web", semantics.aria]] as const).filter(([, v]) => v.length > 0);
   return (
-    <DetailSection title="Accessibility and keyboard" sectionRef={sectionRef}>
+    <DetailSection id="a11y" title="Accessibility and keyboard" sectionRef={sectionRef}>
       <Grid minTileWidth={320} columns={2} roomy>
         <Card eyebrow="Keyboard">
           {keys.length ? (

@@ -70,7 +70,7 @@ export function UsageSection({ note, code, overview, guidance, scope, sectionRef
 }) {
   if (!note?.length && !code && !overview?.length && guidance.length === 0) return null;
   return (
-    <DetailSection title="Usage" sectionRef={sectionRef}>
+    <DetailSection id="use" title="Usage" sectionRef={sectionRef}>
       {note?.length ? <Prose blocks={note} pageBody relaxed /> : null}
       {code ? <CodeBlock headerless code={code} /> : null}
       {overview?.length ? <Prose blocks={overview} pageNote relaxed /> : null}
@@ -86,7 +86,7 @@ export function UsageSection({ note, code, overview, guidance, scope, sectionRef
 export function DoDontSection({ donts, scope, sectionRef }: { donts: readonly DocDontPair[]; scope: ExampleScope; sectionRef?: Ref<View> }) {
   if (donts.length === 0) return null;
   return (
-    <DetailSection title="Do & Don’t" sectionRef={sectionRef}>
+    <DetailSection id="dodont" title="Do & Don’t" sectionRef={sectionRef}>
       {donts.map((pair, i) => (
         <Column key={i} snug>
           {pair.title ? <Typography h5 level={3}><InlineMarkdown text={pair.title} heading /></Typography> : null}
@@ -115,7 +115,7 @@ export function TokensSection({ roles, related, tokens, sectionRef }: { roles: r
   const live = tokens as unknown as Record<string, string | undefined>;
   const links = related.map((slug) => getComponent(slug)).filter((c) => c != null);
   return (
-    <DetailSection title="Tokens" note="The colour roles this component's skins read, live from the active scheme and palette." sectionRef={sectionRef}>
+    <DetailSection id="tok" title="Tokens" note="The colour roles this component's skins read, live from the active scheme and palette." sectionRef={sectionRef}>
       <Row wrap snug>
         {roles.map((role) => (
           <Chip key={role} outline icon={live[role] ? <Swatch small circle color={live[role]!} accessibilityLabel={role} /> : undefined}>
@@ -154,30 +154,32 @@ export function PrevNext({ slug }: { slug: string }) {
   const n = next ? getComponent(next) : undefined;
   if (!p && !n) return null;
   return (
-    <Column loose>
-      <Divider />
-      <Row stacks relaxed>
-        <Column span={6}>
-          {p ? (
-            <Card onPress={() => router.push(`/components/${p.slug}` as never)} accessibilityLabel={`Previous: ${p.name}`}>
-              <Column tight>
-                <Typography eyebrow subtle>Previous</Typography>
-                <Typography lead semibold>{p.name}</Typography>
-              </Column>
-            </Card>
-          ) : null}
-        </Column>
-        <Column span={6}>
-          {n ? (
-            <Card onPress={() => router.push(`/components/${n.slug}` as never)} accessibilityLabel={`Next: ${n.name}`}>
-              <Column tight alignEnd>
-                <Typography eyebrow subtle>Next</Typography>
-                <Typography lead semibold>{n.name}</Typography>
-              </Column>
-            </Card>
-          ) : null}
-        </Column>
-      </Row>
-    </Column>
+    <View {...(Platform.OS === "web" ? ({ dataSet: { detailSection: "prevnext" } } as object) : null)}>
+      <Column loose>
+        <Divider />
+        <Row stacks relaxed>
+          <Column span={6}>
+            {p ? (
+              <Card onPress={() => router.push(`/components/${p.slug}` as never)} accessibilityLabel={`Previous: ${p.name}`}>
+                <Column tight>
+                  <Typography eyebrow subtle>Previous</Typography>
+                  <Typography lead semibold>{p.name}</Typography>
+                </Column>
+              </Card>
+            ) : null}
+          </Column>
+          <Column span={6}>
+            {n ? (
+              <Card onPress={() => router.push(`/components/${n.slug}` as never)} accessibilityLabel={`Next: ${n.name}`}>
+                <Column tight alignEnd>
+                  <Typography eyebrow subtle>Next</Typography>
+                  <Typography lead semibold>{n.name}</Typography>
+                </Column>
+              </Card>
+            ) : null}
+          </Column>
+        </Row>
+      </Column>
+    </View>
   );
 }

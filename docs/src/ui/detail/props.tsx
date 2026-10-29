@@ -106,6 +106,7 @@ export function PropsSection({ groups, propsInterface, sectionRef }: { groups: r
   const subs = groups.filter((group) => group !== main);
   return (
     <DetailSection
+      id="props"
       title="Props"
       note={`${total} props on ${main.name}, grouped as they are declared in source. Required props are marked *.`}
       sectionRef={sectionRef}

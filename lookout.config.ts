@@ -146,6 +146,14 @@ states["button-group-held"] = {
 // photographs the vendored hand-off, tools/v4/handoff). The owner's rule (2026-10-28): the
 // docs and the kit match the hand-off pixel for pixel, dimensions and responsiveness
 // included, so every divergence is a finding unless the never-file list settles it.
+//
+// A component page is judged twice. Whole (components/<slug>.png) it answers for presence
+// and order: which sections the page has and in what sequence. A whole page is too tall for
+// the judge to see a fine difference, so geometry and finish are judged per section: one
+// route per (component, section), cropped to the docs' [data-detail-section=<id>] marker and
+// held against the hand-off's crop of the same section, components/<slug>/<id>.png (cut by
+// the same script). The ids, in page order: header, pg, var, sz, st, an, props, a11y, pf,
+// use, tok, prevnext (V4_SECTIONS, below).
 // ---------------------------------------------------------------------------
 
 const REFERENCE = "./.v4-reference/dark";
@@ -173,6 +181,47 @@ states["whole-page"] = {
   element: null,
 };
 
+// The sections of a component detail page, in page order. The ids are shared by the
+// reference crops (components/<slug>/<id>.png) and the docs' data-detail-section markers
+// (web only). Each maps to one part of the hand-off's component page:
+//   header    the page <header>: crumbs, title, lead and links
+//   pg        #cv-pg, Playground
+//   var       #cv-var, Variants
+//   sz        #cv-sz, Sizes
+//   st        #cv-st, States
+//   an        #cv-an, Anatomy
+//   props     #cv-props, Props
+//   a11y      #cv-a11y, Accessibility and keyboard
+//   pf        #cv-pf, Platform skins
+//   use       #cv-use, Usage
+//   tok       #cv-tok, Tokens and related
+//   prevnext  the previous/next grid after Tokens
+const V4_SECTIONS = ["header", "pg", "var", "sz", "st", "an", "props", "a11y", "pf", "use", "tok", "prevnext"] as const;
+
+// One fit state per section. A StateRecipe is not handed its route, so a state cannot read
+// which section the route names; each id gets its own. Like whole-page, it grows the window
+// (the docs scroll an inner view, so a section below the first window is not painted
+// otherwise), here to hold one section: fitElementForScreenshot scrolls the section clear of
+// the floating navbar and grows the height to fit it, and restore puts the window back.
+const sectionViewports = new WeakMap<Page, { width: number; height: number }>();
+for (const id of V4_SECTIONS) {
+  const section = `[data-detail-section=${id}]`;
+  states[`fit-section-${id}`] = {
+    description: `The ${id} section of a component page, the window grown to hold it`,
+    prepare: async (page: Page) => {
+      const viewport = page.viewportSize();
+      if (viewport) sectionViewports.set(page, viewport);
+      await fitElementForScreenshot(page, page.locator(section).first());
+    },
+    restore: async (page: Page) => {
+      const viewport = sectionViewports.get(page);
+      if (viewport) await page.setViewportSize(viewport);
+      sectionViewports.delete(page);
+    },
+    element: section,
+  };
+}
+
 const V4_PAGES: { path: string; name: string; file: string }[] = [
   { path: "/", name: "library", file: "pages/library.png" },
   ...["foundations", "layout", "controls", "inputs", "navigation", "data", "charts", "overlays"].map((section) => ({
@@ -198,6 +247,22 @@ const v4Routes: RouteDef[] = [
     .map((route) => {
       const slug = route.path.slice("/components/".length);
       return { path: route.path, name: `v4-${slug}`, design: reference(`components/${slug}.png`), states: ["whole-page"] };
+    }),
+  // A component's sections, each against its own crop of the hand-off's page. The ?section=
+  // query is what gives each its own route identity: Lookout keys a route by its path, and
+  // sets its own surface and palette parameters on the URL with searchParams.set, so a path
+  // that already carries a query keeps it.
+  ...componentRoutes
+    .filter((route) => route.path.startsWith("/components/"))
+    .flatMap((route) => {
+      const slug = route.path.slice("/components/".length);
+      return V4_SECTIONS.map((id) => ({
+        path: `${route.path}?section=${id}`,
+        name: `v4-${slug}-${id}`,
+        element: `[data-detail-section=${id}]`,
+        design: reference(`components/${slug}/${id}.png`),
+        states: [`fit-section-${id}`],
+      }));
     }),
   // A template's reference is the hand-off's Templates page showing it in the Web frame,
   // filed under the hand-off's own names where they differ from the docs' slugs.
@@ -274,6 +339,9 @@ const config: LookoutConfig = {
     "the circular indicator in Spinner and in a loading Button: information-bearing motion by design; Skeleton is the shimmer",
     "pill-shaped chips and badges on the iOS and Android rows: platform shape, not a rounding accident",
     "10pt tab-bar labels on iOS rows: the HIG size for that control",
+    "the Do and Don't section on a component page, which the hand-off does not draw: the owner keeps it (PLAN P3, rule S8), after Usage, in the hand-off's card look (2026-10-28)",
+    "the example picker, form-factor switcher and code block above and below the Platform skins cards, which the hand-off does not draw: the owner keeps them for the docs and glass targets and the e2e recipes, and their look is still judged (2026-10-28)",
+    "the Platform skins cards rendering the chosen example where the hand-off renders the playground's props: the same owner decision that keeps the example picker, form-factor switcher and code block (2026-10-28)",
   ],
 
   // Where a defect gets fixed. This repository IS the kit, so a finding on a docs
