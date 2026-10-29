@@ -215,6 +215,20 @@ const V4_SECTIONS = ["header", "pg", "var", "sz", "st", "an", "props", "a11y", "
 // section crops, and restore shows it again.
 const sectionViewports = new WeakMap<Page, { width: number; height: number }>();
 const HIDE_BANNER = "lookout-hide-banner";
+const SECTION_TOP = 100;
+const SECTION_HEADROOM = 200;
+/** The section's box, measured twice a few frames apart until it holds still. */
+async function settledSectionHeight(page: Page, selector: string): Promise<number> {
+  let last = -1;
+  for (let round = 0; round < 6; round++) {
+    const box = await page.locator(selector).first().boundingBox();
+    const height = Math.ceil(box?.height ?? 0);
+    if (height === last) return height;
+    last = height;
+    await page.waitForTimeout(350);
+  }
+  return last;
+}
 for (const id of V4_SECTIONS) {
   const section = `[data-detail-section=${id}]`;
   states[`fit-section-${id}`] = {
@@ -227,21 +241,24 @@ for (const id of V4_SECTIONS) {
         const style = Array.from(document.querySelectorAll("style")).find((node) => node.textContent?.includes(marker));
         if (style) style.id = marker;
       }, HIDE_BANNER);
-      const target = page.locator(section).first();
-      await fitElementForScreenshot(page, target);
-      // A section keeps growing after the first fit (code blocks and grids measure in
-      // stages), and a crop past the painted window comes out white: the 2026-10-28 ruling
-      // on Usage read a 35 px white band under its last cards. Fit again until the height
-      // holds still.
-      for (let round = 0; round < 4; round++) {
-        await page.waitForTimeout(500);
-        const before = (await target.boundingBox())?.height;
-        await fitElementForScreenshot(page, target);
-        const after = (await target.boundingBox())?.height;
-        if (before === after) break;
+      // Grow the window to the section plus headroom, scroll the inner view so the section
+      // starts SECTION_TOP below the window's top, and let the section's height and the
+      // backdrop settle: a crop past the painted window showed the document under the last
+      // cards (the 2026-10-28 rulings on Variants and Usage), and growing to the section's
+      // exact height left no room for a late layout pass.
+      const width = viewport?.width ?? 1440;
+      for (let round = 0; round < 3; round++) {
+        const height = await settledSectionHeight(page, section);
+        await page.setViewportSize({ width, height: Math.min(height + SECTION_TOP + SECTION_HEADROOM, 16000) });
+        await page.waitForTimeout(400);
+        await page.locator(section).first().evaluate((node, top) => {
+          const scroller = node.closest<HTMLElement>("[data-page-scroll]");
+          if (scroller) scroller.scrollTop += node.getBoundingClientRect().top - top;
+        }, SECTION_TOP);
+        await page.waitForTimeout(400);
+        const after = await settledSectionHeight(page, section);
+        if (after === height) break;
       }
-      // The page backdrop fills the shell's safe-area frame, which follows a grown window a
-      // frame late; wait for it to reach the window's foot before the shot.
       await page
         .waitForFunction(() => {
           const backdrop = document.querySelector("[data-page-backdrop]");
