@@ -71,7 +71,7 @@ import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx"
 import { widthOf as alertDialogWidth } from "../../src/molecules/alert-dialog/alert-dialog.shared.tsx";
 import { elevationOf, densityOf as cardDensity, cornerOf as cardCorner, mediaWellOf, contentDensityOf } from "../../src/molecules/card/card.shared.tsx";
 import { variantOf as codeBlockVariant, densityOf as codeBlockDensity } from "../../src/molecules/code-block/code-block.shared.tsx";
-import { layoutOf as descriptionLayout, rowsOf as descriptionRows, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
+import { layoutOf as descriptionLayout, rowsOf as descriptionRows, densityOf as descriptionDensity, valueFormOf } from "../../src/molecules/description-lists/description-lists.shared.tsx";
 import { leadOf } from "../../src/molecules/feeds/feeds.shared.tsx";
 import { columnsOf } from "../../src/molecules/grid-lists/grid-lists.shared.tsx";
 import { alignOf as mediaAlign, directionOf } from "../../src/molecules/media-objects/media-objects.shared.tsx";
@@ -413,7 +413,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
 
   subject({ id: "Badge.intent", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeIntentOf", members: ["action", "primary", "reference", "success", "warning", "error", "info"], resolve: badgeIntentOf }),
-  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "reference", "navigationCount", "count", "tier", "small"], resolve: badgeMetricOf }),
+  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "marker", "disc", "reference", "navigationCount", "count", "tier", "band", "small"], resolve: badgeMetricOf }),
   subject({ id: "Badge.surface", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "neutralFill", "soft", "reference"], resolve: badgeSurfaceOf }),
   subject({ id: "Badge.ink", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeInkOf", members: ["inverse", "notification", "marker", "navigationCount", "solid", "foreground"], resolve: badgeInkOf }),
   subject({ id: "Badge.tracking", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeTrackingOf", members: ["reference", "uppercase"], resolve: badgeTrackingOf }),
@@ -461,6 +461,15 @@ export const SUBJECTS: readonly AnySubject[] = [
     members: ["ruled", "divided"],
     resolve: descriptionRows,
     notes: ["A ruled two-column list's term hugs its content over a 120 floor; the fixed label column is the plain and divided lists'."],
+  }),
+  subject({
+    id: "DescriptionList.density",
+    components: ["DescriptionList"],
+    pages: ["description-lists"],
+    resolver: "src/molecules/description-lists/description-lists.shared.tsx#densityOf",
+    members: ["compact"],
+    resolve: descriptionDensity,
+    notes: ["`compact` acts on the ruled rows alone: 8 above and below, 12 to the value, a fixed 110 term column, the value at the top of its row. A plain or divided list is unchanged by it."],
   }),
   subject({
     id: "DescriptionList.item value",

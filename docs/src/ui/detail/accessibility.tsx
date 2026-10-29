@@ -58,7 +58,9 @@ export function AccessibilitySection({ keyboard, semantics, notes, sectionRef }:
           <Typography pageLabel mono>Semantics</Typography>
           <Column cozy>
             {sem.length ? (
-              <DescriptionList twoColumn ruled items={sem.map(([label, values]) => ({ term: label, value: <Values values={values} /> }))} />
+              // The semantics rows (line 263): `grid-template-columns:110px 1fr;gap:12px;
+              // align-items:start;padding:8px 0`, the compact step of the ruled rows.
+              <DescriptionList twoColumn ruled compact items={sem.map(([label, values]) => ({ term: label, value: <Values values={values} /> }))} />
             ) : (
               <Typography small subtle>No role of its own in source; it reads as the content it renders.</Typography>
             )}

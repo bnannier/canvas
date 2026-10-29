@@ -41,8 +41,8 @@ export interface BadgeSize {
 }
 
 export interface BadgeSkin {
-  /** The pill per size step (`small`, the default, `large`), the anatomy `marker` disc (the legend `disc` shares it) and the `tier` pill. */
-  sizes: Record<"small" | "default" | "large" | "marker" | "tier", BadgeSize>;
+  /** The pill per size step (`small`, the default, `large`), the anatomy `marker` disc (the legend `disc` shares it), the `tier` pill and the group `band` pill. */
+  sizes: Record<"small" | "default" | "large" | "marker" | "tier" | "band", BadgeSize>;
   /**
    * The shadow set under an anatomy `marker`, from the theme's tokens: the hand-off's ring
    * of the stage's fill and its drop shadow (Component.dc.html line 220).
@@ -112,6 +112,13 @@ export interface BadgeProps {
    * caps with `uppercase` and in the code face with `mono`, as the page sets it.
    */
   tier?: boolean;
+  /**
+   * A group band's pill (the props table's "pick one" beside an axis's title): 20 px tall
+   * with a 7 px inset and a 500 11 px label (Component.dc.html line 237), in the code face
+   * with `mono` as the page sets it, in the tone axis's fill (the accent's soft pill with
+   * none). It sits between `tier` and `small` in precedence.
+   */
+  band?: boolean;
   /** Show the intent dot without switching to the status family. */
   dot?: boolean;
   /** Standalone 10px signal marker, retaining its status label. */
@@ -184,6 +191,7 @@ export function badgeMetricOf(p: BadgeProps) {
   if (p.navigationCount) return "navigationCount";
   if (p.count) return "count";
   if (p.tier) return "tier";
+  if (p.band) return "band";
   if (p.small) return "small";
   return "default";
 }
@@ -265,8 +273,8 @@ export function createBadge(skin: BadgeSkin) {
     if (props.signal) return <View testID={testID} accessibilityRole="image" accessibilityLabel={accessibilityLabel ?? statusOf(props)} aria-label={accessibilityLabel ?? statusOf(props)} style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: statusColors(tokens, statusOf(props)).dot }} />;
 
     const metric = badgeMetricOf(props);
-    // The legend disc is the marker's size; the tier pill its own step.
-    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" ? "tier" : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
+    // The legend disc is the marker's size; the tier and band pills their own steps.
+    const size = skin.sizes[metric === "marker" || metric === "disc" ? "marker" : metric === "tier" || metric === "band" ? metric : metric === "small" || metric === "count" || metric === "navigationCount" ? "small" : props.large ? "large" : "default"];
 
     if (props.status) {
       const tone = statusOf(props);
@@ -329,10 +337,10 @@ export function createBadge(skin: BadgeSkin) {
       gap: reference ? skin.referenceGap : skin.gap,
       height: size.height,
       paddingHorizontal: size.paddingHorizontal,
-      // The tier pill draws no border (line 139 sets none), so its 24 px box is the fill
-      // alone; every other pill keeps the hand-off's 1 px border, transparent until a tone
-      // draws it.
-      borderWidth: metric === "tier" ? 0 : 1,
+      // The tier pill (line 139) and the band pill (line 237) draw no border, so their 24
+      // and 20 px boxes are the fill alone; every other pill keeps the hand-off's 1 px
+      // border, transparent until a tone draws it.
+      borderWidth: metric === "tier" || metric === "band" ? 0 : 1,
       borderRadius: reference ? skin.referenceRadius : skin.radius,
       // The marker and the legend disc are discs: as wide as they are tall, the number
       // centred (the hand-off's `width:22px;height:22px;...;display:grid;place-items:center`,

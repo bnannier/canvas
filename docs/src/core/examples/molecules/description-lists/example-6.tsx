@@ -3,13 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList } = scope;
+  const { Badge, DescriptionList, Row } = scope;
   return (
 <DescriptionList
   twoColumn
+  ruled
+  compact
   items={[
-    { term: "Name", value: "Rachel Chen", update: true },
-    { term: "Email", value: "rachel.chen@example.com", update: true }
+    { term: "Roles", value: <Row compact wrap><Badge mono small>button</Badge></Row> },
+    { term: "States", value: <Row compact wrap><Badge mono small>disabled</Badge><Badge mono small>busy</Badge><Badge mono small>loading</Badge><Badge mono small>pressed</Badge><Badge mono small>focused</Badge><Badge mono small>hovered</Badge></Row> },
+    { term: "ARIA on web", value: <Row compact wrap><Badge mono small>aria-busy</Badge><Badge mono small>aria-disabled</Badge></Row> }
   ]}
 />
   );
