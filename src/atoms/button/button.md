@@ -177,7 +177,7 @@ hand-off's `THM` table (cv-kit-code.js line 67) gives blush `oklch(.8 .09 10)` a
 ### Icon only
 
 ```tsx
-<Button icon accessibilityLabel="Add item" iconLeft={<Icon plus primaryForeground size={16} />} />
+<Button icon accessibilityLabel="Add item" iconLeft={<Icon plus size={16} />} />
 ```
 
 ### Disabled
@@ -225,8 +225,28 @@ normal width when space permits and wraps its full label when constrained.
 
 ### With icon
 
+An `Icon` in `iconLeft` or `iconRight` takes the button's label ink when it carries no
+tone of its own: the primary's contrast ink on a primary button, the foreground on an
+outline or ghost one, the muted ink on a quiet trigger, the link ink on a link, and it
+dims with the label while the button is disabled. Size the glyph (16 at the base size,
+14 small); pass a tone (`destructive`, `muted`) only to colour it apart from the label.
+
 ```tsx
-<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>
+<Button iconLeft={<Icon plus size={16} />}>Save changes</Button>
+```
+
+### Icon ink per intent
+
+The same bare glyph on each intent, in that intent's label ink.
+
+```tsx
+<Row relaxed alignCenter>
+  <Button iconLeft={<Icon sparkles size={16} />} iconRight={<Icon chevronDown size={16} />}>Save changes</Button>
+  <Button secondary iconLeft={<Icon sparkles size={16} />}>Save changes</Button>
+  <Button outline iconLeft={<Icon sparkles size={16} />}>Save changes</Button>
+  <Button destructive iconLeft={<Icon trash2 size={16} />}>Delete</Button>
+  <Button disabled iconLeft={<Icon sparkles size={16} />}>Save changes</Button>
+</Row>
 ```
 
 ## Do & Don't

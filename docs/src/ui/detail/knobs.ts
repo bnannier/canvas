@@ -14,7 +14,7 @@ export type KnobState = Readonly<Record<string, KnobValue>>;
  * A prop as the playground describes it before it renders: a literal, an Icon element by
  * glyph name, or another kit element by export name (an anatomy demo's slot content).
  */
-export type PropValue = string | number | boolean | { icon: string; tone?: string } | { element: string; children?: string };
+export type PropValue = string | number | boolean | { icon: string } | { element: string; children?: string };
 
 /** The props a knob state passes, in the order the JSX prints them. */
 export type PropDescriptors = Readonly<Record<string, PropValue>>;
@@ -145,7 +145,8 @@ function attribute(name: string, value: PropValue): string {
   if (value === false) return `${name}={false}`;
   if (typeof value === "number") return `${name}={${value}}`;
   if (typeof value === "string") return `${name}="${value}"`;
-  if ("icon" in value) return `${name}={<Icon ${value.icon}${value.tone ? ` ${value.tone}` : ""} size={16} />}`;
+  // An icon slot prints the bare glyph: the host colours it (a Button's icon slots take its label ink).
+  if ("icon" in value) return `${name}={<Icon ${value.icon} size={16} />}`;
   return `${name}={<${value.element}${value.children ? `>${value.children}</${value.element}>` : " />"}}`;
 }
 

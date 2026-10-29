@@ -107,8 +107,9 @@ describe("jsxCode", () => {
   it("prints values by type, an icon as an Icon element", () => {
     expect(jsxCode("Icon", { star: true, size: 20 })).toBe("<Icon star size={20} />");
     expect(jsxCode("Button", { wrap: false, children: "Go" })).toBe("<Button wrap={false}>Go</Button>");
-    expect(jsxCode("Button", { iconLeft: { icon: "plus", tone: "primaryForeground" }, children: "Add" })).toBe(
-      "<Button iconLeft={<Icon plus primaryForeground size={16} />}>Add</Button>",
+    // The glyph prints bare: a Button hands its icon slots its label ink (src/style/ink.tsx).
+    expect(jsxCode("Button", { iconLeft: { icon: "plus" }, children: "Add" })).toBe(
+      "<Button iconLeft={<Icon plus size={16} />}>Add</Button>",
     );
   });
 

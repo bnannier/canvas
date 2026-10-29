@@ -4,6 +4,7 @@ import { View, useTheme, type ColorTokens, type LayoutStyle } from "../../style/
 import { ICONS, NAMES, type Shape, type IconGlyphProps, type IconName } from "./icon.glyphs.js";
 import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
 import { primaryText } from "../../style/primary-text.js";
+import { useInk } from "../../style/ink.js";
 
 // Shared Icon shell. The whole glyph set, the boolean-prop axes (name + color),
 // the semantic color logic, and the SVG presentation live here once. Icon is a
@@ -28,7 +29,9 @@ import { primaryText } from "../../style/primary-text.js";
 //
 // Axes (pass at most one per axis; first match wins):
 //   - Name:  one boolean per glyph (activity, bell, search, shield, …). Default shield.
-//   - Color: primary, primaryForeground, destructive, success, warning, muted. Default foreground.
+//   - Color: primary, primaryForeground, destructive, success, warning, muted. Default: the
+//     label ink of the control hosting the glyph (a Button's icon slots, through the
+//     InkProvider in src/style/ink.tsx), else the foreground.
 //     (primaryForeground is the contrast color for a glyph on a primary surface.)
 //     `color` sets an explicit paint for hues the booleans do not name (kit-internal,
 //     e.g. a Chip tinting its remove glyph); the semantic booleans take precedence.
@@ -119,19 +122,22 @@ export function nameOf(p: IconProps): string {
   return "shield";
 }
 
-// First-match color precedence; defaults to foreground. Every tone reads the theme's
-// roles: `success` is the success role, the solid color a success Alert gives its icon.
-// `primary` is the accent's TEXT ink, as the v4 hand-off's Icon renderer paints it
-// (`--ion-tx`, `K.def('icon')` in tools/v4/handoff/cv-kit-controls.js), so a primary glyph
-// matches the primary label beside it and clears the text floor on every bed.
-export function strokeOf(p: IconProps, tokens: ColorTokens): string {
+// First-match color precedence: an explicit tone, then the kit-internal `color`, then the
+// label ink of the control hosting the glyph (`ink`, from the nearest InkProvider: a
+// Button around its icon slots, the hand-off's `currentColor`), then the foreground.
+// Every tone reads the theme's roles: `success` is the success role, the solid color a
+// success Alert gives its icon. `primary` is the accent's TEXT ink, as the v4 hand-off's
+// Icon renderer paints it (`--ion-tx`, `K.def('icon')` in
+// tools/v4/handoff/cv-kit-controls.js), so a primary glyph matches the primary label
+// beside it and clears the text floor on every bed.
+export function strokeOf(p: IconProps, tokens: ColorTokens, ink?: string): string {
   if (p.primary) return primaryText(tokens);
   if (p.primaryForeground) return tokens["primary-foreground"];
   if (p.destructive) return tokens.destructive;
   if (p.success) return tokens.success;
   if (p.warning) return tokens.warning;
   if (p.muted) return tokens["muted-foreground"];
-  return p.color ?? tokens.foreground;
+  return p.color ?? ink ?? tokens.foreground;
 }
 
 // A filled primitive (Lucide `fill="currentColor"`) paints with the glyph color;
@@ -202,6 +208,8 @@ export function strokeWidthOf(p: IconProps): number {
 /** An outline glyph from the kit's icon set, sized and colored by props. */
 export function Icon(props: IconProps) {
   const { tokens } = useTheme();
+  // The hosting control's label ink (a Button's), undefined on the page.
+  const ink = useInk();
 
   if (props.disclosure) return <DisclosureRotation expanded={!!props.expanded}><Icon {...props} disclosure={false} /></DisclosureRotation>;
 
@@ -210,7 +218,7 @@ export function Icon(props: IconProps) {
     <Glyph
       shapes={ICONS[nameOf(props)]}
       size={props.size ?? 24}
-      stroke={strokeOf(props, tokens)}
+      stroke={strokeOf(props, tokens, ink)}
       strokeWidth={strokeWidthOf(props)}
       // When a wrapper View is the root it carries the testID instead.
       testID={wrapped ? undefined : props.testID}

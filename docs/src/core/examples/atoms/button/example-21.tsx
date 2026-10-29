@@ -3,8 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Icon } = scope;
+  const { Button, Icon, Row } = scope;
   return (
-<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>
+<Row relaxed alignCenter>
+  <Button iconLeft={<Icon sparkles size={16} />} iconRight={<Icon chevronDown size={16} />}>Save changes</Button>
+  <Button secondary iconLeft={<Icon sparkles size={16} />}>Save changes</Button>
+  <Button outline iconLeft={<Icon sparkles size={16} />}>Save changes</Button>
+  <Button destructive iconLeft={<Icon trash2 size={16} />}>Delete</Button>
+  <Button disabled iconLeft={<Icon sparkles size={16} />}>Save changes</Button>
+</Row>
   );
 }
