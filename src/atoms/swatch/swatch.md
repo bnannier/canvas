@@ -28,6 +28,21 @@ grows to 1.25 times its size. A size boolean sizes the disc to that sample edge
 (`small` is a 32px disc, the size a form's hue choice takes). Put the pickers in
 a `radiogroup` so the set reads as one choice. A plain sample still uses `color`.
 
+The section page's samples come as forms and lockups of the same component. `tile` is
+the labelled colour tile, the parent's width and 64 px tall (40 `small`), its name set
+inside the fill on one line (ellipsized where it outgrows the tile, its accessible name
+whole) in the 11 px code face at an 8 px inset, at the foot (centred `small`),
+in the `ink` it is given. `bar` is a colour bar, the parent's width at 26 px and a 7 px
+corner. `steps` takes a list of colours in place of `color` and draws one bar of them,
+flush and clipped at a 10 px corner at the size's height; `segmented` stands them 4 px
+apart in a 28 px bar, each at a 3 px corner but for the bar's two outer ends at 7. The
+form precedence is `tile` > `bar` > `circle`, and a `steps` list wins over all three.
+`fluid` makes the chip's edge the parent's width, held 1:1; `glow` lays the fill's own
+light under the chip; `centered` centres the label column 10 px under the chip; `bare`
+drops the resting edge from a fill that needs none; and `compact` is the mono lockup, the
+name 500 12 px and the value 400 10 px in the code face, each on one line (ellipsized in a
+narrow column), 6 px apart and 6 px under a 56 px `block`.
+
 ## Usage
 
 ```tsx
@@ -77,6 +92,55 @@ The token chip's swatch: a 20px disc edged by a 1px inset ring.
 
 ```tsx
 <Swatch block color={tokens.primary}>primary</Swatch>
+```
+
+### Spectrum
+
+```tsx
+<Row cozy>
+  <Column fill><Swatch fluid circle glow centered bare color={tokens["chart-1"]} value="285" /></Column>
+  <Column fill><Swatch fluid circle glow centered bare color={tokens["chart-2"]} value="205" /></Column>
+  <Column fill><Swatch fluid circle glow centered bare color={tokens["chart-3"]} value="165" /></Column>
+</Row>
+```
+
+### Tiles
+
+```tsx
+<Column snug>
+  <Row snug>
+    <Column fill><Swatch tile bare color={tokens.primary} ink={tokens["primary-foreground"]}>primary</Swatch></Column>
+    <Column fill><Swatch tile bare color={tokens.success} ink={tokens["success-foreground"]}>success</Swatch></Column>
+  </Row>
+  <Row snug>
+    <Column fill><Swatch tile small bare color={tokens["primary-soft"]} ink={tokens.primary}>primary-soft</Swatch></Column>
+    <Column fill><Swatch tile small bare color={tokens["success-soft"]} ink={tokens.success}>success-soft</Swatch></Column>
+  </Row>
+</Column>
+```
+
+### Bar
+
+```tsx
+<Swatch bar inline color={tokens.secondary} value={tokens.secondary} />
+```
+
+### Steps
+
+```tsx
+<Column cozy>
+  <Swatch block small steps={[tokens["chart-1"], tokens["chart-2"], tokens["chart-3"], tokens["chart-4"]]} accessibilityLabel="Ramp" />
+  <Swatch segmented steps={[tokens["chart-1"], tokens["chart-2"], tokens["chart-3"], tokens["chart-4"]]} accessibilityLabel="Series" />
+</Column>
+```
+
+### Compact
+
+```tsx
+<Row comfortable>
+  <Column fill><Swatch block compact bare color={tokens.primary} value="primary">ion</Swatch></Column>
+  <Column fill><Swatch block compact color={tokens.secondary} value="recess">secondary</Swatch></Column>
+</Row>
 ```
 
 ### Selected

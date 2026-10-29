@@ -28,6 +28,22 @@ hand-composes `borderRadius` + `backgroundColor` to build an icon background.
 </Row>
 ```
 
+The precedence is `primary` > `destructive` > `success` > `warning` > `cyan` >
+`secondary` > `muted` (the default).
+
+### Cyan and secondary
+
+`cyan` mixes the tile from the fixed cyan series hue (`chart-2`, the same whatever the
+palette), its glyph in the hue's solved ink. `secondary` is the solid neutral tile: the
+`secondary` fill inside the hairline, the glyph in the second ink, with no lit edge.
+
+```tsx
+<Row snug>
+  <Emblem cyan circle><Icon globe /></Emblem>
+  <Emblem secondary><Icon layers /></Emblem>
+</Row>
+```
+
 ### Sizes
 
 ```tsx

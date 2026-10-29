@@ -3,14 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Swatch, Row } = scope;
+  const { tokens, Swatch, Column } = scope;
   return (
-<View role="radiogroup" aria-label="Accent hue">
-  <Row comfortable alignCenter>
-    <Swatch small circle violet selected onPress={() => {}} />
-    <Swatch small circle cyan onPress={() => {}} />
-    <Swatch small circle mint onPress={() => {}} />
-  </Row>
-</View>
+<Column cozy>
+  <Swatch block small steps={[tokens["chart-1"], tokens["chart-2"], tokens["chart-3"], tokens["chart-4"]]} accessibilityLabel="Ramp" />
+  <Swatch segmented steps={[tokens["chart-1"], tokens["chart-2"], tokens["chart-3"], tokens["chart-4"]]} accessibilityLabel="Series" />
+</Column>
   );
 }

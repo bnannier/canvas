@@ -1457,6 +1457,8 @@
       "destructive",
       "success",
       "warning",
+      "cyan",
+      "secondary",
       "muted"
     ],
     "none": "muted",
@@ -1465,18 +1467,31 @@
       "destructive": "destructive",
       "success": "success",
       "warning": "warning",
+      "cyan": "cyan",
+      "secondary": "secondary",
       "muted": "muted"
     },
     "pairs": {
+      "cyan + destructive": "destructive",
+      "cyan + muted": "cyan",
+      "cyan + primary": "primary",
+      "cyan + secondary": "cyan",
+      "cyan + success": "success",
+      "cyan + warning": "warning",
       "destructive + muted": "destructive",
       "destructive + primary": "primary",
+      "destructive + secondary": "destructive",
       "destructive + success": "destructive",
       "destructive + warning": "destructive",
       "muted + primary": "primary",
+      "muted + secondary": "secondary",
       "muted + success": "success",
       "muted + warning": "warning",
+      "primary + secondary": "primary",
       "primary + success": "primary",
       "primary + warning": "primary",
+      "secondary + success": "success",
+      "secondary + warning": "warning",
       "success + warning": "success"
     }
   },
@@ -1517,7 +1532,8 @@
       "destructive",
       "success",
       "warning",
-      "muted"
+      "muted",
+      "subtle"
     ],
     "none": "foreground",
     "single": {
@@ -1526,23 +1542,30 @@
       "destructive": "destructive",
       "success": "success",
       "warning": "warning",
-      "muted": "muted-foreground"
+      "muted": "subtle-foreground",
+      "subtle": "muted-foreground"
     },
     "pairs": {
       "destructive + muted": "destructive",
       "destructive + primary": "primary",
       "destructive + primaryForeground": "primaryForeground",
+      "destructive + subtle": "destructive",
       "destructive + success": "destructive",
       "destructive + warning": "destructive",
       "muted + primary": "primary",
       "muted + primaryForeground": "primaryForeground",
+      "muted + subtle": "muted",
       "muted + success": "success",
       "muted + warning": "warning",
       "primary + primaryForeground": "primary",
+      "primary + subtle": "primary",
       "primary + success": "primary",
       "primary + warning": "primary",
+      "primaryForeground + subtle": "primaryForeground",
       "primaryForeground + success": "primaryForeground",
       "primaryForeground + warning": "primaryForeground",
+      "subtle + success": "success",
+      "subtle + warning": "warning",
       "success + warning": "success"
     }
   },
@@ -2767,6 +2790,32 @@
       "large + small": "small",
       "large + tiny": "tiny",
       "small + tiny": "tiny"
+    }
+  },
+  "Swatch.form": {
+    "kind": "axis",
+    "components": [
+      "Swatch"
+    ],
+    "pages": [
+      "swatch"
+    ],
+    "resolver": "src/atoms/swatch/swatch.shared.tsx#formOf",
+    "order": [
+      "tile",
+      "bar",
+      "circle"
+    ],
+    "none": "square",
+    "single": {
+      "tile": "tile",
+      "bar": "bar",
+      "circle": "circle"
+    },
+    "pairs": {
+      "bar + circle": "bar",
+      "bar + tile": "tile",
+      "circle + tile": "tile"
     }
   },
   "Swatch.stretch": {

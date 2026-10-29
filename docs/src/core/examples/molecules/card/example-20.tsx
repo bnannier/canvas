@@ -3,16 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Card, CardContent, CardMedia, CardSeparator, Typography } = scope;
+  const { Card, Icon } = scope;
   return (
-<Card flush>
-  <CardMedia>
-    <Button primary>Save changes</Button>
-  </CardMedia>
-  <CardSeparator />
-  <CardContent>
-    <Typography small medium>Primary</Typography>
-  </CardContent>
-</Card>
+<Card
+  title="Identity"
+  icon={<Icon user size={16} />}
+  body="Name, primary email, and sign-in methods."
+  footer="Updated 2 minutes ago"
+/>
   );
 }

@@ -62,7 +62,9 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  *   above the card: the showcase card (20, every `c-*` card of `Canvas v4.0.0
  *   <Section>.dc.html`, `border-radius:20px`) and the hero stage (24, canvas-hero.js, the
  *   stage `.st` at `border-radius:24px`), which Card draws as `showcaseCorners` and
- *   `heroCorners`.
+ *   `heroCorners`; and the Foundations page's samples: a colour bar (7, its neutral
+ *   swatches and the series bar's outer ends), a series step (3, the series bar's inner
+ *   corners), the accent ramp's clipped bar (10) and an icon's cell (10, its glyph grid).
  * - iOS rounds the action sheet at 34 (the iOS 27 kit's Action Sheets symbol), an inset
  *   grouped list or well at 26, a calendar event at 6, the search field's well at 10
  *   (the v4 hand-off's iOS search field), a grouped rail's row at 10 (the hand-off's
@@ -79,7 +81,7 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  * the public table.
  */
 export const platformShape = {
-  web: { insetRow: 10, disclosureCard: 14, codeCard: 14, mediaFrame: 14, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, emblemSmall: 8, emblem: 11, emblemLarge: 16, emblemSoft: 12, dismiss: 6, announcement: 12, referenceCard: 14, referenceSource: 6, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, keySmall: 5, keyTiny: 4, inlineCode: 5, optionChip: 7, optionTile: 8, tooltip: 8, event: 6, bar: 3, mark: 4, cell: 2, candle: 1.5, chartTile: 8, heatCell: 2.5, sparkTrack: 6, funnelBar: 6, listBar: 8, stripBar: 1, sparkBar: 2, chartFlag: 8, zoomControl: 8, tableFrame: 14, listFrame: 14, gridTile: 14, dragGhost: 12, composer: 16, bubble: 16, bubbleTail: 4, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14, lane: 14, laneCard: 10, panel: 18, stage: 20, copyButton: 8, cardSnippet: 10, showcaseCard: 20, heroStage: 24 },
+  web: { insetRow: 10, disclosureCard: 14, codeCard: 14, mediaFrame: 14, brandMark: 9, avatarSquareTiny: 6, avatarSquareSmall: 8, avatarSquare: 11, avatarSquareLarge: 16, emblemSmall: 8, emblem: 11, emblemLarge: 16, emblemSoft: 12, dismiss: 6, announcement: 12, referenceCard: 14, referenceSource: 6, pageCell: 8, menuRow: 8, commandPanel: 18, commandRow: 9, callout: 14, alertDialog: 24, emptyState: 18, key: 6, keySmall: 5, keyTiny: 4, inlineCode: 5, optionChip: 7, optionTile: 8, tooltip: 8, event: 6, bar: 3, mark: 4, cell: 2, candle: 1.5, chartTile: 8, heatCell: 2.5, sparkTrack: 6, funnelBar: 6, listBar: 8, stripBar: 1, sparkBar: 2, chartFlag: 8, zoomControl: 8, tableFrame: 14, listFrame: 14, gridTile: 14, dragGhost: 12, composer: 16, bubble: 16, bubbleTail: 4, navRow: 9, navRowCompact: 8, rail: 12, floatingRail: 14, navBar: 14, lane: 14, laneCard: 10, panel: 18, stage: 20, copyButton: 8, cardSnippet: 10, showcaseCard: 20, heroStage: 24, swatchBar: 7, swatchStep: 3, rampBar: 10, iconCell: 10 },
   ios: { actionSheet: 34, groupedList: 26, event: 6, searchField: 10, navRow: 10, alertDialog: 14 },
   android: {
     chip: M3.small,

@@ -389,3 +389,20 @@ export function insetPanel(mode: "note" | "version" | "gate", t: ColorTokens): V
   if (mode === "version") return { ...base, flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 9, paddingHorizontal: 12, borderRadius: platformShape.web.insetRow };
   return { ...base, paddingVertical: 14, paddingHorizontal: 16, gap: 5, borderRadius: shape.web.tile };
 }
+
+/**
+ * The elevation sample (`sample`): the Foundations page's depth tiles (`height:72px;
+ * background:var(--sf2);border:1px solid var(--ln)`, the edge `--ln2` on its md and lg
+ * tiles), an empty card on the popover fill whose edge is the field border at the
+ * `heroShadow` and `raised` steps.
+ */
+export const SAMPLE_HEIGHT = 72;
+
+export function sampleSurface(tokens: ColorTokens, e: Elevation): ViewStyle {
+  const strong = e === "hero" || e === "raised";
+  return {
+    minHeight: SAMPLE_HEIGHT,
+    backgroundColor: tokens.popover,
+    borderColor: strong ? tokens["field-border"] ?? tokens.input : tokens.border,
+  };
+}

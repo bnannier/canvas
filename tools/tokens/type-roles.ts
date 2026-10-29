@@ -113,7 +113,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/divider/divider.styles.ts": { "webSkin.labelType": "caption" },
   // An emblem's monogram is initials, as an avatar's are; a swatch's value lines are mono metadata.
   "src/atoms/emblem/emblem.styles.ts": { "monogramSize.small": "caption" },
-  "src/atoms/swatch/swatch.styles.ts": { "webSkin.value": "tiny", "webSkin.detail": "tiny" },
+  // A tile's name inside its fill is a tag label; the compact lockup's value a mono meta line.
+  "src/atoms/swatch/swatch.styles.ts": { "webSkin.value": "tiny", "webSkin.detail": "tiny", "webSkin.tile": "tiny", "webSkin.compact": "tiny" },
   // The compact keycaps' labels (the hand-off's 11 and 10 px mono hint caps).
   "src/atoms/kbd/kbd.styles.ts": { SEPARATOR_TYPE: "small", SMALL_LABEL_TYPE: "caption", TINY_LABEL_TYPE: "caption" },
   "src/charts/heatmap/heatmap.shared.tsx": { CAL_MONTH_TYPE: "caption", CAL_WEEKDAY_TYPE: "caption", FLAG_DETAIL_TYPE: "tiny", legendText: "caption" },

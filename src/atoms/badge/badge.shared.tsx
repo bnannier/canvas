@@ -130,7 +130,10 @@ export interface BadgeProps {
    * none). It sits between `tier` and `small` in precedence.
    */
   band?: boolean;
-  /** Show the intent dot without switching to the status family. */
+  /**
+   * Show the intent dot without switching to the status family. With no children it is
+   * the bare 8 px dot in the tone's ink, with no pill (a marker beside text that names it).
+   */
   dot?: boolean;
   /** Standalone 10px signal marker, retaining its status label. */
   signal?: boolean;
@@ -287,6 +290,9 @@ function lookOf(p: BadgeProps, tokens: ColorTokens, dark: boolean): BadgeLook {
 }
 
 // The hand-off's ln2 hairline, the outline pill's and the reference key's border.
+/** The bare dot's edge (`<Badge dot />` with no label). */
+const BARE_DOT = 8;
+
 const fieldBorder = (tokens: ColorTokens) => tokens["field-border"] ?? tokens.input;
 
 export function createBadge(skin: BadgeSkin) {
@@ -352,6 +358,22 @@ export function createBadge(skin: BadgeSkin) {
     if (props.notification) return <NotificationBadge solid={!!props.solid} halo={!!props.action} style={style} testID={testID}>{children}</NotificationBadge>;
 
     const look = lookOf(props, tokens, theme.dark);
+    // The bare dot (`dot` with no label): the pill's dot alone, at the hand-off's 8 px
+    // (Foundations' glass pane, `width:8px;height:8px;border-radius:50%;background:var(--ion)`).
+    // Named, it is an image; unnamed, decoration beside the text that names it.
+    if (props.dot && children == null) {
+      const ink = badgeInkOf(props) === "foreground" ? tokens.foreground : look.ink;
+      const named = accessibilityLabel != null;
+      return (
+        <View
+          testID={testID}
+          {...(named
+            ? { accessibilityRole: "image" as const, role: "img" as const, accessibilityLabel, "aria-label": accessibilityLabel }
+            : { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const, "aria-hidden": true })}
+          style={[{ width: BARE_DOT, height: BARE_DOT, borderRadius: 9999, backgroundColor: ink }, hug, style]}
+        />
+      );
+    }
     const inkKind = badgeInkOf(props);
     const ink = inkKind === "foreground" ? tokens.foreground : look.ink;
     const reference = metric === "reference";

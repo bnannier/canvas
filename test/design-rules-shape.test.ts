@@ -112,9 +112,10 @@ describe("the hand-off's role tokens follow the shape table", () => {
   }
 });
 
-// Every corner the source sets. The icons are left out: a glyph's `rx` rounds a stroke in
-// the icon's own 24-unit drawing, scaled with the glyph, not a corner of the UI.
-const files = [...new Glob("src/**/*.{ts,tsx}").scanSync(ROOT)].filter((f) => !f.endsWith(".d.ts") && !f.startsWith("src/atoms/icon/")).sort();
+// Every corner the source sets. The icon glyphs are left out: a glyph's `rx` rounds a
+// stroke in the icon's own 24-unit drawing, scaled with the glyph, not a corner of the UI.
+// Icon's cell (icon-cell.tsx) is a UI corner and is scanned.
+const files = [...new Glob("src/**/*.{ts,tsx}").scanSync(ROOT)].filter((f) => !f.endsWith(".d.ts") && !(f.startsWith("src/atoms/icon/") && f !== "src/atoms/icon/icon-cell.tsx")).sort();
 const sites = new CornerSites(ROOT);
 const { values: corners, unresolved } = sites.scan(files);
 const where = (v: CornerValue) => `${v.file}:${v.line} ${v.path} (${v.text})`;

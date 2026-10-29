@@ -60,7 +60,7 @@ import { lineHeight, avatarDiameter, buttonSize as skeletonButton, shapeOf as sk
 import { sizeOf as sliderSize } from "../../src/atoms/slider/slider.shared.tsx";
 import { toneOf as spinnerTone, sizeKeyOf as spinnerSize } from "../../src/atoms/spinner/spinner.shared.tsx";
 import { sizeOf as stepperSize } from "../../src/atoms/stepper/stepper.shared.tsx";
-import { sizeOf as swatchSize, stretchesOf, paletteOf } from "../../src/atoms/swatch/swatch.shared.tsx";
+import { sizeOf as swatchSize, stretchesOf, paletteOf, formOf as swatchForm } from "../../src/atoms/swatch/swatch.shared.tsx";
 import { sizeOf as switchSize } from "../../src/atoms/switch/switch.shared.tsx";
 import { sizeOf as textareaSize } from "../../src/atoms/textarea/textarea.shared.tsx";
 import { placementOf as tooltipPlacement, triggerOf } from "../../src/atoms/tooltip/tooltip.shared.tsx";
@@ -309,14 +309,14 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Container.pad", components: ["Container"], pages: ["container"], resolver: "src/atoms/container/container.shared.tsx#padOf", members: ["padLoose", "pad", "padTight"], resolve: containerPad }),
   subject({ id: "Divider.orientation", components: ["Divider"], pages: ["divider"], resolver: "src/atoms/divider/divider.shared.tsx#orientationOf", members: ["vertical", "horizontal"], resolve: orientationOf }),
   subject({ id: "Divider.emphasis", components: ["Divider"], pages: ["divider"], resolver: "src/atoms/divider/divider.shared.tsx#emphasisOf", members: ["soft", "strong"], resolve: emphasisOf }),
-  subject({ id: "Emblem.tone", components: ["Emblem"], pages: ["emblem"], resolver: "src/atoms/emblem/emblem.shared.tsx#toneOf", members: ["primary", "destructive", "success", "warning", "muted"], resolve: emblemTone }),
+  subject({ id: "Emblem.tone", components: ["Emblem"], pages: ["emblem"], resolver: "src/atoms/emblem/emblem.shared.tsx#toneOf", members: ["primary", "destructive", "success", "warning", "cyan", "secondary", "muted"], resolve: emblemTone }),
   subject({ id: "Emblem.size", components: ["Emblem"], pages: ["emblem"], resolver: "src/atoms/emblem/emblem.shared.tsx#sizeOf", members: SIZES, resolve: emblemSize }),
   subject<IconProps>({
     id: "Icon.color",
     components: ["Icon"],
     pages: ["icon"],
     resolver: "src/atoms/icon/icon.shared.tsx#strokeOf",
-    members: ["primary", "primaryForeground", "destructive", "success", "warning", "muted"],
+    members: ["primary", "primaryForeground", "destructive", "success", "warning", "muted", "subtle"],
     resolve: (p) => strokeOf(p, NAMED_TOKENS),
     notes: ["With none, the `color` value, then the foreground."],
   }),
@@ -384,6 +384,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Spinner.size", components: ["Spinner"], pages: ["spinner"], resolver: "src/atoms/spinner/spinner.shared.tsx#sizeKeyOf", members: SIZES_LARGE_FIRST, resolve: spinnerSize }),
   subject({ id: "Stepper.size", components: ["Stepper"], pages: ["stepper"], resolver: "src/atoms/stepper/stepper.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: stepperSize }),
   subject({ id: "Swatch.size", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#sizeOf", members: ["tiny", "small", "large"], resolve: swatchSize }),
+  subject({ id: "Swatch.form", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#formOf", members: ["tile", "bar", "circle"], resolve: swatchForm, notes: ["A `steps` list is data and wins over every form."] }),
   subject({ id: "Swatch.stretch", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#stretchesOf", rule: true, members: ["block", "circle", "inline"], resolve: stretchesOf }),
   subject({ id: "Switch.size", components: ["Switch"], pages: ["switch"], resolver: "src/atoms/switch/switch.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: switchSize }),
   subject({ id: "Textarea.size", components: ["Textarea"], pages: ["textarea"], resolver: "src/atoms/textarea/textarea.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: textareaSize }),

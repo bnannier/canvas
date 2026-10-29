@@ -205,13 +205,14 @@ describe("Swatch boolean axes", () => {
 });
 
 describe("Swatch look (the hand-off renderer)", () => {
-  it("sets the name 500 13/17 and the value lines 400 11/15 mono in the subtle ink, flush", () => {
+  // The hand-off's swatch lines sit on the faces' own 16 and 14 px lines (Foundations color.06).
+  it("sets the name 500 13/16 and the value lines 400 11/14 mono in the subtle ink, flush", () => {
     const { getByText } = ui(<Swatch color="#4f39f6" value="--primary" detail="oklch">primary</Swatch>);
     const name = (getByText("primary") as HTMLElement).style;
-    expect([name.fontSize, name.lineHeight, name.fontWeight]).toEqual(["13px", "17px", "500"]);
+    expect([name.fontSize, name.lineHeight, name.fontWeight]).toEqual(["13px", "16px", "500"]);
     for (const t of ["--primary", "oklch"]) {
       const st = (getByText(t) as HTMLElement).style;
-      expect([st.fontSize, st.lineHeight, st.fontWeight]).toEqual(["11px", "15px", "400"]);
+      expect([st.fontSize, st.lineHeight, st.fontWeight]).toEqual(["11px", "14px", "400"]);
       expect(st.fontFamily).toContain("monospace");
     }
   });

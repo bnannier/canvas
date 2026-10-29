@@ -2139,7 +2139,10 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
       disabled("disableditem", byRole("menuitem", "Archive"), { within: overlay("dropdown"), how: "the menu opens, then its Archive item, which the example disables" }),
     ],
   },
-  icon: { static: true, reason: "A glyph: it takes no input." },
+  icon: {
+    // A bare glyph takes no input; the `cell` tile takes the accent's soft wash under a resting pointer (web only).
+    hover: hover("cell", byRole("img", "search"), { how: "the pointer rests on the search glyph's cell" }),
+  },
   input: {
     // The web field's edge steps up to the subtle ink under a resting pointer.
     hover: hover("default", byRole("textbox")),

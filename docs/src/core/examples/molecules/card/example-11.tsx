@@ -3,24 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Column } = scope;
+  const { Card, Row, Column } = scope;
   return (
-<Column cozy>
-  <Card outlined calloutCorners summary>
-    <Typography small medium>calloutCorners</Typography>
-  </Card>
-  <Card outlined largeCorners panel>
-    <Typography small medium>largeCorners</Typography>
-  </Card>
-  <Card outlined stageCorners panel>
-    <Typography small medium>stageCorners</Typography>
-  </Card>
-  <Card outlined showcaseCorners panel>
-    <Typography small medium>showcaseCorners</Typography>
-  </Card>
-  <Card outlined heroCorners panel>
-    <Typography small medium>heroCorners</Typography>
-  </Card>
-</Column>
+<Row cozy alignEnd>
+  <Column fill><Card sample flat calloutCorners /></Column>
+  <Column fill><Card sample calloutCorners /></Column>
+  <Column fill><Card sample heroShadow calloutCorners /></Column>
+  <Column fill><Card sample raised calloutCorners /></Column>
+</Row>
   );
 }

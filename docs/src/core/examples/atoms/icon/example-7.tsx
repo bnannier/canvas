@@ -3,8 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Icon } = scope;
+  const { Icon, Grid } = scope;
   return (
-<Icon disclosure expanded decorative chevronDown muted heavyStroke size={14} />
+<Grid minTileWidth={40} compact>
+  <Icon cell subtle search size={20} accessibilityLabel="search" />
+  <Icon cell subtle bell size={20} accessibilityLabel="bell" />
+  <Icon cell subtle settings size={20} accessibilityLabel="settings" />
+  <Icon cell subtle user size={20} accessibilityLabel="user" />
+</Grid>
   );
 }

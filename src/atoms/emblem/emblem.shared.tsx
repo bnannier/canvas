@@ -2,6 +2,7 @@ import { cloneElement, isValidElement, type ReactElement, type ReactNode } from 
 import { View, Text, alpha, statusColors, type ColorTokens, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { hueToneColors } from "../../style/hue-tone.js";
 import { type EmblemSkin } from "./emblem.styles.js";
 
 // Shared Emblem shell. The tinted rounded square (or circle) that holds a single
@@ -16,7 +17,7 @@ import { type EmblemSkin } from "./emblem.styles.js";
 // (emblem.styles.ts). The continuous corner curve is drawn only where the platform draws
 // one (iOS).
 
-export type Tone = "primary" | "destructive" | "success" | "warning" | "muted";
+export type Tone = "primary" | "destructive" | "success" | "warning" | "cyan" | "secondary" | "muted";
 export type EmblemSize = "small" | "default" | "large";
 
 export interface EmblemProps {
@@ -25,10 +26,21 @@ export interface EmblemProps {
   /** A monogram letter (or two) instead of an icon, painted in the tone color. */
   label?: string;
   // Tone (pick one; default `muted`). Sets the tinted surface and the icon color.
+  // Precedence: primary > destructive > success > warning > cyan > secondary > muted.
   primary?: boolean;
   destructive?: boolean;
   success?: boolean;
   warning?: boolean;
+  /**
+   * The fixed cyan hue (the hand-off's `--cyan`, the `chart-2` series): its wash and ring
+   * mixed from it, the glyph in the hue's ink, solved to 4.5:1 per scheme (Typography's `cyan`).
+   */
+  cyan?: boolean;
+  /**
+   * The solid neutral tile: the `secondary` fill inside the `border` hairline, the glyph in
+   * the second ink (`muted-foreground`), with no lit top edge (the hand-off's neutral tile).
+   */
+  secondary?: boolean;
   muted?: boolean;
   // Size (pick one; default medium).
   small?: boolean;
@@ -54,6 +66,8 @@ export function toneOf(p: EmblemProps): Tone {
   if (p.destructive) return "destructive";
   if (p.success) return "success";
   if (p.warning) return "warning";
+  if (p.cyan) return "cyan";
+  if (p.secondary) return "secondary";
   return "muted";
 }
 
@@ -68,29 +82,36 @@ export function sizeOf(p: EmblemProps): EmblemSize {
 // the subtle ink for `muted`.
 const STATUS_TONE = { primary: "info", destructive: "error", success: "success", warning: "warning" } as const;
 
-function toneBase(tokens: ColorTokens, tone: Tone): string {
+function toneBase(tokens: ColorTokens, tone: Exclude<Tone, "secondary">): string {
   switch (tone) {
     case "primary": return tokens.primary;
     case "destructive": return tokens.destructive;
     case "success": return tokens.success;
     case "warning": return tokens.warning;
+    case "cyan": return tokens["chart-2"];
     case "muted": return tokens["subtle-foreground"] ?? tokens["muted-foreground"];
   }
 }
 
 // The Icon color boolean to inject per tone (so the glyph matches its tint).
+// The cyan tile names no Icon tone, so its glyph takes the hue's ink as the Icon's
+// kit-internal colour (the shell passes it).
 const ICON_TINT: Record<Tone, Record<string, boolean>> = {
   primary: { primary: true },
   destructive: { destructive: true },
   success: { success: true },
   warning: { warning: true },
+  cyan: {},
+  secondary: { subtle: true },
   muted: { muted: true },
 };
 
 // The monogram label's color: the tone's ink (text-grade over its wash), muted-foreground
-// on the muted tile.
-function labelColor(tokens: ColorTokens, tone: Tone): string {
-  return tone === "muted" ? tokens["muted-foreground"] : statusColors(tokens, STATUS_TONE[tone]).ink;
+// on the muted and the neutral tiles, the hue's solved ink on the cyan one.
+function labelColor(tokens: ColorTokens, tone: Tone, dark: boolean): string {
+  if (tone === "muted" || tone === "secondary") return tokens["muted-foreground"];
+  if (tone === "cyan") return hueToneColors(tokens, dark, "cyan").ink;
+  return statusColors(tokens, STATUS_TONE[tone]).ink;
 }
 
 /** Build an Emblem from a platform skin. */
@@ -99,11 +120,18 @@ export function createEmblem(skin: EmblemSkin) {
     const { children, label, circle, soft, testID, style } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    const base = toneBase(tokens, toneOf(props));
     const tone = toneOf(props);
+    // The neutral tile is solid: the `secondary` fill in the `border` hairline. Every other
+    // tone mixes its tile from its base colour.
+    const neutral = tone === "secondary";
+    const base = neutral ? tokens.border : toneBase(tokens, tone);
     // The soft tile takes the tone's own soft wash token; the default tile mixes its wash
     // and ring from the tone's base colour.
-    const wash = soft ? (tone === "muted" ? tokens.secondary : statusColors(tokens, STATUS_TONE[tone]).wash) : alpha(base, skin.washAlpha);
+    const wash = neutral
+      ? tokens.secondary
+      : soft
+        ? tone === "muted" ? tokens.secondary : tone === "cyan" ? hueToneColors(tokens, theme.dark, "cyan").wash : statusColors(tokens, STATUS_TONE[tone]).wash
+        : alpha(base, skin.washAlpha);
     const size = sizeOf(props);
     const box = skin.box[size];
     const glyph = skin.iconSize[size];
@@ -115,8 +143,8 @@ export function createEmblem(skin: EmblemSkin) {
       height: box,
       borderRadius: circle ? 9999 : soft ? skin.softRadius : skin.radius[size],
       backgroundColor: wash,
-      ...(soft ? null : { borderWidth: 1, borderColor: alpha(base, skin.ringAlpha) }),
-      ...(!soft && tokens.highlight ? { boxShadow: `inset 0px 1px 0px ${tokens.highlight}` } : null),
+      ...(soft ? null : { borderWidth: 1, borderColor: neutral ? tokens.border : alpha(base, skin.ringAlpha) }),
+      ...(!soft && !neutral && tokens.highlight ? { boxShadow: `inset 0px 1px 0px ${tokens.highlight}` } : null),
       ...skin.shape,
     };
 
@@ -124,11 +152,11 @@ export function createEmblem(skin: EmblemSkin) {
     // size by cloning the Icon child, so the caller writes only the glyph.
     const inner =
       label != null ? (
-        <Text style={[skin.monogram, { color: labelColor(tokens, tone), fontSize: skin.monogramSize[size], lineHeight: skin.monogramSize[size] }]}>
+        <Text style={[skin.monogram, { color: labelColor(tokens, tone, theme.dark), fontSize: skin.monogramSize[size], lineHeight: skin.monogramSize[size] }]}>
           {label}
         </Text>
       ) : isValidElement(children) ? (
-        cloneElement(children as ReactElement<Record<string, unknown>>, { ...ICON_TINT[tone], size: glyph })
+        cloneElement(children as ReactElement<Record<string, unknown>>, { ...ICON_TINT[tone], ...(tone === "cyan" ? { color: hueToneColors(tokens, theme.dark, "cyan").ink } : null), size: glyph })
       ) : (
         children
       );

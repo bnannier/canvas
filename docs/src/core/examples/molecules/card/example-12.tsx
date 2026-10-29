@@ -3,17 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Column } = scope;
+  const { Card, Typography } = scope;
   return (
-<Column cozy>
-  <Card showcaseCorners roomy>
-    <Typography eyebrow subtle>Showcase card</Typography>
-    <Typography small subtle>24 in, a 20 px rhythm, the 20 corner.</Typography>
-  </Card>
-  <Card heroCorners heroShadow>
-    <Typography small medium>Hero stage</Typography>
-    <Typography small subtle>The 24 corner under the medium shadow.</Typography>
-  </Card>
-</Column>
+<Card floating heroShadow calloutCorners>
+  <Typography label foreground>A pane over the page</Typography>
+</Card>
   );
 }

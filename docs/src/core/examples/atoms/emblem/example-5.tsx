@@ -3,11 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Icon, Row, Emblem } = scope;
+  const { Icon, Emblem } = scope;
   return (
-<Row snug>
-  <Emblem primary soft><Icon arrowUpRight /></Emblem>
-  <Emblem destructive soft><Icon trash2 /></Emblem>
-</Row>
+<Emblem circle>
+  <Icon check />
+</Emblem>
   );
 }

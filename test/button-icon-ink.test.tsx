@@ -83,7 +83,8 @@ describe("a Button's icon slots take its label ink", () => {
       </ThemeProvider>,
     );
     expect(seen.toned).toBe(t.destructive);
-    expect(seen.muted).toBe(t["muted-foreground"]);
+    // `muted` is the third ink (the hand-off's --tx3, Foundations icon.09).
+    expect(seen.muted).toBe(t["subtle-foreground"]);
     // Icon's precedence: the tone, then the kit-internal `color`, then the ink, then the foreground.
     expect(strokeOf({ primary: true }, t, "#abcdef")).toBe(primaryText(t));
     expect(strokeOf({ color: "#123456" }, t, "#abcdef")).toBe("#123456");

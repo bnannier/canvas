@@ -5,10 +5,9 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Icon, Row, Emblem } = scope;
   return (
-<Row snug alignCenter>
-  <Emblem small><Icon bell /></Emblem>
-  <Emblem><Icon bell /></Emblem>
-  <Emblem large><Icon bell /></Emblem>
+<Row snug>
+  <Emblem cyan circle><Icon globe /></Emblem>
+  <Emblem secondary><Icon layers /></Emblem>
 </Row>
   );
 }
