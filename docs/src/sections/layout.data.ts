@@ -63,7 +63,7 @@ export const RESIZE_PRESETS: readonly ResizePreset[] = [
 
 /** The gap scale (Row and Column), narrowest first: each name's spacing-token step, the
  *  same steps src/atoms/layout/layout.styles.ts maps them to. */
-export const GAP_SCALE: readonly { name: string; step: "0" | "1" | "2" | "3" | "4" | "6" }[] = [
+export const GAP_SCALE: readonly { name: "flush" | "tight" | "snug" | "cozy" | "relaxed" | "loose"; step: "0" | "1" | "2" | "3" | "4" | "6" }[] = [
   { name: "flush", step: "0" },
   { name: "tight", step: "1" },
   { name: "snug", step: "2" },
