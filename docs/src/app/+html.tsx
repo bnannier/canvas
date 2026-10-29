@@ -40,7 +40,14 @@ const IMAGE_ALT = "The same Canvas Select component rendered as native iOS, Mate
 // those widths and no inset, so the rules change nothing. The id prefix outranks the
 // class rules react-native-web writes, and the inset's rule must also outrank the inline
 // style it writes for a computed value, hence !important.
+// The document itself takes the page colour (the hand-off's root is `background:var(--bg)`,
+// Component.dc.html line 95): any strip the app has not painted yet, a window grown faster
+// than the shell's safe-area frame, or an overscroll, shows the page, never white. Dark is the
+// exported look before hydration; the light look follows `html[data-look]` once the docs theme
+// commits it (docs/src/ui/docs-head.tsx). The values are the tokens' `background` per scheme
+// (styles/tokens/colors.css).
 const SHELL_CSS =
+  "html{background:#0a0a0f}html[data-look^=\"light\"]{background:#f2f2f7}" +
   "@media (max-width:759.98px){#root [data-shell-rail]{display:none}#root [data-shell-content]{padding-left:0!important}}";
 
 export default function Root({ children }: PropsWithChildren) {
