@@ -39,6 +39,9 @@ export interface UptimeBarProps {
 }
 
 const PILL_HEIGHT = { default: 30, compact: 20 } as const;
+/** The room between a middle caption and the edge captions beside it. */
+const MID_GAP = 8;
+
 // The strip's edge captions, a time axis.
 const EDGE_CAPTION_TYPE = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14 };
 const DOT = 8;
@@ -85,10 +88,12 @@ export function UptimeBar(props: UptimeBarProps) {
       </View>
       {/* Edge captions pin to the strip's physical edges (a time axis). */}
       {hasEdges ? (
-        <View style={{ flexDirection: "row", justifyContent: "space-between", direction: "ltr" }}>
-          <Text style={{ ...EDGE_CAPTION_TYPE, color: subtle }}>{startLabel ?? ""}</Text>
-          {hasMid ? <Text numberOfLines={1} style={{ ...EDGE_CAPTION_TYPE, flexShrink: 1, textAlign: "center", color: subtle }}>{midLabel}</Text> : null}
-          <Text style={{ ...EDGE_CAPTION_TYPE, color: subtle }}>{endLabel ?? ""}</Text>
+        // With a middle caption the edges keep their words and the middle one wraps,
+        // centred, in the room between them (a phone's narrow strip).
+        <View style={{ flexDirection: "row", justifyContent: "space-between", direction: "ltr", gap: hasMid ? MID_GAP : 0 }}>
+          <Text style={{ ...EDGE_CAPTION_TYPE, color: subtle, flexShrink: hasMid ? 0 : undefined }}>{startLabel ?? ""}</Text>
+          {hasMid ? <Text style={{ ...EDGE_CAPTION_TYPE, flexShrink: 1, textAlign: "center", color: subtle }}>{midLabel}</Text> : null}
+          <Text style={{ ...EDGE_CAPTION_TYPE, color: subtle, flexShrink: hasMid ? 0 : undefined }}>{endLabel ?? ""}</Text>
         </View>
       ) : null}
     </View>
