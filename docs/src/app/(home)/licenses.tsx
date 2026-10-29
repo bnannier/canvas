@@ -21,7 +21,8 @@ import {
 //
 // This page is not decorative. MIT requires its copyright and permission notice to travel
 // with the software, and OFL-1.1 requires the same for the Instrument Sans, Bricolage
-// Grotesque and JetBrains Mono typefaces bundled as .ttf files in the binary. Reproducing the notices somewhere the user can reach them is
+// Grotesque and JetBrains Mono typefaces bundled as .ttf files in the binary and served as
+// woff2 files on the web. Reproducing the notices somewhere the user can reach them is
 // how those conditions are met, which is why each licence panel below lists the copyright
 // lines of every package sharing that text before the text itself.
 
