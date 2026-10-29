@@ -63,7 +63,7 @@ function useAccents() {
 export function Vignette() {
   const accents = useAccents();
   return (
-    <VignetteStage testID="vignette-foundations">
+    <VignetteStage>
       <Row wrap loose alignCenter center>
         <Typography display accessibilityRole="text">Aa</Typography>
         <Column relaxed>

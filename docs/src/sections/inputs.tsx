@@ -34,7 +34,7 @@ export function Vignette() {
   // Six full-size cells overrun a phone-width stage; the small cells fit it.
   const phone = useFormFactor() === "phone";
   return (
-    <VignetteStage testID="vignette-inputs">
+    <VignetteStage>
       <Card raised>
         <Column relaxed>
           <InteractionOverride focused>

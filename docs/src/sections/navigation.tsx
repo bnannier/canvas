@@ -42,7 +42,7 @@ const tabIcon = (name: IconName) => (active: boolean) => <Icon {...{ [name]: tru
 /** The hero's still frame: underline tabs over a floating tab bar. */
 export function Vignette() {
   return (
-    <VignetteStage testID="vignette-navigation">
+    <VignetteStage>
       <Column panel>
         <Tabs underline defaultActive={0} tabs={["Overview", "Components", "Tokens", "Changelog"]} />
         <TabBar

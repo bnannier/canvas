@@ -65,7 +65,7 @@ export function Vignette() {
   const { tokens } = useTheme();
   const cyan = alpha(tokens["chart-2"], 0.16);
   return (
-    <VignetteStage testID="vignette-layout">
+    <VignetteStage>
       <Column relaxed alignCenter>
         <Typography eyebrow primary>Desktop · 12 columns</Typography>
         <Card raised compact>
