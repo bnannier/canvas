@@ -52,7 +52,10 @@ export interface StageSpec {
   height?: number;
   /**
    * A centred stage instead (`display:grid;place-items:center`): at least this tall, the
-   * chips and the overlay centred in the flow inside `pad` ([vertical, horizontal]).
+   * chips and the overlay centred in the flow inside `pad` ([vertical, horizontal]). The
+   * grid's two auto rows share the free height equally and each item centres in its row,
+   * which places them as a column spread `space-around` does: the chips do not sit on the
+   * overlay's edge (the 2026-10-29 wizard, whose dialog covered its chip).
    */
   minHeight?: number;
   pad?: [number, number];
@@ -112,7 +115,7 @@ function Stage({ id, spec, chips, caption, children }: { id: string; spec: Stage
     <Card sunken flush clip showcaseCorners testID={`showcase-${id}`}>
       <View
         style={centred
-          ? { minHeight: inner, paddingVertical: padV, paddingHorizontal: padH, alignItems: "center", justifyContent: "center" }
+          ? { minHeight: inner, paddingVertical: padV, paddingHorizontal: padH, alignItems: "center", justifyContent: "space-around" }
           : spec.grows ? { minHeight: inner } : { height: inner }}
       >
         {chips.length > 0 ? (
