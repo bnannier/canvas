@@ -5,6 +5,19 @@ universally: native on iOS and Android, and on the web through React Native Web.
 
 ## Current v4 hand-off authority — 2026-10-29
 
+### Test image retention — 2026-10-31
+
+The owner requires all testing screenshots, including reference screenshots, to be
+absent from Git and its history. Generate captures only temporarily for inspection;
+do not commit them, their archives, or reports/traces containing them. CI retains
+compact text results, not test images or whole diagnostic directories. Pixel checks
+may retain non-reversible digests and measured dimensions. Audit tests generate
+synthetic images in temporary directories. Product imagery and store artwork are
+separate from test captures. The reference paths below are ignored local capture
+destinations: regenerate them from the recorded source when reviewing a change.
+
+### Visual authority
+
 The owner explicitly requested the vendored hand-off to look exactly the same, including
 animations, and said to forget the old rules for this new version. That supersedes older
 visual exceptions in this document and `audit/v4-redesign/PLAN.md` wherever they change
