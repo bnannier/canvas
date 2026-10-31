@@ -5,7 +5,7 @@ import { OVERLAYS } from "../support/overlays";
 const dialog = OVERLAYS.find((recipe) => recipe.slug === "dialog")!;
 
 test("an open dialog and its draft survive narrow and desktop layouts", async ({ page }) => {
-  await gotoDocs(page, "/components/dialog", { scheme: "light" });
+  await gotoDocs(page, dialog.path, { scheme: "light" });
   await dialog.open(page);
   const panel = dialog.panel(page);
   await expect(panel).toBeVisible();
@@ -36,7 +36,7 @@ for (const slug of ["dialog", "calendar", "grid-lists"] as const) {
     await page.clock.setFixedTime(FIXED_TIME);
     // The detail page's example cards fit a 900 px window, so the resting examples load in
     // a short one, where their card is again taller than the viewport it is captured in.
-    await gotoDocs(page, `/components/${slug}`, slug === "dialog" ? { scheme: "light" } : { scheme: "dark", viewport: { width: 1280, height: 400 } });
+    await gotoDocs(page, slug === "dialog" ? dialog.path : `/components/${slug}`, slug === "dialog" ? { scheme: "light" } : { scheme: "dark", viewport: { width: 1280, height: 400 } });
     const frame = slug === "dialog" ? stage(page) : previewCard(page).first();
     await expect(frame).toBeVisible();
     if (slug === "dialog") {

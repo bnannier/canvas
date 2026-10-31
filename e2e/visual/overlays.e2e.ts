@@ -20,7 +20,7 @@ for (const scheme of ["dark", "light"] as const) {
   for (const recipe of OVERLAYS) {
     test(`${recipe.slug} open in ${scheme}`, async ({ page }) => {
       await page.clock.setFixedTime(FIXED_TIME);
-      await gotoDocs(page, `/components/${recipe.slug}`, { scheme, surface: "solid" });
+      await gotoDocs(page, recipe.path, { scheme, surface: "solid" });
       await expect(stage(page)).toBeVisible();
       // Open it from the same place on every page: the stage at the top of the page's
       // scrollport, under the banner. Where the page left the stage is set by the prose
@@ -40,11 +40,22 @@ for (const scheme of ["dark", "light"] as const) {
       await settledBox(stage(page));
 
       const name = `overlays/${recipe.slug}--${scheme}.png`;
-      if (recipe.atDocumentRoot) {
+      if (recipe.atDocumentRoot || recipe.inWindowLayer) {
+        // Window-layer menus extend past the fixed-height platform card. Capture
+        // their whole window, and prove the open panel fits inside that frame.
+        // Keep the configured viewport for document-root Modals as well.
+        await expect(recipe.panel(page).last()).toBeInViewport({ ratio: 1 });
         await expect(page).toHaveScreenshot(name, { fullPage: false });
       } else {
         await fitElementForScreenshot(page, stage(page));
         await expect(recipe.panel(page).last()).toBeVisible();
+        await settledBox(recipe.panel(page).last());
+        const frame = (await stage(page).boundingBox())!;
+        const panel = (await recipe.panel(page).last().boundingBox())!;
+        expect(panel.x).toBeGreaterThanOrEqual(frame.x - 0.5);
+        expect(panel.y).toBeGreaterThanOrEqual(frame.y - 0.5);
+        expect(panel.x + panel.width).toBeLessThanOrEqual(frame.x + frame.width + 0.5);
+        expect(panel.y + panel.height).toBeLessThanOrEqual(frame.y + frame.height + 0.5);
         await expect(stage(page)).toHaveScreenshot(name);
         await expect(recipe.panel(page).last()).toBeVisible();
       }

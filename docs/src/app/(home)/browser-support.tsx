@@ -17,7 +17,7 @@ const PLATFORMS = shownItems<string[]>([
 const PEERS = [
   ["react", ">=18", "The React runtime Canvas builds on."],
   ["react-native", ">=0.74", "The native host, and the module aliased to react-native-web on the web."],
-  ["react-native-svg", ">=14", "Vector icons and the chart primitives."],
+  ["react-native-svg", ">=15.8.0", "Vector icons and the chart primitives, including SVG filters."],
 ];
 
 const WEB_BASELINE = [

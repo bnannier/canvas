@@ -14,8 +14,13 @@
  * See the `visual` project in playwright.config.ts.
  */
 import { componentRoutes } from "../support/routes";
-import { FIXED_TIME, fitElementForScreenshot, gotoDocs, previewCard } from "../support/docs";
+import { FIXED_TIME, fitElementForScreenshot, gotoDocs, previewCard, stage, paintedPreviewPanels } from "../support/docs";
+import { DETAIL_SPECS } from "../../docs/src/core/data/detail-specs";
 import { expect, test } from "../support/fixtures";
+
+const PANEL_ROLES: Record<string, "alert" | "menu" | "listbox" | undefined> = {
+  tooltip: "alert", dropdown: "menu", "row-menu": "menu", select: "listbox", autocomplete: "listbox", command: "listbox",
+};
 
 for (const scheme of ["dark", "light"] as const) {
   for (const route of componentRoutes()) {
@@ -28,6 +33,12 @@ for (const scheme of ["dark", "light"] as const) {
       await expect(card).toBeVisible();
       // Settle self-measuring examples and fit tall cards before Chromium crops them.
       await fitElementForScreenshot(page, card);
+      const role = PANEL_ROLES[route.name];
+      const spec = DETAIL_SPECS[route.name];
+      const pinnedOpen = spec?.knobs.some(knob => knob.kind === "boolean" && knob.prop === "open" && knob.value);
+      if (role && pinnedOpen) {
+        await paintedPreviewPanels(card, stage(page).locator("..").getByRole(role), 3);
+      }
       await expect(card).toHaveScreenshot(`components/${route.name}--${scheme}.png`);
     });
   }

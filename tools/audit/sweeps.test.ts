@@ -26,8 +26,8 @@ describe("e2e catalog sweeps", () => {
     expect(sweep.catalogs).toEqual(["componentRoutes"]);
     expect(sweep.routes).toEqual(paths(componentRoutes()));
     // A recipe catalog drives each overlay's own page.
-    const [overlays] = sweepsOf(`${header}for (const recipe of OVERLAYS) test(recipe.slug, async ({ page }) => gotoDocs(page, \`/components/\${recipe.slug}\`));`);
-    expect(overlays.routes).toEqual(OVERLAY_RECIPES.map((r) => `/components/${r.slug}`));
+    const [overlays] = sweepsOf(`${header}for (const recipe of OVERLAYS) test(recipe.slug, async ({ page }) => gotoDocs(page, recipe.path));`);
+    expect(overlays.routes).toEqual(OVERLAY_RECIPES.map((r) => r.path));
   });
 
   it("follows a filter it can evaluate, a map, a spread, a const and a local helper that navigates", () => {
@@ -59,7 +59,7 @@ describe("e2e catalog sweeps", () => {
     const reach = e2eReach(
       ROOT,
       "e2e/x/spec.e2e.ts",
-      `${header}for (const recipe of OVERLAYS) gotoDocs(page, \`/components/\${recipe.slug}\`);\nfor (const slug of ["dialog", "row-menu"]) gotoDocs(page, \`/components/\${slug}\`);\ngotoDocs(page, contentRoutes().find((r) => r.kind === "pattern")!.path);`,
+      `${header}for (const recipe of OVERLAYS) gotoDocs(page, recipe.path);\nfor (const slug of ["dialog", "row-menu"]) gotoDocs(page, \`/components/\${slug}\`);\ngotoDocs(page, contentRoutes().find((r) => r.kind === "pattern")!.path);`,
     );
     const built = reach.literals.filter((l) => !l.open).map((l) => l.text);
     expect(built).toContain("/components/dialog");
@@ -140,12 +140,12 @@ describe("e2e catalog sweeps", () => {
 
   it("finds the real catalog sweeps the facts credit, and not the data check", () => {
     const sweepsIn = (file: string) => e2eReach(ROOT, file, readFileSync(join(ROOT, file), "utf8")).sweeps.flatMap((s) => s.catalogs);
-    expect(sweepsIn("e2e/a11y/components.e2e.ts")).toEqual(["componentRoutes"]);
+    expect(sweepsIn("e2e/a11y/components.e2e.ts")).toEqual(["componentRoutes", "OVERLAYS"]);
     expect(sweepsIn("e2e/visual/components.e2e.ts")).toEqual(["componentRoutes"]);
     expect(sweepsIn("e2e/smoke/examples.e2e.ts")).toEqual(["componentExamples"]);
     expect(sweepsIn("e2e/smoke/routes.e2e.ts")).toEqual(["allRoutes"]);
     expect(sweepsIn("e2e/responsive/component-widths.e2e.ts")).toEqual(["contentRoutes", "contentRoutes", "componentRoutes"]);
-    expect(sweepsIn("e2e/visual/materials.e2e.ts")).toEqual(["MATERIAL_ROUTES"]);
+    expect(sweepsIn("e2e/visual/materials.e2e.ts")).toEqual(["MATERIAL_ROUTES", "MATERIAL_OVERLAYS"]);
     expect(sweepsIn("e2e/behavior/hydration-ids.e2e.ts")).toEqual(["contentRoutes"]);
     expect(sweepsIn("e2e/visual/material-coverage.e2e.ts")).toEqual([]);
   });

@@ -23,7 +23,7 @@ Audit checklist for `/components/text-input`. The facts block and the variants t
 | Interaction states | recipes: focus on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 2: `test/focus-ring.test.tsx`, `test/fonts.test.tsx` |
+| Tests importing it | 3: `test/detail-reference-specimens.test.tsx`, `test/focus-ring.test.tsx`, `test/fonts.test.tsx` |
 | E2E naming it | 2: `e2e/a11y/components.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/text-input.md`, written by `bun run audit:turn -- --slug=text-input --phase=before\|after` (the before and after capture runs) |

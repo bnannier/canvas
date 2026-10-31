@@ -7,6 +7,42 @@ import type { DocsUsageException } from "./component-usage.ts";
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   ...V4_PRESENTATION_EXCEPTIONS,
   {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "TextInputSpecimen", tag: "View", attribute: "style", keys: ["maxWidth", "width"], occurrences: 1,
+    reason: "The hand-off's raw TextInput demonstration has a 280px parent, fluid below that cap; the actual primitive keeps its native editing behavior.",
+  },
+  {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "TextInputSpecimen", tag: "TextInput", attribute: "style", keys: ["backgroundColor", "borderBottomColor", "borderBottomWidth", "color", "fontSize", "fontWeight", "height", "opacity", "outlineWidth", "paddingBottom", "paddingHorizontal", "paddingTop", "textAlignVertical", "width"], occurrences: 1,
+    reason: "Primitive pedagogy reproduces cv-kit-inputs.js's 36/88px raw input, 2px inset, literal theme ink and focus-accent underline through the real scoped TextInput on every platform.",
+  },
+  {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "ViewSpecimen", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderRadius", "borderWidth", "gap", "minWidth", "padding"], occurrences: 1,
+    reason: "The hand-off's raw View demonstration: the actual primitive's 220px minimum panel, 16px padding, 8px gap, 12px corners and sf2 surface; not a substitute kit control.",
+  },
+  {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "ViewSpecimen", tag: "View", attribute: "style", keys: ["alignItems", "backgroundColor", "borderColor", "borderRadius", "borderStyle", "borderWidth", "justifyContent", "minHeight", "minWidth", "paddingHorizontal", "paddingVertical"], occurrences: 1,
+    reason: "The two noninteractive children use cv-kit-controls.js's exact box() renderer measurements and ion wash/dashed ring to demonstrate actual View nesting.",
+  },
+  ...["ChatSpecimen", "ScrollSpecimen"].map(owner => ({
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner, tag: "View", attribute: "style", keys: ["maxWidth", "width"], occurrences: 1,
+    reason: "The v4 detail specimen's parent supplies the hand-off's full-width 520px cap; the real Chat and ScrollView retain their own component sizing.",
+  })),
+  {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "ChatSpecimen", tag: "Chat", attribute: "style", keys: ["height"], occurrences: 1,
+    reason: "The real Chat needs a bounded conversation viewport so its anchored composer and both authored messages remain visible in each narrow platform specimen.",
+  },
+  {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "ScrollSpecimen", tag: "ScrollView", attribute: "style", keys: ["backgroundColor", "borderColor", "borderRadius", "borderWidth", "height"], occurrences: 1,
+    reason: "The v4 hand-off's primitive ScrollView specimen: its bounded 102px horizontal or 180px vertical viewport, sunken fill and 12px border corners, from cv-kit-controls.js.",
+  },
+  {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "ScrollSpecimen", tag: "ScrollView", attribute: "contentContainerStyle", keys: ["gap", "padding"], occurrences: 1,
+    reason: "The primitive ScrollView's own content container demonstrates the hand-off's 10px padding and 10px horizontal or 8px vertical tile gaps.",
+  },
+  {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "ScrollSpecimen", tag: "View", attribute: "style", keys: ["alignItems", "backgroundColor", "borderRadius", "flexShrink", "height", "justifyContent", "width"], occurrences: 1,
+    reason: "Ten noninteractive numbered content tiles illustrate a real ScrollView: the hand-off's 120x80px horizontal tiles or 40px vertical rows, 10px corners and secondary fill; no control is substituted.",
+  },
+  {
     file: "docs/src/ui/preview-viewport.tsx", owner: "PreviewViewport", tag: "View", attribute: "style", keys: ["height"], occurrences: 1,
     reason: "Docs-only viewport harness supplies a definite parent height for app-sized previews inside the unbounded page scroller, and the 300 px of the section hero's stage (the v4 hand-off's canvas-hero.js `.st`); it paints no control or surface.",
   },

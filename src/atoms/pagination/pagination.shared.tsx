@@ -331,33 +331,45 @@ export function createPagination(skin: PaginationSkin) {
       }
     };
 
-    const abutting = variant !== "compact";
     // The labelled arrows fall back to the chevron alone when the labelled row is wider
     // than its container (a phone, a narrow panel). The row cannot learn either width from
     // its own frame (it hugs its content in a Column and is squeezed in a narrow one), so
     // an out-of-flow containerProbe sibling measures the container, and the row's content
     // width is where its last child ends (the next arrow, or the with-size arrow pair).
-    // It is recorded only while labelled, so the unlabelled row never measures itself back
-    // into labels it has no room for.
+    // Keep each presentation's natural width separately: an unlabelled row must not
+    // measure itself back into labels, and can still be wider than a narrow panel.
+    // In that case the existing compact pager preserves both arrows and the count.
     const container = useMeasuredWidth();
-    const [labelledWidth, setLabelledWidth] = useState(0);
-    const wantsLabels = abutting && s.arrowLabelled(size);
-    const labelled = wantsLabels && !(container.measured && labelledWidth > container.width);
-    const measureEnd = labelled ? (e: LayoutChangeEvent) => {
+    const window = pageWindow(current, total);
+    // Mono page cells of the same digit width have the same footprint. Keep the
+    // measured presentation while navigating that window instead of briefly
+    // restoring an overflowing row on every page change.
+    const layoutKey = `${variant}:${size}:${window.map((p) => p === GAP ? "gap" : Math.max(2, String(p).length)).join(",")}:${variant === "withSize" ? `${indicatorLabel}:${pageSize}` : ""}`;
+    const [rowWidths, setRowWidths] = useState({ key: "", labelled: 0, unlabelled: 0 });
+    const widths = rowWidths.key === layoutKey ? rowWidths : { labelled: 0, unlabelled: 0 };
+    const narrowNumbered = variant === "numbered" && container.measured && widths.unlabelled > container.width;
+    const abutting = variant !== "compact" && !narrowNumbered;
+    const wantsLabels = variant !== "compact" && s.arrowLabelled(size);
+    const labelled = abutting && wantsLabels && !(container.measured && widths.labelled > container.width);
+    const measureEnd = (e: LayoutChangeEvent) => {
       const { x, width } = e.nativeEvent.layout;
       const next = Math.round(x + width);
-      setLabelledWidth((prev) => (prev === next ? prev : next));
-    } : undefined;
+      const field = labelled ? "labelled" : "unlabelled";
+      setRowWidths((prev) => {
+        const before = prev.key === layoutKey ? prev : { key: layoutKey, labelled: 0, unlabelled: 0 };
+        return before[field] === next ? before : { ...before, [field]: next };
+      });
+    };
     const hug = useHugStyle();
-    const withProbe = (root: ReactNode) => wantsLabels ? <><View style={containerProbe} onLayout={container.onLayout} />{root}</> : root;
+    const withProbe = (root: ReactNode) => wantsLabels || variant === "numbered" ? <><View style={containerProbe} onLayout={container.onLayout} />{root}</> : root;
     // A disabled pager dims as one; in an enabled one an arrow at either end dims on its own.
     const dimmed = disabled ? { opacity: skin.disabledOpacity } : null;
     const prev = <Arrow direction="previous" size={size} disabled={disabled || atStart} dim={!disabled && atStart} abutting={abutting} labelled={labelled} onPress={() => go(current - 1)} />;
     const nextArrow = (onLayout?: (event: LayoutChangeEvent) => void) => <Arrow direction="next" size={size} disabled={disabled || atEnd} dim={!disabled && atEnd} abutting={abutting} labelled={labelled} onLayout={onLayout} onPress={() => go(current + 1)} />;
 
     // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
-    if (variant === "compact") {
-      return (
+    if (variant === "compact" || narrowNumbered) {
+      return withProbe(
         <View testID={testID} style={[s.compactRow, hug, dimmed, style]}>
           {prev}
           <Text style={muted}>{indicatorLabel}</Text>
@@ -398,8 +410,6 @@ export function createPagination(skin: PaginationSkin) {
     }
 
     // Numbered (default): a windowed row of page buttons with ellipsis gaps.
-    const window = pageWindow(current, total);
-
     return withProbe(
       <View testID={testID} style={[s.numberedRow, hug, dimmed, style]}>
         {prev}

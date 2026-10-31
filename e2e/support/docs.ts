@@ -457,3 +457,30 @@ export async function fitElementForScreenshot(page: Page, frame: Locator): Promi
   expect(fitted.width, "the element exceeds the screenshot viewport width").toBeLessThanOrEqual(viewport.width);
   expect(fitted.height, "the element exceeds the screenshot viewport height").toBeLessThanOrEqual(height);
 }
+
+/** Wait for controlled-open preview panels to finish placement and actually paint. */
+export async function paintedPreviewPanels(frame: Locator, panels: Locator, count: number): Promise<void> {
+  await expect(panels).toHaveCount(count);
+  for (let index = 0; index < count; index++) await expect(panels.nth(index)).toBeInViewport({ ratio: 1 });
+  const painted = () => panels.evaluateAll((nodes) => nodes.every((node) => {
+    const rect = node.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return false;
+    for (let ancestor: Element | null = node; ancestor; ancestor = ancestor.parentElement) {
+      const style = getComputedStyle(ancestor);
+      if (style.display === "none" || style.visibility !== "visible" || Number(style.opacity) !== 1) return false;
+    }
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return hit !== null && (node === hit || node.contains(hit));
+  }));
+  await expect.poll(painted, { message: "open preview panels have not painted after anchor placement" }).toBe(true);
+  await animationFrames(frame.page(), 2);
+  await expect.poll(painted).toBe(true);
+  const bounds = (await frame.boundingBox())!;
+  for (let index = 0; index < count; index++) {
+    const panel = (await panels.nth(index).boundingBox())!;
+    expect(panel.x).toBeGreaterThanOrEqual(bounds.x - 0.5);
+    expect(panel.y).toBeGreaterThanOrEqual(bounds.y - 0.5);
+    expect(panel.x + panel.width).toBeLessThanOrEqual(bounds.x + bounds.width + 0.5);
+    expect(panel.y + panel.height).toBeLessThanOrEqual(bounds.y + bounds.height + 0.5);
+  }
+}

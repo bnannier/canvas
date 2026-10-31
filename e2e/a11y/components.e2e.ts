@@ -16,11 +16,8 @@ import { BLOCKING_IMPACTS, attach, describe as describeViolations, scan, scanPag
 import { expect, test } from "../support/fixtures";
 
 const REPORT_ONLY = process.env.E2E_AXE_REPORT === "1";
-const overlayFor = new Map(OVERLAYS.map((recipe) => [recipe.slug, recipe]));
 
 for (const route of componentRoutes()) {
-  const recipe = overlayFor.get(route.name);
-
   test(`${route.name} has no serious accessibility violations`, async ({ page }, testInfo) => {
     await gotoDocs(page, route.path, { scheme: "dark" });
     await expect(platformRow(page, "web").first()).toBeVisible();
@@ -28,7 +25,9 @@ for (const route of componentRoutes()) {
     const findings = await scan(page, '[data-platform-row="web"]');
     await attach(testInfo, route.name, findings);
 
-    if (recipe) {
+    for (const recipe of OVERLAYS) {
+      if (recipe.slug !== route.name) continue;
+      await gotoDocs(page, recipe.path, { scheme: "dark" });
       // An open overlay portals OUT of the row, so it is scanned as part of the page.
       await recipe.open(page);
       await expect(recipe.panel(page).last()).toBeVisible();

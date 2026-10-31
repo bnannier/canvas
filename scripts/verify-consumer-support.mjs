@@ -9,14 +9,15 @@ import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { assertInstalledPackage } from "../tools/native/candidate.mjs";
 import { supportMatrix, validatePeerCoverage, sealedPackage, assertNativeGraph } from "../tools/package/consumer-support/contract.mjs";
+import { reactNativeWebFlowPlugin } from "../tools/package/consumer-support/web-flow.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtures = path.join(repo, "tools/package/consumer-support");
 const rootRequire = createRequire(path.join(repo, "package.json"));
 const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
-function run(cwd, command, args) {
+function run(cwd, command, args, env = {}) {
   try {
-    return execFileSync(command, args, { cwd, encoding: "utf8", env: { ...process.env, HUSKY: "0" }, stdio: ["ignore", "pipe", "pipe"] });
+    return execFileSync(command, args, { cwd, encoding: "utf8", env: { ...process.env, HUSKY: "0", ...env }, stdio: ["ignore", "pipe", "pipe"] });
   } catch (error) {
     throw new Error(`${command} ${args.join(" ")} failed:\n${error.stdout ?? ""}${error.stderr ?? ""}`, { cause: error });
   }
@@ -65,6 +66,7 @@ async function checkServer(app, require, expectedReact, label) {
   const result = await require("esbuild").build({
     absWorkingDir: app, entryPoints: ["ssr.jsx"], outfile: "ssr.cjs", bundle: true,
     platform: "node", format: "cjs", metafile: true,
+    plugins: [reactNativeWebFlowPlugin(require)],
     alias: { "react-native": "react-native-web" },
     resolveExtensions: [".web.tsx", ".web.ts", ".web.jsx", ".web.js", ".tsx", ".ts", ".jsx", ".js", ".json"],
     define: { "process.env.NODE_ENV": '"development"', __DEV__: "true" }, logLevel: "silent",
@@ -83,10 +85,12 @@ async function checkWeb(app, require, expectedReact, label) {
   await checkServer(app, require, expectedReact, label);
   fs.copyFileSync(path.join(fixtures, "web.jsx"), path.join(app, "web.jsx"));
   // These are ordinary RNW consumer settings, including web sibling selection
-  // for react-native-svg. Nothing aliases Canvas, rewrites .js requests or stubs peers.
+  // for react-native-svg and Babel preprocessing of RN's Flow asset registry.
+  // Nothing aliases Canvas, rewrites .js requests or stubs peers.
   const result = await require("esbuild").build({
     absWorkingDir: app, entryPoints: ["web.jsx"], outfile: "web-dist/app.js", bundle: true,
     platform: "browser", format: "esm", minify: true, metafile: true,
+    plugins: [reactNativeWebFlowPlugin(require)],
     alias: { "react-native": "react-native-web" },
     resolveExtensions: [".web.tsx", ".web.ts", ".web.jsx", ".web.js", ".tsx", ".ts", ".jsx", ".js", ".json"],
     define: { "process.env.NODE_ENV": '"production"', __DEV__: "false" }, logLevel: "silent",
@@ -162,7 +166,9 @@ export async function verifyConsumerSupport(args = process.argv.slice(2)) {
       fs.mkdirSync(app);
       fs.writeFileSync(path.join(app, "package.json"), JSON.stringify({ name: `canvas-${row.name}-consumer`, version: "1.0.0", private: true, dependencies: { ...row.dependencies, [metadata.name]: `file:${tarball}` } }, null, 2));
       console.log(`${row.name}: installing Canvas ${metadata.version} with ${optional.length} optional peers absent`);
-      run(app, "bun", ["install", "--ignore-scripts", "--no-progress"]);
+      // Share downloads within this run, without inheriting the developer/CI
+      // machine's global Bun cache. The outer finally removes this cache too.
+      run(app, "bun", ["install", "--ignore-scripts", "--no-progress"], { BUN_INSTALL_CACHE_DIR: path.join(root, "bun-cache") });
       const require = createRequire(path.join(app, "package.json"));
       const installed = path.join(app, "node_modules", metadata.name);
       assertInstalledPackage(packageRoot, installed);

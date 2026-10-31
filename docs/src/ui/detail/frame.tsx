@@ -4,6 +4,8 @@ import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg";
 import { View, Row, Column, Typography, useTheme } from "@nannier/canvas";
 import type { ExampleRender, ExampleScope } from "../../core/scope";
 import type { PropDescriptors, PropValue } from "./knobs";
+import { kitProps } from "./knobs";
+import { referenceSpecimen } from "./reference-specimens";
 
 // The detail page's docs-only frame: a section's heading block, the hand-off's dotted
 // staging ground, and the one place a knob state becomes a live element.
@@ -165,13 +167,15 @@ export function heldOpen(props: PropDescriptors | undefined): boolean {
  * component whose data no knob supplies renders the example's data.
  */
 export function renderComponent(scope: ExampleScope, name: string, props: PropDescriptors, base?: SpecimenBase): ReactNode {
+  const reference = referenceSpecimen(scope, name, props);
+  if (reference !== undefined) return reference;
   const component = (scope as unknown as Record<string, Parameters<typeof createElement>[0]>)[name];
   if (!component) return null;
   const { children, ...rest } = props;
   const live: Record<string, unknown> = {};
   const example = base ? exampleProps(scope, component, base.examples) : undefined;
   if (example) for (const [key, value] of Object.entries(example)) if (key !== "children" && !base!.controlled.has(key)) live[key] = value;
-  for (const [key, value] of Object.entries({ ...base?.open, ...rest })) live[key] = propValue(scope, value);
+  for (const [key, value] of Object.entries(kitProps(name, { ...base?.open, ...rest }))) live[key] = propValue(scope, value);
   const own = children == null ? undefined : typeof children === "object" ? slotElement(scope, children) : String(children);
   const content = own !== undefined ? own : base?.controlled.has("children") ? undefined : (example?.children as ReactNode);
   return createElement(component, live, content);

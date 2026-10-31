@@ -12,6 +12,8 @@ import { stage } from "./docs";
 
 export interface BoundOverlay {
   slug: string;
+  /** Load before counting panels: the bare page can be a pinned-open specimen. */
+  path: string;
   /** Open it, and return once the click has been dispatched. */
   open: (page: Page) => Promise<void>;
   /** The overlay's role in its own preview host, the window's layer, or a document-root Modal. */
@@ -29,6 +31,7 @@ export interface BoundOverlay {
 function bind(recipe: OverlayRecipe): BoundOverlay {
   return {
     slug: recipe.slug,
+    path: `/components/${recipe.slug}${recipe.variant ? `/${recipe.variant}` : ""}`,
     open: (page) => recipe.open(page as never, stage(page) as never),
     // The stage's OverlayProvider wraps both the preview and its sibling portal
     // outlet. Scope to that host so portaled panels are included but permanently
@@ -58,6 +61,7 @@ export const MATERIAL_OVERLAYS: BoundOverlay[] = MATERIAL_OVERLAY_RECIPES.map(bi
 
 export const TOAST = {
   slug: TOAST_RECIPE.slug,
+  path: TOAST_RECIPE.path,
   open: (page: Page) => TOAST_RECIPE.open(page as never, stage(page) as never),
   region: (page: Page) => page.getByRole("status"),
 };
