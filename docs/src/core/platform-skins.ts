@@ -39,6 +39,8 @@ import { Dialog as DialogIOS } from "../../../src/organisms/dialog/dialog.ios.js
 import { Dialog as DialogAndroid } from "../../../src/organisms/dialog/dialog.android.js";
 import { AlertDialog as AlertDialogIOS } from "../../../src/molecules/alert-dialog/alert-dialog.ios.js";
 import { AlertDialog as AlertDialogAndroid } from "../../../src/molecules/alert-dialog/alert-dialog.android.js";
+import { Alert as AlertIOS } from "../../../src/molecules/alert/alert.ios.js";
+import { Alert as AlertAndroid } from "../../../src/molecules/alert/alert.android.js";
 import { Spinner as SpinnerIOS } from "../../../src/atoms/spinner/spinner.ios.js";
 import { Spinner as SpinnerAndroid } from "../../../src/atoms/spinner/spinner.android.js";
 import { TabBar as TabBarIOS } from "../../../src/organisms/tab-bar/tab-bar.ios.js";
@@ -129,7 +131,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Video: VideoIOS, Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Radio: RadioIOS, RadioGroup: RadioGroupIOS,
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
-    RowMenu: RowMenuIOS, Dialog: DialogIOS, Wizard: WizardIOS, AlertDialog: AlertDialogIOS,
+    RowMenu: RowMenuIOS, Dialog: DialogIOS, Wizard: WizardIOS, AlertDialog: AlertDialogIOS, Alert: AlertIOS,
     Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS,
     AvatarMenu: AvatarMenuIOS,
@@ -149,7 +151,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Video: VideoAndroid, Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid, RadioGroup: RadioGroupAndroid,
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
-    RowMenu: RowMenuAndroid, Dialog: DialogAndroid, Wizard: WizardAndroid, AlertDialog: AlertDialogAndroid,
+    RowMenu: RowMenuAndroid, Dialog: DialogAndroid, Wizard: WizardAndroid, AlertDialog: AlertDialogAndroid, Alert: AlertAndroid,
     Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Steps: StepsAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid,
     AvatarMenu: AvatarMenuAndroid,
