@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { DETAIL_SPECS, type Knob } from "../docs/src/core/data/detail-specs.ts";
-import { componentName, controlledProps, initialKnobs, isPinnedState, jsxCode, knobKey, knobProps, optionLabel, withOption } from "../docs/src/ui/detail/knobs.ts";
+import { componentName, controlledProps, initialKnobs, isPinnedState, jsxCode, kitProps, knobKey, knobProps, optionLabel, withOption } from "../docs/src/ui/detail/knobs.ts";
 import { inStage, placeMarks } from "../docs/src/ui/detail/anatomy-marks.ts";
 import { zoomRect } from "../src/style/anatomy.tsx";
 
@@ -16,6 +16,47 @@ const BUTTON_KNOBS: readonly Knob[] = [
   { kind: "boolean", prop: "disabled", value: false },
   { kind: "boolean", prop: "wrap", value: true },
 ];
+
+describe("reference values passed to live kit specimens", () => {
+  it("renders the authored oklch swatch through a supported native sRGB color", () => {
+    const knobs = DETAIL_SPECS.swatch!.knobs;
+    const props = knobProps(knobs, initialKnobs(knobs));
+    expect(props.color).toBe("oklch(.74 .17 285)");
+    const converted = kitProps("Swatch", props).color;
+    expect(converted).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(kitProps("Swatch", { color: "oklch(74% .17 285deg)" }).color).toBe(converted);
+    expect(kitProps("Swatch", { color: "#345678" }).color).toBe("#345678");
+  });
+
+  it("keeps the progress knob in percent while rendering a fractional continuous track", () => {
+    const knobs = DETAIL_SPECS.progress!.knobs;
+    const props = knobProps(knobs, initialKnobs(knobs));
+    expect(props.value).toBe(64);
+    expect(props.segments).toBe(0);
+    expect(kitProps("Progress", props)).toMatchObject({ value: 0.64 });
+    expect(kitProps("Progress", props)).not.toHaveProperty("segments");
+    expect(jsxCode("Progress", { value: 64, segments: 0 })).toBe("<Progress value={0.64} />");
+    expect(kitProps("Progress", { value: 100, segments: 8 })).toEqual({ value: 1, segments: 8 });
+    expect(kitProps("Slider", { value: 64 })).toEqual({ value: 64 });
+  });
+
+  it("turns the OTP group count into cells per group after length overrides", () => {
+    const knobs = DETAIL_SPECS["input-otp"]!.knobs;
+    const props = knobProps(knobs, initialKnobs(knobs));
+    expect(props.groups).toBe(1);
+    expect(kitProps("InputOTP", props)).not.toHaveProperty("groups");
+    expect(kitProps("InputOTP", { ...props, length: 6, groups: 2 }).groups).toBe(3);
+    expect(kitProps("InputOTP", { ...props, length: 8, groups: 3 }).groups).toBe(3);
+    expect(kitProps("InputOTP", { length: 4, groups: 2 }).groups).toBe(2);
+    expect(kitProps("InputOTP", DETAIL_SPECS["input-otp"]!.anatomy.props)).toMatchObject({ length: 6, groups: 3 });
+    expect(jsxCode("InputOTP", { length: 6, groups: 2 })).toBe("<InputOTP length={6} groups={3} />");
+  });
+
+  it("renders the full Chat instead of selecting the delivery-error ChatMessage example", () => {
+    const spec = DETAIL_SPECS.chat!;
+    expect(componentName(spec, initialKnobs(spec.knobs))).toBe("Chat");
+  });
+});
 
 describe("knob state", () => {
   it("keys an axis by its label and every other knob by its prop", () => {

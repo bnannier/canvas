@@ -18,7 +18,7 @@ import { expect, test } from "../support/fixtures";
 
 for (const recipe of OVERLAYS) {
   test(`${recipe.slug} opens, closes on Escape`, async ({ page }) => {
-    await gotoDocs(page, `/components/${recipe.slug}`, { scheme: "dark" });
+    await gotoDocs(page, recipe.path, { scheme: "dark" });
     await expect(stage(page)).toBeVisible();
 
     const panel = recipe.panel(page);
@@ -44,7 +44,7 @@ for (const recipe of OVERLAYS) {
 }
 
 test("a toast announces itself and then leaves", async ({ page }) => {
-  await gotoDocs(page, "/components/toast", { scheme: "dark" });
+  await gotoDocs(page, "/components", { scheme: "dark" });
   // The Toast page carries several live regions: one standing empty for the demo's
   // own toasts, and a few holding the static examples in the Do/Don't cards. So this
   // counts the ones that are SAYING something, before and after.

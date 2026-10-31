@@ -19,10 +19,13 @@ import type { Locator, Page } from "playwright";
 export interface OverlayRecipe {
   /** The component page's slug, which is also its route segment. */
   slug: string;
+  /** Live documented variant; bare v4 routes may intentionally pin an embedded specimen. */
+  variant?: string;
+  /** Browser route of the live documented example. */
+  path?: string;
   /**
-   * Open it. Clicks the LAST matching trigger inside the stage: the rows stack iOS,
-   * Android, Web, so the last one belongs to the Web row, the row whose behaviour is
-   * native to the browser being driven.
+   * Open the Web row explicitly: the hand-off orders Web, iOS, Android, and
+   * positional selection would exercise a native preview skin in the browser.
    */
   open: (page: Page, stage: Locator) => Promise<void>;
   /** The ARIA role the overlay itself carries once open. */
@@ -45,36 +48,46 @@ export interface OverlayRecipe {
   inWindowLayer?: boolean;
 }
 
-const lastButton = (stage: Locator, name: string | RegExp) =>
-  stage.getByRole("button", { name }).last();
+const webRow = (stage: Locator) => stage.locator('[data-platform-row="web"]');
+
+const webButton = (stage: Locator, name: string | RegExp) =>
+  webRow(stage).getByRole("button", { name }).last();
 
 const clickButton =
   (name: string | RegExp) =>
   async (_page: Page, stage: Locator): Promise<void> => {
-    await lastButton(stage, name).click();
+    await webButton(stage, name).click();
   };
 
-export const OVERLAY_RECIPES: OverlayRecipe[] = [
+/** Attach readable route data without navigating from a support module. */
+function liveExample(recipe: OverlayRecipe): OverlayRecipe {
+  return { ...recipe, path: `/components/${recipe.slug}${recipe.variant ? `/${recipe.variant}` : ""}` };
+}
+
+export const OVERLAY_RECIPES: OverlayRecipe[] = ([
   {
     slug: "dialog",
-    open: clickButton("Open dialog"),
-    trigger: (_page, stage) => lastButton(stage, "Open dialog"),
+    variant: "applicationform",
+    open: clickButton("Edit project"),
+    trigger: (_page, stage) => webButton(stage, "Edit project"),
     role: "dialog",
     adds: 1,
     restoresFocus: true,
   },
   {
     slug: "alert-dialog",
+    variant: "bodyfield",
     open: clickButton(/Delete identity/),
-    trigger: (_page, stage) => lastButton(stage, /Delete identity/),
+    trigger: (_page, stage) => webButton(stage, /Delete identity/),
     role: "alertdialog",
     adds: 1,
     restoresFocus: true,
   },
   {
     slug: "popover",
-    open: clickButton("Open popover"),
-    trigger: (_page, stage) => lastButton(stage, "Open popover"),
+    variant: "above",
+    open: clickButton("Filter"),
+    trigger: (_page, stage) => webButton(stage, "Filter"),
     role: "dialog",
     adds: 1,
     restoresFocus: true,
@@ -82,8 +95,9 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
   },
   {
     slug: "dropdown",
+    variant: "destructiveitem",
     open: clickButton("Actions"),
-    trigger: (_page, stage) => lastButton(stage, "Actions"),
+    trigger: (_page, stage) => webButton(stage, "Actions"),
     role: "menu",
     adds: 1,
     expands: true,
@@ -92,10 +106,11 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
   },
   {
     slug: "row-menu",
+    variant: "leadingicons",
     open: async (_page, stage) => {
-      await stage.getByLabel("More options").last().click();
+      await webRow(stage).getByLabel("More options").last().click();
     },
-    trigger: (_page, stage) => stage.getByLabel("More options").last(),
+    trigger: (_page, stage) => webRow(stage).getByLabel("More options").last(),
     role: "menu",
     adds: 1,
     expands: true,
@@ -105,8 +120,9 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     // The collapsed field is a button named for its label. It used to be opened by the
     // text of its current value, which stopped matching when the example changed.
     slug: "select",
+    variant: "country",
     open: clickButton("Country"),
-    trigger: (_page, stage) => lastButton(stage, "Country"),
+    trigger: (_page, stage) => webButton(stage, "Country"),
     role: "listbox",
     adds: 1,
     expands: true,
@@ -116,12 +132,13 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     // The field is a combobox, not a bare textbox: the old locator matched the page's
     // own search box on some routes and timed out on others.
     slug: "autocomplete",
+    variant: "requiredfield",
     open: async (_page, stage) => {
-      const field = stage.getByRole("combobox").last();
+      const field = webRow(stage).getByRole("combobox").last();
       await field.click();
       await field.pressSequentially("a", { delay: 40 });
     },
-    trigger: (_page, stage) => stage.getByRole("combobox").last(),
+    trigger: (_page, stage) => webRow(stage).getByRole("combobox").last(),
     role: "listbox",
     adds: 1,
     expands: true,
@@ -132,7 +149,7 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
     // placeholder the old recipe clicked does not exist until after it opens.
     slug: "command",
     open: clickButton(/Search/),
-    trigger: (_page, stage) => lastButton(stage, /Search/),
+    trigger: (_page, stage) => webButton(stage, /Search/),
     role: "listbox",
     adds: 1,
     expands: true,
@@ -141,7 +158,7 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
   {
     slug: "action-sheet",
     open: clickButton("Add photo"),
-    trigger: (_page, stage) => lastButton(stage, "Add photo"),
+    trigger: (_page, stage) => webButton(stage, "Add photo"),
     role: "dialog",
     adds: 1,
     atDocumentRoot: true,
@@ -149,20 +166,21 @@ export const OVERLAY_RECIPES: OverlayRecipe[] = [
   {
     slug: "drawer",
     open: clickButton("Open menu"),
-    trigger: (_page, stage) => lastButton(stage, "Open menu"),
+    trigger: (_page, stage) => webButton(stage, "Open menu"),
     role: "dialog",
     adds: 1,
     atDocumentRoot: true,
   },
-];
+] satisfies OverlayRecipe[]).map(liveExample);
 
 /** Country menus join material evidence without changing the Linux solid baselines. */
 export const PHONE_INPUT_RECIPE: OverlayRecipe = {
   slug: "phone-input",
+  path: "/components/phone-input",
   open: async (_page, stage) => {
-    await stage.getByRole("button", { name: /^Country(?:,|$)/ }).last().click();
+    await webRow(stage).getByRole("button", { name: /^Country(?:,|$)/ }).last().click();
   },
-  trigger: (_page, stage) => stage.getByRole("button", { name: /^Country(?:,|$)/ }).last(),
+  trigger: (_page, stage) => webRow(stage).getByRole("button", { name: /^Country(?:,|$)/ }).last(),
   role: "listbox",
   adds: 1,
   expands: true,
@@ -178,7 +196,13 @@ export const MATERIAL_OVERLAY_RECIPES: OverlayRecipe[] = [...OVERLAY_RECIPES, PH
  */
 export const TOAST_RECIPE = {
   slug: "toast",
-  open: async (_page: Page, stage: Locator): Promise<void> => {
-    await lastButton(stage, "Show toast").click();
+  // The detail page is a static Toast specimen. The existing catalog Save button
+  // drives the real app-root provider and its auto-dismiss lifecycle.
+  path: "/components",
+  open: async (page: Page, _stage: Locator): Promise<void> => {
+    const tile = page.locator("div")
+      .filter({ has: page.getByRole("link", { name: "Button", exact: true }) })
+      .filter({ has: page.getByRole("button", { name: "Save", exact: true }) }).last();
+    await tile.getByRole("button", { name: "Save", exact: true }).click();
   },
 };

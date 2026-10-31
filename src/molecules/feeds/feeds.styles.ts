@@ -113,6 +113,9 @@ export const androidSkin: FeedSkin = {
 export const activityRow = (t: ColorTokens): ViewStyle => ({ flexDirection: "row", gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: t.border, alignItems: "flex-start" });
 export const activityTime = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "400", lineHeight: 19, color: subtle(t), ...tabularNums(), width: 44 });
 export const activityText = (t: ColorTokens): TextStyle => ({ flex: 1, fontSize: 13, fontWeight: "400", lineHeight: 19, color: t.foreground });
+export const activityEventRow: ViewStyle = { flexDirection: "row", gap: 12, alignItems: "flex-start", paddingBottom: 10 };
+export const activityEventContent: ViewStyle = { flex: 1, minWidth: 0, flexDirection: "row", justifyContent: "space-between", gap: 12 };
+export const activityEventTime = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "400", lineHeight: 19, color: subtle(t), flexShrink: 0, ...tabularNums() });
 export const traceRow = (time?: string): ViewStyle => ({ flexDirection: "row", gap: 12, alignItems: "flex-start", paddingVertical: time ? 5 : 6 });
 export const traceTime = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "400", lineHeight: 19, color: subtle(t), ...tabularNums(), width: 44 });
 export const traceMarkerSlot = (hasTime: boolean): ViewStyle => ({ width: hasTime ? 12 : 14, alignItems: "flex-start" });

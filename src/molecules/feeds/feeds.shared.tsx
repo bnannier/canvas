@@ -257,28 +257,47 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
     // connector row is actually grown; avatar and non-last rows already exceed it.
     const targetFloor: ViewStyle | null = skin.minTarget > 0 ? { minHeight: skin.minTarget } : null;
 
+    const renderSentence = (item: FeedItem) => <>
+      {item.actor ? <Text style={skin.actorLabel(tokens)}>{item.actor} </Text> : null}
+      <Text style={skin.actionLabel(tokens)}>{item.action}</Text>
+      {item.target ? <Text style={skin.actionLabel(tokens)}> {item.target}</Text> : null}
+    </>;
+
+    const renderLead = (item: FeedItem, index: number) => lead === "avatar" || (lead === "activity" && !!item.avatar) ? (
+      <Avatar small src={item.avatar} name={item.actor}>
+        {item.actor ? initialsFrom(item.actor) : ""}
+      </Avatar>
+    ) : item.icon ? (
+      <View style={skin.node(tokens)}><Icon {...{ [item.icon]: true }} muted size={NODE_ICON_SIZE} decorative /></View>
+    ) : <View style={skin.dot(tokens, index === 0)} />;
+
     const renderContent = (item: FeedItem) => (
       <View style={s.contentColumn}>
-        <Text style={skin.lineText}>
-          {item.actor ? <Text style={skin.actorLabel(tokens)}>{item.actor} </Text> : null}
-          <Text style={skin.actionLabel(tokens)}>{item.action}</Text>
-          {item.target ? <Text style={skin.actionLabel(tokens)}> {item.target}</Text> : null}
-        </Text>
+        <Text style={skin.lineText}>{renderSentence(item)}</Text>
         <Text style={skin.timeLabel(tokens)}>{item.time}</Text>
       </View>
     );
 
     if (lead === "activity" || lead === "trace") {
       const renderRow = (item: FeedItem, index: number, listItem: ViewProps) => {
-        const rowStyle = lead === "activity" ? s.activityRow(tokens) : s.traceRow(item.time);
-        const content = <>
+        // Structured events use the hand-off's lead + sentence + trailing time.
+        // Action-only/rich activity rows retain their existing time-gutter API.
+        const event = lead === "activity" && (item.actor != null || item.target != null || item.icon != null || item.avatar != null);
+        const rowStyle = event ? s.activityEventRow : lead === "activity" ? s.activityRow(tokens) : s.traceRow(item.time);
+        const content = event ? <>
+          {renderLead(item, index)}
+          <View style={s.activityEventContent}>
+            <Text style={s.activityText(tokens)}>{item.content ?? renderSentence(item)}</Text>
+            <Text numberOfLines={1} style={s.activityEventTime(tokens)}>{item.time}</Text>
+          </View>
+        </> : <>
           {lead === "activity" ? <Text style={s.activityTime(tokens)}>{item.time}</Text> : <>
             {item.time !== undefined ? <Text style={s.traceTime(tokens)}>{item.time}</Text> : null}
             <View style={s.traceMarkerSlot(item.time !== undefined)}><View style={s.traceMarker(item.color ?? tokens["muted-foreground"], item.halo)} /></View>
           </>}
           <Text style={lead === "activity" ? s.activityText(tokens) : s.traceText(tokens)}>
             {lead === "trace" && item.kind ? <Text style={s.traceKind(tokens)}>{item.kind}{"   "}</Text> : null}
-            {item.content ?? item.action}
+            {item.content ?? (item.actor || item.target ? renderSentence(item) : item.action)}
           </Text>
         </>;
         if (onItemPress) return <View {...listItem}><Pressable accessibilityRole="button" onPress={() => onItemPress(index)} android_ripple={ripple} style={({ pressed }) => [rowStyle, targetFloor, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}>{content}</Pressable></View>;
@@ -310,17 +329,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
           {/* The node, first match wins: the actor's avatar on the avatar lead, the
               item's kit glyph on its disc, then the dot. The glyph is decorative
               because the actor/action line beside it already says what happened. */}
-          {lead === "avatar" ? (
-            <Avatar small src={item.avatar} name={item.actor}>
-              {item.actor ? initialsFrom(item.actor) : ""}
-            </Avatar>
-          ) : item.icon ? (
-            <View style={skin.node(tokens)}>
-              <Icon {...{ [item.icon]: true }} muted size={NODE_ICON_SIZE} decorative />
-            </View>
-          ) : (
-            <View style={skin.dot(tokens, index === 0)} />
-          )}
+          {renderLead(item, index)}
           <View style={s.connectorContentColumn}>{renderContent(item)}</View>
         </>
       );

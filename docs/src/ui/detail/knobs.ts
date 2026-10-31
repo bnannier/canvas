@@ -1,4 +1,5 @@
 import type { DetailSpec, Knob, SpecOption } from "../../core/data/detail-specs";
+import { oklchHex } from "../../../../src/style/color";
 
 // The detail page's playground model, kept free of React so it is unit-tested on its own
 // (test/detail-knobs.test.ts): the knob state a spec starts from, the props that state
@@ -18,6 +19,30 @@ export type PropValue = string | number | boolean | { icon: string } | { element
 
 /** The props a knob state passes, in the order the JSX prints them. */
 export type PropDescriptors = Readonly<Record<string, PropValue>>;
+
+/** Translate the prototype's units into the public kit API after all specimen overrides. */
+export function kitProps(component: string, props: PropDescriptors): PropDescriptors {
+  if (component === "Swatch" && typeof props.color === "string") {
+    // RN colors use sRGB strings; keep the editable authored oklch notation in the knob.
+    const match = /^oklch\(\s*(\d*\.?\d+)(%)?\s+(\d*\.?\d+)\s+([-+]?\d*\.?\d+)(?:deg)?\s*\)$/.exec(props.color);
+    if (match) return { ...props, color: oklchHex(Number(match[1]) / (match[2] ? 100 : 1), Number(match[3]), Number(match[4])) };
+  }
+  if (component === "Progress") {
+    const next = { ...props };
+    if (typeof next.value === "number") next.value /= 100;
+    // The reference's zero means a continuous track; the kit omits segments for it.
+    if (next.segments === 0) delete next.segments;
+    return next;
+  }
+  if (component === "InputOTP" && typeof props.groups === "number") {
+    const next = { ...props };
+    // The reference counts groups; InputOTP specifies cells per group.
+    if (props.groups <= 1) delete next.groups;
+    else next.groups = Math.ceil(Number(props.length ?? 6) / props.groups);
+    return next;
+  }
+  return props;
+}
 
 /** The key a knob's value is kept under: its prop, or its axis label for a pick-one axis. */
 export function knobKey(knob: Knob): string {
@@ -157,7 +182,7 @@ function attribute(name: string, value: PropValue): string {
 export function jsxCode(name: string, props: PropDescriptors): string {
   const attributes: string[] = [];
   let children = "";
-  for (const [key, value] of Object.entries(props)) {
+  for (const [key, value] of Object.entries(kitProps(name, props))) {
     if (key === "children") {
       children = typeof value === "object" && "element" in value ? `<${value.element}>${value.children ?? ""}</${value.element}>` : String(value);
       continue;

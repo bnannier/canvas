@@ -54,7 +54,7 @@
         "react-native": ">=0.74",
         "react-native-qrcode-svg": ">=6",
         "react-native-safe-area-context": ">=4",
-        "react-native-svg": ">=14",
+        "react-native-svg": ">=15.8.0",
       },
       "optionalPeers": [
         "expo-blur",

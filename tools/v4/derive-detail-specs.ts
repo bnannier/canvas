@@ -39,6 +39,10 @@ const PRIMITIVE_PROPS: Record<string, string> = {
   "scroll-view": "react-native:ScrollViewProps",
 };
 
+// The prototype's Chat renderer shows a complete conversation. Its scanned docs
+// happen to list ChatMessage first, which is a subcomponent rather than that specimen.
+const COMPONENT_PROPS: Record<string, string> = { chat: "ChatProps" };
+
 // React Native's TextInput has no `disabled` prop: a field is turned off with
 // `editable={false}` beside `aria-disabled` (src/atoms/text-input/text-input.md).
 const TEXT_INPUT_DISABLED =
@@ -49,7 +53,7 @@ const TEXT_INPUT_DISABLED =
 const DROPPED_KNOBS: Record<string, Record<string, string>> = {
   chat: {
     streaming:
-      "ChatMessage takes streaming as a field of its `message` data (ChatMessageData.streaming), not as a prop of its own.",
+      "Chat streaming is stored on messages[].streaming, not a root prop.",
   },
   "text-input": {
     disabled: TEXT_INPUT_DISABLED,
@@ -220,7 +224,7 @@ function build() {
   for (const { title, slugs } of sections) {
     for (const slug of slugs) {
       const s = kit.spec(slug);
-      const propsInterface = docs.c[slug]?.main?.n ?? PRIMITIVE_PROPS[slug];
+      const propsInterface = COMPONENT_PROPS[slug] ?? docs.c[slug]?.main?.n ?? PRIMITIVE_PROPS[slug];
       if (!propsInterface) throw new Error(`${slug}: the hand-off names no props interface and none is mapped`);
       const dropped: { knob: string; reason: string }[] = [];
       const knobs: Knob[] = [];

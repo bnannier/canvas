@@ -43,7 +43,7 @@ export interface Catalog {
 }
 
 const page = (row: { path: string }) => row.path;
-const overlay = (row: { slug: string }) => `/components/${row.slug}`;
+const overlay = (row: { slug: string; path?: string }) => row.path ?? `/components/${row.slug}`;
 
 /**
  * Every e2e catalog. OVERLAYS and MATERIAL_OVERLAYS are e2e/support/overlays.ts's

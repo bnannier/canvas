@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
-const COMMON_TOOLS = { esbuild: "0.25.11", typescript: "5.9.3" };
+const COMMON_TOOLS = { "@babel/core": "7.25.2", esbuild: "0.25.11", typescript: "5.9.3" };
 const FLOOR = {
-  "react-native": "0.74.0", "react-native-svg": "14.0.0", "react-native-web": "0.19.13",
+  "react-native": "0.74.0", "react-native-svg": "15.8.0", "react-native-web": "0.19.13",
   "@types/react": "18.2.79", "@react-native/metro-config": "0.74.0",
   "@react-native/babel-preset": "0.74.0", metro: "0.79.1",
 };

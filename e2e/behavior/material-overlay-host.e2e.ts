@@ -58,7 +58,7 @@ for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const
 }
 
 for (const slug of ["dialog"]) test(`${slug} catalogue overlay keeps its contained host`, async ({ page }, info) => {
-  await gotoDocs(page, `/components/${slug}`, { scheme: "dark", surface: "glass", viewport: { width: 390, height: 900 } });
+  await gotoDocs(page, `/components/${slug}/applicationform`, { scheme: "dark", surface: "glass", viewport: { width: 390, height: 900 } });
   await expect(stage(page)).toBeVisible();
   const recipe = OVERLAYS.find(entry => entry.slug === slug)!;
   // The stage provider wraps both the preview and its sibling portal outlet.
@@ -80,7 +80,7 @@ for (const slug of ["dialog"]) test(`${slug} catalogue overlay keeps its contain
 // page around the stage left the menu open (on the web, iOS and Android alike).
 for (const slug of ["dropdown", "row-menu"]) for (const width of [1280, 390]) {
   test(`${slug} catalogue menu is placed in its stage and closes on a click beside it at ${width}`, async ({ page }) => {
-    await gotoDocs(page, `/components/${slug}`, { scheme: "dark", surface: "glass", viewport: { width, height: 900 } });
+    await gotoDocs(page, slug === "dropdown" ? "/components/dropdown/destructiveitem" : "/components/row-menu/leadingicons", { scheme: "dark", surface: "glass", viewport: { width, height: 900 } });
     await expect(stage(page)).toBeVisible();
     const recipe = OVERLAYS.find(entry => entry.slug === slug)!;
     const panel = recipe.panel(page);

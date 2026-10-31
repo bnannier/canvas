@@ -15,7 +15,7 @@ describe("isolated support matrix", () => {
     const rows = supportMatrix((name: string) => `installed:${name}`);
     expect(rows.map((row) => row.name)).toEqual(["web-floor", "native-floor", "current"]);
     expect(rows[0]).toMatchObject({ native: false, web: true, dependencies: { react: "18.0.0", "react-dom": "18.0.0", "react-native-web": "0.19.13" } });
-    expect(rows[1]).toMatchObject({ native: true, web: false, dependencies: { react: "18.2.0", "react-native": "0.74.0", "react-native-svg": "14.0.0", metro: "0.79.1" } });
+    expect(rows[1]).toMatchObject({ native: true, web: false, dependencies: { react: "18.2.0", "react-native": "0.74.0", "react-native-svg": "15.8.0", metro: "0.79.1" } });
     expect(rows[2].dependencies.react).toBe("installed:react");
     expect(rows[2].dependencies["@react-native/metro-config"]).toBe("installed:@react-native/metro-config");
   });

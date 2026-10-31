@@ -34,23 +34,13 @@ for (const scheme of ["dark", "light"] as const) {
         const metadata = { route: route.path, roles: route.roles, scheme, formFactor, surface: "glass", reducedMotion: true };
         await attachMaterialEvidence(page, testInfo, "glass-rest", card, metadata);
 
-        const overlay = MATERIAL_OVERLAYS.find(({ slug }) => slug === route.slug);
-        if (overlay) {
-          const closed = await overlay.panel(page).count();
-          await overlay.open(page);
-          await expect(overlay.panel(page)).toHaveCount(closed + overlay.adds);
-          await expect(overlay.panel(page).last()).toBeVisible();
-          // A card in the window's layer paints outside the stage, so its evidence is the
-          // page, like a document-root Modal's.
-          await attachMaterialEvidence(page, testInfo, "glass-open", stage(page), metadata, overlay.atDocumentRoot || overlay.inWindowLayer);
-          await page.keyboard.press("Escape");
-          await expect(overlay.panel(page)).toHaveCount(closed);
-        } else if (route.slug === "toast") {
+        if (route.slug === "toast") {
+          await gotoDocs(page, "/components", { scheme, surface: "glass", viewport });
           const speaking = TOAST.region(page).filter({ hasText: /\S/ });
           const before = await speaking.count();
           await TOAST.open(page);
           await expect(speaking).toHaveCount(before + 1);
-          await attachMaterialEvidence(page, testInfo, "glass-notification", stage(page), metadata, true);
+          await attachMaterialEvidence(page, testInfo, "glass-notification", page.locator("[data-page-scroll]").first(), metadata, true);
         }
 
         // Preserve the existing solid image baselines and additionally verify
@@ -58,7 +48,18 @@ for (const scheme of ["dark", "light"] as const) {
         await gotoDocs(page, route.path, { scheme, surface: "solid", viewport });
         await expect(row).toBeVisible();
         await expectNoMaterialEffects(row);
-        if (overlay) {
+        for (const overlay of MATERIAL_OVERLAYS) {
+          if (overlay.slug !== route.slug) continue;
+          await gotoDocs(page, overlay.path, { scheme, surface: "glass", viewport });
+          const closed = await overlay.panel(page).count();
+          await overlay.open(page);
+          await expect(overlay.panel(page)).toHaveCount(closed + overlay.adds);
+          await expect(overlay.panel(page).last()).toBeVisible();
+          await attachMaterialEvidence(page, testInfo, "glass-open", stage(page), metadata, overlay.atDocumentRoot || overlay.inWindowLayer);
+          await page.keyboard.press("Escape");
+          await expect(overlay.panel(page)).toHaveCount(closed);
+
+          await gotoDocs(page, overlay.path, { scheme, surface: "solid", viewport });
           await overlay.open(page);
           await expect(overlay.panel(page).last()).toBeVisible();
           const host = overlay.atDocumentRoot || overlay.inWindowLayer ? page.locator("body") : stage(page).locator("..");

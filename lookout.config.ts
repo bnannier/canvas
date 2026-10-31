@@ -79,6 +79,11 @@ const states: Record<string, StateRecipe> = Object.fromEntries(
     OVERLAY_STATE[recipe.slug],
     {
       prepare: async (page: Page) => {
+        if (recipe.path) {
+          const url = new URL(page.url());
+          url.pathname = url.pathname.replace(/\/components(?:\/.*)?$/, recipe.path);
+          if (url.href !== page.url()) await page.goto(url.href);
+        }
         await recipe.open(page, stage(page));
         const host = recipe.atDocumentRoot || recipe.inWindowLayer ? page : stage(page).locator("..");
         await host.getByRole(recipe.role).last().waitFor({ state: "visible" });
@@ -115,6 +120,9 @@ states["full-content"] = {
 // live region is already on the page and empty; the trigger fills it.
 states[OVERLAY_STATE.toast] = {
   prepare: async (page: Page) => {
+    const url = new URL(page.url());
+    url.pathname = url.pathname.replace(/\/components(?:\/.*)?$/, TOAST_RECIPE.path);
+    if (url.href !== page.url()) await page.goto(url.href);
     await TOAST_RECIPE.open(page, stage(page));
     await page.waitForTimeout(350);
   },

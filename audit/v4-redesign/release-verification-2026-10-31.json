@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-31",
+  "status": "release preparation; final clean-source CI and publication pending",
+  "baselineReview": {
+    "source": "75ac2101d2c59674baf905a592acabcee421d4ab",
+    "captured": 236,
+    "changedReviewed": 234,
+    "unchangedTokenImages": 2,
+    "review": "All old/new/difference sheets inspected; candidates were not accepted blindly.",
+    "productRepairs": [
+      "Chat full conversation specimen",
+      "Feed actor and target labels with trailing timestamps",
+      "InputOTP group count conversion",
+      "Pagination container overflow fallback",
+      "Progress percent conversion and continuous track",
+      "ScrollView numbered tile specimen",
+      "Swatch oklch conversion to sRGB",
+      "TextInput readable ink and focus underline",
+      "View nested container specimen"
+    ],
+    "captureRepairs": [
+      "Explicit Web platform selection",
+      "Live overlay example routes",
+      "Complete portal framing",
+      "Observable anchored-panel paint readiness"
+    ]
+  },
+  "freshBrowserProof": {
+    "artifacts": ".v4-reference/release-verification-2026-10-31/detail-specimens",
+    "schemes": [
+      "dark",
+      "light"
+    ],
+    "platforms": "Web, iOS and Android skins in a browser; not native runtime evidence",
+    "consoleErrors": 0,
+    "interactions": [
+      "Chat send",
+      "TextInput editing and live/pinned focus",
+      "ScrollView horizontal/vertical switch",
+      "Pagination keyboard navigation and container resize"
+    ],
+    "limitation": "Composition and regression review; does not claim universal pixel-identical rendering."
+  },
+  "packageCompatibility": {
+    "peerMinimum": "react-native-svg >=15.8.0",
+    "webFloor": "React 18.0, RNW 0.19.13, RN 0.74 declarations, SVG 15.8",
+    "nativeFloor": "React 18.2, RN 0.74, SVG 15.8; iOS/Android Metro with exports and legacy resolution",
+    "current": "React 19.2.7; SSR/browser and both native entry paths",
+    "status": "all three rows passed before final source rebuild",
+    "log": ".v4-reference/release-verification-2026-10-31/consumer-support.log"
+  },
+  "nativeLocal": {
+    "source": "75ac2101d2c59674baf905a592acabcee421d4ab",
+    "packageVersion": "3.12.1 (non-publication candidate)",
+    "androidBuild": "passed",
+    "androidInstrumentation": 15,
+    "deviceJourneys": "blocked before app launch by unavailable CoreSimulator service; Maestro enumerates iOS even with Android platform selection",
+    "report": ".v4-reference/release-verification-2026-10-31/native-summary-75ac2101.json",
+    "limitation": "Predates final release repairs; not a final-candidate device pass."
+  },
+  "artifactCleanup": {
+    "userApproved": true,
+    "deletedReports": 35,
+    "archivedBytes": 1304017826,
+    "retainedRemoteArtifacts": 18,
+    "retainedRemoteBytes": 243034703,
+    "archive": ".v4-reference/release-artifact-archive/verified-archives.json",
+    "deletionRecord": ".v4-reference/release-artifact-archive/deletion-results.json"
+  }
+}
