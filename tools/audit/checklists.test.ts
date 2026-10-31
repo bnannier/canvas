@@ -531,7 +531,7 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
       "e2e/a11y/components.e2e.ts": ["componentRoutes"],
       "e2e/journeys/keyboard.e2e.ts": ["componentRoutes"],
       "e2e/responsive/component-widths.e2e.ts": ["contentRoutes", "componentRoutes"],
-      "e2e/smoke/examples.e2e.ts": ["componentExamples"],
+      "e2e/smoke/examples.e2e.ts": ["componentExamples", "EXAMPLE_ROUTES"],
       "e2e/smoke/routes.e2e.ts": ["allRoutes"],
       "e2e/visual/components.e2e.ts": ["componentRoutes"],
       "e2e/visual/materials.e2e.ts": ["MATERIAL_ROUTES"],
