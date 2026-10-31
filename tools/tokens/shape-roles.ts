@@ -117,6 +117,14 @@ export interface SharedPart {
 
 export const SHARED_PARTS: SharedPart[] = [
   {
+    site: "src/organisms/dialog/dialog.styles.ts iosSkin.bandedCard",
+    why: "The banded workflow panel is Wizard's shared v4 panel, not a native alert: K.def('wizard') keeps the web dialog corner on every platform.",
+  },
+  {
+    site: "src/organisms/dialog/dialog.styles.ts androidSkin.bandedCard",
+    why: "The banded workflow panel is Wizard's shared v4 panel, not a native alert: K.def('wizard') keeps the web dialog corner on every platform.",
+  },
+  {
     site: "src/organisms/data-table/data-table.styles.ts iosSkin.actionButton",
     why: "SwiftUI Table, the control DataTable's iOS row cites, draws no icon button in a row: a row action's button is the kit's own, at Dark Factory's control corner",
   },

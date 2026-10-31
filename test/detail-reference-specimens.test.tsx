@@ -6,6 +6,9 @@ import { View, TextInput } from "../src/style/primitives.ts";
 import { ScrollView } from "../src/style/scroll-view.tsx";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 import { Chat } from "../src/organisms/chat/chat.tsx";
+import { Wizard } from "../src/organisms/wizard/wizard.tsx";
+import { Input } from "../src/atoms/input/input.tsx";
+import { Button } from "../src/atoms/button/button.tsx";
 import { colorsFor } from "../src/style/tokens.ts";
 import type { ExampleScope } from "../docs/src/core/scope.ts";
 import { DETAIL_SPECS } from "../docs/src/core/data/detail-specs.ts";
@@ -17,10 +20,31 @@ mock.module(import.meta.resolve("../docs/node_modules/react/index.js"), () => Re
 const { referenceSpecimen } = await import("../docs/src/ui/detail/reference-specimens.tsx");
 
 afterEach(cleanup);
-const scope = { View, TextInput, ScrollView, Typography, Chat, tokens: colorsFor("violet", "dark") } as ExampleScope;
+const scope = { View, TextInput, ScrollView, Typography, Chat, Wizard, Input, Button, tokens: colorsFor("violet", "dark") } as ExampleScope;
 const specimen = (name: string, props = {}) => render(<ThemeProvider dark solid>{referenceSpecimen(scope, name, props)}</ThemeProvider>);
 
 describe("reference conversation and scrolling specimens", () => {
+  it("renders the authored Wizard stages, header status, email fields and opposing footer actions", () => {
+    specimen("Wizard", { title: "Create workspace", current: 1, status: "Step 2 of 4" });
+    const dialog = screen.getByRole("dialog", { name: "Create workspace" });
+    expect(dialog.getAttribute("aria-modal")).toBeNull();
+    for (const label of ["Name", "Members", "Theme", "Review"]) expect(screen.getByText(label)).toBeTruthy();
+    expect(dialog.querySelector('[aria-current="step"]')?.textContent).toContain("Members");
+    expect(screen.getByText("Invite your team")).toBeTruthy();
+    expect(screen.getByText("Invite your team").style.lineHeight).toBe("19px");
+    expect(screen.getByPlaceholderText("noor@nannier.com")).toBeTruthy();
+    const second = screen.getByRole("textbox", { name: "Second teammate email" });
+    fireEvent.change(second, { target: { value: "new@nannier.com" } });
+    expect((second as HTMLInputElement).value).toBe("new@nannier.com");
+    const footer = screen.getByTestId("detail-reference-wizard-footer");
+    expect(footer.textContent).toBe("BackContinue");
+    expect(footer.textContent).not.toContain("Step 2 of 4");
+    expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
+  });
+  it("keeps the invitation title on the active native face's normal line", () => {
+    render(<ThemeProvider dark solid fonts={{ sans: "Roboto" }}>{referenceSpecimen(scope, "Wizard", {})}</ThemeProvider>);
+    expect(screen.getByText("Invite your team").style.lineHeight).toBe("18px");
+  });
   it("targets the complete Chat export from the generated detail spec", () => {
     expect(DETAIL_SPECS.chat.propsInterface).toBe("ChatProps");
     expect(componentName(DETAIL_SPECS.chat, initialKnobs(DETAIL_SPECS.chat.knobs))).toBe("Chat");

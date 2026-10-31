@@ -1,0 +1,18 @@
+{
+  "family": "Roboto",
+  "source": "https://github.com/google/fonts/tree/1c627bfa375fc51cf86fabeca4f6e08a95f0aa5c/ofl/roboto",
+  "commit": "1c627bfa375fc51cf86fabeca4f6e08a95f0aa5c",
+  "file": "Roboto[wdth,wght].ttf",
+  "sha256": "d7598e12c5dbef095ff8272cfc55da0250bd07fbdecbac8a530b9b277872a134",
+  "license": "SIL Open Font License 1.1; Roboto-OFL.txt",
+  "use": "Web Android skin previews requesting Roboto explicitly; no Canvas role or native font registration changes.",
+  "subset": {
+    "wght": [
+      400,
+      700
+    ],
+    "wdth": 100,
+    "glyphRanges": "docs/scripts/subset-fonts.mjs RANGES"
+  },
+  "licenseFile": "Roboto-OFL.txt"
+}

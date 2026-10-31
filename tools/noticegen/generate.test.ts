@@ -1,8 +1,9 @@
 import { afterAll, describe, expect, it } from "bun:test";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { collectShipped, readShipped, renderNotices, type Shipped } from "./generate.ts";
+import { collectShipped, collectSourceFonts, readShipped, renderNotices, type Shipped } from "./generate.ts";
 
 // The generator reads each shipped package from the directory the scan recorded, never by
 // bare name. The fixture is the layout that broke the notices: a docs devDependency
@@ -128,5 +129,40 @@ describe("shipped.json", () => {
         expect(dir, name).not.toMatch(/(^|\/)\.\.(\/|$)/);
       }
     }
+  });
+});
+
+
+describe("vendored font notices", () => {
+  const bytes = Buffer.from("pinned Roboto source fixture");
+  const license = "Copyright 2011 The Roboto Project Authors\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1.\nSIL OPEN FONT LICENSE Version 1.1\nThe complete fixture permission text.";
+  function fontRoot(name: string) {
+    const base = join(root, name);
+    const directory = join(base, "docs/assets/fonts/source");
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(join(directory, "Roboto.ttf"), bytes);
+    writeFileSync(join(directory, "Roboto-OFL.txt"), license);
+    writeFileSync(join(directory, "Roboto-SOURCE.json"), JSON.stringify({
+      family: "Roboto", commit: "official-pinned-revision", file: "Roboto.ttf",
+      sha256: createHash("sha256").update(bytes).digest("hex"), licenseFile: "Roboto-OFL.txt",
+    }));
+    return { base, directory };
+  }
+  it("includes the pinned font's own copyright and full OFL without an invented npm wrapper", () => {
+    const { base } = fontRoot("valid-font");
+    const rows = collectSourceFonts(base);
+    expect(rows[0]).toMatchObject({ name: "Roboto", version: "official-pinned-revision", license: "OFL-1.1", copyright: ["Copyright 2011 The Roboto Project Authors"] });
+    expect(rows[0].body).toContain("The complete fixture permission text.");
+    expect(renderNotices(rows).packages).toHaveLength(1);
+  });
+  it("fails closed when the font source differs from its pinned provenance", () => {
+    const { base, directory } = fontRoot("changed-font");
+    writeFileSync(join(directory, "Roboto.ttf"), "another font");
+    expect(() => collectSourceFonts(base)).toThrow("differs from its recorded revision");
+  });
+  it("fails closed when the source OFL notice is missing", () => {
+    const { base, directory } = fontRoot("missing-font-notice");
+    rmSync(join(directory, "Roboto-OFL.txt"));
+    expect(() => collectSourceFonts(base)).toThrow();
   });
 });

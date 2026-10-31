@@ -28,6 +28,8 @@ export const READING_FLOOR = { body: 12, lead: 12, small: 11, tiny: 10, caption:
 export type ReadingRole = keyof typeof READING_FLOOR;
 
 export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
+  // The compact workflow sidebar's 11px mono step numerals.
+  "src/organisms/steps/steps.styles.ts": { compactGlyph: "caption" },
   "src/atoms/avatar/avatar-menu.shared.tsx": { ACCOUNT_SECONDARY: "tiny" },
   // A Slider `scale`'s min, mid and max marks (the hand-off's 11 px mono axis labels).
   "src/atoms/slider/slider.styles.ts": { scaleType: "caption" },

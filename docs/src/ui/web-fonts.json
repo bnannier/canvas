@@ -26,5 +26,14 @@
       400,
       600
     ]
+  },
+  "androidPreview": {
+    "family": "Roboto",
+    "path": "/fonts/Roboto.f124f5d4fbdf.woff2",
+    "weight": [
+      400,
+      700
+    ],
+    "preload": false
   }
 }

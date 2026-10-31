@@ -6,11 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { Steps } = scope;
   return (
 <Steps
-  segmented
+  vertical
   steps={[
-    { label: "Account", description: "Done" },
-    { label: "Workspace", description: "Current" },
-    { label: "Invite team", description: "Next" }
+    { label: "Create workspace", description: "Northwind · EU Frankfurt" },
+    { label: "Import components", description: "Restyling 72 of 107", progress: 67 },
+    { label: "Invite your team", description: "Optional" }
   ]}
   defaultCurrent={1}
 />

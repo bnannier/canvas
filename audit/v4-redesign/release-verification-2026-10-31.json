@@ -101,7 +101,7 @@
     "sidebarPhoto": "Resolved nested account.src through the existing bundled-photo mapper; missing Grace Hopper photo caused six catalog/Sidebar failures across desktop, tablet and phone. Four focused browser cases, three photo unit tests and docs typecheck pass after the fix.",
     "exampleTests": "Each canonical variant now has its own unchanged 60-second test budget and console gate. Traces showed large groups consumed the shared budget after successful page loads. All 45 Button/Input route cases pass under concurrent CI load.",
     "disclosureTargets": "The explicit target-size scan now uses the existing exact five-dot shell policy, with all raw findings and exception attachments. Four browser cases and seven policy tests pass; unrelated targets remain enforced.",
-    "remaining": "Complete diagnostic coverage and embedded Wizard reference correction, then full clean-source CI and publication.",
+    "remaining": "Final Wizard reference comparison and complete clean-source validation, then publication.",
     "scrollView": "The always-overflowing numbered-tile specimen declares a web keyboard stop. Chromium keyboard, four-side ring pixels and scoped axe checks pass in both schemes; WebKit Tab/Shift-Tab, arrow scrolling and scoped axe checks pass. Unfocused visual comparisons remain unchanged.",
     "toast": "Adapted the reference action string into the public ToastAction shape, restoring the visible and accessible Undo action. Both schemes and all three browser skin previews pass action-name and axe checks. Two fresh captures were visually reviewed and ordinary comparisons pass.",
     "phoneProps": "Tests retain zero page/document overflow and verify the intended four-column Props sheet stays bounded, has a keyboard scroll stop and pans with ArrowRight. Four representative production browser cases pass.",
@@ -110,10 +110,77 @@
       "failed": 0
     },
     "checks": "Docs and end-to-end typechecks, lint, and the docs component usage guard pass.",
-    "finalSourceValidation": "Pending the combined heading/missing-route checks and complete clean-source CI run.",
+    "finalSourceValidation": "91 combined production browser checks passed; full corrected-source validation pending.",
     "webkitRingLimitation": "WebKit paints the existing outline:auto focus treatment with its system color instead of the authored RGBA. Direct screenshots and edge measurements confirm a visible, unclipped ring on all four sides in both schemes; this is not a color-parity pass. No comparison threshold was relaxed.",
     "focusedEvidence": ".v4-reference/release-verification-2026-10-31/accessibility/",
     "headingsAndRoutes": "All 91 focused production checks pass: 77 structure/accessibility cases, two unknown-route recovery cases, and 12 keyboard cases across Chromium, Firefox and WebKit. Footer/Home heading levels change semantics only. Unknown dynamic section names now keep the shared not-found page until the user chooses Go home.",
     "dialogVeil": "The hand-off retains a 2px Dialog scrim veil in both surface modes. All four scheme/viewport tests now verify its exact owner, dim, filter and bounds while rejecting any other material. An injected unrelated second 2px blur is rejected. Product rendering is unchanged."
+  },
+  "diagnosticCoverage": {
+    "source": "27cff194",
+    "remainingShards": {
+      "passed": 1337,
+      "failed": 16
+    },
+    "failureClasses": {
+      "outdatedKeyboardContracts": 8,
+      "authoredDialogVeilPolicy": 4,
+      "embeddedWizardBackdrop": 4
+    },
+    "screenshotComparisonFailures": 0,
+    "focusedBrowserRepairsPassed": 91,
+    "auditTestsPassed": 57,
+    "evidence": ".v4-reference/release-verification-2026-10-31/browser-contracts",
+    "status": "Diagnostic coverage complete; final corrected-source full run pending."
+  },
+  "wizardReferenceRepair": {
+    "authority": "Vendored default K.def(wizard) in cv-kit-overlays.js, measured at matching 1280px viewport, scheme and material mode.",
+    "changes": [
+      "170px vertical stage rail with compact Steps",
+      "Header progress status and opposite footer actions",
+      "620px panel cap and 40px compact outlined Inputs",
+      "Opaque embedded panel without modal veil; live modal retains veil, focus and scrolling"
+    ],
+    "liveBrowserProof": "Solid/glass and Wizard-owned/child-owned scrolling pass; fixed header/footer, controlled transitions, Escape, focus return and zero page overflow verified.",
+    "fontFinding": "Reference and final production Android Wizard title/body both paint custom Roboto, verified through CDP platform-font evidence. Only the original three brand faces preload; Roboto loads on demand from the same origin.",
+    "reviewStatus": "Main reviewed and accepted both final ordinary Wizard captures; both normal screenshot comparisons passed without update flags or tolerance changes. Final clean-source CI pending.",
+    "scope": "Browser platform previews are not native device evidence.",
+    "fontEvidence": ".v4-reference/release-verification-2026-10-31/accessibility/wizard-font-platform-proof-final.json",
+    "matchedCaptureReview": "Main reviewed dark/solid and light/glass matched component crops; hashes confirm each solid/glass pair is identical for both reference and current. Grid width 1004px; reference height 463.78125px and current 463.8125px.",
+    "knownDifference": "The existing page chrome positions the grid 35.21875px lower on the current page; cropped component geometry review does not establish whole-page pixel parity.",
+    "evidence": ".v4-reference/release-verification-2026-10-31/wizard",
+    "materialCasesPassed": 4,
+    "sourceChecks": "Root and e2e TypeScript checks, lint, docs/audit generation freshness, and 41 font/notice tests pass.",
+    "ordinaryComparisonsPassed": 2,
+    "innerGeometry": "Panel, header, body and footer heights and relative vertical positions match exactly on all three skins. Grid sizing leaves panel widths 0.171875px narrower on Web/iOS and 0.1875px narrower on Android."
+  },
+  "compactInputVerification": {
+    "functionalTestsPassed": 101,
+    "shapeChecksPassed": 94,
+    "pinnedBun": "1.4.0 (Linux)",
+    "gzipBytes": {
+      "inputWeb": 47686,
+      "inputIOS": 47909,
+      "inputAndroid": 48012,
+      "inputBudget": 48128,
+      "wholeKitWeb": 295661,
+      "wholeKitIOS": 296959,
+      "wholeKitAndroid": 298076,
+      "wholeKitBudget": 299008
+    },
+    "budgetChange": false,
+    "evidence": ".v4-reference/release-verification-2026-10-31/accessibility/input-pinned-size-final.log"
+  },
+  "hostSuiteDiagnosis": {
+    "initialResult": {
+      "passed": 8676,
+      "skipped": 8,
+      "failed": 36
+    },
+    "resolvedSourceAndMetadataFailures": 11,
+    "environmentFailures": 25,
+    "environmentRerun": "All 53 tests in the five affected files passed outside restricted local process/network permissions, without test changes.",
+    "sourceReaderRerun": "177 tests passed after source and metadata repairs.",
+    "finalAuthority": "Full pinned-Linux ordinary CI remains pending."
   }
 }

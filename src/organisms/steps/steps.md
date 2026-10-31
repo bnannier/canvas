@@ -13,6 +13,17 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 
 ## Variants
 
+### Compact sidebar
+
+`compact` with `vertical` renders short 22px markers without connector lines, as a
+workflow sidebar. The current row is announced as the current step. Pressable steps
+retain their normal controlled and uncontrolled behavior.
+
+```tsx
+<Steps vertical compact defaultCurrent={1}
+  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]} />
+```
+
 ### Vertical
 
 ```tsx

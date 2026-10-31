@@ -3,17 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ViewportOverlay, Stateful, Button, Chat, Wizard, Column } = scope;
+  const { Button, Wizard, Input, Typography } = scope;
   return (
-<Stateful initial={false}>
-  {(open, setOpen) => <Column>
-    <Button outline onPress={() => setOpen(true)}>Open planning conversation</Button>
-    <ViewportOverlay><Wizard open={open} onOpenChange={setOpen} title="Plan a project"
-      steps={[{ label: "Details" }, { label: "Conversation" }, { label: "Review" }]} current={1}
-      scrollBody={false} status="Saved" actions={<Button primary onPress={() => setOpen(false)}>Done</Button>}>
-      <Chat messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
-    </Wizard></ViewportOverlay>
-  </Column>}
-</Stateful>
+<Wizard open embedded onOpenChange={() => {}} title="Create workspace"
+  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
+  current={1} status="Step 2 of 4" previous={{ label: "Back", onPress: () => {} }}
+  actions={<Button>Continue</Button>}>
+  <Typography body medium natural>Invite your team</Typography>
+  <Input compact placeholder="noor@nannier.com" accessibilityLabel="First teammate email" />
+  <Input compact placeholder="liang@nannier.com" accessibilityLabel="Second teammate email" />
+</Wizard>
   );
 }
