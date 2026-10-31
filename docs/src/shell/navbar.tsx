@@ -100,7 +100,7 @@ function WebNav() {
         <WebScrollPadding top={PILL_BAND + SHELL.navTop} bottom={0} />
         {/* The banner and the rail lead the document, so a keyboard reaches the
             navigation first; they float over the page, which lies under them. */}
-        <PillNav onSearch={() => setSearchOpen(true)} />
+        <PillNav />
         {rail && place ? <Rail room={place.room} active={place.active} /> : null}
         {/* A landmark-free host: the main landmark is the page body (ui/page.tsx), so the
             footer that follows it is a top-level contentinfo, as the hand-off's component

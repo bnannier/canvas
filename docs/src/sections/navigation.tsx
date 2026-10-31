@@ -1,3 +1,4 @@
+import { SectionVignette } from "../ui/showcase/section-vignette";
 import { useState } from "react";
 import {
   Avatar,
@@ -24,7 +25,7 @@ import {
 import { CanvasMark } from "../brand/canvas-mark";
 import { COMPONENTS } from "../core/data/components";
 import { resolvePhoto } from "../core/photos";
-import { PagePlaceholder, SectionStage, ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
+import { PagePlaceholder, SectionStage, ShowcaseCard, ShowcaseGrid } from "../ui/showcase";
 
 // The Navigation section page (`Canvas v4.0.0 Navigation.dc.html`): its hero vignette and
 // its six cards. The hand-off's travelling indicators (the gliding underline, thumb and
@@ -38,25 +39,9 @@ const photo = (path: string) => resolvePhoto(path) as string | undefined;
 /** A tab bar item's glyph, accent when active. */
 const tabIcon = (name: IconName) => (active: boolean) => <Icon {...{ [name]: true }} size={19} primary={active} muted={!active} decorative />;
 
-/** The hero's still frame: underline tabs over a floating tab bar. */
+/** The animated hero: underline tabs over a floating tab bar. */
 export function Vignette() {
-  return (
-    <VignetteStage>
-      <Column panel>
-        <Tabs underline defaultActive={0} tabs={["Overview", "Components", "Tokens", "Changelog"]} />
-        <TabBar
-          defaultActive="home"
-          items={[
-            { key: "home", label: "Home", icon: tabIcon("home") },
-            { key: "inbox", label: "Inbox", icon: tabIcon("inbox") },
-            { key: "boards", label: "Boards", icon: tabIcon("columns2") },
-            { key: "messages", label: "Messages", icon: tabIcon("messageCircle") },
-            { key: "settings", label: "Settings", icon: tabIcon("settings") },
-          ]}
-        />
-      </Column>
-    </VignetteStage>
-  );
+  return <SectionVignette kind="navigation" />;
 }
 
 /** Tabs · Segmented · Breadcrumb · Pagination. */

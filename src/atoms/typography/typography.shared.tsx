@@ -311,6 +311,12 @@ export interface TypographyProps {
    */
   underline?: boolean;
   /**
+   * Slant (orthogonal to role / tone / weight / decoration). Sets the text in the face's
+   * italic, for a word set off in prose or the italic mark of a formatting toolbar. Omit
+   * for upright text.
+   */
+  italic?: boolean;
+  /**
    * Numerals (orthogonal to role / tone / weight). Tabular figures: every digit the same
    * width, for numbers read down a column or updated in place (a table's figures, a live
    * metric, a counter), so the column lines up and a changing value holds still. Never
@@ -525,6 +531,13 @@ export function decorationOf(p: TypographyProps): Decoration | null {
   return null;
 }
 
+// Slant: a single-value axis today, so there is no precedence to resolve. Returns null
+// when the prop is absent, so the text stays upright.
+export function slantOf(p: TypographyProps): "italic" | null {
+  if (p.italic) return "italic";
+  return null;
+}
+
 // Numerals: a single-value axis today, so there is no precedence to resolve. Returns
 // null when the prop is absent, so the face's own proportional figures stand.
 export function numeralsOf(p: TypographyProps): Numerals | null {
@@ -631,6 +644,7 @@ export function createTypography(skin: TypographySkin) {
           // Decoration is orthogonal to color/weight/leading (it sets textDecorationLine),
           // so its placement in the cascade is free; it layers on before the escape hatch.
           decoration ? decorationStyle(decoration) : null,
+          slantOf(props) ? { fontStyle: "italic" } : null,
           // Figure width only (no size, colour or weight), so its place in the cascade is
           // free too; the kit's one spelling of tabular figures per platform.
           numerals === "tabular" ? tabularNums() : null,

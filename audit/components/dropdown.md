@@ -20,7 +20,7 @@ Audit checklist for `/components/dropdown`. The facts block and the variants tab
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: drawer-nested-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts) |
 | Overlay recipe | yes (menu) |
-| Interaction states | recipes: hover on Default inside the overlay it opens (web row; desktop), focus on Custom trigger (web row; desktop), focus on Default inside the overlay it opens (web row; desktop), pressed on Custom trigger (web row; desktop), pressed on Default inside the overlay it opens (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop), disabled on Disabled trigger (web row; desktop), disabled on Disabled item inside the overlay it opens (web row; desktop). |
+| Interaction states | recipes: hover on Default inside the overlay it opens (web row; desktop), hover on Inline specimen (web row; desktop), focus on Custom trigger (web row; desktop), focus on Default inside the overlay it opens (web row; desktop), pressed on Custom trigger (web row; desktop), pressed on Default inside the overlay it opens (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop), disabled on Disabled trigger (web row; desktop), disabled on Disabled item inside the overlay it opens (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: the trigger renders 69x30 |
 | Tests importing it | 26: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/anchored-overlay-focus.test.tsx`, `test/anchored-overlay-sheet.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/drawer-host.test.tsx`, `test/dropdown-projects.test.tsx`, `test/escape-layers.test.tsx`, `test/focus-runtime.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-glass-contract.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
@@ -44,8 +44,10 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `sectionlabel` | Section label | [ ] | [ ] | [ ] |  |
 | `identityheader` | Identity header | [ ] | [ ] | [ ] |  |
 | `keyboardshortcuts` | Keyboard shortcuts | [ ] | [ ] | [ ] |  |
+| `choicesandsubmenus` | Choices and submenus | [ ] | [ ] | [ ] |  |
 | `customtrigger` | Custom trigger | [ ] | [ ] | [ ] |  |
 | `endalignment` | End alignment | [ ] | [ ] | [ ] |  |
+| `inlinespecimen` | Inline specimen | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

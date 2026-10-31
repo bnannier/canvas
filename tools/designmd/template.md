@@ -70,9 +70,10 @@ hand-off (vendored at `tools/v4/handoff`): its neutrals, status colours and glas
 literal values, and its accent and chart series as `oklch(L C hue)` formulas converted to
 sRGB within one channel unit of what a browser paints. Five palettes, each one hue for the
 whole accent: violet (the default), cyan, mint, rose and amber, and a palette applies in
-both schemes. Read any pair with `colorsFor(palette, scheme)`. Roles keep their function
-where the hand-off's raw value falls short of a floor: the control boundary `input` is
-solved to WCAG 1.4.11's 3:1, and the light `destructive-text` to 4.5:1. Components read
+both schemes. Read any pair with `colorsFor(palette, scheme)`. D14 preserves the
+hand-off's colors literally, including its 16% control boundary, translucent focus ring
+and unadjusted text inks. Contrast measurements are recorded separately; they do not
+recolor the reference. Components read
 the tokens through `useTheme()`; the scheme follows the OS unless `<ThemeProvider dark>`
 or `<ThemeProvider light>` forces one, and `<ThemeProvider cyan>` (or `mint`, `rose`,
 `amber`) picks the accent. On the web the same values ship as custom properties in

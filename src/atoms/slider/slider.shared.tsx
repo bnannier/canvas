@@ -55,6 +55,16 @@ export interface SliderProps extends MeasureProps {
    * drag in real time and uses tabular figures so it does not jitter.
    */
   showValue?: boolean;
+  /**
+   * The value is a percentage: the `showValue` readout prints it with a percent sign
+   * ("62%") and assistive tech hears it so. Pair with the default 0 to 100 range.
+   */
+  percent?: boolean;
+  /**
+   * A scale under the track: the minimum, the middle and the maximum, spread across the
+   * track's width in the small mono meta type, 8 px below the rail.
+   */
+  scale?: boolean;
   // Size (pick one; default is the standard track + thumb).
   small?: boolean;
   large?: boolean;
@@ -140,6 +150,8 @@ export interface SliderSkin {
   description: (tokens: ColorTokens, size: Size) => TextStyle;
   /** The live value readout trailing the title line (muted, tabular figures). */
   value: (tokens: ColorTokens, size: Size) => TextStyle;
+  /** The `scale` labels under the track (the small mono meta type). */
+  scale: (tokens: ColorTokens) => TextStyle;
 }
 
 // Snap a raw value to the step grid, anchored at `min`, then clamp to [min, max].
@@ -170,6 +182,10 @@ const MAX_TICK_INTERVALS = 20;
 // the control.
 const OUTER: ViewStyle = { width: "100%" };
 const TITLE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 12 };
+// The `scale` under the rail (the Controls page's slider, `c-slider`: `display:flex;
+// justify-content:space-between` 8 px under the rail, in its `gap:8px` column).
+const SCALE_ROW: ViewStyle = { flexDirection: "row", justifyContent: "space-between" };
+const SCALE_GAP = 8;
 
 // Format the readout to at most the step's decimal places (mirroring `snap`'s
 // decimal handling), so an integer-step slider shows "48" and a 0.5-step slider
@@ -197,7 +213,8 @@ export function createSlider(skin: SliderSkin) {
     // Whether the component-owned header (title / description / value readout) renders
     // at all. A bare <Slider/> passes none of these and renders exactly as before —
     // no header, no wrapper node.
-    const hasHeader = children != null || description != null || !!showValue;
+    const hasHeader = children != null || description != null || !!showValue || !!props.scale;
+    const readout = (v: number) => `${formatValue(v, step)}${props.percent ? "%" : ""}`;
     // The visible title names the control for assistive tech: when no explicit
     // accessibilityLabel is given but the title is plain text, derive the accessible
     // name from it (the visible label labels the control). An explicit
@@ -429,6 +446,7 @@ export function createSlider(skin: SliderSkin) {
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={current}
+        aria-valuetext={props.percent ? readout(current) : undefined}
         accessibilityState={{ disabled: !!disabled }}
         // RNW forwards neither accessibilityState nor accessibilityValue to the DOM,
         // so pair the disabled state with an aria-disabled alias (matching the
@@ -541,16 +559,25 @@ export function createSlider(skin: SliderSkin) {
 
     return (
       <View style={[OUTER, { gap: skin.headerGap }, widthCap, style]}>
-        <View style={{ gap: skin.descriptionGap }}>
+        {children != null || description != null || showValue ? <View style={{ gap: skin.descriptionGap }}>
           {children != null || showValue ? (
             <View style={[TITLE_ROW, { justifyContent: titleJustify }]}>
               {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
-              {showValue ? <Text style={skin.value(tokens, size)}>{formatValue(current, step)}</Text> : null}
+              {showValue ? <Text style={skin.value(tokens, size)}>{readout(current)}</Text> : null}
             </View>
           ) : null}
           {description != null ? <Text style={skin.description(tokens, size)}>{description}</Text> : null}
-        </View>
-        {interactive}
+        </View> : null}
+        {props.scale ? (
+          // The rail and its scale, 8 apart; the labels are the rail's reading aid, not
+          // controls, and the slider already announces its range.
+          <View style={{ gap: SCALE_GAP }}>
+            {interactive}
+            <View aria-hidden importantForAccessibility="no-hide-descendants" accessibilityElementsHidden style={SCALE_ROW}>
+              {[min, (min + max) / 2, max].map((v, i) => <Text key={i} style={skin.scale(tokens)}>{formatValue(v, step)}</Text>)}
+            </View>
+          </View>
+        ) : interactive}
       </View>
     );
   });

@@ -13,7 +13,8 @@ export const AvatarGroup = createAvatarGroup(iosSkin);
 // import resolves the web module in a browser bundler, which would render the web menu
 // under the iOS and Android pills in the docs. The native account menu stands off by 6
 // where a plain native dropdown uses 4, and that lives in the skin, not in a prop.
-const MenuDropdown = createDropdown({ ...dropdownIosSkin, menuGap: 6 });
-export const AvatarMenu = createAvatarMenu(iosMenuSkin, MenuDropdown);
+const AccountDropdown = createDropdown({ ...dropdownIosSkin, menuGap: 6 });
+const MenuDropdown = createDropdown({ ...dropdownIosSkin, disabledOpacity: 0.45, menuGap: 6 });
+export const AvatarMenu = createAvatarMenu(iosMenuSkin, MenuDropdown, AccountDropdown);
 export type { AvatarProps, AvatarGroupProps } from "./avatar.shared.js";
 export type { AvatarMenuProps } from "./avatar-menu.shared.js";

@@ -4,6 +4,8 @@ The decomposed-metric dashboard card: headline value, tone-aware rate, Sparkline
 
 It holds a preformatted headline `value` with its caption, an optional secondary `rate` readout under the headline (toned by `rateSuccess`, `rateWarning`, or `rateDestructive`), an optional trend strip drawn by the kit Sparkline at the header's end with a latest-value caption above it, per-category `breakdown` rows with proportional share meters and Stats-style deltas, and a `chips` footer for recent notable codes. Every section is independently optional, so one layout backs OAuth token issuance, API request volume, sign-up sources, and any metric that needs decomposition plus trend in one card.
 
+`detailed` emphasizes the value without repeating its caption, shows a trend arrow beside the rate and places the share rows under a divider. Its spark values are percentages from zero to one hundred; `rateLabel` supplies the period comparison.
+
 ## Usage
 
 ```tsx

@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Switch, Column } = scope;
   return (
-<Column relaxed>
-  <Switch defaultChecked>Available to chat</Switch>
-  <Switch>Weekly digest</Switch>
-  <Switch defaultChecked>Push notifications</Switch>
+<Column tight>
+  <Switch listed defaultChecked description="Frosted material on panels and sheets">Glass surfaces</Switch>
+  <Switch listed divided description="Zero every duration, keep spinners">Reduced motion</Switch>
+  <Switch listed divided defaultChecked>Haptics</Switch>
 </Column>
   );
 }

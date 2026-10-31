@@ -163,7 +163,7 @@ describe("atom surface roles and capability fallback", () => {
 
 describe("identity material ownership", () => {
   for (const [platform, { Avatar, AvatarGroup, AvatarMenu }] of [["web", WebIdentity], ["ios", IOSIdentity], ["android", AndroidIdentity]] as const) {
-    it(`${platform} keeps identity static, and the account pill bare like Dark Factory's`, () => {
+    it(`${platform} keeps identity static and renders the menu trigger as a functional control`, () => {
       liquidWithoutFrost();
       render(mode(<>
         <Avatar name="Rachel Chen" onPress={() => {}} testID="identity" />
@@ -171,9 +171,10 @@ describe("identity material ownership", () => {
         <Emblem primary label="RC" testID="emblem" />
         <AvatarMenu name="Rachel Chen" items={[{ label: "Settings" }]} testID="account" />
       </>, true));
-      // The account pill paints no surface at rest (Dark Factory's identity pill), so it
-      // takes no material of its own.
-      for (const id of ["identity", "group", "emblem", "account"]) expect(materials(screen.getByTestId(id))).toHaveLength(0);
+      // This test mocks an iOS liquid renderer, irrespective of the imported skin.
+      // Static identity has no Liquid Glass; the menu trigger now owns a control pane.
+      for (const id of ["identity", "group", "emblem"]) expect(materials(screen.getByTestId(id))).toHaveLength(0);
+      expect(materials(screen.getByTestId("account"))).toHaveLength(1);
       expect(screen.getByTestId("identity").getAttribute("role")).toBe("button");
     });
 

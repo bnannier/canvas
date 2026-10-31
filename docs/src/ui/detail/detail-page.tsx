@@ -1,5 +1,4 @@
 import { useCallback, useContext, useMemo, useRef, useState } from "react";
-import { Platform } from "react-native";
 import { Redirect } from "expo-router";
 import { HeaderHeightContext } from "expo-router/react-navigation";
 import { View, Column, Alert, useTheme, ICON_NAMES } from "@nannier/canvas";
@@ -18,9 +17,12 @@ import { AnatomySection } from "./anatomy";
 import { PropsSection } from "./props";
 import { AccessibilitySection } from "./accessibility";
 import { PlatformSkinsSection } from "./platform-skins";
-import { UsageSection, DoDontSection, TokensSection, PrevNext } from "./sections";
+import { UsageSection, TokensSection, PrevNext } from "./sections";
 import { componentName, controlledProps, initialKnobs, jsxCode, knobProps, type KnobState, type KnobValue } from "./knobs";
 import { type SpecimenBase } from "./frame";
+import { HOST, type DocsPlatform } from "../../core/platforms-shown";
+import { MobileComponentIndex } from "./mobile-index";
+import { presentationFor, referenceGuidance, referenceNotes, referenceTokens, referenceVariants } from "./presentation";
 
 // The v4 component detail page (Component.dc.html, audit/v4-redesign/PLAN.md decisions P1
 // to P3), behind the pilot gate in ./gate.ts. Everything on it is generated data: the
@@ -57,9 +59,10 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   const headerHeight = useContext(HeaderHeightContext);
   const examples = entry?.examples ?? [];
   const variantIdx = variant ? examples.findIndex((e) => variantSlug(e.label) === variant) : 0;
-  const [selected, setSelected] = useState(() => (variantIdx < 0 ? 0 : variantIdx));
+  const selected = variantIdx < 0 ? 0 : variantIdx;
   const initial = useMemo(() => initialKnobs(spec?.knobs ?? []), [spec]);
   const [knobs, setKnobs] = useState<KnobState>(initial);
+  const [platform, setPlatform] = useState<DocsPlatform>(HOST);
   const sections = useRef<Partial<Record<SectionId, View | null>>>({});
   const refFor = useCallback((id: SectionId) => (node: View | null) => {
     sections.current[id] = node;
@@ -71,10 +74,6 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   const hrefFor = (i: number) => {
     const label = examples[i]?.label;
     return i <= 0 || !label ? `/components/${comp.slug}` : `/components/${comp.slug}/${variantSlug(label)}`;
-  };
-  const onSelect = (i: number) => {
-    setSelected(i);
-    if (Platform.OS === "web") window.history.replaceState(window.history.state, "", hrefFor(i));
   };
 
   // Brings a section to the top of the page scroller, below the floating navbar (web) or
@@ -100,12 +99,15 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   const name = componentName(spec, knobs);
   const props = knobProps(spec.knobs, knobs);
   const code = jsxCode(name, props);
-  const web = scopeFor(tokens, "web").scope;
+  const scope = scopeFor(tokens, platform).scope;
   const dir = comp.dir ?? comp.slug;
   const sourcePath = `src/${entry.category}/${dir}`;
-  const variants = examples.map((example, index) => ({ example, index })).slice(1);
+  const presentation = presentationFor(comp.slug);
+  const variants = referenceVariants(examples, presentation);
   const a11yNotes = entry.guidance?.find((g) => g.title === "Accessibility");
-  const guidance = (entry.guidance ?? []).filter((g) => g !== a11yNotes);
+  const allGuidance = (entry.guidance ?? []).filter((g) => g !== a11yNotes);
+  const guidance = referenceGuidance(allGuidance, presentation);
+  const documentationNotes = referenceNotes(a11yNotes ? a11yProse(a11yNotes.blocks) : [componentDescription(comp), ...(entry.overview ?? []), ...allGuidance.flatMap((g) => a11yProse(g.blocks))], presentation);
   const usage = examples[0];
   // The specimens' data: the props the first example rendering the component gives it, under the knobs'.
   const base: SpecimenBase = { examples: examples.map((example) => example.render), controlled: controlledProps(spec, GLYPHS), open: spec.specimen?.props };
@@ -117,7 +119,7 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
       ["sizes", "Sizes", (spec.sizes?.options.length ?? 0) > 0],
       ["states", "States", (spec.states?.length ?? 0) > 0],
       ["anatomy", "Anatomy", spec.anatomy.parts.length > 0],
-      ["props", "Props", entry.props.length > 0],
+      ["props", "Props", true],
       ["a11y", "Accessibility", true],
       ["platforms", "Platforms", examples.length > 0],
       ["usage", "Usage", true],
@@ -128,9 +130,10 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
     .map(([id, label]) => ({ label, onPress: () => jumpTo(id) }));
 
   return (
-    <Column chapter>
+    <Column chapter style={{ paddingBottom: 24 }}>
       {/* The canonical address tracks the selected example through every in-page switch. */}
       <DocsHead title={comp.name} path={hrefFor(selected)} />
+      <MobileComponentIndex slug={comp.slug} />
       <DetailHeader comp={comp} description={componentDescription(comp)} sourcePath={sourcePath} exports={[name]} jumps={jumps} />
       <PlaygroundSection
         spec={spec}
@@ -141,19 +144,20 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
         onChange={(key: string, value: KnobValue) => setKnobs((s) => ({ ...s, [key]: value }))}
         onReset={() => setKnobs(initial)}
         tokens={tokens}
+        platform={platform}
+        onPlatformChange={setPlatform}
         base={base}
         sectionRef={refFor("playground")}
       />
-      {variants.length ? <VariantsSection examples={variants} path={`${sourcePath}/${dir}.md`} note={entry.variantsNote} scope={web} selected={selected} sectionRef={refFor("variants")} /> : null}
-      <SizesSection spec={spec} component={name} props={props} base={base} scope={web} sectionRef={refFor("sizes")} />
-      <StatesSection spec={spec} component={name} props={props} base={base} scope={web} sectionRef={refFor("states")} />
-      <AnatomySection spec={spec} component={name} props={props} base={base} scope={web} sectionRef={refFor("anatomy")} />
+      {variants.length ? <VariantsSection examples={variants} path={`${sourcePath}/${dir}.md`} scope={scope} sectionRef={refFor("variants")} /> : null}
+      <SizesSection spec={spec} component={name} props={props} base={base} scope={scope} sectionRef={refFor("sizes")} />
+      <StatesSection spec={spec} component={name} props={props} base={base} scope={scope} sectionRef={refFor("states")} />
+      <AnatomySection spec={spec} component={name} props={props} base={base} scope={scope} sectionRef={refFor("anatomy")} />
       <PropsSection groups={entry.props} propsInterface={spec.propsInterface} sectionRef={refFor("props")} />
-      <AccessibilitySection keyboard={spec.keyboard} semantics={entry.semantics} notes={a11yNotes ? a11yProse(a11yNotes.blocks) : undefined} sectionRef={refFor("a11y")} />
-      <PlatformSkinsSection examples={examples} selected={selected} onSelect={onSelect} tokens={tokens} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} sectionRef={refFor("platforms")} />
-      <UsageSection note={usage?.note} code={usage?.code} overview={entry.overview} guidance={guidance} scope={web} sectionRef={refFor("usage")} />
-      <DoDontSection donts={entry.donts} scope={web} />
-      <TokensSection roles={entry.tokens} related={entry.related} tokens={tokens} sectionRef={refFor("tokens")} />
+      <AccessibilitySection keyboard={spec.keyboard} semantics={entry.semantics} notes={documentationNotes} sectionRef={refFor("a11y")} />
+      <PlatformSkinsSection component={name} props={props} base={base} tokens={tokens} example={variant ? examples[selected] : undefined} sectionRef={refFor("platforms")} />
+      <UsageSection note={usage?.note} code={usage?.code} overview={presentation ? entry.overview?.slice(0, presentation.introCount) : entry.overview} guidance={guidance} sectionRef={refFor("usage")} />
+      <TokensSection roles={referenceTokens(presentation, knobs) ?? entry.tokens} related={presentation?.related ?? entry.related} tokens={tokens} sectionRef={refFor("tokens")} />
       <PrevNext slug={comp.slug} />
     </Column>
   );

@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
-import { platformDisabledDim } from "../src/style/ripple.ts";
 import { Text } from "react-native";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Button as IOSButton } from "../src/atoms/button/button.ios.tsx";
@@ -65,9 +64,8 @@ describe("liquid control foreground feedback", () => {
       expect(Number(screen.getByText("North").parentElement!.style.opacity)).toBe(p.selectDisabled);
       expect(Number(screen.getByText("Filter").parentElement!.style.opacity)).toBe(p.chipDisabled);
       expect(Number(screen.getByText("Removable").parentElement!.style.opacity)).toBe(p.chipDisabled);
-      // The identity pill is one skin on every platform, evaluated here in the web
-      // bundle; each native bundle resolves its own dim (platformDisabledDim).
-      expect(Number(screen.getByText("Rachel Chen").parentElement!.style.opacity)).toBe(platformDisabledDim("web"));
+      // The generic AvatarMenu keeps its renderer's 0.45 ink dim on every platform.
+      expect(Number(screen.getByText("Rachel Chen").parentElement!.style.opacity)).toBe(0.45);
       for (const button of screen.getAllByRole("button")) fireEvent.click(button);
       expect(calls).toBe(0);
     });

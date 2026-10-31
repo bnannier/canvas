@@ -231,7 +231,7 @@ describe("the index over real runs", () => {
     const states = `../../runs/${RUNS.states}/web-states`;
 
     const button = read("button");
-    expect(button).toContain("- Captured: web 2 of 414, ios 0 of 138, android 0 of 138; interaction states 4 of 24 (0 not reached)");
+    expect(button).toContain("- Captured: web 2 of 468, ios 0 of 156, android 0 of 156; interaction states 4 of 24 (0 not reached)");
     expect(button).toContain("## Interaction states\n\n4 cell(s), 4 reached and 0 not reached;");
     expect(button).toContain(`| [web-states/button/pressed.web/desktop.blush.solid](${states}/button/pressed.web/desktop.blush.solid/state.png) | Default (\`default\`) | yes | - | - | contrast | 0/0/0/0 | 12 | 1/0/0 | 0 | 0 | 0 | ${RUNS.states} | b87e514 (dirty) |`);
     expect(button).toContain(`| [web-states/button/pressed.web/desktop.blush.glass](${states}/button/pressed.web/desktop.blush.glass/state.png) | Default (\`default\`) | yes | - | - | contrast-review | - | 12 | 0/0/1 |`);
@@ -262,7 +262,7 @@ describe("the index over real runs", () => {
     expect(summary).toContain("| press-not-cancelled | the press took effect where it should have been cancelled: a click reached the control as the button came up after moving off, the control left the page, or the row's tree, the address, or the control's look or pixels changed | 1 | [Slider](slider/index.md) 1 |");
     // A full sweep holds 24 of Slider's state cells: its four states (hover, focus, pressed,
     // disabled), their rows and widths, by the six looks and surfaces.
-    expect(summary).toContain("| [Slider](slider/index.md) | 1 | 1 of 1 | 0/144 0/48 0/48 | 1/24 (0) | press-not-cancelled 1 | press-not-cancelled 1 |");
+    expect(summary).toContain("| [Slider](slider/index.md) | 1 | 1 of 1 | 0/162 0/54 0/54 | 1/24 (0) | press-not-cancelled 1 | press-not-cancelled 1 |");
     expect(summary).toContain("| [template-signin](template-signin/index.md) | 1 | 1 of 1 | 1/18 0/6 0/6 | - | - | contrast-likely 1 |");
 
     const built = JSON.parse(readFileSync(join(root, ".audit", "current", "current.json"), "utf8")) as { cells: { id: string; family: string; notReached?: boolean; releaseFlags?: string[]; sections?: { key: string; file: string }[] }[] };

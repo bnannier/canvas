@@ -1,9 +1,11 @@
+import { V4_PRESENTATION_EXCEPTIONS } from "./v4-presentation-exceptions.ts";
 import type { DocsUsageException } from "./component-usage.ts";
 
 // This is an infrastructure inventory, not a grandfathered list of docs controls.
 // Each entry is limited to a named function, host, keys and occurrence count.
-// Do not add examples, look-alike controls, callout surfaces or typography here.
+// D23 additionally authorizes the exact v4 page chrome and illustration footprints.
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
+  ...V4_PRESENTATION_EXCEPTIONS,
   {
     file: "docs/src/ui/preview-viewport.tsx", owner: "PreviewViewport", tag: "View", attribute: "style", keys: ["height"], occurrences: 1,
     reason: "Docs-only viewport harness supplies a definite parent height for app-sized previews inside the unbounded page scroller, and the 300 px of the section hero's stage (the v4 hand-off's canvas-hero.js `.st`); it paints no control or surface.",
@@ -246,10 +248,6 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The v4 hand-off's flat page, docs-only scaffolding under design-language item 8: an untouchable layer fixed to the window behind the shell, painted the scheme's background.",
   },
   {
-    file: "docs/src/shell/page-backdrop.tsx", owner: "PageGrain", tag: "View", attribute: "style", keys: ["bottom", "left", "opacity", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 1,
-    reason: "The v4 hand-off's grain, docs-only scaffolding under design-language item 8 and decision S6: an untouchable layer over the whole window at the scheme's grain opacity, holding the kit Image that tiles the baked noise.",
-  },
-  {
     file: "docs/src/shell/pill-nav.tsx", owner: "PillNav", tag: "View", attribute: "style", keys: ["alignItems", "left", "paddingHorizontal", "paddingTop", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 1,
     reason: "The banner row floats the v4 hand-off's pill over the page: centred, 14 px under the window's top and 16 px from its sides (SHELL in page-look.ts), untouchable outside the pill; docs scaffolding, it paints nothing.",
   },
@@ -302,10 +300,6 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Each numbered anatomy marker (a kit Badge) is centred on the point placed beside its measured part, untouchable so the specimen under it stays live.",
   },
   {
-    file: "docs/src/ui/detail/platform-skins.tsx", owner: "PlatformSkinsSection", tag: "View", attribute: "style", keys: ["alignSelf", "maxWidth", "width"], occurrences: 1,
-    reason: "The detail page's comparison stage simulates the selected form factor's width (the same harness the Playground page's preview card runs), centred and never wider than the page.",
-  },
-  {
     file: "docs/src/brand/glow.tsx", owner: "AuroraGlow", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
     reason: "Brand illustration (decision P5-G2): the Library hero's aurora, an untouchable layer spread over the hero section from the page's top to its hairline and out to the window's edges, painting only its svg radial gradients.",
   },
@@ -320,10 +314,6 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   {
     file: "docs/src/brand/gradient-text.tsx", owner: "GradientText", tag: "View", attribute: "style", keys: ["alignSelf", "bottom", "left", "opacity", "pointerEvents", "position", "right", "top"], occurrences: 3,
     reason: "Brand illustration (decision P5-G1): the headline's gradient word, a kit Typography held invisible for the line box with the svg text drawn over it at the same place; React Native has no text clip.",
-  },
-  {
-    file: "docs/src/brand/hero-collage.tsx", owner: "HeroCollage", tag: "View", attribute: "style", keys: ["height", "left", "position", "top", "transform", "transformOrigin", "width"], occurrences: 2,
-    reason: "Brand illustration (decision P5-T1): the Library hero's tilted collage, the hand-off's 580 px perspective box with each live kit panel placed at its offset and projected by its own 3D transform.",
   },
   {
     file: "docs/src/ui/templates/frame.tsx", owner: "TemplateStage", tag: "View", attribute: "style",

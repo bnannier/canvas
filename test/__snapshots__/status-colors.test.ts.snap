@@ -1,0 +1,137 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`statusColors records the success reference ink and dot contrast in light: light success text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the warning reference ink and dot contrast in light: light warning text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the error reference ink and dot contrast in light: light error text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the success reference ink and dot contrast in cyan light: cyan light success text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the warning reference ink and dot contrast in cyan light: cyan light warning text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the error reference ink and dot contrast in cyan light: cyan light error text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the info reference ink and dot contrast in cyan light: cyan light info text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2739,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the success reference ink and dot contrast in mint light: mint light success text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the warning reference ink and dot contrast in mint light: mint light warning text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the error reference ink and dot contrast in mint light: mint light error text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the info reference ink and dot contrast in mint light: mint light info text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3532,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the success reference ink and dot contrast in rose light: rose light success text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the warning reference ink and dot contrast in rose light: rose light warning text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the error reference ink and dot contrast in rose light: rose light error text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the success reference ink and dot contrast in amber light: amber light success text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the warning reference ink and dot contrast in amber light: amber light warning text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`statusColors records the error reference ink and dot contrast in amber light: amber light error text 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;

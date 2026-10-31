@@ -4,7 +4,7 @@ import { AccessibilityInfo } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
-import { body, descriptionSlot, imageHeader, single, titleSlot } from "../src/molecules/card/card.board.styles.ts";
+import { badgeSlot, body, descriptionSlot, imageHeader, single, titleSlot } from "../src/molecules/card/card.board.layout.ts";
 
 const ticket = { board: true, compact: true, title: "A long title ".repeat(30), description: "A long description ".repeat(30), ticketNumber: "ARGUS-123", priorityLabel: "High", statusLabel: "In Progress", typeLabel: "Task", testID: "ticket" };
 const ui = (props = {}) => render(<ThemeProvider><Card {...ticket} {...props} /></ThemeProvider>);
@@ -18,18 +18,76 @@ describe("Card board anatomy", () => {
   it("keeps text slots identical for short, long, blocked and active tickets", () => {
     const baseline = ui({ title: "Short", description: "Short" });
     const shape = bodyShape(baseline.getByTestId);
-    expect(shape).toEqual(["40px", "36px", "18px", "18px", "18px", "18px"]);
+    expect(shape).toEqual(["40px", "36px", "18px", "18px", "18px"]);
     expect(baseline.getByTestId("ticket-priority").textContent).toBe("High");
     expect(baseline.getByTestId("ticket-type").textContent).toBe("Task");
     expect(baseline.getByTestId("ticket-text").style.gap).toBe("6px");
-    expect(baseline.getByTestId("ticket-reason").textContent).toBe("");
+    expect(baseline.queryByTestId("ticket-reason")).toBeNull();
     expect(baseline.getByTestId("ticket-progress").textContent).toBe("");
     baseline.unmount();
     const active = ui({ blocked: true, blockedReason: "Discovery", aiActive: true });
     expect(bodyShape(active.getByTestId)).toEqual(shape);
     expect(active.getByTestId("ticket-status").textContent).toBe("Blocked by Discovery");
-    expect(active.getByTestId("ticket-reason").textContent).toBe("");
+    expect(active.queryByTestId("ticket-reason")).toBeNull();
     expect(active.getByTestId("ticket-progress").getAttribute("aria-hidden")).toBeNull();
+  });
+
+  it("uses compact rounded pills with contextual accessible names", () => {
+    const { getByTestId, getByLabelText } = ui();
+    for (const [part, label] of [["priority", "Priority: High"], ["type", "Type: Task"]]) {
+      const metadata = getByTestId(`ticket-${part}`);
+      expect(getByLabelText(label)).toBe(metadata);
+      const pill = metadata.firstElementChild as HTMLElement;
+      expect(pill.style.height).toBe("18px");
+      expect(Number.parseInt(pill.style.borderRadius)).toBeGreaterThanOrEqual(9);
+      expect(metadata.parentElement?.style.height).toBe("18px");
+    }
+    expect(badgeSlot.height).toBe(18);
+    const row = getByTestId("ticket-metadata");
+    expect([...row.children]).toEqual([getByTestId("ticket-type"), getByTestId("ticket-priority")]);
+    expect(row.style.flexDirection).toBe("row");
+    expect(row.style.gap).toBe("6px");
+    expect(getByTestId("ticket-header").contains(getByTestId("ticket-priority"))).toBe(false);
+    expect(getByTestId("ticket-number").parentElement?.parentElement?.parentElement?.childElementCount).toBe(1);
+    expect(getByTestId("ticket-type").parentElement?.previousElementSibling?.contains(getByTestId("ticket-status"))).toBe(true);
+  });
+
+  it("keeps omitted metadata slots without rendering empty pills", () => {
+    const baseline = ui();
+    const shape = bodyShape(baseline.getByTestId);
+    baseline.unmount();
+    const { getByTestId, queryByTestId } = ui({ priorityLabel: undefined, typeLabel: undefined });
+    expect(bodyShape(getByTestId)).toEqual(shape);
+    expect(queryByTestId("ticket-priority")).toBeNull();
+    expect(queryByTestId("ticket-type")).toBeNull();
+    expect(getByTestId("ticket-text").children[3]?.childElementCount).toBe(0);
+    expect(getByTestId("ticket-metadata").childElementCount).toBe(0);
+  });
+
+  it("shows either remaining pill without an empty sibling", () => {
+    for (const hidden of ["priorityLabel", "typeLabel"]) {
+      const card = ui({ [hidden]: undefined });
+      expect(card.getByTestId("ticket-metadata").childElementCount).toBe(1);
+      expect(card.getByTestId("ticket-metadata").textContent).toBe(hidden === "priorityLabel" ? "Task" : "High");
+      card.unmount();
+    }
+  });
+
+  it("preserves severity tones and follows the active theme", () => {
+    const backgrounds = (dark: boolean) => {
+      const colors: string[] = [];
+      for (const priorityLabel of ["High", "Critical", "Medium", "Low"]) {
+        const card = render(<ThemeProvider dark={dark}><Card {...ticket} priorityLabel={priorityLabel} /></ThemeProvider>);
+        const pill = card.getByTestId("ticket-priority").firstElementChild as HTMLElement;
+        colors.push(pill.style.backgroundColor);
+        card.unmount();
+      }
+      expect(colors[0]).toBe(colors[1]);
+      expect(new Set(colors).size).toBe(3);
+      expect(colors.every(Boolean)).toBe(true);
+      return colors;
+    };
+    expect(backgrounds(true)).not.toEqual(backgrounds(false));
   });
 
   it("bounds both summaries at two lines with tail truncation", () => {
@@ -55,6 +113,48 @@ describe("Card board anatomy", () => {
     fireEvent.click(move);
     expect(moved).toBe(1);
     expect(opened).toBe(0);
+  });
+
+  it("opens active AI work independently with native button keyboard semantics", () => {
+    let opened = 0;
+    let inspected = 0;
+    const { getByRole, getByTestId, queryByRole } = ui({ aiActive: true, onPress: () => { opened++; }, interactiveContents: true, onAIProgressPress: () => { inspected++; } });
+    const progress = getByRole("button", { name: "View AI work in progress" });
+    expect(progress.getAttribute("tabindex")).toBe("0");
+    expect(queryByRole("progressbar")).toBeNull();
+    fireEvent.click(progress);
+    expect(inspected).toBe(1);
+    expect(opened).toBe(0);
+    expect(progress.tagName).toBe("BUTTON");
+    act(() => { progress.focus(); });
+    expect(document.activeElement).toBe(progress);
+    // Native buttons synthesize a detail=0 click for keyboard activation.
+    fireEvent.click(progress, { detail: 0 });
+    expect(inspected).toBe(2);
+    expect(opened).toBe(0);
+    fireEvent.click(getByTestId("ticket-title"));
+    expect(opened).toBe(1);
+  });
+
+  it("keeps passive progress semantics and omits the action while idle", () => {
+    const active = ui({ aiActive: true });
+    expect(active.getByRole("progressbar", { name: "AI work in progress" }).getAttribute("aria-busy")).toBe("true");
+    expect(active.queryByRole("button", { name: "View AI work in progress" })).toBeNull();
+    active.unmount();
+    const idle = ui({ onAIProgressPress: () => {} });
+    expect(idle.queryByRole("button", { name: "View AI work in progress" })).toBeNull();
+  });
+
+  it("keeps the AI action available with reduced motion", async () => {
+    const spy = spyOn(AccessibilityInfo, "isReduceMotionEnabled").mockReturnValue(Promise.resolve(true));
+    let inspected = 0;
+    try {
+      const { getByRole, getByTestId } = ui({ aiActive: true, onAIProgressPress: () => { inspected++; } });
+      await waitFor(() => expect(getByTestId("ticket-progress").textContent).toBe("AI work in progress..."));
+      expect(getByTestId("ticket-progress").querySelector('[style*="animation-delay"]')).toBeNull();
+      fireEvent.click(getByRole("button", { name: "View AI work in progress" }));
+      expect(inspected).toBe(1);
+    } finally { spy.mockRestore(); }
   });
 
   it("adds only the optional image header and keeps rounded top corners", () => {

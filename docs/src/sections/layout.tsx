@@ -1,3 +1,4 @@
+import { SectionVignette } from "../ui/showcase/section-vignette";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { Dimensions, type LayoutChangeEvent } from "react-native";
 import {
@@ -21,26 +22,22 @@ import {
   Navbar,
   Row,
   Select,
-  Skeleton,
   Sparkline,
   StackedList,
   Stats,
-  Swatch,
   Switch,
   Typography,
   View,
   spacing,
-  alpha,
   breakpoints,
   useBreakpoint,
   useFormFactor,
   useMeasuredWidth,
-  useTheme,
   widths,
 } from "@nannier/canvas";
 import { CanvasMark } from "../brand/canvas-mark";
 import { resolvePhoto } from "../core/photos";
-import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
+import { ShowcaseCard, ShowcaseGrid } from "../ui/showcase";
 import {
   AppFrameDiagram,
   ColumnGuides,
@@ -73,27 +70,9 @@ function Mono({ children, right }: { children: ReactNode; right?: boolean }) {
   return <Typography cardNote mono right={right}>{children}</Typography>;
 }
 
-/** The hero's still frame: a desktop window's twelve-column grid. */
+/** The animated hero: a desktop window's twelve-column grid. */
 export function Vignette() {
-  const { tokens } = useTheme();
-  const cyan = alpha(tokens["chart-2"], 0.16);
-  return (
-    <VignetteStage>
-      <Column relaxed alignCenter>
-        <Typography eyebrow primary>Desktop · 12 columns</Typography>
-        <Card raised compact>
-          <Column cozy>
-            <Skeleton text small />
-            <Grid minTileWidth={60} snug>
-              {Array.from({ length: 12 }, (_, index) => (
-                <Swatch key={index} block small color={index % 3 === 1 ? cyan : tokens["primary-soft"]} accessibilityLabel={`column ${index + 1}`} />
-              ))}
-            </Grid>
-          </Column>
-        </Card>
-      </Column>
-    </VignetteStage>
-  );
+  return <SectionVignette kind="layout" />;
 }
 
 // The window's width as the kit reads it for window-sized type (src/style/responsive.tsx

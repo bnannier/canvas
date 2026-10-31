@@ -11,16 +11,15 @@
 // is declared again on each `[data-palette]` element so a palette wrapper deeper in the page
 // recomputes the accent against its own hue (a custom property's var() resolves where it is
 // declared). The neutrals, status colours and glass are the scheme's literal values, and
-// the text inks solved to their legibility floor (primary-text, info, inverse-primary)
-// are literal per palette.
+// the text inks keep the hand-off’s exact oklch formulas as well.
 // scripts/validate-tokens.ts resolves the file for every palette and scheme and holds it
 // equal to `colorsFor(palette, scheme)`.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { ACCENT, PALETTES, SERIES, colorsFor, paletteHue, type ColorScheme, type Palette } from "../../src/style/tokens.ts";
+import { ACCENT, PALETTES, SERIES, colorsFor, paletteHue, type ColorScheme } from "../../src/style/tokens.ts";
 import { WEB_FROST, WEB_TINTS } from "../../src/style/glass-surface/web-frost.ts";
-import { ACCENT_SELECTOR, darkPaletteSelector, paletteSelector } from "../tokens/css-tokens.ts";
+import { ACCENT_SELECTOR, paletteSelector } from "../tokens/css-tokens.ts";
 
 const OUT = join(import.meta.dir, "..", "..", "styles", "tokens", "colors.css");
 
@@ -31,13 +30,16 @@ function accentDeclarations(scheme: ColorScheme): [string, string][] {
     `oklch(${l} ${c} var(--hue)${alpha === undefined ? "" : ` / ${alpha}`})`;
   return [
     ["primary", at(a.fill)],
+    ["primary-text", at(a.text)],
+    ["info", at(a.text)],
+    ["inverse-primary", at(ACCENT[scheme === "dark" ? "light" : "dark"].text)],
     ["primary-foreground", a.ink],
     ["primary-soft", at(a.fill, a.soft)],
     ["action", at(a.fill)],
     ["action-foreground", a.ink],
     ["action-soft", at(a.fill, a.soft)],
     ["info-soft", at(a.fill, a.soft)],
-    ["ring", at(a.fill)],
+    ["ring", at(a.fill, a.ring)],
     ["glow", at(a.fill, a.glow)],
     ["featured-start", at(a.fill)],
     ["promo-start", at(a.fill)],
@@ -46,18 +48,6 @@ function accentDeclarations(scheme: ColorScheme): [string, string][] {
 }
 
 const ACCENT_ROLES = new Set(accentDeclarations("light").map(([name]) => name));
-
-/**
- * The text inks solved per palette (tools/v4/derive-inks.ts): the hand-off's formula at a
- * lightness the palette's hue needs to clear its floor, so each palette declares its own
- * value. The default palette's sit in the scheme's literal block too.
- */
-const SOLVED_ROLES = ["primary-text", "info", "inverse-primary"] as const;
-
-function solvedDeclarations(palette: Palette, scheme: ColorScheme): [string, string][] {
-  const tokens = colorsFor(palette, scheme);
-  return SOLVED_ROLES.map((role) => [role, tokens[role]!]);
-}
 
 /** The scheme's literal roles: everything the hue does not move. */
 function literalDeclarations(scheme: ColorScheme): [string, string][] {
@@ -114,10 +104,8 @@ export function render(): string {
    translucent by contract. */\n`);
   out.push(block(":root", [["hue", String(paletteHue.violet)], ...literalDeclarations("light"), ...ALIASES, ...glassDeclarations("light", true)]));
   out.push(block(".dark", [...literalDeclarations("dark"), ...ALIASES, ...glassDeclarations("dark", false)]));
-  out.push(`/* The palettes: one hue each, with the text inks solved for it (tokens.ts, tools/v4/derive-inks.ts),
-   light on the palette element and dark inside a .dark context. */\n`);
-  for (const p of PALETTES) out.push(block(paletteSelector(p), [["hue", String(paletteHue[p])], ...solvedDeclarations(p, "light")]));
-  for (const p of PALETTES) out.push(block(darkPaletteSelector(p), solvedDeclarations(p, "dark")));
+  out.push(`/* Each palette changes only the hand-off’s accent hue. */\n`);
+  for (const p of PALETTES) out.push(block(paletteSelector(p), [["hue", String(paletteHue[p])]]));
   out.push(`/* The accent, declared again on every palette wrapper so it resolves against that
    wrapper's own --hue; the dark rows win inside a .dark context. */\n`);
   out.push(block(ACCENT_SELECTOR.light, accentDeclarations("light")));

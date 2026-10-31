@@ -73,6 +73,8 @@ export type { BoardColumn, BoardItem, BoardMove };
 export interface BoardProps {
   /** Unframed work lanes with custom domain cards. */
   plain?: boolean;
+  /** Let the surrounding page own horizontal overflow instead of an inner scroller. */
+  pageScroll?: boolean;
   /** Enable drag handles and drop targets in plain lanes. */
   draggable?: boolean;
   /** Temporarily prevent moves, for example while the consumer saves a drop. */
@@ -133,6 +135,7 @@ const WEB_PARTS: BoardParts = {
 
 // Shared layout fragments (identical across platforms).
 const ROOT: ViewStyle = { width: "100%", maxWidth: "100%" };
+const PAGE_OVERFLOW: ViewStyle = { minWidth: 0, overflow: "visible" };
 // flex-1: the card's text column fills the row beside the trailing cluster.
 const BODY: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
@@ -157,6 +160,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     compact: boolean;
     emptyLabel: string;
     disabled: boolean;
+    pageScroll: boolean;
   }
 
   // The lanes live in their own component INSIDE the provider so useDragActive can subscribe:
@@ -166,7 +170,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
   // the board (its horizontal scroller claims a sideways drag it cannot scroll, dropping a
   // card's press and the page's scroll), and always elsewhere, where a disabled scroller
   // sets `touch-action: none` on the web.
-  function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel, disabled }: LanesProps) {
+  function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel, disabled, pageScroll }: LanesProps) {
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const dragging = useDragActive();
@@ -250,6 +254,33 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       );
     };
 
+    const lanes = columns.map((col) => {
+      const colItems = list.filter((it) => it.columnId === col.id);
+      return (
+        <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} disabled={disabled} style={{ width: laneWidth }}>
+          {/* The lane is a CONTENT-layer pane under glass (the plain column View in
+              solid mode); the drop zone keeps the lane's width and drop target. */}
+          <GlassSurface layer="content" style={skin.column(tokens, compact)}>
+            <View style={skin.columnHeader}>
+              <Text style={skin.columnLabel(tokens)}>{col.label}</Text>
+              <Text style={skin.columnCount(tokens)}>{col.badge ?? String(colItems.length)}</Text>
+            </View>
+            <View style={skin.cardList(compact)}>
+              {colItems.map(renderCard)}
+              {colItems.length === 0 ? (
+                <View style={skin.emptySlot(tokens)}>
+                  <Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text>
+                </View>
+              ) : null}
+            </View>
+          </GlassSurface>
+        </DropZone>
+      );
+    });
+
+    if (pageScroll) {
+      return <View onLayout={onBoardLayout} style={PAGE_OVERFLOW}><View style={skin.lanes(compact)}>{lanes}</View></View>;
+    }
     return (
       <ScrollView
         horizontal
@@ -262,34 +293,12 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={skin.lanes(compact)}
       >
-        {columns.map((col) => {
-          const colItems = list.filter((it) => it.columnId === col.id);
-          return (
-            <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} disabled={disabled} style={{ width: laneWidth }}>
-              {/* The lane is a CONTENT-layer pane under glass (the plain column View in
-                  solid mode); the drop zone keeps the lane's width and drop target. */}
-              <GlassSurface layer="content" style={skin.column(tokens, compact)}>
-                <View style={skin.columnHeader}>
-                  <Text style={skin.columnLabel(tokens)}>{col.label}</Text>
-                  <Text style={skin.columnCount(tokens)}>{col.badge ?? String(colItems.length)}</Text>
-                </View>
-                <View style={skin.cardList(compact)}>
-                  {colItems.map(renderCard)}
-                  {colItems.length === 0 ? (
-                    <View style={skin.emptySlot(tokens)}>
-                      <Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text>
-                    </View>
-                  ) : null}
-                </View>
-              </GlassSurface>
-            </DropZone>
-          );
-        })}
+        {lanes}
       </ScrollView>
     );
   }
 
-  function PlainBoardLanes({ columns, list, onDrop, renderItem, bleed, emptyLabel, draggable, disabled, style, testID }: {
+  function PlainBoardLanes({ columns, list, onDrop, renderItem, bleed, emptyLabel, draggable, disabled, pageScroll, style, testID }: {
     columns: BoardColumn[];
     list: BoardItem[];
     onDrop: (event: DropEvent) => void;
@@ -298,6 +307,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     emptyLabel: string;
     draggable: boolean;
     disabled: boolean;
+    pageScroll: boolean;
     style?: BoardProps["style"];
     testID?: string;
   }) {
@@ -305,32 +315,41 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     const viewport = useMeasuredWidth();
     const scrollport = useHorizontalScrollFocus();
     const dragging = useDragActive();
+    const lanes = columns.map((column) => {
+      const cards = list.filter((item) => item.columnId === column.id);
+      const content = <>
+        <View style={skin.columnHeader}><Text style={skin.columnLabel(tokens)}>{column.label}</Text><Text style={skin.columnCount(tokens)}>{column.badge ?? String(cards.length)}</Text></View>
+        {cards.map((item) => {
+          const dragHandle = draggable ? <DragHandle label={`Move ${item.title}`} /> : null;
+          const card = renderItem ? renderItem(item, { dragHandle }) : <GlassSurface layer="content" style={skin.card(tokens, false)}><View style={skin.cardRow}><View style={BODY}><Text style={skin.cardTitle(tokens, false)}>{item.title}</Text></View>{dragHandle}</View></GlassSurface>;
+          return draggable
+            ? <Draggable key={item.id} id={item.id} data={item} label={item.title} disabled={disabled}>{card}</Draggable>
+            : <View key={item.id}>{card}</View>;
+        })}
+        {cards.length === 0 ? <View style={skin.emptySlot(tokens)}><Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text></View> : null}
+      </>;
+      // Stretch each target to the full lane height, including the space below
+      // an empty placeholder, so a horizontal drag lands anywhere in that column.
+      return draggable
+        ? <DropZone key={column.id} id={column.id} label={column.label} onDrop={onDrop} disabled={disabled} style={plainColumn}>{content}</DropZone>
+        : <View key={column.id} style={plainColumn}>{content}</View>;
+    });
+    const rowStyle = [plainLane(bleed, viewport.width, columns.length), draggable ? { alignItems: "stretch" as const } : null];
+    if (pageScroll) {
+      // Measure the bounded parent, not the overflowing row: lanes fill the available
+      // page width until their minimums require the page itself to scroll.
+      return <View onLayout={viewport.onLayout} style={[PAGE_OVERFLOW, style]} testID={testID}>
+        <View style={rowStyle}>{lanes}</View>
+      </View>;
+    }
     return <ScrollView horizontal showsHorizontalScrollIndicator
       onLayout={(event) => { viewport.onLayout(event); scrollport.onLayout(event); }}
       onContentSizeChange={scrollport.onContentSizeChange}
       scrollEnabled={!dragging && scrollport.scrollEnabled}
       style={style}
-      contentContainerStyle={[plainLane(bleed, viewport.width, columns.length), draggable ? { alignItems: "stretch" } : null]}
+      contentContainerStyle={rowStyle}
       testID={testID}>
-      {columns.map((column) => {
-        const cards = list.filter((item) => item.columnId === column.id);
-        const content = <>
-          <View style={skin.columnHeader}><Text style={skin.columnLabel(tokens)}>{column.label}</Text><Text style={skin.columnCount(tokens)}>{column.badge ?? String(cards.length)}</Text></View>
-          {cards.map((item) => {
-            const dragHandle = draggable ? <DragHandle label={`Move ${item.title}`} /> : null;
-            const card = renderItem ? renderItem(item, { dragHandle }) : <GlassSurface layer="content" style={skin.card(tokens, false)}><View style={skin.cardRow}><View style={BODY}><Text style={skin.cardTitle(tokens, false)}>{item.title}</Text></View>{dragHandle}</View></GlassSurface>;
-            return draggable
-              ? <Draggable key={item.id} id={item.id} data={item} label={item.title} disabled={disabled}>{card}</Draggable>
-              : <View key={item.id}>{card}</View>;
-          })}
-          {cards.length === 0 ? <View style={skin.emptySlot(tokens)}><Text style={skin.emptyLabel(tokens)}>{emptyLabel}</Text></View> : null}
-        </>;
-        // Stretch each target to the full lane height, including the space below
-        // an empty placeholder, so a horizontal drag lands anywhere in that column.
-        return draggable
-          ? <DropZone key={column.id} id={column.id} label={column.label} onDrop={onDrop} disabled={disabled} style={plainColumn}>{content}</DropZone>
-          : <View key={column.id} style={plainColumn}>{content}</View>;
-      })}
+      {lanes}
     </ScrollView>;
   }
 
@@ -346,6 +365,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       columnWidth = 300,
       compact = false,
       disabled = false,
+      pageScroll = false,
       emptyLabel = "No items",
       testID,
       style,
@@ -366,7 +386,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       const bleed = props.bleed ?? 0;
       const layout = [{ marginHorizontal: -bleed }, style];
       const lanes = <PlainBoardLanes columns={columns} list={list} onDrop={handleDrop} renderItem={props.renderItem}
-        bleed={bleed} emptyLabel={emptyLabel} draggable={!!props.draggable} disabled={disabled}
+        bleed={bleed} emptyLabel={emptyLabel} draggable={!!props.draggable} disabled={disabled} pageScroll={pageScroll}
         style={props.draggable ? undefined : layout} testID={props.draggable ? undefined : testID} />;
       return props.draggable ? <DragDropProvider style={layout} testID={testID}>{lanes}</DragDropProvider> : lanes;
     }
@@ -383,6 +403,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
           compact={compact}
           emptyLabel={emptyLabel}
           disabled={disabled}
+          pageScroll={pageScroll}
         />
       </DragDropProvider>
     );

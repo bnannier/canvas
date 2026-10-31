@@ -12,7 +12,7 @@
 import { componentRoutes } from "../support/routes";
 import { gotoDocs, platformRow } from "../support/docs";
 import { OVERLAYS } from "../support/overlays";
-import { BLOCKING_IMPACTS, attach, describe as describeViolations, scan } from "../support/axe";
+import { BLOCKING_IMPACTS, attach, describe as describeViolations, scan, scanPage } from "../support/axe";
 import { expect, test } from "../support/fixtures";
 
 const REPORT_ONLY = process.env.E2E_AXE_REPORT === "1";
@@ -32,8 +32,7 @@ for (const route of componentRoutes()) {
       // An open overlay portals OUT of the row, so it is scanned as part of the page.
       await recipe.open(page);
       await expect(recipe.panel(page).last()).toBeVisible();
-      const openFindings = await scan(page, "body");
-      await attach(testInfo, `${route.name}-open`, openFindings);
+      const openFindings = await scanPage(page, testInfo, `${route.name}-open`);
       findings.push(...openFindings);
     }
 

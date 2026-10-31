@@ -13,38 +13,38 @@
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
-// Button is on the v4 detail page (docs/src/ui/detail, DETAIL_V4): its guidance sections
-// are cards in Usage, each titled by a level-3 heading, and Do & Don't follows Usage (PLAN
-// decision P3).
-test("Button's guidance sections render as Usage cards before Do & Don't, with a real link in the live example", async ({ page }) => {
+// The reference keeps guidance prose and snippets in Usage cards; Tokens follows Usage.
+test("Button's guidance sections render as Usage cards before Tokens, with accurate source snippets", async ({ page }) => {
   await gotoDocs(page, "/components/button");
   const main = page.getByRole("main");
   // The outline is read once, so wait for the last section to be on the page first.
-  await expect(main.getByRole("heading", { level: 2, name: "Do & Don’t", exact: true })).toBeVisible();
+  await expect(main.getByRole("heading", { level: 2, name: "Tokens", exact: true })).toBeVisible();
   const outline = await main.getByRole("heading").evaluateAll((nodes) =>
     nodes.map((node) => ({ level: Number(node.getAttribute("aria-level") ?? node.tagName.slice(1)), text: (node.textContent ?? "").trim() })));
   const usageAt = outline.findIndex((h) => h.level === 2 && h.text === "Usage");
-  const dontsAt = outline.findIndex((h) => h.level === 2 && h.text === "Do & Don’t");
+  const tokensAt = outline.findIndex((h) => h.level === 2 && h.text === "Tokens");
   expect(usageAt, "the Usage section").toBeGreaterThan(-1);
-  expect(dontsAt, "Do & Don't follows Usage").toBeGreaterThan(usageAt);
-  const cards = outline.slice(usageAt + 1, dontsAt);
+  expect(tokensAt, "Tokens follows Usage").toBeGreaterThan(usageAt);
+  const cards = outline.slice(usageAt + 1, tokensAt);
   expect(cards.every((h) => h.level === 3), "every Usage card title is a level-3 heading").toBe(true);
   expect(cards.map((h) => h.text)).toEqual(expect.arrayContaining(["Real links (href)", "Workflow actions", "Touch area"]));
-  await expect(main.getByText("A button that NAVIGATES should be a real link", { exact: false })).toBeVisible();
-  await expect(main.getByText("keeps its size and extends only its touch area to the minimum", { exact: false })).toBeVisible();
-  // The href example is live: its Button is a genuine browser link to the destination.
-  await expect(main.getByRole("link", { name: "Read the docs" })).toHaveAttribute("href", "https://canvas.nannier.com");
+  const usage = page.locator('[data-detail-section="use"]');
+  await expect(usage.getByText("A button that NAVIGATES should be a real link", { exact: false })).toBeVisible();
+  await expect(usage.getByText("keeps its size and extends only its touch area to the minimum", { exact: false })).toBeVisible();
+  await expect(usage).toContainText('href="https://canvas.nannier.com"');
+  await expect(usage.getByRole("link", { name: "Read the docs" })).toHaveCount(0);
 });
 
 // Each text below holds a code span in the .md, so finding it whole also proves the page
 // set the span in the mono face rather than printing its backticks.
 test("the lead is the .md intro's first paragraph, and the overview follows it", async ({ page }) => {
   await gotoDocs(page, "/components/button");
-  const main = page.getByRole("main");
-  await expect(main.getByText("Six intents × three sizes (plus the icon square)", { exact: false })).toBeVisible();
+  const header = page.locator('[data-detail-section="header"]');
+  const usage = page.locator('[data-detail-section="use"]');
+  await expect(header.getByText("Six intents × three sizes (plus the icon square)", { exact: false })).toBeVisible();
   // The second intro paragraph (the overview) and the third (the ref guidance).
-  await expect(main.getByText("The call to action fills with the accent", { exact: false })).toBeVisible();
-  await expect(main.getByText("Pass ref to access the interactive Pressable", { exact: false })).toBeVisible();
+  await expect(usage.getByText("The call to action fills with the accent", { exact: false })).toBeVisible();
+  await expect(usage.getByText("Pass ref to access the interactive Pressable", { exact: false })).toBeVisible();
 });
 
 // The v4 detail page shows every example at once in its Variants grid, so every note is
@@ -53,7 +53,6 @@ test("the lead is the .md intro's first paragraph, and the overview follows it",
 test("every example's note is shown with its example", async ({ page }) => {
   await gotoDocs(page, "/components/button");
   const main = page.getByRole("main");
-  await expect(main.getByText("The variant only changes how a button looks", { exact: false })).toBeVisible();
   await expect(main.getByText("A button's whole job is to fire onPress", { exact: false })).toBeVisible();
   await expect(main.getByText("A disabled button ignores presses", { exact: false })).toBeVisible();
 });
@@ -75,9 +74,10 @@ test("an intro's bullet list is a list of items, with no bullet read aloud", asy
   expect(await list.getByRole("listitem").first().evaluate((item) => item.querySelector("[aria-hidden='true']")?.textContent)).toBe("•");
 });
 
-test("a wrapped Do & Don't caption reads whole, and its code is set in the mono face", async ({ page }) => {
-  await gotoDocs(page, "/components/field");
-  await expect(page.getByRole("main").getByText("it drifts from the caption scale, misses the destructive tone, and is never announced as an error.", { exact: false })).toBeVisible();
-  await gotoDocs(page, "/components/avatar");
-  await expect(page.getByRole("main").getByText("An unbounded stack (no max) runs off the row and stops being scannable.", { exact: true })).toBeVisible();
+test("the component reference follows the source section order without the former extra Do and Don't section", async ({ page }) => {
+  await gotoDocs(page, "/components/button");
+  await expect(page.locator('[data-detail-section="prevnext"]')).toBeVisible();
+  const ids = await page.locator("[data-detail-section]").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-detail-section")));
+  expect(ids).toEqual(["header", "pg", "var", "sz", "st", "an", "props", "a11y", "pf", "use", "tok", "prevnext"]);
+  await expect(page.getByRole("contentinfo")).toContainText("component detail · props and examples read from bnannier/canvas");
 });

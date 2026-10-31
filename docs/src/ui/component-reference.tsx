@@ -5,6 +5,7 @@ import { getComponent } from "../core/data/components";
 import { Page } from "./page";
 import { DocsHead } from "./docs-head";
 import { DetailPage } from "./detail/detail-page";
+import { DetailFooter } from "./detail/footer";
 
 // The component reference page, shared by the default route (components/[slug]/index) and
 // the deep-linked variant route (components/[slug]/[variant]): the v4 detail page
@@ -25,7 +26,7 @@ export function ComponentReference() {
   // another component fetches that one's chunk, and the page holds a skeleton for the
   // moment it takes.
   return (
-    <Page>
+    <Page detail footer={<DetailFooter />}>
       <DocsHead title={comp.name} />
       <Suspense fallback={<Skeleton card large animate accessibilityLabel="Loading the component" />}>
         <DetailPage comp={comp} variant={variant} />

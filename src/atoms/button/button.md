@@ -123,6 +123,14 @@ hand-off's `THM` table (cv-kit-code.js line 67) gives blush `oklch(.8 .09 10)` a
 <Button icon largeIcon circle ghost steadyPress count={3} accessibilityLabel="Approvals" iconLeft={<Icon bell size={17} mediumStroke muted />} />
 ```
 
+### Unread mark
+
+`unread` marks something new without a number: the accent dot inside the box's upper trailing corner, ringed in the card colour. The dot is decorative, so name the state in the accessible label; `count` wins when both are passed.
+
+```tsx
+<Button outline icon unread accessibilityLabel="Inbox, unread messages" iconLeft={<Icon inbox size={16} decorative />} />
+```
+
 ### Outline
 
 ```tsx
@@ -202,10 +210,26 @@ A disabled button ignores presses: `onPress` never runs.
 <Button raised>Mint agent</Button>
 ```
 
+### Rounded
+
+`rounded` gives a button fully rounded ends: the pill in place of the control corner, and a circle on an `icon` square. The special bodies keep their own corners.
+
+```tsx
+<Button secondary rounded>Rounded</Button>
+```
+
 ### Block
 
 ```tsx
 <Button block>Create account</Button>
+```
+
+### Dashed
+
+`dashed` draws the edge dashed, for an add-a-row or drop-here action. It shows on the looks that draw an edge, `secondary` and `outline`.
+
+```tsx
+<Button secondary block dashed>Add a row</Button>
 ```
 
 ### Measure

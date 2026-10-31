@@ -4,7 +4,7 @@ import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRe
 import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus, useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
-import { FlatList, StyleSheet, ScrollView, type TextInputProps, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
+import { FlatList, StyleSheet, ScrollView, type LayoutChangeEvent, type TextInputProps, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
 import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useContainerWidth, tabularNums, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneHost, paneStyle, PANE_SIBLING_INPUT, withInnerFill, FOCUS_RESET } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
@@ -77,8 +77,16 @@ export interface DataTableColumn {
   numeric?: boolean;
   /** Center the header and cells (short status/flag columns). */
   centered?: boolean;
-  /** Fixed width in px instead of the equal flex share. Wins over `grow` and `minWidth`. */
+  /** Fixed width in px instead of the equal flex share. Wins over `fit`, `grow` and `minWidth`. */
   width?: number;
+  /**
+   * Size the column to its widest cell, its heading included, instead of the equal flex
+   * share: a grid's `max-content` track. The table measures the column's cells and holds
+   * every one at the widest, so a column of buttons lines up at the width of its longest
+   * label. Wins over `grow` and `minWidth`; a table holding a `fit` column pans once the
+   * measured columns add up to more than it has.
+   */
+  fit?: boolean;
   /**
    * The column's relative weight in the width the fixed columns leave: a column with
    * `grow: 2` takes twice the share of one with `grow: 1` (the default every column
@@ -230,6 +238,19 @@ export interface DataTableProps {
    */
   bare?: boolean;
   /**
+   * The specimen matrix (a section page's states grid): no frame, no fill and no rules, the
+   * headings as the page's small uppercase mono label in the third ink, the cells unpadded,
+   * the rows 12 px apart and the columns 20 px apart. Pair it with `fit` columns for the
+   * hand-off's content-sized tracks. `reference` and `bare` win over it.
+   * <!-- only: web -->
+   * On iOS the table keeps its own look and this changes nothing.
+   * <!-- /only -->
+   * <!-- only: ios -->
+   * The table keeps its own look and this changes nothing.
+   * <!-- /only -->
+   */
+  matrix?: boolean;
+  /**
    * Align every cell to the top of its row rather than its middle, so a row whose
    * description wraps keeps its name, type and default beside the description's first
    * line. The selection box and the row actions center on that first line, as they do in
@@ -379,11 +400,12 @@ export function densityOf(p: DataTableProps): Density {
   return "regular";
 }
 
-// The table's look: the reference sheet (`reference`), the bare hairline table (`bare`) or
-// the skin's own table.
-export function lookOf(p: Pick<DataTableProps, "reference" | "bare">): "reference" | "bare" | "table" {
+// The table's look: the reference sheet (`reference`), the bare hairline table (`bare`), the
+// specimen matrix (`matrix`) or the skin's own table.
+export function lookOf(p: Pick<DataTableProps, "reference" | "bare" | "matrix">): "reference" | "bare" | "matrix" | "table" {
   if (p.reference) return "reference";
   if (p.bare) return "bare";
+  if (p.matrix) return "matrix";
   return "table";
 }
 
@@ -467,8 +489,11 @@ const FOOTER_BAR: ViewStyle = {
 // A column's box over the equal flex share: a fixed width replaces the share; a
 // weight (`grow`) scales it and a floor (`minWidth`) holds it, the flex reading of a
 // grid's `minmax(min, Nfr)` track.
-function widthStyle(col: NormalColumn): ViewStyle | null {
+// A `fit` column hugs its content until the table has measured it, then holds the widest
+// cell's width (`fitWidth`).
+function widthStyle(col: NormalColumn, fitWidth?: number): ViewStyle | null {
   if (col.width != null) return { width: col.width, flexGrow: 0, flexShrink: 0, flexBasis: "auto" };
+  if (col.fit) return { ...(fitWidth != null ? { width: fitWidth } : null), flexGrow: 0, flexShrink: 0, flexBasis: "auto" };
   if (col.grow == null && col.minWidth == null) return null;
   return {
     ...(col.grow != null ? { flexGrow: Math.max(0, col.grow) } : null),
@@ -596,7 +621,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // The reference sheet is the skin's where the skin draws one (web, Android); iOS keeps
     // its own table (design-language item 4).
     const look = lookOf(props);
-    const ref = look === "reference" ? skin.reference : look === "bare" ? skin.bare : undefined;
+    const ref = look === "reference" ? skin.reference : look === "bare" ? skin.bare : look === "matrix" ? skin.matrix : undefined;
     const topAligned = rowAlignOf(props) === "top";
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
@@ -612,6 +637,18 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const fill = useFillStyle("DataTable");
 
     const cols = useMemo(() => normalizeColumns(columns), [columns]);
+    // The `fit` columns' measured widths: every cell of such a column reports its box,
+    // and the column holds the widest. A cell held at that width measures the same width
+    // again, so the measurement settles in one pass.
+    const [fitWidths, setFitWidths] = useState<Record<string, number>>({});
+    const fitCell = (col: NormalColumn) =>
+      col.fit && col.width == null
+        ? (event: LayoutChangeEvent) => {
+            const width = Math.ceil(event.nativeEvent.layout.width);
+            setFitWidths((prev) => (width > (prev[col.key] ?? 0) ? { ...prev, [col.key]: width } : prev));
+          }
+        : undefined;
+    const widthOf = (col: NormalColumn) => widthStyle(col, fitWidths[col.key]);
     // The rows, flattened out of `groups` when the table is grouped.
     const { rows, groupOf, groups } = useMemo(() => tableData(props.rows, props.groups), [props.rows, props.groups]);
 
@@ -673,10 +710,12 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // table pans whenever the floors add up to more than it has, not only below sm.
     const hasActions = !!(onRowEdit || onRowDelete);
     const panMinWidth =
-      cols.reduce((w, col) => w + (col.width ?? col.minWidth ?? MIN_COLUMN_WIDTH), 0) +
+      cols.reduce((w, col) => w + (col.width ?? (col.fit ? fitWidths[col.key] : undefined) ?? col.minWidth ?? MIN_COLUMN_WIDTH), 0) +
+      // The sheet's column gap and side inset, which space the columns outside their boxes.
+      (ref ? Number(ref.columns.columnGap ?? 0) * Math.max(0, cols.length - 1) + 2 * Number(ref.columns.paddingHorizontal ?? 0) : 0) +
       (selectable ? SELECT_COLUMN_WIDTH : 0) +
       (hasActions ? skin.actionsColWidth : 0);
-    const floored = cols.some((col) => col.width == null && col.minWidth != null);
+    const floored = cols.some((col) => col.width == null && (col.fit || col.minWidth != null));
     const pans =
       canPan && !stacked && cols.length > 1 && measuredWidth > 0 &&
       (measuredWidth < breakpoints.sm || (floored && measuredWidth < panMinWidth));
@@ -909,7 +948,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // A data or placeholder cell's layout over the skin's cell box: the column's
     // fixed width side by side; stacked, the full width at the content's height.
     const cellLayout = (col: NormalColumn, index: number): StyleProp<ViewStyle> =>
-      stacked ? [STACKED_CELL, index > 0 ? STACKED_CELL_FOLLOWS : null] : widthStyle(col);
+      stacked ? [STACKED_CELL, index > 0 ? STACKED_CELL_FOLLOWS : null] : widthOf(col);
     // A stacked row and an `alignTop` row hold their cells at the top; otherwise the
     // skin's row centers them.
     const rowAlign = stacked || topAligned ? TOP_ALIGNED_ROW : null;
@@ -1141,7 +1180,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         ? STACKED_HEADER_CELL
         : [
             align === "end" ? { justifyContent: "flex-end" } : align === "center" ? { justifyContent: "center" } : null,
-            widthStyle(col),
+            widthOf(col),
           ];
       const label = (
         <Text
@@ -1157,7 +1196,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       );
       if (!sortableAt(col)) {
         return (
-          <View key={`h-${col.key}`} style={[HEADER_CELL_BOX, cellInset, layout]} role="columnheader">
+          <View key={`h-${col.key}`} style={[HEADER_CELL_BOX, cellInset, layout]} role="columnheader" onLayout={stacked ? undefined : fitCell(col)}>
             {label}
           </View>
         );
@@ -1173,6 +1212,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         <Pressable
           key={`h-${col.key}`}
           onPress={() => cycleSort(col)}
+          onLayout={stacked ? undefined : fitCell(col)}
           android_ripple={ripple}
           role="columnheader"
           accessibilityLabel={
@@ -1511,6 +1551,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           key={`c-${rowId}-${c}`}
           style={[skin.dataCell, cellPad, cellLayout(col, index), alignCell]}
           role="cell"
+          onLayout={stacked ? undefined : fitCell(col)}
         >
           {stackedLabel}
           {content}

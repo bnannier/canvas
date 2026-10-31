@@ -39,6 +39,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `applicationpanel` | Application panel | [ ] | [ ] | [ ] |  |
 | `right` | Right | [ ] | [ ] | [ ] |  |
+| `openinplace` | Open in place | [ ] | [ ] | [ ] |  |
 | `bottomsheet` | Bottom sheet | [ ] | [ ] | [ ] |  |
 | `topsheet` | Top sheet | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->

@@ -187,6 +187,22 @@ item draws a trailing chevron, the hint that its `onSelect` opens another menu.
 />
 ```
 
+### Inline specimen
+
+`inline` draws the menu open and in flow under the trigger instead of floating it over the page: a specimen for a docs page or an empty state. The trigger reads as expanded and its press is inert, a row still fires `onSelect`, and nothing dismisses the card.
+
+```tsx
+<Dropdown
+  inline
+  trigger="Account"
+  items={[
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
+  ]}
+/>
+```
+
 ## Do & Don't
 
 ### Trigger

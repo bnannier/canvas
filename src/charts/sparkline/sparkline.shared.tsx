@@ -130,7 +130,7 @@ export function createSparkline(skin: SparklineSkin) {
     const barHeight = (v: number): number => {
       if (!Number.isFinite(v)) return Math.max(2, Math.round(plot * FLOOR));
       if (hi <= lo) return plot;
-      return Math.max(2, Math.round(plot * (FLOOR + (1 - FLOOR) * ((v - lo) / (hi - lo)))));
+      return Math.max(2, plot * (FLOOR + (1 - FLOOR) * ((v - lo) / (hi - lo))));
     };
 
     // The bars grow with `flexGrow`, so the strip needs a definite width or they

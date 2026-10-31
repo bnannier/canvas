@@ -4,6 +4,8 @@
 // registry, and the design rule for components on axis tables
 // (test/design-rules-source.test.ts) lets these stand in a migrated component.
 export const NOT_AXES: Readonly<Record<string, string>> = {
+  "src/charts/funnel-chart/funnel-chart.shared.tsx#<anonymous>": "Independent tapered geometry and share data formatting: the tapered branch shows stage conversion, whose denominator follows share; neither flag takes precedence over the other.",
+  "src/organisms/data-table/data-table.shared.tsx#widthStyle": "A column descriptor's measured fit/fixed/grow geometry, not a choice between component styling props.",
   "src/atoms/textarea/textarea.styles.ts#field": "The field skin's border by state (an error over focus), not a choice between props.",
   "src/organisms/calendar/calendar.shared.tsx#dayCell": "A day's place in the selected range, computed from dates.",
   "src/organisms/calendar/calendar.styles.ts#dayCellState": "A day cell's fill by state (selected over today).",

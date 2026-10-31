@@ -127,9 +127,9 @@ describe("Board interaction", () => {
     expect(pressed!.id).toBe("c");
   });
 
-  it("computes the BoardMove for a keyboard cross-column drop (controlled: list untouched)", async () => {
+  it.each([false, true])("computes the BoardMove for a keyboard cross-column drop with pageScroll=%s (controlled: list untouched)", async (pageScroll) => {
     let move: BoardMove | null = null;
-    const { container, getByText } = ui(<Board columns={columns} items={items} onMove={(m) => { move = m; }} />);
+    const { container, getByText } = ui(<Board pageScroll={pageScroll} columns={columns} items={items} onMove={(m) => { move = m; }} />);
     const grip = byLabel(container, "Move Task A");
 
     fireEvent.keyDown(grip, { key: " " });
@@ -262,10 +262,10 @@ it("renders plain work lanes with custom card actions, counts and dashed empty s
   expect(opened).toBe(true);
 });
 
-it("bounds plain lane content to its container and retains narrow horizontal overflow", () => {
+it.each([false, true])("bounds plain lane content and retains narrow horizontal overflow with pageScroll=%s", (pageScroll) => {
   const fourColumns = [...columns, { id: "review", label: "Review" }, { id: "done", label: "Done" }];
   const { getByTestId, rerender } = ui(
-    <Board plain testID="work-board" columns={fourColumns} items={items}
+    <Board plain pageScroll={pageScroll} testID="work-board" columns={fourColumns} items={items}
       renderItem={(item) => <Text>{item.title.repeat(100)}</Text>} />,
   );
   const viewport = getByTestId("work-board");
@@ -284,17 +284,17 @@ it("bounds plain lane content to its container and retains narrow horizontal ove
   resize(360);
   expect(row().style.width).toBe("708px"); // Four 168px lanes + three 12px gaps.
 
-  rerender(<ThemeProvider><Board plain testID="work-board" bleed={20} columns={fourColumns} items={items} /></ThemeProvider>);
+  rerender(<ThemeProvider><Board plain pageScroll={pageScroll} testID="work-board" bleed={20} columns={fourColumns} items={items} /></ThemeProvider>);
   expect(row().style.width).toBe("748px"); // Bleed pads are outside the lane minimums.
-  rerender(<ThemeProvider><Board plain testID="work-board" bleed={20} columns={columns} items={items} /></ThemeProvider>);
+  rerender(<ThemeProvider><Board plain pageScroll={pageScroll} testID="work-board" bleed={20} columns={columns} items={items} /></ThemeProvider>);
   expect(row().style.width).toBe("388px");
 });
 
 describe("draggable plain work lanes", () => {
-  it("moves a custom card into an empty lane without taking over its actions", async () => {
+  it.each([false, true])("moves a custom card into an empty lane without taking over its actions with pageScroll=%s", async (pageScroll) => {
     let move: BoardMove | null = null;
     let opened = false;
-    const { container, getByRole } = ui(<Board plain draggable columns={columns} items={[items[0]!]}
+    const { container, getByRole } = ui(<Board plain draggable pageScroll={pageScroll} columns={columns} items={[items[0]!]}
       renderItem={(item, { dragHandle }) => <>{dragHandle}<Button onPress={() => { opened = true; }}>{item.title}</Button></>}
       onMove={(next) => { move = next; }} />);
     fireEvent.click(getByRole("button", { name: "Task A" }));
@@ -335,5 +335,23 @@ describe("draggable plain work lanes", () => {
     act(() => { fireEvent.keyDown(grip, { key: "ArrowRight" }); });
     act(() => { fireEvent.keyDown(grip, { key: "Enter" }); });
     expect(moves).toHaveLength(0);
+  });
+});
+
+
+describe("page-owned Board overflow", () => {
+  it.each([false, true])("removes the local horizontal scrollport while retaining focusable grips with plain=%s", (plain) => {
+    const { container, rerender } = ui(<Board plain={plain} draggable columns={columns} items={items} />);
+    const scrollports = () => [...container.querySelectorAll("div")].filter((node) => {
+      const overflow = getComputedStyle(node).overflowX;
+      return overflow === "auto" || overflow === "scroll";
+    });
+    expect(scrollports()).toHaveLength(1);
+    rerender(<ThemeProvider><Board plain={plain} draggable pageScroll columns={columns} items={items} /></ThemeProvider>);
+    expect(scrollports()).toHaveLength(0);
+    const grip = byLabel(container, "Move Task A");
+    expect(grip.getAttribute("tabindex")).not.toBe("-1");
+    grip.focus();
+    expect(document.activeElement).toBe(grip);
   });
 });

@@ -91,6 +91,18 @@ export class TypeSites extends SourceFolder {
   }
 
   protected scaleOf(node: ts.Expression, sf: ts.SourceFile): Origin[] | null {
+    // These authored Charts-room SVG labels are measured in viewBox units. Keep
+    // tracing their named source size while the chart applies its measured meet scale.
+    const chartScale = {
+      "src/charts/box-plot/box-plot.shared.tsx": "k",
+      "src/charts/waterfall-chart/waterfall-chart.shared.tsx": "k",
+      "src/charts/radar-chart/radar-chart.shared.tsx": "compactScale",
+    }[sf.fileName];
+    if (chartScale && ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.AsteriskToken &&
+        ts.isIdentifier(node.right) && node.right.text === chartScale &&
+        ts.isPropertyAccessExpression(node.left) && node.left.name.text === "authoredAxisSize") {
+      return this.values(node.left, sf, new Set());
+    }
     const style = typeScaleStyle(node);
     if (style) return [{ value: STYLES[style].fontSize, node, sf, kind: "type scale", read: `typeScale.${style}` }];
     if (ts.isPropertyAccessExpression(node) && node.name.text === "fontSize") {

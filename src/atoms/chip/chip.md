@@ -65,6 +65,8 @@ receives the press event, so a web app routing on the client calls
 the accent instead of brightening it. A link is not a toggle: `href` is ignored on a
 selectable chip or a ChipGroup option.
 
+`small` gives passive metadata tags a 24 px container and 11 px label where the skin supports it. Platform-native chips and the option, token and link looks keep their own dimensions.
+
 ## Usage
 
 ```tsx

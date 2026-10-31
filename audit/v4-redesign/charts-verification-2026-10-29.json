@@ -1,0 +1,1346 @@
+{
+  "date": "2026-10-29",
+  "scope": "All 27 chart types on /charts, composed in 25 cards",
+  "authority": "tools/v4/handoff/Canvas v4.0.0 Charts.dc.html and imported cv-kit-charts.js",
+  "verification": {
+    "scenarios": [
+      {
+        "name": "desktop-dark",
+        "cards": 25,
+        "browserErrors": [],
+        "maxWidthDifference": 0.25,
+        "maxHeightDifference": 0,
+        "meanChannelError": 0.8497116352161201,
+        "cardsMeasured": [
+          {
+            "id": "c-chart",
+            "reference": {
+              "x": 252,
+              "y": 436,
+              "width": 1163.984375,
+              "height": 318
+            },
+            "actual": {
+              "x": 252,
+              "y": 436,
+              "width": 1164,
+              "height": 318
+            },
+            "meanChannelError": 1.0538031223209203,
+            "changedPixelPercent": 2.279874213836478
+          },
+          {
+            "id": "c-area-chart",
+            "reference": {
+              "x": 252,
+              "y": 774,
+              "width": 374.65625,
+              "height": 317
+            },
+            "actual": {
+              "x": 252,
+              "y": 774,
+              "width": 374.5,
+              "height": 317
+            },
+            "meanChannelError": 0.6407374693305292,
+            "changedPixelPercent": 0.3339642481598318
+          },
+          {
+            "id": "c-range-area-chart",
+            "reference": {
+              "x": 646.65625,
+              "y": 683,
+              "width": 374.671875,
+              "height": 317
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 683,
+              "width": 374.5,
+              "height": 317
+            },
+            "meanChannelError": 0.8725383806519453,
+            "changedPixelPercent": 1.229863301787592
+          },
+          {
+            "id": "c-composed-chart",
+            "reference": {
+              "x": 1041.328125,
+              "y": 683,
+              "width": 374.65625,
+              "height": 317
+            },
+            "actual": {
+              "x": 1041,
+              "y": 683,
+              "width": 374.5,
+              "height": 317
+            },
+            "meanChannelError": 1.3750550297932,
+            "changedPixelPercent": 2.145110410094637
+          },
+          {
+            "id": "c-sparkline",
+            "reference": {
+              "x": 252,
+              "y": 1020,
+              "width": 374.65625,
+              "height": 343
+            },
+            "actual": {
+              "x": 252,
+              "y": 1020,
+              "width": 374.5,
+              "height": 343
+            },
+            "meanChannelError": 0.20814512471655328,
+            "changedPixelPercent": 0.3933916423712342
+          },
+          {
+            "id": "c-histogram",
+            "reference": {
+              "x": 646.65625,
+              "y": 368,
+              "width": 374.671875,
+              "height": 343
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 364,
+              "width": 374.5,
+              "height": 343
+            },
+            "meanChannelError": 1.1512536443148689,
+            "changedPixelPercent": 1.9381924198250728
+          },
+          {
+            "id": "c-box-plot",
+            "reference": {
+              "x": 1041.328125,
+              "y": 368,
+              "width": 374.65625,
+              "height": 343
+            },
+            "actual": {
+              "x": 1041,
+              "y": 364,
+              "width": 374.5,
+              "height": 343
+            },
+            "meanChannelError": 1.4680531260123098,
+            "changedPixelPercent": 1.7220602526724975
+          },
+          {
+            "id": "c-scatter-plot",
+            "reference": {
+              "x": 252,
+              "y": 731,
+              "width": 374.65625,
+              "height": 327
+            },
+            "actual": {
+              "x": 252,
+              "y": 727,
+              "width": 374.5,
+              "height": 327
+            },
+            "meanChannelError": 0.5454814814814815,
+            "changedPixelPercent": 1.0576962283384301
+          },
+          {
+            "id": "c-waterfall-chart",
+            "reference": {
+              "x": 646.65625,
+              "y": 673,
+              "width": 374.671875,
+              "height": 327
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 673,
+              "width": 374.5,
+              "height": 327
+            },
+            "meanChannelError": 0.890892286782195,
+            "changedPixelPercent": 1.7174311926605506
+          },
+          {
+            "id": "c-pie-chart",
+            "reference": {
+              "x": 1041.328125,
+              "y": 673,
+              "width": 374.65625,
+              "height": 327
+            },
+            "actual": {
+              "x": 1041,
+              "y": 673,
+              "width": 374.5,
+              "height": 327
+            },
+            "meanChannelError": 0.7309357798165138,
+            "changedPixelPercent": 1.3520897043832825
+          },
+          {
+            "id": "c-treemap",
+            "reference": {
+              "x": 252,
+              "y": 1020,
+              "width": 374.65625,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 252,
+              "y": 1020,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 1.553919191919192,
+            "changedPixelPercent": 1.7593073593073594
+          },
+          {
+            "id": "c-stacked-bar",
+            "reference": {
+              "x": 646.65625,
+              "y": 386,
+              "width": 374.671875,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 382,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 0.8076046176046177,
+            "changedPixelPercent": 1.0597402597402596
+          },
+          {
+            "id": "c-funnel-chart",
+            "reference": {
+              "x": 1041.328125,
+              "y": 386,
+              "width": 374.65625,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 1041,
+              "y": 382,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 0.7060692640692641,
+            "changedPixelPercent": 0.8251082251082251
+          },
+          {
+            "id": "c-gauge",
+            "reference": {
+              "x": 252,
+              "y": 713.5,
+              "width": 374.65625,
+              "height": 322
+            },
+            "actual": {
+              "x": 252,
+              "y": 709.5,
+              "width": 374.5,
+              "height": 322
+            },
+            "meanChannelError": 0.9074147688060732,
+            "changedPixelPercent": 2.4298136645962733
+          },
+          {
+            "id": "c-progress-ring",
+            "reference": {
+              "x": 646.65625,
+              "y": 677.5,
+              "width": 374.671875,
+              "height": 322
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 677.5,
+              "width": 374.5,
+              "height": 322
+            },
+            "meanChannelError": 0.7263630089717046,
+            "changedPixelPercent": 1.6248447204968943
+          },
+          {
+            "id": "c-radial-bar-chart",
+            "reference": {
+              "x": 1041.328125,
+              "y": 677.5,
+              "width": 374.65625,
+              "height": 322
+            },
+            "actual": {
+              "x": 1041,
+              "y": 677.5,
+              "width": 374.5,
+              "height": 322
+            },
+            "meanChannelError": 0.6481545893719807,
+            "changedPixelPercent": 1.3349896480331263
+          },
+          {
+            "id": "c-bullet-chart",
+            "reference": {
+              "x": 252,
+              "y": 1019.5,
+              "width": 374.65625,
+              "height": 367
+            },
+            "actual": {
+              "x": 252,
+              "y": 1019.5,
+              "width": 374.5,
+              "height": 367
+            },
+            "meanChannelError": 0.34775900696336665,
+            "changedPixelPercent": 0.5718437783832879
+          },
+          {
+            "id": "c-radar-chart",
+            "reference": {
+              "x": 646.65625,
+              "y": 356.5,
+              "width": 374.671875,
+              "height": 367
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 352.5,
+              "width": 374.5,
+              "height": 367
+            },
+            "meanChannelError": 1.2812231304874357,
+            "changedPixelPercent": 5.105177111716621
+          },
+          {
+            "id": "c-metric-breakdown",
+            "reference": {
+              "x": 1041.328125,
+              "y": 356.5,
+              "width": 374.65625,
+              "height": 367
+            },
+            "actual": {
+              "x": 1041,
+              "y": 352.5,
+              "width": 374.5,
+              "height": 367
+            },
+            "meanChannelError": 0.7875289131092946,
+            "changedPixelPercent": 1.5811080835603997
+          },
+          {
+            "id": "c-bar-list",
+            "reference": {
+              "x": 252,
+              "y": 743.5,
+              "width": 374.65625,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 252,
+              "y": 739.5,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 0.7562164502164502,
+            "changedPixelPercent": 1.1636363636363636
+          },
+          {
+            "id": "c-depth-chart",
+            "reference": {
+              "x": 646.65625,
+              "y": 691.5,
+              "width": 374.671875,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 691.5,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 0.5326435786435787,
+            "changedPixelPercent": 1.2502164502164501
+          },
+          {
+            "id": "c-heatmap",
+            "reference": {
+              "x": 252,
+              "y": 1019,
+              "width": 571.984375,
+              "height": 367
+            },
+            "actual": {
+              "x": 252,
+              "y": 1063,
+              "width": 571.75,
+              "height": 367
+            },
+            "meanChannelError": 0.4143721854893517,
+            "changedPixelPercent": 0.4077666203006802
+          },
+          {
+            "id": "c-candlestick-chart",
+            "reference": {
+              "x": 843.984375,
+              "y": 356,
+              "width": 572,
+              "height": 367
+            },
+            "actual": {
+              "x": 843.75,
+              "y": 352,
+              "width": 571.75,
+              "height": 367
+            },
+            "meanChannelError": 0.692231474247823,
+            "changedPixelPercent": 1.9549932356471866
+          },
+          {
+            "id": "c-uptime-bar",
+            "reference": {
+              "x": 252,
+              "y": 743,
+              "width": 571.984375,
+              "height": 495.59375
+            },
+            "actual": {
+              "x": 252,
+              "y": 739,
+              "width": 571.75,
+              "height": 495.59375
+            },
+            "meanChannelError": 0.7969842657342657,
+            "changedPixelPercent": 1.507867132867133
+          },
+          {
+            "id": "c-geo-map",
+            "reference": {
+              "x": 843.984375,
+              "y": 504,
+              "width": 572,
+              "height": 495.59375
+            },
+            "actual": {
+              "x": 843.75,
+              "y": 504,
+              "width": 571.75,
+              "height": 495.59375
+            },
+            "meanChannelError": 1.3474109895480864,
+            "changedPixelPercent": 1.739087525377848
+          }
+        ]
+      },
+      {
+        "name": "phone-dark",
+        "cards": 25,
+        "browserErrors": [],
+        "maxWidthDifference": 0,
+        "maxHeightDifference": 0,
+        "meanChannelError": 0.8220166275271281,
+        "cardsMeasured": [
+          {
+            "id": "c-chart",
+            "reference": {
+              "x": 24,
+              "y": 696.75,
+              "width": 342,
+              "height": 651
+            },
+            "actual": {
+              "x": 24,
+              "y": 696.765625,
+              "width": 342,
+              "height": 651
+            },
+            "meanChannelError": 1.2241865116794375,
+            "changedPixelPercent": 2.096639448082572
+          },
+          {
+            "id": "c-area-chart",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 317
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 317
+            },
+            "meanChannelError": 0.6223365985942775,
+            "changedPixelPercent": 0.4777980703599166
+          },
+          {
+            "id": "c-range-area-chart",
+            "reference": {
+              "x": 24,
+              "y": 640.75,
+              "width": 342,
+              "height": 315
+            },
+            "actual": {
+              "x": 24,
+              "y": 636.765625,
+              "width": 342,
+              "height": 315
+            },
+            "meanChannelError": 0.7564002599090318,
+            "changedPixelPercent": 0.7138215910145734
+          },
+          {
+            "id": "c-composed-chart",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 317
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 317
+            },
+            "meanChannelError": 0.5704552302593145,
+            "changedPixelPercent": 0.3016215617909126
+          },
+          {
+            "id": "c-sparkline",
+            "reference": {
+              "x": 24,
+              "y": 640.75,
+              "width": 342,
+              "height": 343
+            },
+            "actual": {
+              "x": 24,
+              "y": 636.765625,
+              "width": 342,
+              "height": 343
+            },
+            "meanChannelError": 0.40189760114572143,
+            "changedPixelPercent": 0.3102995584198592
+          },
+          {
+            "id": "c-histogram",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 315
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 315
+            },
+            "meanChannelError": 0.6826015656425013,
+            "changedPixelPercent": 0.5328135152696556
+          },
+          {
+            "id": "c-box-plot",
+            "reference": {
+              "x": 24,
+              "y": 639.75,
+              "width": 342,
+              "height": 298
+            },
+            "actual": {
+              "x": 24,
+              "y": 635.765625,
+              "width": 342,
+              "height": 298
+            },
+            "meanChannelError": 0.6632684432931696,
+            "changedPixelPercent": 0.7447309549040386
+          },
+          {
+            "id": "c-scatter-plot",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 327
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 327
+            },
+            "meanChannelError": 0.14558482512771906,
+            "changedPixelPercent": 0.18062485469535203
+          },
+          {
+            "id": "c-waterfall-chart",
+            "reference": {
+              "x": 24,
+              "y": 645.75,
+              "width": 342,
+              "height": 298
+            },
+            "actual": {
+              "x": 24,
+              "y": 641.765625,
+              "width": 342,
+              "height": 298
+            },
+            "meanChannelError": 1.1055411646192288,
+            "changedPixelPercent": 1.3962478904195612
+          },
+          {
+            "id": "c-pie-chart",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 284
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 284
+            },
+            "meanChannelError": 0.5210821458968234,
+            "changedPixelPercent": 0.8977843670208385
+          },
+          {
+            "id": "c-treemap",
+            "reference": {
+              "x": 24,
+              "y": 623.75,
+              "width": 342,
+              "height": 324
+            },
+            "actual": {
+              "x": 24,
+              "y": 619.765625,
+              "width": 342,
+              "height": 324
+            },
+            "meanChannelError": 1.1041110148485067,
+            "changedPixelPercent": 0.9439751642480687
+          },
+          {
+            "id": "c-stacked-bar",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 284
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 284
+            },
+            "meanChannelError": 0.3178520440381078,
+            "changedPixelPercent": 0.3459352606869286
+          },
+          {
+            "id": "c-funnel-chart",
+            "reference": {
+              "x": 24,
+              "y": 623.75,
+              "width": 342,
+              "height": 304
+            },
+            "actual": {
+              "x": 24,
+              "y": 619.765625,
+              "width": 342,
+              "height": 304
+            },
+            "meanChannelError": 0.9161697188878629,
+            "changedPixelPercent": 0.9791474299784549
+          },
+          {
+            "id": "c-gauge",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 322
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 322
+            },
+            "meanChannelError": 0.8547031830784692,
+            "changedPixelPercent": 2.3555264974029275
+          },
+          {
+            "id": "c-progress-ring",
+            "reference": {
+              "x": 24,
+              "y": 642.75,
+              "width": 342,
+              "height": 261
+            },
+            "actual": {
+              "x": 24,
+              "y": 638.765625,
+              "width": 342,
+              "height": 261
+            },
+            "meanChannelError": 1.25928539953545,
+            "changedPixelPercent": 2.1969034975689543
+          },
+          {
+            "id": "c-radial-bar-chart",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 280
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 280
+            },
+            "meanChannelError": 0.28126914508493456,
+            "changedPixelPercent": 0.5190058479532164
+          },
+          {
+            "id": "c-bullet-chart",
+            "reference": {
+              "x": 24,
+              "y": 621.75,
+              "width": 342,
+              "height": 278
+            },
+            "actual": {
+              "x": 24,
+              "y": 617.765625,
+              "width": 342,
+              "height": 278
+            },
+            "meanChannelError": 0.7074270408234815,
+            "changedPixelPercent": 0.7341495224872734
+          },
+          {
+            "id": "c-radar-chart",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 367
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 367
+            },
+            "meanChannelError": 1.0441305352390968,
+            "changedPixelPercent": 4.819382698344408
+          },
+          {
+            "id": "c-metric-breakdown",
+            "reference": {
+              "x": 24,
+              "y": 665.75,
+              "width": 342,
+              "height": 319.5
+            },
+            "actual": {
+              "x": 24,
+              "y": 661.765625,
+              "width": 342,
+              "height": 319.5
+            },
+            "meanChannelError": 0.6002558479532164,
+            "changedPixelPercent": 1.2646198830409356
+          },
+          {
+            "id": "c-bar-list",
+            "reference": {
+              "x": 24,
+              "y": 863.25,
+              "width": 342,
+              "height": 324
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.265625,
+              "width": 342,
+              "height": 324
+            },
+            "meanChannelError": 0.571162130291435,
+            "changedPixelPercent": 0.6985055230669266
+          },
+          {
+            "id": "c-depth-chart",
+            "reference": {
+              "x": 24,
+              "y": 644.25,
+              "width": 342,
+              "height": 297
+            },
+            "actual": {
+              "x": 24,
+              "y": 640.265625,
+              "width": 342,
+              "height": 297
+            },
+            "meanChannelError": 0.5683573880454972,
+            "changedPixelPercent": 0.6930907515702838
+          },
+          {
+            "id": "c-heatmap",
+            "reference": {
+              "x": 24,
+              "y": 864.25,
+              "width": 342,
+              "height": 365.5
+            },
+            "actual": {
+              "x": 24,
+              "y": 908.265625,
+              "width": 342,
+              "height": 365.5
+            },
+            "meanChannelError": 0.8370322436327613,
+            "changedPixelPercent": 1.0297830185664525
+          },
+          {
+            "id": "c-candlestick-chart",
+            "reference": {
+              "x": 24,
+              "y": 664.75,
+              "width": 342,
+              "height": 398
+            },
+            "actual": {
+              "x": 24,
+              "y": 660.765625,
+              "width": 342,
+              "height": 398
+            },
+            "meanChannelError": 1.0626793813120181,
+            "changedPixelPercent": 1.4406829468982338
+          },
+          {
+            "id": "c-uptime-bar",
+            "reference": {
+              "x": 24,
+              "y": 863.75,
+              "width": 342,
+              "height": 523.09375
+            },
+            "actual": {
+              "x": 24,
+              "y": 863.765625,
+              "width": 342,
+              "height": 523.09375
+            },
+            "meanChannelError": 1.2437632992574736,
+            "changedPixelPercent": 1.9156510870050445
+          },
+          {
+            "id": "c-geo-map",
+            "reference": {
+              "x": 24,
+              "y": 743.84375,
+              "width": 342,
+              "height": 360.5
+            },
+            "actual": {
+              "x": 24,
+              "y": 739.859375,
+              "width": 342,
+              "height": 360.5
+            },
+            "meanChannelError": 2.4888629699826668,
+            "changedPixelPercent": 2.3529507054802288
+          }
+        ]
+      },
+      {
+        "name": "desktop-light",
+        "cards": 25,
+        "browserErrors": [],
+        "maxWidthDifference": 0.25,
+        "maxHeightDifference": 0,
+        "meanChannelError": 1.65368487509536,
+        "cardsMeasured": [
+          {
+            "id": "c-chart",
+            "reference": {
+              "x": 252,
+              "y": 436,
+              "width": 1163.984375,
+              "height": 318
+            },
+            "actual": {
+              "x": 252,
+              "y": 436,
+              "width": 1164,
+              "height": 318
+            },
+            "meanChannelError": 1.6187539173096457,
+            "changedPixelPercent": 1.817091357064125
+          },
+          {
+            "id": "c-area-chart",
+            "reference": {
+              "x": 252,
+              "y": 774,
+              "width": 374.65625,
+              "height": 317
+            },
+            "actual": {
+              "x": 252,
+              "y": 774,
+              "width": 374.5,
+              "height": 317
+            },
+            "meanChannelError": 1.1739221871713985,
+            "changedPixelPercent": 0.4046267087276551
+          },
+          {
+            "id": "c-range-area-chart",
+            "reference": {
+              "x": 646.65625,
+              "y": 683,
+              "width": 374.671875,
+              "height": 317
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 683,
+              "width": 374.5,
+              "height": 317
+            },
+            "meanChannelError": 1.6541605327725202,
+            "changedPixelPercent": 1.2458464773922187
+          },
+          {
+            "id": "c-composed-chart",
+            "reference": {
+              "x": 1041.328125,
+              "y": 683,
+              "width": 374.65625,
+              "height": 317
+            },
+            "actual": {
+              "x": 1041,
+              "y": 683,
+              "width": 374.5,
+              "height": 317
+            },
+            "meanChannelError": 1.8000196284612688,
+            "changedPixelPercent": 2.1888538380651945
+          },
+          {
+            "id": "c-sparkline",
+            "reference": {
+              "x": 252,
+              "y": 1020,
+              "width": 374.65625,
+              "height": 343
+            },
+            "actual": {
+              "x": 252,
+              "y": 1020,
+              "width": 374.5,
+              "height": 343
+            },
+            "meanChannelError": 1.2033819241982506,
+            "changedPixelPercent": 0.4641399416909621
+          },
+          {
+            "id": "c-histogram",
+            "reference": {
+              "x": 646.65625,
+              "y": 368,
+              "width": 374.671875,
+              "height": 343
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 364,
+              "width": 374.5,
+              "height": 343
+            },
+            "meanChannelError": 1.6495756397797214,
+            "changedPixelPercent": 1.9801749271137026
+          },
+          {
+            "id": "c-box-plot",
+            "reference": {
+              "x": 1041.328125,
+              "y": 368,
+              "width": 374.65625,
+              "height": 343
+            },
+            "actual": {
+              "x": 1041,
+              "y": 364,
+              "width": 374.5,
+              "height": 343
+            },
+            "meanChannelError": 2.2748325234855846,
+            "changedPixelPercent": 1.788921282798834
+          },
+          {
+            "id": "c-scatter-plot",
+            "reference": {
+              "x": 252,
+              "y": 731,
+              "width": 374.65625,
+              "height": 327
+            },
+            "actual": {
+              "x": 252,
+              "y": 727,
+              "width": 374.5,
+              "height": 327
+            },
+            "meanChannelError": 1.4903377505946314,
+            "changedPixelPercent": 1.1131498470948011
+          },
+          {
+            "id": "c-waterfall-chart",
+            "reference": {
+              "x": 646.65625,
+              "y": 673,
+              "width": 374.671875,
+              "height": 327
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 673,
+              "width": 374.5,
+              "height": 327
+            },
+            "meanChannelError": 1.7065987088005437,
+            "changedPixelPercent": 1.5127420998980632
+          },
+          {
+            "id": "c-pie-chart",
+            "reference": {
+              "x": 1041.328125,
+              "y": 673,
+              "width": 374.65625,
+              "height": 327
+            },
+            "actual": {
+              "x": 1041,
+              "y": 673,
+              "width": 374.5,
+              "height": 327
+            },
+            "meanChannelError": 1.601739721372749,
+            "changedPixelPercent": 1.4320081549439347
+          },
+          {
+            "id": "c-treemap",
+            "reference": {
+              "x": 252,
+              "y": 1020,
+              "width": 374.65625,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 252,
+              "y": 1020,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 2.2902222222222224,
+            "changedPixelPercent": 1.812987012987013
+          },
+          {
+            "id": "c-stacked-bar",
+            "reference": {
+              "x": 646.65625,
+              "y": 386,
+              "width": 374.671875,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 382,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 1.7511601731601731,
+            "changedPixelPercent": 1.187878787878788
+          },
+          {
+            "id": "c-funnel-chart",
+            "reference": {
+              "x": 1041.328125,
+              "y": 386,
+              "width": 374.65625,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 1041,
+              "y": 382,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 1.4015180375180376,
+            "changedPixelPercent": 0.8891774891774892
+          },
+          {
+            "id": "c-gauge",
+            "reference": {
+              "x": 252,
+              "y": 713.5,
+              "width": 374.65625,
+              "height": 322
+            },
+            "actual": {
+              "x": 252,
+              "y": 709.5,
+              "width": 374.5,
+              "height": 322
+            },
+            "meanChannelError": 1.5634506556245686,
+            "changedPixelPercent": 0.7296066252587992
+          },
+          {
+            "id": "c-progress-ring",
+            "reference": {
+              "x": 646.65625,
+              "y": 677.5,
+              "width": 374.671875,
+              "height": 322
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 677.5,
+              "width": 374.5,
+              "height": 322
+            },
+            "meanChannelError": 1.6528447204968943,
+            "changedPixelPercent": 1.3407867494824017
+          },
+          {
+            "id": "c-radial-bar-chart",
+            "reference": {
+              "x": 1041.328125,
+              "y": 677.5,
+              "width": 374.65625,
+              "height": 322
+            },
+            "actual": {
+              "x": 1041,
+              "y": 677.5,
+              "width": 374.5,
+              "height": 322
+            },
+            "meanChannelError": 1.5816673567977917,
+            "changedPixelPercent": 1.4020703933747412
+          },
+          {
+            "id": "c-bullet-chart",
+            "reference": {
+              "x": 252,
+              "y": 1019.5,
+              "width": 374.65625,
+              "height": 367
+            },
+            "actual": {
+              "x": 252,
+              "y": 1019.5,
+              "width": 374.5,
+              "height": 367
+            },
+            "meanChannelError": 1.3043802603693613,
+            "changedPixelPercent": 0.6539509536784741
+          },
+          {
+            "id": "c-radar-chart",
+            "reference": {
+              "x": 646.65625,
+              "y": 356.5,
+              "width": 374.671875,
+              "height": 367
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 352.5,
+              "width": 374.5,
+              "height": 367
+            },
+            "meanChannelError": 1.7750868907054194,
+            "changedPixelPercent": 1.4176203451407812
+          },
+          {
+            "id": "c-metric-breakdown",
+            "reference": {
+              "x": 1041.328125,
+              "y": 356.5,
+              "width": 374.65625,
+              "height": 367
+            },
+            "actual": {
+              "x": 1041,
+              "y": 352.5,
+              "width": 374.5,
+              "height": 367
+            },
+            "meanChannelError": 1.7829682107175295,
+            "changedPixelPercent": 1.6428701180744778
+          },
+          {
+            "id": "c-bar-list",
+            "reference": {
+              "x": 252,
+              "y": 743.5,
+              "width": 374.65625,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 252,
+              "y": 739.5,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 1.537079365079365,
+            "changedPixelPercent": 1.1913419913419914
+          },
+          {
+            "id": "c-depth-chart",
+            "reference": {
+              "x": 646.65625,
+              "y": 691.5,
+              "width": 374.671875,
+              "height": 307.5
+            },
+            "actual": {
+              "x": 646.5,
+              "y": 691.5,
+              "width": 374.5,
+              "height": 307.5
+            },
+            "meanChannelError": 1.561027417027417,
+            "changedPixelPercent": 1.3584415584415583
+          },
+          {
+            "id": "c-heatmap",
+            "reference": {
+              "x": 252,
+              "y": 1019,
+              "width": 571.984375,
+              "height": 367
+            },
+            "actual": {
+              "x": 252,
+              "y": 1063,
+              "width": 571.75,
+              "height": 367
+            },
+            "meanChannelError": 1.1575903660372324,
+            "changedPixelPercent": 0.4715992454412073
+          },
+          {
+            "id": "c-candlestick-chart",
+            "reference": {
+              "x": 843.984375,
+              "y": 356,
+              "width": 572,
+              "height": 367
+            },
+            "actual": {
+              "x": 843.75,
+              "y": 352,
+              "width": 571.75,
+              "height": 367
+            },
+            "meanChannelError": 1.713291476915455,
+            "changedPixelPercent": 2.11076389550504
+          },
+          {
+            "id": "c-uptime-bar",
+            "reference": {
+              "x": 252,
+              "y": 743,
+              "width": 571.984375,
+              "height": 495.59375
+            },
+            "actual": {
+              "x": 252,
+              "y": 739,
+              "width": 571.75,
+              "height": 495.59375
+            },
+            "meanChannelError": 1.943267585908715,
+            "changedPixelPercent": 1.6044439431536206
+          },
+          {
+            "id": "c-geo-map",
+            "reference": {
+              "x": 843.984375,
+              "y": 504,
+              "width": 572,
+              "height": 495.59375
+            },
+            "actual": {
+              "x": 843.75,
+              "y": 504,
+              "width": 571.75,
+              "height": 495.59375
+            },
+            "meanChannelError": 2.153244604857508,
+            "changedPixelPercent": 1.9132077599819535
+          }
+        ]
+      }
+    ],
+    "exactCardDimensions": false,
+    "rasterIdentical": false,
+    "rasterNote": "Card heights match exactly; desktop widths differ by at most 0.25 CSS px and phone dimensions match exactly. Local PNG diffs retain small font/SVG antialiasing and color-quantization differences.",
+    "browserTests": {
+      "development": 5,
+      "production": 5,
+      "failures": 0
+    },
+    "unitAndToolTests": {
+      "fullRunPassed": 8657,
+      "skipped": 8,
+      "fullRunFailed": 1,
+      "failure": "Whole-kit gzip exceeded the prior 282 KiB budget after the chart functionality was added.",
+      "resolution": "Documented actual 294347/295368/296549 B consumer builds, set whole-kit cap to 292 KiB with 2.4 KB headroom; all per-import budgets unchanged; all 10 size-gate tests and real size check pass on rerun."
+    },
+    "builds": [
+      "kit",
+      "web docs: 901 pages"
+    ],
+    "typechecks": [
+      "kit",
+      "tools",
+      "axes",
+      "docs",
+      "e2e"
+    ],
+    "docsGuard": "0 violations; 313 reviewed infrastructure uses",
+    "newHoverRecipes": "GeoMap Detailed and UptimeBar Detailed apply, verify, and release successfully on actual comparison rows",
+    "externalJudge": "Automatic approval review rejected Lookout external judging due to third-party transfer; all captures/diffs stayed local."
+  },
+  "evidenceRoot": ".v4-reference/charts-verification",
+  "reproduce": "bun tools/v4/verify-charts.ts",
+  "notVerified": "Native device pixels; browser native-skin previews do not count as device verification."
+}

@@ -8,8 +8,8 @@ Audit checklist for `/components/card`. The facts block and the variants table a
 | Route | `/components/card` |
 | Category | Molecules (`src/molecules/card/`) |
 | Markdown | `src/molecules/card/card.md` |
-| Source files | `card.android.tsx`, `card.brand.styles.ts`, `card.brand.tsx`, `card.ios.tsx`, `card.md`, `card.reference.styles.ts`, `card.reference.tsx`, `card.shared.tsx`, `card.styles.ts`, `card.tsx` |
-| Implementation | its own source directory, `src/molecules/card/` (9 TypeScript modules) |
+| Source files | `card.android.tsx`, `card.board.layout.ts`, `card.board.tsx`, `card.brand.styles.ts`, `card.brand.tsx`, `card.ios.tsx`, `card.md`, `card.reference.styles.ts`, `card.reference.tsx`, `card.shared.tsx`, `card.styles.ts`, `card.tsx` |
+| Implementation | its own source directory, `src/molecules/card/` (11 TypeScript modules) |
 | Exports | Card, CardMedia, CardTitle, CardHeader, CardDescription, CardContent, CardFooter, CardSeparator |
 | Platform entries | iOS: own build: Card (builds from its own iosSkin); CardMedia (builds from its own iosSkin); CardTitle (builds from its own iosSkin); re-exports the shared build: CardHeader, CardDescription, CardContent, CardFooter, CardSeparator. Android: own build: Card (builds from its own androidSkin); CardMedia (builds from its own androidSkin); CardTitle (builds from its own androidSkin); re-exports the shared build: CardHeader, CardDescription, CardContent, CardFooter, CardSeparator |
 | Platform-skins registry | iOS: Card, CardMedia, CardTitle; Android: Card, CardMedia, CardTitle |
@@ -23,7 +23,7 @@ Audit checklist for `/components/card`. The facts block and the variants table a
 | Interaction states | recipes: hover on Pressable (web row; desktop), focus on Pressable (web row; desktop), pressed on Pressable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `card.reference.tsx`: platformMinTarget, useSeededMinTargetSlop. `test/touch-target-coverage.test.ts` records it as known gap: a pressable card is sized by its content, which can be anything |
-| Tests importing it | 18: `test/card.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/hover-lift.test.tsx`, `test/image.test.tsx`, `test/layout-responsive.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
+| Tests importing it | 20: `test/card-board.test.tsx`, `test/card.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/hover-lift.test.tsx`, `test/image.test.tsx`, `test/layout-responsive.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/new-components.test.tsx`, `test/section-card-kit.test.tsx`, `test/skins-smoke.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
 | E2E naming it | 3: `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/card.md`, written by `bun run audit:turn -- --slug=card --phase=before\|after` (the before and after capture runs) |
@@ -41,10 +41,19 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `artworkalone` | Artwork alone | [ ] | [ ] | [ ] |  |
 | `promotionalartwork` | Promotional artwork | [ ] | [ ] | [ ] |  |
 | `linkedreferences` | Linked references | [ ] | [ ] | [ ] |  |
+| `boardtickets` | Board tickets | [ ] | [ ] | [ ] |  |
 | `generic` | Generic | [ ] | [ ] | [ ] |  |
 | `flatchildren` | Flat children | [ ] | [ ] | [ ] |  |
 | `flat` | Flat | [ ] | [ ] | [ ] |  |
 | `raised` | Raised | [ ] | [ ] | [ ] |  |
+| `outlined` | Outlined | [ ] | [ ] | [ ] |  |
+| `sunken` | Sunken | [ ] | [ ] | [ ] |  |
+| `elevationsamples` | Elevation samples | [ ] | [ ] | [ ] |  |
+| `floating` | Floating | [ ] | [ ] | [ ] |  |
+| `corners` | Corners | [ ] | [ ] | [ ] |  |
+| `showcaseframe` | Showcase frame | [ ] | [ ] | [ ] |  |
+| `pagedensities` | Page densities | [ ] | [ ] | [ ] |  |
+| `sectionedpanel` | Sectioned panel | [ ] | [ ] | [ ] |  |
 | `density` | Density | [ ] | [ ] | [ ] |  |
 | `section` | Section | [ ] | [ ] | [ ] |  |
 | `sectionwithchildren` | Section with children | [ ] | [ ] | [ ] |  |

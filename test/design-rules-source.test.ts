@@ -49,7 +49,11 @@ describe("text stays legible", () => {
     expect(unresolved.map((u) => `${u.file}:${u.line} ${u.path}: ${u.text}`)).toEqual([]);
     expect(values.filter((v) => v.value < FLOOR && !(
       // Owner's no-deviation directive: the existing Argus inline avatar is 9px.
-      v.file === "src/atoms/avatar/avatar.reference.tsx" && v.path === "REFERENCE_TYPE.annotation" && v.value === 9
+      v.file === "src/atoms/avatar/avatar.reference.tsx" && v.path === "REFERENCE_TYPE.annotation" && v.value === 9 ||
+      // Owner's exact hand-off directive: Charts.dc.html SVG axes and detailed
+      // activity-calendar labels are authored at nine user units. This named
+      // declaration is the only additional source-size allowance.
+      v.file === "src/charts/shared/charts.styles.ts" && v.path === "CHART_LOOK.authoredAxisSize" && v.value === 9
     )).map((v) => `${v.file}:${v.line} ${v.path} fontSize ${v.value}`)).toEqual([]);
   });
 });

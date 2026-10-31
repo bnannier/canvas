@@ -54,6 +54,30 @@ On the web, Space activates the focused control on key release, and Enter also a
 </RadioGroup>
 ```
 
+### Card icon and meta
+
+A `card` radio takes an `icon` over its title, which turns the accent when it is chosen, and `equal` on a `row` group gives every option the same share of the row. Any radio takes `meta`, a short trailing note on the title's line (a version, a price, a badge).
+
+```tsx
+<RadioGroup row equal defaultValue="stable">
+  <Radio card value="stable" icon={<Icon shieldCheck size={18} decorative />} meta="v4.0" description="Tested releases.">Stable</Radio>
+  <Radio card value="beta" icon={<Icon gitBranch size={18} decorative />} meta="v4.1" description="Early features.">Beta</Radio>
+  <Radio card value="canary" icon={<Icon bird size={18} decorative />} meta="nightly" description="Every commit.">Canary</Radio>
+</RadioGroup>
+```
+
+### Inline label
+
+`inlineLabel` sets a `row` group's `label` at the start of the row, before the options, in place of the heading above them.
+
+```tsx
+<RadioGroup row inlineLabel label="Digest" defaultValue="weekly">
+  <Radio value="daily">Daily</Radio>
+  <Radio value="weekly" meta={<Badge success small>default</Badge>}>Weekly</Radio>
+  <Radio value="never">Never</Radio>
+</RadioGroup>
+```
+
 ### With description
 
 ```tsx

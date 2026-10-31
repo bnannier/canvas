@@ -38,8 +38,10 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `twocolumn` | Two-column | [ ] | [ ] | [ ] |  |
+| `blockactions` | Block actions | [ ] | [ ] | [ ] |  |
 | `measure` | Measure | [ ] | [ ] | [ ] |  |
 | `sections` | Sections | [ ] | [ ] | [ ] |  |
+| `asidesections` | Aside sections | [ ] | [ ] | [ ] |  |
 | `accountdetails` | Account details | [ ] | [ ] | [ ] |  |
 | `creditcard` | Credit card | [ ] | [ ] | [ ] |  |
 | `creditcardwitherrors` | Credit card with errors | [ ] | [ ] | [ ] |  |

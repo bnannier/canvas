@@ -3,6 +3,29 @@
 Canvas is a React Native UI kit, published as `@nannier/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
+## Current v4 hand-off authority — 2026-10-29
+
+The owner explicitly requested the vendored hand-off to look exactly the same, including
+animations, and said to forget the old rules for this new version. That supersedes older
+visual exceptions in this document and `audit/v4-redesign/PLAN.md` wherever they change
+what the reference renders. Use `tools/v4/handoff/Canvas v4.0.0 Component.dc.html` and its
+imports, plus the other readable pages, as the visual and motion authority. Compare live
+rendered captures at matching viewport, scheme, palette, surface, interaction state and
+animation time; source measurements support that comparison but do not replace it.
+
+In particular, preserve the reference's literal inks, translucent focus rings and control
+boundaries, restore its hero loops, entrances and spring transitions, and retain its page
+copy and structure. Do not keep former alternate copy, extra docs controls, contrast-solved
+colors or static substitute artwork merely because an older rule asked for them. Keep
+keyboard behavior, semantic names, focus management and Reduced Motion functional.
+
+The universal kit architecture remains useful, but docs-specific artwork and page chrome
+may use precise styles and Reanimated/RN/SVG drawing when needed to reproduce the reference.
+Reuse real kit controls for working examples. Narrow, reviewed docs styling allowances are
+recorded in `tools/docs/component-usage-exceptions.ts`; they must not silently restyle
+unrelated examples. The release remains a separate action: showing v4.0.0 in the design
+preview does not publish a version.
+
 ## Design language: Canvas v4, "Light as material"
 
 On 2026-10-27 the owner decided that Canvas takes the Canvas v4 design hand-off ("Light as
@@ -14,22 +37,14 @@ the code it covers still shows the DF look it replaces, and the sections below d
 that code until the phase that changes it rewrites them. These decisions bind all new
 work now:
 
-1. **Tokens.** The hand-off's tokens on web, iOS and Android (`src/style/tokens.ts`,
-   `colorsFor(palette, scheme)`): its neutrals, status colours, glass and shades as
-   literal values, its accent and chart series as `oklch(L C hue)` formulas converted
-   to sRGB by `oklchHex` (within one channel unit of what Chrome paints;
-   `test/v4-accent.test.ts`). `primary` and `action` are the accent ("ion"); roles keep
-   their function, so `input`, the non-field control boundary, is solved to the WCAG
-   1.4.11 3:1 floor where the hand-off's hairline is about 1.5:1. The same holds for
-   text: an ink the hand-off picks below 4.5:1 on a bed it is drawn on (`primary-text`
-   and `info` per palette, `inverse-primary`, and the `destructive-text`,
-   `success-text` and `warning-text` inks) is walked in oklch lightness at its own hue
-   until every bed clears (`tools/v4/derive-inks.ts`, written into `src/style/solved-inks.ts`), and a passing hand-off value is
-   never moved; fills and washes keep the hand-off's values. The focus ring keeps the
-   hand-off's geometry (a 2 px gap, then a 2 px band) with `ring` the solid accent, so
-   the band clears 3:1. The CSS hand-off (`styles/tokens/colors.css`) is GENERATED from
-   the table by `bun run tokens:css` (`tools/v4/derive-css.ts`) and keeps the literal
-   `oklch(... var(--hue))` forms, with the solved inks as literals.
+1. **Tokens.** The hand-off's values on web, iOS and Android (`src/style/tokens.ts`,
+   `colorsFor(palette, scheme)`): neutrals, status colors, glass and shadows as literals;
+   accent and chart series as `oklch(L C hue)` formulas converted to sRGB by `oklchHex`.
+   Text inks, input hairlines and translucent rings match the reference without a
+   lightness/contrast solver. `tools/v4/derive-inks.ts` records these authored values in
+   the compatibility-named `solved-inks.ts`; `tokens:css` generates the CSS mirror while
+   preserving the literal oklch formulas. Parity is checked against the vendored source;
+   contrast measurements remain available as an explicit audit.
 2. **Palettes.** Five accent hues, each a ThemeProvider boolean and a `data-palette`
    value: violet 285 (the default), cyan 205, mint 165, rose 20, amber 75. A palette
    applies in BOTH schemes (`<ThemeProvider dark rose>` is the rose accent on the dark
@@ -587,48 +602,20 @@ styling escape hatches":
 those ban rebuilding a component's look; this bans rebuilding a component's
 anatomy around it.
 
-## Motion: what stays, what is gone, and the tuning harness
+## Motion: v4 reference timing and verification
 
-On 2026-09-21 the owner removed the liquid glass motion outright: the moving
-selections (the pill that travelled between tabs, rows, pages, days and dots), the
-liquid popup presentation (the droplet, the button-to-menu and field hand-offs, the
-cover and the spring-back), the Entrance spring, the Backdrop organism with its Skia
-and WebGL paths, and the docs' decorative scenes. Do not bring any of it back, in any
-form, without a new decision from the owner: a selected state paints where it is
-(a static control-layer pane under glass, the skin's own fill in solid mode), an
-anchored card appears in place once its placement is measured, and no decorative
-loop runs behind a page. The motion that stays is functional: the Spinner, the
-Skeleton shimmer, the indeterminate Progress sweep and the InputOTP caret (all on the
-loop primitive, `src/style/loop.tsx`, the native driver natively and a compositor CSS
-animation on the web, so nothing commits through React per frame), the floating
-labels, the Accordion, Collapsible and Reveal transitions, the Drawer and ActionSheet
-slides, the Sidebar drill-down, the native ripple and the router's own transitions.
-`test/design-rules-source.test.ts` keeps `Animated.loop(` inside `loop-native.ts` and
-every transition between 100 and 700 ms. Why: react-native-web's Animated JS driver
-is one React commit per frame at default priority and React never expires a retry
-lane, so a spring running beside a Suspense boundary held the whole body back (the
-sidebar pill cost every component page 1.3 s per click); the owner judged the
-animations not worth that and had them deleted rather than re-engineered.
+The 2026-10-29 v4 decision supersedes the September removal of decorative motion.
+Implement the hand-off's entrances, loops, selection thumbs, pointer tilt and press
+springs with its exact periods, delays and cubic-bezier curves. Run continuous animation
+outside React's render cycle (Reanimated shared values/worklets, native drivers or the
+existing compositor loop primitive). Cancel work on unmount and honor the live Reduced
+Motion preference. Keep long-running illustration loops distinct from functional
+transitions; the old 100–700 ms rule does not constrain reference illustration timelines.
 
-On 2026-09-23 the owner added one new decision on top of that: Dark Factory's hover
-lifts are ported (the design language's item 9). They are hover feedback, not the
-removed liquid motion, and like the loop primitive nothing in them commits through
-React per frame: the style switches when the hover does and the browser runs the
-transform, shadow or background transition itself. The primitive is
-`src/style/hover.tsx` (hover read on the control's RippleClip wrapper, which never
-moves, so a lifted surface cannot slide out from under a resting pointer; touch never
-hovers; a lifted card stacks at the raised layer, and lifts its Grid or Row span cell,
-while it lifts and settles, because react-native-web paints siblings in document order),
-the values are the `HOVER` table in `src/style/motion.ts`, and the skins own the
-feedback (the web Card, Button and Sidebar skins declare it, and a skin shared by every
-platform, Pagination's, declares its wash through `webHover`). Every change is judged
-against the `df-hover-lift` card. The decision also named the native driver for pointer
-hover on iPad, but React Native 0.86 delivers no pointer hover on iOS or Android unless
-the host app opts into W3C pointer events natively (`RCTSetDispatchW3CPointerEvents` and
-the `shouldPressibilityUseW3CPointerEventsForHover` flag, both off by default), and
-Dark Factory's own app does not, so its lifts exist on the web only; the native half
-waits on the owner. The page behind the docs is static scaffolding (design-language
-item 8); it never animates.
+Hover feedback remains skin-owned. Verify pointer, touch and reduced-motion states at
+runtime. Static captures prove geometry only; record or sample a complete cycle when
+judging motion. Historical `df-*` cards document the former design and do not overrule
+v4 reference evidence.
 
 Effects that remain judged by eye (the glass material and its frost, a gradient, a
 new functional transition) still go through the global `tuning-harness` skill:

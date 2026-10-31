@@ -23,7 +23,7 @@ Audit checklist for `/components/badge`. The facts block and the variants table 
 | Interaction states | recipes: hover on Reference link (web row; desktop), focus on Reference link (web row; desktop), pressed on Reference link (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `badge.shared.tsx`: hitSlop, minTarget, platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: Linked references pad their text and content inset to platformMinTarget through hitSlop; passive badges remain noninteractive. |
-| Tests importing it | 24: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/badge-argus.test.tsx`, `test/data-table-groups.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table.test.tsx`, `test/description-list-nodes.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/render.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
+| Tests importing it | 28: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/badge-argus.test.tsx`, `test/badge-band.test.tsx`, `test/data-table-groups.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table.test.tsx`, `test/description-list-nodes.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/layout-gap-steps.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/layout-weights.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/render.test.tsx`, `test/section-card-kit.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/keyboard.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/badge.md`, written by `bun run audit:turn -- --slug=badge --phase=before\|after` (the before and after capture runs) |
@@ -44,8 +44,18 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `monotokeneventnames` | Mono (token / event names) | [ ] | [ ] | [ ] |  |
 | `status` | Status | [ ] | [ ] | [ ] |  |
 | `statustones` | Status tones | [ ] | [ ] | [ ] |  |
+| `baredot` | Bare dot | [ ] | [ ] | [ ] |  |
+| `huetones` | Hue tones | [ ] | [ ] | [ ] |  |
 | `group` | Group | [ ] | [ ] | [ ] |  |
 | `referencelink` | Reference link | [ ] | [ ] | [ ] |  |
+| `anatomymarker` | Anatomy marker | [ ] | [ ] | [ ] |  |
+| `legenddisc` | Legend disc | [ ] | [ ] | [ ] |  |
+| `tierpill` | Tier pill | [ ] | [ ] | [ ] |  |
+| `bandpill` | Band pill | [ ] | [ ] | [ ] |  |
+| `contrasttick` | Contrast tick | [ ] | [ ] | [ ] |  |
+| `stepmarks` | Step marks | [ ] | [ ] | [ ] |  |
+| `keycornersandthedashedoutline` | Key corners and the dashed outline | [ ] | [ ] | [ ] |  |
+| `tokenchips` | Token chips | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

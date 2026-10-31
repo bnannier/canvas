@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-29",
+  "reference": "tools/v4/handoff/Canvas v4.0.0 Component.dc.html and readable project imports/pages",
+  "authority": "Owner selected vendored snapshot and exact v4 appearance/motion, superseding previous visual exceptions.",
+  "verification": {
+    "unit_and_tool_tests": {
+      "passed": 8636,
+      "skipped": 8,
+      "failed": 0,
+      "files": 398
+    },
+    "native_focus_harness_followup": {
+      "passed": 57,
+      "failed": 0
+    },
+    "browser_checks": {
+      "development_passed": 8,
+      "production_passed": 8,
+      "failed": 0
+    },
+    "production_web_export": "passed,892 app pages",
+    "typechecks": "root/tools/axes/docs/e2e passed",
+    "generated_docs_tokens_design": "passed",
+    "docs_usage": "0 violations,301 reviewed footprints",
+    "size": "passed with pinned Bun1.4.0; measured feature budgets recorded in scripts/check-size.ts"
+  },
+  "visual_checks": {
+    "component": "fresh1440px and390px captures in dark/light plus light mint; full page and section crops",
+    "library": "desktop dark/light and phone dark at four scroll offsets",
+    "motion": "nine animated hero routes sampled, complete cycles for Data/Overlays/Skins, four recorded scenes, pointer tilt and live Reduced Motion checks"
+  },
+  "limits": [
+    "These checks do not establish zero differing pixels across every state. Small glyph/edge and rounding differences remain.",
+    "Current accurate public API rows/prose remain; they can make Props/prose sections taller than the snapshot.",
+    "Native device/simulator visual parity has not been verified in this task."
+  ],
+  "local_evidence": "/Users/bnannier/Workspaces/canvas/.v4-reference/verification-2026-10-29",
+  "artifacts": [
+    "component-desktop-actual.png",
+    "component-desktop-reference.png",
+    "component-phone-actual.png",
+    "component-phone-reference.png",
+    "controls-comparison.png",
+    "controls-motion.gif",
+    "library-actual.png",
+    "library-reference.png",
+    "detail-metrics.json",
+    "library-metrics.json",
+    "full-suite.log"
+  ]
+}

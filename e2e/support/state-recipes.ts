@@ -660,7 +660,7 @@ function findRing(args: { ring: string; key: string; scope: Element | null }): R
   const ringChannels = channels(args.ring)!;
   const themed = (color: string) => {
     const c = channels(color);
-    return !!c && c[0] === ringChannels[0] && c[1] === ringChannels[1] && c[2] === ringChannels[2];
+    return !!c && c.every((value, index) => value === ringChannels[index]);
   };
   const painted = (el: Element, color: string): string => {
     const c = channels(color);
@@ -830,7 +830,7 @@ function focus(variant: string, target: Target, options: FocusOptions = {}): Sta
       // looks for the colour the indicator paints at.
       const ring = await handle.evaluate(({ how, color, painted, themed, drawnBy }) => ({ how, color, painted, themed, drawnBy }));
       const node = (await handle.getProperty("node")).asElement();
-      const sides = node && ring.painted ? await ringShows(scene.page, node, ring.painted) : null;
+      const sides = node && ring.color ? await ringShows(scene.page, node, ring.color) : null;
       await handle.dispose();
       const shows = sides !== null && Object.values(sides).every(Boolean);
       evidence.ring = { how: ring.how, drawnBy: ring.drawnBy, color: ring.color, painted: ring.painted, themed: ring.themed, expected: scene.ring, sides };
@@ -2093,6 +2093,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("default", byRole("link", "Projects")),
   },
   "button-group": {
+    // An attached cell washes under a resting pointer (the web skin's hover).
+    hover: hover("attached", byRole("tab", "Italic")),
     focus: [
       focus("default", stopIn(byRole("tablist"), "tab")),
       // The menu puts focus on its first item when it opens (the WAI-ARIA menu pattern).
@@ -2121,7 +2123,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   divider: { static: true, reason: "A separator: it takes no input (the Action example's control is a Button, whose states the button recipes capture)." },
   dropdown: {
-    hover: hover("default", byRole("menuitem"), { within: overlay("dropdown"), how: "the menu opens, then the pointer rests on its first item" }),
+    hover: [
+      hover("default", byRole("menuitem"), { within: overlay("dropdown"), how: "the menu opens, then the pointer rests on its first item" }),
+      // The inline specimen draws its rows on the page, so they wash where they are.
+      hover("inlinespecimen", byRole("menuitem", "Settings"), { how: "the pointer rests on the inline menu's Settings row" }),
+    ],
     // The default trigger is a kit Button (its focus and press are Button's); Dropdown's own
     // are the Custom trigger example's button, and the rows of the menu it opens.
     focus: [
@@ -2617,7 +2623,12 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("drillinrows", byRole("button", /^news\.ycombinator/)),
   },
   "metric-breakdown": { static: true, reason: CHART_STATIC },
-  "uptime-bar": { static: true, reason: CHART_STATIC },
+  "uptime-bar": {
+    hover: hover("detailed", {
+      locate: (scope) => scope.locator('[data-testid^="uptime-period-"]').first(),
+      control: { in: "UptimeMark" },
+    }, { how: "the pointer rests on the detailed status strip's first period and its mark expands vertically" }),
+  },
   "service-health-list": {
     focus: focus("drillinrows", byRole("button", /^API:/)),
     pressed: pressed("drillinrows", byRole("button", /^API:/)),
@@ -2655,6 +2666,10 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: inspect("default", { text: "Media" }, { mode: "click", expect: ["Media", "620"], how: "press-to-inspect: a press on the Media tile" }),
   },
   "geo-map": {
+    hover: hover("detailed", {
+      locate: (scope) => scope.locator('[data-testid^="geo-map-place-"]').first(),
+      control: { in: "GeoPlaceMark" },
+    }, { how: "the pointer rests on the detailed map's San Francisco city and its outlined mark expands" }),
     // The zoomable map itself takes focus; its zoom buttons are kit Buttons it disables at the ends.
     focus: focus("zoomable", byRole("img", /^Sessions by city/)),
     pressed: inspect("default", { mark: "svg circle", index: 0 }, { mode: "click", how: "press-to-inspect: a press on the first bubble (the hit layer finds the bubble under the point); the others dim" }),

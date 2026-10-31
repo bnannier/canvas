@@ -62,6 +62,14 @@ On Android the handle keeps its own look: Material 3 Expressive's split 16dp tra
 <Slider accessibilityLabel="Playback speed" defaultValue={6} max={10} step={2} />
 ```
 
+### Percent and scale
+
+`percent` reads the value as a percentage (the readout and the announced value), and `scale` draws the minimum, the midpoint and the maximum under the rail.
+
+```tsx
+<Slider percent scale showValue defaultValue={62}>Glass intensity</Slider>
+```
+
 ### Disabled
 
 ```tsx

@@ -33,7 +33,7 @@
   --warning-soft:rgba(165, 93, 0, 0.1);
   --border:rgba(17, 17, 24, 0.08);
   --field-border:rgba(17, 17, 24, 0.16);
-  --input:#8a8a9b;
+  --input:rgba(17, 17, 24, 0.16);
   --field-fill:#fafafd;
   --hover:rgba(17, 17, 24, 0.06);
   --highlight:rgba(255, 255, 255, 0.8);
@@ -45,12 +45,9 @@
   --shade-inset:rgba(255, 255, 255, 0);
   --inverse:#111118;
   --inverse-foreground:#ffffff;
-  --destructive-text:#b00032;
-  --success-text:#00724b;
-  --warning-text:#975300;
-  --primary-text:#573bc3;
-  --info:#573bc3;
-  --inverse-primary:#b5b0ff;
+  --destructive-text:#d62a4b;
+  --success-text:#0b7a53;
+  --warning-text:#a55d00;
   --featured-middle:oklch(0.62 0.13 205);
   --featured-end:oklch(0.66 0.15 165);
   --featured-stack:rgba(255, 255, 255, 0.5);
@@ -104,7 +101,7 @@
   --warning-soft:rgba(246, 184, 76, 0.14);
   --border:rgba(255, 255, 255, 0.08);
   --field-border:rgba(255, 255, 255, 0.16);
-  --input:#686979;
+  --input:rgba(255, 255, 255, 0.16);
   --field-fill:#0e0e15;
   --hover:rgba(255, 255, 255, 0.05);
   --highlight:rgba(255, 255, 255, 0.1);
@@ -116,12 +113,9 @@
   --shade-inset:rgba(255, 255, 255, 0.1);
   --inverse:#f4f4f8;
   --inverse-foreground:#0a0a0f;
-  --destructive-text:#ff9298;
+  --destructive-text:#ff6b7a;
   --success-text:#3ddc97;
   --warning-text:#f6b84c;
-  --primary-text:#b5b0ff;
-  --info:#b5b0ff;
-  --inverse-primary:#5437c0;
   --featured-middle:oklch(0.82 0.13 205);
   --featured-end:oklch(0.85 0.15 165);
   --featured-stack:rgba(255, 255, 255, 0.14);
@@ -144,74 +138,36 @@
   --glass-tint-dense:rgba(18, 18, 26, 0.92);
   --glass-edge:rgba(255, 255, 255, 0.16);
 }
-/* The palettes: one hue each, with the text inks solved for it (tokens.ts, tools/v4/derive-inks.ts),
-   light on the palette element and dark inside a .dark context. */
+/* Each palette changes only the hand-off’s accent hue. */
 [data-palette="violet"]{
   --hue:285;
-  --primary-text:#573bc3;
-  --info:#573bc3;
-  --inverse-primary:#b5b0ff;
 }
 [data-palette="cyan"]{
   --hue:205;
-  --primary-text:#006770;
-  --info:#006770;
-  --inverse-primary:#00d7e8;
 }
 [data-palette="mint"]{
   --hue:165;
-  --primary-text:#006a4a;
-  --info:#006a4a;
-  --inverse-primary:#51daa7;
 }
 [data-palette="rose"]{
   --hue:20;
-  --primary-text:#ac0028;
-  --info:#ac0028;
-  --inverse-primary:#ff9798;
 }
 [data-palette="amber"]{
   --hue:75;
-  --primary-text:#973d00;
-  --info:#973d00;
-  --inverse-primary:#f2af48;
-}
-.dark[data-palette="violet"],.dark [data-palette="violet"],[data-palette="violet"].dark{
-  --primary-text:#b5b0ff;
-  --info:#b5b0ff;
-  --inverse-primary:#5437c0;
-}
-.dark[data-palette="cyan"],.dark [data-palette="cyan"],[data-palette="cyan"].dark{
-  --primary-text:#00d7e8;
-  --info:#00d7e8;
-  --inverse-primary:#005b63;
-}
-.dark[data-palette="mint"],.dark [data-palette="mint"],[data-palette="mint"].dark{
-  --primary-text:#51daa7;
-  --info:#51daa7;
-  --inverse-primary:#005e41;
-}
-.dark[data-palette="rose"],.dark [data-palette="rose"],[data-palette="rose"].dark{
-  --primary-text:#ff9798;
-  --info:#ff9798;
-  --inverse-primary:#a80027;
-}
-.dark[data-palette="amber"],.dark [data-palette="amber"],[data-palette="amber"].dark{
-  --primary-text:#f2af48;
-  --info:#f2af48;
-  --inverse-primary:#724a00;
 }
 /* The accent, declared again on every palette wrapper so it resolves against that
    wrapper's own --hue; the dark rows win inside a .dark context. */
 :root,[data-palette]{
   --primary:oklch(0.5 0.22 var(--hue));
+  --primary-text:oklch(0.47 0.2 var(--hue));
+  --info:oklch(0.47 0.2 var(--hue));
+  --inverse-primary:oklch(0.8 0.14 var(--hue));
   --primary-foreground:#ffffff;
   --primary-soft:oklch(0.5 0.22 var(--hue) / 0.1);
   --action:oklch(0.5 0.22 var(--hue));
   --action-foreground:#ffffff;
   --action-soft:oklch(0.5 0.22 var(--hue) / 0.1);
   --info-soft:oklch(0.5 0.22 var(--hue) / 0.1);
-  --ring:oklch(0.5 0.22 var(--hue));
+  --ring:oklch(0.5 0.22 var(--hue) / 0.28);
   --glow:oklch(0.5 0.22 var(--hue) / 0.4);
   --featured-start:oklch(0.5 0.22 var(--hue));
   --promo-start:oklch(0.5 0.22 var(--hue));
@@ -219,13 +175,16 @@
 }
 .dark,.dark [data-palette],[data-palette].dark{
   --primary:oklch(0.74 0.17 var(--hue));
+  --primary-text:oklch(0.8 0.14 var(--hue));
+  --info:oklch(0.8 0.14 var(--hue));
+  --inverse-primary:oklch(0.47 0.2 var(--hue));
   --primary-foreground:#0a0a0f;
   --primary-soft:oklch(0.74 0.17 var(--hue) / 0.16);
   --action:oklch(0.74 0.17 var(--hue));
   --action-foreground:#0a0a0f;
   --action-soft:oklch(0.74 0.17 var(--hue) / 0.16);
   --info-soft:oklch(0.74 0.17 var(--hue) / 0.16);
-  --ring:oklch(0.74 0.17 var(--hue));
+  --ring:oklch(0.74 0.17 var(--hue) / 0.35);
   --glow:oklch(0.74 0.17 var(--hue) / 0.5);
   --featured-start:oklch(0.74 0.17 var(--hue));
   --promo-start:oklch(0.74 0.17 var(--hue));

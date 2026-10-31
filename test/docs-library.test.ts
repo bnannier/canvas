@@ -22,6 +22,7 @@ import {
   auroraDiscs,
   blurredDisc,
   panelTransform,
+  stackBounds,
   projectCss,
   type TransformOp,
 } from "../docs/src/brand/library-hero-look.ts";
@@ -44,7 +45,7 @@ describe("the Library index", () => {
     const seen = new Set<string>();
     for (const [index, column] of LIBRARY_INDEX.entries()) {
       const room = SECTION_ROOMS[index]!;
-      expect(column.num).toBe(String(index + 1).padStart(2, "0"));
+      expect(column.num).toBe(String(index >= 6 ? index : index + 1).padStart(2, "0"));
       expect(column.href).toBe(room.href!);
       expect(column.items.map((item) => item.slug)).toEqual(room.items.map((item) => item.id));
       for (const item of column.items) {
@@ -74,13 +75,14 @@ describe("the Library index", () => {
 
   it("counts from the registries", () => {
     expect(heroStats()[0]).toBe(`${COMPONENTS.length} components`);
-    expect(INDEX_COPY.title()).toBe(`${COMPONENTS.length} components`);
+    expect(INDEX_COPY.title()).toBe("Index");
+    expect(INDEX_COPY.lead).toBe(`All ${COMPONENTS.length} components, filed by the job they do.`);
   });
 });
 
 describe("the Library copy", () => {
   it("takes the hand-off's headline, eyebrow and calls", () => {
-    expect(LIBRARY_HEADLINE).toBe("Made of light.");
+    expect(LIBRARY_HEADLINE).toBe("Light as material.");
     expect(LIBRARY).toContain(`Light as <em style=`);
     expect(LIBRARY).toContain(`">material.</em></h1>`);
     expect(LIBRARY).toContain(`${LIBRARY_HERO.eyebrow("4.0.0")}</div>`);
@@ -88,8 +90,8 @@ describe("the Library copy", () => {
     expect(LIBRARY).toContain(`>${LIBRARY_HERO.secondary.label} <span`);
   });
 
-  it("takes the hand-off's first three principles word for word", () => {
-    for (const principle of PRINCIPLES.slice(0, 3)) {
+  it("takes the hand-off's four principles word for word", () => {
+    for (const principle of PRINCIPLES) {
       expect(LIBRARY).toContain(`>${principle.num}</div><div style="font:500 22px/1.15 var(--fd);letter-spacing:-.02em">${principle.title}</div>`);
       expect(LIBRARY).toContain(`text-wrap:pretty">${principle.body}</p>`);
     }
@@ -150,6 +152,30 @@ describe("the hero illustrations", () => {
         }
         const box = [Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)];
         for (const [k, value] of box.entries()) expect(Math.abs(value - panels[index]!.box[k]!)).toBeLessThanOrEqual(1.5);
+      }
+    }
+  });
+
+  it("keeps the panel projection and pointer bounds correct throughout a tilt", () => {
+    for (const rotation of [[6, -32, 3], [14, -22, 3], [22, -12, 3]] as const) {
+      const width = 648;
+      const bounds = stackBounds(width, rotation);
+      for (const panel of COLLAGE.panels) {
+        const matrix = matrixOf(panelTransform(panel, width, rotation));
+        for (const [x, y] of [[0, 0], [100, 100], [380, 250]] as [number, number][]) {
+          const v = [x, y, 0, 1];
+          const out = matrix.map(row => row.reduce((sum, value, index) => sum + value * v[index]!, 0));
+          const want = projectCss(panel, width, [x, y], rotation);
+          expect(panel.x + out[0]! / out[3]!).toBeCloseTo(want[0], 8);
+          expect(panel.y + out[1]! / out[3]!).toBeCloseTo(want[1], 8);
+        }
+      }
+      for (const point of [[0, 0], [width, 0], [width, 580], [0, 580]] as [number, number][]) {
+        const [x, y] = projectCss({ x: 0, y: 0, z: 0 }, width, point, rotation);
+        expect(x).toBeGreaterThanOrEqual(bounds.left - 1e-8);
+        expect(x).toBeLessThanOrEqual(bounds.left + bounds.width + 1e-8);
+        expect(y).toBeGreaterThanOrEqual(bounds.top - 1e-8);
+        expect(y).toBeLessThanOrEqual(bounds.top + bounds.height + 1e-8);
       }
     }
   });

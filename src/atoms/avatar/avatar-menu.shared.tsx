@@ -1,7 +1,9 @@
+import { alpha, oklchHex } from "../../style/color.js";
 import type { ReactElement } from "react";
-import { View, Text, useControllableState, withInnerFill, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useControllableState, withInnerFill, platformDisabledDim, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useHover } from "../../style/hover.js";
+import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import type { DropdownItem, DropdownProps } from "../dropdown/dropdown.shared.js";
 import { Icon } from "../icon/icon.js";
 import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
@@ -10,7 +12,7 @@ import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
 // trigger holding the avatar, the person's name over their email, and a trailing
 // chevron, wired to the kit's own Dropdown for the menu itself. It exists so no app
 // (or docs topbar) hand-composes an account menu out of an Avatar, a hand-rolled name
-// column, and a chevron: the anatomy, the pill's look, the viewer's glow and the
+// column, and a chevron: the anatomy, the pill's look, the identity paint and the
 // accessible name live here once.
 //
 // The capsule is passed to Dropdown as its CUSTOM TRIGGER, so Dropdown's own
@@ -20,25 +22,26 @@ import { createAvatar, type AvatarSkin } from "./avatar.shared.js";
 // test/no-console-violations.test.tsx). AvatarMenu owns the open state so the pill
 // can paint its open fill, and passes open/onOpenChange down to keep Dropdown in step.
 //
-// The pill is Dark Factory's identity pill on every platform (no platform ships one):
-// bare at rest, so under glass it paints no surface of its own and takes no pane; the
-// skin's fill under the pointer and while the menu is open (an ink tint under glass);
-// the `small` (28px) disc in the viewer's glow ring; a static chevron. The menu surface
-// is the platform's own Dropdown, so the popover matches the OS with no work here.
+// The generic pill follows SUB('AvatarMenu') in cv-kit-code.js: an edged popover
+// surface with a 32px disc (28px compact), two identity lines and a static chevron.
+// On the web this in-page control stays solid under glass; native owns its control pane.
+// The original account composition keeps its separate metrics and glow.
 
 /**
  * The identity-pill entries an AvatarMenu skin adds to the Avatar skin family.
- * Everything platform-neutral (the capsule's flex row, the 9999 capsule radius,
- * the identity column, the chevron rotation, and the 11/14 secondary line's size)
- * lives in this file; a skin owns only the numbers that shift per OS.
+ * The shared shell owns anatomy and state; the skin carries the renderer's metrics.
+ * The menu surface itself uses the injected platform Dropdown.
  */
 export interface AvatarMenuSkin extends AvatarSkin {
   /** Capsule metrics: height, gap, start/end padding. */
   menuPill: ViewStyle;
+  /** Avatar-only compact trigger metrics. */
+  menuPillCompact: ViewStyle;
   /** Capsule fill, at rest and while hovered or open, from the theme tokens. */
   menuPillFill: (t: ColorTokens, active: boolean) => ViewStyle;
-  /** The viewer's glow ring around the disc (a wrapper's shadow). Under glass there is no
-   *  solid surface to draw its inner gap in, so the ring sits on the disc alone. */
+  /** The capsule's resting edge (width and colour). */
+  menuPillEdge: (t: ColorTokens) => ViewStyle;
+  /** Optional disc decoration; the generic renderer leaves it empty. */
   menuDiscGlow: (t: ColorTokens, glass: boolean) => ViewStyle;
   /** Whether the pill takes its fill under a hovering pointer: the web's, since native
    *  pointer hover waits on the owner (declared through webHover). */
@@ -89,6 +92,13 @@ export interface AvatarMenuProps {
   alignEnd?: boolean;
   /** Dimmed, non-opening pill: the menu never opens and the press is inert. */
   disabled?: boolean;
+  /**
+   * Draw the menu open and in flow under the pill instead of floating it over the page,
+   * a specimen of the account menu (Dropdown's `inline`): the pill reads as open and its
+   * press is inert, a row still fires `onSelect`, and `open` / `onOpenChange` have no
+   * effect.
+   */
+  inline?: boolean;
   /** Controlled open state. Omit for uncontrolled (the pill opens/closes it). */
   open?: boolean;
   /** Fired when the open state changes (pill press, row select, dismissal). */
@@ -102,7 +112,7 @@ export interface AvatarMenuProps {
 }
 
 // The capsule is always a pill: a 9999 radius reads as a capsule at every skin
-// height (32 / 36 / 40), so the shape is platform-neutral and owned here.
+// content height, so the shape is platform-neutral and owned here.
 const PILL_RADIUS = 9999;
 const ACCOUNT_PILL: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 2, paddingStart: 2, paddingEnd: 4 };
 const ACCOUNT_NAME: TextStyle = { fontSize: 12, lineHeight: 13.8, fontWeight: "700" };
@@ -110,7 +120,7 @@ const ACCOUNT_SECONDARY: TextStyle = { fontSize: 10.5, lineHeight: 12.08, fontWe
 
 // The name-over-email column between the avatar and the chevron. Start-aligned and
 // allowed to shrink so a long email never pushes the chevron out of the capsule.
-const IDENTITY_COLUMN: ViewStyle = { alignItems: "flex-start", flexShrink: 1 };
+const IDENTITY_COLUMN: ViewStyle = { alignItems: "flex-start", flexShrink: 1, gap: 2 };
 
 // The TRIGGER BUTTON's accessible name, handed to Dropdown as `triggerLabel` so a
 // screen reader hears WHOSE account the button opens instead of just "button". The
@@ -128,12 +138,24 @@ export function alignEndOf(p: Pick<AvatarMenuProps, "alignStart" | "alignEnd">):
   return p.alignEnd || !p.alignStart;
 }
 
+// cv-kit-code.js K.hueOf: an unsigned name hash over the renderer's eight hues.
+function menuIdentityHue(name?: string): number {
+  let hash = 0;
+  for (const ch of String(name ?? "")) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return [285, 205, 165, 20, 75, 250, 330, 125][hash % 8]!;
+}
+
 /** Build an AvatarMenu from the same platform skin family as Avatar and AvatarGroup. */
-export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: DropdownProps) => ReactElement) {
+export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: DropdownProps) => ReactElement, AccountDropdown: (props: DropdownProps) => ReactElement = Dropdown) {
   // The pill's avatar comes from the same skin, built once per platform module. It
   // is never pressable (Dropdown's trigger owns the press), and like the pill it
   // paints no material: its identity stays static content.
-  const Avatar = createAvatar(skin);
+  const Avatar = createAvatar({
+    ...skin,
+    diameter: { default: 32 },
+    labelType: { ...skin.labelType, default: { fontSize: 12, lineHeight: 12, fontWeight: "600" } },
+    initialsPaint: (hue) => ({ wash: alpha(oklchHex(0.72, 0.14, hue), 0.22), ink: oklchHex(0.82, 0.12, hue) }),
+  });
 
   return function AvatarMenu(props: AvatarMenuProps) {
     const { name, email, src, initials, items, compact, disabled, onSelect, testID, style } = props;
@@ -145,7 +167,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
     const [open, setOpen] = useControllableState<boolean>(props.open, false, props.onOpenChange);
     // A disabled pill can never read as open, whatever the open state says, so the
     // fill, the chevron, and the announced state all stay collapsed.
-    const expanded = open && !disabled;
+    const expanded = (open || !!props.inline) && !disabled;
     const label = props.triggerLabel ?? accountLabel(name, email);
     const menuAlignEnd = alignEndOf(props);
     // The pill fills under the pointer and while its menu is open; under glass the fill
@@ -153,10 +175,16 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
     const { hovered, target } = useHover(skin.menuHover && !disabled);
     const active = props.account ? hovered && !disabled : expanded || (hovered && !disabled);
     const pillFill = props.account ? { backgroundColor: active ? tokens.hover : "transparent" } : active ? withInnerFill(theme, skin.menuPillFill(tokens, true), "firm") : skin.menuPillFill(tokens, false);
-    const disabledInk = theme.surface === "glass" && disabled ? { opacity: skin.menuDisabledOpacity } : null;
+    // The pill is a control surface: the skin's edge and fill at rest, the active fill
+    // under the pointer and while open. Under glass it is a control-layer pane whose
+    // resting edge the material's rim replaces (paneStyle), with the active fill an ink
+    // tint over the pane.
+    const pillShape: ViewStyle = { ...skin.menuPill, ...(compact ? skin.menuPillCompact : null), ...skin.menuPillEdge(tokens), borderRadius: PILL_RADIUS, ...(theme.surface === "glass" && !active ? null : pillFill) };
+    const disabledInk = theme.surface === "glass" && disabled ? { opacity: props.account ? platformDisabledDim() : skin.menuDisabledOpacity } : null;
+    const Menu = props.account ? AccountDropdown : Dropdown;
 
     return (
-      <Dropdown
+      <Menu
         compact={props.account}
         steadyPress={props.account}
         menuWidth={props.menuWidth}
@@ -176,6 +204,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
         description={props.account ? undefined : email}
         alignEnd={menuAlignEnd}
         disabled={disabled}
+        inline={props.inline}
         testID={testID}
         style={style}
       >
@@ -195,11 +224,12 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
             own: it is NOT a Pressable, since nesting one inside Dropdown's would
             make a doubly-focusable, invalid control
             (test/no-console-violations.test.tsx locks that). */}
-        <View style={[props.account ? ACCOUNT_PILL : skin.menuPill, { borderRadius: PILL_RADIUS }, pillFill]} {...target}>
-          {/* The viewer's disc in its glow ring: the `small` (28px) step, 2px inside the
-              32px pill. */}
+        <View style={props.account ? [ACCOUNT_PILL, { borderRadius: PILL_RADIUS }, pillFill] : paneStyle(theme, pillShape)} {...target}>
+          {props.account ? null : <GlassPane layer="control" shape={pillShape} />}
+          {/* The generic renderer's unringed 32px disc, 28px when compact. The
+              original account composition keeps its separate identity treatment. */}
           <View style={props.account ? undefined : skin.menuDiscGlow(tokens, theme.surface === "glass")}>
-            {props.account ? <Avatar whiteInk orchid account glow src={src} name={name} initials={initials} /> : <Avatar small src={src} name={name} initials={initials} />}
+            {props.account ? <Avatar whiteInk orchid account glow src={src} name={name} initials={initials} /> : <Avatar small={compact} hue={menuIdentityHue(name)} src={src} name={name} initials={initials} />}
           </View>
           {compact ? null : (
             <View style={[props.account ? null : IDENTITY_COLUMN, disabledInk]}>
@@ -209,19 +239,19 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
                 </Text>
               ) : null}
               {email ? (
-                <Text numberOfLines={props.account ? undefined : 1} style={[props.account ? ACCOUNT_SECONDARY : skin.menuPillSecondary, { color: tokens["muted-foreground"] }]}>
+                <Text numberOfLines={props.account ? undefined : 1} style={[props.account ? ACCOUNT_SECONDARY : skin.menuPillSecondary, { color: props.account ? tokens["muted-foreground"] : tokens["subtle-foreground"] ?? tokens["muted-foreground"] }]}>
                   {email}
                 </Text>
               ) : null}
             </View>
           )}
-          {/* A static chevron, as Dark Factory's pill has: the button's own state names
+          {/* A static chevron, as the renderer draws: the button's own state names
               whether the menu is open, so it stays decorative. */}
-          <View style={disabledInk}>
+          {compact && !props.account ? null : <View style={disabledInk}>
             <Icon chevronDown heavyStroke={props.account} size={skin.menuChevronSize} muted decorative />
-          </View>
+          </View>}
         </View>
-      </Dropdown>
+      </Menu>
     );
   };
 }

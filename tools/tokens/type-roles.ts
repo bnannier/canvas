@@ -29,6 +29,8 @@ export type ReadingRole = keyof typeof READING_FLOOR;
 
 export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/avatar/avatar-menu.shared.tsx": { ACCOUNT_SECONDARY: "tiny" },
+  // A Slider `scale`'s min, mid and max marks (the hand-off's 11 px mono axis labels).
+  "src/atoms/slider/slider.styles.ts": { scaleType: "caption" },
   // A lane's count (the hand-off's 11px mono numerals).
   "src/organisms/board/board.styles.ts": { "webSkin.columnCount": "tiny" },
   // A drop zone's mono eyebrow (the hand-off's 11px uppercase zone label).
@@ -101,12 +103,11 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   // A reference detail's source chip (the hand-off's 11px label, cv-kit-code3.js).
   "src/molecules/card/card.reference.styles.ts": { source: "small" },
   // The option tile's own label (the hand-off's "none" pick, Component.dc.html line 163: 500 10px mono).
-  "src/atoms/chip/chip.styles.ts": { "webSkin.countType": "tiny", "option.tileLabelType": "tiny" },
+  "src/atoms/chip/chip.styles.ts": { SMALL_LABEL_TYPE: "small", "option.tileLabelType": "tiny" },
   "src/atoms/avatar/avatar.reference.tsx": { "REFERENCE_TYPE.annotation": "annotation" },
-  "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", "webMenuSkin.menuPillSecondary": "tiny" },
+  // An avatar's initials, and the AvatarGroup "+N" count on its disc.
+  "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", OVERFLOW: "caption", "webMenuSkin.menuPillSecondary": "tiny" },
   "src/molecules/stacked-lists/stacked-lists.styles.ts": { "androidSkin.metaLabel": "tiny" },
-  "src/charts/metric-breakdown/metric-breakdown.shared.tsx": { SPARK_TAG_TYPE: "tiny" },
-  "src/charts/shared/breakdown-rows.tsx": { SHARE_TYPE: "tiny", DELTA_TYPE: "tiny" },
   "src/charts/treemap/treemap.shared.tsx": { TILE_VALUE_TYPE: "tiny" },
 
   // Eyebrows, axis and hour labels, tab-bar labels, keycaps.
@@ -117,15 +118,13 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/swatch/swatch.styles.ts": { "webSkin.value": "tiny", "webSkin.detail": "tiny", "webSkin.tile": "tiny", "webSkin.compact": "tiny" },
   // The compact keycaps' labels (the hand-off's 11 and 10 px mono hint caps).
   "src/atoms/kbd/kbd.styles.ts": { SEPARATOR_TYPE: "small", SMALL_LABEL_TYPE: "caption", TINY_LABEL_TYPE: "caption" },
-  "src/charts/heatmap/heatmap.shared.tsx": { CAL_MONTH_TYPE: "caption", CAL_WEEKDAY_TYPE: "caption", FLAG_DETAIL_TYPE: "tiny", legendText: "caption" },
   // The v4 hand-off's chart axis labels (9 units, set at the 10 px source floor) and the donut center's caption.
-  "src/charts/shared/charts.styles.ts": { "CHART_LOOK.axisSize": "caption", "CHART_LOOK.legendCaptionSize": "caption" },
+  "src/charts/shared/charts.styles.ts": { "CHART_LOOK.axisSize": "caption", "CHART_LOOK.authoredAxisSize": "annotation", "CHART_LOOK.legendCaptionSize": "caption" },
   // The chart value flag's lines (the section cards' 11 px mono ink pill), a chart's value annotation.
   "src/charts/shared/chart-inspect.tsx": { FLAG_TYPE: "tiny" },
   // The depth chart's spread pill (the section card's 10 px mono label), a chart's value annotation.
   "src/charts/depth-chart/depth-chart.shared.tsx": { SPREAD_TYPE: "tiny" },
   "src/charts/pie-chart/pie-chart.shared.tsx": { CENTER_LABEL_TYPE: "caption" },
-  "src/charts/uptime-bar/uptime-bar.shared.tsx": { EDGE_CAPTION_TYPE: "caption" },
   "src/organisms/calendar/calendar.styles.ts": {
     "webSkin.hourLabel": "caption",
     "webSkin.eventTime": "caption",

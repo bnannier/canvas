@@ -1,10 +1,11 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useState } from "react";
-import Svg, { Path } from "react-native-svg";
+import { useId, useState } from "react";
+import Svg, { Path, Line, G } from "react-native-svg";
 import { View, Text, alpha, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
+import { Defs, GlowFilter } from "../shared/chart-glow.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { estimateTextWidth, formatCompact, niceTicks, polarPoint, polygonPath, seriesAccessibleName } from "../shared/chart-math.js";
@@ -45,6 +46,8 @@ export interface RadarChartProps {
   hideLegend?: boolean;
   /** Hide the rings and spokes (the labels always render). */
   hideGrid?: boolean;
+  /** Join each outer vertex to the center with a radial guide. */
+  spokes?: boolean;
   /** Formats accessible values (data formatting, not styling). */
   formatValue?: (v: number) => string;
   /** E2E hook forwarded to the root element. */
@@ -114,14 +117,16 @@ export function createRadarChart(skin: ChartSkin) {
     // The polygons need the measured center (the card is fluid); the labels
     // position from the same coordinates.
     const [width, setWidth] = useState(0);
+    const glowId = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}glow`;
     // The default web scales with the frame as the renderer's SVG does (R 80 in its 220 by
     // 200 view, drawn at the frame's width up to 300 px); compact keeps its fixed plot.
     const k = !compact && width > 0 ? Math.min(width, VIEW.maxWidth) / VIEW.width : null;
-    const radius = k != null ? VIEW.radius * k : plot.radius;
-    const plotHeight = k != null ? Math.round(VIEW.height * k) : plot.height;
+    const compactScale = Math.min(width / 264, 190 / 206);
+    const radius = compact ? 80 * compactScale : k != null ? VIEW.radius * k : plot.radius;
+    const plotHeight = compact ? 190 : k != null ? Math.round(VIEW.height * k) : plot.height;
     const rOf = (v: number): number => Math.max(0, Math.min(1, v / niceMax)) * radius;
     const cx = width / 2;
-    const cy = plotHeight / 2;
+    const cy = compact ? 95 + compactScale : plotHeight / 2;
 
     return (
       <View
@@ -150,6 +155,7 @@ export function createRadarChart(skin: ChartSkin) {
           {width > 0 && axes.length >= MIN_AXES ? (
             <>
               <Svg width={width} height={plotHeight} style={{ position: "absolute" }}>
+                <Defs><GlowFilter id={glowId} length={6 * compactScale} /></Defs>
                 {/* Concentric polygon rings at each tick fraction, and a
                     spoke per axis. */}
                 {!props.hideGrid
@@ -160,31 +166,36 @@ export function createRadarChart(skin: ChartSkin) {
                           key={`r${ti}`}
                           d={polygonPath(axes.map((_, i) => polarPoint(cx, cy, rOf(t), angleOf(i))))}
                           fill="none"
-                          stroke={tokens["field-border"] ?? tokens.border}
-                          strokeWidth={1}
+                          stroke={compact && ti < 3 ? tokens.border : tokens["field-border"] ?? tokens.border}
+                          strokeWidth={compact ? compactScale : 1}
                         />
                       ))
                   : null}
+                {props.spokes && !props.hideGrid ? axes.map((_, i) => { const p = polarPoint(cx, cy, radius, angleOf(i)); return <Line key={`spoke${i}`} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke={tokens["field-border"] ?? tokens.border} strokeWidth={compact ? compactScale : 1} />; }) : null}
                 {/* One closed polygon per series: ramp stroke, soft wash (the
                     hand-off's lead at .25 under a 2 px edge, the rest .15 under 1.5). */}
-                {series.map((sr, si) => {
+                {series.map((_, index) => {
+                  const si = compact ? series.length - 1 - index : index;
+                  const sr = series[si];
                   const pts = axes.map((_, i) => polarPoint(cx, cy, rOf(finite(sr.values[i])), angleOf(i)));
                   return (
+                    <G key={sr.id ?? si}>
+                    {compact && si === 0 ? <Path d={polygonPath(pts)} fill="none" stroke={alpha(colorOf(si), theme.dark ? .5 : .4)} strokeWidth={2 * compactScale} filter={`url(#${glowId})`} /> : null}
                     <Path
-                      key={sr.id ?? si}
                       d={polygonPath(pts)}
-                      fill={alpha(colorOf(si), si === 0 ? 0.25 : 0.15)}
+                      fill={alpha(colorOf(si), compact ? si === 0 ? .22 : .16 : si === 0 ? 0.25 : 0.15)}
                       stroke={colorOf(si)}
-                      strokeWidth={si === 0 ? 2 : 1.5}
+                      strokeWidth={compact ? 2 * compactScale : si === 0 ? 2 : 1.5}
                       strokeLinejoin="round"
                     />
+                    </G>
                   );
                 })}
               </Svg>
               {/* Spoke labels: real RN Text just beyond the outer ring,
                   centered on the spoke's direction. */}
               {axes.map((axis, i) => {
-                const p = polarPoint(cx, cy, radius + 12, angleOf(i));
+                const p = compact && axes.length === 6 ? { x: cx + [0, 76, 76, 0, -76, -76][i] * compactScale, y: cy + [-90, -43, 49, 97, 49, -43][i] * compactScale } : polarPoint(cx, cy, radius + 12, angleOf(i));
                 // Shift the label box along the spoke direction so top labels
                 // sit above, bottom labels below, and side labels beside.
                 const dx = Math.sin(angleOf(i));
@@ -196,11 +207,12 @@ export function createRadarChart(skin: ChartSkin) {
                     numberOfLines={1}
                     style={{
                       position: "absolute",
-                      left: p.x - w / 2 + dx * (w / 2) * 0.9,
-                      top: p.y - 7 + dy * 8,
+                      left: compact ? p.x - (i === 0 || i === axes.length / 2 ? w / 2 : i < axes.length / 2 ? 0 : w) : p.x - w / 2 + dx * (w / 2) * 0.9,
+                      top: compact ? p.y - 9 * compactScale : p.y - 7 + dy * 8,
                       width: w,
-                      textAlign: "center",
+                      textAlign: compact && i !== 0 && i !== axes.length / 2 ? i < axes.length / 2 ? "left" : "right" : "center",
                       ...s.axisLabel(tokens),
+                      ...(compact ? { fontSize: s.CHART_LOOK.authoredAxisSize * compactScale, lineHeight: 12 * compactScale } : {}),
                     }}
                   >
                     {axis}
@@ -212,7 +224,7 @@ export function createRadarChart(skin: ChartSkin) {
         </View>
         {/* Identity legend for multiple series, outside the img subtree. */}
         {multi && !props.hideLegend ? (
-          <ChartLegend horizontal items={series.map((sr, i) => ({ label: sr.label, color: colorOf(i) }))} />
+          <View style={{ marginTop: compact ? 2 : 0 }}><ChartLegend horizontal items={series.map((sr, i) => ({ label: sr.label, color: colorOf(i) }))} /></View>
         ) : null}
       </View>
     );

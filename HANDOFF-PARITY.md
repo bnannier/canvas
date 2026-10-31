@@ -41,9 +41,9 @@ it with `tools/handoff-parity/extract.ts --from <export>`.
 | Present in the kit | 74 |
 | Absent (tracked) | 1 |
 | Hand-off props compared | 733 |
-| Same name, present | 516 |
+| Same name, present | 517 |
 | Settled divergences | 162 |
-| Open gaps (tracked) | 55 |
+| Open gaps (tracked) | 54 |
 | Metric gaps (not detectable here) | 4 |
 | **Unclassified** | **0** |
 
@@ -64,7 +64,6 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 | `CandlestickChart` | `lastPrice` | unscheduled | A dashed last-price rule with a label tab. Canvas has no equivalent marker. |
 | `CandlestickChart` | `crosshair` | unscheduled | A tracking crosshair on hover/scrub. Canvas ships scrub-to-inspect with a value flag instead, which is a different affordance. |
 | `CandlestickChart` | `bare` | unscheduled | Drop the chart's card surface so it can embed in an existing one. Canvas charts always paint their own card; ChartFrame gains `bare` in phase 5 but the nine series charts do not. |
-| `DataTable` | `footer` | unscheduled | A summary/footer row under the body. Canvas has no footer slot. |
 | `DepthChart` | `mid` | unscheduled | The mid-price marker between bid and ask walls. Canvas derives the split but draws no marker. |
 | `DepthChart` | `subtitle` | unscheduled | A muted second line under a chart title. Canvas charts carry `title` only. |
 | `DepthChart` | `crosshair` | unscheduled | A tracking crosshair on hover/scrub. Canvas ships scrub-to-inspect with a value flag instead, which is a different affordance. |

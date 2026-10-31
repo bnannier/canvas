@@ -34,6 +34,10 @@ type Back = () => boolean | null | undefined;
 
 function withBackEvents(run: (handlers: Set<Back>) => void, native = true) {
   const originalOS = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+  // These synchronous cases exercise BackHandler wiring. Hold native-only deferred
+  // focus/layout work until unmount, so no frame escapes into RNW after OS restoration.
+  // Native focus delivery and frame timing have their own anchored-overlay-focus suite.
+  const deferred = native ? spyOn(window, "requestAnimationFrame").mockImplementation(() => 0) : null;
   const handlers = new Set<Back>();
   const add = spyOn(BackHandler, "addEventListener").mockImplementation((event, handler) => {
     expect(event).toBe("hardwareBackPress");
@@ -49,6 +53,7 @@ function withBackEvents(run: (handlers: Set<Back>) => void, native = true) {
     expect(handlers.size).toBe(0);
     add.mockRestore();
     select.mockRestore();
+    deferred?.mockRestore();
     Object.defineProperty(Platform, "OS", originalOS);
   }
 }

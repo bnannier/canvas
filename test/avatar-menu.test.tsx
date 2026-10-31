@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -12,8 +13,8 @@ import {
   androidSkin as androidMenuSurface,
 } from "../src/atoms/dropdown/dropdown.styles.ts";
 import { OverlayProvider } from "../src/style/portal.tsx";
-import { lightColors, darkColors } from "../src/style/tokens.ts";
-import { contrastRatio } from "../src/style/color.ts";
+import { lightColors } from "../src/style/tokens.ts";
+import { alpha, channelsOf, oklchHex } from "../src/style/color.ts";
 import type { DropdownItem } from "../src/atoms/dropdown/dropdown.tsx";
 
 // AvatarMenu: the account identity pill (avatar + name/email + chevron) wired to
@@ -114,12 +115,18 @@ describe("AvatarMenu pill", () => {
     expect(container.querySelectorAll("button").length).toBe(1);
   });
 
-  it("compact drops the identity column but keeps the avatar and the account name", () => {
+  it("compact shows only the 28px disc while retaining the accessible account name", () => {
     const { container } = ui(<AvatarMenu compact name={NAME} email={EMAIL} items={ITEMS} />);
     expect(screen.queryByText(NAME)).toBeNull();
     expect(screen.queryByText(EMAIL)).toBeNull();
     expect(screen.getByText("RC")).toBeDefined();
     expect(trigger(container).getAttribute("aria-label")).toBe(LABEL);
+    expect(pill(container).children).toHaveLength(1);
+    expect(pill(container).style.paddingTop).toBe("2px");
+    expect(pill(container).style.paddingRight).toBe("2px");
+    const disc = screen.getByText("RC").parentElement as HTMLElement;
+    expect(disc.style.width).toBe("28px");
+    expect(disc.style.height).toBe("28px");
   });
 
   // The name has to sit on the BUTTON, not merely somewhere in the subtree: a
@@ -162,12 +169,11 @@ describe("AvatarMenu pill", () => {
     expect(screen.queryByText("RC")).toBeNull();
   });
 
-  // The chevron repeats the button's own state, so it must actually flip: a glyph
-  // frozen pointing down says "closed" over an open menu.
-  it("keeps the chevron still and fills the pill while the menu is open, never while disabled", () => {
+  // The hand-off's chevron stays still; the active fill and aria-expanded carry state.
+  it("keeps the chevron still and uses the resting surface while closed or disabled", () => {
     const closed = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />).container;
     expect(chevron(closed).style.transform).toBe("");
-    expect(pill(closed).style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    expect(pill(closed).style.backgroundColor).toBe(asRgba(lightColors.popover));
     cleanup();
 
     const open = ui(<AvatarMenu open name={NAME} email={EMAIL} items={ITEMS} />).container;
@@ -175,10 +181,9 @@ describe("AvatarMenu pill", () => {
     expect(pill(open).style.backgroundColor).toBe(asRgba(lightColors.accent));
     cleanup();
 
-    // A disabled pill can never read as open, so it stays bare even when `open` is
-    // forced, matching the collapsed aria-expanded.
+    // A disabled pill keeps its resting surface even when open is forced.
     const inert = ui(<AvatarMenu open disabled name={NAME} email={EMAIL} items={ITEMS} />).container;
-    expect(pill(inert).style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    expect(pill(inert).style.backgroundColor).toBe(asRgba(lightColors.popover));
     expect(trigger(inert).getAttribute("aria-expanded")).toBe("false");
   });
 
@@ -252,7 +257,7 @@ describe("AvatarMenu open state", () => {
     expect(changes).toEqual([true]);
     expect(container.querySelector('[role="menu"]')).toBeNull();
     expect(trigger(container).getAttribute("aria-expanded")).toBe("false");
-    expect(pill(container).style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    expect(pill(container).style.backgroundColor).toBe(asRgba(lightColors.popover));
   });
 
   it("honours a controlled open prop and reports every change", () => {
@@ -408,9 +413,9 @@ describe("AvatarMenu accessibility and disabled", () => {
   });
 });
 
-describe("AvatarMenu: Dark Factory's identity pill on every platform", () => {
-  // No platform ships an identity pill, so every platform takes Dark Factory's (its
-  // TopBar role switcher); the numbers are the web hand-off's --p-idpill-* tokens
+describe("AvatarMenu: the hand-off's identity pill on every platform", () => {
+  // No platform ships an identity pill, so every platform takes the v4 hand-off's
+  // AvatarMenu trigger; the numbers are the web hand-off's --p-idpill-* tokens
   // (styles/tokens/platforms.css), which native reads from the skin, never the CSS.
 
   it("is one skin on the web, iOS and Android", () => {
@@ -418,34 +423,29 @@ describe("AvatarMenu: Dark Factory's identity pill on every platform", () => {
     expect(androidMenuSkin).toBe(webMenuSkin);
   });
 
-  it("is a bare 32px pill that takes the accent fill under the pointer and while open", () => {
-    expect(webMenuSkin.menuPill).toMatchObject({ height: 32, gap: 10, paddingStart: 2, paddingEnd: 8 });
-    expect(webMenuSkin.menuPill.borderWidth).toBeUndefined();
-    expect(webMenuSkin.menuPillFill(lightColors, false)).toEqual({ backgroundColor: "transparent" });
+  it("is an edged popover pill that takes the accent fill under the pointer and while open", () => {
+    expect(webMenuSkin.menuPill).toMatchObject({ gap: 10, paddingTop: 4, paddingBottom: 4, paddingStart: 4, paddingEnd: 10 });
+    expect(webMenuSkin.menuPillEdge(lightColors)).toEqual({ borderWidth: 1, borderColor: lightColors.border });
+    expect(webMenuSkin.menuPillFill(lightColors, false)).toEqual({ backgroundColor: lightColors.popover });
     expect(webMenuSkin.menuPillFill(lightColors, true)).toEqual({ backgroundColor: lightColors.accent });
-    expect(webMenuSkin.menuPillName).toMatchObject({ fontSize: 12, lineHeight: 14, fontWeight: "700" });
-    expect(webMenuSkin.menuPillSecondary).toMatchObject({ fontSize: 10.5, lineHeight: 13, fontWeight: "600" });
+    expect(webMenuSkin.menuPillName).toMatchObject({ fontSize: 13, lineHeight: 15.6, fontWeight: "500" });
+    expect(webMenuSkin.menuPillSecondary).toMatchObject({ fontSize: 11, lineHeight: 13.2, fontWeight: "400" });
     expect(webMenuSkin.menuChevronSize).toBe(14);
   });
 
-  it("rings the viewer's disc in the violet glow, over a ring of the card (and without it under glass)", () => {
-    const glow = webMenuSkin.menuDiscGlow(lightColors, false).boxShadow as string;
-    expect(glow).toContain(`2px ${lightColors.card}`);
-    expect(glow).toContain(`3.5px ${lightColors.primary}`);
-    // Under glass no solid surface exists to draw the gap in, so the violet ring hugs the disc.
-    expect(webMenuSkin.menuDiscGlow(lightColors, true).boxShadow).toBe(`0px 0px 0px 1.5px ${lightColors.primary}`);
-    // The pill's hover is the web's: native pointer hover waits on the owner.
+  it("keeps the generic viewer disc unringed, as the renderer draws it", () => {
+    expect(webMenuSkin.menuDiscGlow(lightColors, false)).toEqual({});
+    expect(webMenuSkin.menuDiscGlow(lightColors, true)).toEqual({});
     expect(webMenuSkin.menuHover).toBe(true);
     const { container } = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />);
-    const ring = pill(container).firstElementChild as HTMLElement;
-    expect(ring.style.boxShadow).toContain("3.5px");
+    expect((pill(container).firstElementChild as HTMLElement).style.boxShadow).toBe("");
   });
 
   it("paints the rest and the open fill on the rendered pill, on every platform build", async () => {
     for (const { name, file } of PLATFORM_MENUS) {
       const Menu = await loadMenu(file);
       const closed = pill(ui(<Menu name={NAME} email={EMAIL} items={ITEMS} />).container);
-      expect(closed.style.backgroundColor, name).toBe("rgba(0, 0, 0, 0.00)");
+      expect(closed.style.backgroundColor, name).toBe(asRgba(lightColors.popover));
       cleanup();
       const open = pill(ui(<Menu open name={NAME} email={EMAIL} items={ITEMS} />).container);
       expect(open.style.backgroundColor, name).toBe(asRgba(lightColors.accent));
@@ -453,16 +453,14 @@ describe("AvatarMenu: Dark Factory's identity pill on every platform", () => {
     }
   });
 
-  it("fills at once under the pointer, and keeps the email line at 4.5:1 on that fill", () => {
+  it("fills at once under the pointer and keeps the reference third-ink email", () => {
     const { container } = ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />);
     const capsule = pill(container);
     fireEvent.pointerEnter(capsule, { pointerType: "mouse" });
     expect(capsule.style.backgroundColor).toBe(asRgba(lightColors.accent));
     fireEvent.pointerLeave(capsule);
-    expect(capsule.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
-    for (const t of [lightColors, darkColors]) {
-      expect(contrastRatio(t["muted-foreground"], t.accent)).toBeGreaterThanOrEqual(4.5);
-    }
+    expect(capsule.style.backgroundColor).toBe(asRgba(lightColors.popover));
+    expect(channelsOf(screen.getByText(EMAIL).style.color)).toEqual(channelsOf(lightColors["subtle-foreground"]!));
   });
 });
 
@@ -502,32 +500,31 @@ describe("Avatar tiny: the identity pill's disc", () => {
 });
 
 describe("AvatarMenu capsule inset", () => {
-  // Dark Factory's pill holds its disc 2px inside the capsule; the kit's `small` (28px)
-  // disc in the 32px pill keeps that inset.
-  it("holds a small (28px) disc 2px inside the 32px pill", () => {
-    expect(((webMenuSkin.menuPill.height as number) - 28) / 2).toBe(2);
-    expect(webMenuSkin.menuPill.paddingStart).toBe(2);
+  // The renderer's capsule uses 4px vertical/start and 10px trailing padding,
+  // inside a 1px edge; its height follows the content instead of fixing a 32px box.
+  it("holds the disc inside the renderer's padded capsule", () => {
+    expect(webMenuSkin.menuPill).toMatchObject({ paddingTop: 4, paddingBottom: 4, paddingStart: 4, paddingEnd: 10 });
+    expect(webMenuSkin.menuPillEdge(lightColors).borderWidth).toBe(1);
     ui(<AvatarMenu name={NAME} email={EMAIL} items={ITEMS} />);
     // The initials Text is the avatar box's only child, so its parent IS the disc.
     const disc = screen.getByText("RC").parentElement as HTMLElement;
-    expect(disc.style.width).toBe("28px");
-    expect(disc.style.height).toBe("28px");
+    expect(disc.style.width).toBe("32px");
+    expect(disc.style.height).toBe("32px");
   });
 });
 
 describe("AvatarMenu disabled dim", () => {
-  // The pill fades by the Dropdown skin's disabled opacity (its trigger owns the
-  // press), so these are the hand-off's --p-disabled per platform: 0.5 on web,
-  // 0.4 under [data-platform="ios"], 0.38 (M3) under [data-platform="android"].
-  it("uses the hand-off's --p-disabled on each platform", () => {
-    expect(webMenuSurface.disabledOpacity).toBe(0.5);
-    expect(iosMenuSurface.disabledOpacity).toBe(0.4);
-    expect(androidMenuSurface.disabledOpacity).toBe(0.38);
-  });
-
-  it("paints it on the rendered web pill", () => {
-    const { container } = ui(<AvatarMenu disabled name={NAME} email={EMAIL} items={ITEMS} />);
-    expect(trigger(container).style.opacity).toBe("0.5");
+  it("uses the generic renderer's 0.45 on each platform while preserving account feedback", async () => {
+    for (const { name, file } of PLATFORM_MENUS) {
+      const Menu = await loadMenu(file);
+      const generic = ui(<Menu disabled name={NAME} email={EMAIL} items={ITEMS} />);
+      expect(trigger(generic.container).style.opacity, name).toBe("0.45");
+      cleanup();
+      const account = ui(<Menu account disabled name={NAME} email={EMAIL} items={ITEMS} />);
+      const surface = name === "web" ? webMenuSurface : name === "iOS" ? iosMenuSurface : androidMenuSurface;
+      expect(trigger(account.container).style.opacity, name).toBe(String(surface.disabledOpacity));
+      cleanup();
+    }
   });
 });
 
@@ -555,4 +552,45 @@ it("preserves the original sidebar mark's dimensions and letter", () => {
   expect(box.style.borderRadius).toBe("9px");
   expect(label.style.fontSize).toBe("14px");
   expect(label.style.lineHeight).toBe("14px");
+});
+
+// Source-derived expectations: the generic compound renderer has geometry and identity
+// typography of its own; the standalone Avatar size scale and Argus account preset differ.
+describe("generic AvatarMenu matches its vendored renderer", () => {
+  const source = readFileSync(new URL("../tools/v4/handoff/cv-kit-code.js", import.meta.url), "utf8");
+  const renderer = source.slice(source.indexOf(" const av=src?"), source.indexOf(" const menu=K.panel", source.indexOf(" const av=src?")));
+  const sizes = /p\.compact\?(\d+):(\d+)/.exec(renderer)!;
+  const types = [...renderer.matchAll(/font:(\d+) (\d+)px\/([\d.]+) \$\{f\}/g)];
+  const hues = /K\.hueOf=n=>\[([^\]]+)\]/.exec(source)![1]!.split(",").map(Number);
+  const hashBody = /const hash=s=>\{([^}]+)\}/.exec(source)![1]!;
+  const hash = new Function("s", hashBody) as (name: string) => number;
+
+  for (const { name: platform, file } of PLATFORM_MENUS) {
+    it(`${platform}: matches the source's regular and compact dimensions and identity type`, async () => {
+      const Menu = await loadMenu(file);
+      const full = ui(<Menu name={NAME} email={EMAIL} items={ITEMS} />);
+      const disc = screen.getByText("RC").parentElement as HTMLElement;
+      expect(disc.style.width).toBe(`${sizes[2]}px`);
+      expect(disc.style.height).toBe(`${sizes[2]}px`);
+      expect(disc.style.boxShadow).toBe("");
+      expect(disc.parentElement!.style.boxShadow).toBe("");
+      expect(types).toHaveLength(2);
+      for (const [index, text] of [NAME, EMAIL].entries()) {
+        const style = screen.getByText(text).style, type = types[index]!;
+        expect(style.fontWeight).toBe(type[1]!);
+        expect(style.fontSize).toBe(`${type[2]}px`);
+        expect(Number.parseFloat(style.lineHeight)).toBeCloseTo(Number(type[2]) * Number(type[3]), 5);
+      }
+      expect(screen.getByText(NAME).parentElement!.style.gap).toBe("2px");
+      const hue = hues[hash(NAME) % hues.length]!;
+      expect(channelsOf(disc.style.backgroundColor)).toEqual(channelsOf(alpha(oklchHex(0.72, 0.14, hue), 0.22)));
+      expect(channelsOf(screen.getByText("RC").style.color)).toEqual(channelsOf(oklchHex(0.82, 0.12, hue)));
+      expect(pill(full.container).style.backgroundColor).toBe(asRgba(lightColors.popover));
+      cleanup();
+      const compact = ui(<Menu compact name={NAME} email={EMAIL} items={ITEMS} />);
+      expect((screen.getByText("RC").parentElement as HTMLElement).style.width).toBe(`${sizes[1]}px`);
+      expect(pill(compact.container).children).toHaveLength(1);
+      expect(pill(compact.container).style.paddingTop).toBe("2px");
+    });
+  }
 });

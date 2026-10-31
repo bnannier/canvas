@@ -1,9 +1,8 @@
-import { useTheme, Button, ButtonGroup, Card, Column, Grid, Icon, Row, Switch, Typography } from "@nannier/canvas";
+import { SectionVignette } from "../ui/showcase/section-vignette";
+import { useTheme, Card, Column, Grid, Icon, Row, Typography } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { ExampleScope, PreviewScope } from "../core/scope";
-import { VignetteStage } from "../ui/showcase";
-import { PLATFORMS_SHOWN, PLATFORM_LABELS, shows } from "../core/platforms-shown";
-import { PLATFORM_COPY } from "../data/platform-copy";
+import { PLATFORM_LABELS, shows } from "../core/platforms-shown";
 
 // The Skins page (`Canvas v4.0.0 Skins.dc.html`): its hero vignette and its three device
 // columns. Each column renders ONE tree (<Button primary>, <Field><Input>, <ButtonGroup
@@ -21,22 +20,9 @@ type Platform = PreviewScope["platform"];
 /** The hand-off's column order: iOS, Android, Web (filtered to the platforms this build shows). */
 const ORDER: readonly Platform[] = (["ios", "android", "web"] as const).filter(shows);
 
-/** The hero's still frame: the platform switcher on Web, the morphing button and switch. */
+/** The animated hero: the platform switcher on Web, the morphing button and switch. */
 export function Vignette() {
-  return (
-    <VignetteStage>
-      <Column relaxed alignCenter>
-        {PLATFORMS_SHOWN.length > 1 ? (
-          <ButtonGroup segmented small defaultActive={0} items={PLATFORMS_SHOWN.map((p) => PLATFORM_LABELS[p]!.label)} accessibilityLabel="Platform" />
-        ) : null}
-        <Row loose alignCenter>
-          <Button primary>Continue</Button>
-          <Switch defaultChecked accessibilityLabel="Glass surfaces" />
-        </Row>
-        <Typography eyebrow subtle>{PLATFORM_COPY.skinsCaption}</Typography>
-      </Column>
-    </VignetteStage>
-  );
+  return <SectionVignette kind="skins" />;
 }
 
 /** The device chrome over a column: a phone's status bar, or a browser's address. */

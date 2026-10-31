@@ -1,8 +1,8 @@
 import { primaryText } from "../../style/primary-text.js";
 import { actionFill, actionInk } from "../../style/action.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shadow, customShadow, shape, webShadow } from "../../style/index.js";
-import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
+import { type ColorTokens, MONO_FONT, alpha, shadow, customShadow, shape, webShadow } from "../../style/index.js";
+import { type AttachedParts, type ButtonGroupSkin, type Size } from "./button-group.shared.js";
 
 // Co-located ButtonGroup skins, one per platform. The group is laid out per
 // segment in JS (there are no `first:`/`last:` style variants, so the joined-
@@ -144,6 +144,39 @@ export function glassSurfaceGeometry(surface: ViewStyle): ViewStyle {
 export const glassSegmentColor = (t: ColorTokens, selected: boolean): TextStyle => ({
   color: selected ? primaryText(t) : t.foreground,
 });
+// The `attached` kind (Controls.dc.html `c-button-sizes`, its Left / Center / Right group):
+// `display:inline-flex;border-radius:10px;border:1px solid var(--ln2);overflow:hidden;
+// background:var(--sf3);box-shadow:inset 0 1px 0 var(--hl)` around cells of
+// `height:40px;padding:0 14px;font:500 14px/1 var(--ft);color:var(--tx);border-right:1px
+// solid var(--ln2)`, the selected one on `--sf4` and the others washing to it on hover. No
+// platform ships the control, so every skin draws it on its own control corner. The box's
+// edge is the `input` boundary every control takes (design-language item 1, the 3:1 floor
+// where the hand-off's hairline is about 1.5:1); the rules between the cells are the
+// hand-off's `field-border`, since the box's edge, not a rule, is the control's boundary.
+export function attachedParts(corner: number): AttachedParts {
+  const cell = { height: 40, paddingHorizontal: 14 };
+  return {
+    wrap: (t) => ({
+      flexDirection: "row",
+      alignItems: "stretch",
+      borderRadius: corner,
+      borderWidth: 1,
+      borderColor: t.input,
+      backgroundColor: t.secondary,
+      overflow: "hidden",
+      ...(t.highlight ? { boxShadow: `inset 0px 1px 0px ${t.highlight}` } : null),
+    }),
+    segment: (t, selected, leading) => ({
+      ...(leading ? { borderStartWidth: 1, borderColor: t["field-border"] ?? t.border } : null),
+      backgroundColor: selected ? t["surface-raised"] ?? t.secondary : "transparent",
+    }),
+    hover: (t) => ({ backgroundColor: t["surface-raised"] ?? t.secondary }),
+    cell: { small: { height: 32, paddingHorizontal: 12 }, default: cell, large: { height: 48, paddingHorizontal: 18 } },
+    type: { small: { fontSize: 13, lineHeight: 13, fontWeight: "500" }, default: { fontSize: 14, lineHeight: 14, fontWeight: "500" }, large: { fontSize: 16, lineHeight: 16, fontWeight: "500" } },
+    label: (t) => ({ color: t.foreground }),
+  };
+}
+
 // =============================================================================
 // Web: the v4 hand-off's segmented control (`K.def('button-group')` in
 // tools/v4/handoff/cv-kit-controls.js). The row sits in a track on the control corner
@@ -160,6 +193,9 @@ export const glassSegmentColor = (t: ColorTokens, selected: boolean): TextStyle 
 // font:500 12px/1 var(--ft)` buttons): a segment keeps its size's height and takes the
 // small label on a 12 px inset.
 // =============================================================================
+
+// The filled Button's lit top edge (button.styles.ts FILLED_EDGE, `K.btn`'s `.28`).
+const FILLED_EDGE = alpha("#ffffff", 0.28);
 
 const SEGMENT_INSET = 3;
 const SEGMENT_CORNER = shape.web.control - SEGMENT_INSET;
@@ -191,6 +227,22 @@ const WEB_CELL_TYPE: Record<Size, TextStyle> = {
 };
 
 export const webSkin: ButtonGroupSkin = {
+  roundedSegmented: {
+    wrap: { borderRadius: PILL, gap: 0 },
+    cell: {
+      small: { height: 24, paddingHorizontal: 12 },
+      default: { height: 28, paddingHorizontal: 12 },
+      large: { height: 36, paddingHorizontal: 12 },
+    },
+    // The navbar scheme thumb in Component.dc.html: .45 s with the spring's
+    // cubic-bezier(.34,1.56,.64,1), on the same node in both scheme directions.
+    thumb: (index, count, reduced) => ({
+      width: `${100 / count}%`, height: "100%", borderRadius: PILL,
+      transform: [{ translateX: `${index * 100}%` }],
+      transitionProperty: "transform", transitionDuration: `${reduced ? 0 : 450}ms`,
+      transitionTimingFunction: "cubic-bezier(0.34,1.56,0.64,1)",
+    } as ViewStyle),
+  },
   segmentedWrap: (t) => ({
     ...segmentedContainer,
     padding: SEGMENT_INSET,
@@ -221,24 +273,44 @@ export const webSkin: ButtonGroupSkin = {
   segmentType: WEB_SEGMENT_TYPE,
   cellSize: WEB_CELL,
   cellType: WEB_CELL_TYPE,
+  // The segment glyph (`K.def`'s iconsOnly segments and the Controls card: 15 px).
+  segmentIconSize: 15,
+  attached: attachedParts(shape.web.control),
   // A spaced peer has no track behind it: it is the outline Button's hairline pill.
   spacedSurface: (t) => ({ borderWidth: 1, borderColor: t.border, backgroundColor: "transparent" }),
   spacedLabel: (t) => ({ fontWeight: "700", color: t.foreground }),
 
   // --- split: the call to action with its chevron half ---
+  // `K.def('button-group')` builds the split from the default Button (`K.btn`, its 40 px
+  // box, 16 px inset, 500 14/1 label and lit top edge on the control corner) joined to a
+  // chevron half a segmented height square (`width:36px`, a 14 px chevron); the Controls
+  // card leads the label with its 16 px icon, 8 apart.
   splitPrimary(t) {
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopStartRadius: PILL,
-      borderBottomStartRadius: PILL,
+      borderTopStartRadius: shape.web.control,
+      borderBottomStartRadius: shape.web.control,
       backgroundColor: actionFill(t),
+      boxShadow: `inset 0px 1px 0px ${FILLED_EDGE}`,
     };
   },
   splitPrimaryLabel(t) {
-    return { fontWeight: "800", letterSpacing: 0.12, color: actionInk(t) };
+    return { fontWeight: "500", color: actionInk(t) };
   },
+  splitCell: {
+    small: { height: 32, paddingHorizontal: 12 },
+    default: { height: 40, paddingHorizontal: 16 },
+    large: { height: 48, paddingHorizontal: 22 },
+  },
+  splitCellType: {
+    small: { fontSize: 13, lineHeight: 13 },
+    default: { fontSize: 14, lineHeight: 14 },
+    large: { fontSize: 16, lineHeight: 16 },
+  },
+  splitTriggerWidth: { small: 30, default: 36, large: 44 },
+  splitIconSize: { icon: 16, chevron: 14 },
   splitDivider(t, height) {
     return { width: 1, height, backgroundColor: alpha(actionInk(t), 0.2) };
   },
@@ -247,9 +319,10 @@ export const webSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderTopEndRadius: PILL,
-      borderBottomEndRadius: PILL,
+      borderTopEndRadius: shape.web.control,
+      borderBottomEndRadius: shape.web.control,
       backgroundColor: actionFill(t),
+      boxShadow: `inset 0px 1px 0px ${FILLED_EDGE}`,
       paddingStart: 10,
       paddingEnd: 12,
       height,
@@ -278,36 +351,32 @@ export const webSkin: ButtonGroupSkin = {
     return { fontSize: 14, lineHeight: 20, color: t["popover-foreground"] };
   },
 
-  // --- stepper: DF's hairline pill split into a back cell, the value and a forward cell ---
-  stepperArrow(t, height) {
-    return {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 1,
-      borderColor: t.border,
-      backgroundColor: "transparent",
-      paddingHorizontal: 10,
-      height,
-    };
+  // --- stepper: `K.def('button-group')`'s one box (`height:36px;border-radius:10px;
+  // border:1px solid var(--ln2);background:var(--sf2)`) around square end cells holding a
+  // 14 px minus and plus, the value `min-width:32px;font:500 14px var(--fm)` between them.
+  // The box's edge is the `input` control boundary (design-language item 1). ---
+  stepperArrow() {
+    return { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "transparent" };
   },
-  stepperArrowLeft: { borderTopStartRadius: PILL, borderBottomStartRadius: PILL },
-  stepperArrowRight: { marginStart: -1, borderTopEndRadius: PILL, borderBottomEndRadius: PILL },
-  stepperMiddle(t) {
-    return {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 1,
-      marginStart: -1,
-      borderColor: t.border,
-      backgroundColor: "transparent",
-    };
+  stepperArrowLeft: {},
+  stepperArrowRight: {},
+  stepperMiddle() {
+    return { flexDirection: "row", alignItems: "center", justifyContent: "center", minWidth: 32 };
   },
   stepperLabel(t) {
-    return { fontWeight: "700", color: t.foreground };
+    return { fontFamily: MONO_FONT, fontWeight: "500", color: t.foreground };
   },
   stepperChevronColor: "muted",
+  stepperBox: {
+    box: (t) => ({ alignItems: "stretch", borderRadius: shape.web.control, borderWidth: 1, borderColor: t.input, backgroundColor: t.popover, overflow: "hidden" }),
+    height: { small: 30, default: 36, large: 44 },
+  },
+  stepperValueCell: {
+    small: { paddingHorizontal: 0 },
+    default: { paddingHorizontal: 0 },
+    large: { paddingHorizontal: 0 },
+  },
+  stepperSigns: 14,
 
   pressedOpacity: 0.9,
 };
@@ -352,6 +421,7 @@ export const iosSkin: ButtonGroupSkin = {
   // Glyphs track the label: on-foreground on and off the white/elevated thumb.
   segmentIconColor: () => "foreground",
   showSelectedCheck: false,
+  attached: attachedParts(shape.ios.control),
 
   // --- split (HIG: primary action + chevron, brand fill, capsule) ---
   // The split is two prominent iOS buttons joined by a hairline, so the outer
@@ -478,6 +548,7 @@ export const androidSkin: ButtonGroupSkin = {
   // Glyphs track the label: the brand `primary` on the tonal selected fill.
   segmentIconColor: (selected) => (selected ? "primary" : "foreground"),
   showSelectedCheck: true,
+  attached: attachedParts(shape.android.control),
 
   // --- split (M3: brand-filled primary + chevron, stadium) ---
   splitPrimary(t) {

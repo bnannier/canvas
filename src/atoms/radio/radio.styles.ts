@@ -1,5 +1,5 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { shape, type ColorTokens } from "../../style/index.js";
+import { MONO_FONT, shape, type ColorTokens } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { selectedCard } from "../../style/selected-card.js";
 import { type RadioSkin, type Size } from "./radio.shared.js";
@@ -40,10 +40,10 @@ const ANDROID_RING: Record<Size, number> = { small: 18, default: 20, large: 22 }
 const ANDROID_DOT: Record<Size, number> = { small: 10, default: 10, large: 12 };
 
 // The web's text, the same at every size (only the ring scales): the hand-off's 500 14px
-// title at its 1.3 line and the 12px description at its 1.45 line, both rounded up to a
-// whole pixel, as Checkbox sets them.
-const WEB_LABEL: TextStyle = { fontSize: 14, lineHeight: 19 };
-const WEB_DESCRIPTION: TextStyle = { fontSize: 12, lineHeight: 18 };
+// title at its 1.3 line (18.2) and the 12px description at its 1.45 line (17.4), the
+// ratios exactly, as Checkbox and Switch set them.
+const WEB_LABEL: TextStyle = { fontSize: 14, lineHeight: 18.2 };
+const WEB_DESCRIPTION: TextStyle = { fontSize: 12, lineHeight: 17.4 };
 
 // The native rows' text per size.
 const NATIVE_LABEL: Record<Size, TextStyle> = {
@@ -66,6 +66,9 @@ function labelOf(type: (size: Size) => TextStyle) {
 function descriptionOf(type: (size: Size) => TextStyle) {
   return (tokens: ColorTokens, size: Size): TextStyle => ({ fontWeight: "400", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"], ...type(size) });
 }
+// A string `meta` (the card form's trailing version, `K.def('radio')`: `font:400 12px
+// var(--fm);color:var(--tx3)`, its line the face's normal 16 px), the same on every platform.
+const metaType = (tokens: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400", color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] });
 const webLabel = labelOf(() => WEB_LABEL);
 const webDescription = descriptionOf(() => WEB_DESCRIPTION);
 const nativeLabel = labelOf((size) => NATIVE_LABEL[size]);
@@ -101,7 +104,7 @@ export const webSkin: RadioSkin = {
   mark: {
     kind: "ring",
     ring: (t, size, checked, nudge) => ({
-      // Center the ring on the 19px first line.
+      // Center the ring on the 18.2 px first line.
       ...ringBase(WEB_RING[size], nudge ? Math.max(0, (WEB_LABEL.lineHeight! - WEB_RING[size]) / 2) : 0),
       borderWidth: checked ? Math.round(WEB_RING[size] * 0.3) : 1.5,
       borderColor: checked ? t.primary : t.input,
@@ -112,9 +115,13 @@ export const webSkin: RadioSkin = {
   },
   label: webLabel,
   description: webDescription,
+  meta: metaType,
+  // The chosen tile: the accent edge over the accent's soft wash (`K.def('radio')` card:
+  // `border:1px solid var(--ion);background:var(--ion-soft)`), the web's own; the native
+  // tiles keep Card's selected recipe.
   card: cardTile(
     (t) => ({ borderColor: t.border, backgroundColor: t.popover }),
-    chosenTile,
+    (t) => ({ borderColor: t.primary, backgroundColor: t["primary-soft"] ?? selectedCard(t).backgroundColor }),
     { borderRadius: shape.web.tile, paddingVertical: 12, paddingHorizontal: 14, alignItems: "center" },
   ),
   rowGap: 12,
@@ -141,6 +148,7 @@ export const iosSkin: RadioSkin = {
   },
   label: nativeLabel,
   description: nativeDescription,
+  meta: metaType,
   card: cardTile(
     (t) => ({ borderColor: t.border, backgroundColor: t.card }),
     chosenTile,
@@ -173,6 +181,7 @@ export const androidSkin: RadioSkin = {
   },
   label: nativeLabel,
   description: nativeDescription,
+  meta: metaType,
   card: cardTile(
     (t) => ({ borderColor: t["field-border"] ?? t.input, backgroundColor: "transparent" }),
     chosenTile,

@@ -319,11 +319,6 @@
       }
     },
     "DataTable": {
-      "footer": {
-        "kind": "open-gap",
-        "plannedIn": "unscheduled",
-        "reason": "A summary/footer row under the body. Canvas has no footer slot."
-      },
       "sortDir": {
         "kind": "renamed",
         "to": "sort",

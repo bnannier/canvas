@@ -39,6 +39,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `withlabel` | With label | [ ] | [ ] | [ ] |  |
 | `withdescription` | With description | [ ] | [ ] | [ ] |  |
+| `withsuffix` | With suffix | [ ] | [ ] | [ ] |  |
 | `sizes` | Sizes | [ ] | [ ] | [ ] |  |
 | `withminmax` | With min / max | [ ] | [ ] | [ ] |  |
 | `stepped` | Stepped | [ ] | [ ] | [ ] |  |

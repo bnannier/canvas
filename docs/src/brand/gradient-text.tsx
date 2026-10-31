@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type RefObject } from "react";
-import { Dimensions, type NativeSyntheticEvent, type TextLayoutEventData, type View as NativeView } from "react-native";
+import { Dimensions, Platform, type NativeSyntheticEvent, type TextLayoutEventData, type TextStyle, type View as NativeView } from "react-native";
 import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from "react-native-svg";
-import { Typography, View, useTheme, type FontFaces, type FontWeightKey } from "@nannier/canvas";
+import { Text, Typography, View, useTheme, type FontFaces, type FontWeightKey } from "@nannier/canvas";
 import { GRADIENT_TEXT, baselineOffset, heroType } from "./library-hero-look";
 
 // A brand illustration: one word in the display role filled by the brand artwork's
@@ -69,8 +69,19 @@ export function GradientText({ children, anchor, testID }: { children: string; a
     const line = event.nativeEvent.lines[0];
     if (line) setGlyphBaseline(line.y + line.height - line.descender);
   };
+  // On the web use the hand-off's native glyph painting. SVG's text baseline and
+  // antialiasing differ from CSS text by a pixel at the display size. Native keeps
+  // the SVG renderer below, where text clipping is unavailable.
+  if (Platform.OS === "web") {
+    const stops = GRADIENT_TEXT.stops.map(stop => `${tokens[stop.role]} ${Number(stop.offset) * 100}%`).join(", ");
+    return <Text testID={testID} aria-hidden style={{
+      ...type, fontFamily: face?.fontFamily, fontWeight: face?.fontWeight,
+      color: "transparent", backgroundImage: `linear-gradient(90deg, ${stops})`,
+      backgroundClip: "text", WebkitBackgroundClip: "text",
+    } as TextStyle}>{children}</Text>;
+  }
   return (
-    <View ref={box} testID={testID} style={{ alignSelf: "flex-start" }}>
+    <View ref={box} testID={testID} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ alignSelf: "flex-start" }}>
       {/* The word's line box, held invisible; the gradient paints over it. The heading
           around the word carries its accessible name, so both layers are hidden from
           assistive tech. */}
@@ -113,6 +124,9 @@ export function GradientText({ children, anchor, testID }: { children: string; a
 function useLineShift(anchor: RefObject<NativeView | null>, box: RefObject<NativeView | null>, lineHeight: number): number {
   const [shift, setShift] = useState(0);
   useEffect(() => {
+    // Browser inline boxes already share the text baseline. Measuring during the
+    // parent entrance used to capture a transient translateY and retain it forever.
+    if (Platform.OS === "web") return;
     let frame = requestAnimationFrame(function measure() {
       anchor.current?.measureInWindow((_ax, anchorTop) => {
         box.current?.measureInWindow((_bx, boxTop, _w, boxHeight) => {

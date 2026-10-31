@@ -1,6 +1,7 @@
+import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useMemo, useRef, useState } from "react";
-import { PanResponder, StyleSheet } from "react-native";
+import { Animated, Easing, Platform, PanResponder, StyleSheet } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
@@ -13,9 +14,13 @@ import {
   devWarn,
   type LayoutStyle,
   GlassPane,
+  GlassSurface,
+  shadow,
   paneStyle,
   isGlass,
   FOCUS_RESET,
+  useReducedMotion,
+  supportsNativeDriver,
 } from "../../style/index.js";
 import { GESTURE_SURFACE, useWheel, alpha } from "../../style/index.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
@@ -23,10 +28,22 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
-import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
+import {
+  ChartInspectionSurface,
+  flagInk,
+  ChartValueFlag,
+  announceSelection,
+  pressPoint,
+  DIM_OPACITY,
+} from "../shared/chart-inspect.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { formatCompact } from "../shared/chart-math.js";
 import { projectNaturalEarth } from "./geo-map.projection.js";
-import { WORLD_BORDER_PATH, WORLD_LAND_PATH, WORLD_VIEW_BOX } from "./geo-map.world.js";
+import {
+  WORLD_BORDER_PATH,
+  WORLD_LAND_PATH,
+  WORLD_VIEW_BOX,
+} from "./geo-map.world.js";
 import {
   MAX_ZOOM,
   WORLD_CAMERA,
@@ -99,6 +116,8 @@ export interface GeoMapProps {
   title?: string;
   // Density (omit for the default map size).
   compact?: boolean;
+  /** Bordered geography panel with individually outlined place bubbles and an inline readout. */
+  detailed?: boolean;
   /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
   plain?: boolean;
   /** Formats the flagged and accessible counts (data formatting, not styling). */
@@ -134,7 +153,6 @@ export interface GeoMapProps {
   style?: LayoutStyle;
 }
 
-
 // The point's halo: the accent's soft wash (the hand-off's ion-soft, .16 in dark).
 const HALO_ALPHA = 0.16;
 
@@ -163,7 +181,6 @@ export * from "./geo-map.bubbles.js";
 const MAX_POINTS = 60;
 const NAMED_IN_LABEL = 5;
 
-
 /**
  * Project every point into the generated viewBox and size its bubble against
  * the largest count on the map. Pure, and exported for tests: geometry is
@@ -171,13 +188,16 @@ const NAMED_IN_LABEL = 5;
  * react-native-svg so nothing about the drawn circles is assertable from a DOM.
  */
 export function geoMapBubbles(points: GeoMapPoint[]): GeoMapBubble[] {
-  const max = points.reduce((m, p) => (Number.isFinite(p.count) && p.count > m ? p.count : m), 0);
+  const max = points.reduce(
+    (m, p) => (Number.isFinite(p.count) && p.count > m ? p.count : m),
+    0
+  );
   return points.map((p) => ({
     ...projectNaturalEarth(
       Number.isFinite(p.lng) ? p.lng : 0,
       Number.isFinite(p.lat) ? p.lat : 0,
       WORLD_VIEW_BOX.width,
-      WORLD_VIEW_BOX.height,
+      WORLD_VIEW_BOX.height
     ),
     r: bubbleRadius(p.count, max),
   }));
@@ -193,7 +213,12 @@ export function geoMapBubbles(points: GeoMapPoint[]): GeoMapBubble[] {
  * Pure, and exported for tests: the DOM harness cannot drive a real press with
  * coordinates through the hit layer (the `scrubEvent` precedent).
  */
-export function bubbleAt(bubbles: GeoMapBubble[], x: number, y: number, scale: number): number | null {
+export function bubbleAt(
+  bubbles: GeoMapBubble[],
+  x: number,
+  y: number,
+  scale: number
+): number | null {
   let best: number | null = null;
   let bestDistance = Infinity;
   for (let i = 0; i < bubbles.length; i += 1) {
@@ -220,25 +245,35 @@ export function geoMapAccessibleName(
   formatValue: (v: number) => string,
   /** The grouping currently DRAWN, when the map is aggregating. Omitted, or with
    *  nothing merged, the name is byte-identical to what it always was. */
-  clusters?: readonly GeoMapCluster[],
+  clusters?: readonly GeoMapCluster[]
 ): string {
   const head = title != null && title !== "" ? title : "World map";
   if (points.length === 0) return `${head}: no places`;
   const ranked = points
     .map((p, i) => ({ p, i }))
-    .sort((a, b) => (Number.isFinite(b.p.count) ? b.p.count : 0) - (Number.isFinite(a.p.count) ? a.p.count : 0));
+    .sort(
+      (a, b) =>
+        (Number.isFinite(b.p.count) ? b.p.count : 0) -
+        (Number.isFinite(a.p.count) ? a.p.count : 0)
+    );
   const named = ranked
     .slice(0, NAMED_IN_LABEL)
-    .map(({ p }) => `${p.label} ${formatValue(Number.isFinite(p.count) ? p.count : 0)}`)
+    .map(
+      ({ p }) =>
+        `${p.label} ${formatValue(Number.isFinite(p.count) ? p.count : 0)}`
+    )
     .join(", ");
   const rest = ranked.length - NAMED_IN_LABEL;
   // A screen-reader user cannot see bubbles merge, so when the map IS grouping,
   // the name has to say so: otherwise it describes places that are not
   // separately drawn.
-  const grouped = clusters != null && clusters.length > 0 && clusters.length < points.length
-    ? ` in ${clusters.length} group${clusters.length === 1 ? "" : "s"}`
-    : "";
-  return `${head}: ${points.length} places${grouped}. ${named}${rest > 0 ? `, +${rest} more` : ""}`;
+  const grouped =
+    clusters != null && clusters.length > 0 && clusters.length < points.length
+      ? ` in ${clusters.length} group${clusters.length === 1 ? "" : "s"}`
+      : "";
+  return `${head}: ${points.length} places${grouped}. ${named}${
+    rest > 0 ? `, +${rest} more` : ""
+  }`;
 }
 
 /**
@@ -254,8 +289,17 @@ export function geoMapAccessibleName(
  * platform that leaves them undefined.
  */
 function touchesOf(
-  event: { nativeEvent: { touches: readonly { locationX?: number; locationY?: number; pageX?: number; pageY?: number }[] } },
-  scale: number,
+  event: {
+    nativeEvent: {
+      touches: readonly {
+        locationX?: number;
+        locationY?: number;
+        pageX?: number;
+        pageY?: number;
+      }[];
+    };
+  },
+  scale: number
 ): GeoMapTouch[] {
   if (!(scale > 0)) return [];
   return event.nativeEvent.touches.map((t) => ({
@@ -289,20 +333,30 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
     // while the map has keyboard focus.
     const frame = useFocusFrame();
     const compact = !!props.compact;
+    const detailed = !!props.detailed;
     const formatValue = props.formatValue ?? formatCompact;
 
-    devWarn(points.length === 0, "[canvas] <GeoMap />: `points` is empty; the map renders with no bubbles.");
+    devWarn(
+      points.length === 0,
+      "[canvas] <GeoMap />: `points` is empty; the map renders with no bubbles."
+    );
     devWarn(
       points.length > MAX_POINTS,
-      `[canvas] <GeoMap />: more than ${MAX_POINTS} bubbles read as noise on a world map; aggregate by region.`,
+      `[canvas] <GeoMap />: more than ${MAX_POINTS} bubbles read as noise on a world map; aggregate by region.`
     );
     devWarn(
       points.some((p) => !Number.isFinite(p.count) || p.count < 0),
-      "[canvas] <GeoMap />: a point's `count` is negative or not a number; it is treated as 0 and drawn at the minimum radius.",
+      "[canvas] <GeoMap />: a point's `count` is negative or not a number; it is treated as 0 and drawn at the minimum radius."
     );
     devWarn(
-      points.some((p) => !Number.isFinite(p.lat) || !Number.isFinite(p.lng) || Math.abs(p.lat) > 90 || Math.abs(p.lng) > 180),
-      "[canvas] <GeoMap />: a point's coordinates are outside ±90 / ±180; latitude clamps at the poles and longitude wraps around the antimeridian.",
+      points.some(
+        (p) =>
+          !Number.isFinite(p.lat) ||
+          !Number.isFinite(p.lng) ||
+          Math.abs(p.lat) > 90 ||
+          Math.abs(p.lng) > 180
+      ),
+      "[canvas] <GeoMap />: a point's coordinates are outside ±90 / ±180; latitude clamps at the poles and longitude wraps around the antimeridian."
     );
 
     // The camera. Zoom is controllable because it is the one degree of freedom a
@@ -311,30 +365,57 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
     // nobody has asked for. Without `zoomable` the camera is the world verbatim,
     // so none of this can move.
     const zoomable = !!props.zoomable;
-    const [zoom, setZoom] = useControllableState<number>(props.zoom, props.defaultZoom ?? 1, props.onZoomChange);
+    const [zoom, setZoom] = useControllableState<number>(
+      props.zoom,
+      props.defaultZoom ?? 1,
+      props.onZoomChange
+    );
     const [offset, setOffset] = useState({ tx: 0, ty: 0 });
-    const camera = zoomable ? geoMapClampCamera({ k: zoom, tx: offset.tx, ty: offset.ty }) : WORLD_CAMERA;
+    const camera = zoomable
+      ? geoMapClampCamera({ k: zoom, tx: offset.tx, ty: offset.ty })
+      : WORLD_CAMERA;
 
     // The merge tree is built once per data set and cut per zoom LEVEL, so a
     // smooth zoom re-cuts at most MAX_ZOOM_LEVEL times rather than every frame.
     // Without `zoomable` there are no links at all, and the cut degenerates to one
     // cluster per point in input order: exactly the un-clustered map.
-    const links = useMemo(() => (zoomable ? geoMapLinkage(points) : NO_LINKS), [points, zoomable]);
-    const peak = useMemo(() => (zoomable ? geoMapPeak(points, links) : 0), [points, links, zoomable]);
+    const links = useMemo(
+      () => (zoomable && !detailed ? geoMapLinkage(points) : NO_LINKS),
+      [points, zoomable, detailed]
+    );
+    const peak = useMemo(
+      () => (zoomable ? geoMapPeak(points, links) : 0),
+      [points, links, zoomable]
+    );
     const level = geoZoomLevel(camera.k);
-    const clusters = useMemo(() => geoMapClusters(points, links, level), [points, links, level]);
+    const clusters = useMemo(
+      () => geoMapClusters(points, links, level),
+      [points, links, level]
+    );
 
     // Every bubble in viewBox units: the same space the land path is drawn in.
     // A non-zoomable map calls the very function it always called, so its geometry
     // is not merely equivalent but identical.
-    const placed = geoMapPlace(zoomable ? geoMapClusterBubbles(clusters, peak) : geoMapBubbles(points), camera);
+    const placed = geoMapPlace(
+      zoomable ? geoMapClusterBubbles(clusters, peak) : geoMapBubbles(points),
+      camera
+    );
 
     // Press-to-inspect: pressing a bubble flags its count and dims the rest.
-    const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
+    const [selected, setSelectedRaw] = useControllableState<number | null>(
+      props.selected,
+      props.defaultSelected ?? null,
+      props.onSelect
+    );
     const setSelected = (i: number | null) => {
       setSelectedRaw(i);
       const point = i != null ? points[i] : undefined;
-      if (point) announceSelection(`${point.label}: ${formatValue(Number.isFinite(point.count) ? point.count : 0)}`);
+      if (point)
+        announceSelection(
+          `${point.label}: ${formatValue(
+            Number.isFinite(point.count) ? point.count : 0
+          )}`
+        );
     };
     // `selected` stays a POINT index, so onSelect keeps its exact meaning; what is
     // DRAWN and dimmed is the cluster holding it.
@@ -364,7 +445,12 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
     // them compute from the same stale camera and collapse into a single step. The
     // re-seed is what keeps a CONTROLLED `zoom` authoritative: if the parent
     // declines the change, the next render puts its value back.
-    const live = useRef({ camera, scale: 0, measured: false, setCamera: (_: GeoMapCamera) => {} });
+    const live = useRef({
+      camera,
+      scale: 0,
+      measured: false,
+      setCamera: (_: GeoMapCamera) => {},
+    });
     live.current.camera = camera;
 
     // One way in for every zoom source: the controls, the keys, the assistive
@@ -383,7 +469,11 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
       const reached = geoZoomLevel(held.k);
       if (reached !== geoZoomLevel(from.k)) {
         announceSelection(
-          geoZoomAnnouncement(held.k, geoMapClusters(points, links, reached).length, points.length),
+          geoZoomAnnouncement(
+            held.k,
+            geoMapClusters(points, links, reached).length,
+            points.length
+          )
         );
       }
     };
@@ -395,8 +485,14 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
       const { camera: from, scale: px, measured: laid } = live.current;
       if (!laid || px <= 0) return false;
       // Anchored under the cursor: the place you point at is the place that stays.
-      const next = geoMapZoomAt(from, from.k * geoMapWheelFactor(g.deltaY), g.x / px, g.y / px);
-      if (next.k === from.k && next.tx === from.tx && next.ty === from.ty) return false;
+      const next = geoMapZoomAt(
+        from,
+        from.k * geoMapWheelFactor(g.deltaY),
+        g.x / px,
+        g.y / px
+      );
+      if (next.k === from.k && next.tx === from.tx && next.ty === from.ty)
+        return false;
       live.current.setCamera(next);
       return true;
     });
@@ -410,16 +506,28 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           // A two-finger start is never a tap, so claim it immediately. A ONE
           // finger drag is only claimed past the slop AND only above 1x, so at
           // world zoom every press still reaches the hit layer exactly as before.
-          onStartShouldSetPanResponderCapture: (e) => e.nativeEvent.touches.length >= 2,
+          onStartShouldSetPanResponderCapture: (e) =>
+            e.nativeEvent.touches.length >= 2,
           onMoveShouldSetPanResponderCapture: (e, state) =>
             e.nativeEvent.touches.length >= 2 ||
-            (live.current.camera.k > 1 && Math.hypot(state.dx, state.dy) > PAN_SLOP),
+            (live.current.camera.k > 1 &&
+              Math.hypot(state.dx, state.dy) > PAN_SLOP),
           onPanResponderGrant: (e) => {
-            const out = geoMapGestureEvent("grant", touchesOf(e, live.current.scale), gesture.current, live.current.camera);
+            const out = geoMapGestureEvent(
+              "grant",
+              touchesOf(e, live.current.scale),
+              gesture.current,
+              live.current.camera
+            );
             gesture.current = out.gesture;
           },
           onPanResponderMove: (e) => {
-            const out = geoMapGestureEvent("move", touchesOf(e, live.current.scale), gesture.current, live.current.camera);
+            const out = geoMapGestureEvent(
+              "move",
+              touchesOf(e, live.current.scale),
+              gesture.current,
+              live.current.camera
+            );
             gesture.current = out.gesture;
             live.current.setCamera(out.camera);
           },
@@ -432,10 +540,15 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           // Nothing may take a pinch away mid-gesture.
           onPanResponderTerminationRequest: () => false,
         }),
-      [],
+      []
     );
 
-    const name = geoMapAccessibleName(points, title, formatValue, zoomable ? clusters : undefined);
+    const name = geoMapAccessibleName(
+      points,
+      title,
+      formatValue,
+      zoomable ? clusters : undefined
+    );
 
     // The map is a fixed-aspect graphic: `aspectRatio` reserves the right box
     // on the very first frame (no layout jump), and the measured width then
@@ -461,7 +574,9 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
     // 4x-too-thick coastline on whichever platform disagreed.
     // Pulled out so the dependency array can be statically checked.
     // The hand-off's land is the raised surface (sf4) at .9 over the chart surface.
-    const landFill = alpha(tokens["surface-raised"] ?? tokens.muted, 0.9);
+    const landFill = detailed
+      ? tokens["surface-raised"] ?? tokens.muted
+      : alpha(tokens["surface-raised"] ?? tokens.muted, 0.9);
     const coastInk = tokens["muted-foreground"];
     const world = useMemo(
       () => (
@@ -472,7 +587,7 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           <Path
             d={WORLD_LAND_PATH}
             fill={landFill}
-            stroke={coastInk}
+            stroke={detailed ? "none" : coastInk}
             strokeWidth={COASTLINE_WIDTH / camera.k}
             strokeOpacity={COASTLINE_OPACITY}
             strokeLinejoin="round"
@@ -484,31 +599,48 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           <Path
             d={WORLD_BORDER_PATH}
             fill="none"
-            stroke={coastInk}
+            stroke={detailed ? tokens.card : coastInk}
             strokeWidth={BORDER_WIDTH / camera.k}
-            strokeOpacity={BORDER_OPACITY}
+            strokeOpacity={detailed ? 1 : BORDER_OPACITY}
             strokeLinejoin="round"
           />
         </>
       ),
-      [landFill, coastInk, camera.k],
+      [landFill, coastInk, camera.k, detailed, tokens.card]
     );
 
     return (
       <View
-        {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
+        {...(title != null && title !== ""
+          ? {
+              role: "group" as const,
+              accessibilityLabel: `${title} chart`,
+              "aria-label": `${title} chart`,
+            }
+          : {})}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
           CHART_ROOT,
           style,
           zoomable ? frame.ring() : null,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
+        {glass && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
+        ) : null}
         {title != null && title !== "" ? (
-          <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
+          <Text
+            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+          >
+            {title}
+          </Text>
         ) : null}
 
         <View
@@ -528,15 +660,26 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           {...(zoomable
             ? ({
                 focusable: true,
-                accessibilityActions: [{ name: "increment" }, { name: "decrement" }],
-                onAccessibilityAction: (event: { nativeEvent: { actionName: string } }) => {
-                  const factor = event.nativeEvent.actionName === "increment" ? ZOOM_STEP : 1 / ZOOM_STEP;
+                accessibilityActions: [
+                  { name: "increment" },
+                  { name: "decrement" },
+                ],
+                onAccessibilityAction: (event: {
+                  nativeEvent: { actionName: string };
+                }) => {
+                  const factor =
+                    event.nativeEvent.actionName === "increment"
+                      ? ZOOM_STEP
+                      : 1 / ZOOM_STEP;
                   setCamera(geoMapZoomBy(camera, factor));
                 },
                 // RNW forwards onKeyDown to the DOM node; RN's ViewProps does not
                 // declare it, and a phone has no key to press, so it is inert there.
                 // The slider.shared.tsx idiom.
-                onKeyDown: (event: { key: string; preventDefault: () => void }) => {
+                onKeyDown: (event: {
+                  key: string;
+                  preventDefault: () => void;
+                }) => {
                   const next = geoMapKeyCamera(camera, event.key);
                   // A key the map cannot act on is left for the page: an arrow at
                   // 1x must still scroll, and Tab must still move focus.
@@ -550,28 +693,89 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           // instead of the browser zooming the whole page. Kit-internal, and only
           // while the chart actually owns a gesture. The chart's surface draws the
           // focusable map's ring (see `frame` above), so the map drops the browser's own.
-          style={[{ width: "100%", aspectRatio: GEO_MAP_ASPECT }, zoomable ? [GESTURE_SURFACE, FOCUS_RESET] : null]}
+          style={[
+            { width: "100%", aspectRatio: GEO_MAP_ASPECT },
+            detailed
+              ? {
+                  borderWidth: 1,
+                  borderColor: tokens.border,
+                  borderRadius: platformShape.web.mapFrame,
+                  overflow: "hidden",
+                  backgroundColor:
+                    tokens["surface-sunken"] ?? tokens.background,
+                }
+              : null,
+            zoomable ? [GESTURE_SURFACE, FOCUS_RESET] : null,
+          ]}
         >
           {measured ? (
             <>
-              <Svg width={width} height={height} viewBox={`0 0 ${WORLD_VIEW_BOX.width} ${WORLD_VIEW_BOX.height}`}>
+              <Svg
+                width={detailed ? "100%" : width}
+                height={detailed ? "100%" : height}
+                style={detailed ? StyleSheet.absoluteFill : undefined}
+                viewBox={`0 0 ${WORLD_VIEW_BOX.width} ${WORLD_VIEW_BOX.height}`}
+              >
                 {/* Only the MAP is drawn through the camera. Bubbles are placed
                     by geoMapPlace and drawn outside this group, so their radii are
                     never scaled by the zoom and the area encoding is safe. */}
                 <G transform={geoMapMatrix(camera)}>{world}</G>
-                {clusters.map((c, i) => {
-                  const dim = selectedCluster != null && selectedCluster !== i ? DIM_OPACITY : 1;
+                {!detailed && clusters.map((c, i) => {
+                  const dim =
+                    !detailed &&
+                    selectedCluster != null &&
+                    selectedCluster !== i
+                      ? DIM_OPACITY
+                      : 1;
+                  const largest = Math.max(1, ...points.map((p) => p.count));
+                  const radius = detailed
+                    ? Math.round(
+                        8 +
+                          Math.sqrt(
+                            Math.max(0, points[c.lead]?.count ?? 0) / largest
+                          ) *
+                            30
+                      ) /
+                      2 /
+                      scale
+                    : placed[i].r;
                   return (
                     // The hand-off's point: the accent disc in a 4 px halo of its
                     // soft wash (.16), which also keeps overlapping bubbles separable.
                     <G key={points[c.lead]?.id ?? c.lead} opacity={dim}>
-                      <Circle cx={placed[i].x} cy={placed[i].y} r={placed[i].r + BUBBLE_RING_WIDTH} fill={alpha(tokens.primary, HALO_ALPHA)} />
-                      <Circle cx={placed[i].x} cy={placed[i].y} r={placed[i].r} fill={tokens.primary} />
+                      {detailed ? (
+                        <Circle
+                          cx={placed[i].x}
+                          cy={placed[i].y}
+                          r={radius}
+                          fill={tokens.primary}
+                          fillOpacity={0.32}
+                          stroke={tokens.primary}
+                          strokeWidth={1.5 / scale}
+                        />
+                      ) : (
+                        <>
+                          <Circle
+                            cx={placed[i].x}
+                            cy={placed[i].y}
+                            r={placed[i].r + BUBBLE_RING_WIDTH}
+                            fill={alpha(tokens.primary, HALO_ALPHA)}
+                          />
+                          <Circle
+                            cx={placed[i].x}
+                            cy={placed[i].y}
+                            r={placed[i].r}
+                            fill={tokens.primary}
+                          />
+                        </>
+                      )}
                     </G>
                   );
                 })}
                 {/* Selection ring, drawn over the bubbles. */}
-                {selectedCluster != null && placed[selectedCluster] ? (
+                {!detailed &&
+                selectedCluster != null &&
+                placed[selectedCluster] ? (
                   <Circle
                     cx={placed[selectedCluster].x}
                     cy={placed[selectedCluster].y}
@@ -585,13 +789,54 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
               {/* The value flag for the selection, in px over the Svg. Suppressed
                   once the selected bubble has been panned off screen, so the flag
                   never clamps to the plot edge and points at the wrong place. */}
-              {selectedCluster != null && placed[selectedCluster] && geoMapInView(placed[selectedCluster]) ? (
-                <ChartValueFlag
-                  title={geoClusterLabel(clusters[selectedCluster], points)}
-                  rows={geoClusterRows(clusters[selectedCluster], points, formatValue)}
-                  x={placed[selectedCluster].x * scale}
-                  plotW={width}
-                />
+              {selectedCluster != null &&
+              placed[selectedCluster] &&
+              geoMapInView(placed[selectedCluster]) ? (
+                detailed ? (
+                  <ChartInspectionSurface
+                    radius={platformShape.web.chartFlagDense}
+                    style={{
+                      position: "absolute",
+                      zIndex: 10,
+                      left: `${Math.round(placed[selectedCluster].x / WORLD_VIEW_BOX.width * 10000) / 100}%`,
+                      top: `${Math.round(placed[selectedCluster].y / WORLD_VIEW_BOX.height * 10000) / 100}%`,
+                      marginLeft: 16,
+                      marginTop: -14,
+                      paddingVertical: 6,
+                      paddingHorizontal: 9,
+                    }}
+                  >
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        fontFamily: MONO_FONT,
+                        fontSize: s.CHART_LOOK.legendCaptionSize,
+                        lineHeight: 15.95,
+                        fontWeight: "500",
+                        color: flagInk(tokens),
+                      }}
+                    >{`${geoClusterLabel(
+                      clusters[selectedCluster],
+                      points
+                    )} · ${formatValue(
+                      clusters[selectedCluster].members.reduce(
+                        (total, index) => total + points[index].count,
+                        0
+                      )
+                    )}`}</Text>
+                  </ChartInspectionSurface>
+                ) : (
+                  <ChartValueFlag
+                    title={geoClusterLabel(clusters[selectedCluster], points)}
+                    rows={geoClusterRows(
+                      clusters[selectedCluster],
+                      points,
+                      formatValue
+                    )}
+                    x={placed[selectedCluster].x * scale}
+                    plotW={width}
+                  />
+                )
               ) : null}
               {/* Empty hit layer: bubble index by press point (SVG touchables
                   leak responder props to the DOM on web, and the smallest
@@ -601,7 +846,7 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
                 // RNW gives every Pressable tabIndex 0 regardless of
                 // accessible={false}, so without this the map carries a second,
                 // nameless tab stop that announces nothing.
-                {...({ tabIndex: -1 } as object)}
+                {...Platform.select({ web: { focusable: false, tabIndex: -1 }, default: { focusable: true, tabIndex: 0 } })}
                 onPress={(e) => {
                   const point = pressPoint(e);
                   if (!point) return;
@@ -609,6 +854,12 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
                 }}
                 style={StyleSheet.absoluteFill}
               />
+              {detailed ? clusters.map((cluster, index) => {
+                const point = points[cluster.lead];
+                const max = Math.max(1, ...points.map(p => Number.isFinite(p.count) ? p.count : 0));
+                const diameter = Math.round(8 + Math.sqrt(Math.max(0, point.count) / max) * 30);
+                return <GeoPlaceMark key={point.id ?? cluster.lead} left={Math.round(placed[index].x / WORLD_VIEW_BOX.width * 10000) / 100} top={Math.round(placed[index].y / WORLD_VIEW_BOX.height * 10000) / 100} diameter={diameter} color={tokens.primary} label={`${point.label} · ${formatValue(point.count)}`} glow={alpha(tokens.primary, theme.dark ? 0.5 : 0.4)} onPress={() => pressCluster(index)} />;
+              }) : null}
             </>
           ) : null}
         </View>
@@ -621,12 +872,29 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           // The renderer's zoom control: zoom in over zoom out in one framed column at the
           // plot's corner, a hairline between them; the reset joins the column once the map
           // has moved off the world view.
-          <View style={[s.zoomBar, s.zoomStack(tokens)]}>
+          <GlassSurface floating={detailed}
+            style={[
+              s.zoomBar,
+              s.zoomStack(tokens),
+              detailed
+                ? {
+                    top: title ? 42 : 10,
+                    bottom: "auto",
+                    right: 10,
+                    borderRadius: platformShape.web.mapZoom,
+                    ...shadow("md", tokens),
+                  }
+                : null,
+            ]}
+          >
             <Button
               icon
               ghost
               small
-              disabled={camera.k >= MAX_ZOOM}
+              compactIcon={detailed}
+              wideIcon={detailed}
+              style={detailed ? { height: 30 } : undefined}
+              disabled={!detailed && camera.k >= MAX_ZOOM}
               accessibilityLabel="Zoom in"
               iconLeft={<Icon plus decorative size={14} />}
               onPress={() => setCamera(geoMapZoomBy(camera, ZOOM_STEP))}
@@ -636,7 +904,10 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
               icon
               ghost
               small
-              disabled={camera.k <= 1}
+              compactIcon={detailed}
+              wideIcon={detailed}
+              style={detailed ? { height: 30 } : undefined}
+              disabled={!detailed && camera.k <= 1}
               accessibilityLabel="Zoom out"
               iconLeft={<Icon minus decorative size={14} />}
               onPress={() => setCamera(geoMapZoomBy(camera, 1 / ZOOM_STEP))}
@@ -654,9 +925,16 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
                 />
               </>
             )}
-          </View>
+          </GlassSurface>
         ) : null}
       </View>
     );
   };
+}
+
+function GeoPlaceMark({ left, top, diameter, color, label, glow, onPress }: { left: number; top: number; diameter: number; color: string; label: string; glow: string; onPress: () => void }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const reduced = useReducedMotion();
+  const animate = (value: number) => { scale.stopAnimation(); if (reduced) { scale.setValue(1); return; } Animated.timing(scale, { toValue: value, duration: 400, easing: Easing.bezier(0.34, 1.56, 0.64, 1), useNativeDriver: supportsNativeDriver }).start(); };
+  return <Pressable testID={`geo-map-place-${label}`} accessible={false} {...Platform.select({ web: { focusable: false, tabIndex: -1 }, default: { focusable: true, tabIndex: 0 } })} onPress={onPress} onHoverIn={() => animate(1.18)} onHoverOut={() => animate(1)} style={{ position: "absolute", left: `${left}%`, top: `${top}%`, marginLeft: -diameter / 2, marginTop: -diameter / 2, width: diameter, height: diameter }} {...({ title: label } as object)}><Animated.View style={{ width: diameter, height: diameter, borderRadius: 9999, backgroundColor: alpha(color, 0.32), borderWidth: 1.5, borderColor: color, boxShadow: `0 0 18px ${glow}`, transform: [{ scale }] }} /></Pressable>;
 }

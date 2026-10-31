@@ -40,6 +40,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `compactsessions` | Compact sessions | [ ] | [ ] | [ ] |  |
 | `dualmovingaverages` | Dual moving averages | [ ] | [ ] | [ ] |  |
 | `presstoinspect` | Press to inspect | [ ] | [ ] | [ ] |  |
+| `legendcaption` | Legend caption | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

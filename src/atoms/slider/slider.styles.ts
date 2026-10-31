@@ -68,6 +68,11 @@ const IOS_KNOB: Record<Size, { w: number; h: number }> = {
   large: { w: 42, h: 27 },
 };
 
+// The `scale` labels (the Controls page's slider, `c-slider`: `font:400 11px var(--fm);
+// color:var(--tx3)`, its line JetBrains Mono's normal 14 px at 11), the same on every
+// platform: a scale is a meta line, not a platform control's text.
+const scaleType = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "400", color: t["subtle-foreground"] ?? t["muted-foreground"] });
+
 export const iosSkin: SliderSkin = {
   trackHeight: (size) => IOS_TRACK_H[size],
   thumbWidth: (size) => IOS_KNOB[size].w,
@@ -130,6 +135,7 @@ export const iosSkin: SliderSkin = {
   label: nativeLabel,
   description,
   value: nativeValue,
+  scale: scaleType,
 };
 
 // ----- Android (M3 Expressive): thick split track, 4x44dp bar handle -----
@@ -192,6 +198,7 @@ export const androidSkin: SliderSkin = {
   label: nativeLabel,
   description,
   value: nativeValue,
+  scale: scaleType,
 };
 
 // ----- Web: the thin glowing rail and the white thumb -----
@@ -244,4 +251,5 @@ export const webSkin: SliderSkin = {
   label: (t) => ({ fontWeight: "500", flexShrink: 1, color: t["muted-foreground"], ...WEB_TYPE }),
   description,
   value: (t) => ({ fontWeight: "500", fontFamily: MONO_FONT, color: t.foreground, ...WEB_TYPE }),
+  scale: scaleType,
 };

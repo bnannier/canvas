@@ -8,11 +8,8 @@ import { PLATFORM_COPY } from "./platform-copy";
 // kit components and the brand illustrations in docs/src/brand; test/docs-library.test.ts
 // holds it to the hand-off and to the kit's real exports.
 //
-// The headline is the owner's slogan, "Made of light." (2026-10-28), over the hand-off's
-// "Light as material.". Where the hand-off's copy says something Canvas does not do, the copy is Canvas's own:
-// the kit removed its spring motion on 2026-09-21 (CLAUDE.md "Motion"), so the hero
-// paragraph says "functional motion" and the fourth principle describes the motion that
-// stayed. Every count is read from the registries, never written in.
+// The v4 hand-off supplies both the words and the motion. Counts come from the live
+// registries, while the visual design and its typography follow the reference.
 //
 // Plain data with no React import, so the unit tests read it without a kit build.
 
@@ -23,7 +20,7 @@ export const LIBRARY_HERO = {
   /** The eyebrow after the version: "Canvas v4.0.0 · Component library". */
   eyebrow: (version: string) => `Canvas v${version} · Component library`,
   /** The headline's plain part, then its gradient word. The h1's accessible name is both. */
-  headline: { plain: "Made of", accent: "light." },
+  headline: { plain: "Light as", accent: "material." },
   /** Names the platforms, so it is per build (./platform-copy). */
   body: PLATFORM_COPY.heroBody,
   primary: { label: "Explore components", href: "/controls" },
@@ -63,23 +60,19 @@ export const PRINCIPLES: readonly Principle[] = [
   },
   {
     num: "04",
-    title: "Motion has a job",
-    body: "Spinners, shimmers, disclosures and sheets move; nothing decorates. Hover lifts run in the compositor, and Reduce Motion stills everything that is not essential.",
+    title: "Motion is a spring",
+    body: "Every press, toggle and slide runs on one spring curve, .34 / 1.56 / .64 / 1. Entrances rise 16px. Nothing fades in place. Reduced motion zeroes all of it.",
   },
 ];
 
-/**
- * The Index heading, its lead line and its paragraph (the mono package name is its own run).
- * The owner's copy (2026-10-28) over the hand-off's "Index" caption: the heading advertises
- * the kit's size, counted from the registry.
- */
+/** The hand-off's Index introduction; the count tracks the live kit. */
 export const INDEX_COPY = {
-  title: (count: number = COMPONENTS.length) => `${count} components`,
-  lead: PLATFORM_COPY.indexLead,
+  title: () => "Index",
+  lead: `All ${COMPONENTS.length} components, filed by the job they do.`,
   body: {
-    before: "Every one is in ",
+    before: "Every export of ",
     mono: "@nannier/canvas",
-    after: PLATFORM_COPY.indexAfter,
+    after: ", regrouped from atomic tiers into the rooms below. The tag is the tier it ships from in src today; every name jumps to the component, restyled.",
   },
 } as const;
 
@@ -102,11 +95,11 @@ export interface IndexColumn {
 /**
  * The Index: one column per section room, its components in the room's order, each tagged
  * with its tier. The hand-off numbers Surfaces & data and Charts both "06" (a typo in its
- * IDX table); the rooms here are numbered in order, 01 to 08.
+ * IDX table); that numbering is retained so the rendered index matches the source.
  */
 export const LIBRARY_INDEX: readonly IndexColumn[] = SECTION_ROOMS.map((room, index) => ({
   id: room.id as SectionId,
-  num: String(index + 1).padStart(2, "0"),
+  num: String(index >= 6 ? index : index + 1).padStart(2, "0"),
   title: room.title,
   href: room.href!,
   items: room.items.map((item) => {

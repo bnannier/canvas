@@ -3,6 +3,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { MENU_CHOICE } from "../../style/menu-choice-role.js";
 import { useHover } from "../../style/hover.js";
 import { useRef, useState, type ReactNode, type RefObject } from "react";
+import { GlassSurface } from "../../style/glass-surface/glass-surface.js";
 import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useRowFocus, type RowFocusProps } from "../../style/use-row-focus.js";
@@ -111,6 +112,14 @@ export interface DropdownProps {
   alignEnd?: boolean;
   /** Dimmed, inert trigger: the menu never opens and the press is a no-op. */
   disabled?: boolean;
+  /**
+   * Draw the menu open and in flow under the trigger instead of floating it over the
+   * page: a specimen of the menu for a docs page or an empty state. The trigger reads as
+   * expanded and the press is inert, a row still fires `onSelect`, and nothing dismisses
+   * the card, so `open` and `onOpenChange` have no effect. `alignEnd` lines the card up
+   * with the trigger's trailing edge, as it does for the floating card.
+   */
+  inline?: boolean;
   /** Controlled open state. Omit for uncontrolled (the trigger opens/closes it). */
   open?: boolean;
   /** Fired when the open state changes (trigger press, select, etc.). */
@@ -240,9 +249,10 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     const [internalOpen, setInternalOpen] = useState(false);
     // A disabled Dropdown is closed, full stop: the trigger is inert AND a
     // controlled `open` cannot force the menu out of a disabled control.
-    const open = !disabled && (openProp ?? internalOpen);
+    const inline = !!props.inline;
+    const open = inline || (!disabled && (openProp ?? internalOpen));
     const setOpen = (next: boolean) => {
-      if (disabled) return;
+      if (disabled || inline) return;
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
@@ -260,7 +270,8 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     const menuName = props.accessibilityLabel ?? title ?? description ?? label;
 
     // Escape dismisses the open menu via browser Escape or native accessibility escape.
-    const escapeScope = useEscapeLayer(open, () => setOpen(false));
+    // The inline specimen has nothing to dismiss, so it never claims the Escape key.
+    const escapeScope = useEscapeLayer(open && !inline, () => setOpen(false));
 
     // The WAI-ARIA menu pattern (src/style/use-row-focus.ts): the rows are one tab stop
     // the arrows, Home and End move among, Enter and Space activate the focused row,
@@ -378,13 +389,22 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     );
     if (external) return floatingMenu;
 
+    // The inline specimen: the card in flow, the skin's own standoff under the trigger, on
+    // the same dense layer and in the same shape as the floating card. The trigger's press
+    // goes through `setOpen`, which the specimen ignores.
+    const inlineMenu = (
+      <GlassSurface layer="dense" style={[panelShape, props.menuWidth == null ? { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) } : { width: props.menuWidth }]}>
+        {compact ? <OverlayScrollView style={props.maxHeight != null ? { maxHeight: props.maxHeight } : undefined} bounces={false}>{menuBody}</OverlayScrollView> : menuBody}
+      </GlassSurface>
+    );
+
     return (
       // self-start keeps the trigger from stretching; relative anchors the inline
-      // fallback menu.
+      // fallback menu. The specimen stacks the trigger over its card instead.
       <View
         ref={triggerRef}
         testID={testID}
-        style={[wrapper, open && !host ? wrapperLifted : null, hug, style]}
+        style={inline ? [{ gap: skin.menuGap, alignItems: alignEnd ? "flex-end" : "flex-start" }, hug, style] : [wrapper, open && !host ? wrapperLifted : null, hug, style]}
         onLayout={onTriggerLayout}
       >
         {children != null ? (
@@ -426,7 +446,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
           </Button>
         )}
 
-        {floatingMenu}
+        {inline ? inlineMenu : floatingMenu}
       </View>
     );
   };

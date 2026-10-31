@@ -52,6 +52,10 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `collapsible` | Collapsible | [ ] | [ ] | [ ] |  |
 | `tabs` | Tabs | [ ] | [ ] | [ ] |  |
 | `headerless` | Headerless | [ ] | [ ] | [ ] |  |
+| `unbadged` | Unbadged | [ ] | [ ] | [ ] |  |
+| `playgroundcard` | Playground card | [ ] | [ ] | [ ] |  |
+| `pagesnippet` | Page snippet | [ ] | [ ] | [ ] |  |
+| `guidesnippet` | Guide snippet | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

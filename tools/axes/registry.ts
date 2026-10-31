@@ -64,7 +64,7 @@ import { sizeOf as swatchSize, stretchesOf, paletteOf, formOf as swatchForm } fr
 import { sizeOf as switchSize } from "../../src/atoms/switch/switch.shared.tsx";
 import { sizeOf as textareaSize } from "../../src/atoms/textarea/textarea.shared.tsx";
 import { placementOf as tooltipPlacement, triggerOf } from "../../src/atoms/tooltip/tooltip.shared.tsx";
-import { roleOf, textAlignOf, toneOf as typographyTone, weightOf, leadingOf, decorationOf, numeralsOf } from "../../src/atoms/typography/typography.shared.tsx";
+import { roleOf, textAlignOf, toneOf as typographyTone, weightOf, leadingOf, decorationOf, numeralsOf, slantOf } from "../../src/atoms/typography/typography.shared.tsx";
 import { fitOf as videoFit } from "../../src/atoms/video/video.shared.tsx";
 import { toneOf as actionPanelTone, layoutOf as actionPanelLayout } from "../../src/molecules/action-panels/action-panels.shared.tsx";
 import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx";
@@ -232,7 +232,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     resolve: badgeStatus,
     notes: ["Applies only with `status`.", "Spells the danger tone `error`, where Alert, Toast and Chip spell it `destructive`."],
   }),
-  subject({ id: "BadgeGroup.gap", components: ["BadgeGroup"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeGapOf", members: ["cozy", "snug", "tight"], resolve: badgeGapOf }),
+  subject({ id: "BadgeGroup.gap", components: ["BadgeGroup"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeGapOf", members: ["cozy", "snug", "compact", "tight"], resolve: badgeGapOf }),
   subject({ id: "Breadcrumb.separator", components: ["Breadcrumb"], pages: ["breadcrumb"], resolver: "src/atoms/breadcrumb/breadcrumb.shared.tsx#separatorOf", members: ["chevron", "slash", "dot"], resolve: separatorOf }),
   subject({
     id: "Button.intent",
@@ -246,7 +246,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Button.iconBox", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.shared.tsx#iconBoxOf", members: ["compactIcon", "mediumIcon", "largeIcon"], resolve: iconBoxOf }),
   subject({ id: "GlassSurface.frost", components: ["GlassSurface"], pages: ["glass"], resolver: "src/style/glass-surface/material-resolution.ts#frostedKindOf", members: ["veil", "frosted"], resolve: frostedKindOf }),
   subject({ id: "Button.size", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.shared.tsx#sizeOf", members: SIZES, resolve: buttonSize }),
-  subject({ id: "ButtonGroup.kind", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#kindOf", members: ["segmented", "split", "stepper", "spaced"], resolve: kindOf }),
+  subject({ id: "ButtonGroup.kind", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#kindOf", members: ["segmented", "split", "stepper", "spaced", "attached"], resolve: kindOf }),
   subject({ id: "ButtonGroup.size", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#sizeOf", members: SIZES, resolve: buttonGroupSize }),
   subject({ id: "ButtonGroup.density", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#densityOf", members: ["compact"], resolve: buttonGroupDensity, notes: ["The segmented kind's attached segments on the web; the other kinds and the native skins keep their one density."] }),
   subject({
@@ -411,6 +411,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Typography.weight", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#weightOf", members: ["extraBold", "bold", "semibold", "medium", "regular"], resolve: weightOf }),
   subject({ id: "Typography.leading", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#leadingOf", members: ["displayLeading", "singleLeading", "lockupLeading", "denseLeading", "compactLeading", "labelLeading", "captionLeading", "smallLeading", "strongLeading", "bodyLeading", "relaxedLeading", "natural", "tightLeading"], resolve: leadingOf }),
   subject({ id: "Typography.decoration", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#decorationOf", members: ["underline"], resolve: decorationOf }),
+  subject({ id: "Typography.slant", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#slantOf", members: ["italic"], resolve: slantOf }),
   subject({ id: "Typography.numerals", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#numeralsOf", members: ["tabular"], resolve: numeralsOf }),
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
 
@@ -511,7 +512,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Calendar.view", components: ["Calendar"], pages: ["calendar"], resolver: "src/organisms/calendar/calendar.shared.tsx#viewOf", members: ["day", "week"], resolve: viewOf }),
   subject({ id: "DataTable.density", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#densityOf", members: ["compact", "comfortable"], resolve: dataTableDensity }),
   subject({ id: "DataTable.column align", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#columnAlignOf", members: ["numeric", "centered"], resolve: columnAlignOf }),
-  subject({ id: "DataTable.look", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#lookOf", members: ["reference", "bare"], resolve: dataTableLook, notes: ["Where the platform skin draws no reference sheet (iOS), the table keeps its own look."] }),
+  subject({ id: "DataTable.look", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#lookOf", members: ["reference", "bare", "matrix"], resolve: dataTableLook, notes: ["Where the platform skin draws no reference sheet (iOS), the table keeps its own look."] }),
   subject({ id: "DataTable.row align", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#rowAlignOf", members: ["alignTop"], resolve: rowAlignOf, notes: ["A `stacks` table holds its cells at the top once stacked, whatever this says."] }),
   subject({ id: "Dialog.size", components: ["Dialog"], pages: ["dialog"], resolver: "src/organisms/dialog/dialog.shared.tsx#sizeOf", members: ["xs", "small", "medium", "large", "wide"], resolve: dialogSize }),
   subject({ id: "Drawer.edge", components: ["Drawer"], pages: ["drawer"], resolver: "src/organisms/drawer/drawer.shared.tsx#edgeOf", members: ["right", "bottom", "top", "left"], resolve: edgeOf }),

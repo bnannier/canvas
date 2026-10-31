@@ -1,3 +1,4 @@
+import { SectionVignette } from "../ui/showcase/section-vignette";
 import type { ReactNode } from "react";
 import {
   Badge,
@@ -31,7 +32,7 @@ import { oklchHex } from "../../../src/style/color.js";
 import { statusColors } from "../../../src/style/status.js";
 import { primaryText } from "../../../src/style/primary-text.js";
 import { NAMES as GLYPHS } from "../../../src/atoms/icon/icon.glyphs.js";
-import { GlassWell, RadiusSample, ShowcaseCard, ShowcaseGrid, SpecimenRows, VignetteStage } from "../ui/showcase";
+import { GlassWell, RadiusSample, ShowcaseCard, ShowcaseGrid, SpecimenRows } from "../ui/showcase";
 
 // The Foundations section page (`Canvas v4.0.0 Foundations.dc.html`): its hero vignette and
 // its eight cards. Every value a card prints is read from the kit's own tables (the tokens,
@@ -49,30 +50,9 @@ function Meta({ children }: { children: ReactNode }) {
   return <Typography sampleMeta mono muted>{children}</Typography>;
 }
 
-/** Each palette's accent in the active scheme. */
-function useAccents() {
-  const { scheme } = useTheme();
-  return PALETTES.map((palette) => ({ palette, hue: paletteHue[palette], color: colorsFor(palette, scheme).primary }));
-}
-
-/** The hero's still frame: the display face beside the five accent hues. */
+/** The animated hero: the display face beside the five accent hues. */
 export function Vignette() {
-  const accents = useAccents();
-  return (
-    <VignetteStage>
-      <Row wrap loose alignCenter center>
-        <Typography display accessibilityRole="text">Aa</Typography>
-        <Column relaxed>
-          <Row snug>
-            {accents.map((accent) => (
-              <Swatch key={accent.palette} circle small color={accent.color} accessibilityLabel={`${accent.palette} accent`} />
-            ))}
-          </Row>
-          <Typography eyebrow subtle>wght 300 → 800 · one hue · one spring</Typography>
-        </Column>
-      </Row>
-    </VignetteStage>
-  );
+  return <SectionVignette kind="foundations" />;
 }
 
 /** Color · Ion spectrum: the five accent hues, the status fills and washes, the chart series. */

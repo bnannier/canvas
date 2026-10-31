@@ -5,6 +5,8 @@ import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, legibleWash, withInnerFill } from "../../style/index.js";
 import { contrastStyle } from "../../style/glass-surface/glass-surface.shared.js";
+import { InkProvider } from "../../style/ink.js";
+import { primaryText } from "../../style/primary-text.js";
 import { useHover } from "../../style/hover.js";
 import { Icon } from "../icon/icon.js";
 import { useRadioGroup } from "./radio-context.js";
@@ -69,6 +71,20 @@ export interface RadioProps {
    * inside a `<RadioGroup>`.
    */
   card?: boolean;
+  /**
+   * A trailing detail on the title's line (a version, a price, a status pill): a string
+   * is set in the small mono meta type in the subtle ink, a node (a `Badge`) as it is.
+   * The title takes the row, so in a full-width option the detail sits at its end; in a
+   * `row` group's hugging option it follows the title.
+   */
+  meta?: ReactNode;
+  /**
+   * A `card` tile's icon (a kit `Icon` with no tone of its own): the tile stacks the icon
+   * and the mark on one line above the title and description. The icon takes the accent
+   * text ink while the option is chosen and the subtle ink otherwise. Ignored without
+   * `card`.
+   */
+  icon?: ReactNode;
   // Size (pick one; default is the 18px control on the web).
   small?: boolean;
   large?: boolean;
@@ -127,6 +143,8 @@ export interface RadioSkin {
   label: (tokens: ColorTokens, size: Size, disabled: boolean) => TextStyle;
   /** The muted secondary description line, rendered under the label when present. */
   description: (tokens: ColorTokens, size: Size, disabled: boolean) => TextStyle;
+  /** A string `meta`'s type: the small mono meta line in the subtle ink. */
+  meta: (tokens: ColorTokens) => TextStyle;
   /**
    * The `card` mode chrome: the whole control wrapped as a selectable Card surface
    * (bordered + padded, per-OS radius/curve), derived from the kit Card skin. When
@@ -168,12 +186,26 @@ const CHECK_HIDDEN: ViewStyle = { opacity: 0 };
 // the row instead of forcing the row wider.
 const TEXT_COLUMN: ViewStyle = { flexShrink: 1, minWidth: 0 };
 
+// A title with a trailing `meta`: the title takes the line's free width (so a full-width
+// option ends with the detail) and the detail centres on it, 8 after.
+const TITLE_LINE: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
+const TITLE_GROWS: TextStyle = { flexGrow: 1, flexShrink: 1 };
+const META_CELL: ViewStyle = { flexShrink: 0 };
+
+// A `card` tile with an `icon`: the icon and the mark share the top line at its ends, the
+// title and description under them (the Controls page's plan tiles, `c-radio`:
+// `display:flex;flex-direction:column;gap:14px` around a `justify-content:space-between`
+// head row).
+const STACKED_TILE: ViewStyle = { flexDirection: "column", alignItems: "stretch", gap: 14 };
+const TILE_HEAD: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between" };
+
 /** Build a Radio component from a platform skin.
  * @ref Ref to the interactive radio row, preserving group navigation. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
  */
 export function createRadio(skin: RadioSkin) {
   const Radio = forwardRef<View, RadioProps>(function Radio(props, ref) {
-    const { checked, selected, onChange, children, description, card, style } = props;
+    const { checked, selected, onChange, children, description, card, meta, style } = props;
+    const tileIcon = card ? props.icon : undefined;
     const size = sizeOf(props);
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
@@ -182,7 +214,7 @@ export function createRadio(skin: RadioSkin) {
     // decision), and takes the contrasting border under Increase Contrast. A card-mode radio
     // is a CONTENT-layer pane like a selectable Card, tinted while checked.
     // Whether the control carries any text at all (title and/or description).
-    const hasText = children != null || description != null;
+    const hasText = children != null || description != null || meta != null;
 
     // Inside a RadioGroup the group owns selection: this radio reads checked from
     // the group matching its `value`, and pressing it tells the group to select
@@ -229,8 +261,15 @@ export function createRadio(skin: RadioSkin) {
       ? { focusable: roving.focusable, tabIndex: roving.tabIndex }
       : {};
 
-    const rowBox = [mark.kind === "check" ? CHECK_ROW : ROW, { gap: skin.rowGap }, cell ? cell.cell : null];
+    const rowBox = [mark.kind === "check" ? CHECK_ROW : ROW, { gap: skin.rowGap }, cell ? cell.cell : null, tileIcon != null ? STACKED_TILE : null];
     const glyph = mark.kind === "check" ? mark.glyph(tokens, size) : null;
+    // The ring, before the text (or at the end of a stacked tile's head). A stacked tile's
+    // ring needs no nudge: it centres on the head line, not on the title.
+    const ringMark = mark.kind === "ring" ? (
+      <View style={[contrastStyle(theme, mark.ring(tokens, size, isChecked, hasText && tileIcon == null)), hovered && !isChecked && mark.hover ? mark.hover(tokens) : null]}>
+        {isChecked && mark.dot ? <View style={mark.dot(tokens, size)} /> : null}
+      </View>
+    ) : null;
     const control = (
       <Pressable
         ref={hostRef}
@@ -257,7 +296,7 @@ export function createRadio(skin: RadioSkin) {
           // Card mode: the pressable IS the card surface (border, radius, fill, padding),
           // its whole box handed to paneStyle so a resting border becomes padding under glass
           // and a checked card's primary border stays, a state border over its pane.
-          cardChrome ? paneStyle(theme, [rowBox, cardChrome], isChecked) : rowBox,
+          cardChrome ? paneStyle(theme, [rowBox, cardChrome, tileIcon != null ? STACKED_TILE : null], isChecked) : rowBox,
           disabled ? { opacity: skin.disabledOpacity } : null,
           // A list row highlights while pressed (the iOS cell highlight, an ink tint over
           // glass); anywhere else the skin's own dim.
@@ -269,16 +308,23 @@ export function createRadio(skin: RadioSkin) {
         ]}
       >
         {cardChrome ? <GlassPane layer="content" shape={cardChrome} stateBorder={isChecked} tint={isChecked ? legibleWash(theme, "selection", { layer: "content" }) : undefined} /> : null}
-        {mark.kind === "ring" ? (
-          <View style={[contrastStyle(theme, mark.ring(tokens, size, isChecked, hasText)), hovered && !isChecked && mark.hover ? mark.hover(tokens) : null]}>
-            {isChecked && mark.dot ? <View style={mark.dot(tokens, size)} /> : null}
+        {tileIcon != null ? (
+          // The stacked tile's head: its icon in the option's ink, the mark at the end.
+          <View style={TILE_HEAD}>
+            <InkProvider ink={isChecked ? primaryText(tokens) : tokens["subtle-foreground"] ?? tokens["muted-foreground"]}>{tileIcon}</InkProvider>
+            {ringMark}
           </View>
-        ) : null}
+        ) : ringMark}
         {hasText ? (
-          description != null ? (
-            <View style={[TEXT_COLUMN, mark.kind === "check" ? CHECK_TEXT : null]}>
-              {children != null ? <Text style={skin.label(tokens, size, !!disabled)}>{children}</Text> : null}
-              <Text style={skin.description(tokens, size, !!disabled)}>{description}</Text>
+          description != null || meta != null ? (
+            <View style={[TEXT_COLUMN, mark.kind === "check" || meta != null ? CHECK_TEXT : null]}>
+              {meta != null ? (
+                <View style={TITLE_LINE}>
+                  {children != null ? <Text style={[skin.label(tokens, size, !!disabled), TITLE_GROWS]}>{children}</Text> : null}
+                  <View style={META_CELL}>{typeof meta === "string" || typeof meta === "number" ? <Text style={skin.meta(tokens)}>{meta}</Text> : meta}</View>
+                </View>
+              ) : children != null ? <Text style={skin.label(tokens, size, !!disabled)}>{children}</Text> : null}
+              {description != null ? <Text style={skin.description(tokens, size, !!disabled)}>{description}</Text> : null}
             </View>
           ) : (
             <Text style={[skin.label(tokens, size, !!disabled), mark.kind === "check" ? CHECK_TEXT : null]}>{children}</Text>

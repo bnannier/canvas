@@ -1,12 +1,41 @@
+import { useState } from "react";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { G, Line, Path, Rect } from "react-native-svg";
-import { View, Text, useControllableState, alpha, devWarn, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import {
+  View,
+  Text,
+  useControllableState,
+  alpha,
+  devWarn,
+  type ColorTokens,
+  type LayoutStyle,
+  GlassPane,
+  paneStyle,
+  isGlass,
+} from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
-import { CartesianFrame, CHART_ROOT, type CartesianLayout } from "../shared/chart-frame.js";
+import {
+  CartesianFrame,
+  CHART_ROOT,
+  type CartesianLayout,
+} from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
-import { ChartValueFlag, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
-import { DENSE_SERIES, formatCompact, linePath, linearScale } from "../shared/chart-math.js";
+import {
+  ChartValueFlag,
+  announceSelection,
+  DIM_OPACITY,
+} from "../shared/chart-inspect.js";
+import {
+  DENSE_SERIES,
+  formatCompact,
+  linePath,
+  linearScale,
+} from "../shared/chart-math.js";
+import {
+  PresentationFlag,
+  useChartPresentation,
+} from "../shared/chart-presentation.js";
 import { platformShape } from "../../style/platform-shape.js";
 
 // CandlestickChart: the trading instrument view. OHLC candles (a body between
@@ -67,7 +96,8 @@ export interface CandlestickChartProps {
 const PLOT_HEIGHT = { default: 220, compact: 150 } as const;
 const VOLUME_PANE = { default: 40, compact: 26 } as const;
 
-const num = (v: number | undefined): number => (Number.isFinite(v) ? (v as number) : 0);
+const num = (v: number | undefined): number =>
+  Number.isFinite(v) ? (v as number) : 0;
 
 function candleColor(tokens: ColorTokens, c: Candle): string {
   return c.close >= c.open ? tokens.success : tokens.destructive;
@@ -76,41 +106,69 @@ function candleColor(tokens: ColorTokens, c: Candle): string {
 /** Build a CandlestickChart from a platform skin. */
 export function createCandlestickChart(skin: ChartSkin) {
   return function CandlestickChart(props: CandlestickChartProps) {
-    const { labels, candles, volume, overlays = [], title, testID, style } = props;
+    const {
+      labels,
+      candles,
+      volume,
+      overlays = [],
+      title,
+      testID,
+      style,
+    } = props;
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
+    const presentation = useChartPresentation();
+    const specimen = presentation?.kind === "candlestick";
+    const [inspected, setInspected] = useState(false);
     const formatValue = props.formatValue ?? formatCompact;
     // Overlays take the ramp from its second step: the first is the accent the candles'
     // status pair stands beside, so a moving average reads as its own line.
-    const overlayColor = (sr: ChartSeries, i: number): string => s.seriesColor(tokens, sr, i + 1);
+    const overlayColor = (sr: ChartSeries, i: number): string =>
+      s.seriesColor(tokens, sr, i + 1);
 
-    devWarn(candles.length === 0, "[canvas] <CandlestickChart />: `candles` is empty; the chart renders with no candles.");
+    devWarn(
+      candles.length === 0,
+      "[canvas] <CandlestickChart />: `candles` is empty; the chart renders with no candles."
+    );
     devWarn(
       candles.length !== labels.length,
-      "[canvas] <CandlestickChart />: `candles` length differs from `labels`; extra entries are ignored.",
+      "[canvas] <CandlestickChart />: `candles` length differs from `labels`; extra entries are ignored."
     );
     devWarn(
       volume != null && volume.length !== labels.length,
-      "[canvas] <CandlestickChart />: `volume` length differs from `labels`; missing values are treated as 0.",
+      "[canvas] <CandlestickChart />: `volume` length differs from `labels`; missing values are treated as 0."
     );
     devWarn(
       overlays.some((sr) => sr.values.length !== labels.length),
-      "[canvas] <CandlestickChart />: an overlay's `values` length differs from `labels`; missing values are treated as 0.",
+      "[canvas] <CandlestickChart />: an overlay's `values` length differs from `labels`; missing values are treated as 0."
     );
     // Price extent from lows/highs plus any overlays; never forced through 0.
     const count = Math.min(labels.length, candles.length);
     const lows = candles.slice(0, count).map((c) => num(c.low));
     const highs = candles.slice(0, count).map((c) => num(c.high));
-    const overlayValues = overlays.flatMap((sr) => labels.map((_, i) => num(sr.values[i])));
-    const dataMin = Math.min(...(lows.length ? lows : [0]), ...(overlayValues.length ? overlayValues : [Infinity]));
-    const dataMax = Math.max(...(highs.length ? highs : [1]), ...(overlayValues.length ? overlayValues : [-Infinity]));
-    const yExtent: [number, number] = [props.min ?? dataMin, props.max ?? dataMax];
+    const overlayValues = overlays.flatMap((sr) =>
+      labels.map((_, i) => num(sr.values[i]))
+    );
+    const dataMin = Math.min(
+      ...(lows.length ? lows : [0]),
+      ...(overlayValues.length ? overlayValues : [Infinity])
+    );
+    const dataMax = Math.max(
+      ...(highs.length ? highs : [1]),
+      ...(overlayValues.length ? overlayValues : [-Infinity])
+    );
+    const yExtent: [number, number] = [
+      props.min ?? dataMin,
+      props.max ?? dataMax,
+    ];
 
     const maxVolume = Math.max(1, ...(volume ?? []).map(num));
-    const volumePane = volume ? VOLUME_PANE[compact ? "compact" : "default"] : 0;
+    const volumePane = volume
+      ? VOLUME_PANE[compact ? "compact" : "default"]
+      : 0;
 
     // The accessible name carries every candle's OHLC (and volume), per the
     // chart a11y contract. A dense chart summarizes the period instead: listing
@@ -119,27 +177,46 @@ export function createCandlestickChart(skin: ChartSkin) {
     let name: string;
     if (count > DENSE_SERIES) {
       const closes = candles.slice(0, count).map((c) => num(c.close));
-      name = `${title ?? "Candlestick chart"}: ${count} periods from ${labels[0]} to ${labels[count - 1]}, open ${formatValue(num(candles[0].open))}, close ${formatValue(closes[count - 1])}, low ${formatValue(Math.min(...lows))}, high ${formatValue(Math.max(...highs))}`;
+      name = `${title ?? "Candlestick chart"}: ${count} periods from ${
+        labels[0]
+      } to ${labels[count - 1]}, open ${formatValue(
+        num(candles[0].open)
+      )}, close ${formatValue(closes[count - 1])}, low ${formatValue(
+        Math.min(...lows)
+      )}, high ${formatValue(Math.max(...highs))}`;
     } else {
       name = labels
         .slice(0, count)
         .map((l, i) => {
           const c = candles[i];
           const vol = volume ? `, volume ${formatValue(num(volume[i]))}` : "";
-          return `${l} open ${formatValue(num(c.open))}, high ${formatValue(num(c.high))}, low ${formatValue(num(c.low))}, close ${formatValue(num(c.close))}${vol}`;
+          return `${l} open ${formatValue(num(c.open))}, high ${formatValue(
+            num(c.high)
+          )}, low ${formatValue(num(c.low))}, close ${formatValue(
+            num(c.close)
+          )}${vol}`;
         })
         .join("; ");
     }
 
     // Scrub-to-inspect selection; announcements mirror the flag.
-    const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
+    const [selected, setSelectedRaw] = useControllableState<number | null>(
+      props.selected,
+      props.defaultSelected ?? null,
+      props.onSelect
+    );
     const setSelected = (i: number | null) => {
+      setInspected(true);
       if (i === selected) return;
       setSelectedRaw(i);
       if (i != null && i < count) {
         const c = candles[i];
         announceSelection(
-          `${labels[i]}: open ${formatValue(num(c.open))}, high ${formatValue(num(c.high))}, low ${formatValue(num(c.low))}, close ${formatValue(num(c.close))}`,
+          `${labels[i]}: open ${formatValue(num(c.open))}, high ${formatValue(
+            num(c.high)
+          )}, low ${formatValue(num(c.low))}, close ${formatValue(
+            num(c.close)
+          )}`
         );
       }
     };
@@ -147,14 +224,18 @@ export function createCandlestickChart(skin: ChartSkin) {
     const marks = (layout: CartesianLayout) => {
       const band = layout.band!;
       // The hand-off's body: 10 units of a 29.5-unit step (0.34), at least 2 tall.
-      const bodyW = Math.max(3, Math.min(14, band.step * 0.34));
+      const bodyW = specimen
+        ? (layout.plotW / 320) * 10
+        : Math.max(3, Math.min(14, band.step * 0.34));
       const volY = linearScale(0, maxVolume, 0, Math.max(0, volumePane - 6));
       return (
         <>
           {/* Volume pane, docked under the price region. */}
           {volume
             ? labels.slice(0, count).map((_, i) => {
-                const h = Math.max(1, volY(num(volume[i])));
+                const h = specimen
+                  ? (num(volume[i]) * layout.plotH) / 150
+                  : Math.max(1, volY(num(volume[i])));
                 return (
                   <Rect
                     key={`v${i}`}
@@ -162,8 +243,21 @@ export function createCandlestickChart(skin: ChartSkin) {
                     y={layout.plotH - h}
                     width={bodyW}
                     height={h}
-                    fill={alpha(tokens["subtle-foreground"] ?? tokens["muted-foreground"], 0.35)}
-                    opacity={selected != null && selected !== i ? DIM_OPACITY : 1}
+                    fill={
+                      specimen
+                        ? candleColor(tokens, candles[i])
+                        : alpha(
+                            tokens["subtle-foreground"] ??
+                              tokens["muted-foreground"],
+                            0.35
+                          )
+                    }
+                    fillOpacity={specimen ? 0.4 : undefined}
+                    opacity={
+                      !specimen && selected != null && selected !== i
+                        ? DIM_OPACITY
+                        : 1
+                    }
                   />
                 );
               })
@@ -174,11 +268,27 @@ export function createCandlestickChart(skin: ChartSkin) {
             const cx = band.center(i);
             const yTop = layout.y(Math.max(num(c.open), num(c.close)));
             const yBottom = layout.y(Math.min(num(c.open), num(c.close)));
-            const dim = selected != null && selected !== i ? DIM_OPACITY : 1;
+            const dim =
+              !specimen && selected != null && selected !== i ? DIM_OPACITY : 1;
             return (
               <G key={`c${i}`} opacity={dim}>
-                <Line x1={cx} y1={layout.y(num(c.high))} x2={cx} y2={layout.y(num(c.low))} stroke={color} strokeWidth={1} />
-                <Rect x={cx - bodyW / 2} y={yTop} width={bodyW} height={Math.max(2, yBottom - yTop)} fill={color} rx={platformShape.web.candle} />
+                <Line
+                  x1={cx}
+                  y1={layout.y(num(c.high))}
+                  x2={cx}
+                  y2={layout.y(num(c.low))}
+                  stroke={color}
+                  strokeWidth={specimen ? 1.4 : 1}
+                />
+                <Rect
+                  x={cx - bodyW / 2}
+                  y={yTop}
+                  width={bodyW}
+                  height={Math.max(2, yBottom - yTop)}
+                  fill={color}
+                  rx={specimen ? platformShape.web.candleShowcase * (layout.plotW / 320) : platformShape.web.candle}
+                  ry={specimen ? platformShape.web.candleShowcase * (layout.plotH / 150) : platformShape.web.candle}
+                />
               </G>
             );
           })}
@@ -186,9 +296,16 @@ export function createCandlestickChart(skin: ChartSkin) {
           {overlays.map((sr, i) => (
             <Path
               key={`o${sr.id ?? i}`}
-              d={linePath(labels.slice(0, count).map((_, j) => ({ x: band.center(j), y: layout.y(num(sr.values[j])) })))}
+              d={linePath(
+                labels
+                  .slice(0, count)
+                  .map((_, j) => ({
+                    x: band.center(j),
+                    y: layout.y(num(sr.values[j])),
+                  }))
+              )}
               stroke={overlayColor(sr, i)}
-              strokeWidth={1.5}
+              strokeWidth={specimen ? 1.8 : 1.5}
               strokeDasharray={sr.dashed ? s.CHART_LOOK.seriesDash : undefined}
               fill="none"
               strokeLinejoin="round"
@@ -200,21 +317,44 @@ export function createCandlestickChart(skin: ChartSkin) {
 
     return (
       <View
-        {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
+        {...(title != null && title !== ""
+          ? {
+              role: "group" as const,
+              accessibilityLabel: `${title} chart`,
+              "aria-label": `${title} chart`,
+            }
+          : {})}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
+        {glass && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
+        ) : null}
         {title != null && title !== "" ? (
-          <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
+          <Text
+            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+          >
+            {title}
+          </Text>
         ) : null}
 
-        <View accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name}>
+        <View
+          accessible
+          accessibilityRole="image"
+          role="img"
+          accessibilityLabel={name}
+          aria-label={name}
+        >
           <CartesianFrame
             yExtent={yExtent}
             xLabels={labels.slice(0, count)}
@@ -229,16 +369,62 @@ export function createCandlestickChart(skin: ChartSkin) {
             overlay={(layout) =>
               selected != null && selected < count && layout.band ? (
                 // The section card's readout: open and high, low and close, then the volume.
-                <ChartValueFlag
-                  title={props.hideAxes ? labels[selected] : undefined}
-                  rows={[
-                    { label: "O", value: `${formatValue(num(candles[selected].open))} · H ${formatValue(num(candles[selected].high))}` },
-                    { label: "L", value: `${formatValue(num(candles[selected].low))} · C ${formatValue(num(candles[selected].close))}` },
-                    ...(volume ? [{ label: "vol", value: formatCompact(num(volume[selected])) }] : []),
-                  ]}
-                  x={layout.band.center(selected)}
-                  plotW={layout.plotW}
-                />
+                specimen ? (
+                  <PresentationFlag
+                    lines={
+                      !inspected && presentation?.annotation?.index === selected
+                        ? presentation.annotation.lines
+                        : [
+                            `O ${formatValue(
+                              num(candles[selected].open)
+                            )} · H ${formatValue(num(candles[selected].high))}`,
+                            `L ${formatValue(
+                              num(candles[selected].low)
+                            )} · C ${formatValue(
+                              num(candles[selected].close)
+                            )}`,
+                            `vol ${formatCompact(num(volume?.[selected]))}`,
+                          ]
+                    }
+                    x={layout.band.center(selected)}
+                    y={4}
+                    before
+                    gap={12}
+                    radius={platformShape.web.chartFlagDense}
+                    padH={9}
+                    padV={7}
+                    lineHeight={16.5}
+                    mutedLast
+                  />
+                ) : (
+                  <ChartValueFlag
+                    title={props.hideAxes ? labels[selected] : undefined}
+                    rows={[
+                      {
+                        label: "O",
+                        value: `${formatValue(
+                          num(candles[selected].open)
+                        )} · H ${formatValue(num(candles[selected].high))}`,
+                      },
+                      {
+                        label: "L",
+                        value: `${formatValue(
+                          num(candles[selected].low)
+                        )} · C ${formatValue(num(candles[selected].close))}`,
+                      },
+                      ...(volume
+                        ? [
+                            {
+                              label: "vol",
+                              value: formatCompact(num(volume[selected])),
+                            },
+                          ]
+                        : []),
+                    ]}
+                    x={layout.band.center(selected)}
+                    plotW={layout.plotW}
+                  />
+                )
               ) : null
             }
           >
@@ -254,7 +440,12 @@ export function createCandlestickChart(skin: ChartSkin) {
             items={[
               { label: "Up", color: tokens.success },
               { label: "Down", color: tokens.destructive },
-              ...overlays.map((sr, i) => ({ label: sr.label, color: overlayColor(sr, i), line: true, dashed: sr.dashed })),
+              ...overlays.map((sr, i) => ({
+                label: sr.label,
+                color: overlayColor(sr, i),
+                line: true,
+                dashed: sr.dashed,
+              })),
             ]}
           />
         ) : null}

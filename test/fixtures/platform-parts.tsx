@@ -5,7 +5,7 @@
 import { Children, cloneElement, Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 import * as kit from "../../src/index.ts";
 import { Autocomplete as IosAutocomplete } from "../../src/atoms/autocomplete/autocomplete.ios.tsx";
-import { Avatar as IosAvatar, AvatarGroup as IosAvatarGroup } from "../../src/atoms/avatar/avatar.ios.tsx";
+import { Avatar as IosAvatar, AvatarGroup as IosAvatarGroup, AvatarMenu as IosAvatarMenu } from "../../src/atoms/avatar/avatar.ios.tsx";
 import { Badge as IosBadge } from "../../src/atoms/badge/badge.ios.tsx";
 import { Button as IosButton } from "../../src/atoms/button/button.ios.tsx";
 import { Checkbox as IosCheckbox } from "../../src/atoms/checkbox/checkbox.ios.tsx";
@@ -58,7 +58,7 @@ import { Steps as IosSteps } from "../../src/organisms/steps/steps.ios.tsx";
 import { TabBar as IosTabBar } from "../../src/organisms/tab-bar/tab-bar.ios.tsx";
 import { Tabs as IosTabs } from "../../src/organisms/tabs/tabs.ios.tsx";
 import { Autocomplete as AndroidAutocomplete } from "../../src/atoms/autocomplete/autocomplete.android.tsx";
-import { Avatar as AndroidAvatar, AvatarGroup as AndroidAvatarGroup } from "../../src/atoms/avatar/avatar.android.tsx";
+import { Avatar as AndroidAvatar, AvatarGroup as AndroidAvatarGroup, AvatarMenu as AndroidAvatarMenu } from "../../src/atoms/avatar/avatar.android.tsx";
 import { Badge as AndroidBadge } from "../../src/atoms/badge/badge.android.tsx";
 import { Button as AndroidButton } from "../../src/atoms/button/button.android.tsx";
 import { Checkbox as AndroidCheckbox } from "../../src/atoms/checkbox/checkbox.android.tsx";
@@ -114,7 +114,7 @@ import { Tabs as AndroidTabs } from "../../src/organisms/tabs/tabs.android.tsx";
 const pairs = (list: readonly (readonly [unknown, unknown])[]) => new Map<unknown, unknown>(list);
 export const PLATFORM_PARTS = {
   ios: pairs([
-    [kit.Alert, IosAlert], [kit.Autocomplete, IosAutocomplete], [kit.Avatar, IosAvatar], [kit.AvatarGroup, IosAvatarGroup],
+    [kit.Alert, IosAlert], [kit.Autocomplete, IosAutocomplete], [kit.Avatar, IosAvatar], [kit.AvatarGroup, IosAvatarGroup], [kit.AvatarMenu, IosAvatarMenu],
     [kit.Badge, IosBadge], [kit.BarList, IosBarList], [kit.BoxPlot, IosBoxPlot], [kit.BulletChart, IosBulletChart],
     [kit.Button, IosButton], [kit.Calendar, IosCalendar], [kit.CandlestickChart, IosCandlestickChart], [kit.Card, IosCard],
     [kit.Carousel, IosCarousel], [kit.Chart, IosChart], [kit.Checkbox, IosCheckbox], [kit.Chip, IosChip],
@@ -130,7 +130,7 @@ export const PLATFORM_PARTS = {
     [kit.Treemap, IosTreemap], [kit.Video, IosVideo], [kit.WaterfallChart, IosWaterfallChart],
   ]),
   android: pairs([
-    [kit.Alert, AndroidAlert], [kit.Autocomplete, AndroidAutocomplete], [kit.Avatar, AndroidAvatar], [kit.AvatarGroup, AndroidAvatarGroup],
+    [kit.Alert, AndroidAlert], [kit.Autocomplete, AndroidAutocomplete], [kit.Avatar, AndroidAvatar], [kit.AvatarGroup, AndroidAvatarGroup], [kit.AvatarMenu, AndroidAvatarMenu],
     [kit.Badge, AndroidBadge], [kit.BarList, AndroidBarList], [kit.BoxPlot, AndroidBoxPlot], [kit.BulletChart, AndroidBulletChart],
     [kit.Button, AndroidButton], [kit.Calendar, AndroidCalendar], [kit.CandlestickChart, AndroidCandlestickChart], [kit.Card, AndroidCard],
     [kit.Carousel, AndroidCarousel], [kit.Chart, AndroidChart], [kit.Checkbox, AndroidCheckbox], [kit.Chip, AndroidChip],

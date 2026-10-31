@@ -129,7 +129,20 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // loading arc and plain link, the anatomy zoom and eleven Typography page roles) measured
 // on bun 1.4.0 at 269,055 / 269,946 / 270,859B. 278KB keeps 5.1% headroom over Android's
 // figure.
-export const JS_MAX_GZIP = 284_672; // 278 KB
+// The v4 Controls parity integration (2026-10-29) restores the hand-off's attached,
+// split and stepper ButtonGroup geometry, compound radio layouts, compact switch chip,
+// inline menu specimen and exact AvatarMenu. An isolated HEAD build measured
+// 281,903 / 282,792 / 283,868B; the first integrated build measured
+// 284,987 / 285,966 / 286,778B (web / iOS / Android), +3,084 / +3,174 / +2,910B.
+// Largest minified raw contributions are ButtonGroup styles (+3,991B) and shell
+// (+1,939B), then Switch styles (+936B): intentional public capability and reference
+// motion, with no new bundled dependency. 282KiB leaves modest measured headroom.
+// The exact Charts room adds the authored plot frames, detailed compositions and
+// pointer/reduced-motion feedback for all27 chart types. With optional peers still
+// externalized and no chart library added, the pinned Bun1.4.0 consumer build measures
+// 294,347 / 295,368 / 296,549B gzip (web/iOS/Android), about9.7KB over the preceding
+// v4 build. 292KiB leaves2.4KB above the largest build; per-import budgets stay fixed.
+export const JS_MAX_GZIP = 299_008; // 292 KiB
 
 export interface JavaScriptBudget {
   label: string;
@@ -352,9 +365,14 @@ export interface JavaScriptBudget {
 // code, media and lane corner roles the hand-off draws) while DataTable's own skin shrank by
 // 12B; measured on bun 1.4.0 at 51,766 / 52,860 / 53,266B, 18B over 53,248 on Android, from
 // 53,213B before. The ceiling moves to 55,296B (3.8% headroom over the Android figure).
+// Input already exceeded its 44KiB cap at the same isolated HEAD baseline:
+// 47,342 / 47,548 / 47,624B. Integration measured 47,344 / 47,518 / 47,596B
+// (+2 / -30 / -28B). Its only positive raw module changes were the reference tokens
+// (+61B) and field halo fallback (+43B), offset by unadjusted inks. Record 47KiB
+// for the existing published field, rather than attributing that old gap to Controls.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 18_432, requiredExports: ["Button", "ThemeProvider"] },
-  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 45_056, requiredExports: ["Input", "ThemeProvider"] },
+  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 48_128, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 55_296, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 74_752, requiredExports: ["StackedList", "ThemeProvider"] },
 ];

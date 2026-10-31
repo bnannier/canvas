@@ -3,6 +3,8 @@
 Segmented controls, split buttons, attached groups.
 
 On the web the segmented control is the v4 hand-off's: the options sit in a rounded track on the raised fill, and the selected one rides a flat card thumb with a small shadow, the rest in the muted ink. It is 30, 36 or 44 px tall at the small, default and large sizes. The split button is the green call-to-action pill with its chevron half, and the stepper and the spaced peers are hairline pills the height of a Button beside them.
+
+Pass `rounded` for a capsule segmented track with equal cells and one sliding selection thumb. The small capsule is 32 px tall, as in the docs appearance picker. Its spring transition follows Reduce Motion.
 <!-- only: web -->
 On iOS and Android the groups keep their platform shapes (the iOS segmented control, the Material 3 segmented button) in the theme's colours.
 <!-- /only -->
@@ -109,10 +111,34 @@ segment while pressed; `start` pins the group in an app-owned host arrangement.
 </Container>
 ```
 
+### Attached
+
+`attached` joins the segments into one box: a single edge round the group, a hairline between the cells, and every cell its full height, the selected one on the raised fill. Use it for a toolbar's view or formatting choices. An item's `display` draws the cell's face from any node (a glyph set in a weight or a style), with the item's `label` kept as the cell's accessible name.
+
+```tsx
+<ButtonGroup
+  attached
+  defaultActive={0}
+  items={[
+    { label: "Bold", display: <Typography tileTitle bold>B</Typography> },
+    { label: "Italic", display: <Typography tileTitle italic>I</Typography> },
+    { label: "Underline", display: <Typography tileTitle underline>U</Typography> }
+  ]}
+/>
+```
+
 ### Stepper
 
 ```tsx
 <ButtonGroup stepper items={["Yesterday", "Today", "Tomorrow"]} />
+```
+
+### Stepper signs
+
+`decrementIcon` and `incrementIcon` replace the stepper's back and forward glyphs with any icon, for a stepper that changes a value rather than moving through a list.
+
+```tsx
+<ButtonGroup stepper decrementIcon={<Icon zoomOut size={14} decorative />} incrementIcon={<Icon zoomIn size={14} decorative />} items={["100%"]} />
 ```
 
 ### Split

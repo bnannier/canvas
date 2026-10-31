@@ -40,6 +40,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `requiredfield` | Required field | [ ] | [ ] | [ ] |  |
 | `withhelpertext` | With helper text | [ ] | [ ] | [ ] |  |
 | `disabled` | Disabled | [ ] | [ ] | [ ] |  |
+| `optiondetails` | Option details | [ ] | [ ] | [ ] |  |
 | `controlledselection` | Controlled selection | [ ] | [ ] | [ ] |  |
 | `measure` | Measure | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->

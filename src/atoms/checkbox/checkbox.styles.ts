@@ -25,10 +25,10 @@ const BOX: Record<Size, number> = { small: 16, base: 18, large: 22 };
 const IOS_BOX = 22;
 
 // Label type, the same at every size (only the box scales): the hand-off's 500 14px
-// title at its 1.3 line, and the 12px description in the subtle ink at its 1.45 line,
-// both rounded up to a whole pixel. `flexShrink` lets a long label wrap within the row.
-const LABEL_TYPE: TextStyle = { fontSize: 14, lineHeight: 19, fontWeight: "500" };
-const DESCRIPTION_TYPE: TextStyle = { fontSize: 12, lineHeight: 18, fontWeight: "400" };
+// title at its 1.3 line (18.2), and the 12px description in the subtle ink at its 1.45 line
+// (17.4), the ratios exactly, as the Switch sets them. `flexShrink` lets a long label wrap.
+const LABEL_TYPE: TextStyle = { fontSize: 14, lineHeight: 18.2, fontWeight: "500" };
+const DESCRIPTION_TYPE: TextStyle = { fontSize: 12, lineHeight: 17.4, fontWeight: "400" };
 function label(tokens: ColorTokens): TextStyle {
   return { ...LABEL_TYPE, flexShrink: 1, color: tokens.foreground };
 }

@@ -1,8 +1,9 @@
 import { useId } from "react";
 import Svg, { Path } from "react-native-svg";
 import { Defs, GlowFilter } from "../shared/chart-glow.js";
-import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
-import { DISPLAY_FONT } from "../../style/mono.js";
+import { View, Text, useTheme, statusColors, devWarn, alpha, type ColorTokens, type LayoutStyle } from "../../style/index.js";
+import { CHART_LOOK } from "../shared/charts.styles.js";
+import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
 
 // Gauge is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -19,6 +20,8 @@ export interface GaugeProps {
   // Tone of the fill arc (pick one; default primary). Precedence when several
   // are passed: success > warning > destructive (first match wins).
   primary?: boolean;
+  /** Use the wider 250 px adoption dial. */
+  large?: boolean;
   success?: boolean;
   warning?: boolean;
   destructive?: boolean;
@@ -47,17 +50,11 @@ export function gaugeFill(tokens: ColorTokens, p: GaugeProps): string {
 const VIEW_W = 200;
 const VIEW_H = 116;
 const SIZE = 240;
-const SCALE = SIZE / VIEW_W;
 const STROKE = 14;
 const INSET = 20;
 const BASE = 104;
 const RADIUS = VIEW_W / 2 - INSET;
 const SEMICIRCUMFERENCE = Math.PI * RADIUS;
-const GRAPHIC_HEIGHT = VIEW_H * SCALE;
-const VALUE_SIZE = 36 * SCALE;
-const VALUE_LINE = Math.round(VALUE_SIZE * 1.1);
-// The value's line box, placed so its baseline lands on the viewBox's y 96.
-const VALUE_TOP = 96 * SCALE - VALUE_SIZE * 0.92;
 
 // Pure semicircle geometry, exported for tests (not re-exported from the
 // barrel), following the gaugeFill precedent. The track and value arcs share
@@ -65,7 +62,7 @@ const VALUE_TOP = 96 * SCALE - VALUE_SIZE * 0.92;
 // the value arc reveals its share of the track's length through the dash
 // pattern.
 /** The value arc's glow length in px (the renderer's 8 px drop shadow in the tone). */
-const ARC_GLOW = 8;
+const ARC_GLOW = 6;
 
 export function gaugeArc(v: number): { d: string; dasharray: string } {
   return {
@@ -77,7 +74,12 @@ export function gaugeArc(v: number): { d: string; dasharray: string } {
 /** A radial dial: a track, a tone-colored fill arc and the value inside. */
 export function Gauge(props: GaugeProps) {
   const { value, label, testID, style } = props;
-  const { tokens } = useTheme();
+  const { tokens, dark } = useTheme();
+  const size = props.large ? 250 : SIZE;
+  const scale = size / VIEW_W;
+  const valueSize = 36 * scale;
+  const valueLine = Math.round(valueSize * 1.1);
+  const valueTop = 96 * scale - valueSize * .92 + (props.large ? 2 : 0);
   // Gauge is a 0–100 dial; an out-of-range value is clamped, but warn so the
   // developer notices the input was outside the supported range.
   devWarn(
@@ -96,18 +98,18 @@ export function Gauge(props: GaugeProps) {
   return (
     <View
       testID={testID}
-      style={[{ width: SIZE }, style]}
+      style={[{ width: size }, style]}
       accessibilityRole="image"
       accessibilityLabel={`${label ?? "Gauge"}: ${pct}%`}
       aria-label={`${label ?? "Gauge"}: ${pct}%`}
     >
-      <Svg width={SIZE} height={GRAPHIC_HEIGHT} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
+      <Svg width={size} height={VIEW_H * scale} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
         <Defs>
           {/* The arc's glow, in the view's units: the renderer's `drop-shadow(0 0 8px <tone>)`. */}
-          <GlowFilter id={glowId} length={(ARC_GLOW * VIEW_W) / SIZE} />
+          <GlowFilter id={glowId} length={(ARC_GLOW * VIEW_W) / size} />
         </Defs>
         <Path d={arc.d} fill="none" stroke={tokens["surface-raised"] ?? tokens.muted} strokeWidth={STROKE} strokeLinecap="round" />
-        {v > 0 ? <Path d={arc.d} fill="none" stroke={fill} strokeWidth={STROKE} strokeLinecap="round" strokeDasharray={arc.dasharray} filter={`url(#${glowId})`} /> : null}
+        {v > 0 ? <Path d={arc.d} fill="none" stroke={props.large ? alpha(fill, dark ? .5 : .4) : fill} strokeWidth={STROKE} strokeLinecap="round" strokeDasharray={arc.dasharray} filter={`url(#${glowId})`} /> : null}
         <Path
           d={arc.d}
           fill="none"
@@ -122,23 +124,24 @@ export function Gauge(props: GaugeProps) {
       <Text
         style={{
           position: "absolute",
-          top: VALUE_TOP,
+          top: valueTop,
           left: 0,
           right: 0,
           textAlign: "center",
           fontFamily: DISPLAY_FONT,
-          fontSize: VALUE_SIZE,
-          lineHeight: VALUE_LINE,
+          fontSize: valueSize,
+          lineHeight: valueLine,
           fontWeight: "500",
+          letterSpacing: -1.4 * scale,
           color: tokens.foreground,
         }}
       >
         {pct}%
       </Text>
       {/* The scale row: the dial's ends with the caption between them. */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: props.large ? 8 : -6, paddingHorizontal: 6 }}>
         <Text style={scaleText(tokens)}>0</Text>
-        {label ? <Text style={scaleText(tokens)}>{label}</Text> : null}
+        {label ? <Text style={{ fontSize: 12, lineHeight: 15, fontWeight: "500", color: tokens["muted-foreground"] }}>{label}</Text> : null}
         <Text style={scaleText(tokens)}>100</Text>
       </View>
     </View>
@@ -147,5 +150,5 @@ export function Gauge(props: GaugeProps) {
 
 // The scale row's type: the hand-off's 12 px caption in the subtle ink.
 function scaleText(tokens: ColorTokens) {
-  return { fontSize: 12, lineHeight: 16, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
+  return { fontFamily: MONO_FONT, fontSize: CHART_LOOK.axisSize, lineHeight: 15, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }

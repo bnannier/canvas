@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button } = scope;
+  const { Button, Icon } = scope;
   return (
-<Button outline>Save changes</Button>
+<Button outline icon unread accessibilityLabel="Inbox, unread messages" iconLeft={<Icon inbox size={16} decorative />} />
   );
 }

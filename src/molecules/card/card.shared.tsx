@@ -498,7 +498,7 @@ export function createCard(skin: CardSkin) {
 
     let inner: ReactNode;
     if (props.board) {
-      inner = <BoardCardContent {...props} cornerRadius={skin.corners[corner]} insets={s.sectionInsets(skin.density[dens])} />;
+      inner = <BoardCardContent {...props} imageHeaderCorners={{ borderTopLeftRadius: skin.corners[corner], borderTopRightRadius: skin.corners[corner] }} insets={s.sectionInsets(skin.density[dens])} />;
     } else if (children != null) {
       // A plain card still renders exactly what the caller passed, byte for byte.
       // A sectioned card wraps those children in the same anatomy the string path

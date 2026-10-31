@@ -93,7 +93,7 @@ export interface ShowcaseCardProps {
   caption?: ReactNode;
   /**
    * The caption in the 11 px `tiny` role instead of the 12 px card note: the Charts page's
-   * `font:400 11px/1.5 var(--fm)` foot (15.95 against its 16.5 line, decision 3's residual).
+   * exact `font:400 11px/1.5 var(--fm)` foot.
    */
   tinyCaption?: boolean;
   /**
@@ -162,7 +162,7 @@ export function ShowcaseCard({ id, title, meta, links, caption, tinyCaption, spl
     return (
       <Card showcaseCorners roomy testID={`showcase-${id}`}>
         <Grid minTileWidth={320} apart>
-          <Row wrap compact>
+          <Row wrap compact style={{ marginTop: -6 }}>
             {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
           </Row>
           {children}
@@ -196,8 +196,8 @@ export function ShowcaseCard({ id, title, meta, links, caption, tinyCaption, spl
       ) : null}
     </GapColumn>
   ) : null;
-  const body = <Column grow spacious>{children}</Column>;
-  const foot = caption == null ? null : tinyCaption ? <Typography tiny mono muted>{caption}</Typography> : <Typography cardNote mono>{caption}</Typography>;
+  const body = <GapColumn gap={spec?.gap ?? 20} grow>{children}</GapColumn>;
+  const foot = caption == null ? null : tinyCaption ? <Typography tiny mono muted style={{ lineHeight: 16.5 }}>{caption}</Typography> : <Typography cardNote mono>{caption}</Typography>;
   return (
     // The composition takes the slack a grid row hands the card, so the caption sits at the foot.
     <FrameCard inset={spec?.inset ?? 24} testID={`showcase-${id}`}>

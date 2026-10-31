@@ -1,6 +1,6 @@
 import { usePathname, useRouter } from "expo-router";
 import { StyleSheet } from "react-native";
-import { View, Navbar, Button, ButtonGroup, Divider, Icon, Switch, liquidGlassAvailable } from "@nannier/canvas";
+import { View, Navbar, ButtonGroup, Divider, Switch, liquidGlassAvailable } from "@nannier/canvas";
 import { CanvasMark } from "../brand/canvas-mark";
 import { PILL_LINKS, pillIndexFor } from "../data/rooms";
 import { useDocsTheme } from "../theme/docs-theme";
@@ -31,7 +31,7 @@ export const PILL_HEIGHT = 44;
 /** Where the pill's band ends: the top offset and the pill. Content scrolled into view parks below it. */
 export const PILL_BAND = SHELL.navTop + PILL_HEIGHT;
 
-export function PillNav({ onSearch }: { onSearch: () => void }) {
+export function PillNav() {
   const pathname = usePathname();
   const router = useRouter();
   return (
@@ -58,7 +58,7 @@ export function PillNav({ onSearch }: { onSearch: () => void }) {
             event?.preventDefault();
             router.push(HREFS[index] as never);
           }}
-          actions={<PillActions onSearch={onSearch} />}
+          actions={<PillActions />}
         />
       </View>
     </View>
@@ -73,17 +73,18 @@ const styles = StyleSheet.create({
   band: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 40, paddingTop: SHELL.navTop, paddingHorizontal: SHELL.navSide, alignItems: "center", pointerEvents: "box-none" },
 });
 
-function PillActions({ onSearch }: { onSearch: () => void }) {
+function PillActions() {
   const { scheme, surface, setScheme, setSurface } = useDocsTheme();
   return (
     <>
-      <Button ghost icon small accessibilityLabel="Search components" iconLeft={<Icon search />} onPress={onSearch} />
       <Divider vertical inset strong />
-      <HueSwatches />
+      <View style={{ paddingHorizontal: 6 }}><HueSwatches /></View>
       <Divider vertical inset strong />
       <ButtonGroup
         segmented
+        rounded
         small
+        testID="navbar-scheme"
         accessibilityLabel="Scheme"
         items={["Dark", "Light"]}
         active={scheme === "dark" ? 0 : 1}
@@ -92,7 +93,7 @@ function PillActions({ onSearch }: { onSearch: () => void }) {
       {/* Only where the surface is the reader's to choose: on iOS 26 glass is the system
           material (the native bars carry their own toggle). */}
       {!liquidGlassAvailable() ? (
-        <Switch small checked={surface === "glass"} onChange={(on) => setSurface(on ? "glass" : "solid")}>
+        <Switch chip testID="navbar-glass" checked={surface === "glass"} onChange={(on) => setSurface(on ? "glass" : "solid")}>
           Glass
         </Switch>
       ) : null}

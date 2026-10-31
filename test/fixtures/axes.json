@@ -429,15 +429,20 @@
     "order": [
       "cozy",
       "snug",
+      "compact",
       "tight"
     ],
-    "none": "snug",
+    "none": "compact",
     "single": {
       "cozy": "cozy",
       "snug": "snug",
+      "compact": "compact",
       "tight": "tight"
     },
     "pairs": {
+      "compact + cozy": "cozy",
+      "compact + snug": "snug",
+      "compact + tight": "compact",
       "cozy + snug": "cozy",
       "cozy + tight": "cozy",
       "snug + tight": "snug"
@@ -596,16 +601,22 @@
       "segmented",
       "split",
       "stepper",
-      "spaced"
+      "spaced",
+      "attached"
     ],
     "none": "segmented",
     "single": {
       "segmented": "segmented",
       "split": "split",
       "stepper": "stepper",
-      "spaced": "spaced"
+      "spaced": "spaced",
+      "attached": "attached"
     },
     "pairs": {
+      "attached + segmented": "segmented",
+      "attached + spaced": "spaced",
+      "attached + split": "split",
+      "attached + stepper": "stepper",
       "segmented + spaced": "segmented",
       "segmented + split": "segmented",
       "segmented + stepper": "segmented",
@@ -5351,6 +5362,24 @@
     },
     "pairs": {}
   },
+  "Typography.slant": {
+    "kind": "toggle",
+    "components": [
+      "Typography"
+    ],
+    "pages": [
+      "typography"
+    ],
+    "resolver": "src/atoms/typography/typography.shared.tsx#slantOf",
+    "order": [
+      "italic"
+    ],
+    "none": null,
+    "single": {
+      "italic": "italic"
+    },
+    "pairs": {}
+  },
   "Typography.numerals": {
     "kind": "toggle",
     "components": [
@@ -7336,15 +7365,19 @@
     "resolver": "src/organisms/data-table/data-table.shared.tsx#lookOf",
     "order": [
       "reference",
-      "bare"
+      "bare",
+      "matrix"
     ],
     "none": "table",
     "single": {
       "reference": "reference",
-      "bare": "bare"
+      "bare": "bare",
+      "matrix": "matrix"
     },
     "pairs": {
-      "bare + reference": "reference"
+      "bare + matrix": "bare",
+      "bare + reference": "reference",
+      "matrix + reference": "reference"
     }
   },
   "DataTable.row align": {

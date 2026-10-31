@@ -139,6 +139,28 @@ export interface ButtonProps extends MeasureProps {
   wideIcon?: boolean;
   /** Round a utility icon box into a circle. */
   circle?: boolean;
+  /**
+   * Fully rounded ends: the control's corner becomes the pill (an `icon` square a circle).
+   * The special bodies (the links, the triggers, the utility boxes) keep their own corners;
+   * a utility box rounds with `circle`.
+   * <!-- only: web -->
+   * The pill's ends sit 2 px wider at each side (18 at the default size).
+   * <!-- /only -->
+   */
+  rounded?: boolean;
+  /**
+   * A dashed edge in place of the solid one: an add-a-row or drop-here affordance. It
+   * shows on the intents that draw an edge (`secondary`, `outline`); the filled, ghost and
+   * link looks have no visible edge to dash.
+   */
+  dashed?: boolean;
+  /**
+   * An unread mark: the accent dot inside the box's upper trailing corner, ringed in the
+   * card colour. A quieter sibling of `count` for "something new" without a number;
+   * name the state in `accessibilityLabel` (the dot is decorative). `count` wins when both
+   * are passed.
+   */
+  unread?: boolean;
   /** Quiet inset fill for a utility icon action. */
   inset?: boolean;
   /** Keep the resting look while pressed (no dim, no press scale). */
@@ -230,7 +252,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const iconBox = iconBoxOf(props);
-    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, jumpLink: !!props.jumpLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, plainLink: !!props.plainLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, jumpLink: !!props.jumpLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, plainLink: !!props.plainLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, rounded: !!props.rounded, dashed: !!props.dashed, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -362,7 +384,8 @@ export function createButton(skin: ButtonSkin) {
                 {!loading && iconRight != null ? <AnatomyPart name="Trailing icon">{iconRight}</AnatomyPart> : null}
               </InkProvider>
             </View>
-            {props.count !== undefined && props.count !== "" ? <View ref={countPart?.ref} onLayout={countPart?.onLayout} style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View> : null}
+            {props.count !== undefined && props.count !== "" ? <View ref={countPart?.ref} onLayout={countPart?.onLayout} style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View>
+              : props.unread ? <View aria-hidden style={skin.unread(tokens)} /> : null}
           </>}
         </Pressable>
       </RippleClip>

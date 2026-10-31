@@ -1,6 +1,6 @@
-import { useState, type Ref } from "react";
+import { type Ref } from "react";
 import { Platform } from "react-native";
-import { View, ScrollView, Row, Column, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, useContainerBreakpoint, type ColorTokens } from "@nannier/canvas";
+import { View, ScrollView, Row, Column, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, useMeasuredWidth, type ColorTokens } from "@nannier/canvas";
 import { CodeBlock as KitCodeBlock } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
 import type { DetailSpec, Knob } from "../../core/data/detail-specs";
@@ -148,7 +148,7 @@ function KnobPanel({ spec, state, onChange, onReset }: { spec: DetailSpec; state
   );
 }
 
-export function PlaygroundSection({ spec, component, props, code, state, onChange, onReset, tokens, base, sectionRef }: {
+export function PlaygroundSection({ spec, component, props, code, state, onChange, onReset, tokens, platform, onPlatformChange, base, sectionRef }: {
   spec: DetailSpec;
   component: string;
   props: PropDescriptors;
@@ -157,14 +157,18 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   onChange: (key: string, value: KnobValue) => void;
   onReset: () => void;
   tokens: ColorTokens;
+  platform: PreviewScope["platform"];
+  onPlatformChange: (platform: PreviewScope["platform"]) => void;
   base?: SpecimenBase;
   sectionRef?: Ref<View>;
 }) {
-  const [platform, setPlatform] = useState(0);
-  // The knob panel sits beside the stage while the frame is wider than the kit's `lg` step
-  // (the hand-off's 1180 px window, about 900 px of content) and under it below that.
-  const { value: stacked, onLayout } = useContainerBreakpoint({ base: false, lg: true });
-  const preview = scopeFor(tokens, (PLATFORMS[platform] ?? PLATFORMS[0]!).platform);
+  // At the hand-off's 1180 px window cut, its frame leaves 904 px of content:
+  // 1180 - 48 outer padding - 200 rail - 28 gap. Measure that content directly so
+  // an embedded playground makes the same layout decision without reading the window.
+  const { width, measured, onLayout } = useMeasuredWidth();
+  const stacked = measured && width < 904;
+  const activePlatform = Math.max(0, PLATFORMS.findIndex((p) => p.platform === platform));
+  const preview = scopeFor(tokens, platform);
   const live = (
     <ExampleErrorBoundary key={`${preview.platform}:${code}`}>
       <FitStage>{renderComponent(preview.scope, component, props, base)}</FitStage>
@@ -196,7 +200,7 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
       actions={PLATFORMS.length > 1 ? (
         // The hand-off's platform switch (Component.dc.html line 153): the default-height
         // track around 28 px segments of 12 px labels on a 12 px inset, the kit's compact density.
-        <ButtonGroup segmented compact accessibilityLabel="Playground platform" items={PLATFORMS.map((p) => p.label)} active={platform} onSelect={setPlatform} />
+        <ButtonGroup segmented compact accessibilityLabel="Playground platform" items={PLATFORMS.map((p) => p.label)} active={activePlatform} onSelect={(index) => onPlatformChange(PLATFORMS[index]!.platform)} />
       ) : null}
     >
       <View onLayout={onLayout}>

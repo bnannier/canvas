@@ -1,7 +1,7 @@
 import { useId } from "react";
 import Svg, { Path } from "react-native-svg";
 import { Icon } from "../../atoms/icon/icon.js";
-import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, statusColors, devWarn, alpha, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
 import { Defs, GlowFilter } from "../shared/chart-glow.js";
 
@@ -83,10 +83,11 @@ export function ringDash(v: number, size: number = SIZE.default, stroke: number 
 /** A completion ring: a track, a tone-colored arc and the percent inside. */
 export function ProgressRing(props: ProgressRingProps) {
   const { value, label, testID, style } = props;
-  const { tokens } = useTheme();
+  const { tokens, dark } = useTheme();
   const density = props.compact ? "compact" : "default";
-  const size = SIZE[density];
-  const stroke = STROKE[density];
+  const smallStack = !!props.compact && !!props.stacked;
+  const size = smallStack ? 78 : SIZE[density];
+  const stroke = smallStack ? 7.8 : STROKE[density];
   // A 0-100 dial; an out-of-range value is clamped, but warn so the developer
   // notices the input was outside the supported range.
   devWarn(
@@ -99,7 +100,7 @@ export function ProgressRing(props: ProgressRingProps) {
   // the same number the eye sees. Identical to the Gauge split.
   const pct = Math.round(v);
   const fill = ringFill(tokens, props);
-  const arc = ringDash(v, size, stroke);
+  const arc = smallStack ? ringDash(v, size, (size - 2 * 42 * .78) / 2) : ringDash(v, size, stroke);
   const glowId = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}glow`;
 
   return (
@@ -113,24 +114,24 @@ export function ProgressRing(props: ProgressRingProps) {
       <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: "absolute", top: 0, left: 0 }}>
           <Defs>
-            <GlowFilter id={glowId} length={ARC_GLOW} />
+            <GlowFilter id={glowId} length={smallStack ? 4 * .78 : ARC_GLOW} />
           </Defs>
           <Path d={arc.d} fill="none" stroke={tokens["surface-raised"] ?? tokens.muted} strokeWidth={stroke} strokeLinecap="round" />
-          {v > 0 ? (
-            <Path d={arc.d} fill="none" stroke={fill} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={arc.dasharray} filter={`url(#${glowId})`} />
+          {v > 0 && (!smallStack || !(props.success || props.warning || props.destructive)) ? (
+            <Path d={arc.d} fill="none" stroke={smallStack ? alpha(fill, dark ? .5 : .4) : fill} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={arc.dasharray} filter={`url(#${glowId})`} />
           ) : null}
           <Path d={arc.d} fill="none" stroke={fill} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={arc.dasharray} />
         </Svg>
         {/* The readout sits in the ring's open center: the tone's check once complete. */}
         {pct >= 100 ? (
-          <Icon check decorative size={CHECK[density]} color={fill} />
+          <Icon check decorative heavyStroke={smallStack} size={smallStack ? 22 : CHECK[density]} color={fill} />
         ) : (
-          <Text style={{ fontFamily: DISPLAY_FONT, fontSize: VALUE[density], lineHeight: Math.round(VALUE[density] * 1.2), fontWeight: "600", color: tokens.foreground }}>
+          <Text style={{ fontFamily: DISPLAY_FONT, fontSize: smallStack ? 17 : VALUE[density], lineHeight: smallStack ? 22 : Math.round(VALUE[density] * 1.2), fontWeight: smallStack ? "500" : "600", letterSpacing: smallStack ? -.34 : 0, color: tokens.foreground }}>
             {pct}%
           </Text>
         )}
       </View>
-      {label ? <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>{label}</Text> : null}
+      {label ? <Text style={{ fontSize: smallStack ? 12 : 14, lineHeight: smallStack ? 15 : 20, fontWeight: smallStack ? "400" : "500", color: smallStack ? tokens["muted-foreground"] : tokens.foreground }}>{label}</Text> : null}
     </View>
   );
 }

@@ -4,6 +4,8 @@ The statuspage strip: per-period status pills (operational, degraded, down, unkn
 
 The pills run in a single row, oldest on the left, colored operational green, degraded amber, down red, or unknown muted (precedence down > degraded > unknown; an unmarked period is operational). An optional `caption` summarizes the strip above it, and `startLabel`/`endLabel` caption the physical edges below. The strip is a time axis, so it keeps left-to-right ordering in every locale, and its accessible name tallies every status.
 
+`detailed` uses a display header, taller history marks and neutral unknown periods. Hovering a period expands it with an overshooting transition; Reduced Motion keeps it still.
+
 ## Usage
 
 ```tsx
@@ -48,6 +50,26 @@ periods={Array.from({ length: 60 }, (_, i) => (i === 40 ? { degraded: true } : {
   midLabel="45 days"
   endLabel="Today"
   periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : {}))}
+/>
+```
+
+### Detailed
+
+A display header and taller marks for a status overview. A resting pointer expands its period; Reduced Motion keeps the marks still.
+
+```tsx
+<UptimeBar
+  detailed
+  label="API uptime"
+  caption="99.94% uptime"
+  startLabel="60 days ago"
+  endLabel="Today"
+  periods={Array.from({ length: 60 }, (_, i) => ({
+    label: `Day ${i + 1}`,
+    degraded: i === 17 || i === 41,
+    down: i === 52,
+    unknown: i === 3
+  }))}
 />
 ```
 

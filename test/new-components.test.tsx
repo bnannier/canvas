@@ -128,7 +128,7 @@ describe("AvatarGroup", () => {
 });
 
 // BadgeGroup, AvatarGroup's sibling for badges: it owns the wrapping row and the gap so
-// no call site hand-writes one. Gap axis: cozy > snug > tight, snug (8) by default.
+// no call site hand-writes one. Gap axis: cozy > snug > compact > tight, snug (8) by default.
 describe("BadgeGroup", () => {
   const gapOf = (props: Record<string, boolean>) => {
     const { container } = ui(
@@ -157,17 +157,20 @@ describe("BadgeGroup", () => {
     expect(group.contains(getByText("Owner"))).toBe(true);
   });
 
-  it("spaces its badges snug (8) by default, tight at 4 and cozy at 12", () => {
-    expect(gapOf({})).toBe("8px");
+  it("spaces its badges compact (6) by default, snug at8, tight at4 and cozy at12", () => {
+    expect(gapOf({})).toBe("6px");
+    expect(gapOf({ compact: true })).toBe("6px");
     expect(gapOf({ snug: true })).toBe("8px");
     expect(gapOf({ tight: true })).toBe("4px");
     expect(gapOf({ cozy: true })).toBe("12px");
   });
 
-  it("resolves two gaps by first match, largest first: cozy > snug > tight", () => {
+  it("resolves two gaps by first match, largest first: cozy > snug > compact > tight", () => {
     expect(gapOf({ cozy: true, tight: true })).toBe("12px");
     expect(gapOf({ cozy: true, snug: true })).toBe("12px");
     expect(gapOf({ snug: true, tight: true })).toBe("8px");
+    expect(gapOf({ compact: true, tight: true })).toBe("6px");
+    expect(gapOf({ snug: true, compact: true })).toBe("8px");
   });
 });
 

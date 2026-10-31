@@ -33,6 +33,12 @@ Proportional composition as arc slices in the `chart-1`..`chart-8` token colors,
 />
 ```
 
+### Detailed composition
+
+```tsx
+<PieChart donut detailed label="Sessions" slices={[{label: "Direct", value: 42}, {label: "Search", value: 28}, {label: "Other", value: 30}]} />
+```
+
 ## Do & Don't
 
 ### Pie

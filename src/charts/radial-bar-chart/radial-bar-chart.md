@@ -1,6 +1,6 @@
 # RadialBarChart
 
-Concentric arc rings, one per category, innermost first: each pairs a muted full-circle track with a ramp-colored value arc revealed clockwise from 12 o'clock, and a column legend carries the formatted values. Every ring sweeps against the same `max` (the largest entry by default), so the chart compares attainment, not shares. Press a ring to select it (the others dim); press elsewhere to clear.
+Concentric arc rings, one per category, outermost first: each pairs a muted full-circle track with a ramp-colored value arc revealed clockwise from 12 o'clock, and a column legend carries the formatted values. Every ring sweeps against the same `max` (the largest entry by default), so the chart compares attainment, not shares. Press a ring to select it (the others dim); press elsewhere to clear.
 
 ## Usage
 
@@ -57,6 +57,12 @@ Concentric arc rings, one per category, innermost first: each pairs a muted full
     { label: "Cold", value: 890 }
   ]}
 />
+```
+
+### Detailed attainment
+
+```tsx
+<RadialBarChart detailed max={80} formatValue={(v) => `${v}k`} data={[{label: "Phone", value: 64}, {label: "Tablet", value: 41}, {label: "Web", value: 23}]} />
 ```
 
 ## Do & Don't

@@ -426,6 +426,19 @@ export class CornerSites extends SourceFolder {
   }
 
   protected scaleOf(node: ts.Expression, sf: ts.SourceFile): Origin[] | null {
+    // The Charts-room SVG meet viewport scales the named authored radius with
+    // its geometry. Judge the semantic radius it reads before that transform.
+    const scaledMark = sf.fileName === "src/charts/box-plot/box-plot.shared.tsx" &&
+      ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.AsteriskToken &&
+      node.right.getText(sf) === "k";
+    const scaledCandle = sf.fileName === "src/charts/candlestick-chart/candlestick-chart.shared.tsx" &&
+      ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.AsteriskToken &&
+      ["(layout.plotW / 320)", "(layout.plotH / 150)"].includes(node.right.getText(sf));
+    if ((scaledMark || scaledCandle) && ts.isBinaryExpression(node) &&
+        ts.isPropertyAccessExpression(node.left) &&
+        ["mark", "candleShowcase"].includes(node.left.name.text)) {
+      return this.values(node.left, sf, new Set());
+    }
     for (const table of ["shape", "platformShape"] as const) {
       const read = platformRead(node, sf, table);
       if (!read) continue;

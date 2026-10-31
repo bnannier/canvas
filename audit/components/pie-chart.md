@@ -8,8 +8,8 @@ Audit checklist for `/components/pie-chart`. The facts block and the variants ta
 | Route | `/components/pie-chart` |
 | Category | Charts (`src/charts/pie-chart/`) |
 | Markdown | `src/charts/pie-chart/pie-chart.md` |
-| Source files | `pie-chart.android.tsx`, `pie-chart.ios.tsx`, `pie-chart.md`, `pie-chart.shared.tsx`, `pie-chart.tsx` |
-| Implementation | its own source directory, `src/charts/pie-chart/` (4 TypeScript modules) |
+| Source files | `composition-inspect.ts`, `pie-chart.android.tsx`, `pie-chart.ios.tsx`, `pie-chart.md`, `pie-chart.shared.tsx`, `pie-chart.tsx` |
+| Implementation | its own source directory, `src/charts/pie-chart/` (5 TypeScript modules) |
 | Exports | PieChart |
 | Platform entries | iOS: re-exports the shared build: PieChart (nothing built per platform). Android: re-exports the shared build: PieChart (nothing built per platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -23,7 +23,7 @@ Audit checklist for `/components/pie-chart`. The facts block and the variants ta
 | Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the pressable is the slice, sized by its share |
-| Tests importing it | 5: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 6: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/charts-composition-parity.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/pie-chart.md`, written by `bun run audit:turn -- --slug=pie-chart --phase=before\|after` (the before and after capture runs) |
@@ -38,6 +38,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `donut` | Donut | [ ] | [ ] | [ ] |  |
+| `detailedcomposition` | Detailed composition | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

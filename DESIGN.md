@@ -32,7 +32,7 @@ colors:
   warning-soft: "rgba(165, 93, 0, 0.1)"
   border: "rgba(17, 17, 24, 0.08)"
   field-border: "rgba(17, 17, 24, 0.16)"
-  input: "#8a8a9b"
+  input: "rgba(17, 17, 24, 0.16)"
   field-fill: "#fafafd"
   hover: "rgba(17, 17, 24, 0.06)"
   highlight: "rgba(255, 255, 255, 0.8)"
@@ -44,9 +44,9 @@ colors:
   shade-inset: "rgba(255, 255, 255, 0)"
   inverse: "#111118"
   inverse-foreground: "#ffffff"
-  destructive-text: "#b00032"
-  success-text: "#00724b"
-  warning-text: "#975300"
+  destructive-text: "#d62a4b"
+  success-text: "#0b7a53"
+  warning-text: "#a55d00"
   primary: "#5f3ed8"
   primary-text: "#573bc3"
   primary-foreground: "#ffffff"
@@ -56,7 +56,7 @@ colors:
   action-soft: "rgba(95, 62, 216, 0.1)"
   info: "#573bc3"
   info-soft: "rgba(95, 62, 216, 0.1)"
-  ring: "#5f3ed8"
+  ring: "rgba(95, 62, 216, 0.28)"
   glow: "rgba(95, 62, 216, 0.4)"
   inverse-primary: "#b5b0ff"
   featured-start: "#5f3ed8"
@@ -99,7 +99,7 @@ colorsDark:
   warning-soft: "rgba(246, 184, 76, 0.14)"
   border: "rgba(255, 255, 255, 0.08)"
   field-border: "rgba(255, 255, 255, 0.16)"
-  input: "#686979"
+  input: "rgba(255, 255, 255, 0.16)"
   field-fill: "#0e0e15"
   hover: "rgba(255, 255, 255, 0.05)"
   highlight: "rgba(255, 255, 255, 0.1)"
@@ -111,7 +111,7 @@ colorsDark:
   shade-inset: "rgba(255, 255, 255, 0.1)"
   inverse: "#f4f4f8"
   inverse-foreground: "#0a0a0f"
-  destructive-text: "#ff9298"
+  destructive-text: "#ff6b7a"
   success-text: "#3ddc97"
   warning-text: "#f6b84c"
   primary: "#a298ff"
@@ -123,9 +123,9 @@ colorsDark:
   action-soft: "rgba(162, 152, 255, 0.16)"
   info: "#b5b0ff"
   info-soft: "rgba(162, 152, 255, 0.16)"
-  ring: "#a298ff"
+  ring: "rgba(162, 152, 255, 0.35)"
   glow: "rgba(162, 152, 255, 0.5)"
-  inverse-primary: "#5437c0"
+  inverse-primary: "#573bc3"
   featured-start: "#a298ff"
   featured-middle: "#36dcec"
   featured-end: "#56ecb5"
@@ -716,9 +716,10 @@ hand-off (vendored at `tools/v4/handoff`): its neutrals, status colours and glas
 literal values, and its accent and chart series as `oklch(L C hue)` formulas converted to
 sRGB within one channel unit of what a browser paints. Five palettes, each one hue for the
 whole accent: violet (the default), cyan, mint, rose and amber, and a palette applies in
-both schemes. Read any pair with `colorsFor(palette, scheme)`. Roles keep their function
-where the hand-off's raw value falls short of a floor: the control boundary `input` is
-solved to WCAG 1.4.11's 3:1, and the light `destructive-text` to 4.5:1. Components read
+both schemes. Read any pair with `colorsFor(palette, scheme)`. D14 preserves the
+hand-off's colors literally, including its 16% control boundary, translucent focus ring
+and unadjusted text inks. Contrast measurements are recorded separately; they do not
+recolor the reference. Components read
 the tokens through `useTheme()`; the scheme follows the OS unless `<ThemeProvider dark>`
 or `<ThemeProvider light>` forces one, and `<ThemeProvider cyan>` (or `mint`, `rose`,
 `amber`) picks the accent. On the web the same values ship as custom properties in
@@ -768,7 +769,7 @@ theme that omits any of these keeps the older fallbacks.
 | `warning-soft` | `rgba(165, 93, 0, 0.1)` | `rgba(246, 184, 76, 0.14)` |
 | `border` | `rgba(17, 17, 24, 0.08)` | `rgba(255, 255, 255, 0.08)` |
 | `field-border` | `rgba(17, 17, 24, 0.16)` | `rgba(255, 255, 255, 0.16)` |
-| `input` | `#8a8a9b` | `#686979` |
+| `input` | `rgba(17, 17, 24, 0.16)` | `rgba(255, 255, 255, 0.16)` |
 | `field-fill` | `#fafafd` | `#0e0e15` |
 | `hover` | `rgba(17, 17, 24, 0.06)` | `rgba(255, 255, 255, 0.05)` |
 | `highlight` | `rgba(255, 255, 255, 0.8)` | `rgba(255, 255, 255, 0.1)` |
@@ -780,9 +781,9 @@ theme that omits any of these keeps the older fallbacks.
 | `shade-inset` | `rgba(255, 255, 255, 0)` | `rgba(255, 255, 255, 0.1)` |
 | `inverse` | `#111118` | `#f4f4f8` |
 | `inverse-foreground` | `#ffffff` | `#0a0a0f` |
-| `destructive-text` | `#b00032` | `#ff9298` |
-| `success-text` | `#00724b` | `#3ddc97` |
-| `warning-text` | `#975300` | `#f6b84c` |
+| `destructive-text` | `#d62a4b` | `#ff6b7a` |
+| `success-text` | `#0b7a53` | `#3ddc97` |
+| `warning-text` | `#a55d00` | `#f6b84c` |
 | `primary` | `#5f3ed8` | `#a298ff` |
 | `primary-text` | `#573bc3` | `#b5b0ff` |
 | `primary-foreground` | `#ffffff` | `#0a0a0f` |
@@ -792,9 +793,9 @@ theme that omits any of these keeps the older fallbacks.
 | `action-soft` | `rgba(95, 62, 216, 0.1)` | `rgba(162, 152, 255, 0.16)` |
 | `info` | `#573bc3` | `#b5b0ff` |
 | `info-soft` | `rgba(95, 62, 216, 0.1)` | `rgba(162, 152, 255, 0.16)` |
-| `ring` | `#5f3ed8` | `#a298ff` |
+| `ring` | `rgba(95, 62, 216, 0.28)` | `rgba(162, 152, 255, 0.35)` |
 | `glow` | `rgba(95, 62, 216, 0.4)` | `rgba(162, 152, 255, 0.5)` |
-| `inverse-primary` | `#b5b0ff` | `#5437c0` |
+| `inverse-primary` | `#b5b0ff` | `#573bc3` |
 | `featured-start` | `#5f3ed8` | `#a298ff` |
 | `featured-middle` | `#009bab` | `#36dcec` |
 | `featured-end` | `#00ae7b` | `#56ecb5` |
@@ -898,6 +899,23 @@ kit's own Android parts at a step of the same scale.
 <!-- @generated:platform-shapes -->
 | Platform | Role | Corner |
 | --- | --- | --- |
+| web | `chartTrack` | 6px |
+| web | `chartSelectedBar` | 6px |
+| web | `chartFlagDense` | 9px |
+| web | `chartFlagCompact` | 7px |
+| web | `mapFrame` | 14px |
+| web | `mapZoom` | 10px |
+| web | `activityCell` | 3px |
+| web | `serviceFrame` | 14px |
+| web | `stackEnd` | 7px |
+| web | `stackInner` | 3px |
+| web | `stackEndCompact` | 4px |
+| web | `stackInnerCompact` | 2px |
+| web | `treemapSmall` | 6px |
+| web | `treemapTiny` | 5px |
+| web | `treemapSmallest` | 4px |
+| web | `candleShowcase` | 1px |
+| web | `boardMetadata` | 6px |
 | web | `insetRow` | 10px |
 | web | `disclosureCard` | 14px |
 | web | `codeCard` | 14px |
@@ -910,6 +928,9 @@ kit's own Android parts at a step of the same scale.
 | web | `emblemSmall` | 8px |
 | web | `emblem` | 11px |
 | web | `emblemLarge` | 16px |
+| web | `emblemSoft` | 12px |
+| web | `dismiss` | 6px |
+| web | `announcement` | 12px |
 | web | `referenceCard` | 14px |
 | web | `referenceSource` | 6px |
 | web | `pageCell` | 8px |
@@ -920,6 +941,8 @@ kit's own Android parts at a step of the same scale.
 | web | `alertDialog` | 24px |
 | web | `emptyState` | 18px |
 | web | `key` | 6px |
+| web | `keySmall` | 5px |
+| web | `keyTiny` | 4px |
 | web | `inlineCode` | 5px |
 | web | `optionChip` | 7px |
 | web | `optionTile` | 8px |
@@ -935,6 +958,9 @@ kit's own Android parts at a step of the same scale.
 | web | `funnelBar` | 6px |
 | web | `listBar` | 8px |
 | web | `stripBar` | 1px |
+| web | `sparkBar` | 2px |
+| web | `chartFlag` | 8px |
+| web | `zoomControl` | 8px |
 | web | `tableFrame` | 14px |
 | web | `listFrame` | 14px |
 | web | `gridTile` | 14px |
@@ -952,6 +978,14 @@ kit's own Android parts at a step of the same scale.
 | web | `panel` | 18px |
 | web | `stage` | 20px |
 | web | `copyButton` | 8px |
+| web | `cardSnippet` | 10px |
+| web | `showcaseCard` | 20px |
+| web | `heroStage` | 24px |
+| web | `swatchBar` | 7px |
+| web | `swatchStep` | 3px |
+| web | `rampBar` | 10px |
+| web | `iconCell` | 10px |
+| web | `stepMark` | 10px |
 | ios | `actionSheet` | 34px |
 | ios | `groupedList` | 26px |
 | ios | `event` | 6px |
@@ -987,15 +1021,32 @@ drawn by those entries' platforms.
 <!-- @generated:shape-roles -->
 | Role | Drawn by |
 | --- | --- |
-| `control` | `atoms/button`, `atoms/button-group`, `atoms/skeleton`, `atoms/stepper`, `atoms/tooltip`, `molecules/alert`, `molecules/card`, `molecules/code-block`, `molecules/stacked-lists`, `organisms/calendar`, `organisms/data-table`, `organisms/dialog`, `organisms/drag-drop`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/toast` |
+| `control` | `atoms/button`, `atoms/button-group`, `atoms/skeleton`, `atoms/stepper`, `atoms/tooltip`, `molecules/card`, `molecules/code-block`, `molecules/stacked-lists`, `organisms/calendar`, `organisms/data-table`, `organisms/dialog`, `organisms/drag-drop`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/toast` |
 | `field` | `atoms/autocomplete`, `atoms/input`, `atoms/input-otp`, `atoms/select`, `atoms/textarea`, `organisms/command`, `organisms/data-table` |
-| `card` | `atoms/autocomplete`, `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/action-panels`, `molecules/card`, `molecules/code-block`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/stacked-lists`, `molecules/stats`, `organisms/calendar`, `organisms/carousel`, `organisms/chat`, `organisms/data-table`, `organisms/navbars`, `organisms/sidebar`, `organisms/toast` |
+| `card` | `atoms/autocomplete`, `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/action-panels`, `molecules/card`, `molecules/code-block`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/stacked-lists`, `molecules/stats`, `organisms/calendar`, `organisms/carousel`, `organisms/chat`, `organisms/data-table`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/toast` |
 | `dialog` | `molecules/alert-dialog`, `organisms/dialog` |
-| `menu` | `atoms/autocomplete`, `atoms/button-group`, `atoms/dropdown`, `atoms/popover`, `atoms/select`, `charts/shared`, `organisms/action-sheet`, `organisms/calendar`, `organisms/row-menu`, `style` |
+| `menu` | `atoms/autocomplete`, `atoms/button-group`, `atoms/dropdown`, `atoms/popover`, `atoms/select`, `organisms/action-sheet`, `organisms/calendar`, `organisms/row-menu`, `style` |
 | `sheet` | `atoms/popover`, `organisms/action-sheet`, `organisms/drawer` |
 | `checkbox` | `atoms/checkbox` |
 | `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/input`, `organisms/navbars`, `organisms/tabs` |
 | `tile` | `atoms/listbox`, `atoms/radio`, `atoms/swatch`, `molecules/card`, `molecules/grid-lists`, `molecules/media-objects`, `organisms/dashboard-grid`, `organisms/tabs` |
+| `chartTrack` | `charts/bullet-chart` |
+| `chartSelectedBar` | `charts/chart` |
+| `chartFlagDense` | `charts/candlestick-chart`, `charts/geo-map` |
+| `chartFlagCompact` | `charts/chart` |
+| `mapFrame` | `charts/geo-map` |
+| `mapZoom` | `charts/geo-map` |
+| `activityCell` | `charts/heatmap`, `charts/uptime-bar` |
+| `serviceFrame` | `charts/service-health-list` |
+| `stackEnd` | `charts/stacked-bar` |
+| `stackInner` | `charts/stacked-bar` |
+| `stackEndCompact` | `charts/stacked-bar` |
+| `stackInnerCompact` | `charts/stacked-bar` |
+| `treemapSmall` | `charts/treemap` |
+| `treemapTiny` | `charts/treemap` |
+| `treemapSmallest` | `charts/treemap` |
+| `candleShowcase` | `charts/candlestick-chart` |
+| `boardMetadata` | `molecules/card` |
 | `insetRow` | `molecules/card`, `molecules/collapsible` |
 | `disclosureCard` | `molecules/collapsible` |
 | `codeCard` | `molecules/code-block` |
@@ -1008,6 +1059,9 @@ drawn by those entries' platforms.
 | `emblemSmall` | `atoms/emblem`, `molecules/media-objects` |
 | `emblem` | `atoms/emblem`, `molecules/media-objects` |
 | `emblemLarge` | `atoms/emblem` |
+| `emblemSoft` | `atoms/emblem` |
+| `dismiss` | `molecules/alert`, `organisms/toast` |
+| `announcement` | `molecules/alert` |
 | `referenceCard` | `molecules/card` |
 | `referenceSource` | `molecules/card` |
 | `pageCell` | `atoms/pagination` |
@@ -1017,24 +1071,29 @@ drawn by those entries' platforms.
 | `callout` | `molecules/alert`, `molecules/card` |
 | `alertDialog` | `molecules/alert-dialog` |
 | `emptyState` | `molecules/empty-state` |
-| `key` | `atoms/badge`, `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `charts/heatmap`, `molecules/code-block`, `molecules/phone-input` |
+| `key` | `atoms/badge`, `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `molecules/code-block`, `molecules/phone-input` |
+| `keySmall` | `atoms/kbd` |
+| `keyTiny` | `atoms/kbd` |
 | `inlineCode` | `atoms/typography` |
 | `optionChip` | `atoms/chip` |
 | `optionTile` | `atoms/chip` |
 | `tooltip` | `atoms/tooltip` |
 | `event` | `organisms/calendar` |
 | `bar` | `charts/shared` |
-| `mark` | `charts/box-plot`, `charts/bullet-chart`, `charts/sparkline`, `charts/stacked-bar`, `charts/waterfall-chart` |
-| `cell` | `charts/histogram`, `charts/shared` |
+| `mark` | `charts/box-plot`, `charts/bullet-chart`, `charts/service-health-list`, `charts/stacked-bar`, `charts/waterfall-chart` |
+| `cell` | `charts/bullet-chart`, `charts/histogram`, `charts/pie-chart`, `charts/radial-bar-chart`, `charts/service-health-list`, `charts/shared`, `charts/stacked-bar` |
 | `candle` | `charts/candlestick-chart` |
 | `chartTile` | `charts/treemap` |
 | `heatCell` | `charts/heatmap` |
 | `sparkTrack` | `charts/sparkline` |
 | `funnelBar` | `charts/funnel-chart` |
 | `listBar` | `charts/shared` |
-| `stripBar` | `charts/service-health-list` |
+| `stripBar` | `charts/bullet-chart`, `charts/service-health-list` |
+| `sparkBar` | `charts/metric-breakdown`, `charts/sparkline` |
+| `chartFlag` | `charts/shared` |
+| `zoomControl` | `charts/shared` |
 | `tableFrame` | `organisms/data-table` |
-| `listFrame` | `molecules/stacked-lists` |
+| `listFrame` | `molecules/stacked-lists`, `organisms/row-menu` |
 | `gridTile` | `molecules/grid-lists` |
 | `dragGhost` | `organisms/drag-drop` |
 | `composer` | `organisms/chat` |
@@ -1050,8 +1109,16 @@ drawn by those entries' platforms.
 | `panel` | `molecules/card`, `organisms/data-table` |
 | `stage` | `molecules/card` |
 | `copyButton` | `molecules/code-block` |
+| `cardSnippet` | `molecules/code-block` |
+| `showcaseCard` | `molecules/card` |
+| `heroStage` | `molecules/card` |
+| `swatchBar` | `atoms/swatch` |
+| `swatchStep` | `atoms/swatch` |
+| `rampBar` | `atoms/swatch` |
+| `iconCell` | `atoms/icon` |
+| `stepMark` | `atoms/badge` |
 | `actionSheet` | `organisms/action-sheet` |
-| `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists` |
+| `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists`, `organisms/row-menu` |
 | `searchField` | `atoms/input` |
 | `chip` | `atoms/chip` |
 | `sliderTrack` | `atoms/slider` |

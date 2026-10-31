@@ -1,5 +1,4 @@
 import { alpha } from "./color.js";
-import { SOLVED_INKS } from "./solved-inks.js";
 import type { ColorTokens } from "./tokens.js";
 
 /**
@@ -16,12 +15,7 @@ const SERIES_TOKEN: Record<HueTone, "chart-2" | "chart-3"> = { cyan: "chart-2", 
 /** The pill's wash: the hand-off's `color-mix(in oklch, var(--cyan) 16%, transparent)`. */
 export const HUE_TONE_WASH = 0.16;
 
-/**
- * A hue tone's ink and wash in a scheme. The ink is the series colour walked in oklch
- * lightness at its own hue until it reads at 4.5:1 on every neutral surface and on its
- * own wash (tools/v4/derive-inks.ts, solved into src/style/solved-inks.ts); the dark
- * scheme's light series clears that as it is. The wash is the series token at 16%.
- */
-export function hueToneColors(tokens: ColorTokens, dark: boolean, tone: HueTone): { ink: string; wash: string } {
-  return { ink: SOLVED_INKS[dark ? "dark" : "light"].hues[tone], wash: alpha(tokens[SERIES_TOKEN[tone]], HUE_TONE_WASH) };
+/** The hand-off's series color as ink, with its own 16% wash. */
+export function hueToneColors(tokens: ColorTokens, _dark: boolean, tone: HueTone): { ink: string; wash: string } {
+  return { ink: tokens[SERIES_TOKEN[tone]], wash: alpha(tokens[SERIES_TOKEN[tone]], HUE_TONE_WASH) };
 }

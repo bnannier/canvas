@@ -3,9 +3,8 @@
 // glows (P5-G2) and the tilted six-panel collage (P5-T1). Every value is the v4 hand-off's
 // (`tools/v4/handoff/Canvas v4.0.0 Library.dc.html`, its hero section), judged against the
 // `v4-library-hero` reference card in tools/native/liquid-motion.md; the harness is
-// `/testing/library-hero`. The hand-off's motion (the glows' drift, the stack's
-// pointer-follow tilt, the eyebrow dot's pulse, the column's rise) is not reproduced: the
-// kit removed decorative motion on 2026-09-21.
+// `/testing/library-hero`. The v4 motion accompanies the drawing: aurora drift,
+// pointer-follow perspective, the eyebrow pulse and the column's entrance.
 //
 // Plain data and math with no React import, so the unit tests read it without a kit build.
 // Registered as a tunable in .tuning-harness.json: a change here needs an evidence row.
@@ -28,6 +27,19 @@ export const HERO_FRAME = {
 
 /** The hand-off's two-column hero grid: `minmax(min(100%, 460px), 1fr)`. */
 export const HERO_GRID = { minTileWidth: 460 } as const;
+
+/** Timings and curves from the Library hand-off, including its reversed cyan drift. */
+export const HERO_MOTION = {
+  rise: 900,
+  tilt: 500,
+  pulse: 2400,
+  entrance: [0.2, 0.8, 0.2, 1] as const,
+  drifts: [
+    { duration: 22000, delay: 0, reversed: false },
+    { duration: 28000, delay: 0, reversed: true },
+    { duration: 26000, delay: 3000, reversed: false },
+  ],
+} as const;
 
 /** A colour role of the theme's tokens: the brand artwork's accent-to-cyan-to-mint sweep. */
 export type SweepRole = "featured-start" | "featured-middle" | "featured-end";
@@ -202,6 +214,7 @@ const RAD = Math.PI / 180;
 
 /** The stack's rotation applied to a vector: CSS `rotateX(a) rotateY(b) rotateZ(c)`, the last first. */
 export function rotateStack(v: Vec3, [a, b, c]: readonly [number, number, number] = COLLAGE.rotate): Vec3 {
+  "worklet";
   const [x0, y0, z0] = v;
   const cz = Math.cos(c * RAD), sz = Math.sin(c * RAD);
   const x1 = cz * x0 - sz * y0, y1 = sz * x0 + cz * y0, z1 = z0;
@@ -230,12 +243,13 @@ export type TransformOp =
  * `v.z` is a scale of `d / (d - v.z)` about the perspective origin with the perspective
  * shortened to `d - v.z` (the same projection, exactly).
  */
-export function panelTransform(panel: Pick<CollagePanel, "x" | "y" | "z">, width: number): TransformOp[] {
+export function panelTransform(panel: Pick<CollagePanel, "x" | "y" | "z">, width: number, rotation: readonly [number, number, number] = COLLAGE.rotate): TransformOp[] {
+  "worklet";
   const d = COLLAGE.perspective;
   const po = [COLLAGE.origin[0] * width, COLLAGE.origin[1] * COLLAGE.height];
   const sc = [width / 2, COLLAGE.height / 2];
-  const [vx, vy, vz] = rotateStack([0, 0, panel.z]);
-  const [rx, ry, rz] = COLLAGE.rotate;
+  const [vx, vy, vz] = rotateStack([0, 0, panel.z], rotation);
+  const [rx, ry, rz] = rotation;
   return [
     { translateX: po[0]! - panel.x },
     { translateY: po[1]! - panel.y },
@@ -256,14 +270,24 @@ export function panelTransform(panel: Pick<CollagePanel, "x" | "y" | "z">, width
  * composition (perspective box, rotated stack, `translateZ`), for the tests to hold
  * `panelTransform` to and to project the panels against the reference's measured boxes.
  */
-export function projectCss(panel: Pick<CollagePanel, "x" | "y" | "z">, width: number, point: [number, number]): [number, number] {
+export function projectCss(panel: Pick<CollagePanel, "x" | "y" | "z">, width: number, point: [number, number], rotation: readonly [number, number, number] = COLLAGE.rotate): [number, number] {
   const d = COLLAGE.perspective;
   const po = [COLLAGE.origin[0] * width, COLLAGE.origin[1] * COLLAGE.height];
   const sc = [width / 2, COLLAGE.height / 2];
   const local: Vec3 = [panel.x + point[0] - sc[0]!, panel.y + point[1] - sc[1]!, panel.z];
-  const [x, y, z] = rotateStack(local);
+  const [x, y, z] = rotateStack(local, rotation);
   const px = x + sc[0]! - po[0]!;
   const py = y + sc[1]! - po[1]!;
   const w = 1 - z / d;
   return [po[0]! + px / w, po[1]! + py / w];
+}
+
+/** Bounding rect of the rotated stack, as getBoundingClientRect observes it in the hand-off. */
+export function stackBounds(width: number, rotation: readonly [number, number, number]) {
+  const points = [[0, 0], [width, 0], [width, COLLAGE.height], [0, COLLAGE.height]].map(
+    point => projectCss({ x: 0, y: 0, z: 0 }, width, point as [number, number], rotation),
+  );
+  const left = Math.min(...points.map(p => p[0]));
+  const top = Math.min(...points.map(p => p[1]));
+  return { left, top, width: Math.max(...points.map(p => p[0])) - left, height: Math.max(...points.map(p => p[1])) - top };
 }

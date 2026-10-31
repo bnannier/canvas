@@ -48,6 +48,8 @@ export const CHART_LOOK = {
   titleLine: 20,
   /** Axis labels: the mono face at the 10 px floor, in the subtle ink. */
   axisSize: 10,
+  /** Authored SVG user-unit axes in the Charts page; preserve their viewBox scaling. */
+  authoredAxisSize: 9,
   axisLine: 14,
   /** Gridlines: a dotted `2 4` hairline, the baseline (the 0 line) solid. */
   gridDash: "2,4",

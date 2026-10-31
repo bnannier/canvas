@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Slider, Column, Container } = scope;
+  const { Slider } = scope;
   return (
-<Column>
-  <Slider xs start defaultValue={40}>xs step, pinned to the start (320)</Slider>
-  <Slider lg start defaultValue={40}>lg step, pinned to the start (512)</Slider>
-  <Container lg start><Slider defaultValue={40}>Bare, in an lg Container: fills it (512)</Slider></Container>
-</Column>
+<Slider disabled accessibilityLabel="Volume" defaultValue={30} />
   );
 }

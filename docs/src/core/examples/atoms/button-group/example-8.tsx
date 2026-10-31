@@ -3,8 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ButtonGroup } = scope;
+  const { ButtonGroup, Typography } = scope;
   return (
-<ButtonGroup stepper items={["Yesterday", "Today", "Tomorrow"]} />
+<ButtonGroup
+  attached
+  defaultActive={0}
+  items={[
+    { label: "Bold", display: <Typography tileTitle bold>B</Typography> },
+    { label: "Italic", display: <Typography tileTitle italic>I</Typography> },
+    { label: "Underline", display: <Typography tileTitle underline>U</Typography> }
+  ]}
+/>
   );
 }

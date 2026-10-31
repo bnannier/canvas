@@ -3,15 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ButtonGroup } = scope;
+  const { ButtonGroup, Icon } = scope;
   return (
-<ButtonGroup
-  iconsOnly
-  items={[
-    { label: "Phone width", icon: "smartphone" },
-    { label: "Tablet width", icon: "tablet" },
-    { label: "Desktop width", icon: "monitor" }
-  ]}
-/>
+<ButtonGroup stepper decrementIcon={<Icon zoomOut size={14} decorative />} incrementIcon={<Icon zoomIn size={14} decorative />} items={["100%"]} />
   );
 }

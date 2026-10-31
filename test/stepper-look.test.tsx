@@ -16,7 +16,7 @@ describe("Stepper takes the hand-off's look", () => {
     expect(group).toMatchObject({ height: 40, borderWidth: 1, borderRadius: 10, backgroundColor: lightColors.popover, borderColor: lightColors["field-border"] });
     expect(webSkin.group(lightColors, "small", false, false).height).toBe(32);
     expect(webSkin.group(lightColors, "large", false, false).height).toBe(48);
-    expect(webSkin.button(lightColors, "base", "left", false, false).width).toBe(38);
+    expect(webSkin.button(lightColors, "base", "left", false, false).width).toBe(40);
     expect(webSkin.divider).toBeNull();
     expect(webSkin.field(lightColors, "base", false)).toMatchObject({ fontSize: 14, fontWeight: "500", width: 40 });
     expect(webSkin.field(lightColors, "large", false).fontSize).toBe(16);

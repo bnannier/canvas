@@ -9,9 +9,15 @@ export interface Framed {
   boundingBox(): Promise<{ x: number; y: number; width: number; height: number } | null>;
 }
 
-export const rgb = (hex: string) => {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+/** Normalize token colors to the browser's computed spelling, retaining authored alpha. */
+export const rgb = (color: string) => {
+  if (/^rgba?\(/.test(color)) return color;
+  if (!/^#(?:[\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.test(color)) throw new Error(`Unsupported ring color: ${color}`);
+  const hex = color.slice(1);
+  const full = hex.length <= 4 ? [...hex].map(c => c + c).join("") : hex;
+  const channels = [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16));
+  const alpha = full.length === 8 ? parseInt(full.slice(6, 8), 16) / 255 : 1;
+  return alpha === 1 ? `rgb(${channels.join(", ")})` : `rgba(${channels.join(", ")}, ${alpha})`;
 };
 // Whether the ring shows along each side of `frame`, read from the pixels: a computed
 // outline proves nothing when a parent clips it or the scrolled content paints over it.
@@ -23,20 +29,68 @@ export async function ringShows(page: Page, frame: Framed, color: string) {
   const pad = 6;
   const clip = { x: box.x - pad, y: box.y - pad, width: box.width + pad * 2, height: box.height + pad * 2 };
   const png = (await page.screenshot({ clip })).toString("base64");
-  return page.evaluate(async ({ png, pad, color, clip }) => {
-    const image = new Image();
-    image.src = `data:image/png;base64,${png}`;
-    await image.decode();
-    const canvas = document.createElement("canvas");
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    const context = canvas.getContext("2d")!;
-    context.drawImage(image, 0, 0);
-    const { data, width, height } = context.getImageData(0, 0, canvas.width, canvas.height);
-    const [r, g, b] = (color.match(/\d+/g) ?? []).map(Number) as [number, number, number];
+  // Photograph the same backdrop with only matching ring paints suppressed. This
+  // measures the actual bed (including glass, gradients and ancestors), rather than
+  // assuming a flat theme background. Keep geometry, focus and every other paint.
+  const hidden = await page.evaluate((color) => {
+    const paints: { node: HTMLElement | SVGElement; style: string | null }[] = [];
+    for (const node of document.querySelectorAll<HTMLElement | SVGElement>("*")) {
+      const style = getComputedStyle(node);
+      const properties = ["outline-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color"]
+        .filter(property => style.getPropertyValue(property) === color);
+      const shadow = style.boxShadow;
+      const shadowColors: string[] = shadow.match(/rgba?\([^)]*\)/g) ?? [];
+      const matchingShadow = shadowColors.includes(color);
+      if (!properties.length && !matchingShadow) continue;
+      paints.push({ node, style: node.getAttribute("style") });
+      for (const property of properties) node.style.setProperty(property, "transparent", "important");
+      if (matchingShadow) node.style.setProperty("box-shadow", shadow.split(color).join("transparent"), "important");
+    }
+    const key = `__canvasRingPaints${Date.now()}`;
+    Object.assign(window, { [key]: paints });
+    return key;
+  }, rgb(color));
+  let backdrop: string;
+  try {
+    backdrop = (await page.screenshot({ clip })).toString("base64");
+  } finally {
+    await page.evaluate((key) => {
+      const saved = window as unknown as Record<string, { node: Element; style: string | null }[]>;
+      for (const { node, style } of saved[key]!) {
+        if (style === null) node.removeAttribute("style");
+        else node.setAttribute("style", style);
+      }
+      delete saved[key];
+    }, hidden);
+  }
+  return page.evaluate(async ({ png, backdrop, pad, color, clip }) => {
+    const decode = async (source: string) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${source}`;
+      await image.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d")!;
+      context.drawImage(image, 0, 0);
+      return context.getImageData(0, 0, canvas.width, canvas.height);
+    };
+    const { data, width, height } = await decode(png);
+    const bed = (await decode(backdrop)).data;
+    const channels = (color.match(/[\d.]+/g) ?? []).map(Number);
+    const alpha = channels[3] ?? 1;
     const near = (x: number, y: number) => {
       const i = (y * width + x) * 4;
-      return Math.abs(data[i]! - r) + Math.abs(data[i + 1]! - g) + Math.abs(data[i + 2]! - b) < 60;
+      let difference = 0;
+      let error = 0;
+      for (let channel = 0; channel < 3; channel++) {
+        const expected = channels[channel]! * alpha + bed[i + channel]! * (1 - alpha);
+        error += Math.abs(data[i + channel]! - expected);
+        difference += Math.abs(data[i + channel]! - bed[i + channel]!);
+      }
+      // A missing/clipped ring cannot pass just because its bed resembles the ink.
+      // Fully painted pixels must match source-over compositing, including alpha.
+      return difference >= 6 && error < 12;
     };
     const band = Math.round(pad * 2 * (width / clip.width));
     // Nine in ten points along the middle three fifths of a side hold a ring pixel.
@@ -57,7 +111,7 @@ export async function ringShows(page: Page, frame: Framed, color: string) {
       return hits >= points * 0.9;
     };
     return { top: side(true, false), right: side(false, true), bottom: side(true, true), left: side(false, false) };
-  }, { png, pad, color, clip });
+  }, { png, backdrop, pad, color: rgb(color), clip });
 }
 export const ALL_SIDES = { top: true, right: true, bottom: true, left: true };
 

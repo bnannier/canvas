@@ -1,3 +1,4 @@
+import { channelsOf } from "../src/style/color.ts";
 import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { type ReactElement } from "react";
@@ -208,7 +209,7 @@ describe("pinned focus on a control's own focused look", () => {
     const pinned = screen.getByTestId("s").style;
     expect(pinned.getPropertyValue("outline-width")).toBe("0px");
     const ring = lightColors.ring;
-    expect(pinned.getPropertyValue("border-color")).toBe(`rgba(${[1, 3, 5].map((i) => parseInt(ring.slice(i, i + 2), 16)).join(", ")}, 1.00)`);
+    expect(channelsOf(pinned.getPropertyValue("border-color"))).toEqual(channelsOf(ring));
     expect(pinned.getPropertyValue("box-shadow")).toMatch(/^0 0 0 4px rgba\(/);
     cleanup();
     render(light(<Select testID="s" label="Size" options={["Small"]} />));

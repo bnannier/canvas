@@ -1,15 +1,37 @@
+import { useState } from "react";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useId } from "react";
 import { Circle, Path } from "react-native-svg";
 import { Defs, GlowFilter } from "../shared/chart-glow.js";
-import { View, Text, useControllableState, alpha, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import {
+  View,
+  Text,
+  useControllableState,
+  alpha,
+  devWarn,
+  type LayoutStyle,
+  GlassPane,
+  paneStyle,
+  isGlass,
+} from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection } from "../shared/chart-inspect.js";
+import {
+  PresentationFlag,
+  useChartPresentation,
+} from "../shared/chart-presentation.js";
 import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
-import { areaBandPath, formatCompact, linePath, monotonePath, DENSE_SERIES, type Pt } from "../shared/chart-math.js";
+import {
+  areaBandPath,
+  formatCompact,
+  linePath,
+  monotonePath,
+  DENSE_SERIES,
+  type Pt,
+} from "../shared/chart-math.js";
 
 // RangeAreaChart: a min/max envelope (forecast band, error envelope, daily
 // temperature range) as a translucent band between the low and high edges,
@@ -75,7 +97,8 @@ export function toneOf(p: RangeAreaChartProps): Tone {
   return "primary";
 }
 
-const fin = (v: number | undefined): number => (Number.isFinite(v) ? (v as number) : 0);
+const fin = (v: number | undefined): number =>
+  Number.isFinite(v) ? (v as number) : 0;
 
 // The inspected range's marks (the section card): the high and low marks 10 px across
 // with a 1.5 px edge over the card fill, the mid mark a 10 px disc in a 3 px card ring
@@ -91,19 +114,25 @@ export function createRangeAreaChart(skin: ChartSkin) {
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
+    const presentation = useChartPresentation();
+    const specimen = presentation?.kind === "range";
+    const [inspected, setInspected] = useState(false);
     const curved = !!props.curved;
     const formatValue = props.formatValue ?? formatCompact;
     const fill = s.barFill(tokens, toneOf(props));
     const glowId = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}glow`;
 
-    devWarn(data.length === 0 || labels.length === 0, "[canvas] <RangeAreaChart />: `labels` or `data` is empty; the chart renders with no band.");
+    devWarn(
+      data.length === 0 || labels.length === 0,
+      "[canvas] <RangeAreaChart />: `labels` or `data` is empty; the chart renders with no band."
+    );
     devWarn(
       data.length !== labels.length && data.length > 0 && labels.length > 0,
-      "[canvas] <RangeAreaChart />: `data` length differs from `labels`; missing ranges are treated as 0.",
+      "[canvas] <RangeAreaChart />: `data` length differs from `labels`; missing ranges are treated as 0."
     );
     devWarn(
       data.some((r) => fin(r.low) > fin(r.high)),
-      "[canvas] <RangeAreaChart />: a range's `low` exceeds its `high`; the pair is swapped.",
+      "[canvas] <RangeAreaChart />: a range's `low` exceeds its `high`; the pair is swapped."
     );
 
     // Normalized ranges: low <= high, aligned to the labels.
@@ -111,48 +140,98 @@ export function createRangeAreaChart(skin: ChartSkin) {
       const r = data[i];
       const lo = fin(r?.low);
       const hi = fin(r?.high);
-      return { low: Math.min(lo, hi), high: Math.max(lo, hi), mid: r?.mid != null && Number.isFinite(r.mid) ? r.mid : undefined };
+      return {
+        low: Math.min(lo, hi),
+        high: Math.max(lo, hi),
+        mid: r?.mid != null && Number.isFinite(r.mid) ? r.mid : undefined,
+      };
     });
 
     // The envelope hugs the data; the frame nices the extent.
     const lows = ranges.map((r) => r.low);
     const highs = ranges.map((r) => r.high);
-    const yExtent: [number, number] = ranges.length > 0 ? [Math.min(...lows), Math.max(...highs)] : [0, 1];
+    const yExtent: [number, number] =
+      ranges.length > 0 ? [Math.min(...lows), Math.max(...highs)] : [0, 1];
 
     // The accessible name folds every range; dense envelopes summarize.
     const chartLabel = props.label ?? "Range";
     const name =
       labels.length > DENSE_SERIES
-        ? `${chartLabel}: ${labels.length} ranges, low ${formatValue(Math.min(...lows))}, high ${formatValue(Math.max(...highs))}`
-        : `${chartLabel}: ${labels.map((l, i) => `${l} ${formatValue(ranges[i].low)} to ${formatValue(ranges[i].high)}${ranges[i].mid != null ? ` around ${formatValue(ranges[i].mid as number)}` : ""}`).join(", ")}`;
+        ? `${chartLabel}: ${labels.length} ranges, low ${formatValue(
+            Math.min(...lows)
+          )}, high ${formatValue(Math.max(...highs))}`
+        : `${chartLabel}: ${labels
+            .map(
+              (l, i) =>
+                `${l} ${formatValue(ranges[i].low)} to ${formatValue(
+                  ranges[i].high
+                )}${
+                  ranges[i].mid != null
+                    ? ` around ${formatValue(ranges[i].mid as number)}`
+                    : ""
+                }`
+            )
+            .join(", ")}`;
 
     // Scrub selection with deduped announcements (the cartesian contract).
-    const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
+    const [selected, setSelectedRaw] = useControllableState<number | null>(
+      props.selected,
+      props.defaultSelected ?? null,
+      props.onSelect
+    );
     const setSelected = (i: number | null) => {
+      setInspected(true);
       if (i === selected) return;
       setSelectedRaw(i);
       if (i != null && labels[i] != null) {
         const r = ranges[i];
-        announceSelection(`${labels[i]}: low ${formatValue(r.low)}, high ${formatValue(r.high)}${r.mid != null ? `, mid ${formatValue(r.mid)}` : ""}`);
+        announceSelection(
+          `${labels[i]}: low ${formatValue(r.low)}, high ${formatValue(
+            r.high
+          )}${r.mid != null ? `, mid ${formatValue(r.mid)}` : ""}`
+        );
       }
     };
 
     return (
       <View
-        {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
+        {...(title != null && title !== ""
+          ? {
+              role: "group" as const,
+              accessibilityLabel: `${title} chart`,
+              "aria-label": `${title} chart`,
+            }
+          : {})}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
-        {title != null && title !== "" ? (
-          <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
+        {glass && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
         ) : null}
-        <View accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name}>
+        {title != null && title !== "" ? (
+          <Text
+            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+          >
+            {title}
+          </Text>
+        ) : null}
+        <View
+          accessible
+          accessibilityRole="image"
+          role="img"
+          accessibilityLabel={name}
+          aria-label={name}
+        >
           <CartesianFrame
             yExtent={yExtent}
             xLabels={labels}
@@ -168,36 +247,79 @@ export function createRangeAreaChart(skin: ChartSkin) {
             onBandScrub={setSelected}
             overlay={(layout) =>
               selected != null && layout.band && labels[selected] != null ? (
-                <ChartValueFlag
-                  title={props.hideAxes ? labels[selected] : undefined}
-                  rows={[
-                    { label: "High", value: formatValue(ranges[selected].high) },
-                    ...(ranges[selected].mid != null ? [{ label: "Mid", value: formatValue(ranges[selected].mid as number) }] : []),
-                    { label: "Low", value: formatValue(ranges[selected].low) },
-                  ]}
-                  x={layout.band.center(selected)}
-                  plotW={layout.plotW}
-                />
+                specimen ? (
+                  <PresentationFlag
+                    lines={
+                      !inspected && presentation?.annotation?.index === selected
+                        ? presentation.annotation.lines
+                        : [
+                            `High ${formatValue(ranges[selected].high)}`,
+                            `Mid ${formatValue(ranges[selected].mid ?? 0)}`,
+                            `Low ${formatValue(ranges[selected].low)}`,
+                          ]
+                    }
+                    x={layout.band.center(selected)}
+                    before
+                  />
+                ) : (
+                  <ChartValueFlag
+                    title={props.hideAxes ? labels[selected] : undefined}
+                    rows={[
+                      {
+                        label: "High",
+                        value: formatValue(ranges[selected].high),
+                      },
+                      ...(ranges[selected].mid != null
+                        ? [
+                            {
+                              label: "Mid",
+                              value: formatValue(
+                                ranges[selected].mid as number
+                              ),
+                            },
+                          ]
+                        : []),
+                      {
+                        label: "Low",
+                        value: formatValue(ranges[selected].low),
+                      },
+                    ]}
+                    x={layout.band.center(selected)}
+                    plotW={layout.plotW}
+                  />
+                )
               ) : null
             }
           >
             {(layout) => {
               const band = layout.band;
               if (!band) return null;
-              const top: Pt[] = labels.map((_, i) => ({ x: band.center(i), y: layout.y(ranges[i].high) }));
-              const bottom: Pt[] = labels.map((_, i) => ({ x: band.center(i), y: layout.y(ranges[i].low) }));
+              const top: Pt[] = labels.map((_, i) => ({
+                x: band.center(i),
+                y: layout.y(ranges[i].high),
+              }));
+              const bottom: Pt[] = labels.map((_, i) => ({
+                x: band.center(i),
+                y: layout.y(ranges[i].low),
+              }));
               const mids: Pt[] = ranges.every((r) => r.mid != null)
-                ? labels.map((_, i) => ({ x: band.center(i), y: layout.y(ranges[i].mid as number) }))
+                ? labels.map((_, i) => ({
+                    x: band.center(i),
+                    y: layout.y(ranges[i].mid as number),
+                  }))
                 : [];
               return (
                 <>
                   {/* The hand-off's band: a .22 wash with no edge, the middle line over it. */}
-                  <Path d={areaBandPath(top, bottom, curved)} fill={alpha(fill, 0.22)} />
+                  <Path
+                    d={areaBandPath(top, bottom, curved)}
+                    fill={alpha(fill, 0.22)}
+                  />
                   {mids.length > 0 ? (
                     <Path
                       d={curved ? monotonePath(mids) : linePath(mids)}
                       stroke={fill}
-                      strokeWidth={2}
+                      strokeWidth={specimen ? 2.2 : 2}
                       fill="none"
                       strokeLinejoin="round"
                       strokeLinecap="round"
@@ -212,13 +334,38 @@ export function createRangeAreaChart(skin: ChartSkin) {
                           <Defs>
                             <GlowFilter id={glowId} length={MARK.glow} />
                           </Defs>
-                          <Circle cx={band.center(selected)} cy={layout.y(ranges[selected].mid as number)} r={MARK.mid} fill={tokens.glow ?? tokens.ring} filter={`url(#${glowId})`} />
-                          <Circle cx={band.center(selected)} cy={layout.y(ranges[selected].mid as number)} r={MARK.mid + MARK.ring / 2} fill={fill} stroke={tokens.card} strokeWidth={MARK.ring} />
+                          <Circle
+                            cx={band.center(selected)}
+                            cy={layout.y(ranges[selected].mid as number)}
+                            r={MARK.mid}
+                            fill={tokens.glow ?? tokens.ring}
+                            filter={`url(#${glowId})`}
+                          />
+                          <Circle
+                            cx={band.center(selected)}
+                            cy={layout.y(ranges[selected].mid as number)}
+                            r={MARK.mid + MARK.ring / 2}
+                            fill={fill}
+                            stroke={tokens.card}
+                            strokeWidth={MARK.ring}
+                          />
                         </>
                       ) : null}
-                      {[ranges[selected].high, ranges[selected].low].map((v, k) => (
-                        <Circle key={k} cx={band.center(selected)} cy={layout.y(v)} r={MARK.edge - MARK.edgeStroke / 2} fill={tokens.card} stroke={fill} strokeWidth={MARK.edgeStroke} />
-                      ))}
+                      {[ranges[selected].high, ranges[selected].low].map(
+                        (v, k) => (
+                          <Circle
+                            key={k}
+                            cx={band.center(selected)}
+                            cy={layout.y(v)}
+                            r={
+                              specimen ? 2.75 : MARK.edge - MARK.edgeStroke / 2
+                            }
+                            fill={tokens.card}
+                            stroke={fill}
+                            strokeWidth={MARK.edgeStroke}
+                          />
+                        )
+                      )}
                     </>
                   ) : null}
                 </>

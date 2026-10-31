@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { colorsFor } from "../../src/style/tokens.ts";
-import { BLOCKING_IMPACTS, scan, scanStructure } from "../support/axe";
+import { BLOCKING_IMPACTS, scanPage, scanStructure } from "../support/axe";
 import { gotoDocs, platformRow } from "../support/docs";
 import { ALL_SIDES, rgb, ringShows } from "../support/focus-ring";
 import { expect, test } from "../support/fixtures";
@@ -108,7 +108,7 @@ for (const width of [1280, 390]) {
       // The heatmap's day cells are pointer-only at every width, so a year that fits
       // on the desktop page is no tab stop at all.
       if (width >= 640) await expect(page.getByTestId("scroll-heatmap").locator('[tabindex="0"]')).toHaveCount(0);
-      const findings = await scan(page, "body");
+      const findings = await scanPage(page, testInfo, `scroll-focus-${width}-${scheme}`);
       expect(findings.filter((finding) => BLOCKING_IMPACTS.has(finding.impact))).toEqual([]);
       expect(await scanStructure(page, "body", ["scrollable-region-focusable"])).toEqual([]);
     });
@@ -378,7 +378,7 @@ for (const scheme of ["light", "dark"] as const) {
     const screenshot = testInfo.outputPath(`token-colors-phone-${scheme}.png`);
     await page.screenshot({ path: screenshot, fullPage: true });
     await testInfo.attach("token-colors-phone", { path: screenshot, contentType: "image/png" });
-    const findings = await scan(page, "body");
+    const findings = await scanPage(page, testInfo, `token-colors-phone-${scheme}`);
     expect(findings.filter((finding) => BLOCKING_IMPACTS.has(finding.impact))).toEqual([]);
     expect(await scanStructure(page, "body", ["page-has-heading-one", "scrollable-region-focusable"])).toEqual([]);
   });

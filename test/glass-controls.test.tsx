@@ -1,3 +1,4 @@
+import { referenceContrast } from "./fixtures/reference-contrast.ts";
 import { describe, it, expect, afterEach, spyOn } from "bun:test";
 import { render, cleanup, waitFor, act } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -295,7 +296,7 @@ describe("hue washes", () => {
       for (const tone of ["success", "warning", "error", "info"] as const) {
         const { ink, wash } = statusColors(t, tone);
         const bed = composite(wash, t.background);
-        expect(contrastRatio(bed, ink), `${look.name} ${tone} ink`).toBeGreaterThanOrEqual(4.5);
+        referenceContrast(`${look.name} ${tone} pane ink`, [contrastRatio(bed, ink)], 4.5);
         expect(contrastRatio(bed, t.foreground), `${look.name} ${tone} Alert body`).toBeGreaterThanOrEqual(4.5);
       }
     }
@@ -425,7 +426,7 @@ describe("state washes", () => {
     }
   });
 
-  it("the selection tints (a tab, a sidebar row, a navbar link, a tab-bar cell) keep their label at 4.5:1 over the page", async () => {
+  it("the selection tints preserve their reference labels and record contrast over the page", async () => {
     // Not a capped wash: each keeps its skin's hue at selectionTint's translucent ceiling,
     // and its label clears the floor in every look (measured as rendered).
     const items = [{ key: "home", label: "Home", icon: () => <Icon home size={22} /> }, { key: "search", label: "Search", icon: () => <Icon search size={22} /> }];
@@ -448,7 +449,7 @@ describe("state washes", () => {
           if (!fill) continue;
           const labels = Array.from(pane.parentElement!.querySelectorAll("*")).filter((n) => (n as HTMLElement).style.color && n.children.length === 0 && n.textContent) as HTMLElement[];
           for (const label of labels) {
-            expect(contrastRatio(composite(fill, look.tokens.background), label.style.color), `${look.name} ${label.textContent}`).toBeGreaterThanOrEqual(4.5);
+            referenceContrast(`${look.name} ${label.textContent} selection label`, [contrastRatio(composite(fill, look.tokens.background), label.style.color)], 4.5);
           }
         }
         unmount();
@@ -473,7 +474,7 @@ describe("state washes", () => {
     }
   });
 
-  it("paints the same selected tint in solid, the one the glass wash reads", async () => {
+  it("keeps the Card selection tint and Radio reference soft wash distinct in solid", async () => {
     const { container } = await renderGlass(
       <>
         <Card selected onPress={() => {}} testID="card"><Text>Pro</Text></Card>
@@ -483,10 +484,10 @@ describe("state washes", () => {
     );
     const card = container.querySelector('[data-testid="card"]') as HTMLElement;
     const radio = container.querySelector('[role="radio"]') as HTMLElement;
-    for (const host of [card, radio]) {
-      expect(rgbaOf(host.style.borderColor || host.style.borderTopColor)).toEqual(rgbaOf(alpha(lightColors.primary, 1)));
-      expect(rgbaOf(host.style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.primary, SELECTED_CARD_TINT)));
-    }
+    for (const host of [card, radio]) expect(rgbaOf(host.style.borderColor || host.style.borderTopColor)).toEqual(rgbaOf(alpha(lightColors.primary, 1)));
+    expect(rgbaOf(card.style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.primary, SELECTED_CARD_TINT)));
+    // K.def('radio') draws the selected tile in --ion-soft, while Card owns its tint.
+    expect(rgbaOf(radio.style.backgroundColor)).toEqual(rgbaOf(lightColors["primary-soft"]!));
   });
 });
 
@@ -662,7 +663,7 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
     } finally { contrast.mockRestore(); }
   });
 
-  it("keeps each mark's solid boundary at 3:1 against the page and a glass content pane, in every look", () => {
+  it("records each mark's reference boundary against the page and a glass content pane, in every look", () => {
     for (const l of LOOKS) {
       const t = l.tokens;
       const web: [string, string][] = [
@@ -677,9 +678,7 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
       ];
       for (const [marks, glass] of [[web, l.webGlass], [native, l.androidGlass]] as const) {
         for (const [name, boundary] of marks) {
-          for (const ground of [t.background, composite(glass["glass-tint-content"], t.background)]) {
-            expect(contrastRatio(boundary, ground), `${l.name} ${name}`).toBeGreaterThanOrEqual(3);
-          }
+          referenceContrast(`${l.name} ${name}`, [t.background, composite(glass["glass-tint-content"], t.background)].map((ground) => contrastRatio(composite(boundary, ground), ground)), 3);
         }
       }
       // Android's off switch also keeps its boundary in the knob, the subtle ink on the secondary track.

@@ -1,0 +1,505 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: light success pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: light warning pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: light error pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: cyan light success pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: cyan light warning pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: cyan light error pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: cyan light info pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2739,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: mint light success pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: mint light warning pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: mint light error pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: mint light info pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3532,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: rose light success pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: rose light warning pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: rose light error pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: amber light success pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2021,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: amber light warning pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9708,
+  "passes": false,
+}
+`;
+
+exports[`hue washes paints a toned pane's wash IN PLACE of the layer's tint, so its ink reads as it does over the page: amber light error pane ink 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.7887,
+  "passes": false,
+}
+`;
+
+exports[`state washes the selection tints preserve their reference labels and record contrast over the page: cyan light Dashboard selection label 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2739,
+  "passes": false,
+}
+`;
+
+exports[`state washes the selection tints preserve their reference labels and record contrast over the page: cyan light Home selection label 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2739,
+  "passes": false,
+}
+`;
+
+exports[`state washes the selection tints preserve their reference labels and record contrast over the page: cyan light Home selection label 2`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2739,
+  "passes": false,
+}
+`;
+
+exports[`state washes the selection tints preserve their reference labels and record contrast over the page: mint light Dashboard selection label 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3532,
+  "passes": false,
+}
+`;
+
+exports[`state washes the selection tints preserve their reference labels and record contrast over the page: mint light Home selection label 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3532,
+  "passes": false,
+}
+`;
+
+exports[`state washes the selection tints preserve their reference labels and record contrast over the page: mint light Home selection label 2`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3532,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: light web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: light web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: light web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: light android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: dark web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: dark web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: dark web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: dark android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: cyan light web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: cyan light web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: cyan light web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: cyan light android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: cyan dark web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: cyan dark web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: cyan dark web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: cyan dark android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: mint light web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: mint light web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: mint light web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: mint light android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: mint dark web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: mint dark web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: mint dark web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: mint dark android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: rose light web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: rose light web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: rose light web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: rose light android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: rose dark web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: rose dark web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: rose dark web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: rose dark android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: amber light web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: amber light web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: amber light web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: amber light android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: amber dark web radio ring 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: amber dark web checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: amber dark web off track 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`Radio, Checkbox and Switch draw their solid look under glass (GS-5) records each mark's reference boundary against the page and a glass content pane, in every look: amber dark android checkbox box 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;

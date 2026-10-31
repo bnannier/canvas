@@ -3,12 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Radio, RadioGroup } = scope;
+  const { Icon, Radio, RadioGroup } = scope;
   return (
-<RadioGroup defaultValue="pro">
-  <Radio value="hobby" description="For personal projects and experiments.">Hobby</Radio>
-  <Radio value="pro" description="For growing teams that need more control.">Pro</Radio>
-  <Radio value="enterprise" description="Advanced security, compliance, and support.">Enterprise</Radio>
+<RadioGroup row equal defaultValue="stable">
+  <Radio card value="stable" icon={<Icon shieldCheck size={18} decorative />} meta="v4.0" description="Tested releases.">Stable</Radio>
+  <Radio card value="beta" icon={<Icon gitBranch size={18} decorative />} meta="v4.1" description="Early features.">Beta</Radio>
+  <Radio card value="canary" icon={<Icon bird size={18} decorative />} meta="nightly" description="Every commit.">Canary</Radio>
 </RadioGroup>
   );
 }

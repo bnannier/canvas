@@ -46,6 +46,10 @@ export interface ButtonSkinOpts {
   iconBox?: "compact" | "medium" | "large" | null;
   wideIcon?: boolean;
   circle?: boolean;
+  /** A standard control with fully rounded ends (a pill), 2 px wider at each side on the web. */
+  rounded?: boolean;
+  /** A dashed edge in place of the solid one. */
+  dashed?: boolean;
   inset?: boolean;
   inverse?: boolean;
   quiet?: boolean;
@@ -123,6 +127,11 @@ export interface ButtonSkin {
   lift?: (intent: Intent, opts?: ButtonSkinOpts) => HoverMotion | null;
   /** Where the notification `count` sits over the upper trailing corner. */
   count: ViewStyle;
+  /**
+   * The `unread` mark: the accent dot inside the box's upper trailing corner, ringed in the
+   * card colour (the hand-off's inbox, Controls.dc.html `c-avatar`).
+   */
+  unread: (t: ColorTokens) => ViewStyle;
 }
 
 // --- the resolvers the axes registry reads (tools/axes/registry.ts) ---------------
@@ -250,6 +259,27 @@ const CONTROL: Record<Size, Metrics> = {
   base: { height: 40, padX: 16, type: FS(14, 20) },
   large: { height: 48, padX: 22, type: FS(16, 22) },
 };
+
+// The web's label lines: the hand-off sets every label on a line its own size (`K.btn`
+// `font:500 14px/1`, 13/1 small, 16/1 large), so a link's box is its label's line.
+const WEB_CONTROL: Record<Size, Metrics> = {
+  small: { ...CONTROL.small, type: FS(13, 13) },
+  base: { ...CONTROL.base, type: FS(14, 14) },
+  large: { ...CONTROL.large, type: FS(16, 16) },
+};
+
+// The `rounded` pill's ends: the hand-off's `<Button rounded>` (Controls.dc.html
+// `c-button-sizes`, `padding:0 18px;border-radius:999px` on the 40 px control) sits 2 px
+// wider at each side than the 16 px control.
+const ROUNDED_PAD = 2;
+
+// The `unread` dot: `position:absolute;top:6px;right:6px;width:8px;height:8px;
+// border-radius:50%;background:var(--ion);box-shadow:0 0 0 2px var(--sf)`.
+const UNREAD_DOT = 8;
+const unreadDot = (t: ColorTokens, inset: number): ViewStyle => ({
+  position: "absolute", top: inset, right: inset, width: UNREAD_DOT, height: UNREAD_DOT,
+  borderRadius: 9999, backgroundColor: t.primary, boxShadow: `0px 0px 0px 2px ${t.card}`,
+});
 
 // iOS's row: a 50pt control with a 17pt label (`--h-c: 50px; --fs: 17px`). The small step
 // is the hand-off's 32; its large step (48, 16) would sit below the 50pt base, so large
@@ -387,22 +417,24 @@ function bodyLabel(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOpts
  * square), its corner, the intent's fill, border and lit edge. A link has no box: no
  * border, no vertical padding, 2 at the sides.
  */
-function controlContainer(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOpts, m: Record<Size, Metrics>, corner: number): ViewStyle {
+function controlContainer(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOpts, m: Record<Size, Metrics>, corner: number, pill: number, roundedPad = 0): ViewStyle {
   const look = lookOf(t, intent, o);
   const metrics = m[size];
   return {
     ...ROW,
     gap: 8,
-    borderRadius: corner,
+    // `rounded` turns the control's corner into the pill (an icon square into a circle).
+    borderRadius: o.rounded ? pill : corner,
     ...(o.icon
       ? sq(metrics.height)
       : intent === "link" ? { paddingHorizontal: 2, paddingVertical: 0 }
       // The hand-off's fixed height (`K.btn`, `height: 48px`), the border box: an icon taller
       // than the label line (a 24 px arrow beside a 22 px line) centres in it rather than
       // growing the button.
-      : { height: metrics.height, paddingVertical: 0, paddingHorizontal: metrics.padX }),
+      : { height: metrics.height, paddingVertical: 0, paddingHorizontal: metrics.padX + (o.rounded ? roundedPad : 0) }),
     backgroundColor: look.fill,
     borderWidth: intent === "link" ? 0 : BORDER,
+    ...(o.dashed ? { borderStyle: "dashed" } : null),
     borderColor: look.border,
     ...edgeShadow(standard(o) ? look.edge : null),
     ...(o.consistent ? { minWidth: 78 } : null),
@@ -441,12 +473,12 @@ export const webSkin: ButtonSkin = {
   surround: (o) => o.comfortable ? { paddingHorizontal: 16, paddingVertical: 7 } : {},
   container: (t, intent, size, o) =>
     bodyContainer(t, intent, o, shape.web.control, shape.web.pill) ?? {
-      ...controlContainer(t, intent, size, o, CONTROL, shape.web.control),
+      ...controlContainer(t, intent, size, o, WEB_CONTROL, shape.web.control, shape.web.pill, ROUNDED_PAD),
       ...(o.disabled ? { opacity: 0.4 } : null),
     },
   label: (t, intent, size, o) =>
     bodyLabel(t, intent, size, o ?? { icon: false, block: false, dim: false }) ?? {
-      ...CONTROL[size].type,
+      ...WEB_CONTROL[size].type,
       fontWeight: "500",
       color: lookOf(t, intent, o).label,
       ...(intent === "link" ? { textDecorationLine: "underline" } : null),
@@ -476,6 +508,7 @@ export const webSkin: ButtonSkin = {
   // The filled looks rise 1 px under the pointer; every other hover switches at once.
   lift: (intent, o) => (filled(intent, o) ? HOVER.button : null),
   count: { position: "absolute", top: -5, right: -5 },
+  unread: (t) => unreadDot(t, 6),
 };
 
 // The surfaces a button paints on iOS and Android: every standard intent but the bare
@@ -495,7 +528,7 @@ function nativeLabel(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOp
 // ---------- iOS (HIG / iOS 26+ Liquid Glass): capsule, semibold, dim on press ----------
 export const iosSkin: ButtonSkin = {
   container: (t, intent, size, o) => ({
-    ...(bodyContainer(t, intent, o, shape.ios.control, shape.ios.pill) ?? controlContainer(t, intent, size, o, IOS_CONTROL, shape.ios.control)),
+    ...(bodyContainer(t, intent, o, shape.ios.control, shape.ios.pill) ?? controlContainer(t, intent, size, o, IOS_CONTROL, shape.ios.control, shape.ios.pill)),
     ...(o.dim ? { opacity: 0.4 } : null), // iOS disabled control alpha (the hand-off's 0.4)
   }),
   // The hand-off's iOS row: 600 weight, -0.2 tracking.
@@ -509,6 +542,7 @@ export const iosSkin: ButtonSkin = {
   ripple: null,
   minTarget: 44, // HIG minimum tappable area 44x44pt (small = 32pt tall, extended via hitSlop)
   count: { position: "absolute", top: -5, right: -5 },
+  unread: (t) => unreadDot(t, 6),
 };
 
 // Android ripple over a fill: a light ripple on dark fills, a dark one on light/
@@ -523,7 +557,7 @@ export const androidSkin: ButtonSkin = {
     // The Material ripple is clipped to this pill by the shell's <RippleClip> parent, NOT here:
     // a bounded android_ripple is the pressable's own rectangular-masked background, which a
     // same-node overflow:"hidden" cannot clip (RN only path-clips CHILDREN). See ripple-clip.tsx.
-    ...(bodyContainer(t, intent, o, shape.android.control, shape.android.pill) ?? controlContainer(t, intent, size, o, CONTROL, shape.android.control)),
+    ...(bodyContainer(t, intent, o, shape.android.control, shape.android.pill) ?? controlContainer(t, intent, size, o, CONTROL, shape.android.control, shape.android.pill)),
     ...(o.dim ? { opacity: 0.38 } : null), // M3 disabled opacity
   }),
   // The hand-off's Android row: 500 weight, 0.1 tracking.
@@ -539,10 +573,11 @@ export const androidSkin: ButtonSkin = {
   ripple: androidRipple,
   // Clip the bounded ripple to the stadium (icon = circle). Same corner as `container`, so
   // the <RippleClip> parent's rounded outline matches the button's own corners at every size.
-  rippleClipShape: () => ({ borderRadius: shape.android.control }),
+  rippleClipShape: (_size, o) => ({ borderRadius: o.rounded ? shape.android.pill : shape.android.control }),
   minTarget: 48, // M3 minimum touch target 48x48dp (small = 32dp, base = 40dp; extended via hitSlop)
   // Inside the ripple clip, so the badge sits within the corner rather than over it.
   count: { position: "absolute", top: 3, right: 2 },
+  unread: (t) => unreadDot(t, 6),
 };
 
 function sq(d: number): ViewStyle {

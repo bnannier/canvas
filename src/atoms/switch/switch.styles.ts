@@ -1,6 +1,7 @@
 import { type ViewStyle } from "react-native";
 import { customShadow, TOUCH_TARGET, type ColorTokens } from "../../style/index.js";
 import { type SwitchSkin, type Size } from "./switch.shared.js";
+import { isRTL } from "../../style/rtl.js";
 
 // Co-located Switch skins, one per platform, drawn in the Canvas v4 hand-off's colours
 // (tools/v4/handoff/cv-kit-controls.js, its `sw` renderer and the K.PF rows). Plain RN
@@ -46,6 +47,18 @@ const WEB_TRACK_LIGHT = "inset 0px 1px 0px rgba(255, 255, 255, 0.2)";
 const WEB_KNOB_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 3, opacity: 0.35 });
 
 export const webSkin: SwitchSkin = {
+  // Component.dc.html's navbar setting: the 32 px chip holds a 26×16 track,
+  // a 10 px knob and a 12 px trailing label; the ordinary Switch keeps its sizes.
+  chip: {
+    root: (t) => ({ height: 32, paddingStart: 8, paddingEnd: 12, marginStart: 4, gap: 8, justifyContent: "flex-start", borderRadius: 9999, borderWidth: 1, borderColor: t.border, backgroundColor: t.secondary }),
+    track: (t, checked) => ({ ...PILL, width: 26, height: 16, borderWidth: 1, borderColor: t["field-border"] ?? t.border, backgroundColor: checked ? t.primary : raised(t), transitionProperty: "background-color", transitionDuration: "250ms" } as ViewStyle),
+    thumb: (_t, checked) => ({
+      ...ABS, ...customShadow({ offsetY: 1, radius: 2, opacity: 0.35 }), top: 2, start: 2, width: 10, height: 10, backgroundColor: KNOB,
+      transform: [{ translateX: checked ? 10 * (isRTL() ? -1 : 1) : 0 }],
+      transitionProperty: "transform", transitionDuration: "350ms", transitionTimingFunction: "cubic-bezier(0.34,1.56,0.64,1)",
+    } as ViewStyle),
+    label: (t, checked) => ({ fontSize: 12, lineHeight: 12, color: checked ? t.foreground : t["subtle-foreground"] ?? t["muted-foreground"] }),
+  },
   minTarget: null,
   track: (t, _dark, checked, size) => ({
     ...PILL,
@@ -59,7 +72,14 @@ export const webSkin: SwitchSkin = {
   thumb: (_t, checked, size) => {
     // The knob sits 1px inside the 1px edge: 2px from the track's outer edge on every side.
     const d = WEB_TRACK[size].height - 4;
-    return { ...ABS, ...WEB_KNOB_SHADOW, top: 1, width: d, height: d, backgroundColor: KNOB, ...(checked ? { end: 1 } : { start: 1 }) };
+    // cv-kit-controls.js and Component.dc.html move one knob on the same node:
+    // .35 s cubic-bezier(.34,1.56,.64,1), rather than exchanging start/end.
+    return {
+      ...ABS, ...WEB_KNOB_SHADOW, top: 1, start: 1, width: d, height: d, backgroundColor: KNOB,
+      transform: [{ translateX: checked ? (WEB_TRACK[size].width - WEB_TRACK[size].height) * (isRTL() ? -1 : 1) : 0 }],
+      transitionProperty: "transform", transitionDuration: "350ms",
+      transitionTimingFunction: "cubic-bezier(0.34,1.56,0.64,1)",
+    } as ViewStyle;
   },
   hover: (t, checked) => (checked ? { boxShadow: `${WEB_TRACK_LIGHT}, 0px 0px 16px ${t.glow ?? t.ring}` } : null),
 };

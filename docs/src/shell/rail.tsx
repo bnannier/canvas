@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Platform, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { View, ScrollView, Sidebar, Input } from "@nannier/canvas";
+import { View, ScrollView, Sidebar, Input, useTheme } from "@nannier/canvas";
 import type { Room } from "../data/rooms";
 import { SHELL } from "./page-look";
 
@@ -45,10 +45,7 @@ export function Rail({ room, active }: { room: Room; active?: string }) {
               // shows as an example.
               accessibilityLabel={room.id === "guides" ? room.title : `${room.title} components`}
               header={
-                <Input
-                  small
-                  leadingIcon
-                  icon="search"
+                <RailFilter
                   placeholder={`Filter ${room.items.length} ${room.id === "guides" ? "pages" : "components"}`}
                   accessibilityLabel={room.id === "guides" ? "Filter pages" : "Filter components"}
                   value={query}
@@ -73,6 +70,12 @@ export function Rail({ room, active }: { room: Room; active?: string }) {
       </View>
     </View>
   );
+}
+
+/** The rail's 36 px search well from Component.dc.html, shared with its phone index. */
+export function RailFilter(props: { placeholder: string; accessibilityLabel: string; value: string; onChangeText: (value: string) => void }) {
+  const { tokens } = useTheme();
+  return <Input small leadingIcon icon="search" {...props} style={{ height: 36, borderRadius: 10, backgroundColor: tokens.popover, borderColor: tokens["field-border"] ?? tokens.border }} />;
 }
 
 // box-none lives in a StyleSheet.create style: react-native-web compiles its box-none

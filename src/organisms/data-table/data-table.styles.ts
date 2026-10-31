@@ -45,7 +45,7 @@ export type Density = "compact" | "regular" | "comfortable";
 // band + flex-row grid, the selection column, the striped/pressable rows); the
 // skin maps tokens and density to RN style objects and declares its press mode
 // (iOS/web tint the row fill, Android ripples).
-/** A sheet look's parts (`reference`, `bare`): each replaces the skin's own part. */
+/** A sheet look's parts (`reference`, `bare`, `matrix`): each replaces the skin's own part. */
 export interface DataTableSheet {
   frame: (t: ColorTokens) => ViewStyle;
   columns: ViewStyle;
@@ -114,6 +114,12 @@ export interface DataTableSkin {
    * the skin's own; absent where the platform's own table control draws the table (iOS).
    */
   bare?: DataTableSheet;
+  /**
+   * The `matrix` look: a section page's specimen grid (Controls.dc.html, `c-button`), no
+   * frame, fill or rules, unpadded cells 12 apart in rows and 20 apart in columns. Absent
+   * where the platform's own table control draws the table (iOS).
+   */
+  matrix?: DataTableSheet;
   /** Size (px) of the sort-direction indicator icon beside a sortable header label. */
   sortIconSize: number;
   /**
@@ -323,6 +329,21 @@ export const webSkin: DataTableSkin = {
     cellInset: { paddingLeft: 0, paddingRight: 12 },
     groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
     // Every row draws its own rule beneath, so the footer adds none.
+    footerRule: () => ({}),
+  },
+  // The Controls page's states matrix (Controls.dc.html, `c-button`): `display:grid;
+  // grid-template-columns:110px repeat(5,max-content);gap:12px 20px` with no chrome, the
+  // headings in the sheet's mono label. The row gap rides above each row, the column gap
+  // between the cells, and nothing pads a cell.
+  matrix: {
+    frame: () => ({}),
+    columns: { paddingHorizontal: 0, columnGap: 20 },
+    headerRow: () => ({ flexDirection: "row", alignItems: "center" }),
+    headerCell: sheetHeading,
+    dataRow: () => ({ flexDirection: "row", alignItems: "center", paddingTop: 12 }),
+    cellPad: { paddingVertical: 0, paddingHorizontal: 0 },
+    cellInset: { paddingHorizontal: 0 },
+    groupBand: () => ({ flexDirection: "row", paddingTop: 12 }),
     footerRule: () => ({}),
   },
   sortIconSize: 12,
