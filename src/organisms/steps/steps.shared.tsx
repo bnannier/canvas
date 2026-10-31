@@ -40,6 +40,8 @@ export interface StepsProps {
   defaultCurrent?: number;
   // Layout (pick one; default is horizontal). Precedence: progress, segmented, vertical.
   vertical?: boolean;
+  /** A short vertical list with 22px markers and no connector lines, for a workflow sidebar. */
+  compact?: boolean;
   /**
    * Equal segments in a row: each step a 4 px bar (the accent once reached, glowing on the
    * current step) over its label and, from its `description`, a status line inked by the
@@ -163,12 +165,12 @@ function StepProgress({ value, skin }: { value: number; skin: StepsSkin }) {
 export function createSteps(skin: StepsSkin) {
   // The numbered/check disc. Pressable (and so opacity-dim / ripple) only when an
   // onStepPress handler is supplied; otherwise a plain View.
-  function Circle({ index, state, onPress, seams }: { index: number; state: State; onPress?: () => void; seams: CircleSeams }) {
+  function Circle({ index, state, onPress, seams, compact, label }: { index: number; state: State; onPress?: () => void; seams: CircleSeams; compact?: boolean; label?: string }) {
     // A step circle is 32pt of visible dot on every platform, which is right for the
     // rail's rhythm and short of both platforms' minimum, so the touch area grows
     // around it rather than the dot growing. The slop is seeded from that fixed size, so it
     // is in place before the first layout (src/style/touch-target-seed.ts).
-    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(s.circleBase));
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(compact ? { ...s.circleBase, ...s.compactCircle } : s.circleBase));
     const hitSlop = seamed(target.hitSlop, seams);
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
@@ -179,7 +181,7 @@ export function createSteps(skin: StepsSkin) {
     const circle = skin.circleState(tokens, state);
     const surfaced = circle.backgroundColor != null && circle.backgroundColor !== "transparent";
     const current = state === "current";
-    const shape = [s.circleBase, circle];
+    const shape = [s.circleBase, circle, compact ? s.compactCircle : null];
     // An open ring (the current and upcoming markers) paints no surface, so glass leaves it
     // as solid draws it; in solid mode it still takes Increase Contrast's weight, its own
     // colour kept for the current step's state ring and `foreground` for the rest.
@@ -187,9 +189,9 @@ export function createSteps(skin: StepsSkin) {
     const pane = surfaced ? <GlassPane static layer="control" shape={shape} stateBorder={current} brand={state === "completed" ? tokens.primary : undefined} /> : null;
     const glyph = (
       state === "completed" ? (
-        <Icon check decorative size={s.checkSize} color={skin.glyphState(tokens, state).color as string} />
+        <Icon check decorative size={compact ? 11 : s.checkSize} color={skin.glyphState(tokens, state).color as string} />
       ) : (
-        <Text style={[s.glyphBase, skin.glyphState(tokens, state)]}>{String(index + 1)}</Text>
+        <Text style={[s.glyphBase, compact ? s.compactGlyph : null, skin.glyphState(tokens, state)]}>{String(index + 1)}</Text>
       )
     );
     if (onPress) {
@@ -210,6 +212,7 @@ export function createSteps(skin: StepsSkin) {
             android_ripple={ripple}
             onPress={onPress}
             accessibilityRole="button"
+            accessibilityLabel={label}
           >
             {pane}
             {glyph}
@@ -293,6 +296,21 @@ export function createSteps(skin: StepsSkin) {
     };
 
     if (layout === "vertical") {
+      if (props.compact) return withStacksProbe(
+        <View testID={testID} style={[s.fullWidth, s.compactList, style]}>
+          {steps.map((step, i) => {
+            const state = stateOf(i, current);
+            return <View key={i} style={s.compactRow} aria-current={state === "current" ? "step" : undefined}>
+              <Circle compact index={i} state={state} label={`${step.label}, step ${i + 1} of ${steps.length}`} onPress={pressStep ? () => pressStep(i) : undefined}
+                seams={{ top: i > 0 ? 6 : undefined, bottom: i < steps.length - 1 ? 6 : undefined }} />
+              <View style={s.flex1}>
+                <Text style={[s.compactLabel, skin.labelState(tokens, state)]}>{step.label}</Text>
+                {step.description != null ? <Text style={skin.verticalDescription(tokens, state)}>{step.description}</Text> : null}
+              </View>
+            </View>;
+          })}
+        </View>,
+      );
       return withStacksProbe(
         <View testID={testID} style={[s.fullWidth, style]}>
           {steps.map((step, i) => {

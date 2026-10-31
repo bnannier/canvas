@@ -60,6 +60,13 @@ export const glyphBase: TextStyle = { fontFamily: MONO_FONT, fontSize: 12, lineH
 
 /** The completed marker's check glyph size. */
 export const checkSize = 13;
+// The Wizard's short sidebar list, without the long vertical rail connectors.
+export const compactCircle: ViewStyle = { width: 22, height: 22, boxShadow: "none" };
+// The compact workflow's mono step number is small meta text.
+export const compactGlyph: TextStyle = { fontSize: 11, lineHeight: 14 };
+export const compactList: ViewStyle = { gap: 6 };
+export const compactRow: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10 };
+export const compactLabel: TextStyle = { fontSize: 13, fontWeight: "500" };
 
 // The vertical layout's label: 500 14px on the 18.2 line (the variant title's role, the
 // Navigation card's `font:500 14px/1.3`).

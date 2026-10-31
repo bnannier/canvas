@@ -62,6 +62,8 @@ export interface FieldState {
 // them to RN style objects. `borderColor` is a token key (error > focus > input)
 // the shell already resolved; the skin reads tokens[borderColor].
 export interface InputSkin extends FloatingLabelStyles<Size> {
+  /** The platform's compact outlined density, using the same editor and behavior. */
+  compact?: InputSkin;
   /** Clear material for the web skin. */
   liquid?: boolean;
   /** Type scale per size; the field and its addons share it so they line up. */
@@ -208,7 +210,7 @@ const WEB_INSET = 12;
 const WEB_ICON = 16;
 const WEB_ICON_GUTTER = WEB_INSET + WEB_ICON + 8;
 
-export const webSkin: InputSkin = {
+const webBase: InputSkin = {
   // The hand-off's toolbar search (cv-kit-code2.js): a borderless 36px row, a 15px
   // magnifier and 10px gap. The type is what the hand-off renders, not its renderer's
   // span (PLAN S10): its interactive layer (cv-kit-code7.js `toInput`) swaps the span
@@ -351,7 +353,7 @@ const IOS_ICON = 20;
 const IOS_INSET = 12;
 const IOS_ICON_GUTTER = IOS_INSET + IOS_ICON + 8;
 
-export const iosSkin: InputSkin = {
+const iosBase: InputSkin = {
   // The hand-off's iOS search field (cv-kit-code6.js): a 36pt `muted` well at the
   // search-field corner, 8pt inset, a 16pt subtle magnifier 6pt from a 17pt value.
   search: {
@@ -481,7 +483,7 @@ function androidLabelRest(size: Size): TextStyle {
   if (size === "small") return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 };
   return { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 };
 }
-export const androidSkin: InputSkin = {
+const androidBase: InputSkin = {
   // The hand-off's Material 3 search bar (cv-kit-code6.js): a 56dp `muted` stadium,
   // 16dp inset, a 22dp magnifier 16dp from a 16sp value, the placeholder muted.
   search: {
@@ -611,3 +613,41 @@ export const androidSkin: InputSkin = {
   // the resting type, medium weight.
   labelAbove: (t, size) => ({ ...androidLabelRest(size), fontWeight: "500", color: t.foreground }),
 };
+
+
+// The reference's compact form well (cv-kit-overlays.js fld): 40px, 14px text,
+// a 12px inset, bg2 and ln2. Density remains independent of the size axis; the
+// 32/40/48 ladder keeps each compact field at the same bounds on every skin.
+function compactWell(base: InputSkin, radius: number): InputSkin {
+  const height = (size: Size) => size === "large" ? 48 : size === "small" ? 32 : 40;
+  const well = (t: ColorTokens, borderColor: keyof ColorTokens): TextStyle => ({
+    borderRadius: radius,
+    borderWidth: 1,
+    borderColor: fieldEdge(t, borderColor),
+    backgroundColor: webFill(t),
+  });
+  return {
+    ...base,
+    text: (t, size) => ({ fontSize: size === "large" ? 16 : size === "small" ? 13 : 14, lineHeight: size === "large" ? 22 : size === "small" ? 18 : 20, fontWeight: "400", color: t.foreground }),
+    bareBox: (size) => ({ height: height(size) }),
+    groupedHeight: height,
+    bareField: (t, borderColor) => ({ ...well(t, borderColor), width: "100%", paddingHorizontal: 12, paddingVertical: 0, textAlignVertical: "center", ...FOCUS_RESET }),
+    groupContainer: (t, borderColor) => ({ ...well(t, borderColor), flexDirection: "row", alignItems: "stretch", width: "100%", overflow: "hidden" }),
+    groupField: (t, options) => ({ ...base.groupField(t, options), paddingStart: options.leadingIcon ? 12 + base.iconSize + 8 : 12, paddingEnd: options.trailingIcon ? 12 + base.iconSize + 8 : 12, paddingVertical: 0 }),
+    placeholder: subtleInk,
+    floatingLabel: false,
+    readOnlyFrame: undefined,
+    readOnlyField: () => ({ borderStyle: "dashed", backgroundColor: "transparent" }),
+  };
+}
+
+// Pure initializers let an Input platform entry retain only its own skin. Mutating
+// exported objects here would make every platform's construction a module side effect.
+// Read the radius inside that initializer too: an argument property read can retain
+// the unused call because a consumer bundler must account for potential getters.
+function withCompact(base: InputSkin, radius: number): InputSkin {
+  return { ...base, compact: compactWell(base, radius) };
+}
+export const webSkin: InputSkin = /* @__PURE__ */ (() => withCompact(webBase, shape.web.field))();
+export const iosSkin: InputSkin = /* @__PURE__ */ (() => withCompact(iosBase, shape.ios.field))();
+export const androidSkin: InputSkin = /* @__PURE__ */ (() => withCompact(androidBase, shape.android.field))();

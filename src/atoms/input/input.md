@@ -1,7 +1,7 @@
 # Input
 
 The Input component is a React Native text field with semantic boolean props
-(`error`, `small`, `large`, `disabled`), plus prefix/suffix addons, overlaid
+(`error`, `small`, `large`, `compact`, `disabled`), plus prefix/suffix addons, overlaid
 icons (`leadingIcon` / `trailingIcon` with any Canvas glyph as `icon`), a
 `passwordToggle` eye for a `secureTextEntry` value, a `clearable` clear
 button, and a `shortcut` keycap. Input is single-line; for multi-line entry use the
@@ -120,6 +120,16 @@ focus outline for the borderless editor.
 ```
 
 ## Variants
+
+### Compact
+
+`compact` is an outlined well with a 12px inset and the platform's field corner.
+Its default is 40px high with a 14px value; `small` is 32px/13px and `large` is
+48px/16px. Labels sit above the well on every platform.
+
+```tsx
+<Input compact placeholder="noor@nannier.com" accessibilityLabel="Teammate email" />
+```
 
 ### Toolbar search
 

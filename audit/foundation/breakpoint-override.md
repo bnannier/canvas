@@ -45,7 +45,7 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | `navbars` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `row-menu` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `steps` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
-| `wizard` | through shared modules | `useContainerWidth` (src/style/container.ts) |
+| `wizard` | through shared modules | `ThemeProvider` (src/style/theme.tsx) |
 | `tabs` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `toast` | through shared modules | `Portal` (src/style/portal.tsx) |
 | `avatar` | through other kit components | `dropdown` |

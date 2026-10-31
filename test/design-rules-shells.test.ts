@@ -98,6 +98,7 @@ describe("the shells that build each component", () => {
   // A platform check inside a shell is allowed only for a mechanism, never for what the
   // component draws: the look and the control come from the entry files.
   const PLATFORM_MECHANISMS: Record<string, string> = {
+    "src/organisms/wizard/wizard.typography.ts": "Browser native-skin preview font stacks; physical native keeps the app's configured faces. No markup or shape changes.",
     "src/charts/geo-map/geo-map.shared.tsx": "browser-only tab exclusion keeps decorative map targets out of Tab order without disabling native touch activation",
     "src/charts/heatmap/heatmap.shared.tsx": "browser-only tab exclusion keeps calendar marks out of Tab order without disabling native touch activation",
     "src/molecules/alert-dialog/alert-dialog.shared.tsx": "iOS's keyboard pushes the alert up by padding (KeyboardAvoidingView behavior)",

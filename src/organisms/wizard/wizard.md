@@ -1,6 +1,6 @@
 # Wizard
 
-A modal workflow with fixed step navigation and footer actions around a bounded, scrolling body. The application owns stage content, validation, saving and transitions; Wizard composes the existing Dialog, Steps and Button controls.
+A modal workflow with a fixed step sidebar, a title and status header, and footer actions around a bounded, scrolling body. The application owns stage content, validation, saving and transitions; Wizard composes the existing Dialog, Steps and Button controls.
 
 Add `embedded` to show an open wizard in a page as a specimen, the way a catalogue
 or a showcase does: it keeps its look, its dialog role and its labelling, but it is
@@ -34,6 +34,22 @@ native back, and it renders in place in the page's flow instead of presenting in
 ```
 
 ## Variants
+
+### Team invitation
+
+The status sits beside the title, with the previous action at the footer's start and the
+application actions at its end. Compact steps occupy the fixed sidebar.
+
+```tsx
+<Wizard open embedded onOpenChange={() => {}} title="Create workspace"
+  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
+  current={1} status="Step 2 of 4" previous={{ label: "Back", onPress: () => {} }}
+  actions={<Button>Continue</Button>}>
+  <Typography body medium natural>Invite your team</Typography>
+  <Input compact placeholder="noor@nannier.com" accessibilityLabel="First teammate email" />
+  <Input compact placeholder="liang@nannier.com" accessibilityLabel="Second teammate email" />
+</Wizard>
+```
 
 ### Child owns scrolling
 
@@ -70,4 +86,4 @@ Set `scrollBody={false}` for a bounded child such as Chat that already manages i
 
 ## Accessibility
 
-Dialog supplies the accessible modal name, focus management, close action, Escape and native back behavior. The previous action carries its stage name; application actions provide their own labels and disabled states. Footer buttons stay on one row. At narrow widths the centered status moves above them; use Button `shrink` on application actions so long labels wrap within their button rather than moving the operation to another row. A controlled `onOpenChange` lets the application decide whether a dismissal request can proceed.
+Dialog supplies the accessible modal name, focus management, live close action, Escape and native back behavior. Embedded specimens keep the bare panel without a close action or modal focus ownership. The current sidebar stage carries `aria-current="step"`. The previous action carries its stage name; application actions provide their own labels and disabled states. Footer buttons stay on one row; use Button `shrink` on application actions so long labels wrap within their button rather than moving the operation to another row. A controlled `onOpenChange` lets the application decide whether a dismissal request can proceed.

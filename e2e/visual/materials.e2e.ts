@@ -20,7 +20,7 @@ const VIEWPORTS = {
 // rule, PLAN D13: resolveMaterial's "design" fallback), so under glass their web row keeps
 // its complete solid skin and does no backdrop work; the floating overlays below are the
 // web's glass, and native material evidence comes from the native Lookout targets.
-const SOLID_ON_WEB_DEFAULTS = new Set(["button", "button-group", "card", "input", "badge", "data-table"]);
+const SOLID_ON_WEB_DEFAULTS = new Set(["button", "button-group", "card", "input", "badge", "data-table", "wizard"]);
 
 for (const scheme of ["dark", "light"] as const) {
   for (const [formFactor, viewport] of Object.entries(VIEWPORTS)) {

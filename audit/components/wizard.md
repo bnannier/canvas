@@ -8,8 +8,8 @@ Audit checklist for `/components/wizard`. The facts block and the variants table
 | Route | `/components/wizard` |
 | Category | Organisms (`src/organisms/wizard/`) |
 | Markdown | `src/organisms/wizard/wizard.md` |
-| Source files | `wizard.android.tsx`, `wizard.ios.tsx`, `wizard.md`, `wizard.shared.tsx`, `wizard.styles.ts`, `wizard.tsx` |
-| Implementation | its own source directory, `src/organisms/wizard/` (5 TypeScript modules) |
+| Source files | `wizard.android.tsx`, `wizard.ios.tsx`, `wizard.md`, `wizard.shared.tsx`, `wizard.styles.ts`, `wizard.tsx`, `wizard.typography.ts` |
+| Implementation | its own source directory, `src/organisms/wizard/` (6 TypeScript modules) |
 | Exports | Wizard |
 | Platform entries | iOS: own build: Wizard (injects platform parts (../dialog/dialog.ios.js); injects platform parts (../steps/steps.ios.js); injects platform parts (../../atoms/button/button.ios.js)). Android: own build: Wizard (injects platform parts (../dialog/dialog.android.js); injects platform parts (../steps/steps.android.js); injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: Wizard; Android: Wizard |
@@ -23,7 +23,7 @@ Audit checklist for `/components/wizard`. The facts block and the variants table
 | Interaction states | static: A modal workflow composed of kit parts: the Dialog it opens, its Steps and its footer Buttons are kit components, whose own recipes capture them, and its body scroller declares no keyboard stop. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 5: `test/design-rules-skins.test.ts`, `test/dialog-embedded.test.tsx`, `test/docs-viewport-overlay.test.tsx`, `test/skins-smoke.test.tsx`, `test/wizard.test.tsx` |
+| Tests importing it | 6: `test/design-rules-skins.test.ts`, `test/detail-reference-specimens.test.tsx`, `test/dialog-embedded.test.tsx`, `test/docs-viewport-overlay.test.tsx`, `test/skins-smoke.test.tsx`, `test/wizard.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples, EXAMPLE_ROUTES), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/wizard.md`, written by `bun run audit:turn -- --slug=wizard --phase=before\|after` (the before and after capture runs) |
@@ -37,6 +37,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
+| `teaminvitation` | Team invitation | [ ] | [ ] | [ ] |  |
 | `childownsscrolling` | Child owns scrolling | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 

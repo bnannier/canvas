@@ -18,7 +18,9 @@
  *
  * HOW THE SET IS CHOSEN. It is not chosen here. tools/noticegen/scan.ts works out which
  * packages actually ship and records them in shipped.json; this generator only turns that
- * list into licence data. See scan.ts for why walking the dependency closure gives the
+ * list into licence data. Vendored Roboto is read separately from its committed source
+ * provenance and OFL notice, since it ships without an npm wrapper.
+ * See scan.ts for why walking the dependency closure gives the
  * wrong answer (it reports 531 packages and attributes copyleft code the app never
  * contains).
  *
@@ -439,13 +441,13 @@ export interface NoticeText {
 export const THIRD_PARTY_TITLE = "Open Source Licenses";
 
 export const THIRD_PARTY_INTRO =
-  ${q(`Canvas is built on open source. This page lists every third-party package the app ships, with its licence and copyright notice, and reproduces the full text of each licence. It is generated from the packages actually installed, so it cannot drift from what is in the build.`)};
+  ${q(`Canvas is built on open source. This page lists every third-party package the app ships, with its licence and copyright notice, and reproduces the full text of each licence. It is generated from the packages actually installed and the pinned vendored font sources, so it cannot drift from what is in the build.`)};
 
 export const THIRD_PARTY_CANVAS =
   ${q(`Canvas itself, its native capture module included, is published to npm as @nannier/canvas under the MIT License. This app is its reference documentation.`)};
 
 export const THIRD_PARTY_FONTS =
-  ${q(`The Instrument Sans, Bricolage Grotesque and JetBrains Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.`)};
+  ${q(`The Instrument Sans, Bricolage Grotesque, JetBrains Mono and Roboto typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.`)};
 
 /** Package count by declared licence, most common first. */
 export const THIRD_PARTY_BREAKDOWN: { license: string; count: number }[] = ${JSON.stringify(breakdown.map(([license, count]) => ({ license, count })), null, 2)};
@@ -460,12 +462,33 @@ export const THIRD_PARTY_TEXTS: NoticeText[] = ${JSON.stringify(texts, null, 2)}
   return { packages, texts, breakdown, rendered: header + body };
 }
 
+/** Vendored font data ships without an npm wrapper, so read its pinned source notice. */
+export function collectSourceFonts(root: string): Pkg[] {
+  const provenancePath = join(root, "docs/assets/fonts/source/Roboto-SOURCE.json");
+  const source = readJson(provenancePath);
+  if (!source || typeof source.family !== "string" || typeof source.commit !== "string"
+    || typeof source.file !== "string" || typeof source.sha256 !== "string" || typeof source.licenseFile !== "string") {
+    throw new Error("Missing or invalid vendored Roboto provenance");
+  }
+  const directory = dirname(provenancePath);
+  const hash = createHash("sha256").update(readFileSync(join(directory, source.file))).digest("hex");
+  if (hash !== source.sha256) throw new Error("Vendored Roboto source differs from its recorded revision");
+  const text = readFileSync(join(directory, source.licenseFile), "utf8");
+  if (!/SIL OPEN FONT LICENSE Version 1\.1/.test(text)) throw new Error("Vendored Roboto is missing its OFL notice");
+  const { copyright, body } = splitLicense(text);
+  return [{
+    name: source.family, version: source.commit, license: "OFL-1.1", copyright, body,
+    bodyHash: createHash("sha256").update(body.replace(/\s+/g, " ").trim()).digest("hex"),
+    bodyTitle: titleFor(body, "OFL-1.1"),
+  }];
+}
+
 // ---- run ----------------------------------------------------------------------------
 
 if (import.meta.main) {
   let notices: Notices;
   try {
-    notices = renderNotices(collectShipped(repo, readShipped(SHIPPED)));
+    notices = renderNotices([...collectShipped(repo, readShipped(SHIPPED)), ...collectSourceFonts(repo)]);
   } catch (err) {
     console.error(`notices:gen: ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);

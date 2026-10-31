@@ -23,7 +23,7 @@ Audit checklist for `/components/steps`. The facts block and the variants table 
 | Interaction states | static: A progress display whose step circles are plain in every rail example. focus exempt, verified: `onStepPress` makes each circle a button, a tab stop; no rail example passes it. pressed exempt, verified: `onStepPress` makes each circle a button; no rail example passes it. |
 | MeasureProps | not adopted |
 | Touch target | `steps.shared.tsx`: hitSlop, inlineSide, leastLine, minTarget, slopSides, splitSeam, styleBox, useSeededMinTargetSlop; `steps.styles.ts`: TOUCH_TARGET, minTarget |
-| Tests importing it | 15: `test/behavior-smoke-d.test.tsx`, `test/design-rules-skins.test.ts`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
+| Tests importing it | 16: `test/behavior-smoke-d.test.tsx`, `test/design-rules-skins.test.ts`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/steps-compact.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples, EXAMPLE_ROUTES), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/steps.md`, written by `bun run audit:turn -- --slug=steps --phase=before\|after` (the before and after capture runs) |
@@ -37,6 +37,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
+| `compactsidebar` | Compact sidebar | [ ] | [ ] | [ ] |  |
 | `vertical` | Vertical | [ ] | [ ] | [ ] |  |
 | `stepprogress` | Step progress | [ ] | [ ] | [ ] |  |
 | `segmented` | Segmented | [ ] | [ ] | [ ] |  |

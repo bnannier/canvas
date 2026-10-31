@@ -4,6 +4,7 @@ import type { ChatMessageData } from "@nannier/canvas";
 import type { ExampleScope } from "../../core/scope";
 import type { PropDescriptors } from "./knobs";
 import { usePinnedFocus } from "../../../../src/style/interaction-override";
+import { useTheme } from "../../../../src/style/theme";
 
 // K.def('chat') and K.def('scroll-view') are compositions, not a standalone message
 // or an empty primitive. Keep their authored specimen data here, and render the real
@@ -14,7 +15,32 @@ export function referenceSpecimen(scope: ExampleScope, name: string, props: Prop
   if (name === "ScrollView") return <ScrollSpecimen scope={scope} horizontal={props.horizontal === true} />;
   if (name === "TextInput") return <TextInputSpecimen key={JSON.stringify(props)} scope={scope} props={props} />;
   if (name === "View") return <ViewSpecimen scope={scope} props={props} />;
+  if (name === "Wizard") return <WizardSpecimen scope={scope} props={props} />;
   return undefined;
+}
+
+/** The default K.def('wizard') workflow, using the same real kit as application forms. */
+function WizardSpecimen({ scope, props }: { scope: ExampleScope; props: PropDescriptors }) {
+  const { Wizard, Input, Typography, Button } = scope;
+  return <Wizard open={props.open !== false} embedded onOpenChange={() => {}}
+    testID="detail-reference-wizard"
+    title={typeof props.title === "string" ? props.title : "Create workspace"}
+    steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
+    current={typeof props.current === "number" ? props.current : 1}
+    status={typeof props.status === "string" ? props.status : "Step 2 of 4"}
+    previous={{ label: "Back", onPress: () => {} }} actions={<Button>Continue</Button>}>
+    <WizardInvitationTitle Typography={Typography} />
+    <Input compact placeholder="noor@nannier.com" accessibilityLabel="First teammate email" />
+    <Input compact placeholder="liang@nannier.com" accessibilityLabel="Second teammate email" />
+  </Wizard>;
+}
+
+function WizardInvitationTitle({ Typography }: { Typography: ExampleScope["Typography"] }) {
+  const { fonts } = useTheme();
+  // K.def's normal 15px line is 19px in Instrument Sans and 18px in SF/Roboto.
+  // Use the existing leading props for the active face, including preview scopes.
+  const nativeFace = typeof fonts.sans === "string" && /SF Pro Text|Roboto/.test(fonts.sans);
+  return <Typography body medium natural={!nativeFace} denseLeading={nativeFace}>Invite your team</Typography>;
 }
 
 /** The raw input pedagogy in cv-kit-inputs.js, with the same native editing surface. */

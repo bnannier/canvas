@@ -3,11 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Input, Column } = scope;
+  const { Input } = scope;
   return (
-<Column>
-  <Input leadingIcon icon="search" shortcut="⌘K" placeholder="Search components…" />
-  <Input small shortcut="⌘K" placeholder="Search…" />
-</Column>
+<Input leadingIcon icon="search" clearable placeholder="Search" defaultValue="example" />
   );
 }

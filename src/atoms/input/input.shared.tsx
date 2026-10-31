@@ -210,6 +210,9 @@ export interface InputProps extends TextEntryProps, MeasureProps {
   // Size (pick one; default is the medium field).
   small?: boolean;
   large?: boolean;
+  /** A compact outlined well: 40 high with a 14px value by default; small is 32/13,
+   * large is 48/16. Keeps the platform's field corner and places labels above. */
+  compact?: boolean;
   // Width: a field is FILL (src/style/sizing.ts). It takes the bounds its parent
   // layout container provides, a Column, a Row span, a Container step, and never
   // carries a width of its own.
@@ -313,8 +316,9 @@ const GROUP_FIELD_AREA: ViewStyle = {
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
 
 /** Build an Input component from a platform skin. */
-export function createInput(skin: InputSkin) {
+export function createInput(platformSkin: InputSkin) {
   const Input = forwardRef<RNTextInput, InputProps>(function Input(props, ref) {
+    const skin = props.compact ? (platformSkin.compact ?? platformSkin) : platformSkin;
     const {
       value,
       onChangeText,

@@ -48,12 +48,13 @@ const IMAGE_ALT = "The same Canvas Select component rendered as native iOS, Mate
 // commits it (docs/src/ui/docs-head.tsx). The values are the tokens' `background` per scheme
 // (styles/tokens/colors.css).
 //
-// The faces are the document's too (decision D20): the hand-off's three variable families,
+// The faces are the document's too (decision D20): three critical variable families
+// and a nonpreloaded Roboto face for explicit Android previews,
 // self-hosted under public/fonts as the woff2 files docs/scripts/subset-fonts.mjs cuts from
 // Google Fonts' own sources, declared here from the manifest it writes (../ui/web-fonts.json)
 // with each family's `font-weight` range on its rule, so the browser draws every weight the
-// type scale asks for from one file, and preloaded below so they are fetching before the
-// bundle arrives. They do not go through expo-font, whose web rule carries no weight range
+// type scale asks for from one file. The three critical faces are preloaded below;
+// the optional preview face loads only when its family is actually requested. They do not go through expo-font, whose web rule carries no weight range
 // (docs/src/ui/fonts.ts), and the site's CSP admits no font host but this one
 // (public/_headers `font-src 'self'`). The body rule is the hand-off's: antialiased
 // smoothing and optimizeLegibility, which on its own took the Button header's pixel residue
@@ -89,7 +90,7 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="twitter:title" content={TITLE} />
         <meta name="twitter:description" content={DESCRIPTION} />
         <meta name="twitter:image" content="https://canvas.nannier.com/og.png" />
-        {Object.values(WEB_FONTS).map((font) => (
+        {Object.values(WEB_FONTS).filter((font) => !("preload" in font) || font.preload !== false).map((font) => (
           <link key={font.path} rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={font.path} />
         ))}
         {/* The react-native-web root reset: html, body and #root full-height, body scroll off. */}

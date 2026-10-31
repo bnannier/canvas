@@ -8,16 +8,20 @@ import type { ViewStyle } from "react-native";
 export interface WizardSkin {
   /** The scrolled body's content inset. */
   bodyContent: ViewStyle;
-  /** The footer column: the status row (when space is narrow) over the button row. */
+  /** The fixed workflow step rail. */
+  sidebar: ViewStyle;
+  /** Back at the start, application actions at the end. */
   footer: ViewStyle;
 }
 
 // Layout-only and identical across platforms: the body fills the workspace Dialog bounds.
-export const bodyScroll: ViewStyle = { flex: 1, minHeight: 0 };
+export const bodyScroll: ViewStyle = { flex: 1, minHeight: 0, minWidth: 0 };
+export const actions: ViewStyle = { flexDirection: "row", gap: 8, marginStart: "auto" };
 
 export const webSkin: WizardSkin = {
-  bodyContent: {},
-  footer: { gap: 8 },
+  bodyContent: { padding: 20, gap: 10 },
+  sidebar: { width: 170, flexShrink: 0, padding: 16, borderEndWidth: 1 },
+  footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8 },
 };
 export const iosSkin: WizardSkin = webSkin;
 export const androidSkin: WizardSkin = webSkin;

@@ -57,6 +57,10 @@ export type FooterKind = "buttons" | "capsules";
 // the active platform's look. The footer kind picks between a Button row
 // (web/Android) and iOS's side-by-side capsule row.
 export interface DialogSkin {
+  /** The shared workflow panel shell, distinct from a platform alert's card. */
+  bandedCard: ViewStyle;
+  /** Workflow panel title, in the platform's display face and weight. */
+  bandedTitle: (t: ColorTokens) => TextStyle;
   /** Structured application form treatment; platform alert defaults remain separate. */
   form?: {
     card: (t: ColorTokens) => ViewStyle;
@@ -189,12 +193,13 @@ export const compactWorkspaceContent: ViewStyle = { flexGrow: 0, flexShrink: 1, 
 export const workspaceBody: ViewStyle = { flex: 1, minHeight: 0, marginTop: 18 };
 export const workspaceFooter: ViewStyle = { flexShrink: 0, marginTop: 18 };
 // The `banded` form (the Wizard's panel): the panel takes no padding and draws three bands
-// split by hairline rules, the header padded 20 20 16 over its rule (its rows 16 apart),
-// the body padded 20, the footer padded 14 20 under its rule.
-export const bandedCard: ViewStyle = { padding: 0, overflow: "hidden" };
-export const bandedHeader: ViewStyle = { flexShrink: 0, paddingTop: 20, paddingHorizontal: 20, paddingBottom: 16, gap: 16, borderBottomWidth: 1 };
+// split by hairline rules, the header padded 18 22 over its rule, the body padded 20
+// (or a side rail beside its own padded scroll body), the footer padded 14 22.
+export const bandedCard: ViewStyle = { padding: 0, borderWidth: 1, borderRadius: shape.web.dialog, overflow: "hidden" };
+export const bandedHeader: ViewStyle = { flexShrink: 0, paddingVertical: 18, paddingHorizontal: 22, borderBottomWidth: 1 };
 export const bandedBody: ViewStyle = { flex: 1, minHeight: 0, padding: 20 };
-export const bandedFooter: ViewStyle = { flexShrink: 0, paddingVertical: 14, paddingHorizontal: 20, borderTopWidth: 1 };
+export const bandedSplitBody: ViewStyle = { flexDirection: "row", flex: 1, minHeight: 0 };
+export const bandedFooter: ViewStyle = { flexShrink: 0, paddingVertical: 14, paddingHorizontal: 22, borderTopWidth: 1 };
 export const dismissBackdrop: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
 
 // Per-size panel width: a dialog is a floating container (a bounds provider for
@@ -221,6 +226,8 @@ const webPanel = (t: ColorTokens): ViewStyle => ({
   ...shadow("lg", t),
 });
 export const webSkin: DialogSkin = {
+  bandedCard,
+  bandedTitle: (t) => ({ ...WEB_TITLE, color: t.foreground }),
   // The renderer's close: a bare 28 px ghost box holding the 16 px x in the third ink.
   close: {
     iconSize: 16,
@@ -263,6 +270,8 @@ export const webSkin: DialogSkin = {
 const IOS_RADIUS = shape.ios.dialog;
 const IOS_CAPSULE_RADIUS = shape.ios.control;
 export const iosSkin: DialogSkin = {
+  bandedCard,
+  bandedTitle: (t) => ({ fontSize: 18, lineHeight: 22.5, fontWeight: "700", letterSpacing: -0.27, color: t.foreground }),
   iconGap: 16,
   backdrop: (t) => ({ borderRadius: IOS_RADIUS, backgroundColor: scrimFill(t, 0.3) }),
   card: (t) => ({
@@ -330,6 +339,8 @@ export const iosSkin: DialogSkin = {
 // android_ripple on each, and NO dividers.
 const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: DialogSkin = {
+  bandedCard,
+  bandedTitle: (t) => ({ ...WEB_TITLE, fontFamily: undefined, fontWeight: "500", color: t.foreground }),
   iconGap: 16,
   backdrop: (t) => ({ borderRadius: ANDROID_RADIUS, backgroundColor: scrimFill(t, 0.32) }),
   card: (t) => ({ ...webPanel(t), borderRadius: ANDROID_RADIUS }),

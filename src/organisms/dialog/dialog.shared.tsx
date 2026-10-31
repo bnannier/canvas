@@ -48,12 +48,17 @@ export interface DialogProps {
   compact?: boolean;
   /** Extra content in the fixed header of a workspace form, below its title and description. */
   workspaceHeader?: ReactNode;
+  /** Content beside the form title, such as a workflow's progress status. */
+  headerAccessory?: ReactNode;
+  /** A fixed side rail beside a workspace's scrolling body. */
+  workspaceSidebar?: ReactNode;
   /** Custom actions after the form body; fixed below the body in workspace mode. */
   footer?: ReactNode;
   /**
-   * Draw the form's panel as three bands split by hairline rules: the header (title,
-   * close and `workspaceHeader`) over its rule, the body, and the footer under its rule,
-   * the panel itself unpadded. The Wizard's panel.
+   * Draw the reference's shared workflow panel as three bands split by hairline rules: the header
+   * (title, `headerAccessory` and optional `workspaceHeader`), body, and footer. A
+   * `workspaceSidebar` stays beside the body. Embedded panels keep their opaque in-page
+   * surface without a veil or close action; live panels keep modal presentation.
    */
   banded?: boolean;
   /**
@@ -219,6 +224,9 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     const modal = !(props.embedded === true && trigger == null);
 
     const banded = form && props.banded === true;
+    // The embedded Wizard is the hand-off's bare, in-page panel. A live Wizard
+    // keeps the modal veil and floating material, like every other form dialog.
+    const embeddedBanded = banded && !modal;
     const ruleColor = { borderColor: tokens.border };
     const iconTile = props.icon != null ? (
       <View style={{ marginBottom: skin.iconGap, alignItems: "flex-start" }}>
@@ -337,7 +345,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
       trigger != null && !overlay ? s.backdropTriggerGap : null,
       overlay ? s.backdropOverlay : s.backdropLayout,
       !modal && !overlay ? s.embeddedFill : null,
-      form ? { backgroundColor: "transparent", paddingTop: 20 + (insets?.top ?? 0), paddingBottom: 20 + (insets?.bottom ?? 0), paddingLeft: 20 + (insets?.left ?? 0), paddingRight: 20 + (insets?.right ?? 0) } : null,
+      form ? embeddedBanded ? { backgroundColor: "transparent", padding: 0 } : { backgroundColor: "transparent", paddingTop: 20 + (insets?.top ?? 0), paddingBottom: 20 + (insets?.bottom ?? 0), paddingLeft: 20 + (insets?.left ?? 0), paddingRight: 20 + (insets?.right ?? 0) } : null,
     ];
     // Under glass on the web the dim moves onto the scrim's blur layer (useHeldScrim).
     const scrim = useHeldScrim(backdrop);
@@ -370,13 +378,13 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                 blur never samples the dim, and this node, which holds the card, wears
                 neither (a blur here would cut the card's frost off from the page). A form
                 dialog's dim is its own veil instead. */}
-            {form ? <GlassSurface veil tint={scrimFill(tokens, 0.6)} pointerEvents="none" style={[s.dismissBackdrop, { backgroundColor: scrimFill(tokens, 0.6) }]} /> : scrim.layer}
+            {form ? embeddedBanded ? null : <GlassSurface veil tint={scrimFill(tokens, 0.6)} pointerEvents="none" style={[s.dismissBackdrop, { backgroundColor: scrimFill(tokens, 0.6) }]} /> : scrim.layer}
             {props.dismissible && modal ? (
               <Pressable accessible={false} focusable={false} tabIndex={-1}
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
             ) : null}
             <View style={[s.cardSizing, workspace && hydrated ? s.workspaceSizing(workspaceHeight, compactWorkspace) : null, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
-            <GlassSurface floating style={[s.cardLayout, workspace ? compactWorkspace ? s.compactWorkspaceContent : s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null, banded ? s.bandedCard : null]}>
+            <GlassSurface floating={!embeddedBanded} style={[s.cardLayout, workspace ? compactWorkspace ? s.compactWorkspaceContent : s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null, banded ? [skin.bandedCard, { backgroundColor: tokens.card, borderColor: tokens.border }] : null]}>
               {/* The panel content region wraps the content in a
                   KeyboardAvoidingView so the iOS keyboard never
                   covers a form field (padding behavior on iOS; a plain passthrough
@@ -387,12 +395,13 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                     <>
                       <View style={banded ? [s.bandedHeader, ruleColor] : null}>
                       {iconTile}
-                      <View style={{ flexDirection: "row", gap: 12, alignItems: banded ? "center" : "flex-start" }}>
-                        <View style={{ flex: 1, gap: 4 }}>
-                          {title != null ? <Text nativeID={titleId} role="heading" style={skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
+                      <View style={{ flexDirection: "row", gap: banded ? 0 : 12, alignItems: banded ? "center" : "flex-start", justifyContent: banded ? "space-between" : undefined }}>
+                        <View style={banded ? { flexShrink: 1, minWidth: 0, gap: 4 } : { flex: 1, gap: 4 }}>
+                          {title != null ? <Text nativeID={titleId} role="heading" style={banded ? skin.bandedTitle(tokens) : skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
                           {description ? <Text nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
                         </View>
-                        {skin.close != null ? (
+                        {props.headerAccessory == null ? null : <View style={banded ? { flexShrink: 1, minWidth: 0 } : null}>{props.headerAccessory}</View>}
+                        {embeddedBanded ? null : skin.close != null ? (
                           <Button icon compactIcon ghost steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x color={skin.close.color(tokens)} size={skin.close.iconSize} decorative />} />
                         ) : (
                           <Button icon mediumIcon circle ghost inset steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x muted heavyStroke size={15} />} />
@@ -403,7 +412,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                       {workspace ? (
                         <>
                           {!banded && props.workspaceHeader != null ? <View style={s.workspaceHeader}>{props.workspaceHeader}</View> : null}
-                          <View style={[banded ? s.bandedBody : s.workspaceBody, compactWorkspace ? s.compactWorkspaceContent : null]}>{children}</View>
+                          <View style={[banded ? props.workspaceSidebar != null ? s.bandedSplitBody : s.bandedBody : s.workspaceBody, compactWorkspace ? s.compactWorkspaceContent : null]}>{props.workspaceSidebar}{children}</View>
                           {props.footer ? <View style={banded ? [s.bandedFooter, ruleColor] : s.workspaceFooter}>{props.footer}</View> : null}
                         </>
                       ) : (
