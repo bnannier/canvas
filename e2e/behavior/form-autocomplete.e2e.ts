@@ -1,10 +1,10 @@
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
-import AxeBuilder from "@axe-core/playwright";
+import { scanPage } from "../support/axe";
 
 for (const scheme of ["light", "dark"] as const) {
   for (const width of [1280, 390]) {
-    test(`all skins contain usable disclosure targets (${scheme}, ${width}px)`, async ({ page }) => {
+    test(`all skins contain usable disclosure targets (${scheme}, ${width}px)`, async ({ page }, testInfo) => {
       await gotoDocs(page, "/testing/form-autocomplete?scenario=targets", { scheme, viewport: { width, height: 900 } });
       for (const [platform, minimum] of [["Web", 24], ["iOS", 44], ["Android", 48]] as const) {
         for (const size of ["small", "default", "large"] as const) {
@@ -52,8 +52,8 @@ for (const scheme of ["light", "dark"] as const) {
           }
         }
       }
-      const axe = await new AxeBuilder({ page }).withRules(["target-size"]).analyze();
-      expect(axe.violations).toEqual([]);
+      const findings = await scanPage(page, testInfo, `disclosure-targets-${scheme}-${width}`, ["target-size"]);
+      expect(findings).toEqual([]);
     });
 
     test(`Autocomplete selects before Form submits (${scheme}, ${width}px)`, async ({ page }, testInfo) => {

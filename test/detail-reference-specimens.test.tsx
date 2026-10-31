@@ -41,6 +41,7 @@ describe("reference conversation and scrolling specimens", () => {
     specimen("ScrollView", { horizontal: true });
     const scroll = screen.getByTestId("detail-reference-scroll-view");
     expect(scroll.style.height).toBe("102px");
+    expect(scroll.getAttribute("tabindex")).toBe("0");
     for (let index = 1; index <= 10; index++) {
       const tile = screen.getByTestId(`detail-reference-scroll-tile-${index}`);
       expect(tile.textContent).toBe(String(index));
@@ -51,7 +52,9 @@ describe("reference conversation and scrolling specimens", () => {
 
   it("switches to ten vertical tiles in a bounded 180px viewport", () => {
     specimen("ScrollView", { horizontal: false });
-    expect(screen.getByTestId("detail-reference-scroll-view").style.height).toBe("180px");
+    const scroll = screen.getByTestId("detail-reference-scroll-view");
+    expect(scroll.style.height).toBe("180px");
+    expect(scroll.getAttribute("tabindex")).toBe("0");
     expect(screen.getAllByTestId(/^detail-reference-scroll-tile-/)).toHaveLength(10);
     const tile = screen.getByTestId("detail-reference-scroll-tile-1");
     expect(tile.style.width).toBe("");

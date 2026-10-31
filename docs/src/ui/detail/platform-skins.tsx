@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import { View, Grid, Card, CardMedia, CardContent, CardSeparator, Column, Typography, type ColorTokens } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
 import { ExampleErrorBoundary, FitStage, StageHost, useAuditCard } from "../stage";
-import { DetailSection, renderComponent, type SpecimenBase } from "./frame";
+import { DetailSection, renderComponent, stageData, type SpecimenBase } from "./frame";
 import { PLATFORMS_SHOWN, PLATFORM_LABELS } from "../../core/platforms-shown";
 import type { DocExample } from "../../core/scope";
 import type { PropDescriptors } from "./knobs";
@@ -27,7 +27,7 @@ export function PlatformSkinsSection({ component, props, base, tokens, example, 
   return (
     <DetailSection id="pf" title="Platform skins" note="The playground's props on each platform: same tree, native shapes, type and touch sizes." sectionRef={sectionRef}>
       <StageHost bucket={null}>
-        <View {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}>
+        <View {...(Platform.OS === "web" ? ({ dataSet: stageData(!example && component === "Autocomplete" && props.open === true) } as object) : null)}>
           <View ref={cardRef} {...(Platform.OS === "web" ? ({ dataSet: { previewCard: "", example: example?.label ?? "Playground" } } as object) : null)}>
             <Grid minTileWidth={300} roomy>
               {previews.map((p) => (

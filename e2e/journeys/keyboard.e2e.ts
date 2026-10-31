@@ -291,34 +291,43 @@ test("a windowed list's overflowing rows are one keyboard stop, in every engine"
 });
 
 test("Tab passes over a disabled field and stops on a read-only one, in every engine", async ({ page }) => {
-  // A disabled field is out of the tab order (the native disabled attribute,
-  // src/style/text-entry-state.ts); a read-only one stays a stop, so its value can still
-  // be reached, selected and copied. The Input page's "Read only or disabled" pair sets
-  // the two side by side, the disabled Don't before the read-only Do.
-  await gotoDocs(page, "/components/input", { scheme: "light" });
-  const disabled = page.getByRole("textbox", { name: "Workspace ID", disabled: true });
-  const readOnly = page.getByRole("textbox", { name: "Workspace ID", disabled: false });
+  // The live variants preserve keyboard semantics; the bare detail page now
+  // renders the hand-off playground rather than the former Do/Don't pair.
+  await gotoDocs(page, "/components/input/disabled", { scheme: "light" });
+  const disabled = platformRow(page, "web").getByRole("textbox", { disabled: true });
   await expect(disabled).toHaveCount(1);
-  await expect(readOnly).toHaveCount(1);
   await expect(disabled).toHaveAttribute("aria-disabled", "true");
+  const next = await disabled.evaluateHandle((field) => {
+    const stops = [...document.querySelectorAll<HTMLElement>("input, textarea, button, select, a[href], [tabindex]")]
+      .filter(node => node.tabIndex >= 0 && !(node as HTMLInputElement).disabled && node.getClientRects().length > 0);
+    const before = stops.filter(node => (node.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0).at(-1);
+    const after = stops.find(node => (field.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
+    if (!before || !after) throw new Error("the disabled variant needs keyboard stops on both sides");
+    before.focus();
+    return after;
+  });
+  await page.keyboard.press("Tab");
+  expect(await next.evaluate(node => node === document.activeElement)).toBe(true);
+  await expect(disabled).not.toBeFocused();
+  await next.dispose();
+
+  await gotoDocs(page, "/components/input/readonly", { scheme: "light" });
+  const readOnly = platformRow(page, "web").getByRole("textbox", { name: "Email", disabled: false });
   await expect(readOnly).toHaveAttribute("readonly", "");
   await expect(readOnly).not.toHaveAttribute("aria-disabled");
-  // Start on the last stop before the disabled field in document order.
-  await disabled.evaluate((field) => {
-    const stops = [...document.querySelectorAll<HTMLElement>("input, textarea, button, select, a[href], [tabindex]")]
-      .filter((node) => node.tabIndex >= 0 && !(node as HTMLInputElement).disabled && node.getClientRects().length > 0
-        && (node.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
-    const before = stops.at(-1);
-    if (!before) throw new Error("no keyboard stop precedes the disabled field");
+  await readOnly.evaluate((field) => {
+    const before = [...document.querySelectorAll<HTMLElement>("input, textarea, button, select, a[href], [tabindex]")]
+      .filter(node => node.tabIndex >= 0 && !(node as HTMLInputElement).disabled && node.getClientRects().length > 0
+        && (node.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0).at(-1);
+    if (!before) throw new Error("no keyboard stop precedes the read-only variant");
     before.focus();
   });
   await page.keyboard.press("Tab");
   await expect(readOnly).toBeFocused();
-  // Its text stays selectable for copying.
   expect(await readOnly.evaluate((field: HTMLInputElement) => {
     field.select();
     return field.value.slice(field.selectionStart ?? 0, field.selectionEnd ?? 0);
-  })).toBe("ws_8f2k1");
+  })).toBe("rachel.chen@example.com");
 });
 
 test("a raw TextInput's keyboard ring is the palette's ring", async ({ page }) => {
@@ -326,8 +335,8 @@ test("a raw TextInput's keyboard ring is the palette's ring", async ({ page }) =
   // as its Pressable does (src/style/text.tsx), so the ring Tab draws on a raw field is the
   // theme's, not the browser's default blue.
   for (const look of [{ scheme: "light", palette: "violet" }, { scheme: "light", palette: "mint" }, { scheme: "dark", palette: "violet" }] as const) {
-    await gotoDocs(page, "/components/text-input", look);
-    const field = platformRow(page, "web").getByRole("textbox", { name: "Your name" });
+    await gotoDocs(page, "/components/text-input/multiline", look);
+    const field = platformRow(page, "web").getByRole("textbox", { name: "Notes" });
     await field.evaluate((node) => {
       const before = [...document.querySelectorAll<HTMLElement>("[tabindex], input, textarea, button, a[href]")]
         .filter((other) => other.tabIndex >= 0 && other.getClientRects().length > 0 && (other.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)

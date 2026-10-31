@@ -3,7 +3,7 @@ import { attach, describe as describeViolations, scanStructure, STRUCTURAL_RULES
 import { expect, test } from "../support/fixtures";
 
 const PAGES = [
-  { path: "/", title: "Made of light." },
+  { path: "/", title: "Light as material." },
   { path: "/components", title: "Components" },
   { path: "/tokens/colors", title: "Colors & Theme" },
   { path: "/integration", title: "Integration" },
@@ -23,11 +23,6 @@ const PAGES = [
   { path: "/overlays", title: "Overlays & feedback" },
 ];
 
-// A component page's Do/Don't section heading (docs/src/ui/detail/sections.tsx), named after the
-// `## Do & Don't` section of the component's .md source, with the typographic apostrophe
-// the page sets. One h2 for the section; each pair's title is an h3 under it.
-const DO_DONT_HEADING = "Do & Don’t";
-
 for (const width of [1280, 390]) {
   for (const scheme of ["light", "dark"] as const) {
     for (const entry of PAGES) {
@@ -40,27 +35,24 @@ for (const width of [1280, 390]) {
         await expect(main.getByRole("heading", { level: 1, name: entry.title, exact: true })).toBeVisible();
         if (entry.path === "/components/avatar") {
           await expect(main.getByRole("heading", { level: 2, name: "Props", exact: true })).toHaveCount(1);
-          // Avatar's own props lead; its sub-components' tables are collapsibles under them.
+          // The current sheet names the main interface and exposes its real table.
           await expect(main.getByText(/props on AvatarProps,/)).toHaveCount(1);
-          await expect(main.getByRole("button", { name: /^AvatarMenuProps/ })).toHaveCount(1);
-          await expect(main.getByRole("heading", { level: 2, name: DO_DONT_HEADING, exact: true })).toHaveCount(1);
-          await expect(main.getByRole("heading", { level: 3, name: "Identity", exact: true })).toHaveCount(1);
-          // Each card's Do or Don't is a Badge label, never a heading of its own.
-          await expect(main.getByRole("heading", { name: /^(Do|Don’t)$/ })).toHaveCount(0);
+          await expect(main.getByTestId("prop-table").first()).toHaveCount(1);
         }
         if (isDetailPath(entry.path)) {
           // The v4 detail page (docs/src/ui/detail): every section an h2 under the title,
-          // Props and Do & Don't among them, and the guidance in Usage as h3 cards.
+          // Accessibility, platform previews and Usage are explicit sections;
+          // the hand-off places the documentation guidance inside Usage as h3 cards.
           // A specimen's own headings sit in a preview stage (Typography's samples name
           // themselves "Playground"), so only the page's outline is counted.
           const outline = await main.getByRole("heading", { level: 2 }).evaluateAll((headings) => headings
             .filter((heading) => !heading.closest("[data-preview-stage]"))
             .map((heading) => heading.textContent));
-          for (const section of ["Playground", "Variants", "Props", "Usage", DO_DONT_HEADING]) {
+          for (const section of ["Playground", "Variants", "Props", "Accessibility and keyboard", "Platform skins", "Usage", "Tokens"]) {
             expect(outline.filter((name) => name === section), section).toHaveLength(1);
           }
           await expect(main.getByRole("heading", { name: /^(Do|Don’t)$/ })).toHaveCount(0);
-          // A section of the component's own after Do & Don't (Button's "## Touch area").
+          // The original documentation guidance remains semantic under Usage.
           if (entry.path === "/components/button") {
             await expect(main.getByRole("heading", { level: 3, name: "Touch area", exact: true })).toHaveCount(1);
           }
@@ -82,8 +74,8 @@ for (const width of [1280, 390]) {
           expect(outline[0]).toEqual({ name: "Typography", level: 1 });
           // Both lookups fail as "Expected: 2, Received: undefined", so each names its heading.
           expect(outline.find((heading) => heading.name === "Props")?.level, "the Props section h2").toBe(2);
-          expect(outline.find((heading) => heading.name === DO_DONT_HEADING)?.level, `the ${DO_DONT_HEADING} section h2`)
-            .toBe(2);
+          expect(outline.find((heading) => heading.name === "Usage")?.level, "the Usage section h2").toBe(2);
+          expect(outline.find((heading) => heading.name === "Inline links (href)")?.level, "the inline-links guidance h3").toBe(3);
           for (let index = 1; index < outline.length; index++) {
             expect(outline[index].level, `heading ${outline[index].name} follows ${outline[index - 1].name}`)
               .toBeLessThanOrEqual(outline[index - 1].level + 1);

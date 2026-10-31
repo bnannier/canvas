@@ -122,8 +122,13 @@ export async function shellReferencePolicy(page: Page, findings: Violation[]) {
 }
 
 /** Whole-page scan: attach every raw finding before enforcing the authored shell policy. */
-export async function scanPage(page: Page, testInfo: Pick<TestInfo, "attach" | "annotations">, name: string) {
-  const findings = await scan(page, "body");
+export async function scanPage(
+  page: Page,
+  testInfo: Pick<TestInfo, "attach" | "annotations">,
+  name: string,
+  rules?: string[],
+) {
+  const findings = rules ? await scanStructure(page, "body", rules) : await scan(page, "body");
   await attach(testInfo, name, findings);
   const { enforced, excepted } = await shellReferencePolicy(page, findings);
   if (excepted.length > 0) {

@@ -81,14 +81,19 @@ export function DotGrid() {
  */
 function slotElement(scope: ExampleScope, value: Exclude<PropValue, string | number | boolean>): ReactNode {
   if ("icon" in value) return createElement(scope.Icon, { [value.icon]: true, size: 16 });
+  if (!("element" in value)) return null;
   const element = (scope as unknown as Record<string, Parameters<typeof createElement>[0]>)[value.element];
   return element ? createElement(element, null, value.children) : null;
 }
 
 /** A descriptor as the value the component receives: an icon slot's or anatomy slot's element, or the literal. */
 function propValue(scope: ExampleScope, value: PropValue): unknown {
+  if (typeof value === "object" && "actionLabel" in value) return { label: value.actionLabel, onPress: specimenAction };
   return typeof value === "object" ? slotElement(scope, value) : value;
 }
+
+// The hand-off's static Toast specimen demonstrates its action without changing page state.
+const specimenAction = () => {};
 
 /**
  * The data a specimen starts from: the component's examples, the default first, whose

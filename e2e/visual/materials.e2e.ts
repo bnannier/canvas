@@ -3,10 +3,11 @@
  * Browser screenshots of iOS/Android rows establish skin anatomy only. Native
  * material evidence comes from the explicit native Lookout targets.
  */
+import { colorsFor } from "../../src/style/tokens";
 import { MATERIAL_ROUTES } from "../support/material-routes";
 import { MATERIAL_OVERLAYS, TOAST } from "../support/overlays";
 import { FIXED_TIME, gotoDocs, platformRow, previewCard, stage } from "../support/docs";
-import { attachMaterialEvidence, expectNoMaterialEffects } from "../support/material-evidence";
+import { attachMaterialEvidence, expectNoMaterialEffects, expectOnlyDialogVeil, readMaterialEffects } from "../support/material-evidence";
 import { expect, test } from "../support/fixtures";
 
 const VIEWPORTS = {
@@ -47,7 +48,13 @@ for (const scheme of ["dark", "light"] as const) {
         // that this route does no browser backdrop work when glass is disabled.
         await gotoDocs(page, route.path, { scheme, surface: "solid", viewport });
         await expect(row).toBeVisible();
-        await expectNoMaterialEffects(row);
+        await testInfo.attach("solid-rest-effects.json", {
+          body: JSON.stringify(await readMaterialEffects(row), null, 2), contentType: "application/json",
+        });
+        // cv-kit-overlays.js stg() paints the Dialog's 2px dim veil in both modes;
+        // the floating panel's glass must still disappear completely.
+        if (route.slug === "dialog") await expectOnlyDialogVeil(row, row.getByRole("dialog"), colorsFor("violet", scheme).scrim!);
+        else await expectNoMaterialEffects(row);
         for (const overlay of MATERIAL_OVERLAYS) {
           if (overlay.slug !== route.slug) continue;
           await gotoDocs(page, overlay.path, { scheme, surface: "glass", viewport });
@@ -63,7 +70,11 @@ for (const scheme of ["dark", "light"] as const) {
           await overlay.open(page);
           await expect(overlay.panel(page).last()).toBeVisible();
           const host = overlay.atDocumentRoot || overlay.inWindowLayer ? page.locator("body") : stage(page).locator("..");
-          await expectNoMaterialEffects(host);
+          await testInfo.attach("solid-open-effects.json", {
+            body: JSON.stringify(await readMaterialEffects(host), null, 2), contentType: "application/json",
+          });
+          if (overlay.slug === "dialog") await expectOnlyDialogVeil(host, overlay.panel(page).last(), colorsFor("violet", scheme).scrim!);
+          else await expectNoMaterialEffects(host);
         }
       });
     }

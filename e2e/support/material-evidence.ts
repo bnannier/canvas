@@ -58,7 +58,7 @@ export async function readMaterialEffects(scope: Locator) {
   });
 }
 
-/** Solid must stop backdrop work and every material layer, including after changing modes without a reload. */
+/** Ordinary material surfaces stop backdrop work in solid, including after mode changes without a reload. */
 export async function expectNoMaterialEffects(scope: Locator) {
   await expect.poll(async () => {
     const { activeBackdropEffects, clearMaterials } = await readMaterialEffects(scope);
@@ -66,6 +66,27 @@ export async function expectNoMaterialEffects(scope: Locator) {
   }, {
     message: "solid mode must remove active browser backdrop material",
   }).toBe(0);
+}
+
+/** The reference Dialog scrim keeps its authored 2px veil in either surface mode.
+ * The panel must still have no material, and no other backdrop effect qualifies.
+ */
+export async function expectOnlyDialogVeil(scope: Locator, dialog: Locator, scrim: string) {
+  await expect(dialog).toHaveCount(1);
+  const veil = dialog.locator(":scope > div").first();
+  await expect(veil).toHaveCSS("backdrop-filter", "blur(2px)");
+  await expect(veil).toHaveCSS("background-color", scrim);
+  await expect.poll(async () => {
+    const outer = await dialog.boundingBox();
+    const inner = await veil.boundingBox();
+    if (!outer || !inner) return false;
+    return (["x", "y", "width", "height"] as const).every((key) => Math.abs(outer[key] - inner[key]) < 0.1);
+  }, { message: "the authored veil must fill its own Dialog scrim" }).toBe(true);
+  await expect.poll(async () => {
+    const effects = await readMaterialEffects(scope);
+    return { activeBackdropEffects: effects.activeBackdropEffects, clearMaterials: effects.clearMaterials, filters: effects.effects.map(({ filter }) => filter) };
+  }, { message: "solid Dialog permits only its owned reference veil, with no panel or unrelated material" })
+    .toEqual({ activeBackdropEffects: 1, clearMaterials: 0, filters: ["blur(2px)"] });
 }
 
 /** Change the real docs appearance control. This intentionally moves input focus. */

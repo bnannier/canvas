@@ -386,14 +386,13 @@ for (const scheme of ["light", "dark"] as const) {
 
 for (const scheme of ["light", "dark"] as const) {
   test(`a raw ScrollView with nothing focusable inside takes the palette's ring on every side (${scheme})`, async ({ page }) => {
-    // Chromium makes an overflowing scroller with nothing focusable inside it a keyboard
-    // stop and draws its own ring there. The kit's ScrollView primitive hands it the
+    // This always-overflowing specimen has an explicit keyboard stop on every
+    // browser. The kit's ScrollView primitive hands it the
     // palette's `ring` 2 px off the scroller (src/style/scroll-view.tsx), and nothing on
     // the docs page clips it.
     await gotoDocs(page, "/components/scroll-view", { scheme, viewport: { width: 1280, height: 900 } });
-    // The reference specimen is a real overflowing ScrollView, with no tab index
-    // of its own: Chromium supplies the keyboard stop. Move back to its actual
-    // preceding stop, then Tab forward again to prove keyboard reachability.
+    // Move back to the specimen's actual preceding stop, then Tab forward
+    // again to prove keyboard reachability.
     const web = platformRow(page, "web");
     const scroller = web.getByTestId("detail-reference-scroll-view");
     await expect(scroller).toHaveCount(1);
@@ -403,7 +402,8 @@ for (const scheme of ["light", "dark"] as const) {
     await expect(scroller).not.toBeFocused();
     await page.keyboard.press("Tab");
     await expect(scroller).toBeFocused();
-    expect(await scroller.getAttribute("tabindex")).toBeNull();
+    await expect(scroller).toHaveAttribute("tabindex", "0");
+    expect(await scanStructure(page, '[data-platform-row="web"]', ["scrollable-region-focusable"])).toEqual([]);
     const ring = rgb(colorsFor("violet", scheme).ring);
     expect(await scroller.evaluate((node) => {
       const style = getComputedStyle(node);
