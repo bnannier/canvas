@@ -66,5 +66,17 @@
     "retainedRemoteBytes": 243034703,
     "archive": ".v4-reference/release-artifact-archive/verified-archives.json",
     "deletionRecord": ".v4-reference/release-artifact-archive/deletion-results.json"
+  },
+  "finalProductionCapture": {
+    "source": "ec85b9f49586c273debdfe780267c3efb3d85f8c",
+    "productionBuild": "passed; source tree clean before and after export",
+    "docsArchiveSha256": "54c465af6b84bb69db95b4a42d63dc1f5433f1b54a07d2b151cbedef73058231",
+    "testsPassed": 238,
+    "screenshots": 236,
+    "productCorrectionsReviewed": 18,
+    "baselineReview": "All 236 accepted after prior full review, direct review of all 18 repaired captures, and investigation of six extra raw-pixel differences.",
+    "unexpectedDifferences": "Four subthreshold raster differences; two navigation raster variants passed all six ordinary comparator checks with unchanged thresholds. Geometry and clipping were identical across three frame observations.",
+    "ordinaryFocusedComparisons": 6,
+    "finalCI": "pending"
   }
 }
