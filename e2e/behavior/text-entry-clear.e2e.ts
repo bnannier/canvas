@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
-import { gotoDocs, platformRow, selectExample } from "../support/docs";
+import { gotoDocs, platformRow } from "../support/docs";
+import { variantSlug } from "../support/routes";
 import { LINE_START } from "../support/keys";
 import { expectNoMaterialEffects, readMaterialEffects } from "../support/material-evidence";
 import { expect, test } from "../support/fixtures";
@@ -13,12 +14,12 @@ interface EntryCase {
   open?: (row: Locator) => Promise<void>;
 }
 const fields: EntryCase[] = [
-  { slug: "input", value: "Clear material preserves this draft" },
-  { slug: "textarea", value: "First line\nClear material preserves this draft" },
-  { slug: "autocomplete", value: "Ada", role: "combobox" },
-  { slug: "input-otp", value: "123", otp: true },
-  { slug: "stepper", value: "7", role: "spinbutton" },
-  { slug: "phone-input", value: "4165550123" },
+  { slug: "input", variant: "Label", value: "Clear material preserves this draft" },
+  { slug: "textarea", variant: "With label", value: "First line\nClear material preserves this draft" },
+  { slug: "autocomplete", variant: "Required field", value: "Ada", role: "combobox" },
+  { slug: "input-otp", variant: "Length", value: "123", otp: true },
+  { slug: "stepper", variant: "With label", value: "7", role: "spinbutton" },
+  { slug: "phone-input", variant: "Pre-filled", value: "4165550123" },
 ];
 const additional: EntryCase[] = [
   { slug: "input", variant: "Prefix", value: "canvas.dev/draft" },
@@ -28,8 +29,7 @@ const additional: EntryCase[] = [
 ];
 
 async function entry(page: Page, recipe: EntryCase, scheme: "light" | "dark", width: number, surface: "glass" | "solid" = "glass") {
-  await gotoDocs(page, `/components/${recipe.slug}`, { scheme, surface, viewport: { width, height: 900 } });
-  if (recipe.variant) await selectExample(page, recipe.variant);
+  await gotoDocs(page, `/components/${recipe.slug}${recipe.variant ? `/${variantSlug(recipe.variant)}` : ""}`, { scheme, surface, viewport: { width, height: 900 } });
   const row = platformRow(page, "web").first();
   if (recipe.open) await recipe.open(row);
   const field = row.getByRole(recipe.role ?? "textbox").first();

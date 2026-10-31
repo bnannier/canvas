@@ -270,25 +270,6 @@ export function exampleCard(page: Page, label: string): Locator {
   return page.locator(`[data-preview-card][data-example="${label.replace(/"/g, '\\"')}"]`);
 }
 
-/**
- * Show one example on the page's comparison stage: the rail tab on the Playground page,
- * the "Platform example" picker on the v4 detail page. Either rewrites the address to the
- * example's variant route.
- */
-export async function selectExample(page: Page, label: string): Promise<void> {
-  if (isDetailPath(new URL(page.url()).pathname)) {
-    await page.getByRole("button", { name: "Platform example", exact: true }).click();
-    // The selected option's name carries the Select's checkmark glyph ("✓ Default").
-    const name = new RegExp(`^(✓ )?${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
-    await page.getByRole("option", { name }).click();
-    await expect(exampleCard(page, label)).toHaveCount(1);
-    return;
-  }
-  const tab = page.getByTestId("playground-examples").getByRole("tab", { name: label, exact: true });
-  await tab.click();
-  await expect(tab).toHaveAttribute("aria-selected", "true");
-}
-
 const FORM_FACTOR_LABEL: Record<FormFactor, string> = {
   phone: "Phone width (375px)",
   largePhone: "Large phone width (640px)",

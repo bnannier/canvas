@@ -168,7 +168,9 @@ export async function verifyConsumerSupport(args = process.argv.slice(2)) {
       console.log(`${row.name}: installing Canvas ${metadata.version} with ${optional.length} optional peers absent`);
       // Share downloads within this run, without inheriting the developer/CI
       // machine's global Bun cache. The outer finally removes this cache too.
-      run(app, "bun", ["install", "--ignore-scripts", "--no-progress"], { BUN_INSTALL_CACHE_DIR: path.join(root, "bun-cache") });
+      // Bound the connection burst as well: constrained CI networks can leave
+      // dozens of simultaneous registry connections waiting for TCP retries.
+      run(app, "bun", ["install", "--ignore-scripts", "--no-progress", "--network-concurrency=16"], { BUN_INSTALL_CACHE_DIR: path.join(root, "bun-cache") });
       const require = createRequire(path.join(app, "package.json"));
       const installed = path.join(app, "node_modules", metadata.name);
       assertInstalledPackage(packageRoot, installed);

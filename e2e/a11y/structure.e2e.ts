@@ -133,14 +133,15 @@ for (const width of [1280, 390]) {
 }
 
 test("phone search preserves named landmarks when opened and dismissed", async ({ page }, testInfo) => {
-  // The phone shell is the pill navbar alone (no drawer, no tab bar): its search opener
-  // sits in the pill's sideways-scrolling row.
+  // Search uses the global shortcut; the brand provides a visible keyboard
+  // return target in the phone pill navbar.
   await gotoDocs(page, "/tokens/colors", { viewport: { width: 390, height: 900 } });
   const primary = page.getByRole("navigation", { name: "Primary", exact: true });
   await expect(primary).toBeVisible();
   await expect(page.getByRole("navigation")).toHaveCount(1);
-  const opener = page.getByRole("banner").getByRole("button", { name: "Search components", exact: true });
-  await opener.click();
+  const opener = primary.getByRole("link", { name: "Canvas", exact: true });
+  await opener.focus();
+  await page.keyboard.press("Control+k");
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Search components", exact: true })).toBeFocused();
   const findings = await scanStructure(page, "body", ["landmark-unique", "region"]);

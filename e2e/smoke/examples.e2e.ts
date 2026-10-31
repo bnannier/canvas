@@ -1,9 +1,9 @@
 /**
- * Every Playground example on every component page, actually rendered.
+ * Every component playground and documented variant route, actually rendered.
  *
- * The route smoke opens each component page and sees its FIRST example. The other
- * 463 are one tab click away and are otherwise never executed by anything: the docs
- * typecheck proves they compile against the real prop types, which is what catches a
+ * Bare component routes show the hand-off playground; named variants render their
+ * documented examples. The docs typecheck proves those examples compile against the
+ * real component prop types, which is what catches a
  * prop that does not exist, but a component that throws at render still typechecks.
  *
  * The catch is that a throw here is invisible to the console gate, because
@@ -12,10 +12,10 @@
  *
  * It also holds three things together that would otherwise drift apart: the example
  * labels in the component's markdown, the slugs docs/src/lib/variant.ts derives from
- * them, and the URL component-reference.tsx replaces into the address bar.
+ * them, and the canonical deep links the detail page resolves.
  */
-import { componentExamples } from "../support/routes";
-import { gotoDocs, selectExample, stage, BASE_PATH } from "../support/docs";
+import { componentExamples, EXAMPLE_ROUTES } from "../support/routes";
+import { gotoDocs, exampleCard, stage, BASE_PATH } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 const FAILURE = "Example failed to render";
@@ -26,21 +26,13 @@ for (const { route, examples } of componentExamples()) {
     await expect(stage(page)).toBeVisible();
     await expect(page.getByText(FAILURE)).toHaveCount(0);
 
-    // One example means no switcher: the page is already showing it.
-    if (examples.length === 1) return;
-
-    // The detail page renders every example in its Variants grid and switches its
-    // comparison stage with the "Platform example" picker.
-    for (const example of examples) {
-      await selectExample(page, example.label);
-      // Each example has exactly one canonical address, and selecting it puts the
-      // page there (replace, not push, so the back button still leaves the page).
-      // toHaveURL, not a bare read of page.url(): the address is rewritten by a
-      // router navigation that lands a beat after the click, so reading it once
-      // races the router and fails under parallel workers on the fastest pages.
-      await expect(page, example.label).toHaveURL(
-        (url) => url.pathname === `${BASE_PATH}${example.path}`,
-      );
+    // Bare routes show the hand-off playground. Every non-default documented
+    // example has its own live route; the former example picker no longer exists.
+    for (const example of EXAMPLE_ROUTES) {
+      if (example.slug !== route.name || example.path === route.path) continue;
+      await gotoDocs(page, example.path, { scheme: "dark" });
+      await expect(page, example.label).toHaveURL(url => url.pathname === `${BASE_PATH}${example.path}`);
+      await expect(exampleCard(page, example.label), example.label).toBeVisible();
       await expect(page.getByText(FAILURE), example.label).toHaveCount(0);
     }
   });

@@ -9,14 +9,14 @@
  * worked, and in a browser the keydown never left the text field.
  */
 import type { Locator, Page } from "@playwright/test";
-import { exampleCard, gotoDocs, platformRow } from "../support/docs";
+import { gotoDocs, platformRow } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 test("a tab set walks with every key the roving-focus pattern promises", async ({ page }) => {
   // The web row, the one whose behaviour is native to the browser being driven. Tabs,
   // RadioGroup, Listbox and the Dropdown menu all share src/style/use-roving-focus.ts,
   // so this is the one place the arrows, Home and End are all exercised for real.
-  await gotoDocs(page, "/components/tabs", { scheme: "dark" });
+  await gotoDocs(page, "/components/tabs/pill", { scheme: "dark" });
   const tabs = platformRow(page, "web").getByRole("tab");
   const selectedIndex = async () => {
     const flags = await tabs.evaluateAll((nodes) => nodes.map((n) => n.getAttribute("aria-selected")));
@@ -36,7 +36,7 @@ test("a tab set walks with every key the roving-focus pattern promises", async (
 });
 
 test("a radio group moves the checked option with the arrows", async ({ page }) => {
-  await gotoDocs(page, "/components/radio", { scheme: "dark" });
+  await gotoDocs(page, "/components/radio/inline", { scheme: "dark" });
   const radios = platformRow(page, "web").getByRole("radio");
   await expect(radios.first()).toBeVisible();
   const checkedIndex = async () => {
@@ -54,26 +54,25 @@ test("a radio group moves the checked option with the arrows", async ({ page }) 
   await expect.poll(checkedIndex).toBe(start);
 });
 
-test("the example picker selects with the arrow keys and addresses the example", async ({ page }) => {
-  await gotoDocs(page, "/components/badge", { scheme: "dark" });
-  const picker = page.getByRole("button", { name: "Platform example", exact: true });
-  await picker.click();
-  // The picker is the kit Select: focus enters its list at the selected example, the
-  // arrows move it, Enter chooses (the WAI-ARIA listbox pattern, src/style/use-row-focus.ts).
-  // The selected option's name carries the Select's checkmark glyph ("✓ Default").
-  await expect(page.getByRole("option", { name: /^(✓ )?Default$/ })).toBeFocused();
-  await page.keyboard.press("ArrowDown");
-  await expect(page.getByRole("option", { name: "Notification count", exact: true })).toBeFocused();
+test("a Select chooses with the arrow keys and returns focus to its trigger", async ({ page }) => {
+  await gotoDocs(page, "/components/select/small", { scheme: "dark" });
+  const picker = platformRow(page, "web").getByRole("button", { name: "Country", exact: true });
+  await picker.focus();
   await page.keyboard.press("Enter");
-  // Selecting an example is addressable: the URL names it, rewritten in place (no
-  // navigation, so nothing remounts), and focus goes back to the picker.
-  await expect(page).toHaveURL(/\/components\/badge\/notificationcount(\?|$)/);
-  await expect(exampleCard(page, "Notification count")).toHaveCount(1);
+  // The live documented Select exercises the same listbox keyboard contract
+  // that the removed docs example picker previously covered.
+  const list = page.getByRole("listbox").and(page.locator(":not([data-page-scroll] *)")).last();
+  await expect(list.getByRole("option", { name: /United States/ })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(list.getByRole("option", { name: "Canada", exact: true })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(picker).toContainText("Canada");
+  await expect(picker).toHaveAttribute("aria-expanded", "false");
   await expect(picker).toBeFocused();
 });
 
 test("a slider moves its value with the arrows", async ({ page }) => {
-  await gotoDocs(page, "/components/slider", { scheme: "dark" });
+  await gotoDocs(page, "/components/slider/small", { scheme: "dark" });
   const slider = platformRow(page, "web").getByRole("slider").first();
   await expect(slider).toBeVisible();
   const before = Number(await slider.getAttribute("aria-valuenow"));

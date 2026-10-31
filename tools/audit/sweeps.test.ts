@@ -142,7 +142,7 @@ describe("e2e catalog sweeps", () => {
     const sweepsIn = (file: string) => e2eReach(ROOT, file, readFileSync(join(ROOT, file), "utf8")).sweeps.flatMap((s) => s.catalogs);
     expect(sweepsIn("e2e/a11y/components.e2e.ts")).toEqual(["componentRoutes", "OVERLAYS"]);
     expect(sweepsIn("e2e/visual/components.e2e.ts")).toEqual(["componentRoutes"]);
-    expect(sweepsIn("e2e/smoke/examples.e2e.ts")).toEqual(["componentExamples"]);
+    expect(sweepsIn("e2e/smoke/examples.e2e.ts")).toEqual(["componentExamples", "EXAMPLE_ROUTES"]);
     expect(sweepsIn("e2e/smoke/routes.e2e.ts")).toEqual(["allRoutes"]);
     expect(sweepsIn("e2e/responsive/component-widths.e2e.ts")).toEqual(["contentRoutes", "contentRoutes", "componentRoutes"]);
     expect(sweepsIn("e2e/visual/materials.e2e.ts")).toEqual(["MATERIAL_ROUTES", "MATERIAL_OVERLAYS"]);

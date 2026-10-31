@@ -391,14 +391,18 @@ for (const scheme of ["light", "dark"] as const) {
     // palette's `ring` 2 px off the scroller (src/style/scroll-view.tsx), and nothing on
     // the docs page clips it.
     await gotoDocs(page, "/components/scroll-view", { scheme, viewport: { width: 1280, height: 900 } });
-    // The example's scroller is the web row's one stop, with no tab index of its own: the
-    // browser makes it one. Tab reaches it from the preview's last form-factor tab, past
-    // the iOS and Android rows' scrollers.
+    // The reference specimen is a real overflowing ScrollView, with no tab index
+    // of its own: Chromium supplies the keyboard stop. Move back to its actual
+    // preceding stop, then Tab forward again to prove keyboard reachability.
     const web = platformRow(page, "web");
-    const scroller = web.locator(":focus");
-    await page.getByRole("tab", { name: "Full width" }).focus();
-    for (let k = 0; k < 10 && (await scroller.count()) === 0; k++) await page.keyboard.press("Tab");
+    const scroller = web.getByTestId("detail-reference-scroll-view");
     await expect(scroller).toHaveCount(1);
+    expect(await scroller.evaluate((node) => node.scrollWidth > node.clientWidth || node.scrollHeight > node.clientHeight)).toBe(true);
+    await scroller.focus();
+    await page.keyboard.press("Shift+Tab");
+    await expect(scroller).not.toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(scroller).toBeFocused();
     expect(await scroller.getAttribute("tabindex")).toBeNull();
     const ring = rgb(colorsFor("violet", scheme).ring);
     expect(await scroller.evaluate((node) => {
