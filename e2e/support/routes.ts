@@ -181,3 +181,6 @@ export function componentExamples(): { route: DocsRoute; examples: ExampleRoute[
     })
     .filter((entry) => entry.examples.length > 0);
 }
+
+/** Canonical example addresses: the bare playground plus documented variant routes. */
+export const EXAMPLE_ROUTES: ExampleRoute[] = componentExamples().flatMap(({ examples }) => examples);

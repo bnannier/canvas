@@ -7,18 +7,18 @@ for (const width of [1280, 390]) {
     for (const scheme of ["light", "dark"] as const) {
       test(`search focuses its input and restores its keyboard opener (${scheme})`, async ({ page }, testInfo) => {
         await gotoDocs(page, "/tokens/colors", { scheme });
-        // The pill navbar carries the search opener at every width (docs/src/shell/pill-nav.tsx);
-        // on a phone it sits in the pill's sideways-scrolling row.
-        const opener = page.getByRole("banner").getByRole("button", { name: "Search components", exact: true });
+        // Search opens from the global shortcut at every width. The brand link
+        // is a real keyboard focus target for the overlay to restore on dismissal.
+        const opener = page.getByRole("navigation", { name: "Primary", exact: true }).getByRole("link", { name: "Canvas", exact: true });
         const dialog = page.getByRole("dialog");
         const input = page.getByRole("textbox", { name: "Search components", exact: true });
 
         for (const close of ["Escape", "backdrop"] as const) {
-          // WebKit pointer activation does not promise focus on a button. Explicit
-          // keyboard activation gives the overlay an actual focused opener on every engine.
+          // Explicit focus gives the overlay an actual keyboard return target
+          // across browser engines and touch projects.
           await opener.focus();
           await expect(opener).toBeFocused();
-          await page.keyboard.press("Enter");
+          await page.keyboard.press("Control+k");
           await expect(dialog).toBeVisible();
           await expect(input).toBeFocused();
           await expect(input).toHaveValue("");
@@ -30,7 +30,7 @@ for (const width of [1280, 390]) {
           await expect(opener).toBeFocused();
         }
         // Opening again after both close paths starts a fresh, focused search.
-        await page.keyboard.press("Enter");
+        await page.keyboard.press("Control+k");
         await expect(input).toBeFocused();
         await expect(input).toHaveValue("");
         await page.keyboard.press("Escape");
@@ -48,8 +48,9 @@ test("search preserves resize state, description matches, shortcuts and the chos
   // sheet, so the width is pinned here: the touch projects open at a device viewport,
   // not the suite's desktop default, and the resize below is the journey itself.
   await gotoDocs(page, "/tokens/colors", { viewport: { width: 1280, height: 900 } });
-  const opener = page.getByRole("banner").getByRole("button", { name: "Search components", exact: true });
-  await opener.click();
+  const opener = page.getByRole("navigation", { name: "Primary", exact: true }).getByRole("link", { name: "Canvas", exact: true });
+  await opener.focus();
+  await page.keyboard.press("Control+k");
   const input = page.getByRole("textbox", { name: "Search components", exact: true });
   await expect(input).toBeFocused();
   await input.fill("universal");
@@ -79,7 +80,8 @@ test("search preserves resize state, description matches, shortcuts and the chos
   await expect(input).toBeFocused();
   await input.press("Control+k");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await opener.click();
+  await opener.focus();
+  await page.keyboard.press("Control+k");
   await expect(input).toHaveValue("");
   await input.press("Meta+k");
   await expect(page.getByRole("dialog")).toHaveCount(0);

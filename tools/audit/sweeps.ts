@@ -25,7 +25,7 @@ import { dirname, relative, resolve, sep } from "node:path";
 import ts from "typescript";
 import { MATERIAL_ROUTES, nativeMaterialRoutes } from "../../e2e/support/material-routes.ts";
 import { MATERIAL_OVERLAY_RECIPES, OVERLAY_RECIPES } from "../../e2e/support/overlay-recipes.ts";
-import { aliasRoutes, allRoutes, componentExamples, componentRoutes, contentRoutes, examplesFor, guideRoutes } from "../../e2e/support/routes.ts";
+import { aliasRoutes, allRoutes, EXAMPLE_ROUTES, componentExamples, componentRoutes, contentRoutes, examplesFor, guideRoutes } from "../../e2e/support/routes.ts";
 import { NOT_HANDLED, type Intercept } from "./hosts.ts";
 import { Host, StaticReader, UNKNOWN, indexedLoop, isFunctionNode, isValueRead, outermost, unwrap, type Env, type LoopNode } from "./static-eval.ts";
 
@@ -56,6 +56,7 @@ export const CATALOGS: Catalog[] = [
   { module: "e2e/support/routes", name: "guideRoutes", call: true, rows: () => guideRoutes(), route: page },
   { module: "e2e/support/routes", name: "aliasRoutes", call: true, rows: () => aliasRoutes(), route: page },
   { module: "e2e/support/routes", name: "allRoutes", call: true, rows: () => allRoutes(), route: page },
+  { module: "e2e/support/routes", name: "EXAMPLE_ROUTES", call: false, rows: () => EXAMPLE_ROUTES, route: page },
   { module: "e2e/support/routes", name: "componentExamples", call: true, rows: () => componentExamples(), route: (row: { route: { path: string } }) => row.route.path },
   { module: "e2e/support/routes", name: "examplesFor", call: true, rows: (args) => examplesFor(...(args as [string, string, string?])), route: page },
   { module: "e2e/support/material-routes", name: "MATERIAL_ROUTES", call: false, rows: () => MATERIAL_ROUTES, route: page },

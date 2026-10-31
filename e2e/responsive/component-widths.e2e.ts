@@ -1,5 +1,5 @@
 /**
- * Nothing scrolls sideways, and the form-factor switcher really clamps the preview.
+ * Nothing scrolls sideways, and component previews follow their real container bounds.
  *
  * Responsiveness is a core requirement of every Canvas component rather than an
  * add-on, and horizontal overflow is how a failure of it shows up: a table that will
@@ -10,13 +10,14 @@
  *
  * Two nodes are checked, because the docs scroll in an INNER view: the document
  * itself, and the page's own scroller (docs/src/ui/page.tsx marks it). Both at tablet
- * width and at phone width: the form-factor switcher below clamps the preview card
- * only, so a Do/Don't frame, which the viewport lays out, is caught by the phone pass
- * alone (the Radio page's card example ran 44 px past a 390 px page before RadioGroup
+ * width and at phone width. The platform comparison is a responsive grid in the v4
+ * detail page; resizing the browser changes its actual container and the kit's
+ * viewport bucket together. A Do/Don't frame is also caught by the phone pass
+ * (the Radio page's card example ran 44 px past a 390 px page before RadioGroup
  * took the FILL nature).
  */
 import { componentRoutes, contentRoutes } from "../support/routes";
-import { gotoDocs, previewCard, setFormFactor, settled } from "../support/docs";
+import { gotoDocs, platformRow, previewCard, settled } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 type Overflow = { document: number; page: number };
@@ -117,28 +118,40 @@ test.describe("phone width", () => {
   }
 });
 
-test.describe("the form-factor switcher", () => {
-  // It does two things at once: clamps the preview card to the tier's width AND pins
-  // the kit's viewport bucket, so a component measures itself as it would on that
-  // tier rather than inside a 1280px desktop page.
+test.describe("the platform preview's responsive container", () => {
+  // StageHost follows the actual viewport (bucket=null). Resize the live page so
+  // both the platform grid's bounds and the kit's viewport subscription update.
   for (const route of componentRoutes()) {
     test(`${route.name} previews at phone and tablet width`, async ({ page }) => {
       await gotoDocs(page, route.path, { scheme: "dark" });
       const card = previewCard(page).first();
       await expect(card).toBeVisible();
 
-      await setFormFactor(page, "phone");
-      const phone = await card.boundingBox();
+      await page.setViewportSize({ width: 375, height: 900 });
+      const phone = await settled(() => card.boundingBox());
       expect(phone, "the preview card has no box at phone width").not.toBeNull();
       expect(phone!.width).toBeLessThanOrEqual(375);
       expect(phone!.width).toBeGreaterThan(300);
       expect((await overflow(page)).document, "phone width overflows").toBeLessThanOrEqual(0);
+      for (const platform of ["web", "ios", "android"] as const) {
+        const row = await settled(() => platformRow(page, platform).first().boundingBox());
+        expect(row, `${platform} has no platform preview at phone width`).not.toBeNull();
+        expect(row!.width).toBeGreaterThan(0);
+        expect(row!.width).toBeLessThanOrEqual(phone!.width);
+      }
 
-      await setFormFactor(page, "tablet");
-      const tablet = await card.boundingBox();
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const tablet = await settled(() => card.boundingBox());
+      expect(tablet, "the preview card has no box at tablet width").not.toBeNull();
       expect(tablet!.width).toBeLessThanOrEqual(768);
       expect(tablet!.width).toBeGreaterThan(phone!.width);
       expect((await overflow(page)).document, "tablet width overflows").toBeLessThanOrEqual(0);
+      for (const platform of ["web", "ios", "android"] as const) {
+        const row = await settled(() => platformRow(page, platform).first().boundingBox());
+        expect(row, `${platform} has no platform preview at tablet width`).not.toBeNull();
+        expect(row!.width).toBeGreaterThan(0);
+        expect(row!.width).toBeLessThanOrEqual(tablet!.width);
+      }
     });
   }
 });

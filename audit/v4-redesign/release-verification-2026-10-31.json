@@ -78,5 +78,22 @@
     "unexpectedDifferences": "Four subthreshold raster differences; two navigation raster variants passed all six ordinary comparator checks with unchanged thresholds. Geometry and clipping were identical across three frame observations.",
     "ordinaryFocusedComparisons": 6,
     "finalCI": "pending"
+  },
+  "browserContractRepairs": {
+    "reason": "The v4 hand-off removes the former docs example picker, search button and form-factor tabs. Tests use canonical variant routes, the existing search shortcut and actual viewport resizing.",
+    "productChanges": false,
+    "focusedCasesPassed": 72,
+    "coverage": "Keyboard navigation, input editing, disabled state, material changes, search focus restoration, responsive bounds, ScrollView keyboard entry and focus-ring pixels. Existing thresholds are unchanged."
+  },
+  "localValidation": {
+    "source": "b2addeb7",
+    "buildAndPackageCheck": "passed",
+    "unitTests": {
+      "passed": 8694,
+      "skipped": 8,
+      "failed": 0
+    },
+    "consumerSupport": "all three configurations passed against the sealed package",
+    "browserRun": "stopped before superseded browser tests; final clean rerun pending"
   }
 }
