@@ -182,5 +182,35 @@
     "environmentRerun": "All 53 tests in the five affected files passed outside restricted local process/network permissions, without test changes.",
     "sourceReaderRerun": "177 tests passed after source and metadata repairs.",
     "finalAuthority": "Full pinned-Linux ordinary CI remains pending."
+  },
+  "cleanSourceRun129e150f": {
+    "source": "129e150febe6e9bef102cefe235d592459a3daaa",
+    "unit": {
+      "passed": 8720,
+      "skipped": 8,
+      "failed": 0
+    },
+    "packageCompatibility": "All three sealed consumer configurations passed.",
+    "starterPassed": 30,
+    "smokeWebPassed": 333,
+    "browser": {
+      "passed": 3415,
+      "failed": 9
+    },
+    "failureClasses": {
+      "staleFontInventoryAssertion": 3,
+      "componentCapturePhase": 4,
+      "openDialogCapturePhase": 2
+    },
+    "fontRepair": "The existing three-engine journey now requires four declared families but exactly the three original brand preloads. Duplicate declarations, stable style ownership, weight ranges and same-origin hashed font sources remain enforced. Three focused engines pass.",
+    "componentCaptureProof": "All 93 Dialog nodes and 104 Steps nodes keep identical relative geometry, fonts and line heights between frozen and current builds. Only the fractional capture origin changes. Frozen captures reproduce old goldens exactly; three current captures reproduce the CI images exactly in both schemes.",
+    "acceptedComponentCaptures": 4,
+    "remaining": "New full clean-source CI run and publication.",
+    "evidence": ".v4-reference/release-verification-2026-10-31/ci-129e150f-summary.json",
+    "openDialogCaptureProof": "All 81 visible nodes keep identical relative geometry, fonts and line heights. The stage stays 492.21875px high; its origin shifts from 57.8125px to 58.40625px, so outward screenshot rounding changes 494px to 493px. Three current captures per scheme are identical and match CI; frozen captures exactly match the old baselines.",
+    "acceptedOverlayCaptures": 2,
+    "ordinaryVisualComparisonsPassed": 18,
+    "comparisonPolicy": "Six explicitly reviewed fresh captures each passed three ordinary repetitions, with no update flags, tolerance changes or harness changes. No product source changed for these failures.",
+    "captureEvidence": ".v4-reference/release-verification-2026-10-31/crop-phase"
   }
 }
