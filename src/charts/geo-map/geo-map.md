@@ -8,6 +8,8 @@ Add `zoomable` and the wheel zooms about the pointer, two fingers pinch, a drag 
 
 Single-identity encoding, so there is no tone axis and no legend. Press a bubble to flag its label and count (the others dim); the accessible name carries the biggest places with their values, because a screen reader user cannot see bubbles.
 
+`detailed` frames the geography and outlines every place separately, keeping all places visible while an inline readout identifies the selected city. Zoom, pan and keyboard controls remain available.
+
 ## Usage
 
 ```tsx
@@ -80,6 +82,24 @@ Single-identity encoding, so there is no tone axis and no legend. Press a bubble
     { label: "Amsterdam", lat: 52.3676, lng: 4.9041, count: 64 },
     { label: "Nairobi", lat: -1.2921, lng: 36.8219, count: 12 },
     { label: "Osaka", lat: 34.6937, lng: 135.5023, count: 39 }
+  ]}
+/>
+```
+
+### Detailed
+
+An outlined city panel with an inline inspection readout. Hover a city to expand its mark; select a city to inspect its count.
+
+```tsx
+<GeoMap
+  detailed
+  zoomable
+  title="Sessions by city"
+  points={[
+    { label: "San Francisco", lat: 37.77, lng: -122.42, count: 2400 },
+    { label: "New York", lat: 40.71, lng: -74, count: 3100 },
+    { label: "London", lat: 51.51, lng: -0.13, count: 2650 },
+    { label: "Berlin", lat: 52.52, lng: 13.4, count: 1920 }
   ]}
 />
 ```

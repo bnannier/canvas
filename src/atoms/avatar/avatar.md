@@ -79,6 +79,14 @@ Four steps: `tiny` (20px), `small` (28px), the default 40px row avatar, and `lar
 <Avatar rounded name="LB" />
 ```
 
+### Online
+
+`online` marks presence: the success dot in a ring of the card at the disc's lower trailing edge. The dot is decorative, so say the presence in the label where it matters.
+
+```tsx
+<Avatar online name="Rachel Chen" accessibilityLabel="Rachel Chen, online" />
+```
+
 ### Ring outline
 
 ```tsx
@@ -122,7 +130,7 @@ Built on Dropdown, so in glass mode the menu is Dropdown's dense-layer glass car
 under the capsule, which keeps its place, its press and its accessible name
 throughout.
 
-The whole account control in one component. `AvatarMenu` renders a single capsule trigger (the avatar in the viewer's violet glow ring, the name over the muted email, a chevron) and the account menu itself, with `name` and `email` repeated as the menu's own identity header. One press target covers the capsule, so nothing beside it has to be wired up. The capsule is Dark Factory's identity pill on every platform: bare at rest, it fills under the pointer and while its menu is open; the menu is each platform's own Dropdown.
+The whole account control in one component. `AvatarMenu` renders a single capsule trigger (the avatar in the viewer's violet glow ring, the name over the muted email, a chevron) and the account menu itself, with `name` and `email` repeated as the menu's own identity header. One press target covers the capsule, so nothing beside it has to be wired up. The capsule is the hand-off's identity pill on every platform: a hairline edge round the popover fill at rest, the accent fill under the pointer and while its menu is open; the menu is each platform's own Dropdown.
 
 ```tsx
 <AvatarMenu
@@ -137,9 +145,27 @@ The whole account control in one component. `AvatarMenu` renders a single capsul
 />
 ```
 
+### Menu specimen
+
+`inline` draws the menu open and in flow under the capsule rather than floating over the page, for a page that shows the menu itself. Rows still fire `onSelect`; nothing dismisses it.
+
+```tsx
+<AvatarMenu
+  inline
+  name="Rachel Chen"
+  email="rachel.chen@example.com"
+  menuWidth={240}
+  items={[
+    { label: "Profile", icon: "user" },
+    { label: "Settings", icon: "settings" },
+    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
+
 ### Compact menu
 
-`compact` drops the name block for a bar with no room for it, leaving the avatar and the chevron. The identity still travels with the menu, so the name and email head the rows the moment it opens. A topbar parks the pill at the trailing edge, so the menu hangs from that edge by default; `alignStart` moves it to the leading edge for a pill that sits at the start of a bar.
+`compact` drops the name block for a bar with no room for it, leaving the 28px avatar alone. The identity still travels with the menu, so the name and email head the rows the moment it opens. A topbar parks the pill at the trailing edge, so the menu hangs from that edge by default; `alignStart` moves it to the leading edge for a pill that sits at the start of a bar.
 
 ```tsx
 <AvatarMenu

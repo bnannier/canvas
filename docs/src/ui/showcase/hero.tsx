@@ -11,8 +11,7 @@ import { PreviewViewport } from "../preview-viewport";
 // A section page's hero (`Canvas v4.0.0 <Section>.dc.html`, its first grid): the room's
 // title, its tagline and the paragraph under it on the left, the section's vignette on the
 // right, side by side until the hero's own width runs out and then stacked. The vignette is
-// a still frame (decision P5-V): the hand-off's `<cv-hero>` loops are motion the owner
-// removed, so it shows live kit components in the reference image's state.
+// animated reference illustration: the owner reinstated the hand-off motion in D15.
 
 export function SectionHero({ room, vignette }: { room: Pick<Room, "title" | "lead" | "body">; vignette: ReactNode }) {
   return (
@@ -107,14 +106,16 @@ function StageGround() {
  * composition centred in the 300 px stage. Its test id is the one hook Lookout's hero
  * routes crop to (lookout.config.ts), the box the hand-off's `<cv-hero>` host draws.
  */
-export function VignetteStage({ children }: { children: ReactNode }) {
+export function VignetteStage({ children, illustration = false }: { children: ReactNode; illustration?: boolean }) {
   return (
     <Card heroCorners heroShadow flush clip testID="section-hero">
       <StageGround />
       <PreviewViewport height={STAGE_WELL_HEIGHT}>
-        <Column grow padLoose center alignCenter>
-          <Container sm>{children}</Container>
-        </Column>
+        {illustration ? children : (
+          <Column grow padLoose center alignCenter>
+            <Container sm>{children}</Container>
+          </Column>
+        )}
       </PreviewViewport>
     </Card>
   );

@@ -461,6 +461,8 @@ interface Requirement {
 interface Placement {
   around: Around | null;
   calls: ts.CallExpression[];
+  /** Conditions on the use of a stored subtree or render helper along this route. */
+  gates?: string[];
 }
 
 /** An object literal a value can be, with the module it is written in and the props its conditions say were passed. */
@@ -1536,12 +1538,13 @@ export class SignalReader {
    * on the surface and inside a drawer (FilterPanel's `panel`, a drawer only when responsive)
    * is in both.
    */
-  private placesAround(module: Parsed, node: ts.Node, scope: ts.Node, own: string, seen: ReadonlySet<ts.Node> = new Set(), calls: ts.CallExpression[] = []): Placement[] {
+  private placesAround(module: Parsed, node: ts.Node, scope: ts.Node, own: string, seen: ReadonlySet<ts.Node> = new Set(), calls: ts.CallExpression[] = [], inheritedGates: readonly string[] = []): Placement[] {
+    const gates = [...new Set([...inheritedGates, ...this.gatesOf(module, node, scope)])];
     for (let current: ts.Node = node; current !== scope && current.parent; current = current.parent) {
       const parent = current.parent;
       if (ts.isJsxElement(parent) && current !== parent.openingElement && current !== parent.closingElement) {
         const found = this.overlayOf(module, parent.openingElement, own, new Set(seen));
-        if (found) return [{ around: found, calls }];
+        if (found) return [{ around: found, calls, gates }];
       }
       if (ts.isVariableDeclaration(parent) && parent.initializer === current && ts.isIdentifier(parent.name)) {
         if (seen.has(parent)) return [];
@@ -1549,12 +1552,12 @@ export class SignalReader {
         // A render helper's call is part of the route: its arguments decide what it renders there.
         const places = usesOf(module, parent, scope).flatMap((use) => {
           const call = ts.isCallExpression(use.parent) && use.parent.expression === use ? [use.parent] : [];
-          return this.placesAround(module, use, scope, own, along, [...calls, ...call]);
+          return this.placesAround(module, use, scope, own, along, [...calls, ...call], gates);
         });
-        return places.length ? places : [{ around: null, calls }];
+        return places.length ? places : [{ around: null, calls, gates }];
       }
     }
-    return [{ around: null, calls }];
+    return [{ around: null, calls, gates }];
   }
 
   /** The first overlay a node renders inside, or null when it renders on the surface alone. */
@@ -1803,6 +1806,12 @@ export class SignalReader {
       if (depth > 4) return null;
       if (ts.isBinaryExpression(e) && (e.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || e.operatorToken.kind === ts.SyntaxKind.BarBarToken)) {
         return follow(e.right, depth + 1) ?? follow(e.left, depth + 1);
+      }
+      // A compound control can select between injected renderers of the same kit
+      // component (AvatarMenu's generic and original-account Dropdown skins).
+      if (ts.isConditionalExpression(e)) {
+        const yes = follow(e.whenTrue, depth + 1), no = follow(e.whenFalse, depth + 1);
+        return yes && yes === no ? yes : null;
       }
       if (!ts.isIdentifier(e)) return null;
       const binding = module.reader.resolve(e);
@@ -2148,7 +2157,7 @@ export class SignalReader {
     const placedAt = (places: readonly Placement[], control: Control | undefined, signal: Signal, node: ts.Node, needs?: Requirement[]) => {
       for (const place of places) {
         if (!this.callsAllow(needs, place.calls, module)) continue;
-        out.push({ ...signal, ...(control ? { control } : {}), ...(place.around ? { within: place.around.name } : {}), ...buildsOf(node) });
+        out.push({ ...signal, gates: [...new Set([...signal.gates, ...(place.gates ?? [])])], ...(control ? { control } : {}), ...(place.around ? { within: place.around.name } : {}), ...buildsOf(node) });
       }
     };
 
@@ -2364,8 +2373,9 @@ export class SignalReader {
       }
       // Placed where the use is: each place, but an overlay that is kept closed whenever it is disabled.
       for (const place of placesAtSite()) {
-        if (place.around && by && shutIn(place.around, reached.gates, by)) continue;
-        out.push({ ...reached, ...(place.around ? { within: place.around.name } : {}) });
+        const gates = [...new Set([...reached.gates, ...(place.gates ?? [])])];
+        if (place.around && by && shutIn(place.around, gates, by)) continue;
+        out.push({ ...reached, gates, ...(place.around ? { within: place.around.name } : {}) });
       }
     }
   }
@@ -2452,10 +2462,22 @@ export class SignalReader {
     const skip = this.tagComponents(modules, own);
     const signals: Signal[] = [];
     for (const module of modules) signals.push(...this.collect(module, module.sf, own, skip));
-    // One signal per place and route to it.
+    // One signal per place and route. A route whose gates are a strict superset
+    // adds nothing when the same element also renders there under weaker gates
+    // (for example compact/noncompact menu rows and virtualized/nonvirtual rows).
+    const keyOf = (s: Signal) => `${s.kind}|${s.state}|${s.what}|${s.at}|${s.via.join(">")}|${s.disabledBy ? JSON.stringify(s.disabledBy) : ""}|${s.within ?? ""}|${s.control?.at ?? ""}|${s.builds?.join(",") ?? ""}`;
+    const routes = new Map<string, Signal[]>();
+    for (const signal of signals) {
+      const key = keyOf(signal);
+      const group = routes.get(key) ?? [];
+      group.push(signal);
+      routes.set(key, group);
+    }
     const seen = new Set<string>();
     return signals.filter((s) => {
-      const key = `${s.kind}|${s.state}|${s.what}|${s.at}|${s.via.join(">")}|${[...s.gates].sort().join(",")}|${s.disabledBy ? JSON.stringify(s.disabledBy) : ""}|${s.within ?? ""}|${s.control?.at ?? ""}|${s.builds?.join(",") ?? ""}`;
+      const base = keyOf(s);
+      if (routes.get(base)!.some((other) => other.gates.length < s.gates.length && other.gates.every((gate) => s.gates.includes(gate)))) return false;
+      const key = `${base}|${[...s.gates].sort().join(",")}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;

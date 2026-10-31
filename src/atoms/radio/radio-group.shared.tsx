@@ -29,6 +29,14 @@ const RADIOGROUP: Role = "radiogroup";
 // column's gap is the skin's (`groupGap`: plain rows, or card tiles).
 const COLUMN: ViewStyle = { flexDirection: "column" };
 const ROW: ViewStyle = { flexDirection: "row", flexWrap: "wrap", rowGap: 12, columnGap: 20 };
+// The `equal` row: the options split it into equal shares and never wrap, card tiles 10
+// apart (the Controls page's plan tiles, `grid-template-columns:repeat(3,minmax(0,1fr));
+// gap:10px`), plain options at the row's 20.
+const EQUAL_ROW: ViewStyle = { flexDirection: "row", flexWrap: "nowrap" };
+const EQUAL_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0 };
+const EQUAL_GAP = { card: 10, plain: 20 };
+// An `inlineLabel` sits in the row before the options, centred on them.
+const INLINE_ROW: ViewStyle = { alignItems: "center" };
 
 // A labeled group stacks its header over the options; the header keeps the label
 // tight to its description. Field-label rhythm: 8 between header and options
@@ -41,6 +49,11 @@ const HEADER: ViewStyle = { gap: 4 };
 // the way Radio shares its own label type, not a platform face.
 function labelType(t: ColorTokens): TextStyle {
   return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground };
+}
+// The inline label (the Controls page's Digest row, `c-radio`: `font:500 13px var(--ft);
+// color:var(--tx2)`, its line the face's normal 16 px).
+function inlineLabelType(t: ColorTokens): TextStyle {
+  return { fontSize: 13, lineHeight: 16, fontWeight: "500", color: t["muted-foreground"] };
 }
 function descriptionType(t: ColorTokens): TextStyle {
   return { fontSize: 12, lineHeight: 16, color: t["muted-foreground"] };
@@ -64,6 +77,18 @@ export interface RadioGroupProps {
    * <!-- /only -->
    */
   row?: boolean;
+  /**
+   * With `row`: the options share the row equally and never wrap, a tile picker's even
+   * columns (card tiles 10 apart, plain options 20).
+   */
+  equal?: boolean;
+  /**
+   * With `row` and a `label`: the label sits at the start of the row, before the options
+   * and centred on them, in the 500 13 px muted ink (a short setting's inline choice:
+   * "Digest  ( ) Daily  (o) Weekly"), instead of as a heading above. The `description` is
+   * not shown inline.
+   */
+  inlineLabel?: boolean;
   /**
    * The group's name, rendered as a heading above the options. It also becomes the
    * radiogroup's accessible name, so a screen reader announces what the set of
@@ -162,7 +187,11 @@ export function createRadioGroup(skin: RadioSkin) {
     // alias are set because RNW forwards neither on its own (the kit's dual-a11y
     // contract; same pattern the grouped surfaces use).
     const nameProps = label != null ? { accessibilityLabel: label, "aria-label": label } : {};
-    const hasHeader = label != null || description != null;
+    // A list section (iOS) has no row form, so its label stays a heading above it.
+    const inline = !!props.row && !!props.inlineLabel && label != null && list == null;
+    const hasHeader = !inline && (label != null || description != null);
+    const equal = !!props.row && !!props.equal;
+    const rowStyle: ViewStyle | ViewStyle[] = equal ? [EQUAL_ROW, { gap: cards ? EQUAL_GAP.card : EQUAL_GAP.plain }] : ROW;
 
     // A list section is a content-layer pane under glass (GlassSurface is the plain
     // section in solid mode), with an inset hairline between two rows; the radiogroup
@@ -187,9 +216,13 @@ export function createRadioGroup(skin: RadioSkin) {
         testID={hasHeader ? undefined : props.testID}
         role={RADIOGROUP}
         {...nameProps}
-        style={[props.row ? ROW : [COLUMN, { gap: cards ? skin.groupGap.card : skin.groupGap.plain }], hasHeader ? null : [fill, props.style]]}
+        style={[props.row ? rowStyle : [COLUMN, { gap: cards ? skin.groupGap.card : skin.groupGap.plain }], inline ? INLINE_ROW : null, hasHeader ? null : [fill, props.style]]}
       >
-        {props.children}
+        {/* The group's accessible name already says it, so the visible label is not read twice. */}
+        {inline ? <Text aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={inlineLabelType(tokens)}>{label}</Text> : null}
+        {equal
+          ? Children.map(props.children, (child) => <View style={EQUAL_CELL}>{child}</View>)
+          : props.children}
       </View>
     );
 

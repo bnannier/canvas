@@ -6,7 +6,7 @@ import { fireEvent, type RenderResult } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import {
-  ActionPanel, Alert, Autocomplete, Avatar, AvatarGroup, Badge, BarList, BoxPlot, BulletChart, Button, Calendar, CandlestickChart, Card,
+  ActionPanel, Alert, Autocomplete, Avatar, AvatarGroup, AvatarMenu, Badge, BarList, BoxPlot, BulletChart, Button, Calendar, CandlestickChart, Card,
   Carousel, Chart, Chip, CodeBlock, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, GridList, Histogram, Icon, Input,
   InputOTP, Kbd, LineChart, Listbox, MediaObject, MetricBreakdown, Navbar, Pagination, PhoneInput, Progress, RadarChart, Radio,
   RadioGroup, RangeAreaChart, ScatterPlot, Select, ServiceHealthList, Sidebar, Skeleton, Slider, Stats, Stepper, Steps,
@@ -33,6 +33,7 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/molecules/action-panels/action-panels.shared.tsx", name: "ActionPanel", node: <><ActionPanel title="Export data" description="Download a CSV." actionLabel="Export" /><ActionPanel destructive title="Delete project" description="This cannot be undone." actionLabel="Delete" /></> },
   { file: "src/molecules/card/card.reference.tsx", name: "Reference Card", node: <Card referenceDetail referenceKey="CORE-1" title="Reference" description="Ready · Core" referenceSource="Jira" /> },
   { file: "src/atoms/autocomplete/autocomplete.shared.tsx", name: "Autocomplete", node: <Autocomplete label="Assigned to" options={["Ada Lovelace", "Grace Hopper"]} /> },
+  { file: "src/atoms/avatar/avatar-menu.shared.tsx", name: "AvatarMenu trigger", node: <AvatarMenu name="Ada Lovelace" items={[{ label: "Profile" }]} /> },
   { file: "src/atoms/avatar/avatar.shared.tsx", name: "Avatar tile and group overflow", node: <><Avatar /><AvatarGroup max={1}><Avatar name="Ada Lovelace" /><Avatar name="Grace Hopper" /></AvatarGroup></> },
   { file: "src/molecules/code-block/code-block.shared.tsx", name: "CodeBlock inline copy", node: <CodeBlock inline copy code={'import { Button } from "@nannier/canvas"'} /> },
   { file: "src/atoms/badge/badge.shared.tsx", name: "Badge", node: <><Badge>admin</Badge><Badge success>Live</Badge><Badge status success>Healthy</Badge></> },

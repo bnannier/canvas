@@ -1,0 +1,1145 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: background 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2986,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: muted 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: Android filled Textarea 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: iOS Dialog resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: iOS AlertDialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9435,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.6554,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: ios ActionSheet resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.0924,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: android ActionSheet ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: web Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: android Dropdown ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9891,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: web fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: ios fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records light reference error/action text contrast through surface and press rounding: light: android fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9891,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records dark reference error/action text contrast through surface and press rounding: dark: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records dark reference error/action text contrast through surface and press rounding: dark: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records dark reference error/action text contrast through surface and press rounding: dark: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.4499,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records dark reference error/action text contrast through surface and press rounding: dark: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.606,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: background 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2986,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: muted 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: Android filled Textarea 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: iOS Dialog resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: iOS AlertDialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9435,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.6554,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: ios ActionSheet resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.0924,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: android ActionSheet ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: web Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: android Dropdown ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.0885,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: web fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: ios fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan light reference error/action text contrast through surface and press rounding: cyan light: android fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.0885,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan dark reference error/action text contrast through surface and press rounding: cyan dark: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan dark reference error/action text contrast through surface and press rounding: cyan dark: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan dark reference error/action text contrast through surface and press rounding: cyan dark: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.4499,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records cyan dark reference error/action text contrast through surface and press rounding: cyan dark: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.606,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: background 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2986,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: muted 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: Android filled Textarea 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: iOS Dialog resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: iOS AlertDialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9435,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.6554,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: ios ActionSheet resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.0924,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: android ActionSheet ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: web Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: android Dropdown ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.0779,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: web fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: ios fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint light reference error/action text contrast through surface and press rounding: mint light: android fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.0779,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint dark reference error/action text contrast through surface and press rounding: mint dark: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint dark reference error/action text contrast through surface and press rounding: mint dark: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint dark reference error/action text contrast through surface and press rounding: mint dark: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.4499,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records mint dark reference error/action text contrast through surface and press rounding: mint dark: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.606,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: background 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2986,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: muted 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: Android filled Textarea 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: iOS Dialog resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: iOS AlertDialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9435,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.6554,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: ios ActionSheet resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.0924,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: android ActionSheet ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: web Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: android Dropdown ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8391,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: web fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: ios fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose light reference error/action text contrast through surface and press rounding: rose light: android fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8391,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose dark reference error/action text contrast through surface and press rounding: rose dark: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose dark reference error/action text contrast through surface and press rounding: rose dark: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose dark reference error/action text contrast through surface and press rounding: rose dark: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.4499,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records rose dark reference error/action text contrast through surface and press rounding: rose dark: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.606,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: background 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2986,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: muted 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: Android filled Textarea 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: iOS Dialog resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: iOS AlertDialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9435,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.3251,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.6554,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: ios ActionSheet resting 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.0924,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: android ActionSheet ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.8865,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: web Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: android Dropdown ripple 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9981,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: web fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: ios fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2605,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber light reference error/action text contrast through surface and press rounding: amber light: android fixed-red RowMenu pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9981,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber dark reference error/action text contrast through surface and press rounding: amber dark: iOS Dialog pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber dark reference error/action text contrast through surface and press rounding: amber dark: iOS Dropdown pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1859,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber dark reference error/action text contrast through surface and press rounding: amber dark: web ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.4499,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces records amber dark reference error/action text contrast through surface and press rounding: amber dark: ios ActionSheet pressed 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.606,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: light focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5376,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: dark focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.912,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: cyan light focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4388,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: cyan dark focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 2.0544,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: mint light focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4489,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: mint dark focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 2.0231,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: rose light focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.691,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: rose dark focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.8604,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: amber light focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5286,
+  "passes": false,
+}
+`;
+
+exports[`error and destructive text on authored enabled surfaces keeps CSS text aliases separate from fills and indicators, with menus on the error ink: amber dark focus band 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.9341,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces paints the dark Android snackbar action in the palette's inverse primary on the pill: dark inverse action across solid, glass and ripple beds 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3349,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces matches cyan light RN/CSS primary text and records its rounded contrast: cyan light tonal selected on background exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.2583,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces matches cyan light RN/CSS primary text and records its rounded contrast: cyan light tonal selected on background rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1614,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces matches cyan light RN/CSS primary text and records its rounded contrast: cyan light tonal selected on muted exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.2228,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces matches cyan light RN/CSS primary text and records its rounded contrast: cyan light tonal selected on muted rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.1265,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four cyan light neutral surfaces: cyan light background exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.0726,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four cyan light neutral surfaces: cyan light background rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9832,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four cyan light neutral surfaces: cyan light card exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.4697,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four cyan light neutral surfaces: cyan light card rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3734,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four cyan light neutral surfaces: cyan light popover exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.4697,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four cyan light neutral surfaces: cyan light popover rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3734,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four cyan light neutral surfaces: cyan light muted exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.0419,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four cyan light neutral surfaces: cyan light muted rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.9531,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces renders the actual cyan light Android pill label over its selected fill and muted track: cyan light selected Overview 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.2228,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces renders the actual cyan light Android pill label over its selected fill and muted track: cyan light selected Activity 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.2228,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces paints the cyan dark Android snackbar action in the palette's inverse primary on the pill: cyan dark inverse action across solid, glass and ripple beds 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.1381,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces matches mint light RN/CSS primary text and records its rounded contrast: mint light tonal selected on background exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.3539,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces matches mint light RN/CSS primary text and records its rounded contrast: mint light tonal selected on background rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2549,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces matches mint light RN/CSS primary text and records its rounded contrast: mint light tonal selected on muted exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.3175,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces matches mint light RN/CSS primary text and records its rounded contrast: mint light tonal selected on muted rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.2193,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four mint light neutral surfaces: mint light background exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.1711,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four mint light neutral surfaces: mint light background rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.0795,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four mint light neutral surfaces: mint light card exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.576,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four mint light neutral surfaces: mint light card rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.4773,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four mint light neutral surfaces: mint light popover exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.576,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four mint light neutral surfaces: mint light popover rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.4773,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four mint light neutral surfaces: mint light muted exact 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.1398,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces records actual CSS anchor hover contrast on the four mint light neutral surfaces: mint light muted rounded 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.0487,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces renders the actual mint light Android pill label over its selected fill and muted track: mint light selected Overview 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.3175,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces renders the actual mint light Android pill label over its selected fill and muted track: mint light selected Activity 1`] = `
+{
+  "floor": 4.65,
+  "minimum": 4.3175,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces paints the mint dark Android snackbar action in the palette's inverse primary on the pill: mint dark inverse action across solid, glass and ripple beds 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 3.2163,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces paints the rose dark Android snackbar action in the palette's inverse primary on the pill: rose dark inverse action across solid, glass and ripple beds 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.3008,
+  "passes": false,
+}
+`;
+
+exports[`primary text on authored surfaces paints the amber dark Android snackbar action in the palette's inverse primary on the pill: amber dark inverse action across solid, glass and ripple beds 1`] = `
+{
+  "floor": 4.5,
+  "minimum": 4.0967,
+  "passes": false,
+}
+`;

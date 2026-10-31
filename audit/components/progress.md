@@ -38,6 +38,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `labeled` | Labeled | [ ] | [ ] | [ ] |  |
+| `status` | Status | [ ] | [ ] | [ ] |  |
 | `indeterminate` | Indeterminate | [ ] | [ ] | [ ] |  |
 | `small` | Small | [ ] | [ ] | [ ] |  |
 | `large` | Large | [ ] | [ ] | [ ] |  |

@@ -21,6 +21,13 @@ extends horizontal scrolling through the owning container's inset.
 Plain lanes share the Board's measured width equally, with a 168px minimum per
 lane. Narrow containers scroll horizontally; long card text stays within its lane.
 
+Add `pageScroll` when the surrounding page or content pane owns horizontal scrolling.
+The Board then renders an overflow-visible lane row without an inner scrollport.
+Plain lanes still fill the available content width equally down to their 168px
+minimum; standard lanes keep their configured width. The surrounding scroll area
+must allow horizontal overflow and keyboard scrolling. Card actions and drag grips
+retain their keyboard behavior. Omit `pageScroll` to keep the default local scroller.
+
 ## Usage
 
 ```tsx

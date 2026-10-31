@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Slider } = scope;
   return (
-<Slider disabled accessibilityLabel="Volume" defaultValue={30} />
+<Slider percent scale showValue defaultValue={62}>Glass intensity</Slider>
   );
 }

@@ -1,3 +1,4 @@
+import { referenceContrast } from "./fixtures/reference-contrast.ts";
 import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { CSSMediaRule, CSSStyleRule, Window } from "happy-dom";
@@ -235,28 +236,9 @@ describe("CSS material handoff fallbacks", () => {
   }
 });
 
-/**
- * WCAG 2.2 SC 1.4.11 (Non-text Contrast) holds "visual information required to
- * identify user interface components" to 3:1 against adjacent colour. In this
- * token set that clause lands squarely on `input`: it is the boundary the
- * unfilled controls draw themselves with (the iOS and Android outline Button, the
- * text fields, checkbox, radio, the switch track, select, autocomplete, a disabled pager's
- * current page),
- * and for several of them it is the ONLY thing separating the control from the page.
- * (The web's outline Button is a hairline pill in `border`: its label
- * identifies it, so its boundary is not the visual information 1.4.11 protects.)
- *
- * `border` is deliberately NOT held to the same floor. It separates two SURFACES
- * that differ in fill (a card edge, a divider, a table rule), so it is read
- * against that fill difference rather than on its own contrast.
- *
- * The regression this pins: `input` and `border` shipped the same hairline value
- * in both schemes, which put every unfilled control at 1.27:1 in light and
- * 1.34:1 in dark, i.e. a silhouette that disappeared into the page. Anyone
- * re-tuning `input` has to keep it above the floor for all three surfaces a
- * control sits on, not just the page.
- */
-describe("control boundary contrast (WCAG 1.4.11)", () => {
+// D14 restores the hand-off’s 16% control hairline. Pin its composed contrast and
+// retain the historical 3:1 floor as an explicit audit result, never a recoloring rule.
+describe("reference control boundary contrast (WCAG 1.4.11 audit)", () => {
   /** sRGB hex -> WCAG relative luminance. */
   function luminance(hex: string): number {
     const h = hex.replace("#", "");
@@ -281,31 +263,24 @@ describe("control boundary contrast (WCAG 1.4.11)", () => {
   for (const { name: scheme, tokens: t } of LOOKS) {
     // Every surface a bordered control is placed on: the page, a card or popover,
     // and a muted/accent panel. The muted fill is the tightest of the three.
-    it(`keeps \`input\` at 3:1 on every ${scheme} surface a control sits on`, () => {
-      for (const surface of [t.background, t.card, t.popover, t.muted, t.accent, t.secondary]) {
-        expect(contrast(t.input, surface)).toBeGreaterThanOrEqual(3);
-      }
+    it(`records the reference input boundary on every ${scheme} surface`, () => {
+      expect(t.input).toBe(t["field-border"]!);
+      referenceContrast(`${scheme} input boundary`, [t.background, t.card, t.popover, t.muted, t.accent, t.secondary].map((surface) => contrastRatio(composite(t.input, surface), surface)), 3);
     });
 
-    it(`keeps the ${scheme} switch thumb readable against its unchecked track`, () => {
-      // The web switch paints an unchecked track with `input` and the thumb with
-      // `background`, so the thumb-on-track pair is a second consumer of the same
-      // floor: it is the only thing that shows the switch is off.
-      expect(contrast(t.background, t.input)).toBeGreaterThanOrEqual(3);
+    it(`records the ${scheme} switch thumb contrast against its unchecked track`, () => {
+      // The reference off-track uses the translucent input hairline.
+      referenceContrast(`${scheme} switch thumb`, [contrastRatio(t.background, composite(t.input, t.background))], 3);
     });
   }
 
-  it("`field-border` is the field's resting hairline: between `border` and `input`, below the floor on purpose", () => {
-    // A text field rests on the hand-off's strong hairline (`--ln2`, translucent), denser
-    // than a divider, a disclosed WCAG 1.4.11 trade-off scoped to the field skins
-    // (src/style/field-colors.ts). It must stay distinct from both neighbours: collapsing
-    // it onto `input` would re-heavy the box, collapsing it onto `border` would make the
-    // box vanish on the card. The translucent lines are judged as painted on the card.
+  it("`field-border` and `input` share the reference strong hairline above the divider", () => {
+    // Both control and field boundaries name --ln2; separators name the finer --ln.
     for (const { tokens: t } of LOOKS) {
       const rest = composite(t["field-border"]!, t.card);
       expect(contrastRatio(rest, t.card)).toBeLessThan(3);
       expect(contrastRatio(rest, t.card)).toBeGreaterThan(contrastRatio(composite(t.border, t.card), t.card));
-      expect(contrastRatio(rest, t.card)).toBeLessThan(contrastRatio(t.input, t.card));
+      expect(t["field-border"]).toBe(t.input);
     }
   });
 

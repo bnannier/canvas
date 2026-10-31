@@ -1,5 +1,18 @@
+import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { View, Text, statusColors, devWarn, tabularNums, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import {
+  View,
+  Text,
+  statusColors,
+  devWarn,
+  tabularNums,
+  type ColorTokens,
+  type LayoutStyle,
+  GlassPane,
+  paneStyle,
+  isGlass,
+  alpha,
+} from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -7,6 +20,7 @@ import { formatCompact } from "../shared/chart-math.js";
 import { BreakdownRows, type BreakdownRow } from "../shared/breakdown-rows.js";
 import { Sparkline } from "../sparkline/sparkline.js";
 import { Chip as WebChip } from "../../atoms/chip/chip.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
 
 // Shared MetricBreakdown shell. The decomposed-metric dashboard card: a
@@ -78,6 +92,8 @@ export interface MetricBreakdownProps {
   formatValue?: (v: number) => string;
   // Density (omit for the default spacing).
   compact?: boolean;
+  /** Expanded metric summary with a divided share breakdown and trend annotation. */
+  detailed?: boolean;
   /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
   plain?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -89,13 +105,15 @@ export interface MetricBreakdownProps {
 // The rate readout's color: the tone's ink for the toned states (it is text, so it takes
 // the text-grade color, statusColors' ink), the muted foreground otherwise (a rate is
 // contextual until a tone claims it). Exported for tests (not re-exported from the barrel).
-export function rateColor(tokens: ColorTokens, p: MetricBreakdownProps): string {
+export function rateColor(
+  tokens: ColorTokens,
+  p: MetricBreakdownProps
+): string {
   if (p.rateSuccess) return statusColors(tokens, "success").ink;
   if (p.rateWarning) return statusColors(tokens, "warning").ink;
   if (p.rateDestructive) return statusColors(tokens, "error").ink;
   return tokens["muted-foreground"];
 }
-
 
 // The v4 hand-off's card (`K.def('metric-breakdown')`): the label (500 12 px, subtle) over
 // the value (the display face, 600 32 px at a 1.1 line, -0.02em) over the rate (500 12 px
@@ -104,13 +122,21 @@ export function rateColor(tokens: ColorTokens, p: MetricBreakdownProps): string 
 const VALUE_SIZE = 32;
 const SPARK_WIDTH = 120;
 // The trend's trailing value tag: a value annotation.
-const SPARK_TAG_TYPE = { fontSize: 11, lineHeight: 14, fontWeight: "500" as const };
+const SPARK_TAG_TYPE = {
+  fontSize: s.CHART_LOOK.legendCaptionSize,
+  lineHeight: 14,
+  fontWeight: "500" as const,
+};
 
 // The label over the headline and the rate's caption: 500 12 px in the subtle ink.
 function captionStyle(tokens: ColorTokens) {
-  return { fontSize: 12, lineHeight: 16, fontWeight: "500" as const, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
+  return {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "500" as const,
+    color: tokens["subtle-foreground"] ?? tokens["muted-foreground"],
+  };
 }
-
 
 /**
  * The components a MetricBreakdown draws with that look different per platform. The web
@@ -121,37 +147,61 @@ export interface MetricBreakdownParts {
   Chip?: typeof WebChip;
 }
 
-export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownParts = {}) {
+export function createMetricBreakdown(
+  skin: ChartSkin,
+  parts: MetricBreakdownParts = {}
+) {
   const Chip = parts.Chip ?? WebChip;
   return function MetricBreakdown(props: MetricBreakdownProps) {
-    const { value, label, rate, rateLabel, sparkUnit, breakdown, chips, chipsLabel, testID, style } = props;
+    const {
+      value,
+      label,
+      rate,
+      rateLabel,
+      sparkUnit,
+      breakdown,
+      chips,
+      chipsLabel,
+      testID,
+      style,
+    } = props;
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
+    const detailed = !!props.detailed;
     const formatValue = props.formatValue ?? formatCompact;
 
     // The spark needs two points to draw a trend; a single point is skipped.
-    const spark = props.spark != null && props.spark.length > 1 ? props.spark : null;
+    const spark =
+      props.spark != null && props.spark.length > 1 ? props.spark : null;
     devWarn(
       props.spark != null && props.spark.length === 1,
-      "[canvas] <MetricBreakdown />: `spark` has a single point; a trend needs at least two, so the strip is not rendered.",
+      "[canvas] <MetricBreakdown />: `spark` has a single point; a trend needs at least two, so the strip is not rendered."
     );
     devWarn(
       (breakdown ?? []).some((r) => Number.isFinite(r.value) && r.value < 0),
-      "[canvas] <MetricBreakdown />: a breakdown row's `value` is negative; share bars treat it as 0.",
+      "[canvas] <MetricBreakdown />: a breakdown row's `value` is negative; share bars treat it as 0."
     );
 
-    const hasRate = (rate != null && rate !== "") || (rateLabel != null && rateLabel !== "");
+    const hasRate =
+      (rate != null && rate !== "") || (rateLabel != null && rateLabel !== "");
     const hasRows = breakdown != null && breakdown.length > 0;
     const hasChips = chips != null && chips.length > 0;
     // The chip footer draws its divider only when a section precedes it.
     const chipsDivided = hasChips && (spark != null || hasRows);
     // The latest-value caption inherits the rate tone when one is set.
-    const tagColor = props.rateSuccess || props.rateWarning || props.rateDestructive ? rateColor(tokens, props) : tokens["muted-foreground"];
+    const tagColor =
+      props.rateSuccess || props.rateWarning || props.rateDestructive
+        ? rateColor(tokens, props)
+        : tokens["muted-foreground"];
     const last = spark != null ? spark[spark.length - 1] : 0;
-    const sectionGap = compact ? s.CHART_LOOK.gap.compact : s.CHART_LOOK.gap.default;
+    const sectionGap = detailed
+      ? 14
+      : compact
+      ? s.CHART_LOOK.gap.compact
+      : s.CHART_LOOK.gap.default;
 
     return (
       <View
@@ -160,26 +210,46 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
         aria-label={label}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
           CHART_ROOT,
           { gap: sectionGap },
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
+        {glass && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
+        ) : null}
         {/* Header: the label, the headline and the rate stacked at the left, the trend
             strip at the right on their foot. */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
-          <View style={{ flexShrink: 1 }}>
-            <Text numberOfLines={1} style={captionStyle(tokens)}>{label}</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            gap: 12,
+          }}
+        >
+          <View style={{ flexShrink: 1, paddingBottom: detailed && hasRate ? 3.5 : 0 }}>
+            {detailed ? null : (
+              <Text numberOfLines={1} style={captionStyle(tokens)}>
+                {label}
+              </Text>
+            )}
             <Text
               style={{
                 fontFamily: DISPLAY_FONT,
                 fontSize: VALUE_SIZE,
-                lineHeight: Math.round(VALUE_SIZE * 1.1),
-                fontWeight: "600",
-                letterSpacing: -0.02 * VALUE_SIZE,
+                lineHeight: detailed
+                  ? VALUE_SIZE
+                  : Math.round(VALUE_SIZE * 1.1),
+                fontWeight: detailed ? "500" : "600",
+                letterSpacing: (detailed ? -0.03 : -0.02) * VALUE_SIZE,
                 color: tokens["card-foreground"],
                 ...tabularNums(),
               }}
@@ -187,40 +257,113 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
               {value}
             </Text>
             {hasRate ? (
-              <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: 6 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  columnGap: detailed ? 4 : 6,
+                  marginTop: detailed ? 8 : 0,
+                }}
+              >
+                {detailed ? (
+                  <Icon
+                    trendingUp
+                    size={14}
+                    color={rateColor(tokens, props)}
+                    decorative
+                  />
+                ) : null}
                 {rate != null && rate !== "" ? (
-                  <Text style={{ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: rateColor(tokens, props), ...tabularNums() }}>
-                    {rate}
+                  <Text
+                    style={{
+                      fontFamily: detailed ? undefined : MONO_FONT,
+                      fontSize: 12,
+                      lineHeight: detailed ? 15 : 16,
+                      fontWeight: "500",
+                      color: rateColor(tokens, props),
+                      ...tabularNums(),
+                    }}
+                  >
+                    {detailed
+                      ? `${rate}${rateLabel ? ` ${rateLabel}` : ""}`
+                      : rate}
                   </Text>
                 ) : null}
-                {rateLabel != null && rateLabel !== "" ? <Text numberOfLines={1} style={captionStyle(tokens)}>{rateLabel}</Text> : null}
+                {!detailed && rateLabel != null && rateLabel !== "" ? (
+                  <Text numberOfLines={1} style={captionStyle(tokens)}>
+                    {rateLabel}
+                  </Text>
+                ) : null}
               </View>
             ) : null}
           </View>
           {/* The trend: the latest-value tag over the bar strip. The tag is
               presentational; the strip's name carries the data. */}
           {spark != null ? (
-            <View style={{ width: SPARK_WIDTH, flexShrink: 0 }}>
-              {props.hideSparkTag ? null : (
+            <View
+              style={{ width: detailed ? "42%" : SPARK_WIDTH, flexShrink: 0 }}
+            >
+              {props.hideSparkTag || detailed ? null : (
                 <View
                   aria-hidden
                   accessibilityElementsHidden
                   importantForAccessibility="no-hide-descendants"
                   style={{ alignSelf: "flex-end" }}
                 >
-                  <Text style={{ ...SPARK_TAG_TYPE, color: tagColor, ...tabularNums() }}>
-                    {sparkUnit != null && sparkUnit !== "" ? `${formatValue(last)} ${sparkUnit}` : formatValue(last)}
+                  <Text
+                    style={{
+                      ...SPARK_TAG_TYPE,
+                      color: tagColor,
+                      ...tabularNums(),
+                    }}
+                  >
+                    {sparkUnit != null && sparkUnit !== ""
+                      ? `${formatValue(last)} ${sparkUnit}`
+                      : formatValue(last)}
                   </Text>
                 </View>
               )}
-              <Sparkline values={spark} tall={!compact} accessibilityLabel={`${label} trend`} />
+              {detailed ? (
+                <View
+                  role="img"
+                  accessibilityLabel={`${label} trend: ${spark.join(", ")}`}
+                  aria-label={`${label} trend: ${spark.join(", ")}`}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-end",
+                    height: 36,
+                    gap: 2,
+                  }}
+                >
+                  {spark.map((v, i) => (
+                    <View
+                      key={i}
+                      style={{
+                        flex: 1,
+                        height: `${Math.max(0, Math.min(100, v))}%`,
+                        borderRadius: platformShape.web.sparkBar,
+                        backgroundColor: tokens.primary,
+                        opacity: i === spark.length - 1 ? 1 : 0.3,
+                            ...(i === spark.length - 1 ? { boxShadow: `0 0 8px ${alpha(tokens.primary, theme.dark ? 0.5 : 0.4)}` } : {}),
+                      }}
+                    />
+                  ))}
+                </View>
+              ) : (
+                <Sparkline
+                  values={spark}
+                  tall={!compact}
+                  accessibilityLabel={`${label} trend`}
+                />
+              )}
             </View>
           ) : null}
         </View>
 
-        {/* Per-category share rows (share of the visible rows' sum). */}
+        {/* The shared row engine keeps formatting, color slots and non-finite data consistent. */}
         {breakdown != null && breakdown.length > 0 ? (
-          <BreakdownRows rows={breakdown} share percent={false} tone={null} compact={compact} formatValue={formatValue} />
+          <BreakdownRows rows={breakdown} share percent={false} tone={null} compact={compact} detailed={detailed} formatValue={formatValue} />
         ) : null}
 
         {/* Chip footer, divided from the sections above it. Chip's own color
@@ -230,14 +373,37 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
         {chips != null && chips.length > 0 ? (
           <View
             style={[
-              { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 },
-              chipsDivided ? { borderTopWidth: 1, borderColor: tokens.border, paddingTop: compact ? 8 : 10 } : null,
+              {
+                flexDirection: "row",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 6,
+              },
+              chipsDivided && !detailed
+                ? {
+                    borderTopWidth: 1,
+                    borderColor: tokens.border,
+                    paddingTop: compact ? 8 : 10,
+                  }
+                : null,
             ]}
           >
-            {chipsLabel != null && chipsLabel !== "" ? <Text style={captionStyle(tokens)}>{chipsLabel}</Text> : null}
+            {chipsLabel != null && chipsLabel !== "" ? (
+              <Text style={captionStyle(tokens)}>{chipsLabel}</Text>
+            ) : null}
             {chips.map((chip, i) => (
-              <Chip key={chip.id ?? i} success={chip.success} warning={chip.warning} destructive={chip.destructive} info={chip.info}>
-                {chip.count != null ? `${chip.label} · ${chip.count}` : chip.label}
+              <Chip
+                small={detailed}
+                gray={detailed && !chip.success && !chip.warning && !chip.destructive && !chip.info}
+                key={chip.id ?? i}
+                success={chip.success}
+                warning={chip.warning}
+                destructive={chip.destructive}
+                info={chip.info}
+              >
+                {chip.count != null
+                  ? `${chip.label} · ${chip.count}`
+                  : chip.label}
               </Chip>
             ))}
           </View>

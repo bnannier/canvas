@@ -1,5 +1,19 @@
+import { useId } from "react";
+import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { View, Text, devWarn, tabularNums, statusColors, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import {
+  View,
+  Text,
+  devWarn,
+  tabularNums,
+  statusColors,
+  type ColorTokens,
+  type LayoutStyle,
+  GlassPane,
+  paneStyle,
+  isGlass,
+  alpha,
+} from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
@@ -29,6 +43,8 @@ export interface BulletDatum {
   label: string;
   /** The measured value; sizes the bar. */
   value: number;
+  /** Optional per-row formatter for charts whose goal rows use different units. */
+  formatValue?: (value: number) => string;
   /** The goal, drawn as a vertical tick over the track. */
   target?: number;
   /** Ascending qualitative band bounds (e.g. [150, 250, 350]); each band
@@ -50,10 +66,26 @@ export interface BulletDatum {
  * A row's measure fill and value ink: its own tone first (the solid status colour on the
  * bar, the status text ink on the value), else the chart's fill under the card ink.
  */
-export function rowTone(tokens: ColorTokens, d: BulletDatum, chartFill: string): { fill: string; ink: string } {
-  if (d.success) return { fill: statusColors(tokens, "success").dot, ink: statusColors(tokens, "success").ink };
-  if (d.warning) return { fill: statusColors(tokens, "warning").dot, ink: statusColors(tokens, "warning").ink };
-  if (d.destructive) return { fill: statusColors(tokens, "error").dot, ink: statusColors(tokens, "error").ink };
+export function rowTone(
+  tokens: ColorTokens,
+  d: BulletDatum,
+  chartFill: string
+): { fill: string; ink: string } {
+  if (d.success)
+    return {
+      fill: statusColors(tokens, "success").dot,
+      ink: statusColors(tokens, "success").ink,
+    };
+  if (d.warning)
+    return {
+      fill: statusColors(tokens, "warning").dot,
+      ink: statusColors(tokens, "warning").ink,
+    };
+  if (d.destructive)
+    return {
+      fill: statusColors(tokens, "error").dot,
+      ink: statusColors(tokens, "error").ink,
+    };
   return { fill: chartFill, ink: tokens["card-foreground"] };
 }
 
@@ -71,6 +103,8 @@ export interface BulletChartProps {
   destructive?: boolean;
   // Density (omit for the default row spacing).
   compact?: boolean;
+  /** Expanded goal rows with inset markers and a qualitative-band key. */
+  detailed?: boolean;
   /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
   plain?: boolean;
   /** Formats row values (data formatting, not styling). */
@@ -105,8 +139,9 @@ const bandFill = (tokens: ColorTokens, i: number): string => {
 export function createBulletChart(skin: ChartSkin) {
   return function BulletChart(props: BulletChartProps) {
     const { data, title, testID, style } = props;
+    const rangeKeyId = useId();
     const theme = useMaterialTheme({ layer: "content" });
-    const { tokens } = theme;
+    const { tokens, dark } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
@@ -114,10 +149,17 @@ export function createBulletChart(skin: ChartSkin) {
     const formatValue = props.formatValue ?? formatCompact;
     const fill = s.barFill(tokens, tone);
 
-    devWarn(data.length === 0, "[canvas] <BulletChart />: `data` is empty; the chart renders with no rows.");
     devWarn(
-      data.some((d) => d.ranges != null && d.ranges.some((r, i) => i > 0 && r < (d.ranges as number[])[i - 1])),
-      "[canvas] <BulletChart />: `ranges` must ascend; out-of-order bounds draw overlapping bands.",
+      data.length === 0,
+      "[canvas] <BulletChart />: `data` is empty; the chart renders with no rows."
+    );
+    devWarn(
+      data.some(
+        (d) =>
+          d.ranges != null &&
+          d.ranges.some((r, i) => i > 0 && r < (d.ranges as number[])[i - 1])
+      ),
+      "[canvas] <BulletChart />: `ranges` must ascend; out-of-order bounds draw overlapping bands."
     );
 
     // Per-row scales (the bullet-graph anatomy), unless the caller forces one
@@ -128,36 +170,65 @@ export function createBulletChart(skin: ChartSkin) {
       ...(d.ranges ?? []).filter((r) => Number.isFinite(r)),
     ];
     const rowMax = (d: BulletDatum): number =>
-      props.max != null && props.max > 0 ? props.max : Math.max(1, ...rowPool(d));
+      props.max != null && props.max > 0
+        ? props.max
+        : Math.max(1, ...rowPool(d));
     devWarn(
-      props.max != null && data.some((d) => rowPool(d).some((v) => v > (props.max as number))),
-      "[canvas] <BulletChart />: a value, target, or range bound exceeds `max`; it is clamped to the scale.",
+      props.max != null &&
+        data.some((d) => rowPool(d).some((v) => v > (props.max as number))),
+      "[canvas] <BulletChart />: a value, target, or range bound exceeds `max`; it is clamped to the scale."
     );
-    const pctOf = (v: number, max: number): number => Math.max(0, Math.min(100, ((Number.isFinite(v) ? v : 0) / max) * 100));
+    const pctOf = (v: number, max: number): number =>
+      Math.max(0, Math.min(100, ((Number.isFinite(v) ? v : 0) / max) * 100));
 
-    const trackH = compact ? 10 : 14;
-    const barH = trackH * 0.4;
+    const detailed = !!props.detailed;
+    const trackH = detailed ? 22 : compact ? 10 : 14;
+    const barH = detailed ? 8 : trackH * 0.4;
 
     return (
       <View
-        {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
+        {...(title != null && title !== ""
+          ? {
+              role: "group" as const,
+              accessibilityLabel: `${title} chart`,
+              "aria-label": `${title} chart`,
+            }
+          : {})}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
-        {title != null && title !== "" ? (
-          <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
+        {glass && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
         ) : null}
-        <View style={{ gap: compact ? 8 : 14 }}>
+        {title != null && title !== "" ? (
+          <Text
+            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+          >
+            {title}
+          </Text>
+        ) : null}
+        <View
+          style={{ gap: compact ? 8 : 14, paddingVertical: detailed ? 4 : 0 }}
+        >
           {data.map((d, i) => {
             const max = rowMax(d);
-            const name = `${d.label}: ${formatValue(Number.isFinite(d.value) ? d.value : 0)}${
-              d.target != null && Number.isFinite(d.target) ? ` of target ${formatValue(d.target)}` : ""
+            const rowFormat = d.formatValue ?? formatValue;
+            const name = `${d.label}: ${rowFormat(
+              Number.isFinite(d.value) ? d.value : 0
+            )}${
+              d.target != null && Number.isFinite(d.target)
+                ? ` of target ${rowFormat(d.target)}`
+                : ""
             }`;
             return (
               <View
@@ -169,7 +240,18 @@ export function createBulletChart(skin: ChartSkin) {
                 aria-label={name}
                 style={[s.horizontalRow, { gap: 10 }]}
               >
-                <Text numberOfLines={1} style={{ width: LABEL_WIDTH, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    width: detailed ? 70 : LABEL_WIDTH,
+                    fontSize: detailed ? 13 : 12,
+                    lineHeight: 16,
+                    fontWeight: detailed ? "500" : "400",
+                    color: detailed
+                      ? tokens.foreground
+                      : tokens["muted-foreground"],
+                  }}
+                >
                   {d.label}
                 </Text>
                 {/* The track: bands under the measure bar under the target
@@ -178,11 +260,28 @@ export function createBulletChart(skin: ChartSkin) {
                 <View
                   style={[
                     s.horizontalTrack,
-                    { height: trackH, alignItems: "center", borderRadius: platformShape.web.mark, backgroundColor: d.ranges && d.ranges.length > 0 ? bandFill(tokens, d.ranges.length) : tokens.muted },
+                    {
+                      height: trackH,
+                      alignItems: "center",
+                      borderRadius: detailed ? platformShape.web.chartTrack : platformShape.web.mark,
+                      overflow: detailed ? "hidden" : "visible",
+                      backgroundColor: detailed
+                        ? tokens["surface-sunken"] ?? tokens.background
+                        : d.ranges && d.ranges.length > 0
+                        ? bandFill(tokens, d.ranges.length)
+                        : tokens.muted,
+                    },
                   ]}
                 >
                   {(d.ranges ?? [])
-                    .map((bound, bi) => ({ bound, fill: bandFill(tokens, bi), first: bi === 0 }))
+                    .map((bound, bi) => ({
+                      bound,
+                      fill:
+                        detailed && bi > 1
+                          ? tokens["surface-sunken"] ?? tokens.background
+                          : bandFill(tokens, bi),
+                      first: bi === 0,
+                    }))
                     .reverse()
                     .map((band, ri) => (
                       <View
@@ -199,16 +298,94 @@ export function createBulletChart(skin: ChartSkin) {
                         }}
                       />
                     ))}
-                  <View style={{ position: "absolute", left: 0, top: (trackH - barH) / 2, height: barH, width: `${pctOf(d.value, max)}%`, backgroundColor: rowTone(tokens, d, fill).fill, borderRadius: skin.barRadius }} />
+                  <View
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: (trackH - barH) / 2,
+                      height: barH,
+                      width: `${pctOf(d.value, max)}%`,
+                      backgroundColor: rowTone(tokens, d, fill).fill,
+                      ...(detailed && !d.success && !d.warning && !d.destructive ? { boxShadow: `0 0 10px ${alpha(fill, dark ? 0.5 : 0.4)}` } : {}),
+                      borderRadius: detailed ? platformShape.web.mark : skin.barRadius,
+                      ...(detailed
+                        ? { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }
+                        : {}),
+                    }}
+                  />
                   {d.target != null && Number.isFinite(d.target) ? (
-                    <View style={{ position: "absolute", left: `${pctOf(d.target, max)}%`, top: -TARGET_OVERHANG, bottom: -TARGET_OVERHANG, width: 2, marginLeft: -1, backgroundColor: tokens["card-foreground"] }} />
+                    <View
+                      style={{
+                        position: "absolute",
+                        left: `${pctOf(d.target, max)}%`,
+                        top: detailed ? 3 : -TARGET_OVERHANG,
+                        bottom: detailed ? 3 : -TARGET_OVERHANG,
+                        width: 2,
+                        borderRadius: detailed ? platformShape.web.stripBar : 0,
+                        marginLeft: detailed ? 0 : -1,
+                        backgroundColor: tokens["card-foreground"],
+                      }}
+                    />
                   ) : null}
                 </View>
-                <Text style={[s.horizontalValue(tokens), { minWidth: VALUE_WIDTH, textAlign: "right", color: rowTone(tokens, d, fill).ink, ...tabularNums() }]}>{formatValue(Number.isFinite(d.value) ? d.value : 0)}</Text>
+                <Text
+                  style={[
+                    s.horizontalValue(tokens),
+                    {
+                      minWidth: VALUE_WIDTH,
+                      textAlign: "right",
+                      color:
+                        detailed && (d.success || d.warning || d.destructive)
+                          ? rowTone(tokens, d, fill).fill
+                          : rowTone(tokens, d, fill).ink,
+                      ...tabularNums(),
+                    },
+                  ]}
+                >
+                  {rowFormat(Number.isFinite(d.value) ? d.value : 0)}
+                </Text>
               </View>
             );
           })}
         </View>
+        {detailed ? (
+          <View style={{ flexDirection: "row", gap: 14, marginTop: 14 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            >
+              <View
+                style={{
+                  width: 2,
+                  height: 10,
+                  backgroundColor: tokens.foreground,
+                }}
+              />
+              <Text
+                style={{
+                  fontFamily: "JetBrains Mono",
+                  fontSize: s.CHART_LOOK.legendCaptionSize,
+                  color: tokens["subtle-foreground"],
+                }}
+              >
+                target
+              </Text>
+            </View>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            >
+              <Svg width={16} height={8}><Defs><LinearGradient id={rangeKeyId} x1="0%" y1="0%" x2="100%" y2="0%"><Stop offset="0%" stopColor={tokens["surface-raised"] ?? tokens.muted} /><Stop offset="100%" stopColor={tokens["surface-sunken"] ?? tokens.background} /></LinearGradient></Defs><Rect width={16} height={8} rx={platformShape.web.cell} fill={`url(#${rangeKeyId})`} /></Svg>
+              <Text
+                style={{
+                  fontFamily: "JetBrains Mono",
+                  fontSize: s.CHART_LOOK.legendCaptionSize,
+                  color: tokens["subtle-foreground"],
+                }}
+              >
+                ranges
+              </Text>
+            </View>
+          </View>
+        ) : null}
       </View>
     );
   };

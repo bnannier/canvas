@@ -3,13 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, AvatarGroup } = scope;
+  const { Avatar } = scope;
   return (
-<AvatarGroup max={3}>
-  <Avatar name="Rachel Chen" />
-  <Avatar name="Liang Bao" />
-  <Avatar name="Marcus Allen" />
-  <Avatar name="Kira Tran" />
-</AvatarGroup>
+<Avatar ring name="AO" />
   );
 }

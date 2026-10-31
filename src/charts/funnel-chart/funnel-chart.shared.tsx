@@ -1,4 +1,7 @@
+import { compositionInspectProps } from "../pie-chart/composition-inspect.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useState } from "react";
+import Svg, { Path } from "react-native-svg";
 import { StyleSheet } from "react-native";
 import { View, Text, Pressable, useControllableState, devWarn, tabularNums, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
@@ -31,6 +34,8 @@ export interface FunnelChartProps {
   /** Show each stage as a share of the FIRST stage instead of the conversion
    *  from the previous stage. */
   share?: boolean;
+  /** Draw connected stage trapezoids and show counts alongside stage conversion. */
+  tapered?: boolean;
   // Density (omit for the default funnel height).
   compact?: boolean;
   /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
@@ -67,7 +72,8 @@ export function createFunnelChart(skin: ChartSkin) {
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
-    const formatValue = props.formatValue ?? formatCompact;
+    const formatValue = props.formatValue ?? (props.tapered ? (v: number) => v.toLocaleString("en-US") : formatCompact);
+    const [plotWidth, setPlotWidth] = useState(0);
 
     devWarn(stages.length === 0, "[canvas] <FunnelChart />: `stages` is empty; the chart renders with no funnel.");
     devWarn(
@@ -76,7 +82,8 @@ export function createFunnelChart(skin: ChartSkin) {
     );
 
     const clean = stages.map((st) => (Number.isFinite(st.value) && st.value > 0 ? st.value : 0));
-    const barH = compact ? BAR_HEIGHT.compact : BAR_HEIGHT.default;
+    const barH = props.tapered ? compact ? 26 : 36 : compact ? BAR_HEIGHT.compact : BAR_HEIGHT.default;
+    const rowGap = props.tapered ? 4 : ROW_GAP;
     const peak = Math.max(...clean, 0);
 
     // Conversion readout per stage: of the previous stage (default), or of
@@ -115,22 +122,25 @@ export function createFunnelChart(skin: ChartSkin) {
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}
-        <View accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name} style={{ gap: ROW_GAP }}>
+        <View {...compositionInspectProps(stages.length, selected, setSelected)} accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name} style={{ gap: rowGap }}>
           {stages.map((st, i) => {
             const share = peak > 0 ? (clean[i] / peak) * 100 : 0;
             return (
               <View
                 key={i}
-                style={[{ flexDirection: "row", alignItems: "center", gap: COLUMN_GAP, height: barH, opacity: selected != null && selected !== i ? DIM_OPACITY : 1 }]}
+                style={[{ flexDirection: "row", alignItems: "center", gap: props.tapered ? 8 : COLUMN_GAP, height: barH, opacity: selected != null && selected !== i ? DIM_OPACITY : 1 }]}
               >
-                <Text numberOfLines={1} style={{ width: LABEL_WIDTH, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>
-                  {st.label}
-                </Text>
-                <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", alignItems: "center" }}>
-                  <View style={{ height: barH, width: `${share}%`, borderRadius: platformShape.web.funnelBar, backgroundColor: s.seriesFill(tokens, i) }} />
+                {props.tapered ? <View style={{ width: 74 }}>
+                  <Text style={{ fontSize: 12, lineHeight: 14.4, fontWeight: "500", color: tokens.foreground }}>{st.label}</Text>
+                  <Text style={{ fontFamily: MONO_FONT, fontSize: s.CHART_LOOK.legendCaptionSize, lineHeight: 14, color: tokens["subtle-foreground"] }}>{formatValue(clean[i])}</Text>
+                </View> : <Text numberOfLines={1} style={{ width: LABEL_WIDTH, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{st.label}</Text>}
+                <View onLayout={props.tapered ? (e) => setPlotWidth(e.nativeEvent.layout.width) : undefined} style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", alignItems: "center" }}>
+                  {props.tapered ? <Svg width={plotWidth} height={barH}>
+                    <Path d={funnelTrapezoid(plotWidth, barH, share / 100, i + 1 < clean.length ? clean[i + 1] / Math.max(1, peak) : share / 100 * .81)} fill={s.seriesFill(tokens, 0)} opacity={[1, .8, .62, .45][Math.min(i, 3)]} />
+                  </Svg> : <View style={{ height: barH, width: `${share}%`, borderRadius: platformShape.web.funnelBar, backgroundColor: s.seriesFill(tokens, i) }} />}
                 </View>
-                <Text numberOfLines={1} style={{ width: VALUE_WIDTH, textAlign: "right", fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"], ...tabularNums() }}>
-                  {props.share ? `${Math.round(share)}%` : formatValue(clean[i])}
+                <Text numberOfLines={1} style={{ width: props.tapered ? 40 : VALUE_WIDTH, textAlign: "right", fontFamily: MONO_FONT, fontSize: props.tapered ? s.CHART_LOOK.legendCaptionSize : 12, lineHeight: 16, fontWeight: "500", color: props.tapered && i === 0 ? tokens["subtle-foreground"] : props.tapered && i === stages.length - 1 ? tokens.warning : tokens["card-foreground"], ...tabularNums() }}>
+                  {props.tapered ? i === 0 ? "—" : `${(100 * clean[i] / Math.max(1, props.share ? clean[0] : clean[i - 1])).toFixed(1)}%` : props.share ? `${Math.round(share)}%` : formatValue(clean[i])}
                 </Text>
               </View>
             );
@@ -141,7 +151,7 @@ export function createFunnelChart(skin: ChartSkin) {
             onPress={(e) => {
               const point = pressPoint(e);
               if (!point) return;
-              const i = Math.floor(point.y / (barH + ROW_GAP));
+              const i = Math.floor(point.y / (barH + rowGap));
               if (i >= 0 && i < stages.length) toggle(i);
             }}
             style={StyleSheet.absoluteFill}
@@ -150,4 +160,11 @@ export function createFunnelChart(skin: ChartSkin) {
       </View>
     );
   };
+}
+
+/** A centered stage that tapers from its own share to the following stage's share. */
+export function funnelTrapezoid(width: number, height: number, from: number, to: number): string {
+  const top = Math.max(0, Math.min(1, from)) * width;
+  const bottom = Math.max(0, Math.min(from, to)) * width;
+  return `M ${(width - top) / 2} 0 L ${(width + top) / 2} 0 L ${(width + bottom) / 2} ${height} L ${(width - bottom) / 2} ${height} Z`;
 }

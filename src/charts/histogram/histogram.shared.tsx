@@ -1,12 +1,30 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { StyleSheet } from "react-native";
 import { Rect } from "react-native-svg";
-import { View, Text, useControllableState, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import {
+  View,
+  Text,
+  useControllableState,
+  devWarn,
+  type LayoutStyle,
+  GlassPane,
+  paneStyle,
+  isGlass,
+} from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
-import { ChartValueFlag, ScrubSurface, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
+import {
+  ChartValueFlag,
+  ScrubSurface,
+  announceSelection,
+  DIM_OPACITY,
+} from "../shared/chart-inspect.js";
+import {
+  PresentationFlag,
+  useChartPresentation,
+} from "../shared/chart-presentation.js";
 import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
 import { binValues, formatCompact } from "../shared/chart-math.js";
 import { platformShape } from "../../style/platform-shape.js";
@@ -74,14 +92,18 @@ export function createHistogram(skin: ChartSkin) {
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
+    const specimen = useChartPresentation()?.kind === "histogram";
     const formatValue = props.formatValue ?? formatCompact;
     const fill = s.barFill(tokens, toneOf(props));
 
-    devWarn(props.values.length === 0, "[canvas] <Histogram />: `values` is empty; the chart renders with no bars.");
+    devWarn(
+      props.values.length === 0,
+      "[canvas] <Histogram />: `values` is empty; the chart renders with no bars."
+    );
     const { edges, counts } = binValues(props.values, props.bins);
     devWarn(
       props.values.length > 0 && counts.length === 0,
-      "[canvas] <Histogram />: `values` has no finite samples; the chart renders with no bars.",
+      "[canvas] <Histogram />: `values` has no finite samples; the chart renders with no bars."
     );
 
     const chartLabel = props.label ?? "Distribution";
@@ -89,38 +111,76 @@ export function createHistogram(skin: ChartSkin) {
     // The accessible name lists each bin's range and count.
     const name =
       counts.length > 0
-        ? `${chartLabel}: ${total} samples in ${counts.length} bins: ${counts.map((c, i) => `${formatValue(edges[i])} to ${formatValue(edges[i + 1])} ${c}`).join(", ")}`
+        ? `${chartLabel}: ${total} samples in ${counts.length} bins: ${counts
+            .map(
+              (c, i) =>
+                `${formatValue(edges[i])} to ${formatValue(edges[i + 1])} ${c}`
+            )
+            .join(", ")}`
         : `${chartLabel}: no samples`;
 
     // Press-to-inspect over the bins, announced like every cartesian chart.
-    const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
+    const [selected, setSelectedRaw] = useControllableState<number | null>(
+      props.selected,
+      props.defaultSelected ?? null,
+      props.onSelect
+    );
     const setSelected = (i: number | null) => {
       if (i === selected) return;
       setSelectedRaw(i);
       if (i != null && counts[i] != null) {
-        announceSelection(`${formatValue(edges[i])} to ${formatValue(edges[i + 1])}: ${counts[i]}`);
+        announceSelection(
+          `${formatValue(edges[i])} to ${formatValue(edges[i + 1])}: ${
+            counts[i]
+          }`
+        );
       }
     };
 
     return (
       <View
-        {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
+        {...(title != null && title !== ""
+          ? {
+              role: "group" as const,
+              accessibilityLabel: `${title} chart`,
+              "aria-label": `${title} chart`,
+            }
+          : {})}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
-        {title != null && title !== "" ? (
-          <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
+        {glass && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
         ) : null}
-        <View accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name}>
+        {title != null && title !== "" ? (
+          <Text
+            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+          >
+            {title}
+          </Text>
+        ) : null}
+        <View
+          accessible
+          accessibilityRole="image"
+          role="img"
+          accessibilityLabel={name}
+          aria-label={name}
+        >
           <CartesianFrame
             yExtent={[0, Math.max(1, ...counts)]}
-            xDomain={counts.length > 0 ? [edges[0], edges[edges.length - 1]] : [0, 1]}
+            xDomain={
+              counts.length > 0 ? [edges[0], edges[edges.length - 1]] : [0, 1]
+            }
             plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
             compact={compact}
             hideGrid={props.hideGrid}
@@ -140,14 +200,39 @@ export function createHistogram(skin: ChartSkin) {
               };
               return (
                 <>
-                  <ScrubSurface indexAt={indexAt} selected={selected} onScrub={setSelected} style={StyleSheet.absoluteFill} />
+                  <ScrubSurface
+                    indexAt={indexAt}
+                    selected={selected}
+                    onScrub={setSelected}
+                    style={StyleSheet.absoluteFill}
+                  />
                   {selected != null && counts[selected] != null ? (
-                    <ChartValueFlag
-                      title={`${formatValue(edges[selected])}–${formatValue(edges[selected + 1])}`}
-                      rows={[{ value: String(counts[selected]) }]}
-                      x={(layout.x(edges[selected]) + layout.x(edges[selected + 1])) / 2}
-                      plotW={layout.plotW}
-                    />
+                    specimen ? (
+                      <PresentationFlag
+                        lines={[
+                          `${formatValue(edges[selected])}–${formatValue(
+                            edges[selected + 1]
+                          )} ms`,
+                          `${counts[selected]} requests`,
+                        ]}
+                        x={layout.plotW * 0.534}
+                        y={0}
+                        gap={4}
+                      />
+                    ) : (
+                      <ChartValueFlag
+                        title={`${formatValue(edges[selected])}–${formatValue(
+                          edges[selected + 1]
+                        )}`}
+                        rows={[{ value: String(counts[selected]) }]}
+                        x={
+                          (layout.x(edges[selected]) +
+                            layout.x(edges[selected + 1])) /
+                          2
+                        }
+                        plotW={layout.plotW}
+                      />
+                    )
                   ) : null}
                 </>
               );
@@ -165,13 +250,24 @@ export function createHistogram(skin: ChartSkin) {
                     // The hand-off's bins: a 1-unit gutter each side, the data-cell corner.
                     <Rect
                       key={i}
-                      x={x0 + 1}
+                      x={specimen ? x0 : x0 + 1}
                       y={y}
-                      width={Math.max(1, x1 - x0 - 2)}
+                      width={Math.max(
+                        1,
+                        x1 - x0 - (specimen ? layout.plotW / 300 : 2)
+                      )}
                       height={h}
-                      rx={Math.min(platformShape.web.cell, h / 2)}
+                      rx={
+                        specimen ? 0 : Math.min(platformShape.web.cell, h / 2)
+                      }
                       fill={fill}
-                      opacity={selected != null && selected !== i ? DIM_OPACITY : 1}
+                      opacity={
+                        selected != null && selected !== i
+                          ? specimen
+                            ? 0.55
+                            : DIM_OPACITY
+                          : 1
+                      }
                     />
                   );
                 })}

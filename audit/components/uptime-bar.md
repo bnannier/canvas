@@ -20,10 +20,10 @@ Audit checklist for `/components/uptime-bar`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | static: A chart that takes no input: no press, scrub or hover handler in its source or the shared chart modules it renders; it displays data. |
+| Interaction states | recipes: hover on Detailed (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 5: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 6: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/charts-metric-parity.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/uptime-bar.md`, written by `bun run audit:turn -- --slug=uptime-bar --phase=before\|after` (the before and after capture runs) |
@@ -39,6 +39,8 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `compact` | Compact | [ ] | [ ] | [ ] |  |
 | `withunknownperiods` | With unknown periods | [ ] | [ ] | [ ] |  |
+| `middlecaption` | Middle caption | [ ] | [ ] | [ ] |  |
+| `detailed` | Detailed | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

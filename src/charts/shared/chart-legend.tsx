@@ -2,6 +2,7 @@ import Svg, { Line } from "react-native-svg";
 import { View, Text, useTheme } from "../../style/index.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { useChartPresentation } from "./chart-presentation.js";
 import { CHART_LOOK } from "./charts.styles.js";
 
 // The shared series legend for the Chart family (the v4 hand-off's `leg`): an 8 px
@@ -22,6 +23,10 @@ export interface LegendItem {
   line?: boolean;
   /** The rule dashed, for a series drawn dashed (implies `line`). */
   dashed?: boolean;
+  /** A translucent series keeps the same wash in its legend mark. */
+  opacity?: number;
+  /** Width of a line-series swatch in authored specimens. */
+  strokeWidth?: number;
 }
 
 export interface ChartLegendProps {
@@ -34,21 +39,58 @@ export interface ChartLegendProps {
   caption?: string;
 }
 
-export function ChartLegend({ items, horizontal, flush, caption }: ChartLegendProps) {
+export function ChartLegend({
+  items,
+  horizontal,
+  flush,
+  caption,
+}: ChartLegendProps) {
   const { tokens } = useTheme();
-  const marginTop = flush ? 0 : CHART_LOOK.gap.default;
+  const presentation = useChartPresentation();
+  const marginTop = flush ? 0 : presentation ? presentation.kind === "line" ? 16 : 14 : CHART_LOOK.gap.default;
 
   if (horizontal) {
     return (
-      <View style={{ marginTop, flexDirection: "row", flexWrap: "wrap", columnGap: CHART_LOOK.legendColumnGap, rowGap: CHART_LOOK.legendRowGap }}>
+      <View
+        style={{
+          marginTop,
+          flexDirection: "row",
+          flexWrap: "wrap",
+          columnGap: CHART_LOOK.legendColumnGap,
+          rowGap: CHART_LOOK.legendRowGap,
+        }}
+      >
         {items.map((item, i) => (
-          <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: CHART_LOOK.swatchGap }}>
+          <View
+            key={i}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: CHART_LOOK.swatchGap,
+            }}
+          >
             <Swatch item={item} />
-            <Text style={{ fontSize: CHART_LOOK.legendSize, lineHeight: CHART_LOOK.legendLine, color: tokens["muted-foreground"] }}>{item.label}</Text>
+            <Text
+              style={{
+                fontSize: CHART_LOOK.legendSize,
+                lineHeight: CHART_LOOK.legendLine,
+                color: tokens["muted-foreground"],
+              }}
+            >
+              {item.label}
+            </Text>
           </View>
         ))}
         {caption ? (
-          <Text style={{ marginLeft: "auto", fontFamily: MONO_FONT, fontSize: CHART_LOOK.legendCaptionSize, lineHeight: CHART_LOOK.legendLine, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>
+          <Text
+            style={{
+              marginLeft: "auto",
+              fontFamily: MONO_FONT,
+              fontSize: CHART_LOOK.legendCaptionSize,
+              lineHeight: 14,
+              color: tokens["subtle-foreground"] ?? tokens["muted-foreground"],
+            }}
+          >
             {caption}
           </Text>
         ) : null}
@@ -57,15 +99,44 @@ export function ChartLegend({ items, horizontal, flush, caption }: ChartLegendPr
   }
 
   return (
-    <View style={{ marginTop, flexDirection: "column", gap: CHART_LOOK.legendRowGap }}>
+    <View
+      style={{
+        marginTop,
+        flexDirection: "column",
+        gap: CHART_LOOK.legendRowGap,
+      }}
+    >
       {items.map((item, i) => (
-        <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: CHART_LOOK.swatchGap }}>
+        <View
+          key={i}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: CHART_LOOK.swatchGap,
+          }}
+        >
           <Swatch item={item} />
-          <Text style={{ flexGrow: item.detail != null ? 1 : 0, flexShrink: 1, fontSize: CHART_LOOK.legendSize, lineHeight: CHART_LOOK.legendLine, color: tokens["muted-foreground"] }}>
+          <Text
+            style={{
+              flexGrow: item.detail != null ? 1 : 0,
+              flexShrink: 1,
+              fontSize: CHART_LOOK.legendSize,
+              lineHeight: CHART_LOOK.legendLine,
+              color: tokens["muted-foreground"],
+            }}
+          >
             {item.label}
           </Text>
           {item.detail != null ? (
-            <Text style={{ fontSize: CHART_LOOK.legendSize, lineHeight: CHART_LOOK.legendLine, color: tokens["muted-foreground"] }}>{item.detail}</Text>
+            <Text
+              style={{
+                fontSize: CHART_LOOK.legendSize,
+                lineHeight: CHART_LOOK.legendLine,
+                color: tokens["muted-foreground"],
+              }}
+            >
+              {item.detail}
+            </Text>
           ) : null}
         </View>
       ))}
@@ -81,13 +152,41 @@ export function ChartLegend({ items, horizontal, flush, caption }: ChartLegendPr
 function Swatch({ item }: { item: LegendItem }) {
   if (item.dashed) {
     return (
-      <Svg width={CHART_LOOK.ruleSwatch} height={2}>
-        <Line x1={0} y1={1} x2={CHART_LOOK.ruleSwatch} y2={1} stroke={item.color} strokeWidth={2} strokeDasharray={CHART_LOOK.ruleDash} />
+      <Svg width={CHART_LOOK.ruleSwatch} height={item.strokeWidth ?? 2}>
+        <Line
+          x1={0}
+          y1={(item.strokeWidth ?? 2) / 2}
+          x2={CHART_LOOK.ruleSwatch}
+          y2={(item.strokeWidth ?? 2) / 2}
+          stroke={item.color}
+          strokeWidth={item.strokeWidth ?? 2}
+          strokeDasharray={CHART_LOOK.ruleDash}
+        />
       </Svg>
     );
   }
   if (item.line) {
-    return <View style={{ width: CHART_LOOK.ruleSwatch, height: 2, borderRadius: 9999, backgroundColor: item.color }} />;
+    return (
+      <View
+        style={{
+          width: CHART_LOOK.ruleSwatch,
+          height: item.strokeWidth ?? 2,
+          borderRadius: 9999,
+          backgroundColor: item.color,
+          opacity: item.opacity,
+        }}
+      />
+    );
   }
-  return <View style={{ width: CHART_LOOK.swatch, height: CHART_LOOK.swatch, borderRadius: platformShape.web.cell, backgroundColor: item.color }} />;
+  return (
+    <View
+      style={{
+        width: CHART_LOOK.swatch,
+        height: CHART_LOOK.swatch,
+        borderRadius: platformShape.web.cell,
+        backgroundColor: item.color,
+        opacity: item.opacity,
+      }}
+    />
+  );
 }

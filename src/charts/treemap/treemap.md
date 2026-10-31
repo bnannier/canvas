@@ -52,6 +52,12 @@ Flat one-level data; nesting and drill-down are deferred scope. Press a tile to 
 />
 ```
 
+### Outlined partitions
+
+```tsx
+<Treemap partitioned outlined formatValue={(v) => `${v}%`} data={[{label: "Web", value: 42}, {label: "Phone", value: 28}, {label: "Tablet", value: 18}, {label: "Desktop", value: 7}, {label: "CLI", value: 3}, {label: "Other", value: 2}]} />
+```
+
 ## Do & Don't
 
 ### Treemap

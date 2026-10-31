@@ -9,17 +9,9 @@ import { alpha, channelsOf, mixOklab } from "./color.js";
 // Autocomplete), the v4 hand-off's `--ion-ring`.
 
 /**
- * The resting border of a field: the `field-border` token (gray-300 light,
- * systemGray4 dark), falling back to `input` for a legacy token map that omits it.
- *
- * DISCLOSED TRADE-OFF. `input` is held to WCAG 1.4.11's 3:1 boundary floor; this
- * value is ~1.5:1 on the field's own fill, which is the iOS reference's hairline. It
- * is read ONLY for the resting state of the web and iOS field skins (the user asked
- * for the web to follow iOS: the 3:1 outline read as a white frame on the dark
- * card); focus (`ring`) and error (`destructive`) borders are unchanged, the `card`
- * box on the tinted page still gives the field an edge, the non-field controls
- * (checkbox, radio, switch, pagination, outline button) keep `input`, and Android's
- * M3 fields draw their underline, not this.
+ * The resting border of a field: the hand-off's strong hairline (--ln2), falling
+ * back to `input` for a legacy token map. D14 gives both roles the reference's
+ * 16% line; they remain separate so a consumer can override the field alone.
  */
 export function fieldBorder(tokens: ColorTokens): string {
   return tokens["field-border"] ?? tokens.input;
@@ -27,12 +19,13 @@ export function fieldBorder(tokens: ColorTokens): string {
 
 /**
  * The accent halo around a keyboard-focused web field: the hand-off's `--ion-ring`, the
- * accent at 35% (28% light). Canvas's `ring` is the solid accent, so the halo is derived
- * from the `glow` token (the accent at 50%, 40% light) at 0.7 of its alpha, which lands on
- * both schemes' values without a scheme flag; a token map without `glow` takes the ring at
- * 35%.
+ * accent at 35% (28% light), now carried directly by `ring` under D14. Legacy
+ * token maps with an opaque ring derive the halo from `glow` at 0.7 of its alpha,
+ * or use the opaque ring at 35% when no glow exists.
  */
 export function focusHaloColor(tokens: ColorTokens): string {
+  const ring = channelsOf(tokens.ring);
+  if (ring && ring[3] < 1) return tokens.ring;
   const g = tokens.glow ? channelsOf(tokens.glow) : null;
   if (!g) return alpha(tokens.ring, 0.35);
   return `rgba(${g[0]}, ${g[1]}, ${g[2]}, ${Math.round(g[3] * 0.7 * 1000) / 1000})`;

@@ -1,4 +1,13 @@
-import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, tabularNums, type ColorTokens } from "../../style/index.js";
+import {
+  View,
+  Text,
+  Pressable,
+  useTheme,
+  surfaceRipple,
+  pressDim,
+  tabularNums,
+  type ColorTokens,
+} from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { deltaTone } from "../../molecules/stats/stats.styles.js";
@@ -64,7 +73,12 @@ export function hasSlot(row: BreakdownRow): boolean {
  * A row's fill: its own chart slot first, then the component-level tone, then
  * the categorical ramp by index (identity follows the row, never its rank).
  */
-export function rowFill(tokens: ColorTokens, row: BreakdownRow, i: number, tone: Tone | null): string {
+export function rowFill(
+  tokens: ColorTokens,
+  row: BreakdownRow,
+  i: number,
+  tone: Tone | null
+): string {
   const slot = slotOf(row);
   if (slot) return tokens[slot as keyof ColorTokens] as string;
   if (tone) return s.barFill(tokens, tone);
@@ -78,11 +92,17 @@ export function rowFill(tokens: ColorTokens, row: BreakdownRow, i: number, tone:
  * qualifier, not a change claim, so it reads verbatim). Pure, exported for
  * tests.
  */
-export function rowAccessibleLabel(row: BreakdownRow, sharePct: number | null, fmt: (v: number) => string): string {
+export function rowAccessibleLabel(
+  row: BreakdownRow,
+  sharePct: number | null,
+  fmt: (v: number) => string
+): string {
   let out = `${row.label}: ${fmt(Number.isFinite(row.value) ? row.value : 0)}`;
   if (sharePct != null) out += `, ${sharePct}% of total`;
   if (row.delta != null && row.delta !== "") {
-    out += row.steady ? `, ${row.delta}` : `, ${row.down ? "down" : "up"} ${row.delta}`;
+    out += row.steady
+      ? `, ${row.delta}`
+      : `, ${row.down ? "down" : "up"} ${row.delta}`;
   }
   return out;
 }
@@ -101,6 +121,8 @@ export interface BreakdownRowsProps {
   onPressRow?: (index: number) => void;
   /** The bar-list look: the share as a wash behind the row instead of a meter under it. */
   bars?: boolean;
+  /** Divided metric rows, with finer meters and a quieter label. */
+  detailed?: boolean;
 }
 
 const METER_HEIGHT = 6;
@@ -109,42 +131,88 @@ const LIST_WASH = 0.22;
 
 /** The shared renderer. Each row is one accessible item; the bar is decorative. */
 // A row's share and its delta beside the value: value annotations.
-const SHARE_TYPE = { fontSize: 11, lineHeight: 16 };
+const SHARE_TYPE = { fontSize: s.CHART_LOOK.legendCaptionSize, lineHeight: 16 };
 // The delta: the section's bar list sets it in the mono face, 500 11 px on the face's 14 px
 // normal line, right-aligned in a 38 px slot (wider only for a longer delta).
-const DELTA_TYPE = { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "500" as const };
+const DELTA_TYPE = {
+  fontFamily: MONO_FONT,
+  fontSize: s.CHART_LOOK.legendCaptionSize,
+  lineHeight: 14,
+  fontWeight: "500" as const,
+};
 const DELTA_SLOT = 38;
 const MONO_ADVANCE = 0.6;
 
-export function BreakdownRows({ rows, share, percent, tone, compact, formatValue, onPressRow, bars }: BreakdownRowsProps) {
-  const { tokens } = useTheme();
+export function BreakdownRows({
+  rows,
+  share,
+  percent,
+  tone,
+  compact,
+  formatValue,
+  onPressRow,
+  bars,
+  detailed,
+}: BreakdownRowsProps) {
+  const { tokens, dark } = useTheme();
   // Negative and non-finite values cannot carry a proportional bar; they are
   // treated as 0 (the consumers devWarn).
-  const values = rows.map((r) => (Number.isFinite(r.value) && r.value > 0 ? r.value : 0));
+  const values = rows.map((r) =>
+    Number.isFinite(r.value) && r.value > 0 ? r.value : 0
+  );
   const sum = values.reduce((a, b) => a + b, 0);
   const basis = share ? sum : Math.max(0, ...values);
   // The delta column is sized to the longest delta via the estimator so the
   // column aligns by layout; tabular figures are inconsistent across Android
   // fonts and stay a progressive enhancement.
   const deltas = rows.filter((r) => r.delta != null && r.delta !== "");
-  const deltaWidth = deltas.length > 0 ? Math.max(DELTA_SLOT, Math.ceil(Math.max(...deltas.map((r) => [...(r.delta as string)].length * 11 * MONO_ADVANCE))) + 2) : 0;
+  const deltaWidth =
+    deltas.length > 0
+      ? Math.max(
+          DELTA_SLOT,
+          Math.ceil(
+            Math.max(
+              ...deltas.map(
+                (r) => [...(r.delta as string)].length * 11 * MONO_ADVANCE
+              )
+            )
+          ) + 2
+        )
+      : 0;
 
   return (
-    <View style={{ gap: bars ? (compact ? 4 : 6) : 8 }}>
+    <View style={{ gap: bars ? (compact || deltas.length ? 4 : 6) : detailed ? 10 : 8, ...(detailed ? { borderTopWidth: 1, borderColor: tokens.border, paddingTop: 12 } : {}) }}>
       {rows.map((row, i) => {
         const v = values[i];
-        const widthPct = basis > 0 ? Math.max(0, Math.min(100, (v / basis) * 100)) : 0;
+        const widthPct =
+          basis > 0 ? Math.max(0, Math.min(100, (v / basis) * 100)) : 0;
         const sharePct = sum > 0 ? Math.round((v / sum) * 100) : 0;
         const fill = rowFill(tokens, row, i, tone);
-        const name = rowAccessibleLabel(row, share ? sharePct : null, formatValue);
-        const valueText = bars && percent ? `${sharePct}%` : formatValue(Number.isFinite(row.value) ? row.value : 0);
-        const valueType = { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500" as const, color: tokens["card-foreground"], ...tabularNums() };
+        const name = rowAccessibleLabel(
+          row,
+          share ? sharePct : null,
+          formatValue
+        );
+        const valueText =
+          bars && percent
+            ? `${sharePct}%`
+            : formatValue(Number.isFinite(row.value) ? row.value : 0);
+        const valueType = {
+          fontFamily: MONO_FONT,
+          fontSize: detailed ? s.CHART_LOOK.legendCaptionSize : 12,
+          lineHeight: detailed ? 15 : 16,
+          fontWeight: "500" as const,
+          color: tokens["card-foreground"],
+          ...tabularNums(),
+        };
         const delta =
           row.delta != null && row.delta !== "" ? (
             <Text
               style={[
                 { ...DELTA_TYPE, minWidth: deltaWidth, textAlign: "right" },
-                row.steady ? { color: tokens["muted-foreground"] } : deltaTone(tokens, !!row.down),
+                row.steady
+                  ? { color: tokens["muted-foreground"] }
+                  : deltaTone(tokens, !!row.down),
               ]}
             >
               {row.delta}
@@ -162,10 +230,23 @@ export function BreakdownRows({ rows, share, percent, tone, compact, formatValue
                 bottom: 0,
                 width: `${widthPct}%`,
                 borderRadius: platformShape.web.listBar,
-                backgroundColor: alpha(fill, LIST_WASH),
+                backgroundColor: alpha(
+                  fill,
+                  deltas.length ? (dark ? 0.16 : 0.1) : LIST_WASH
+                ),
               }}
             />
-            <Text numberOfLines={1} style={{ flexGrow: 1, flexShrink: 1, fontSize: 13, lineHeight: 18, color: tokens["card-foreground"] }}>
+            <Text
+              numberOfLines={1}
+              style={{
+                flexGrow: 1,
+                flexShrink: 1,
+                fontFamily: deltas.length ? MONO_FONT : undefined,
+                fontSize: deltas.length ? 12 : 13,
+                lineHeight: 18,
+                color: tokens["card-foreground"],
+              }}
+            >
               {row.label}
             </Text>
             <Text style={valueType}>{valueText}</Text>
@@ -173,26 +254,67 @@ export function BreakdownRows({ rows, share, percent, tone, compact, formatValue
           </>
         ) : (
           <>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Text numberOfLines={1} style={{ flexGrow: 1, flexShrink: 1, fontSize: 12, lineHeight: 16, color: tokens["card-foreground"] }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            >
+              <Text
+                numberOfLines={1}
+                style={{
+                  flexGrow: 1,
+                  flexShrink: 1,
+                  fontSize: 12,
+                  lineHeight: detailed ? 15 : 16,
+                  color: detailed ? tokens["muted-foreground"] : tokens["card-foreground"],
+                }}
+              >
                 {row.label}
               </Text>
-              <Text style={valueType}>{formatValue(Number.isFinite(row.value) ? row.value : 0)}</Text>
+              <Text style={valueType}>
+                {formatValue(Number.isFinite(row.value) ? row.value : 0)}
+              </Text>
               {percent ? (
-                <Text style={{ ...SHARE_TYPE, color: tokens["muted-foreground"], ...tabularNums() }}>{sharePct}%</Text>
+                <Text
+                  style={{
+                    ...SHARE_TYPE,
+                    color: tokens["muted-foreground"],
+                    ...tabularNums(),
+                  }}
+                >
+                  {sharePct}%
+                </Text>
               ) : null}
               {delta}
             </View>
             {/* The proportional meter: a muted pill track, the row-colored share.
                 Decorative; the share reaches AT through the row's name. */}
-            <View style={{ height: METER_HEIGHT, borderRadius: 9999, backgroundColor: tokens.muted, overflow: "hidden" }}>
-              <View style={{ height: METER_HEIGHT, borderRadius: 9999, backgroundColor: fill, width: `${widthPct}%` }} />
+            <View
+              style={{
+                height: detailed ? 5 : METER_HEIGHT,
+                borderRadius: 9999,
+                backgroundColor: detailed ? tokens["surface-raised"] : tokens.muted,
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  height: detailed ? 5 : METER_HEIGHT,
+                  borderRadius: 9999,
+                  backgroundColor: fill,
+                  width: `${widthPct}%`,
+                }}
+              />
             </View>
           </>
         );
         const rowBox = bars
-          ? { height: compact ? LIST_ROW.compact : LIST_ROW.default, flexDirection: "row" as const, alignItems: "center" as const, gap: 8, paddingHorizontal: 10 }
-          : { gap: 4 };
+          ? {
+              height: compact ? LIST_ROW.compact : LIST_ROW.default,
+              flexDirection: "row" as const,
+              alignItems: "center" as const,
+              gap: 8,
+              paddingHorizontal: 10,
+            }
+          : { gap: detailed ? 5 : 4 };
         if (onPressRow) {
           return (
             <Pressable

@@ -202,15 +202,16 @@
   --p-select-row-radius:8px;--p-select-row-pad-x:10px;--p-select-row-pad-y:0px;--p-select-row-gap:8px;--p-select-row-min-h:34px;
   --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--muted);
   --p-select-check-color:var(--primary-text);--p-select-check-weight:400;
-  /* AvatarMenu identity pill (avatar.styles.ts webMenuSkin, every platform: Dark Factory's
-     pill, bare at rest, the accent fill under the pointer and while open, a 28px disc in
-     the viewer's violet glow, 12/700 name over the 10.5/600 muted email, a static chevron) */
-  --p-idpill-h:32px;--p-idpill-gap:10px;--p-idpill-pad-start:2px;--p-idpill-pad-end:8px;
-  --p-idpill-border:0px;--p-idpill-border-color:transparent;
-  --p-idpill-fill:transparent;--p-idpill-open-fill:var(--accent);--p-idpill-hover-fill:var(--accent);
+  /* AvatarMenu identity pill (avatar.styles.ts webMenuSkin, every platform: the hand-off's
+     AvatarMenu trigger, a 1px border edge round the popover fill inset 4 10 4 4, the accent
+     fill under the pointer and while open, a 28px disc in the viewer's violet glow, 12/700
+     name over the 10.5/600 muted email, a static chevron) */
+  --p-idpill-h:42px;--p-idpill-gap:10px;--p-idpill-pad-start:4px;--p-idpill-pad-end:10px;
+  --p-idpill-border:1px;--p-idpill-border-color:var(--border);
+  --p-idpill-fill:var(--popover);--p-idpill-open-fill:var(--accent);--p-idpill-hover-fill:var(--accent);
   --p-idpill-open-border-color:transparent;
-  --p-idpill-name:12px;--p-idpill-name-lh:14px;--p-idpill-name-weight:700;--p-idpill-tracking:0px;
-  --p-idpill-disc:28px;--p-idpill-glow:0px 0px 0px 2px var(--card), 0px 0px 0px 3.5px var(--primary);
+  --p-idpill-name:13px;--p-idpill-name-lh:15.6px;--p-idpill-name-weight:500;--p-idpill-tracking:0px;
+  --p-idpill-disc:32px;--p-idpill-glow:none;
   /* Autocomplete (autocomplete.styles.ts webSkin: the v4 sunken field, the panel's 34px rows, no check) */
   --p-ac-h:40px;--p-ac-radius:10px;--p-ac-radius-bottom:10px;--p-ac-border:1px;--p-ac-underline:0px;
   --p-ac-border-color:var(--field-border);--p-ac-underline-rest:var(--field-border);--p-ac-fill:var(--surface-sunken);--p-ac-pad-x:12px;

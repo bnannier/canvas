@@ -433,6 +433,14 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 <Typography underline>View invoices</Typography>
 ```
 
+### Italic
+
+`italic` sets the text in the face's italic, on any role.
+
+```tsx
+<Typography italic>Draft, not yet shared</Typography>
+```
+
 ### Tight leading
 
 ```tsx

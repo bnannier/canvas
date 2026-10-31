@@ -1,13 +1,33 @@
+import { useState } from "react";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { StyleSheet } from "react-native";
 import { Circle } from "react-native-svg";
-import { View, Text, Pressable, useControllableState, devWarn, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import {
+  View,
+  Text,
+  Pressable,
+  useControllableState,
+  devWarn,
+  type LayoutStyle,
+  GlassPane,
+  paneStyle,
+  isGlass,
+} from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
-import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
+import {
+  ChartValueFlag,
+  announceSelection,
+  pressPoint,
+  DIM_OPACITY,
+} from "../shared/chart-inspect.js";
+import {
+  PresentationFlag,
+  useChartPresentation,
+} from "../shared/chart-presentation.js";
 import { formatCompact } from "../shared/chart-math.js";
 
 // ScatterPlot: numeric x/y point clouds through the shared CartesianFrame
@@ -88,51 +108,78 @@ export function createScatterPlot(skin: ChartSkin) {
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
+    const presentation = useChartPresentation();
+    const specimen = presentation?.kind === "scatter";
+    const [inspected, setInspected] = useState(false);
     const multi = series.length > 1;
     const tone = toneOf(props);
     const formatValue = props.formatValue ?? formatCompact;
 
-    devWarn(series.length === 0, "[canvas] <ScatterPlot />: `series` is empty; the plot renders with no points.");
+    devWarn(
+      series.length === 0,
+      "[canvas] <ScatterPlot />: `series` is empty; the plot renders with no points."
+    );
     devWarn(
       multi && !!(props.success || props.destructive),
-      "[canvas] <ScatterPlot />: tone props apply to single-series plots only; multi-series plots use the chart-1..8 tokens.",
+      "[canvas] <ScatterPlot />: tone props apply to single-series plots only; multi-series plots use the chart-1..8 tokens."
     );
     const pointCount = series.reduce((n, sr) => n + sr.points.length, 0);
     devWarn(
       pointCount > 50,
-      `[canvas] <ScatterPlot />: the accessible name carries every point and this plot has ${pointCount}; consider pre-aggregating.`,
+      `[canvas] <ScatterPlot />: the accessible name carries every point and this plot has ${pointCount}; consider pre-aggregating.`
     );
 
-    const colorOf = (i: number): string => (multi ? s.seriesFill(tokens, i) : s.barFill(tokens, tone));
+    const colorOf = (i: number): string =>
+      multi ? s.seriesFill(tokens, i) : s.barFill(tokens, tone);
 
     // Position encodes both axes, so neither is forced through zero: domains
     // are the (niced) data extents.
-    const finitePoints = series.flatMap((sr) => sr.points.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y)));
+    const finitePoints = series.flatMap((sr) =>
+      sr.points.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
+    );
     const xs = finitePoints.map((p) => p.x);
     const ys = finitePoints.map((p) => p.y);
-    const xDomain: [number, number] = xs.length ? [Math.min(...xs), Math.max(...xs)] : [0, 1];
-    const yExtent: [number, number] = ys.length ? [Math.min(...ys), Math.max(...ys)] : [0, 1];
+    const xDomain: [number, number] = xs.length
+      ? [Math.min(...xs), Math.max(...xs)]
+      : [0, 1];
+    const yExtent: [number, number] = ys.length
+      ? [Math.min(...ys), Math.max(...ys)]
+      : [0, 1];
 
     // Press-to-inspect: pressing a point flags its coordinates and dims the
     // rest; announced for assistive tech.
-    const [selected, setSelectedRaw] = useControllableState<ScatterSelection | null>(
-      props.selected,
-      props.defaultSelected ?? null,
-      props.onSelect,
-    );
+    const [selected, setSelectedRaw] =
+      useControllableState<ScatterSelection | null>(
+        props.selected,
+        props.defaultSelected ?? null,
+        props.onSelect
+      );
     const pointText = (sel: ScatterSelection): string => {
       const p = series[sel.series]?.points[sel.point];
       if (!p) return "";
-      return `${p.label ?? series[sel.series].label}: (${formatValue(Number.isFinite(p.x) ? p.x : 0)}, ${formatValue(Number.isFinite(p.y) ? p.y : 0)})`;
+      return `${p.label ?? series[sel.series].label}: (${formatValue(
+        Number.isFinite(p.x) ? p.x : 0
+      )}, ${formatValue(Number.isFinite(p.y) ? p.y : 0)})`;
     };
     const setSelected = (sel: ScatterSelection | null) => {
+      setInspected(true);
       setSelectedRaw(sel);
       if (sel != null) announceSelection(pointText(sel));
     };
     const toggle = (sel: ScatterSelection) =>
-      setSelected(selected != null && selected.series === sel.series && selected.point === sel.point ? null : sel);
-    const isSelected = (i: number, j: number) => selected != null && selected.series === i && selected.point === j;
-    const selectedPoint = selected != null ? series[selected.series]?.points[selected.point] : undefined;
+      setSelected(
+        selected != null &&
+          selected.series === sel.series &&
+          selected.point === sel.point
+          ? null
+          : sel
+      );
+    const isSelected = (i: number, j: number) =>
+      selected != null && selected.series === i && selected.point === j;
+    const selectedPoint =
+      selected != null
+        ? series[selected.series]?.points[selected.point]
+        : undefined;
 
     // The plot's accessible name carries every point, series-prefixed
     // ("Trial A: (1, 2.4), (2, 3.1); Trial B: ...").
@@ -140,28 +187,56 @@ export function createScatterPlot(skin: ChartSkin) {
       .map(
         (sr) =>
           `${sr.label}: ${sr.points
-            .map((p) => `${p.label ? `${p.label} ` : ""}(${formatValue(Number.isFinite(p.x) ? p.x : 0)}, ${formatValue(Number.isFinite(p.y) ? p.y : 0)})`)
-            .join(", ")}`,
+            .map(
+              (p) =>
+                `${p.label ? `${p.label} ` : ""}(${formatValue(
+                  Number.isFinite(p.x) ? p.x : 0
+                )}, ${formatValue(Number.isFinite(p.y) ? p.y : 0)})`
+            )
+            .join(", ")}`
       )
       .join("; ");
 
     return (
       <View
-        {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
+        {...(title != null && title !== ""
+          ? {
+              role: "group" as const,
+              accessibilityLabel: `${title} chart`,
+              "aria-label": `${title} chart`,
+            }
+          : {})}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
+        {glass && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
+        ) : null}
         {title != null && title !== "" ? (
-          <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
+          <Text
+            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+          >
+            {title}
+          </Text>
         ) : null}
 
-        <View accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name}>
+        <View
+          accessible
+          accessibilityRole="image"
+          role="img"
+          accessibilityLabel={name}
+          aria-label={name}
+        >
           <CartesianFrame
             yExtent={yExtent}
             xDomain={xDomain}
@@ -186,7 +261,8 @@ export function createScatterPlot(skin: ChartSkin) {
                     let bestD = 14 * 14;
                     series.forEach((sr, i) =>
                       sr.points.forEach((p, j) => {
-                        if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
+                        if (!Number.isFinite(p.x) || !Number.isFinite(p.y))
+                          return;
                         const dx = layout.x(p.x) - lx;
                         const dy = layout.y(p.y) - ly;
                         const d = dx * dx + dy * dy;
@@ -194,31 +270,58 @@ export function createScatterPlot(skin: ChartSkin) {
                           bestD = d;
                           best = { series: i, point: j };
                         }
-                      }),
+                      })
                     );
                     if (best) toggle(best);
                     else setSelected(null);
                   }}
                   style={StyleSheet.absoluteFill}
                 />
-                {selected && selectedPoint && Number.isFinite(selectedPoint.x) && Number.isFinite(selectedPoint.y) ? (
+                {selected &&
+                selectedPoint &&
+                Number.isFinite(selectedPoint.x) &&
+                Number.isFinite(selectedPoint.y) ? (
                   // The section card's readout: the point's x over its y (its own name first when it has one).
-                  <ChartValueFlag
-                    title={selectedPoint.label}
-                    rows={[
-                      { label: "x", value: formatValue(selectedPoint.x) },
-                      { label: "y", value: formatValue(selectedPoint.y) },
-                    ]}
-                    x={layout.x(selectedPoint.x)}
-                    plotW={layout.plotW}
-                  />
+                  specimen ? (
+                    <PresentationFlag
+                      lines={
+                        !inspected &&
+                        presentation?.annotation?.index === selected.point
+                          ? presentation.annotation.lines
+                          : [
+                              `x ${selectedPoint.x.toFixed(1)} s`,
+                              `y ${Math.round(selectedPoint.y)} ms`,
+                            ]
+                      }
+                      x={
+                        (layout.viewportWidth ?? layout.plotW) *
+                          (selectedPoint.x / 7) -
+                        (layout.plotOffsetX ?? 0)
+                      }
+                      y={layout.y(selectedPoint.y) - 16}
+                      gap={14}
+                    />
+                  ) : (
+                    <ChartValueFlag
+                      title={selectedPoint.label}
+                      rows={[
+                        { label: "x", value: formatValue(selectedPoint.x) },
+                        { label: "y", value: formatValue(selectedPoint.y) },
+                      ]}
+                      x={layout.x(selectedPoint.x)}
+                      plotW={layout.plotW}
+                    />
+                  )
                 ) : null}
               </>
             )}
           >
             {(layout) => (
               <>
-                {series.map((sr, i) => {
+                {(specimen
+                  ? series.map((sr, i) => ({ sr, i })).reverse()
+                  : series.map((sr, i) => ({ sr, i }))
+                ).map(({ sr, i }) => {
                   const color = colorOf(i);
                   return sr.points.map((p, j) =>
                     Number.isFinite(p.x) && Number.isFinite(p.y) ? (
@@ -226,24 +329,44 @@ export function createScatterPlot(skin: ChartSkin) {
                         key={`${sr.id ?? `s${i}`}p${j}`}
                         cx={layout.x(p.x)}
                         cy={layout.y(p.y)}
-                        r={isSelected(i, j) ? SELECTED.dot : POINT_RADIUS}
+                        r={
+                          (isSelected(i, j)
+                            ? SELECTED.dot
+                            : specimen
+                            ? 3.5
+                            : POINT_RADIUS) * (specimen ? layout.scale : 1)
+                        }
                         fill={color}
                         // The hand-off's points are washed at .7, so overlaps read through; the
                         // inspected point is solid.
-                        fillOpacity={isSelected(i, j) ? 1 : selected != null ? DIM_OPACITY * POINT_OPACITY : POINT_OPACITY}
+                        fillOpacity={
+                          isSelected(i, j)
+                            ? 1
+                            : specimen
+                            ? i === 0
+                              ? 0.85
+                              : 0.75
+                            : selected != null
+                            ? DIM_OPACITY * POINT_OPACITY
+                            : POINT_OPACITY
+                        }
                       />
-                    ) : null,
+                    ) : null
                   );
                 })}
                 {/* Selection ring under the hit layer. */}
-                {selectedPoint && Number.isFinite(selectedPoint.x) && Number.isFinite(selectedPoint.y) ? (
+                {selectedPoint &&
+                Number.isFinite(selectedPoint.x) &&
+                Number.isFinite(selectedPoint.y) ? (
                   <Circle
                     cx={layout.x(selectedPoint.x)}
                     cy={layout.y(selectedPoint.y)}
-                    r={SELECTED.ring}
+                    r={SELECTED.ring * (specimen ? layout.scale : 1)}
                     fill="none"
                     stroke={colorOf(selected!.series)}
-                    strokeWidth={SELECTED.ringStroke}
+                    strokeWidth={
+                      SELECTED.ringStroke * (specimen ? layout.scale : 1)
+                    }
                   />
                 ) : null}
               </>
@@ -252,7 +375,13 @@ export function createScatterPlot(skin: ChartSkin) {
         </View>
 
         {multi && !props.hideLegend ? (
-          <ChartLegend horizontal items={series.map((sr, i) => ({ label: sr.label, color: colorOf(i) }))} />
+          <ChartLegend
+            horizontal
+            items={series.map((sr, i) => ({
+              label: sr.label,
+              color: colorOf(i),
+            }))}
+          />
         ) : null}
       </View>
     );

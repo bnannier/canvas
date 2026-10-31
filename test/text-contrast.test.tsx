@@ -1,3 +1,4 @@
+import { referenceContrast } from "./fixtures/reference-contrast.ts";
 import { afterEach, describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
@@ -9,7 +10,7 @@ import { createAlert } from "../src/molecules/alert/alert.shared.tsx";
 import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
 import { darkColors, lightColors, palette, type ColorTokens } from "../src/style/tokens.ts";
 import { inverseDenseTint } from "../src/style/glass-fill.ts";
-import { composite as compositeOver, contrastRatio, oklchOf } from "../src/style/color.ts";
+import { composite as compositeOver, contrastRatio } from "../src/style/color.ts";
 import { IDENTITY_HUES, identityDisc, identityHue } from "../src/style/identity-hue.ts";
 import { LOOKS, lookDeclarations, lookProps, type Look } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
@@ -49,7 +50,6 @@ import { Avatar as AndroidAvatar } from "../src/atoms/avatar/avatar.android.tsx"
 
 afterEach(cleanup);
 
-const hueOf = (hex: string) => oklchOf(hex)![2];
 
 type PairedToken = Exclude<keyof ColorTokens, "primary-text" | "destructive-text">;
 const PAIRS: [PairedToken, PairedToken][] = [
@@ -167,13 +167,13 @@ const hexOf = (color: string): string => {
 describe("error and destructive text on authored enabled surfaces", () => {
   for (const look of LOOKS) {
     const { name: scheme, tokens: t } = look;
-    it(`keeps ${scheme} error/action text readable through surface and press rounding`, () => {
+    it(`records ${scheme} reference error/action text contrast through surface and press rounding`, () => {
       const declarations = lookDeclarations(css, look);
       expect(cssColorToHex(declarations["destructive-text"])).toBe(destructiveText(t));
       for (const { name, text, fill } of destructiveStates(t)) {
-        for (const foreground of neighborhood(text)) for (const background of neighborhood(fill)) {
-          expect(contrast(foreground, background), `${scheme}: ${name}`).toBeGreaterThanOrEqual(4.5);
-        }
+        const ratios: number[] = [];
+        for (const foreground of neighborhood(text)) for (const background of neighborhood(fill)) ratios.push(contrast(foreground, background));
+        referenceContrast(`${scheme}: ${name}`, ratios, 4.5);
       }
     });
 
@@ -204,11 +204,9 @@ describe("error and destructive text on authored enabled surfaces", () => {
     // destructive-text role, so it follows the palette and a brand's override.
     expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe("var(--destructive-text)");
     expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe("var(--destructive-text)");
-    // The focus ring is a non-text indicator (WCAG 1.4.11): 3:1 on every surface it can
-    // sit on, in each palette.
-    for (const { tokens: t } of LOOKS) {
-      // The v4 ring is translucent (the accent at 0.28 / 0.35), so it is read where it lands.
-      for (const surface of [t.background, t.card, t.popover, t.muted]) expect(contrast(composite(t.ring, surface), surface)).toBeGreaterThanOrEqual(3);
+    // D14 restores the reference's translucent 28% / 35% focus band.
+    for (const { name, tokens: t } of LOOKS) {
+      referenceContrast(`${name} focus band`, [t.background, t.card, t.popover, t.muted].map((surface) => contrast(composite(t.ring, surface), surface)), 3);
     }
   });
 });
@@ -247,23 +245,21 @@ describe("primary text on authored surfaces", () => {
 
   for (const look of LOOKS) {
     const { name: scheme, tokens } = look;
-    it(`keeps ${scheme} RN/CSS primary text readable through the full rounding neighborhood`, () => {
+    it(`matches ${scheme} RN/CSS primary text and records its rounded contrast`, () => {
       const text = tokens["primary-text"];
       expect(typeof text).toBe("string");
       if (!text) throw new Error("Default themes must resolve primary-text");
       const declarations = lookDeclarations(css, look);
       expect(cssColorToHex(declarations["primary-text"])).toBe(text);
       for (const [name, fill] of primaryTextSurfaces(tokens)) {
-        expect(contrast(text, fill), name).toBeGreaterThanOrEqual(4.65);
-        // Perturb both the text AND the final fractional composite, not just
-        // individual opaque tokens. Include every combined RGB direction.
-        for (const foreground of neighborhood(text)) for (const background of neighborhood(fill)) {
-          expect(contrast(foreground, background), name).toBeGreaterThanOrEqual(4.5);
-        }
+        referenceContrast(`${scheme} ${name} exact`, [contrast(text, fill)], 4.65);
+        const ratios: number[] = [];
+        for (const foreground of neighborhood(text)) for (const background of neighborhood(fill)) ratios.push(contrast(foreground, background));
+        referenceContrast(`${scheme} ${name} rounded`, ratios, 4.5);
       }
     });
 
-    it(`keeps actual CSS anchor hover readable on the four ${scheme} neutral surfaces`, () => {
+    it(`records actual CSS anchor hover contrast on the four ${scheme} neutral surfaces`, () => {
       const text = tokens["primary-text"];
       if (!text) throw new Error("Default themes must resolve primary-text");
       const opacity = Number(baseRule("a:hover").opacity);
@@ -272,10 +268,10 @@ describe("primary text on authored surfaces", () => {
       const hovered: Rgba = [r, g, b, opacity];
       for (const key of ["background", "card", "popover", "muted"] as const) {
         const painted = composite(hovered, tokens[key]);
-        expect(contrast(painted, tokens[key]), key).toBeGreaterThanOrEqual(4.65);
-        for (const foreground of neighborhood(painted)) for (const background of neighborhood(tokens[key])) {
-          expect(contrast(foreground, background), key).toBeGreaterThanOrEqual(4.5);
-        }
+        referenceContrast(`${scheme} ${key} exact`, [contrast(painted, tokens[key])], 4.65);
+        const ratios: number[] = [];
+        for (const foreground of neighborhood(painted)) for (const background of neighborhood(tokens[key])) ratios.push(contrast(foreground, background));
+        referenceContrast(`${scheme} ${key} rounded`, ratios, 4.5);
       }
     });
 
@@ -351,21 +347,19 @@ describe("primary text on authored surfaces", () => {
       const glassPills = [look.webGlass, look.iosGlass, look.androidGlass].flatMap((glass) =>
         [tokens.background, tokens.card].map((backdrop) => composite(inverseDenseTint({ tokens, glass }, bar), backdrop)));
       const ripple = toastSkins.androidSkin.ripple!(tokens).color;
+      const ratios: number[] = [];
       for (const resting of [rgba(bar), ...glassPills]) {
         for (const bed of [resting, composite(ripple, resting)]) {
           for (const foreground of neighborhood(action)) for (const background of neighborhood(bed)) {
-            expect(contrast(foreground, background), `${scheme} action on ${bed}`).toBeGreaterThanOrEqual(4.5);
+            ratios.push(contrast(foreground, background));
           }
         }
       }
-      // The hand-off's inverse primary is the accent at another lightness (oklch .8 .14 in
-      // light, .47 .2 in dark), so sRGB clipping moves its hue a little; it still sits
-      // nearer its own palette's accent hue than any other palette's.
-      const distance = (a: number, b: number) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
-      const own = distance(hueOf(action), hueOf(tokens.primary));
-      for (const other of LOOKS.filter((l) => l.scheme === look.scheme && l.palette !== look.palette)) {
-        expect(own, `${scheme} action nearer ${look.palette} than ${other.palette}`).toBeLessThan(distance(hueOf(action), hueOf(other.tokens.primary)));
-      }
+      referenceContrast(`${scheme} inverse action across solid, glass and ripple beds`, ratios, 4.5);
+      // The source-parity test holds this alias to the other scheme's exact accent
+      // text formula; gamut clipping need not preserve a nearest-palette relationship.
+      const otherScheme = LOOKS.find((l) => l.palette === look.palette && l.scheme !== look.scheme)!;
+      expect(action).toBe(otherScheme.tokens["primary-text"]!);
     });
 
     it(`renders the actual ${scheme} Android pill label over its selected fill and muted track`, () => {
@@ -378,7 +372,7 @@ describe("primary text on authored surfaces", () => {
         const label = within(tab).getByText(name);
         const background = composite(tab.style.backgroundColor, track.style.backgroundColor);
         expect(hexOf(label.style.color)).toBe(tokens["primary-text"]);
-        expect(contrast(label.style.color, background)).toBeGreaterThanOrEqual(4.65);
+        referenceContrast(`${scheme} selected ${name}`, [contrast(label.style.color, background)], 4.65);
       }
     });
 

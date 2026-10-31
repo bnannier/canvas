@@ -11,7 +11,7 @@ Audit checklist for `/components/alert`. The facts block and the variants table 
 | Source files | `alert.android.tsx`, `alert.ios.tsx`, `alert.md`, `alert.shared.tsx`, `alert.styles.ts`, `alert.tsx` |
 | Implementation | its own source directory, `src/molecules/alert/` (5 TypeScript modules) |
 | Exports | Alert |
-| Platform entries | iOS: web build: Alert. Android: web build: Alert |
+| Platform entries | iOS: own build: Alert (injects platform parts (../../atoms/button/button.ios.js)). Android: own build: Alert (injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `alert` (Shared, Built). iOS: none (iOS has no inline alert banner; iOS alerts are modal interruptions (UIAlertController), covered by the alert-dialog row). Android: none (Material 3 has no inline alert banner; M2 banners were dropped in M3, leaving a snackbar or dialog as the nearest substitutes). Web: link [alert (Web)](https://ui.shadcn.com/docs/components/alert) (inline callout banner; Catalyst's Alert is a modal dialog, a different component) |
 | Materials manifest | Alert: molecules, static; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -43,6 +43,8 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `neutral` | Neutral | [ ] | [ ] | [ ] |  |
 | `dismissible` | Dismissible | [ ] | [ ] | [ ] |  |
 | `actions` | Actions | [ ] | [ ] | [ ] |  |
+| `inlineaction` | Inline action | [ ] | [ ] | [ ] |  |
+| `announcement` | Announcement | [ ] | [ ] | [ ] |  |
 | `measurescomefromtheparent` | Measures come from the parent | [ ] | [ ] | [ ] |  |
 | `richbody` | Rich body | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->

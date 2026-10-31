@@ -2,6 +2,8 @@
 
 Density cells whose fill encodes each value. Pass `calendar` for a GitHub-style contribution graph: seven-day week columns with weekday and month labels, discrete less-to-more levels, and press or hover to inspect a day's count and date. The calendar layout IS the kit's activity calendar, so a contribution graph needs no separate component.
 
+`detailed` keeps contribution-calendar cells at their authored size, with compact month and weekday labels and the contribution-count color levels. A narrow parent scrolls the same calendar.
+
 ## Usage
 
 ```tsx

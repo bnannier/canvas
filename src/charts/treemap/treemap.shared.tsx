@@ -1,15 +1,16 @@
+import { compositionInspectProps } from "../pie-chart/composition-inspect.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState } from "react";
 import { StyleSheet } from "react-native";
-import { View, Text, Pressable, useControllableState, devWarn, tabularNums, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Text, Pressable, useControllableState, devWarn, tabularNums, alpha, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { estimateTextWidth, formatCompact, squarify } from "../shared/chart-math.js";
 import { platformShape } from "../../style/platform-shape.js";
-import { MONO_FONT } from "../../style/mono.js";
-import { mixOklab } from "../../style/color.js";
+import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
+import { mixOklab, oklchHex, oklchOf } from "../../style/color.js";
 
 // Shared Treemap shell. Squarified value tiles (Bruls layout through the
 // shared chart-math helper): each datum becomes a ramp-colored rectangle
@@ -38,6 +39,10 @@ export interface TreemapProps {
   title?: string;
   // Density (omit for the default 240 plot height; compact is 160).
   compact?: boolean;
+  /** Slice successive values along alternating axes, keeping the data order. */
+  partitioned?: boolean;
+  /** Show pale series washes with colored outlines and large readable values. */
+  outlined?: boolean;
   /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
   plain?: boolean;
   /** Formats tile values and the flag (data formatting, not styling). */
@@ -85,7 +90,7 @@ export function createTreemap(skin: ChartSkin) {
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
     const [width, setWidth] = useState(0);
-    const height = width > 0 ? Math.round(width / 2) : compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default;
+    const height = props.partitioned ? compact ? 120 : 180 : width > 0 ? Math.round(width / 2) : compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default;
 
     devWarn(data.length === 0, "[canvas] <Treemap />: `data` is empty; the chart renders with no tiles.");
     devWarn(data.length > MAX_TILES, `[canvas] <Treemap />: more than ${MAX_TILES} tiles read as noise; aggregate the tail.`);
@@ -109,7 +114,7 @@ export function createTreemap(skin: ChartSkin) {
     const toggle = (i: number) => setSelected(selected === i ? null : i);
 
     // The tiles need the measured width (the card is fluid).
-    const rects = width > 0 ? squarify(clean, 0, 0, width, height) : [];
+    const rects = width > 0 ? props.partitioned ? partitionTiles(clean, width, height) : squarify(clean, 0, 0, width, height) : [];
 
     return (
       <View
@@ -127,13 +132,14 @@ export function createTreemap(skin: ChartSkin) {
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}
         <View
+          {...compositionInspectProps(data.length, selected, setSelected)}
           accessible
           accessibilityRole="image"
           role="img"
           accessibilityLabel={name}
           aria-label={name}
           onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-          style={{ height }}
+          style={{ height, ...(props.partitioned ? { margin: -2 } : {}) }}
         >
           {rects.map((r, i) => {
             if (r.w <= 0 || r.h <= 0) return null;
@@ -144,7 +150,7 @@ export function createTreemap(skin: ChartSkin) {
             if (w <= 0 || h <= 0) return null;
             const labelFits = h >= 32 && estimateTextWidth(data[i].label, 12) + TILE_PAD * 2 <= w;
             const valueFits = labelFits && h >= 46 && estimateTextWidth(formatValue(clean[i]), 11) + TILE_PAD * 2 <= w;
-            const look = tileLook(tokens.card, s.seriesFill(tokens, i));
+            const look = props.outlined ? { fill: outlinedTileFill(tokens.card, s.seriesFill(tokens, i)), ink: tokens.foreground } : tileLook(tokens.card, s.seriesFill(tokens, i));
             return (
               <View
                 key={data[i].id ?? i}
@@ -155,18 +161,19 @@ export function createTreemap(skin: ChartSkin) {
                   width: w,
                   height: h,
                   backgroundColor: look.fill,
-                  borderRadius: Math.min(platformShape.web.chartTile, w / 2, h / 2),
-                  padding: TILE_PAD,
+                  borderRadius: Math.min(props.outlined && i > 2 ? i === 3 ? platformShape.web.treemapSmall : i === 4 ? platformShape.web.treemapTiny : platformShape.web.treemapSmallest : platformShape.web.chartTile, w / 2, h / 2),
+                  ...(props.outlined ? { borderWidth: 1, borderColor: alpha(s.seriesFill(tokens, i), .6), flexDirection: i === 1 ? "row" : "column", justifyContent: "space-between" } : {}),
+                  padding: props.outlined ? i < 3 ? 10 : 6 : TILE_PAD,
                   opacity: selected != null && selected !== i ? DIM_OPACITY : 1,
                 }}
               >
-                {labelFits ? (
-                  <Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 16, fontWeight: "600", color: look.ink }}>
+                {labelFits && (!props.outlined || i < 3) ? (
+                  <Text numberOfLines={1} style={{ fontSize: props.outlined ? 13 : 12, lineHeight: 16, fontWeight: props.outlined ? "500" : "600", color: look.ink }}>
                     {data[i].label}
                   </Text>
                 ) : null}
-                {valueFits ? (
-                  <Text numberOfLines={1} style={{ ...TILE_VALUE_TYPE, color: look.ink, opacity: 0.75, ...tabularNums() }}>
+                {(props.outlined ? i < 4 : valueFits) ? (
+                  <Text numberOfLines={1} style={{ ...TILE_VALUE_TYPE, ...(props.outlined && i < 3 ? { fontFamily: DISPLAY_FONT, fontSize: i === 0 ? 18 : 15, lineHeight: i === 0 ? 18 : 15 } : {}), color: look.ink, opacity: props.outlined ? 1 : 0.75, ...tabularNums() }}>
                     {formatValue(clean[i])}
                   </Text>
                 ) : null}
@@ -201,4 +208,26 @@ export function createTreemap(skin: ChartSkin) {
       </View>
     );
   };
+}
+
+/** Ordered slice-and-dice layout; each step partitions the remaining rectangle. */
+export function partitionTiles(values: number[], width: number, height: number) {
+  let x = 0, y = 0, w = width, h = height;
+  let remaining = values.reduce((a, b) => a + Math.max(0, b), 0);
+  return values.map((value, index) => {
+    const share = remaining > 0 ? Math.max(0, value) / remaining : 0;
+    const vertical = index % 2 === 0;
+    const tile = { x, y, w: vertical ? w * share : w, h: vertical ? h : h * share };
+    if (vertical) { x += tile.w; w -= tile.w; } else { y += tile.h; h -= tile.h; }
+    remaining -= Math.max(0, value);
+    return tile;
+  });
+}
+
+/** The authored 30% oklch mix. A near-neutral base contributes no hue, as CSS does. */
+export function outlinedTileFill(card: string, series: string): string {
+  const a = oklchOf(card), b = oklchOf(series);
+  if (!a || !b) return mixOklab(card, series, .3);
+  const delta = ((b[2] - a[2] + 540) % 360) - 180;
+  return oklchHex(a[0] * .7 + b[0] * .3, a[1] * .7 + b[1] * .3, a[1] < .02 ? b[2] : a[2] + delta * .3);
 }

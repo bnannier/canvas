@@ -40,6 +40,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `compactpanel` | Compact panel | [ ] | [ ] | [ ] |  |
 | `inline` | Inline | [ ] | [ ] | [ ] |  |
 | `above` | Above | [ ] | [ ] | [ ] |  |
+| `inlinewithabeak` | Inline with a beak | [ ] | [ ] | [ ] |  |
 | `descriptiononly` | Description only | [ ] | [ ] | [ ] |  |
 | `controlled` | Controlled | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->

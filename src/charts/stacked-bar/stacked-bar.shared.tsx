@@ -1,8 +1,10 @@
-import { View, useTheme, devWarn, alpha, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, devWarn, alpha, type LayoutStyle } from "../../style/index.js";
 import { seriesFill } from "../shared/charts.styles.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { type StackedSegment } from "../shared/types.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { CHART_LOOK } from "../shared/charts.styles.js";
+import { MONO_FONT } from "../../style/mono.js";
 
 // StackedBar is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -14,9 +16,8 @@ import { platformShape } from "../../style/platform-shape.js";
 
 // The v4 hand-off's strip (`K.def('stacked-bar')`): an 8 px pill whose segments sit 2 px
 // apart, a `track` rail of 2 px around them on the muted fill, the `subtle` wash at .6,
-// and the legend 10 px under the strip with each share inline. `tall` stays the
-// metric-strip band (the height a Sparkline plots in, at the mark corner) because Stats
-// lines a composition up with a trend on it; the hand-off's own tall strip is 16.
+// and the legend 10 px under the strip with each share inline. `tall` is the 24 px
+// strip; a capacity composition uses the section's 14 px separated bands.
 const SUBTLE_ALPHA = 0.6;
 const STRIP_HEIGHT = { default: 8, tall: 24 } as const;
 const SEGMENT_GAP = 2;
@@ -29,14 +30,16 @@ export interface StackedBarProps {
   label?: string;
   /** Hide the legend (the labelled dots below the bar). */
   hideLegend?: boolean;
+  /** A two-column legend with separate right-aligned share readouts. */
+  detailed?: boolean;
+  /** The series to identify in a shared comparison legend. Defaults to this strip. */
+  legendSegments?: StackedSegment[];
   /** Paint the unfilled remainder as a muted rail, so a bar whose segments sum
    *  to zero still reads as a bar rather than as blank space. A composition of
    *  nothing (an empty queue, a metric at zero) is a real state to draw, and
    *  without the rail it draws as an absence. */
   track?: boolean;
-  /** The metric-strip size: a 24 band at the chart mark corner, instead of the default 8
-   *  pill. It is the height a Sparkline plots in, so a composition drawn at this size
-   *  sits in the same band as a trend and a row holding both scans as one set. */
+  /** A 24 px strip instead of the default 8 px pill; capacity strips use 14 px bands. */
   tall?: boolean;
   /** Draw the segments as washes of their ramp colours rather than at full
    *  strength. For a bar that supports a headline rather than being one (the
@@ -57,8 +60,8 @@ export interface StackedBarProps {
 }
 
 /** One proportional bar split into colored segments, with a legend of shares. */
-export function StackedBar({ segments, label, hideLegend, track, tall, subtle, max, testID, style }: StackedBarProps) {
-  const { tokens } = useTheme();
+export function StackedBar({ segments, label, hideLegend, track, tall, subtle, max, detailed, legendSegments, testID, style }: StackedBarProps) {
+  const { tokens, dark } = useTheme();
   const rawTotal = segments.reduce((sum, seg) => sum + Math.max(0, Number.isFinite(seg.value) ? seg.value : 0), 0);
   const capacity = max != null && Number.isFinite(max) && max > rawTotal ? max : null;
   // Floor the divisor at 1 so an all-zero (or empty) bar divides cleanly to 0%
@@ -96,15 +99,16 @@ export function StackedBar({ segments, label, hideLegend, track, tall, subtle, m
   } as const;
 
   return (
-    <View testID={testID} style={[{ gap: LEGEND_GAP }, style]} {...(hideLegend ? img : {})}>
+    <View testID={testID} style={[{ gap: detailed ? 14 : LEGEND_GAP }, style]} {...(hideLegend ? img : {})}>
       <View
         {...(hideLegend ? {} : img)}
         style={{
           flexDirection: "row",
-          overflow: "hidden",
-          borderRadius: tall ? platformShape.web.mark : 9999,
-          gap: SEGMENT_GAP,
-          height: tall ? STRIP_HEIGHT.tall : STRIP_HEIGHT.default,
+          overflow: capacity != null ? "visible" : "hidden",
+          borderRadius: capacity != null ? 0 : tall ? platformShape.web.mark : 9999,
+          gap: capacity != null ? 3 : SEGMENT_GAP,
+          height: tall ? capacity != null ? 14 : STRIP_HEIGHT.tall : STRIP_HEIGHT.default,
+          opacity: capacity != null && subtle ? .7 : 1,
           ...(track ? { backgroundColor: tokens.muted, padding: TRACK_INSET } : {}),
         }}
       >
@@ -116,17 +120,27 @@ export function StackedBar({ segments, label, hideLegend, track, tall, subtle, m
                 // The share of the strip, less its part of the 2 px gaps, so the
                 // segments and gaps fill the row exactly.
                 flexBasis: `${pct(seg.value)}%`,
-                flexShrink: 1,
-                backgroundColor: subtle ? alpha(seriesFill(tokens, i), SUBTLE_ALPHA) : seriesFill(tokens, i),
+                flexShrink: capacity != null ? 0 : 1,
+                ...(capacity != null && tall && i === 0 ? { boxShadow: [{ offsetX: 0, offsetY: 0, blurRadius: 12, color: alpha(tokens.primary, dark ? .5 : .4) }] } : {}),
+                ...(capacity != null ? { borderTopLeftRadius: i === 0 ? tall ? platformShape.web.stackEnd : platformShape.web.stackEndCompact : tall ? platformShape.web.stackInner : platformShape.web.stackInnerCompact, borderBottomLeftRadius: i === 0 ? tall ? platformShape.web.stackEnd : platformShape.web.stackEndCompact : tall ? platformShape.web.stackInner : platformShape.web.stackInnerCompact, borderTopRightRadius: tall ? platformShape.web.stackInner : platformShape.web.stackInnerCompact, borderBottomRightRadius: tall ? platformShape.web.stackInner : platformShape.web.stackInnerCompact } : {}),
+                backgroundColor: subtle && capacity == null ? alpha(seriesFill(tokens, i), SUBTLE_ALPHA) : seriesFill(tokens, i),
               }}
             />
           )
         )}
         {remainder > 0 ? (
-          <View style={{ flexBasis: `${remainder}%`, flexShrink: 1, backgroundColor: tokens["surface-raised"] ?? tokens.muted }} />
+          <View style={{ flex: 1, borderTopLeftRadius: tall ? platformShape.web.stackInner : platformShape.web.stackInnerCompact, borderBottomLeftRadius: tall ? platformShape.web.stackInner : platformShape.web.stackInnerCompact, borderTopRightRadius: tall ? platformShape.web.stackEnd : platformShape.web.stackEndCompact, borderBottomRightRadius: tall ? platformShape.web.stackEnd : platformShape.web.stackEndCompact, backgroundColor: tokens["surface-raised"] ?? tokens.muted }} />
         ) : null}
       </View>
-      {hideLegend ? null : (
+      {hideLegend ? null : detailed ? (
+        <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: 16, rowGap: 8 }}>
+          {(legendSegments ?? segments).map((seg, i) => <View key={i} style={{ width: "47%", flexGrow: 1, flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View style={{ width: 8, height: 8, borderRadius: platformShape.web.cell, backgroundColor: seriesFill(tokens, i) }} />
+            <Text style={{ flex: 1, fontSize: 12, lineHeight: 15, color: tokens["muted-foreground"] }}>{seg.label}</Text>
+            <Text style={{ fontFamily: MONO_FONT, fontSize: CHART_LOOK.legendCaptionSize, lineHeight: 15, fontWeight: "500", color: tokens.foreground }}>{Math.round(pct(seg.value))}%</Text>
+          </View>)}
+        </View>
+      ) : (
         <ChartLegend
           horizontal
           flush

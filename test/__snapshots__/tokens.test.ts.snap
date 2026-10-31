@@ -1,0 +1,161 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every light surface: light input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the light switch thumb contrast against its unchecked track: light switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every dark surface: dark input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the dark switch thumb contrast against its unchecked track: dark switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every cyan light surface: cyan light input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the cyan light switch thumb contrast against its unchecked track: cyan light switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every cyan dark surface: cyan dark input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the cyan dark switch thumb contrast against its unchecked track: cyan dark switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every mint light surface: mint light input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the mint light switch thumb contrast against its unchecked track: mint light switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every mint dark surface: mint dark input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the mint dark switch thumb contrast against its unchecked track: mint dark switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every rose light surface: rose light input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the rose light switch thumb contrast against its unchecked track: rose light switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every rose dark surface: rose dark input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the rose dark switch thumb contrast against its unchecked track: rose dark switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every amber light surface: amber light input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the amber light switch thumb contrast against its unchecked track: amber light switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.4051,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the reference input boundary on every amber dark surface: amber dark input boundary 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;
+
+exports[`reference control boundary contrast (WCAG 1.4.11 audit) records the amber dark switch thumb contrast against its unchecked track: amber dark switch thumb 1`] = `
+{
+  "floor": 3,
+  "minimum": 1.5249,
+  "passes": false,
+}
+`;

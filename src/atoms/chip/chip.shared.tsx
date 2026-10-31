@@ -116,6 +116,8 @@ export interface ChipSkin {
    * assist chip).
    */
   link?: Pick<ChipSkin, "base" | "sidePadding" | "labelType" | "selectedCheck"> & { steadyPress: boolean };
+  /** Smaller passive-tag geometry where the platform supports it. */
+  small?: Pick<ChipSkin, "base" | "sidePadding" | "labelType" | "bodyMinTarget">;
 }
 
 export interface ChipProps {
@@ -259,7 +261,8 @@ export interface ChipProps {
    * `option` look.
    */
   square?: boolean;
-  // A chip has ONE compact size, so there is no size axis.
+  /** A small metadata tag; option, token and link looks retain their own dimensions. */
+  small?: boolean;
   disabled?: boolean;
   /** Keep resting opacity while pressed, preserving the reference filter treatment. */
   steadyPress?: boolean;
@@ -410,7 +413,9 @@ export function createChip(platformSkin: ChipSkin) {
         ? { ...platformSkin, ...tokenLook }
         : linkLook
           ? { ...platformSkin, ...linkLook }
-          : platformSkin;
+          : props.small && platformSkin.small
+            ? { ...platformSkin, ...platformSkin.small }
+            : platformSkin;
     // A press keeps the resting look where asked, or where the link look says so.
     const steadyPress = props.steadyPress === true || linkLook?.steadyPress === true;
     const paneShape = iconOnly ? StyleSheet.flatten([skin.base, iconOnly]) : skin.base;

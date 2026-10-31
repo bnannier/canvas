@@ -4,6 +4,8 @@ Goal-attainment rows: each datum is a leading label, a track holding qualitative
 
 Following the classic bullet-graph anatomy each row carries its own scale, since goals rarely share units; pass `max` to force one shared scale when they do. The compact alternative to a dashboard of gauges: five goals read in five rows.
 
+`detailed` expands each track, keeps its target marker inside the band and adds the target/ranges key.
+
 ## Usage
 
 ```tsx

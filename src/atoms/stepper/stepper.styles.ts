@@ -29,6 +29,10 @@ import { type StepperSkin, type Size } from "./stepper.shared.js";
 
 const ROW_CENTER: ViewStyle = { alignItems: "center", justifyContent: "center" };
 
+// A string `suffix` beside the control (the Controls page's `× 4px`: `font:400 13px
+// var(--ft);color:var(--tx3)`, its line the face's normal 16 px), on every platform.
+const suffixType = (t: ColorTokens): TextStyle => ({ fontSize: 13, lineHeight: 16, fontWeight: "400", color: t["subtle-foreground"] ?? t["muted-foreground"] });
+
 // ============================ Web: the bordered box ============================
 const WEB_HEIGHT: Record<Size, number> = { small: 32, base: 40, large: 48 };
 
@@ -47,10 +51,11 @@ export const webSkin: StepperSkin = {
     overflow: "hidden",
   }),
   groupShowsFocus: true,
-  // Square cells: as wide as the box is tall, less its 1px edges.
+  // The end cells: as wide as the box is tall (`K.def('stepper')` cells are the box's
+  // height square, the Controls card's `width:40px`), its inner height tall.
   button: (_t, size) => ({
     ...ROW_CENTER,
-    width: WEB_HEIGHT[size] - 2,
+    width: WEB_HEIGHT[size],
     height: "100%",
   }),
   buttonHover: (t) => ({ backgroundColor: t.secondary }),
@@ -75,6 +80,7 @@ export const webSkin: StepperSkin = {
   // The hand-off's field label: 500 13px in the secondary ink, at every size.
   labelAbove: (t) => ({ fontSize: 13, lineHeight: 17, fontWeight: "500", color: t["muted-foreground"] }),
   description: (t) => ({ fontSize: 12, lineHeight: 18, fontWeight: "400", color: t["subtle-foreground"] ?? t["muted-foreground"] }),
+  suffix: suffixType,
 };
 
 // ============================ iOS (HIG / iOS 27 kit Stepper) ============================
@@ -155,6 +161,7 @@ export const iosSkin: StepperSkin = {
   labelAbove: (t, size) => ({ ...NATIVE_LABEL[size], fontWeight: "600", letterSpacing: -0.15, color: t.foreground }),
   // The footnote line under the control: iOS footnote 13pt with SF tracking.
   description: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "400", letterSpacing: -0.08, color: t["subtle-foreground"] ?? t["muted-foreground"] }),
+  suffix: suffixType,
 };
 
 // ============================ Android (Material 3 quantity control) ============================
@@ -220,4 +227,5 @@ export const androidSkin: StepperSkin = {
   labelAbove: (t, size) => ({ ...NATIVE_LABEL[size], fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
   // M3 supporting text: body-small (12sp) with body-small tracking (0.4), on-surface-variant.
   description: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "400", letterSpacing: 0.4, color: t["muted-foreground"] }),
+  suffix: suffixType,
 };

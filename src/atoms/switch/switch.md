@@ -9,6 +9,7 @@ label, the description and the hit target never move, and the checked state flip
 at once. A disabled switch is inert.
 
 `small` and `large` scale the track on the web.
+Pass `chip` for a compact toolbar setting: a 32 px bordered capsule with a 26×16 track, a 10 px knob and the label after the switch. The web thumb follows the reference spring and Reduce Motion; native skins keep their own switch.
 <!-- only: web -->
 On iOS and Android the switch is the
 platform's own control, which comes in one size (51x31 on iOS, 52x32 on Android), so
@@ -61,11 +62,13 @@ On the web, Space activates the focused control on key release, and Enter also a
 
 ### Settings list
 
+`listed` gives each row a settings list's 10 px above and below, and `divided` rules a hairline above every row after the first, so the stack reads as one list.
+
 ```tsx
-<Column relaxed>
-  <Switch defaultChecked>Available to chat</Switch>
-  <Switch>Weekly digest</Switch>
-  <Switch defaultChecked>Push notifications</Switch>
+<Column tight>
+  <Switch listed defaultChecked description="Frosted material on panels and sheets">Glass surfaces</Switch>
+  <Switch listed divided description="Zero every duration, keep spinners">Reduced motion</Switch>
+  <Switch listed divided defaultChecked>Haptics</Switch>
 </Column>
 ```
 

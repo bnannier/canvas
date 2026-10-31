@@ -79,8 +79,8 @@ describe("cell ids", () => {
     const rank = (id: string) => recipeRank(parseCellId(id)!);
     // Dropdown's states in capture order: hover, its focus and its press on the custom trigger
     // and on a menu row, open, then its two disabled recipes.
-    const dropdown = ["hover", "focus-customtrigger", "focus-default", "pressed-customtrigger", "pressed-default", "open", "disabled-disabledtrigger", "disabled-disableditem"];
-    expect(dropdown.map((name) => rank(`web-states/dropdown/${name}.web/desktop.blush.solid`))).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    const dropdown = ["hover-default", "hover-inlinespecimen", "focus-customtrigger", "focus-default", "pressed-customtrigger", "pressed-default", "open", "disabled-disabledtrigger", "disabled-disableditem"];
+    expect(dropdown.map((name) => rank(`web-states/dropdown/${name}.web/desktop.blush.solid`))).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
     // The names its single focus and disabled recipes had before the second, and a state it has no recipe of.
     expect(rank("web-states/dropdown/focus.web/desktop.blush.solid")).toBe(-1);
     expect(rank("web-states/dropdown/disabled.web/desktop.blush.solid")).toBe(-1);

@@ -1,3 +1,4 @@
+import { SectionVignette } from "../ui/showcase/section-vignette";
 import { useState, type ReactNode } from "react";
 import { PLATFORM_COPY } from "../data/platform-copy";
 import {
@@ -49,7 +50,7 @@ import {
 } from "@nannier/canvas";
 import { resolvePhoto } from "../core/photos";
 import { COMPONENTS } from "../core/data/components";
-import { ShowcaseCard, ShowcaseGrid, ShowcaseGroup, VignetteStage } from "../ui/showcase";
+import { ShowcaseCard, ShowcaseGrid, ShowcaseGroup } from "../ui/showcase";
 import {
   BOARD_COLUMNS,
   BOARD_ITEMS,
@@ -73,20 +74,9 @@ import {
 /** A bundled sample photo, resolved for the platform (docs/src/core/photos.ts). */
 const photo = (path: string) => resolvePhoto(path) as string | undefined;
 
-/** The hero's still frame: the installs stat, its spark drawn in full. */
+/** The animated hero: the installs stat, its spark drawn in full. */
 export function Vignette() {
-  return (
-    <VignetteStage>
-      <Stats
-        items={[{
-          label: "Installs · this week",
-          value: "48.2k",
-          delta: "+12.4% vs. last week",
-          spark: [4, 8, 6, 14, 12, 20, 18, 26, 24, 32, 30],
-        }]}
-      />
-    </VignetteStage>
-  );
+  return <SectionVignette kind="data" />;
 }
 
 // ── The Card specimens ──────────────────────────────────────────────────────────────

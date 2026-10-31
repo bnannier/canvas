@@ -1,40 +1,22 @@
-import type { ReactNode, Ref } from "react";
+import type { Ref } from "react";
 import { Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { View, Grid, Card, Column, Row, Typography, Chip, Swatch, Divider, Icon, type ColorTokens } from "@nannier/canvas";
-import type { DocDontPair, DocGuidance, DocGuidanceBlock, DocProse, ExampleScope } from "../../core/scope";
+import type { DocGuidance, DocGuidanceBlock, DocProse } from "../../core/scope";
 import { getComponent } from "../../core/data/components";
 import { SECTIONS } from "../../core/data/detail-sections";
 import { CodeBlock } from "../code-block";
-import { DoDontCard } from "../dont";
 import { InlineMarkdown, Prose } from "../prose";
-import { ExampleErrorBoundary, FitStage } from "../stage";
 import { DetailSection } from "./frame";
+import { referenceTokenValue } from "./presentation";
 
 // The detail page's closing sections (Component.dc.html `#cv-use`, `#cv-tok`, the related
-// grid and the previous / next pair), with the repository's Do & Don't after Usage (PLAN
-// decision P3).
-
-/** A live guidance example over its source, found by the tooling attribute every example carries. */
-function GuidanceExample({ code, render, scope }: { code: string; render: (scope: ExampleScope) => ReactNode; scope: ExampleScope }) {
-  return (
-    <Column snug>
-      <View {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}>
-        <ExampleErrorBoundary>
-          <FitStage code={code}>{render(scope)}</FitStage>
-        </ExampleErrorBoundary>
-      </View>
-      {/* The guidance card's snippet (Component.dc.html line 288): `padding:12px 14px;border-radius:10px;
-          ...;font:400 12px/1.65 var(--fm)`, the kit CodeBlock's `guide` density. */}
-      <CodeBlock headerless guide code={code} />
-    </Column>
-  );
-}
+// grid and the previous / next pair).
 
 const isProse = (block: DocGuidanceBlock): block is DocProse => typeof block === "string" || "list" in block;
 
 /** One guidance section of the .md as a card: its title, prose, sub-headings and live examples in order. */
-function GuidanceCard({ section, scope }: { section: DocGuidance; scope: ExampleScope }) {
+function GuidanceCard({ section }: { section: DocGuidance }) {
   const runs: (DocProse[] | Exclude<DocGuidanceBlock, DocProse>)[] = [];
   for (const block of section.blocks) {
     const last = runs[runs.length - 1];
@@ -56,21 +38,20 @@ function GuidanceCard({ section, scope }: { section: DocGuidance; scope: Example
         ) : "heading" in run ? (
           <Typography key={i} small semibold><InlineMarkdown text={run.heading} heading /></Typography>
         ) : (
-          <GuidanceExample key={i} code={run.code} render={run.render} scope={scope} />
+          <CodeBlock key={i} headerless guide code={run.code} />
         ),
       )}
     </Card>
   );
 }
 
-export function UsageSection({ note, code, overview, guidance, scope, sectionRef }: {
+export function UsageSection({ note, code, overview, guidance, sectionRef }: {
   /** The Usage example's own note (the .md's `## Usage` prose). */
   note?: DocProse[];
   /** The Usage example's source. */
   code?: string;
   overview?: DocProse[];
   guidance: readonly DocGuidance[];
-  scope: ExampleScope;
   sectionRef?: Ref<View>;
 }) {
   if (!note?.length && !code && !overview?.length && guidance.length === 0) return null;
@@ -83,26 +64,9 @@ export function UsageSection({ note, code, overview, guidance, scope, sectionRef
       {overview?.length ? <Prose blocks={overview} pageNote relaxed /> : null}
       {guidance.length ? (
         <Grid minTileWidth={420} roomy>
-          {guidance.map((section) => <GuidanceCard key={section.title} section={section} scope={scope} />)}
+          {guidance.map((section) => <GuidanceCard key={section.title} section={section} />)}
         </Grid>
       ) : null}
-    </DetailSection>
-  );
-}
-
-export function DoDontSection({ donts, scope, sectionRef }: { donts: readonly DocDontPair[]; scope: ExampleScope; sectionRef?: Ref<View> }) {
-  if (donts.length === 0) return null;
-  return (
-    <DetailSection id="dodont" title="Do & Don’t" sectionRef={sectionRef}>
-      {donts.map((pair, i) => (
-        <Column key={i} snug>
-          {pair.title ? <Typography h5 level={3}><InlineMarkdown text={pair.title} heading /></Typography> : null}
-          <Row stacks stackBreakpoint="md" relaxed>
-            <Column span={6}><DoDontCard dont caption={pair.dont.caption}>{pair.dont.render(scope)}</DoDontCard></Column>
-            <Column span={6}><DoDontCard do caption={pair.do.caption}>{pair.do.render(scope)}</DoDontCard></Column>
-          </Row>
-        </Column>
-      ))}
     </DetailSection>
   );
 }
@@ -122,18 +86,30 @@ export function TokensSection({ roles, related, tokens, sectionRef }: { roles: r
   const live = tokens as unknown as Record<string, string | undefined>;
   const links = related.map((slug) => getComponent(slug)).filter((c) => c != null);
   return (
-    <DetailSection id="tok" title="Tokens" note="The colour roles this component's skins read, live from the active scheme and palette." sectionRef={sectionRef}>
+    <DetailSection id="tok" title="Tokens" note="Read from the playground render. Values follow the scheme and the ion hue." sectionRef={sectionRef}>
       {/* The chips and the related grid sit 32 apart: the hand-off's h3 (line 296) carries
           `margin:16px 0 0` inside the section's `gap:16px`, the `apart` step. */}
       <Column apart>
         <Row wrap snug>
-          {roles.map((role) => (
+          {roles.map((role) => {
+            const value = role.startsWith("--") ? referenceTokenValue(role, tokens) : live[role];
+            const color = value && /^(#|rgb|oklch|color-mix|hsl)/.test(value);
+            const icon = color ? <Swatch tiny ring circle color={value} decorative /> : (
+              <View style={{ position: "relative", width: 20, height: 20 }}>
+                <Swatch tiny ring circle color={tokens.secondary} decorative />
+                <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, alignItems: "center", justifyContent: "center" }}>
+                  <Icon type={/^--f/.test(role)} layers={/^--sh/.test(role)} sparkles={!/^--(f|sh)/.test(role)} muted size={11} decorative />
+                </View>
+              </View>
+            );
+            return (
             // The hand-off's token chip (Component.dc.html line 294): the 32 px pill with its
             // 20 px ringed swatch, the role name in mono beside it.
-            <Chip key={role} token icon={live[role] ? <Swatch tiny ring circle color={live[role]!} accessibilityLabel={role} /> : undefined}>
+            <Chip key={role} token accessibilityLabel={value ? `${role}: ${value}` : role} icon={icon}>
               {role}
             </Chip>
-          ))}
+            );
+          })}
         </Row>
         {links.length ? (
           // The h3 (line 296: `font:600 16px var(--ft)` on its face's own 20 line, the kit's
@@ -180,7 +156,7 @@ export function PrevNext({ slug }: { slug: string }) {
             pager label (line 303: `font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)`,
             on the face's own 14 px line). */}
         {/* The pager grid's gap is 12 (line 302: `grid-template-columns:1fr 1fr;gap:12px`). */}
-        <Row stacks cozy>
+        <Row cozy>
           <Column span={6}>
             {p ? (
               <Card pager outlined onPress={() => router.push(`/components/${p.slug}` as never)} accessibilityLabel={`Previous: ${p.name}`}>

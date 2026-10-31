@@ -1,15 +1,43 @@
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
-import { View, useTheme } from "@nannier/canvas";
-import { AURORA, HERO_FRAME, auroraDiscs } from "./library-hero-look";
+import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
+import { View, useReducedMotion, useTheme } from "@nannier/canvas";
+import { AURORA, HERO_FRAME, HERO_MOTION, auroraDiscs } from "./library-hero-look";
 
 // A brand illustration: the v4 hand-off's Library hero aurora (decision P5-G2, the
 // `v4-library-hero` card), three soft discs of the brand sweep behind the hero, and the
 // frame that holds them. The hand-off blurs a radial gradient with CSS `filter: blur()`;
 // here each disc is one react-native-svg radial gradient whose stops are that blur already
 // applied (`blurredDisc`, integrated once per size), so the same drawing paints on iOS,
-// Android and the web with no filter. Static: the hand-off's 22 to 28 s drift is not
-// reproduced. The values are the table in ./library-hero-look.ts.
+// Android and the web with no filter. Each disc follows the same independent drift,
+// reversal and delay as the hand-off, driven outside React's render cycle.
+
+function DriftingDisc({ disc, index, width, color, opacity, id }: {
+  disc: ReturnType<typeof auroraDiscs>[number]; index: number; width: number; color: string; opacity: number; id: string;
+}) {
+  const reduced = useReducedMotion();
+  const timing = HERO_MOTION.drifts[index]!;
+  const progress = useSharedValue(timing.reversed ? 1 : 0);
+  useEffect(() => {
+    progress.value = timing.reversed ? 1 : 0;
+    if (!reduced) progress.value = withDelay(timing.delay, withRepeat(withTiming(timing.reversed ? 0 : 1, { duration: timing.duration, easing: Easing.bezier(0.42, 0, 0.58, 1) }), -1, true));
+    return () => cancelAnimation(progress);
+  }, [progress, reduced, timing]);
+  const size = AURORA.orbs[index]!.size * width;
+  const drift = useAnimatedStyle(() => ({ transform: [
+    { translateX: reduced ? 0 : size * 0.08 * progress.value },
+    { translateY: reduced ? 0 : size * 0.12 * progress.value },
+    { scale: reduced ? 1 : 1 + 0.15 * progress.value },
+  ] }));
+  return <Animated.View style={[{ position: "absolute", left: disc.cx - disc.r, top: disc.cy - disc.r, width: disc.r * 2, height: disc.r * 2 }, drift]}>
+    <Svg width={disc.r * 2} height={disc.r * 2}>
+      <Defs><RadialGradient id={id} cx="50%" cy="50%" r="50%">
+        {disc.stops.map((stop) => <Stop key={stop.offset} offset={stop.offset} stopColor={color} stopOpacity={stop.opacity * opacity} />)}
+      </RadialGradient></Defs>
+      <Circle cx={disc.r} cy={disc.r} r={disc.r} fill={`url(#${id})`} />
+    </Svg>
+  </Animated.View>;
+}
 
 /** The glow layer: the hero section's box, from the page's top to the hero's foot, the window's width. */
 function AuroraGlow() {
@@ -35,20 +63,7 @@ function AuroraGlow() {
         pointerEvents: "none",
       }}
     >
-      {box ? (
-        <Svg width={box.width} height={box.height}>
-          <Defs>
-            {discs.map((disc, index) => (
-              <RadialGradient key={disc.role} id={`${key}aurora${index}`} gradientUnits="userSpaceOnUse" cx={disc.cx} cy={disc.cy} r={disc.r} fx={disc.cx} fy={disc.cy}>
-                {disc.stops.map((stop) => (
-                  <Stop key={stop.offset} offset={stop.offset} stopColor={tokens[disc.role]} stopOpacity={stop.opacity * layer} />
-                ))}
-              </RadialGradient>
-            ))}
-          </Defs>
-          {discs.map((disc, index) => <Circle key={disc.role} cx={disc.cx} cy={disc.cy} r={disc.r} fill={`url(#${key}aurora${index})`} />)}
-        </Svg>
-      ) : null}
+      {box ? discs.map((disc, index) => <DriftingDisc key={disc.role} disc={disc} index={index} width={box.width} color={tokens[disc.role] ?? tokens.primary} opacity={layer} id={`${key}aurora${index}`} />) : null}
     </View>
   );
 }

@@ -1,3 +1,4 @@
+import { SectionVignette } from "../ui/showcase/section-vignette";
 import { useState } from "react";
 import { PLATFORM_COPY } from "../data/platform-copy";
 import {
@@ -35,7 +36,7 @@ import {
   useFormFactor,
 } from "@nannier/canvas";
 import { COMPONENTS } from "../core/data/components";
-import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
+import { ShowcaseCard, ShowcaseGrid } from "../ui/showcase";
 import { ActionSheetScene, AlertDialogScene, CommandScene, DialogScene, DrawerScene, PopoverScene, WizardScene } from "../ui/showcase/stage-scene";
 
 // The Overlays & feedback section page (`Canvas v4.0.0 Overlays.dc.html`): its hero
@@ -50,27 +51,9 @@ import { ActionSheetScene, AlertDialogScene, CommandScene, DialogScene, DrawerSc
 // anchored overlay becomes a sheet along the bottom of the window (the kit's AO-6
 // presentation), so there it stays closed.
 
-/** The hero's still frame: the invite dialog at the point the loop holds it open. */
+/** The animated hero: the invite dialog at the point the loop holds it open. */
 export function Vignette() {
-  return (
-    <VignetteStage>
-      <Dialog
-        form
-        open
-        embedded
-        title="Invite teammates"
-        description="They get edit access to this board only."
-        footer={(
-          <Row end snug>
-            <Button ghost small>Cancel</Button>
-            <Button primary small>Send invites</Button>
-          </Row>
-        )}
-      >
-        <Input label="Email" defaultValue="noor@nannier.com" />
-      </Dialog>
-    </VignetteStage>
-  );
+  return <SectionVignette kind="overlays" />;
 }
 
 function DialogCard() {

@@ -20,7 +20,7 @@ Audit checklist for `/components/action-sheet`. The facts block and the variants
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (dialog) |
-| Interaction states | recipes: focus on Default inside the overlay it opens (web row; desktop), pressed on Default inside the overlay it opens (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop), disabled on Disabled action inside the overlay it opens (web row; desktop). |
+| Interaction states | recipes: focus on Default inside the overlay it opens (web row; desktop), focus on Open in place (web row; desktop), pressed on Default inside the overlay it opens (web row; desktop), pressed on Open in place (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop), disabled on Disabled action inside the overlay it opens (web row; desktop), disabled on Open in place (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: rows are 48/52 tall by skin |
 | Tests importing it | 18: `test/action-sheet-look.test.ts`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/disclosure.test.tsx`, `test/escape-layers.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/hardware-back.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-android-names.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/scrim-frost.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-glass-contract.test.tsx` |
@@ -41,6 +41,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `destructiveaction` | Destructive action | [ ] | [ ] | [ ] |  |
 | `disabledaction` | Disabled action | [ ] | [ ] | [ ] |  |
 | `controlled` | Controlled | [ ] | [ ] | [ ] |  |
+| `openinplace` | Open in place | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

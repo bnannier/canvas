@@ -42,6 +42,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `responsivevertical` | Responsive vertical | [ ] | [ ] | [ ] |  |
 | `badgecounts` | Badge counts | [ ] | [ ] | [ ] |  |
 | `disabledtab` | Disabled tab | [ ] | [ ] | [ ] |  |
+| `leadingglyphs` | Leading glyphs | [ ] | [ ] | [ ] |  |
 | `block` | Block | [ ] | [ ] | [ ] |  |
 | `scrollableoverflow` | Scrollable overflow | [ ] | [ ] | [ ] |  |
 | `wrappedoverflow` | Wrapped overflow | [ ] | [ ] | [ ] |  |

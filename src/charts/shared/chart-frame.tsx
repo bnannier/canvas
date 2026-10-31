@@ -1,10 +1,31 @@
 import { useState, type ReactNode } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, type ViewProps } from "react-native";
 import Svg, { Line } from "react-native-svg";
-import { View, Text, useTheme, FILL, type ViewStyle } from "../../style/index.js";
+import {
+  View,
+  Text,
+  useTheme,
+  FILL,
+  type ViewStyle,
+} from "../../style/index.js";
+import {
+  CHART_PRESENTATIONS,
+  useChartPresentation,
+  type ChartPresentationKind,
+} from "./chart-presentation.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { CHART_LOOK, axisLabel } from "./charts.styles.js";
 import { ScrubSurface } from "./chart-inspect.js";
-import { bandScale, estimateTextWidth, formatAxis, linearScale, niceTicks, pointScale, quarterTicks, type Band } from "./chart-math.js";
+import {
+  bandScale,
+  estimateTextWidth,
+  formatAxis,
+  linearScale,
+  niceTicks,
+  pointScale,
+  quarterTicks,
+  type Band,
+} from "./chart-math.js";
 
 // The shared cartesian plot frame for the Chart family's SVG types (line,
 // area, scatter): it measures its width, sizes a y-axis gutter from the tick
@@ -32,6 +53,9 @@ export interface CartesianLayout {
   yMax: number;
   /** The hand-off's drawing scale: its 360-unit viewBox width over the frame's (1 without `aspect`). */
   scale: number;
+  /** Authored specimen viewport before an SVG meet inset. */
+  viewportWidth?: number;
+  plotOffsetX?: number;
 }
 
 export interface CartesianFrameProps {
@@ -77,6 +101,8 @@ export interface CartesianFrameProps {
    * whose web path leaks RN responder props onto DOM nodes.
    */
   onBandScrub?: (index: number | null) => void;
+  /** Internal specimen hover feedback; independent of the scrub selection. */
+  plotHoverProps?: (layout: CartesianLayout) => Pick<ViewProps, "onPointerMove" | "onPointerLeave">;
   /**
    * The inspected category: its guide is drawn through the plot (unless `noGuide`) and its
    * x label is set in the card ink, shown even where the axis thins its neighbours out.
@@ -105,15 +131,46 @@ const VIEW_RIGHT = 8;
 const MIN_X_SLOT = 44;
 
 export function CartesianFrame(props: CartesianFrameProps) {
-  const { yExtent, xLabels, xDomain, plotHeight, compact, hideGrid, hideAxes, children, overlay, onBandScrub, selectedBand, noGuide } = props;
+  const presentation = useChartPresentation();
+  return presentation ? (
+    <PresentedFrame {...props} onBandScrub={props.onBandScrub} kind={presentation.kind} />
+  ) : (
+    <DefaultCartesianFrame {...props} onBandScrub={props.onBandScrub} />
+  );
+}
+
+function DefaultCartesianFrame(props: CartesianFrameProps) {
+  const {
+    yExtent,
+    xLabels,
+    xDomain,
+    plotHeight,
+    compact,
+    hideGrid,
+    hideAxes,
+    children,
+    overlay,
+    onBandScrub,
+    selectedBand,
+    noGuide,
+  } = props;
   const { tokens } = useTheme();
   const [width, setWidth] = useState(0);
 
   const formatValue = props.formatValue ?? formatAxis;
-  const { ticks, niceMin, niceMax } = quarterTicks(yExtent[0], yExtent[1], props.yExact);
+  const { ticks, niceMin, niceMax } = quarterTicks(
+    yExtent[0],
+    yExtent[1],
+    props.yExact
+  );
   // The hand-off's chart is an SVG drawn at the frame's width: every length scales with it,
   // until the plot reaches the density's height.
-  const aspectPlot = props.aspect && width > 0 ? Math.round((width * VIEW_H) / VIEW_W) - TOP_PAD - (hideAxes ? 0 : X_BAND) : null;
+  const aspectPlot =
+    props.aspect && width > 0
+      ? Math.round((width * VIEW_H) / VIEW_W) -
+        TOP_PAD -
+        (hideAxes ? 0 : X_BAND)
+      : null;
 
   // Y gutter: widest tick label (estimated - RN has no synchronous text
   // measurement) plus breathing room, clamped so an extreme label cannot eat
@@ -123,16 +180,32 @@ export function CartesianFrame(props: CartesianFrameProps) {
   // an axis of five or more ticks names the even ones counted from the bottom.
   const labelled = (i: number): boolean => ticks.length < 5 || i % 2 === 0;
   const axisInk = axisLabel(tokens);
-  const widest = labels.reduce((m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)), 0);
-  const plotH = aspectPlot != null ? Math.max(48, Math.min(plotHeight, aspectPlot)) : plotHeight;
-  const scale = props.aspect ? (plotH + TOP_PAD + (hideAxes ? 0 : X_BAND)) / VIEW_H : 1;
-  const gutter = hideAxes ? 0 : Math.min(64, Math.max(props.aspect ? VIEW_GUTTER * scale : 24, Math.ceil(widest) + 8));
+  const widest = labels.reduce(
+    (m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)),
+    0
+  );
+  const plotH =
+    aspectPlot != null
+      ? Math.max(48, Math.min(plotHeight, aspectPlot))
+      : plotHeight;
+  const scale = props.aspect
+    ? (plotH + TOP_PAD + (hideAxes ? 0 : X_BAND)) / VIEW_H
+    : 1;
+  const gutter = hideAxes
+    ? 0
+    : Math.min(
+        64,
+        Math.max(props.aspect ? VIEW_GUTTER * scale : 24, Math.ceil(widest) + 8)
+      );
 
   // The grid stops short of the frame's right edge, as the hand-off's does; the marks may
   // reach into that margin (a band centred near the edge).
   const rightPad = props.aspect ? VIEW_RIGHT * scale : 0;
   const plotW = Math.max(0, width - gutter - rightPad);
-  const insetBottom = Math.max(0, Math.min(props.plotInsetBottom ?? 0, plotH - 24));
+  const insetBottom = Math.max(
+    0,
+    Math.min(props.plotInsetBottom ?? 0, plotH - 24)
+  );
 
   const y = linearScale(niceMin, niceMax, plotH - insetBottom, 0);
 
@@ -142,35 +215,81 @@ export function CartesianFrame(props: CartesianFrameProps) {
   const band: Band | null = !xLabels
     ? null
     : props.xPoints
-      ? pointScale(xLabels.length, 0, plotW)
-      : bandScale(xLabels.length, inset, Math.max(inset, plotW + rightPad - inset), 0, 0);
-  const xTicksInfo = xDomain ? niceTicks(xDomain[0], xDomain[1], compact ? 3 : 5) : null;
-  const x = xTicksInfo ? linearScale(xTicksInfo.niceMin, xTicksInfo.niceMax, 0, plotW) : (v: number) => v;
+    ? pointScale(xLabels.length, 0, plotW)
+    : bandScale(
+        xLabels.length,
+        inset,
+        Math.max(inset, plotW + rightPad - inset),
+        0,
+        0
+      );
+  const xTicksInfo = xDomain
+    ? niceTicks(xDomain[0], xDomain[1], compact ? 3 : 5)
+    : null;
+  const x = xTicksInfo
+    ? linearScale(xTicksInfo.niceMin, xTicksInfo.niceMax, 0, plotW)
+    : (v: number) => v;
 
-  const layout: CartesianLayout = { plotW, plotH, y, x, band, yTicks: ticks, yMin: niceMin, yMax: niceMax, scale };
+  const layout: CartesianLayout = {
+    plotW,
+    plotH,
+    y,
+    x,
+    band,
+    yTicks: ticks,
+    yMin: niceMin,
+    yMax: niceMax,
+    scale,
+  };
 
   // Categorical labels collide on narrow plots: render every kth label so a
   // label never overflows its band step.
   let xLabelStep = 1;
   if (xLabels && band && xLabels.length > 0 && band.step > 0) {
-    const widestX = xLabels.reduce((m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)), 0);
-    xLabelStep = Math.max(1, Math.ceil(Math.max(widestX + 6, xLabels.length > 8 ? MIN_X_SLOT : 0) / band.step));
+    const widestX = xLabels.reduce(
+      (m, l) => Math.max(m, estimateTextWidth(l, LABEL_SIZE)),
+      0
+    );
+    xLabelStep = Math.max(
+      1,
+      Math.ceil(
+        Math.max(widestX + 6, xLabels.length > 8 ? MIN_X_SLOT : 0) / band.step
+      )
+    );
   }
   // The inspected category's label is always shown, in the card ink (the section cards set
   // the selected month in `--tx`); a thinned label it would run into steps aside for it.
-  const selectedLabel = xLabels && band && selectedBand != null && xLabels[selectedBand] != null ? selectedBand : null;
+  const selectedLabel =
+    xLabels && band && selectedBand != null && xLabels[selectedBand] != null
+      ? selectedBand
+      : null;
   const xLabelShown = (i: number): boolean => {
     if (i === selectedLabel) return true;
     if (i % xLabelStep !== 0) return false;
-    if (selectedLabel == null || selectedLabel % xLabelStep === 0 || !xLabels || !band) return true;
+    if (
+      selectedLabel == null ||
+      selectedLabel % xLabelStep === 0 ||
+      !xLabels ||
+      !band
+    )
+      return true;
     const gap = Math.abs(band.center(i) - band.center(selectedLabel));
-    return gap >= (estimateTextWidth(xLabels[i], LABEL_SIZE) + estimateTextWidth(xLabels[selectedLabel], LABEL_SIZE)) / 2 + 6;
+    return (
+      gap >=
+      (estimateTextWidth(xLabels[i], LABEL_SIZE) +
+        estimateTextWidth(xLabels[selectedLabel], LABEL_SIZE)) /
+        2 +
+        6
+    );
   };
 
   const ready = width > 0 && plotW > 0;
 
   return (
-    <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ width: "100%" }}>
+    <View
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={{ width: "100%" }}
+    >
       <View style={{ height: TOP_PAD + plotH + (hideAxes ? 0 : X_BAND) }}>
         {ready ? (
           <>
@@ -192,35 +311,85 @@ export function CartesianFrame(props: CartesianFrameProps) {
                     >
                       {labels[i]}
                     </Text>
-                  ) : null,
+                  ) : null
                 )
               : null}
 
             {/* The plot: gridlines, baseline, then the mark layer. */}
-            <View style={{ position: "absolute", left: gutter, top: TOP_PAD, width: plotW + rightPad, height: plotH }}>
+            <View
+              style={{
+                position: "absolute",
+                left: gutter,
+                top: TOP_PAD,
+                width: plotW + rightPad,
+                height: plotH,
+              }}
+            >
               <Svg width={plotW + rightPad} height={plotH}>
                 {/* The hand-off's grid: dotted 2 4 hairlines, the bottom line solid. */}
                 {!hideGrid
                   ? ticks.map((t, i) => (
-                      <Line key={`g${i}`} x1={0} y1={y(t)} x2={plotW} y2={y(t)} stroke={tokens.border} strokeWidth={1} strokeDasharray={i === 0 ? undefined : CHART_LOOK.gridDash} />
+                      <Line
+                        key={`g${i}`}
+                        x1={0}
+                        y1={y(t)}
+                        x2={plotW}
+                        y2={y(t)}
+                        stroke={tokens.border}
+                        strokeWidth={1}
+                        strokeDasharray={
+                          i === 0 ? undefined : CHART_LOOK.gridDash
+                        }
+                      />
                     ))
                   : null}
                 {/* The hand-off draws horizontal gridlines only, on a numeric x axis too. */}
                 {/* Baseline hairline, kept even when the grid is hidden. */}
-                {!hideAxes ? <Line x1={0} y1={plotH - 0.5} x2={plotW} y2={plotH - 0.5} stroke={tokens.border} strokeWidth={1} /> : null}
+                {!hideAxes ? (
+                  <Line
+                    x1={0}
+                    y1={plotH - 0.5}
+                    x2={plotW}
+                    y2={plotH - 0.5}
+                    stroke={tokens.border}
+                    strokeWidth={1}
+                  />
+                ) : null}
                 {/* Selection guide through the inspected category: the section cards' dashed
                     3 4 line in the third ink. */}
                 {selectedBand != null && band && !noGuide ? (
-                  <Line x1={band.center(selectedBand)} y1={0} x2={band.center(selectedBand)} y2={plotH} stroke={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} strokeWidth={1} strokeDasharray={CHART_LOOK.guideDash} />
+                  <Line
+                    x1={band.center(selectedBand)}
+                    y1={0}
+                    x2={band.center(selectedBand)}
+                    y2={plotH}
+                    stroke={
+                      tokens["subtle-foreground"] ?? tokens["muted-foreground"]
+                    }
+                    strokeWidth={1}
+                    strokeDasharray={CHART_LOOK.guideDash}
+                  />
                 ) : null}
                 {children(layout)}
               </Svg>
               {/* Scrub-to-inspect hit layer, presentational (the plot's
                   accessible name already carries the data). */}
-              {onBandScrub && band && xLabels && xLabels.length > 0 && band.step > 0 ? (
+              {onBandScrub &&
+              band &&
+              xLabels &&
+              xLabels.length > 0 &&
+              band.step > 0 ? (
                 <ScrubSurface
                   indexAt={(x) =>
-                    Math.max(0, Math.min(xLabels.length - 1, props.xPoints ? Math.round(x / band.step) : Math.floor((x - inset) / band.step)))
+                    Math.max(
+                      0,
+                      Math.min(
+                        xLabels.length - 1,
+                        props.xPoints
+                          ? Math.round(x / band.step)
+                          : Math.floor((x - inset) / band.step)
+                      )
+                    )
                   }
                   selected={selectedBand ?? null}
                   onScrub={onBandScrub}
@@ -237,7 +406,13 @@ export function CartesianFrame(props: CartesianFrameProps) {
             {!hideAxes && xLabels && band
               ? xLabels.map((label, i) => {
                   if (!xLabelShown(i)) return null;
-                  const slot = i % xLabelStep === 0 ? band.step * xLabelStep : Math.max(band.step, estimateTextWidth(label, LABEL_SIZE) + 6);
+                  const slot =
+                    i % xLabelStep === 0
+                      ? band.step * xLabelStep
+                      : Math.max(
+                          band.step,
+                          estimateTextWidth(label, LABEL_SIZE) + 6
+                        );
                   return (
                     <Text
                       key={`xl${i}`}
@@ -248,7 +423,9 @@ export function CartesianFrame(props: CartesianFrameProps) {
                         top: TOP_PAD + plotH + 4,
                         textAlign: "center",
                         ...axisInk,
-                        ...(i === selectedLabel ? { color: tokens["card-foreground"] } : null),
+                        ...(i === selectedLabel
+                          ? { color: tokens["card-foreground"] }
+                          : null),
                       }}
                       numberOfLines={1}
                     >
@@ -288,3 +465,284 @@ export function CartesianFrame(props: CartesianFrameProps) {
  * geometry measures that width; it never carries a standard width of its own.
  */
 export const CHART_ROOT: ViewStyle = FILL;
+
+/** Authored room specimens use the same scales, SVG marks and scrub surface. */
+function PresentedFrame(
+  props: CartesianFrameProps & { kind: ChartPresentationKind }
+) {
+  const { tokens } = useTheme();
+  const [width, setWidth] = useState(0);
+  const profile = CHART_PRESENTATIONS[props.kind];
+  const height = props.kind === "candlestick" ? 210 : profile.height;
+  const axisBelow = [
+    "chart",
+    "range",
+    "histogram",
+    "depth",
+    "candlestick",
+  ].includes(props.kind);
+  const belowHeight = axisBelow ? (props.kind === "chart" ? 29 : 27) : 0;
+  const top = props.kind === "chart" ? 32 : 0;
+  const outerW = props.kind === "candlestick" ? Math.max(0, width - 56) : width;
+  const fit = profile.meet ? Math.min(outerW / profile.width, 1) : 1;
+  const plotW = profile.meet ? profile.width * fit : outerW;
+  // These source SVGs (or their containing wells) include a 1px bottom
+  // border in their declared height. Their measured viewBox viewport is
+  // therefore 179/180 or 139/140 tall; the border stays outside the marks.
+  const borderedPlot = ["line", "area", "range", "composed", "histogram", "depth"].includes(props.kind);
+  const viewportH = profile.meet ? profile.height * fit : height;
+  const plotH = viewportH - (borderedPlot ? 1 : 0);
+  const left = (outerW - plotW) / 2;
+  const offsetY = profile.meet ? (height - viewportH) / 2 : 0;
+  const sx = plotW / profile.width;
+  const sy = plotH / profile.height;
+  const extents: Partial<Record<ChartPresentationKind, [number, number]>> = {
+    line: [0, 180],
+    box: [0, 150],
+    area: [0, 140],
+    range: [0, 140],
+    composed: [0, 140],
+    histogram: [0, 87.5],
+    scatter: [0, 450],
+    depth: [0, 140],
+    chart: [0, 1204],
+  };
+  const [yMin, yMax] = extents[props.kind] ?? props.yExtent;
+  const baseline =
+    props.kind === "waterfall"
+      ? 130 * sy
+      : props.kind === "chart"
+      ? plotH - 9
+      : plotH;
+  const y =
+    props.kind === "candlestick"
+      ? (v: number) => ((42600 - v) / 10) * sy
+      : props.kind === "waterfall"
+      ? (v: number) => (130 - v * 0.7) * sy
+      : linearScale(yMin, yMax, baseline, 0);
+  const domains: Partial<Record<ChartPresentationKind, [number, number]>> = {
+    histogram: [110, 250],
+    scatter: [0, 7],
+    depth: [41980, 42230],
+  };
+  const [xMin, xMax] = domains[props.kind] ?? props.xDomain ?? [0, plotW];
+  const x = linearScale(xMin, xMax, 0, plotW);
+  let band: Band | null = props.xLabels
+    ? props.xPoints
+      ? pointScale(props.xLabels.length, 0, plotW)
+      : bandScale(props.xLabels.length, 0, plotW, 0, 0)
+    : null;
+  if (props.kind === "chart" && props.xLabels) {
+    const bw = (plotW - (props.xLabels.length - 1) * 8) / props.xLabels.length;
+    const basic = bandScale(props.xLabels.length, 0, plotW, 0, 0);
+    band = {
+      ...basic,
+      step: bw + 8,
+      center: (i: number) => bw / 2 + i * (bw + 8),
+    };
+  }
+  if (props.kind === "waterfall" && props.xLabels) {
+    const basic = bandScale(props.xLabels.length, 0, plotW, 0, 0);
+    band = {
+      ...basic,
+      step: 46 * sx,
+      center: (i: number) => (28 + 46 * i) * sx,
+    };
+  }
+  const layout: CartesianLayout = {
+    plotW,
+    plotH,
+    y,
+    x,
+    band,
+    yTicks: [],
+    yMin,
+    yMax,
+    scale: profile.meet ? fit : 1,
+    viewportWidth: outerW,
+    plotOffsetX: left,
+  };
+  const ink = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
+  const axis = {
+    fontFamily: MONO_FONT,
+    fontSize: CHART_LOOK.axisSize,
+    lineHeight: 13,
+    color: ink,
+  } as const;
+  const below =
+    props.kind === "range"
+      ? ["Jan", "Apr", "Aug", "Dec"]
+      : props.kind === "histogram"
+      ? ["110 ms", "180", "250 ms"]
+      : props.kind === "depth"
+      ? ["41,980", "42,105", "42,230"]
+      : props.kind === "candlestick"
+      ? ["09:30", "11:00", "12:30", "14:00", "15:30"]
+      : [];
+  return (
+    <View
+      onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+      style={{ width: "100%", height: top + height + belowHeight }}
+    >
+      {width > 0 ? (
+        <>
+          <View
+            style={{
+              position: "absolute",
+              left,
+              top: top + offsetY,
+              width: plotW,
+              height: viewportH,
+            }}
+          >
+            <Svg width={plotW} height={viewportH}>
+              {!props.hideGrid
+                ? profile.grid.map((gy, i) => (
+                    <Line
+                      key={i}
+                      x1={0}
+                      x2={plotW}
+                      y1={gy * sy}
+                      y2={gy * sy}
+                      stroke={tokens.border}
+                      strokeWidth={profile.meet ? fit : 1}
+                      strokeDasharray={
+                        props.kind === "box" && i === 0 ? "2,4" : undefined
+                      }
+                    />
+                  ))
+                : null}
+              {props.kind === "scatter" && !props.hideGrid
+                ? [70, 140, 210].map((gx) => (
+                    <Line
+                      key={gx}
+                      x1={gx * sx}
+                      x2={gx * sx}
+                      y1={0}
+                      y2={plotH}
+                      stroke={tokens.border}
+                      strokeWidth={fit}
+                    />
+                  ))
+                : null}
+              {[
+                "chart",
+                "line",
+                "area",
+                "range",
+                "composed",
+                "histogram",
+                "depth",
+              ].includes(props.kind) ? (
+                <Line
+                  x1={0}
+                  x2={plotW}
+                  y1={viewportH - 0.5}
+                  y2={viewportH - 0.5}
+                  stroke={tokens.border}
+                />
+              ) : null}
+              {props.selectedBand != null &&
+              band &&
+              !props.noGuide &&
+              ["range", "candlestick"].includes(props.kind) ? (
+                <Line
+                  x1={band.center(props.selectedBand)}
+                  x2={band.center(props.selectedBand)}
+                  y1={0}
+                  y2={plotH}
+                  stroke={ink}
+                  strokeDasharray="3,4"
+                />
+              ) : null}
+              {props.children(layout)}
+            </Svg>
+            {props.onBandScrub && band && props.xLabels?.length ? (
+              <ScrubSurface
+                indexAt={(px) =>
+                  Math.max(
+                    0,
+                    Math.min(
+                      props.xLabels!.length - 1,
+                      props.xPoints
+                        ? Math.round(px / band!.step)
+                        : Math.floor(px / band!.step)
+                    )
+                  )
+                }
+                selected={props.selectedBand ?? null}
+                onScrub={props.onBandScrub}
+                hoverProps={props.plotHoverProps?.(layout)}
+                style={StyleSheet.absoluteFill}
+              />
+            ) : null}
+            {props.overlay?.(layout)}
+          </View>
+          {below.length ? (
+            <View
+              style={{
+                position: "absolute",
+                left: 0,
+                right: props.kind === "candlestick" ? 56 : 0,
+                top: top + height + 14,
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              {below.map((label, i) => (
+                <Text
+                  key={i}
+                  style={[
+                    axis,
+                    props.kind === "depth" && i === 1
+                      ? { color: tokens.foreground }
+                      : null,
+                  ]}
+                >
+                  {label}
+                </Text>
+              ))}
+            </View>
+          ) : null}
+          {props.kind === "chart" && band
+            ? props.xLabels?.map((label, i) => (
+                <Text
+                  key={i}
+                  style={[
+                    axis,
+                    {
+                      position: "absolute",
+                      top: top + height + 16,
+                      left: band!.center(i) - band!.step / 2,
+                      width: band!.step,
+                      textAlign: "center",
+                      color: i === props.selectedBand ? tokens.foreground : ink,
+                    },
+                  ]}
+                >
+                  {label}
+                </Text>
+              ))
+            : null}
+          {props.kind === "candlestick" ? (
+            <View
+              style={{
+                position: "absolute",
+                top: 20,
+                right: 0,
+                height: 136,
+                justifyContent: "space-between",
+              }}
+            >
+              {["42,600", "42,300", "42,000"].map((label) => (
+                <Text key={label} style={[axis, { textAlign: "right" }]}>
+                  {label}
+                </Text>
+              ))}
+            </View>
+          ) : null}
+        </>
+      ) : null}
+    </View>
+  );
+}

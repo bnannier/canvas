@@ -1,7 +1,7 @@
 import type { ReactNode, Ref } from "react";
 import { Platform } from "react-native";
 import { View, Grid, Card, CardMedia, CardContent, CardSeparator, Column, Typography, InteractionOverride, CodeBlock } from "@nannier/canvas";
-import type { DocExample, DocProse, ExampleScope } from "../../core/scope";
+import type { DocExample, ExampleScope } from "../../core/scope";
 import type { DetailSpec } from "../../core/data/detail-specs";
 import { ExampleErrorBoundary, FitStage } from "../stage";
 import { Prose } from "../prose";
@@ -32,16 +32,12 @@ export function Well({ compact, tall, pinsRing, code, children }: { compact?: bo
   );
 }
 
-export function VariantsSection({ examples, path, note, scope, selected, sectionRef }: {
+export function VariantsSection({ examples, path, scope, sectionRef }: {
   /** The page's examples after the first (the Usage example, shown in Usage). */
   examples: readonly { example: DocExample; index: number }[];
   /** The .md the examples come from, for the note. */
   path: string;
-  /** The .md's prose before its first variant: a note on every example. */
-  note?: DocProse[];
   scope: ExampleScope;
-  /** The example the Platform skins section shows, marked here. */
-  selected: number;
   sectionRef?: Ref<View>;
 }) {
   return (
@@ -51,12 +47,11 @@ export function VariantsSection({ examples, path, note, scope, selected, section
       note={`${examples.length} examples from ${path}, each rendered live from its own JSX.`}
       sectionRef={sectionRef}
     >
-      {note?.length ? <Prose blocks={note} small subtle /> : null}
       <Grid minTileWidth={340} roomy>
-        {examples.map(({ example, index }) => (
+        {examples.map(({ example }) => (
           // The hand-off's variant card (line 182): `border:1px solid var(--ln);border-radius:18px;
           // overflow:hidden;background:var(--sf)`, no shadow.
-          <Card key={example.label} flush clip largeCorners outlined selected={index === selected}>
+          <Card key={example.label} flush clip largeCorners outlined>
             <Well code={example.code}>{example.render(scope)}</Well>
             <CardSeparator />
             <CardContent cozy>

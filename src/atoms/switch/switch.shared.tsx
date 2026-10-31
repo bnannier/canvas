@@ -3,9 +3,10 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { Pressable, View, Text, useControllableState, useTheme, type ColorTokens, type ViewStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
+import { Pressable, View, Text, useControllableState, useTheme, type ColorTokens, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
 import { contrastStyle, PlainSurface } from "../../style/glass-surface/glass-surface.shared.js";
 import { useHover } from "../../style/hover.js";
+import { useReducedMotion } from "../../style/motion.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so colors follow light/dark.
@@ -38,6 +39,16 @@ export interface SwitchProps {
   // <!-- /only -->
   small?: boolean;
   large?: boolean;
+  /** A compact bordered capsule with its label after the switch, for a toolbar setting. */
+  chip?: boolean;
+  /**
+   * A row of a settings list: 10 px above and below the row, so a stack of switches reads
+   * as a list rather than a form (stack them in a `Column tight`). Pair with `divided` on
+   * every row after the first.
+   */
+  listed?: boolean;
+  /** A hairline above the row in the `border` ink: a settings list's separator from the row before. */
+  divided?: boolean;
   // State.
   disabled?: boolean;
   /** Optional label, rendered to the left of the track. */
@@ -71,6 +82,13 @@ export interface SwitchSkin extends TouchTargetSkin {
   thumb: (tokens: ColorTokens, checked: boolean, size: Size) => ViewStyle;
   /** The track's look under a hovering pointer (the web's glow on an on switch); omit for none. */
   hover?: (tokens: ColorTokens, checked: boolean, size: Size) => ViewStyle | null;
+  /** Compact toolbar form, where the platform offers one. */
+  chip?: {
+    root: (tokens: ColorTokens) => ViewStyle;
+    track: (tokens: ColorTokens, checked: boolean) => ViewStyle;
+    thumb: (tokens: ColorTokens, checked: boolean) => ViewStyle;
+    label: (tokens: ColorTokens, checked: boolean) => TextStyle;
+  };
 }
 
 // The hand-off's switch row: a 500 14px title over a 12px description in the subtle ink,
@@ -83,6 +101,9 @@ const DISABLED_OPACITY = 0.4;
 // The label takes the space left by the fixed-size track and wraps within it.
 // Without shrink, a long description makes the whole switch wider than its parent.
 const TEXT_COLUMN: ViewStyle = { flexShrink: 1, minWidth: 0 };
+// The settings-list row (the Controls page's switch list, `c-switch`: `padding:10px 0` on
+// each row, `border-top:1px solid var(--ln)` on every row after the first).
+const LISTED: ViewStyle = { paddingVertical: 10 };
 
 /** Build a Switch component from a platform skin.
  * @ref Ref to the interactive switch row, including its label. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
@@ -93,6 +114,7 @@ export function createSwitch(skin: SwitchSkin) {
     const { onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
     const theme = useTheme();
     const { tokens, dark } = theme;
+    const reducedMotion = useReducedMotion();
     const size = sizeOf(props);
     // A switch is a small mark inside content, not a surface: it draws the skin's own track
     // and knob in every mode, glass included, with no pane and no rim on any platform, its
@@ -109,10 +131,11 @@ export function createSwitch(skin: SwitchSkin) {
         onValueChange?.(next);
       },
     );
-    const { hovered, target: hoverTarget } = useHover(skin.hover != null && !disabled);
-    const trackShape = skin.track(tokens, dark, checked, size);
-    const trackHover = hovered ? skin.hover?.(tokens, checked, size) ?? null : null;
-    const thumbShape = skin.thumb(tokens, checked, size);
+    const chip = props.chip ? skin.chip : undefined;
+    const { hovered, target: hoverTarget } = useHover(skin.hover != null && !disabled && !chip);
+    const trackShape = chip ? chip.track(tokens, checked) : skin.track(tokens, dark, checked, size);
+    const trackHover = hovered && !chip ? skin.hover?.(tokens, checked, size) ?? null : null;
+    const thumbShape = chip ? chip.thumb(tokens, checked) : skin.thumb(tokens, checked, size);
 
     const handlePress = (_event: GestureResponderEvent) => {
       setChecked(!checked);
@@ -125,6 +148,12 @@ export function createSwitch(skin: SwitchSkin) {
     // track, the least the row renders at, so it is in place before the first layout
     // (src/style/touch-target-seed.ts).
     const target = useSeededMinTargetSlop(skin.minTarget, styleBox(trackShape));
+    const label = children != null || description != null ? (
+      <View style={TEXT_COLUMN}>
+        {children != null ? <Text style={[LABEL_TYPE, { color: tokens.foreground }, chip?.label(tokens, checked)]}>{children}</Text> : null}
+        {description != null ? <Text style={{ ...DESCRIPTION_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>{description}</Text> : null}
+      </View>
+    ) : null;
 
     return (
       <Pressable
@@ -147,24 +176,19 @@ export function createSwitch(skin: SwitchSkin) {
             gap: 24,
             alignItems: "center",
           },
+          props.listed ? LISTED : null,
+          props.divided ? { borderTopWidth: 1, borderColor: tokens.border } : null,
+          chip?.root(tokens),
           disabled ? { opacity: DISABLED_OPACITY } : null,
           pressed ? { opacity: 0.9 } : null,
           style,
         ]}
       >
-        {children != null || description != null ? (
-          <View style={TEXT_COLUMN}>
-            {children != null ? (
-              <Text style={{ ...LABEL_TYPE, color: tokens.foreground }}>{children}</Text>
-            ) : null}
-            {description != null ? (
-              <Text style={{ ...DESCRIPTION_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>{description}</Text>
-            ) : null}
-          </View>
-        ) : null}
+        {!chip ? label : null}
         <View style={contrastStyle(theme, trackHover ? { ...trackShape, ...trackHover } : trackShape)}>
-          <PlainSurface pointerEvents="none" style={contrastStyle(theme, thumbShape)} />
+          <PlainSurface pointerEvents="none" style={[contrastStyle(theme, thumbShape), reducedMotion ? { transitionDuration: "0ms" } as ViewStyle : null]} />
         </View>
+        {chip ? label : null}
       </Pressable>
     );
   });

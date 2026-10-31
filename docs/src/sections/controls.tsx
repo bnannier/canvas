@@ -1,3 +1,4 @@
+import { SectionVignette } from "../ui/showcase/section-vignette";
 import type { ReactNode } from "react";
 import { PLATFORM_COPY } from "../data/platform-copy";
 import {
@@ -8,7 +9,6 @@ import {
   BadgeGroup,
   Button,
   ButtonGroup,
-  Card,
   Checkbox,
   Chip,
   Column,
@@ -27,7 +27,7 @@ import {
   Typography,
 } from "@nannier/canvas";
 import { resolvePhoto } from "../core/photos";
-import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
+import { ShowcaseCard, ShowcaseGrid } from "../ui/showcase";
 
 // The Controls section page (`Canvas v4.0.0 Controls.dc.html`): its hero vignette and its
 // seven cards, composed of live kit controls with the hand-off's copy. Where the kit has
@@ -38,24 +38,9 @@ import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
 /** A bundled sample photo, resolved for the platform (docs/src/core/photos.ts). */
 const photo = (path: string) => resolvePhoto(path) as string | number | undefined;
 
-/** The hero's still frame: the vignette's panel in the reference image's state. */
+/** The animated hero: the vignette's panel in the reference image's state. */
 export function Vignette() {
-  return (
-    <VignetteStage>
-      <Card raised>
-        <Column cozy>
-          <Switch description="Frost on every pane">Glass surfaces</Switch>
-          <Divider />
-          <Slider defaultValue={0}>Glass intensity</Slider>
-          <Divider />
-          <Row between alignCenter cozy>
-            <Checkbox>Release notes</Checkbox>
-            <Button primary small>Save</Button>
-          </Row>
-        </Column>
-      </Card>
-    </VignetteStage>
-  );
+  return <SectionVignette kind="controls" />;
 }
 
 const INTENTS = ["primary", "secondary", "outline", "ghost", "destructive", "link"] as const;

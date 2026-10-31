@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from "react";
-import { AccessibilityInfo, StyleSheet } from "react-native";
+import { AccessibilityInfo, StyleSheet, type ViewProps } from "react-native";
 import { View, Text, useTheme, GlassPane, paneStyle, isGlass, inverseDenseTint, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { MONO_FONT } from "../../style/mono.js";
@@ -161,6 +161,8 @@ export interface ScrubSurfaceProps {
   selected: number | null;
   /** SET the selection (null clears). */
   onScrub: (index: number | null) => void;
+  /** Caller-owned pointer feedback shares the scrub host without selecting a datum. */
+  hoverProps?: Pick<ViewProps, "onPointerMove" | "onPointerLeave">;
   style?: LayoutStyle;
 }
 
@@ -197,7 +199,7 @@ export function scrubEvent(
   return { gesture, select: undefined };
 }
 
-export function ScrubSurface({ indexAt, selected, onScrub, style }: ScrubSurfaceProps) {
+export function ScrubSurface({ indexAt, selected, onScrub, hoverProps, style }: ScrubSurfaceProps) {
   // Gesture bookkeeping in a ref: the surface never re-renders for it.
   const gesture = useRef<ScrubGesture>({ index: null, wasSelected: false, moved: false });
 
@@ -212,6 +214,7 @@ export function ScrubSurface({ indexAt, selected, onScrub, style }: ScrubSurface
   return (
     <View
       accessible={false}
+      {...hoverProps}
       onStartShouldSetResponder={() => true}
       onResponderGrant={handle("grant")}
       onResponderMove={handle("move")}

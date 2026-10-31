@@ -104,6 +104,12 @@ export interface StepperProps {
    * The star takes effect only alongside `label`.
    */
   required?: boolean;
+  /**
+   * A unit or note beside the control, 16 px after it on the same line ("× 4px",
+   * "items"): a string is set in the 400 13 px subtle ink, a node as it is. Unlike
+   * `description`, it reads as part of the value's line.
+   */
+  suffix?: ReactNode;
   // Size (pick one; default is the medium control). Precedence: large > small.
   small?: boolean;
   large?: boolean;
@@ -171,6 +177,8 @@ export interface StepperSkin {
   labelAbove: (t: ColorTokens, size: Size) => TextStyle;
   /** The secondary description line under the control (per-OS supporting-text type). */
   description: (t: ColorTokens, size: Size) => TextStyle;
+  /** A string `suffix`'s type beside the control. */
+  suffix: (t: ColorTokens) => TextStyle;
 }
 
 // Size precedence when more than one is passed: first match wins (large > small).
@@ -181,6 +189,10 @@ export function sizeOf(p: StepperProps): Size {
 }
 
 /** Build a Stepper component from a platform skin. */
+// The `suffix` beside the control (the Controls page's stepper, `c-slider`: `display:flex;
+// align-items:center;gap:16px` around the control and its `× 4px`).
+const SUFFIX: ViewStyle = { marginStart: 16 };
+
 export function createStepper(skin: StepperSkin) {
   const Stepper = forwardRef<RNTextInput, StepperProps>(function Stepper(props, ref) {
     const {
@@ -510,6 +522,11 @@ export function createStepper(skin: StepperSkin) {
             {groupSurface?.border}
           </View>
         )}
+        {props.suffix != null ? (
+          <View style={SUFFIX}>
+            {typeof props.suffix === "string" || typeof props.suffix === "number" ? <Text style={[skin.suffix(tokens), disabledInk]}>{props.suffix}</Text> : props.suffix}
+          </View>
+        ) : null}
       </View>
     );
 

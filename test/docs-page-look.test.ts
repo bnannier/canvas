@@ -1,3 +1,5 @@
+import { createElement } from "react";
+import { render, cleanup } from "@testing-library/react";
 import { describe, expect, it } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -83,10 +85,13 @@ describe("the grain", () => {
     expect(layer).not.toContain("mix-blend-mode");
   });
 
-  it("is baked: the committed PNGs are the bake of this table", async () => {
+  it("preserves the source-noise bake independently of the runtime gray film", async () => {
     const manifest = JSON.parse(readFileSync(join(IMAGES, "grain.bake.json"), "utf8"));
     expect(manifest.svg).toBe(grainSvg());
+    // The retained PNGs record the authored SVG, with the observed runtime film
+    // recorded as provenance alongside the procedural recipe.
     expect(manifest.grain).toEqual(JSON.parse(JSON.stringify(GRAIN)));
+    expect(GRAIN.renderedColor).toBe("rgba(187,187,187,0.5019607843137255)");
     expect(Object.keys(manifest.files).sort()).toEqual(GRAIN.scales.map((s) => (s === 1 ? "grain.png" : `grain@${s}x.png`)).sort());
     for (const [name, want] of Object.entries(manifest.files) as [string, { scale: number; sha256: string }][]) {
       const { data, info } = await sharp(readFileSync(join(IMAGES, name))).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -94,6 +99,27 @@ describe("the grain", () => {
       expect(createHash("sha256").update(data).digest("hex"), name).toBe(want.sha256);
     }
   });
+
+  it("renders the observed uniform film in both schemes", async () => {
+    // The docs tsconfig resolves its public import to src; use that same context.
+    const { ThemeProvider } = await import("../src/style/theme.tsx");
+    const { PageGrain } = await import("../docs/src/shell/page-backdrop.tsx");
+    const { channelsOf } = await import("../src/style/color.ts");
+    for (const scheme of ["light", "dark"] as const) {
+      const { container } = render(createElement(ThemeProvider, { scheme }, createElement(PageGrain)));
+      try {
+        const layer = container.firstElementChild as HTMLElement;
+        const color = channelsOf(layer.style.backgroundColor)!;
+        expect(color.slice(0, 3)).toEqual([187, 187, 187]);
+        expect(color[3]).toBeCloseTo(128 / 255, 2);
+        expect(layer.style.opacity).toBe(String(grainOpacity(scheme)));
+        expect(layer.style.pointerEvents).toBe("none");
+        expect(layer.style.zIndex).toBe(String(GRAIN.zIndex));
+        expect(layer.querySelector("img")).toBeNull();
+      } finally { cleanup(); }
+    }
+  });
+
 });
 
 describe("the scrollbars", () => {

@@ -4,8 +4,8 @@ import { ThemeProvider, useTheme, type ThemeTokenOverrides } from "../src/style/
 import { colorsByScheme } from "../src/style/tokens.ts";
 import { statusColors } from "../src/style/status.ts";
 
-// The success and warning text roles are solved from the hand-off's status colours
-// (tools/v4/derive-inks.ts), so a brand that overrides a status colour must repaint its text
+// The success and warning text roles alias the hand-off's status colours,
+// so a brand that overrides a status colour must repaint its text
 // too, the way an overriding `destructive` repaints `destructive-text`; an explicit text
 // role wins, and an undefined one is an omission.
 
@@ -24,7 +24,7 @@ function inks(tokens: ThemeTokenOverrides) {
 }
 
 describe("status text roles", () => {
-  it("default to the solved inks", () => {
+  it("default to the hand-off status inks", () => {
     expect(inks({})).toEqual({ success: colorsByScheme.light["success-text"], warning: colorsByScheme.light["warning-text"] });
   });
 

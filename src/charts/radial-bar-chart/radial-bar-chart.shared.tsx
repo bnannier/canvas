@@ -1,23 +1,27 @@
+import { compositionInspectProps } from "../pie-chart/composition-inspect.js";
 import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { View, Pressable, useTheme, useControllableState, devWarn, type LayoutStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, devWarn, type LayoutStyle } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
+import { CHART_LOOK } from "../shared/charts.styles.js";
 import { seriesFill } from "../shared/charts.styles.js";
 import { type StackedSegment } from "../shared/types.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { formatCompact } from "../shared/chart-math.js";
 
 // RadialBarChart is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
 //
-// RadialBarChart: concentric arc rings, one per category, innermost first.
+// RadialBarChart: concentric arc rings, one per category, outermost first.
 // Each ring pairs a muted full-circle track with a ramp-colored value arc
 // revealed clockwise from 12 o'clock (the ProgressRing anatomy, stacked),
 // with a column legend carrying the formatted values. Pressing a ring
 // selects it (the others dim); pressing outside the rings clears.
 
 export interface RadialBarChartProps {
-  /** One ring per entry, inner to outer. */
+  /** One ring per entry, outer to inner. */
   data: StackedSegment[];
   /** What the rings measure (e.g. "Platform activation"); leads the accessible name. */
   label?: string;
@@ -27,6 +31,8 @@ export interface RadialBarChartProps {
   compact?: boolean;
   /** Hide the value legend (the accessible name still carries every value). */
   hideLegend?: boolean;
+  /** A compact disc with a separate value column and shared maximum caption. */
+  detailed?: boolean;
   /** Formats legend values (data formatting, not styling). */
   formatValue?: (v: number) => string;
   /** Press-to-inspect: the selected ring index (controlled). Pass null for none. */
@@ -66,14 +72,14 @@ export function RadialBarChart(props: RadialBarChartProps) {
   const max = props.max != null && props.max > 0 ? props.max : Math.max(1, ...clean);
   const pctOf = (v: number): number => Math.round(Math.max(0, Math.min(1, v / max)) * 100);
 
-  const size = compact ? 120 : 160;
-  const stroke = compact ? 8 : 10;
+  const size = props.detailed ? 132 : compact ? 120 : 160;
+  const stroke = props.detailed ? 11 * 132 / 160 : compact ? 8 : 10;
   // The hand-off's rings sit 16 apart at a 10 stroke: a 6 px gap.
-  const gap = 6;
+  const gap = props.detailed ? 3 * 132 / 160 : 6;
   const center = size / 2;
   // The first series is the outermost ring, hugging the disc, and each next ring steps
   // inward (the renderer's `r = 74 - i * 16`).
-  const rOuter = center - stroke / 2;
+  const rOuter = props.detailed ? 64 * 132 / 160 : center - stroke / 2;
   const radiusOf = (i: number): number => rOuter - i * (stroke + gap);
 
   // Press-to-inspect: nearest ring by press radius, cleared elsewhere.
@@ -100,14 +106,14 @@ export function RadialBarChart(props: RadialBarChartProps) {
   const img = { accessibilityRole: "image", accessibilityLabel: name, "aria-label": name } as const;
 
   return (
-    <View testID={testID} style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 20 }, style]} {...(props.hideLegend ? img : {})}>
-      <View {...(props.hideLegend ? {} : img)} style={{ width: size, height: size }}>
+    <View testID={testID} style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: props.detailed ? 16 : 20 }, style]} {...(props.hideLegend ? { ...img, ...compositionInspectProps(data.length, selected, setSelected) } : {})}>
+      <View {...(props.hideLegend ? {} : { ...img, ...compositionInspectProps(data.length, selected, setSelected) })} style={{ width: size, height: size }}>
         <Svg width={size} height={size} style={{ position: "absolute" }}>
           {data.map((d, i) => {
             const r = radiusOf(i);
             if (r < stroke) return null;
             const dim = selected != null && selected !== i ? DIM_OPACITY : 1;
-            return <Path key={i} d={circlePath(center, center, r)} fill="none" stroke={tokens.muted} strokeWidth={stroke} opacity={dim} />;
+            return <Path key={i} d={circlePath(center, center, r)} fill="none" stroke={props.detailed ? tokens["surface-raised"] ?? tokens.muted : tokens.muted} strokeWidth={stroke} opacity={dim} />;
           })}
           {data.map((d, i) => {
             const r = radiusOf(i);
@@ -141,7 +147,16 @@ export function RadialBarChart(props: RadialBarChartProps) {
           style={StyleSheet.absoluteFill}
         />
       </View>
-      {props.hideLegend ? null : (
+      {props.hideLegend ? null : props.detailed ? (
+        <View style={{ flex: 1, minWidth: 100, gap: 8 }}>
+          {data.map((d, i) => <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View style={{ width: 8, height: 8, borderRadius: platformShape.web.cell, backgroundColor: seriesFill(tokens, i) }} />
+            <Text style={{ flex: 1, fontSize: 13, lineHeight: 16, color: tokens["muted-foreground"] }}>{d.label}</Text>
+            <Text style={{ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens.foreground }}>{formatValue(clean[i])}</Text>
+          </View>)}
+          <Text style={{ borderTopWidth: 1, borderTopColor: tokens.border, paddingTop: 6, fontFamily: MONO_FONT, fontSize: CHART_LOOK.legendCaptionSize, lineHeight: 14, color: tokens["subtle-foreground"] }}>max {formatValue(max)}</Text>
+        </View>
+      ) : (
         <ChartLegend
           flush
           items={data.map((d, i) => ({

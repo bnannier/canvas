@@ -15,7 +15,7 @@ import { badgeIntentOf } from "../src/atoms/badge/badge.shared.tsx";
 import { toneOf, leadingOf } from "../src/atoms/typography/typography.shared.tsx";
 import { SOLVED_INKS } from "../src/style/solved-inks.ts";
 import { lightColors, darkColors } from "../src/style/tokens.ts";
-import { channelsOf, contrastRatio } from "../src/style/color.ts";
+import { channelsOf } from "../src/style/color.ts";
 
 // The section cards' shared kit vocabulary (Canvas v4 section-page parity, wave 0): the
 // Chip link pill, the card roles and the `natural` line, the cyan and mint hue tones, the
@@ -64,17 +64,17 @@ describe("cyan and mint hue tones", () => {
     expect(badgeIntentOf({ cyan: true, mint: true })).toBe("cyan");
   });
 
-  it("paint the solved series ink, which clears 4.5:1 on the page in both schemes", () => {
+  it("paint the unadjusted hand-off series ink in both schemes", () => {
     const el = first(ui(<Typography caption cyan>a</Typography>).container);
     expect(sameColor(getComputedStyle(el).color, SOLVED_INKS.light.hues.cyan)).toBe(true);
     for (const [scheme, tokens] of [["light", lightColors], ["dark", darkColors]] as const) {
       for (const hue of ["cyan", "mint"] as const) {
-        expect(contrastRatio(SOLVED_INKS[scheme].hues[hue], tokens.background as string)).toBeGreaterThanOrEqual(4.5);
+        expect(SOLVED_INKS[scheme].hues[hue]).toBe(tokens[hue === "cyan" ? "chart-2" : "chart-3"]);
       }
     }
   });
 
-  it("a Badge mint draws the hue's wash under its solved ink", () => {
+  it("a Badge mint draws the hue's wash under its reference ink", () => {
     const { container } = ui(<Badge mint>fixed</Badge>);
     expect(painted(container, "color").some((c) => sameColor(c, SOLVED_INKS.light.hues.mint))).toBe(true);
     expect(painted(container, "backgroundColor").some((c) => (channelsOf(c)?.[3] ?? 1) < 1 && (channelsOf(c)?.[3] ?? 0) > 0)).toBe(true);

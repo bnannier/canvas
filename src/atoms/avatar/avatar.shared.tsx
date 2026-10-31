@@ -44,10 +44,18 @@ export type Shape = "circle" | "rounded";
 // null; iOS and web set `pressedOpacity` and leave `ripple` null, so the press
 // feedback never double-signals.
 export interface AvatarSkin {
+  /** Internal compound-control geometry; standalone Avatar keeps its public size scale. */
+  diameter?: Partial<Record<Size, number>>;
+  /** A compound control's exact identity paint, before the default readable wash. */
+  initialsPaint?: (hue: number) => { ink: string; wash: string };
   /** Corner radius for the `rounded` (square) shape per size; the circle is always 9999. */
   roundedRadius: Record<Size, number>;
   /** Initials type per size (weight / size / line-height / tracking). */
   labelType: Record<Size, TextStyle>;
+  /** The AvatarGroup "+N" label per size (the hand-off's 600 13px at the 40px disc). */
+  overflowType: Record<Size, TextStyle>;
+  /** The `online` presence dot per size: its diameter and its ring of the card. */
+  presence: (tokens: ColorTokens, size: number) => ViewStyle;
   /** Android ripple config for the pressable trigger (null where there is no ripple). */
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean }) | null;
   /** The press dim for the pressable trigger (the shell skips it on Android, where the ripple carries the press; see pressDim). */
@@ -114,6 +122,12 @@ export interface AvatarProps {
   rounded?: boolean;
   /** Separator outline, for avatars that overlap in a stack. */
   ring?: boolean;
+  /**
+   * A presence dot: the `success` disc in a 2px ring of the card, at the bottom right,
+   * one pixel past the disc's edge. It is decoration (hidden from assistive tech), so
+   * name the presence in the label where it matters.
+   */
+  online?: boolean;
   /** When set, the avatar becomes pressable (e.g. a topbar account trigger). */
   onPress?: () => void;
   /** E2E hook forwarded to the root element. */
@@ -233,6 +247,8 @@ function DiscGradient({ disc, id }: { disc: IdentityDisc; id: string }) {
   );
 }
 
+const PRESENCE: ViewStyle = { position: "absolute", right: -1, bottom: -1, borderRadius: 9999, pointerEvents: "none" };
+
 const DISC_FILL: ViewStyle = { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none" };
 
 /** Build an Avatar component from a platform skin. */
@@ -245,7 +261,7 @@ export function createAvatar(skin: AvatarSkin) {
     const shape = shapeOf(props);
     const reference = referenceSizeOf(props);
     const referenceGeometry = reference ? REFERENCE_SIZES[reference] : null;
-    const diameter = referenceGeometry ?? BOX[size];
+    const diameter = referenceGeometry ?? skin.diameter?.[size] ?? BOX[size];
     const sheen = sheenOf(props);
     const photo = src ?? uri;
     // Track a photo that failed to load so we fall back to the initials rather than
@@ -274,7 +290,7 @@ export function createAvatar(skin: AvatarSkin) {
     // hand-off's flat wash.
     const gradient = colored && (referenceGeometry != null || paint !== "identity");
     const disc = gradient ? paint === "logo" ? { from: actionFill(tokens), to: tokens.ring, mid: actionFill(tokens), ink: "#ffffff" } : paint === "orchid" ? { from: "#d9b8ea", to: "#b559a6", mid: "#d9b8ea", ink: "#ffffff" } : identityDisc(discHue) : null;
-    const wash = colored && !gradient ? initialsDisc(discHue, tokens.background, dark) : null;
+    const wash = colored && !gradient ? skin.initialsPaint?.(discHue) ?? initialsDisc(discHue, tokens.background, dark) : null;
     const gradientId = `avatar-disc-${useId().replace(/:/g, "")}`;
     const background = disc ? disc.mid : wash ? wash.wash : tokens.muted;
     const foreground = props.whiteInk || props.inverse ? "#ffffff" : disc ? disc.ink : wash ? wash.ink : tokens["muted-foreground"];
@@ -289,11 +305,15 @@ export function createAvatar(skin: AvatarSkin) {
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;
     // The separator ring is a border a tile keeps under glass, over its pane, which sits
     // flush inside it (paneStyle's and GlassPane's `stateBorder`).
-    const container: StyleProp<ViewStyle> = [showPhoto || identityFill ? shapeStyle : paneStyle(theme, shapeStyle, !!ring), separator, style];
+    const container: StyleProp<ViewStyle> = [showPhoto || identityFill ? shapeStyle : paneStyle(theme, shapeStyle, !!ring), separator, props.online ? null : style];
     const pane = showPhoto || identityFill ? null : <GlassPane static layer="control" shape={shapeStyle} stateBorder={!!ring} />;
     const fill = props.inverse ? <View style={[DISC_FILL, { borderRadius: 9999, backgroundColor: "rgba(255,255,255,0.2)", boxShadow: "inset 0 0 0 3px rgba(255,255,255,0.7)" }]} /> : !showPhoto && disc ? <DiscGradient disc={disc} id={gradientId} /> : null;
     const innerRing = sheen ? <View style={[DISC_FILL, { borderRadius: 9999, boxShadow: `inset 0 0 0 ${sheen}px ${tokens.card}` }]} /> : null;
-    const wrap = (node: ReactNode) => sheen ? <View style={{ width: diameter + sheen * 2, height: diameter + sheen * 2, alignItems: "center", justifyContent: "center" }}><ConicRing size={diameter + sheen * 2} width={sheen} hue={discHue} />{node}</View> : node;
+    // The presence dot sits past the disc's clipped edge, so it rides a wrapper the size
+    // of the disc, which takes the call site's layout style in place of the disc.
+    const presence = props.online ? <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[PRESENCE, skin.presence(tokens, diameter)]} /> : null;
+    const wrap = (node: ReactNode) => presence ? <View style={[{ width: diameter, height: diameter, flexShrink: 0 }, style]}>{wrapSheen(node)}{presence}</View> : wrapSheen(node);
+    const wrapSheen = (node: ReactNode) => sheen ? <View style={{ width: diameter + sheen * 2, height: diameter + sheen * 2, alignItems: "center", justifyContent: "center" }}><ConicRing size={diameter + sheen * 2} width={sheen} hue={discHue} />{node}</View> : node;
 
     // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
     // M3) when the avatar is pressable: e.g. the 28px `small` topbar trigger gets
@@ -443,7 +463,7 @@ export function createAvatarGroup(skin: AvatarSkin) {
             style={[paneStyle(theme, overflowShape, true), { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background, marginStart: visible.length > 0 ? overlap : 0 }]}
           >
             <GlassPane static layer="control" shape={overflowShape} stateBorder />
-            <Text style={{ color: tokens["muted-foreground"], ...skin.labelType[size] }}>+{hidden}</Text>
+            <Text style={{ color: tokens["muted-foreground"], ...skin.overflowType[size] }}>+{hidden}</Text>
           </View>
         ) : null}
       </View>

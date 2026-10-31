@@ -52,7 +52,7 @@ describe("the reading floors", () => {
       const mod = (await import("../src/atoms/typography/typography.styles.ts")) as Record<string, { roleType: Record<string, { fontSize?: number }> }>;
       const roleType = mod[`${platform}Skin`].roleType;
       for (const [role, floor] of Object.entries(READING_FLOOR)) {
-        // Annotation belongs to the Avatar identity image, not Typography.
+        // Annotation belongs to identity artwork and authored chart axes, not Typography.
         if (role === "annotation") continue;
         expect(roleType[role]?.fontSize, `Typography ${role} on ${platform}`).toBeGreaterThanOrEqual(floor);
       }

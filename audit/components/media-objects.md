@@ -41,6 +41,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `barerowwithmeta` | Bare row with meta | [ ] | [ ] | [ ] |  |
 | `icon` | Icon | [ ] | [ ] | [ ] |  |
 | `action` | Action | [ ] | [ ] | [ ] |  |
+| `numberedstep` | Numbered step | [ ] | [ ] | [ ] |  |
 | `tappable` | Tappable | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 

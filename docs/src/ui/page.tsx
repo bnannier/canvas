@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import { ScrollView, View, Column, Container, OverlayProvider } from "@nannier/canvas";
 import { ScreenFrame } from "../shell/native-header";
 import { Footer } from "../shell/footer";
-import { RAIL_INSET, useShellFrame } from "../shell/frame";
+import { RAIL_INSET, useShellFrame, useRailFits } from "../shell/frame";
 import { SHELL } from "../shell/page-look";
 import { H1, Lead } from "./prose";
 import { DocsHead } from "./docs-head";
@@ -44,7 +44,7 @@ export function usePageScroller(): RefObject<ScrollView | null> | null {
  */
 export const PAGE_TOP = Platform.OS === "web" ? SHELL.contentTop : SHELL.gutter;
 
-export function Page({ children, lead, viewportOverlays = false }: {
+export function Page({ children, lead, footer, detail = false, viewportOverlays = false }: {
   children: ReactNode;
   /**
    * A full-width section leading the page, above its 1440 px frame and under the pill, as
@@ -52,6 +52,10 @@ export function Page({ children, lead, viewportOverlays = false }: {
    * starts at the scroller's top and owns the room above its content (`PAGE_TOP`).
    */
   lead?: ReactNode;
+  /** A route's own footer, where its hand-off differs from the shared section footer. */
+  footer?: ReactNode;
+  /** Component detail pages use their own 18 px phone gutter and 88 px top inset. */
+  detail?: boolean;
   viewportOverlays?: boolean;
 }) {
   // The scroller, published to the native audit driver (docs/src/audit/probe-context.tsx)
@@ -62,6 +66,8 @@ export function Page({ children, lead, viewportOverlays = false }: {
   const Sensor = probe?.Sensor;
   const scrollerRef = useRef<ScrollView>(null);
   const { rail } = useShellFrame();
+  const wideShell = useRailFits();
+  const phoneShell = Platform.OS === "web" && !wideShell;
   useEffect(() => probe?.scroller({ ref: scrollerRef }), [probe]);
   // Runtime fixtures need viewport modals and a sibling capture plane. Keep the
   // catalogue's content host by default so anchored previews scroll as before.
@@ -85,7 +91,7 @@ export function Page({ children, lead, viewportOverlays = false }: {
         contentContainerStyle={{
           // `PAGE_TOP`, unless a lead section owns that room. The footer closes the page,
           // so the foot adds nothing.
-          paddingTop: lead ? 0 : PAGE_TOP,
+          paddingTop: lead ? 0 : phoneShell && detail ? 88 : PAGE_TOP,
           width: "100%",
           alignItems: "center",
         }}
@@ -109,11 +115,11 @@ export function Page({ children, lead, viewportOverlays = false }: {
               {...(Platform.OS === "web" ? ({ dataSet: { shellContent: "" } } as object) : null)}
               style={{ paddingLeft: rail ? RAIL_INSET : 0 }}
             >
-              <Container padLoose><Column loose>{children}</Column></Container>
+              <Container padLoose style={phoneShell && detail && !lead ? { paddingHorizontal: 18 } : undefined}><Column loose>{children}</Column></Container>
             </View>
           </ContentHost>
         </View>
-        <Footer />
+        {footer ?? <Footer />}
       </ScrollView>
   );
   return (

@@ -104,21 +104,24 @@ source affordance in the detail panel. An `href` opens through the system browse
 
 `board` owns the ticket anatomy while retaining Card's existing surface, corner,
 elevation and press behavior. It reads `ticketNumber`, `priorityLabel`, `title`,
-`description`, `statusLabel` and `typeLabel`. Metadata shows the values without
+`description`, `statusLabel` and `typeLabel`. Priority and type appear in compact rounded Badge pills without
 visible field-name prefixes; accessible names retain their field context. High
-and Critical priorities use the destructive text ink, Medium uses warning, and
-other priorities use muted text. Pass the Board render callback's
+and Critical priorities use the soft error treatment, Medium uses warning, and
+other priorities use a quiet secondary pill. Types use the soft primary treatment.
+Type comes first, then priority, in one 18 px metadata row below the status on
+every platform. Omitted labels render no pill; the shared row retains its height.
+The header contains only the ticket number and move handle. Pass the Board render callback's
 `moveHandle` unchanged; Card places it at the top right beside the ticket number.
 `blocked` displays “Blocked by Discovery” when `blockedReason` is “Discovery”,
 or just “Blocked” when there is no reason. `aiActive` reveals
 “AI work in progress” with a shimmer in the text and cycling dots. Reduced motion
 keeps that label static. Title and description clamp to two lines; each other
-text row has one line. The metadata spacer and optional progress keep their
+text row has one line. The metadata row and optional progress keep their
 reserved slots, so short and long tickets have the same text height.
 
 `imageSource` accepts an actual React Native image source (including authentication
 headers), with `imageLabel` for its accessible name. It adds a taller, full-bleed
-header, with matching top corners and the number, move handle and priority over
+header, with matching top corners and the number and move handle over
 an opaque, legible backing. Images use contain fitting. A failed image collapses
 to the compact metadata header; a new source retries. Only the image header adds
 height. Board anatomy takes precedence over raw children and section props.

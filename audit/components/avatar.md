@@ -11,7 +11,7 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | Source files | `avatar-menu.shared.tsx`, `avatar.android.tsx`, `avatar.ios.tsx`, `avatar.md`, `avatar.reference.tsx`, `avatar.shared.tsx`, `avatar.styles.ts`, `avatar.tsx` |
 | Implementation | its own source directory, `src/atoms/avatar/` (7 TypeScript modules) |
 | Exports | Avatar, AvatarGroup, AvatarMenu |
-| Platform entries | iOS: web build: Avatar, AvatarGroup; own build: AvatarMenu (builds a part from dropdown's own iosSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own). Android: web build: Avatar, AvatarGroup; own build: AvatarMenu (builds a part from dropdown's own androidSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own) |
+| Platform entries | iOS: web build: Avatar, AvatarGroup; own build: AvatarMenu (builds a part from dropdown's own iosSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` which the web entry does not; counted as the platform's own; passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own). Android: web build: Avatar, AvatarGroup; own build: AvatarMenu (builds a part from dropdown's own androidSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` which the web entry does not; counted as the platform's own; passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own) |
 | Platform-skins registry | iOS: AvatarMenu; Android: AvatarMenu |
 | Reference row | `avatar` (Shared, Built). iOS: none (iOS has no system avatar control; apps compose one from an image view or the person.crop.circle SF Symbol). Android: none (Material 3 has no avatar component; avatars appear only as content inside lists, chips, and app bars). Web: link [avatar (Web)](https://catalyst.tailwindui.com/docs/avatar) |
 | Materials manifest | Avatar: atoms, static + liquid + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state. AvatarGroup: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state. AvatarMenu: atoms, liquid + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state, open-surface |
@@ -24,7 +24,7 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | MeasureProps | not adopted |
 | Touch target | `avatar.shared.tsx`: hitSlop, minTarget; `avatar.styles.ts`: minTarget, platformMinTarget |
 | Tests importing it | 21: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-argus.test.tsx`, `test/avatar-look.test.tsx`, `test/avatar-menu.test.tsx`, `test/behavior-smoke-c.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/image.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-coverage.test.ts`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
-| E2E naming it | 2: `e2e/a11y/structure.e2e.ts`, `e2e/behavior/component-docs.e2e.ts` |
+| E2E naming it | 1: `e2e/a11y/structure.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/avatar.md`, written by `bun run audit:turn -- --slug=avatar --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
@@ -42,11 +42,13 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `identitycolours` | Identity colours | [ ] | [ ] | [ ] |  |
 | `sizes` | Sizes | [ ] | [ ] | [ ] |  |
 | `rounded` | Rounded | [ ] | [ ] | [ ] |  |
+| `online` | Online | [ ] | [ ] | [ ] |  |
 | `ringoutline` | Ring outline | [ ] | [ ] | [ ] |  |
 | `stacked` | Stacked | [ ] | [ ] | [ ] |  |
 | `topbar` | Topbar | [ ] | [ ] | [ ] |  |
 | `argusaccountmenu` | Argus account menu | [ ] | [ ] | [ ] |  |
 | `accountmenu` | Account menu | [ ] | [ ] | [ ] |  |
+| `menuspecimen` | Menu specimen | [ ] | [ ] | [ ] |  |
 | `compactmenu` | Compact menu | [ ] | [ ] | [ ] |  |
 | `menualignment` | Menu alignment | [ ] | [ ] | [ ] |  |
 | `disabledmenu` | Disabled menu | [ ] | [ ] | [ ] |  |

@@ -23,4 +23,13 @@ What reads it:
   they pass to a real prop; a hand-off knob the repository has no prop for is listed in the
   spec's `dropped` with its reason.
 
-Where the prototype and the repository disagree on an API, the repository wins.
+- `derive-detail-presentation.ts`: records the hand-off's specimen labels and order,
+  guidance selection and note counts. Detail pages use that presentation with current
+  executable examples, without deleting newer kit docs.
+
+The owner selected this vendored snapshot for exact appearance and motion on2026-10-29
+(PLAN D23), superseding older visual exceptions. Current public API rows remain accurate;
+reference presentation does not remove newer capabilities. Compare matching live browser
+states, including phone widths, scheme, palette, surface and animation phase. A screenshot
+only proves the phase it captured. The reference runtime turns its nominal grain SVG into
+uniform RGBA(187,187,187,128), which the docs reproduce as a translucent film.

@@ -9,6 +9,9 @@ import e_charts_heatmap_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "heatmap",
   category: "charts",
+  overview: [
+    "`detailed` keeps contribution-calendar cells at their authored size, with compact month and weekday labels and the contribution-count color levels. A narrow parent scrolls the same calendar.",
+  ],
   examples: [
     { label: "Default", code: "<Container xs>\n  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />\n</Container>", render: e_charts_heatmap_example_0 },
     { label: "Calendar", code: "<Heatmap\n  calendar\n  label=\"Contribution activity\"\n  values={Array.from({ length: 371 }, (_, i) => {\n    const noise = Math.sin(i * 12.9898) * 43758.5453;\n    const r = noise - Math.floor(noise);\n    const value = r < 0.5 ? 0 : (r - 0.5) / 0.5;\n    return { value, count: Math.round(value * 14), date: new Date(Date.UTC(2025, 6, 6 + i)).toISOString().slice(0, 10) };\n  })}\n/>", render: e_charts_heatmap_example_1 },
@@ -18,10 +21,10 @@ export const docs: ComponentDocs = {
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
-  props: [{"name":"HeatmapProps","props":[{"name":"values","type":"HeatmapValue[]","required":true,"description":"The cells: intensities 0–1, or `{ value, count?, date?, label? }` for inspectable data."},{"name":"label","type":"string","required":false,"description":"What the grid measures (e.g. \"Contribution activity\"); leads the accessible name."},{"name":"calendar","type":"boolean","required":false,"description":"GitHub-style: lay the cells into seven-row week columns with weekday + month labels.","default":"false"},{"name":"caption","type":"string","required":false,"description":"A summary line above the grid (e.g. \"248 contributions in the last year\")."},{"name":"hideLegend","type":"boolean","required":false,"description":"Hide the less-to-more legend row.","default":"false"},{"name":"testID","type":"string","required":false,"description":"E2E hook forwarded to the root element."},{"name":"style","type":"LayoutStyle","required":false,"description":"For sizing/composition only."}],"groups":[],"inherits":[]}],
+  props: [{"name":"HeatmapProps","props":[{"name":"values","type":"HeatmapValue[]","required":true,"description":"The cells: intensities 0–1, or `{ value, count?, date?, label? }` for inspectable data."},{"name":"label","type":"string","required":false,"description":"What the grid measures (e.g. \"Contribution activity\"); leads the accessible name."},{"name":"calendar","type":"boolean","required":false,"description":"GitHub-style: lay the cells into seven-row week columns with weekday + month labels.","default":"false"},{"name":"detailed","type":"boolean","required":false,"description":"Fixed-size contribution calendar with the authored month, weekday and level styling.","default":"false"},{"name":"caption","type":"string","required":false,"description":"A summary line above the grid (e.g. \"248 contributions in the last year\")."},{"name":"hideLegend","type":"boolean","required":false,"description":"Hide the less-to-more legend row.","default":"false"},{"name":"testID","type":"string","required":false,"description":"E2E hook forwarded to the root element."},{"name":"style","type":"LayoutStyle","required":false,"description":"For sizing/composition only."}],"groups":[],"inherits":[]}],
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":["image"],"states":[],"aria":["aria-label"],"touchTarget":[]},
-  tokens: ["card-foreground","chart-1","foreground","muted-foreground","subtle-foreground"],
+  tokens: ["card","card-foreground","chart-1","foreground","muted","muted-foreground","primary","subtle-foreground"],
   related: ["container","card","chart","line-chart","area-chart","range-area-chart","composed-chart","sparkline"],
 };

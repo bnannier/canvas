@@ -17,8 +17,9 @@ export const AvatarGroup = createAvatarGroup(webSkin);
 // import resolves the web module in a browser bundler, which would render the web menu
 // under the iOS and Android pills in the docs. On the web it stands off by Dark
 // Factory's menu offset, as every web menu does.
-const MenuDropdown = createDropdown(dropdownWebSkin);
+const AccountDropdown = createDropdown(dropdownWebSkin);
+const MenuDropdown = createDropdown({ ...dropdownWebSkin, disabledOpacity: 0.45 });
 /** An identity pill (avatar and name) that opens an account menu. */
-export const AvatarMenu = createAvatarMenu(webMenuSkin, MenuDropdown);
+export const AvatarMenu = createAvatarMenu(webMenuSkin, MenuDropdown, AccountDropdown);
 export type { AvatarProps, AvatarGroupProps } from "./avatar.shared.js";
 export type { AvatarMenuProps } from "./avatar-menu.shared.js";

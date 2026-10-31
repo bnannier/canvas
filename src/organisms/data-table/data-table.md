@@ -321,6 +321,27 @@ The table keeps its own look and the prop changes nothing.
 />
 ```
 
+### Matrix
+
+Pass `matrix` for a specimen grid: no frame, no fill and no rules, the headings in the reference sheet's small uppercase mono label, the cells unpadded, the rows 12 px apart and the columns 20 px apart. A column with `fit` takes its widest cell's width, its heading included (a grid's `max-content` track), so a column of buttons lines up at its longest label; a table with `fit` columns pans once they add up to more than it has. `reference` and `bare` win over `matrix`.
+<!-- only: web -->
+On iOS the table keeps its own look and the prop changes nothing.
+<!-- /only -->
+<!-- only: ios -->
+The table keeps its own look and the prop changes nothing.
+<!-- /only -->
+
+```tsx
+<DataTable
+  matrix
+  columns={[{ label: "", width: 110 }, { label: "Default", fit: true }, { label: "Disabled", fit: true }]}
+  rows={[
+    ["primary", <Button primary>Save changes</Button>, <Button primary disabled>Save changes</Button>],
+    ["outline", <Button outline>Preview</Button>, <Button outline disabled>Preview</Button>]
+  ]}
+/>
+```
+
 ### Top-aligned cells
 
 Pass `alignTop` when a cell may wrap to several lines: every cell sits at the top of its row, so a row's name, type and default stay beside the first line of its description instead of drifting to the row's middle. The selection box and the row actions center on that first line, as they do in a stacked row.

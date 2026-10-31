@@ -4,6 +4,8 @@ Per-service status rows: a status dot (down > degraded > operational), the servi
 
 It shares its strip renderer with UptimeBar, so the two never drift. `onPressItem` turns rows into drill-in buttons; `compact` tightens the rows; `plain` strips the card surface for nesting.
 
+`detailed` places the services in one bordered panel, spells out each status and shows its complete history in a separate full-width strip.
+
 ## Usage
 
 ```tsx

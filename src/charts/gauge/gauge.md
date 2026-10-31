@@ -22,6 +22,12 @@ A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value
 <Gauge value={81} warning />
 ```
 
+### Wide dial
+
+```tsx
+<Gauge large value={72} label="of Q4 adoption goal" />
+```
+
 ## Do & Don't
 
 ### Gauge

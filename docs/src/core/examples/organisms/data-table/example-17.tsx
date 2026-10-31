@@ -3,16 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, DataTable } = scope;
+  const { DataTable } = scope;
   return (
 <DataTable
-  columns={["Prop", "Type", "Default"]}
-  rows={[
-    ["primary", "boolean", "false"],
-    ["small", "boolean", "false"],
-    ["loading", "boolean", "false"]
+  alignTop
+  columns={[
+    { label: "Prop", minWidth: 150 },
+    { label: "Type", grow: 1.2, minWidth: 150 },
+    { label: "Description", grow: 2.2, minWidth: 220 }
   ]}
-  footer={<Button link small>Show all 58 props</Button>}
+  rows={[
+    ["iconLeft", "ReactNode", "An icon before the label. It takes the label's ink and size, and the button keeps its height, so a leading icon never grows a row of buttons."],
+    ["href", "string", "Renders the button as a link to this address on the web, and opens it natively elsewhere."]
+  ]}
 />
   );
 }

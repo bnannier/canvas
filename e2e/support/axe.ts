@@ -80,6 +80,83 @@ export function summarize(violations: RawViolation[]): Violation[] {
     .sort((a, b) => order.indexOf(a.impact) - order.indexOf(b.impact));
 }
 
+/** An authored visual limitation, not a claim that these targets meet WCAG 2.5.8. */
+export const PALETTE_TARGET_REFERENCE_NOTE =
+  "The owner's exact v4 navbar reference uses five 16px palette radios with 6px gaps (22px centers). " +
+  "24px hit targets would overlap by 2px. Preserve this authored geometry and report its target-size failure.";
+
+const PALETTE_NAMES = ["Violet", "Cyan", "Mint", "Rose", "Amber"];
+
+/**
+ * Apply only to the shell scan. Verify the live landmark, names and geometry before
+ * recognizing any axe selector; similarly named radios elsewhere never qualify.
+ */
+export async function shellReferencePolicy(page: Page, findings: Violation[]) {
+  const targetSize = findings.find((finding) => finding.id === "target-size");
+  const targets = targetSize ? await page.evaluate(({ names, candidates }) => {
+    const groups = document.querySelectorAll(
+      ':is(nav,[role="navigation"])[aria-label="Primary"] [role="radiogroup"][aria-label="Palette"]',
+    );
+    if (groups.length !== 1) return [];
+    const radios = [...groups[0].querySelectorAll('[role="radio"]')];
+    if (radios.length !== names.length) return [];
+    const boxes = radios.map((radio) => radio.getBoundingClientRect());
+    const near = (a: number, b: number) => Math.abs(a - b) <= 0.25;
+    if (!radios.every((radio, index) => radio.getAttribute("aria-label") === names[index]
+      && ["true", "false"].includes(radio.getAttribute("aria-checked") ?? "")
+      && near(boxes[index].width, 16) && near(boxes[index].height, 16)
+      && near(boxes[index].y, boxes[0].y)
+      && (index === 0 || near(boxes[index].x - boxes[index - 1].x, 22)))) return [];
+    return candidates.filter((target) => {
+      try {
+        const matches = document.querySelectorAll(target);
+        return matches.length === 1 && radios.includes(matches[0]);
+      } catch { return false; }
+    });
+  }, {
+    names: PALETTE_NAMES,
+    candidates: targetSize.raw.nodes.flatMap((node) =>
+      node.target.length === 1 && typeof node.target[0] === "string" ? [node.target[0]] : []),
+  }) : [];
+  return partitionAuthoredPaletteTargets(findings, new Set(targets));
+}
+
+/** Whole-page scan: attach every raw finding before enforcing the authored shell policy. */
+export async function scanPage(page: Page, testInfo: Pick<TestInfo, "attach" | "annotations">, name: string) {
+  const findings = await scan(page, "body");
+  await attach(testInfo, name, findings);
+  const { enforced, excepted } = await shellReferencePolicy(page, findings);
+  if (excepted.length > 0) {
+    testInfo.annotations.push({ type: "authored-reference", description: PALETTE_TARGET_REFERENCE_NOTE });
+    await testInfo.attach(`axe-${name}-authored-reference-exceptions.json`, {
+      body: JSON.stringify({ reason: PALETTE_TARGET_REFERENCE_NOTE, violations: excepted.map(({ raw }) => raw) }, null, 2),
+      contentType: "application/json",
+    });
+  }
+  return enforced;
+}
+
+/** Pure policy boundary: retain unrelated nodes, and fail closed if the five differ. */
+export function partitionAuthoredPaletteTargets(findings: Violation[], liveTargets: ReadonlySet<string>) {
+  const excepted: RawViolation[] = [];
+  const enforced = findings.map((finding) => {
+    if (finding.id !== "target-size" || liveTargets.size !== PALETTE_NAMES.length) return finding.raw;
+    const eligible = finding.raw.nodes.filter((node) => {
+      if (node.target.length !== 1 || typeof node.target[0] !== "string" || !liveTargets.has(node.target[0])) return false;
+      const size = node.any.find((check) => check.id === "target-size")?.data;
+      const offset = node.any.find((check) => check.id === "target-offset")?.data;
+      return size?.width === 16 && size?.height === 16 && size?.minSize === 24
+        && offset?.closestOffset === 20 && offset?.minOffset === 24;
+    });
+    if (eligible.length !== PALETTE_NAMES.length
+      || new Set(eligible.map((node) => node.target[0])).size !== PALETTE_NAMES.length) return finding.raw;
+    const accepted = new Set(eligible);
+    excepted.push({ ...finding.raw, nodes: eligible });
+    return { ...finding.raw, nodes: finding.raw.nodes.filter((node) => !accepted.has(node)) };
+  }).filter((violation) => violation.nodes.length > 0);
+  return { enforced: summarize(enforced), excepted: summarize(excepted) };
+}
+
 /** Keep the compact report and attach unabridged rule/node/check diagnostics. */
 export async function attach(testInfo: Pick<TestInfo, "attach">, name: string, violations: Violation[]): Promise<void> {
   if (violations.length === 0) return;

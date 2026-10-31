@@ -31,7 +31,7 @@ export const webSkin: SparklineSkin = {
   barRadius: platformShape.web.sparkBar,
   trackRadius: platformShape.web.sparkTrack,
   gap: 2,
-  height: { compact: 16, default: SPARK_STRIP_HEIGHT, tall: 32 },
+  height: { compact: 16, default: SPARK_STRIP_HEIGHT, tall: 34 },
 };
 
 export const iosSkin: SparklineSkin = webSkin;

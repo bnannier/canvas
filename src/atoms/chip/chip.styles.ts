@@ -24,7 +24,7 @@ import { type ChipSkin } from "./chip.shared.js";
 //     18dp remove glyph with a 48dp close target. A selected filter chip is the tonal
 //     accent with a leading 18dp checkmark and no outline. Disabled at 0.38.
 //
-// A chip is a compact tag, so it has ONE size per platform; there is no size axis.
+// Passive metadata also has a small tag on web and iOS; Material keeps its native chip.
 
 // The structure every skin shares. The horizontal insets resolve per side in the shell
 // from `sidePadding`. The chip is HUG: the shell appends `useHugStyle()`
@@ -104,11 +104,14 @@ const link: NonNullable<ChipSkin["link"]> = {
   steadyPress: true,
 };
 
+const SMALL_LABEL_TYPE = { fontSize: 11 } as const;
+
 export const webSkin: ChipSkin = {
   base: pill,
+  small: { bodyMinTarget: MIN_TARGET ?? undefined, base: { ...pill, height: 24 }, sidePadding: { text: 9, icon: 6, remove: 6 }, labelType: { fontSize: SMALL_LABEL_TYPE.fontSize, lineHeight: 14, fontWeight: "500" } },
   sidePadding: { text: 12, icon: 8, remove: 6 },
   labelType: { fontSize: 13, lineHeight: 17, fontWeight: "500" },
-  countType: { fontFamily: MONO_FONT, fontSize: 11, lineHeight: 14, fontWeight: "500", opacity: 0.7 },
+  countType: { fontFamily: MONO_FONT, fontSize: SMALL_LABEL_TYPE.fontSize, lineHeight: 14, fontWeight: "500", opacity: 0.7 },
   removeSize: REMOVE,
   removeGlyph: 11,
   // The hand-off's neutral grey wash, the same on either scheme's page.

@@ -30,6 +30,8 @@ export function shellTier(width: number): ShellTier {
  * tools/v4/bake-grain.ts (decision S6); change a value here and re-bake.
  */
 export const GRAIN = {
+  /** Observed SVG output after the hand-off runtime rewrites its turbulence attributes. */
+  renderedColor: "rgba(187,187,187,0.5019607843137255)",
   /** The tile's edge in CSS px (points natively): the hand-off's `background-size`. */
   tile: 180,
   /** The layer's opacity per scheme (`--grain-o`). */

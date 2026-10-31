@@ -38,6 +38,12 @@ series={[{ label: "Build A", values: [12, 18, 9, 15, 7, 14] }]}
 />
 ```
 
+### Compact with spokes
+
+```tsx
+<RadarChart compact spokes axes={["Speed", "Contrast", "Motion", "Density", "Reach", "A11y"]} max={10} series={[{label: "Current", values: [9, 7, 8, 6, 7.5, 5]}, {label: "Previous", values: [6, 8.5, 5, 8, 4.5, 7]}]} />
+```
+
 ## Do & Don't
 
 ### RadarChart

@@ -17,8 +17,8 @@ export const SIGNUPS = BAR_SHARE.map((share, i) => ({ label: "JFMAMJJASOND"[i]!,
 export const SESSIONS = {
   labels: months(11),
   series: [
-    { label: "This month", values: above(180, [130, 118, 110, 92, 98, 72, 66, 48, 44, 30, 22]).map((v) => v * 10) },
-    { label: "Last month", values: above(180, [120, 112, 124, 100, 108, 90, 96, 70, 78, 52, 60]).map((v) => v * 10) },
+    { label: "This month", values: above(180, [130, 118, 110, 92, 98, 72, 66, 48, 44, 30, 22]) },
+    { label: "Last month", values: above(180, [120, 112, 124, 100, 108, 90, 96, 70, 78, 52, 60]) },
   ],
 };
 
@@ -39,7 +39,7 @@ export const PLATFORM_AREA = {
 const RANGE_HIGH = [40, 36, 42, 30, 26, 34, 28, 20, 24, 18, 22, 16];
 const RANGE_MID = [65, 61, 68, 55, 51, 59, 53, 45, 48, 42, 46, 40];
 const RANGE_LOW = [90, 86, 94, 80, 76, 84, 78, 70, 72, 66, 70, 64];
-const degrees = (y: number) => Math.round((140 - y) / 4.9);
+const degrees = (y: number) => 140 - y;
 export const TEMPERATURE = {
   labels: [...MONTHS],
   data: RANGE_HIGH.map((y, i) => ({ high: degrees(y), mid: degrees(RANGE_MID[i]!), low: degrees(RANGE_LOW[i]!) })),
@@ -79,6 +79,15 @@ export const SCREEN_LOAD = [
   { label: "Profile", values: [52, 66, 72, 78, 84, 92, 100] },
   { label: "Settings", values: [64, 80, 86, 92, 98, 106, 114, 30] },
 ];
+
+/** Authored box summaries in plot units; the prototype's whiskers are illustrative. */
+export const BOX_SUMMARIES = [
+  [30, 50, 62, 76, 100, 16], [44, 60, 70, 82, 104, 116],
+  [24, 40, 52, 64, 86, 12], [50, 66, 74, 86, 110], [36, 54, 66, 78, 96, 116],
+].map(([high, q3, median, q1, low, outlier]) => ({
+  min: 150 - low!, q1: 150 - q1!, median: 150 - median!,
+  q3: 150 - q3!, max: 150 - high!, outliers: outlier == null ? [] : [150 - outlier],
+}));
 
 /** c-scatter-plot: frame time against load, glass on and solid. */
 export const FRAME_TIME = [
@@ -145,17 +154,17 @@ export const INSTALLS_BY_PLATFORM = [
 
 /** c-bullet-chart: three measures against their targets. */
 export const TARGETS = [
-  { label: "Revenue", value: 72, target: 85, ranges: [50, 75, 100] },
-  { label: "Retention", value: 91, target: 88, ranges: [50, 75, 100], success: true },
-  { label: "NPS", value: 48, target: 60, ranges: [30, 60, 100], warning: true },
+  { label: "Revenue", value: 72, target: 85, ranges: [50, 80, 100] },
+  { label: "Retention", value: 91, target: 88, ranges: [60, 85, 100], success: true },
+  { label: "NPS", value: 48, target: 60, ranges: [40, 70, 100], warning: true, formatValue: String },
 ];
 
 /** c-radar-chart: v4 against the v1 skin on six axes (the hand-off's polygons, out of 10). */
 export const SKIN_RADAR = {
   axes: ["Speed", "Contrast", "Motion", "Density", "Reach", "A11y"],
   series: [
-    { label: "Canvas v4.0.0", values: [9.2, 9.0, 8.3, 9.0, 7.7, 8.0] },
-    { label: "v1 skin", values: [7.0, 8.5, 4.0, 5.2, 9.0, 8.5] },
+    { label: "Canvas v4.0.0", values: [9, 7, 8, 6, 7.5, 5] },
+    { label: "v1 skin", values: [6, 8.5, 5, 8, 4.5, 7] },
   ],
 };
 
@@ -163,7 +172,7 @@ export const SKIN_RADAR = {
 export const INSTALLS = {
   value: "48.2k",
   label: "Installs · October",
-  rate: "+12.4% vs. Sep",
+  rate: "+12.4%",
   spark: [30, 42, 38, 50, 46, 58, 52, 64, 60, 72, 78, 92],
   breakdown: [
     { label: "Web", value: 54 },
@@ -182,26 +191,27 @@ export const TOP_PAGES = [
 ];
 
 /** c-depth-chart: the order book either side of a 0.12% spread around 42,105. */
-const DEPTH_STEPS = [116, 102, 88, 74, 56, 36];
 export const ORDER_BOOK = {
-  bids: DEPTH_STEPS.map((size, i) => ({ price: 42098 - i * 20, size })),
-  asks: DEPTH_STEPS.map((size, i) => ({ price: 42148 + i * 20, size })),
+  bids: [14, 14, 14, 18, 20, 36].map((size, i) => ({ price: 41980 + i * 20, size })),
+  asks: [36, 20, 18, 14, 14, 14].map((size, i) => ({ price: 42110 + i * 20, size })),
 };
 
 /** c-candlestick-chart: a trading day in half-hours, with a volume pane and the MA 20. */
-const OHLC = [
-  [42180, 42240, 42120, 42230], [42230, 42260, 42170, 42190], [42190, 42320, 42180, 42300],
-  [42300, 42380, 42280, 42360], [42360, 42420, 42320, 42400], [42400, 42410, 42300, 42330],
-  [42330, 42370, 42260, 42350], [42350, 42450, 42340, 42430], [42430, 42480, 42400, 42460],
-  [42460, 42510, 42420, 42490], [42490, 42540, 42450, 42520], [42520, 42530, 42410, 42440],
-  [42440, 42560, 42430, 42540], [42540, 42580, 42500, 42520], [42520, 42590, 42510, 42580],
-  [42580, 42620, 42550, 42600],
-] as const;
+const CANDLE_TOP = [70, 70, 60, 52, 52, 58, 54, 44, 44, 36, 36, 30, 30, 34, 32, 22];
+const CANDLE_BOTTOM = [80, 74, 74, 60, 58, 66, 66, 54, 48, 48, 40, 40, 34, 42, 42, 32];
+const CANDLE_HIGH = [64, 62, 56, 46, 48, 54, 50, 40, 38, 32, 30, 24, 26, 28, 28, 16];
+const CANDLE_LOW = [86, 78, 78, 64, 62, 70, 70, 58, 52, 52, 46, 44, 40, 46, 46, 36];
+const CANDLE_UP = [true, false, true, true, false, false, true, true, false, true, false, true, false, false, true, true];
+const priceAt = (y: number) => 42600 - 10 * y;
 export const TRADING_DAY = {
   labels: ["09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "15:45", "15:50", "15:55"],
-  candles: OHLC.map(([open, high, low, close]) => ({ open, high, low, close })),
-  volume: [12, 8, 20, 16, 14, 10, 12, 22, 18, 16, 20, 14, 26, 12, 18, 28],
-  ma: [42210, 42220, 42240, 42270, 42290, 42280, 42280, 42310, 42330, 42350, 42370, 42390, 42400, 42420, 42430, 42450],
+  candles: CANDLE_TOP.map((top, i) => ({
+    open: priceAt(CANDLE_UP[i] ? CANDLE_BOTTOM[i]! : top),
+    close: priceAt(CANDLE_UP[i] ? top : CANDLE_BOTTOM[i]!),
+    high: priceAt(CANDLE_HIGH[i]!), low: priceAt(CANDLE_LOW[i]!),
+  })),
+  volume: [12, 8, 20, 16, 10, 14, 22, 26, 9, 24, 11, 28, 10, 15, 18, 30],
+  ma: [76, 74, 70, 62, 58, 60, 60, 54, 50, 46, 42, 38, 35, 36, 34, 30].map(priceAt),
 };
 
 /**

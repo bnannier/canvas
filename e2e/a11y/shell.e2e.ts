@@ -12,7 +12,7 @@
  */
 import { contentRoutes } from "../support/routes";
 import { gotoDocs } from "../support/docs";
-import { BLOCKING_IMPACTS, attach, describe as describeViolations, scan } from "../support/axe";
+import { BLOCKING_IMPACTS, describe as describeViolations, scanPage } from "../support/axe";
 import { expect, test } from "../support/fixtures";
 
 const firstOf = (kind: string) => contentRoutes().find((r) => r.kind === kind)!.path;
@@ -44,8 +44,7 @@ for (const scheme of ["dark", "light"] as const) {
         viewport: scheme === "light" ? { width: 375, height: 812 } : { width: 1280, height: 900 },
       });
 
-      const findings = await scan(browserPage, "body");
-      await attach(testInfo, `${page.name}-${scheme}`, findings);
+      const findings = await scanPage(browserPage, testInfo, `${page.name}-${scheme}`);
 
       const blocking = findings.filter((f) => BLOCKING_IMPACTS.has(f.impact));
       const known = KNOWN_FINDINGS[page.name] ?? [];

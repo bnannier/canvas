@@ -47,6 +47,12 @@ stages={[
 />
 ```
 
+### Tapered stages
+
+```tsx
+<FunnelChart tapered stages={[{label: "Visited", value: 12400}, {label: "Signed up", value: 7900}, {label: "Activated", value: 4980}, {label: "Paid", value: 2610}]} />
+```
+
 ## Do & Don't
 
 ### FunnelChart

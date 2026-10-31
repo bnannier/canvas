@@ -70,8 +70,9 @@ describe("the web ButtonGroup is the hand-off's segmented control", () => {
   it("gives the split, stepper and spaced cells the Button's pill heights", () => {
     expect([webSkin.cellSize!.small.height, webSkin.cellSize!.default.height, webSkin.cellSize!.large.height]).toEqual([29, 36, 40]);
     expect(webSkin.spacedSurface!(t)).toEqual({ borderWidth: 1, borderColor: t.border, backgroundColor: "transparent" });
-    expect(webSkin.splitPrimary(t)).toMatchObject({ borderTopStartRadius: 9999, borderBottomStartRadius: 9999 });
-    expect(webSkin.stepperArrowLeft).toEqual({ borderTopStartRadius: 9999, borderBottomStartRadius: 9999 });
+    expect(webSkin.splitPrimary(t)).toMatchObject({ borderTopStartRadius: 10, borderBottomStartRadius: 10 });
+    // The outer 10px corner clips square inner arrow cells in the renderer.
+    expect(webSkin.stepperArrowLeft).toEqual({});
   });
 });
 

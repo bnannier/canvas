@@ -30,8 +30,8 @@ describe("skin divergence, per built export", () => {
     expect(avatar.exportDivergence.AvatarGroup).toBeUndefined();
     // The pill's menu also stands off by 6, which the web entry's menu does not.
     expect(avatar.exportDivergence.AvatarMenu).toEqual({
-      iOS: "builds a part from dropdown's own iosSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own",
-      Android: "builds a part from dropdown's own androidSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own",
+      iOS: "builds a part from dropdown's own iosSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` which the web entry does not; counted as the platform's own; passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own",
+      Android: "builds a part from dropdown's own androidSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` which the web entry does not; counted as the platform's own; passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own",
     });
     expect(Object.keys(avatar.divergent).sort()).toEqual(["Android", "iOS"]);
   });
@@ -404,8 +404,9 @@ describe("skin divergence, per built export", () => {
     // so each reason carries what it is made of.
     const kinds = (c: ComponentSkins, name: string, platform: "iOS" | "Android") => c.exportReasons[name]?.[platform]?.map((r) => (r.owner ? `${r.kind} ${r.owner}` : r.kind));
     // AvatarMenu builds the Dropdown from the Dropdown's own skin and hands its factory a 6
-    // gap: both set the part's look, so Avatar's own skin is still the web skin.
-    expect(kinds(skinsOf(KIT, "avatar"), "AvatarMenu", "iOS")).toEqual(["part-skin dropdown", "part-skin dropdown"]);
+    // gap in the generic and original-account factories; all divergence belongs to
+    // the injected part, while Avatar's own skin is still the web skin.
+    expect(kinds(skinsOf(KIT, "avatar"), "AvatarMenu", "iOS")).toEqual(["part-skin dropdown", "part-skin dropdown", "part-skin dropdown"]);
     // A part under a nested directory belongs to the component it sits in.
     expect(kinds(skinsOf(KIT, "filter-panel"), "FilterPanel", "Android")).toContain("part checkbox");
     expect(kinds(skinsOf(KIT, "video"), "Video", "Android")).toEqual(["own-skin", "part spinner", "own-data"]);

@@ -276,6 +276,28 @@ recorded deviation above. What follows from it:
   300 px hero stage at radius 24) is one fix for every page; the heroes' loops are D15 work
   through the tuning harness, hero by hero, after the geometry.
 
+## D23 — Exact rendered hand-off and motion (2026-10-29)
+
+The owner chose the vendored hand-off and explicitly requested pixel-exact appearance,
+including animation, then superseded the old rules for this new version. This takes
+precedence over previous deviations: solved inks and control boundaries; the alternate
+Library headline and index copy; static hero scenes; extra component-page sections and
+controls; and restrictions preventing exact docs-specific illustration or page styling.
+Keep the universal component architecture and working accessibility behavior, including
+live Reduced Motion, while matching the reference's literal color, geometry and timing.
+
+The current implementation restores the Library entrance, pulse, drifting aurora and
+pointer-following 3D panels; the nine section hero timelines; the scheme capsule and
+switch spring motion; the detail page's live platform propagation, responsive rail/index,
+props fallback and footer; and literal source tokens. The gray film matches observed
+hand-off runtime output: its SVG attribute rewrite makes the nominal noise tile uniform
+RGBA(187,187,187,128). Procedural noise is therefore not a faithful screenshot match.
+
+Validation must include visible browser captures against the vendored page, motion
+sampling and reduced-motion behavior, plus the applicable checks. Pixel equality and
+native runtime parity must not be claimed from source inspection or a browser preview.
+The release is not dispatched by this implementation task.
+
 ## Phases (each committed and pushed on its own, CI run locally first; screenshot
 baselines and tuning evidence land WITH the visual phase that moves them, never at the end)
 

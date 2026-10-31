@@ -6,10 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { AvatarMenu } = scope;
   return (
 <AvatarMenu
-  disabled
-  name="Ada Lovelace"
-  email="ada.lovelace@example.com"
-  src="/ada-lovelace.jpg"
+  compact
+  name="Marcus Allen"
+  email="admin@example.com"
+  src="/marcus-allen.jpg"
   items={[
     { label: "Profile", icon: "user" },
     { label: "Settings", icon: "settings" },

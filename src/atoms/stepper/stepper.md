@@ -49,6 +49,14 @@ from its name ("Quantity, required").
 <Stepper label="Quantity" description="Up to 10 per order." defaultValue={1} min={1} max={10} />
 ```
 
+### With suffix
+
+`suffix` sets a unit beside the control, in the subtle ink.
+
+```tsx
+<Stepper label="Spacing" suffix="× 4px" defaultValue={2} min={0} max={99} />
+```
+
 ### Sizes
 
 ```tsx

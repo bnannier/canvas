@@ -39,6 +39,8 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `inline` | Inline | [ ] | [ ] | [ ] |  |
 | `card` | Card | [ ] | [ ] | [ ] |  |
+| `cardiconandmeta` | Card icon and meta | [ ] | [ ] | [ ] |  |
+| `inlinelabel` | Inline label | [ ] | [ ] | [ ] |  |
 | `withdescription` | With description | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 

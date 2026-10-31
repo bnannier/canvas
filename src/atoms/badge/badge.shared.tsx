@@ -507,19 +507,21 @@ export function createBadge(skin: BadgeSkin) {
 //
 // Layout-only, so it carries no per-OS skin and no colors: the badges it holds
 // own their own platform treatment. Gap draws from the kit's spacing scale
-// (a subset of Row's), defaulting to `snug`.
+// (a subset of Row's), defaulting to `compact`, the hand-off's 6 (`SUB('BadgeGroup')`
+// in tools/v4/handoff/cv-kit-code.js).
 
-export type BadgeGap = "tight" | "snug" | "cozy";
+export type BadgeGap = "tight" | "compact" | "snug" | "cozy";
 
 // Inter-badge gap per axis value, from the shared spacing scale (matches Row's
-// tight/snug/cozy). Owned here once instead of a magic `gap` at every call site.
-const BADGE_GAP: Record<BadgeGap, number> = { tight: 4, snug: 8, cozy: 12 };
+// tight/compact/snug/cozy). Owned here once instead of a magic `gap` at every call site.
+const BADGE_GAP: Record<BadgeGap, number> = { tight: 4, compact: 6, snug: 8, cozy: 12 };
 
 export interface BadgeGroupProps {
   /** The Badge elements to lay out in a wrapping row. */
   children?: ReactNode;
-  // Inter-badge gap (pick one; default `snug`). Precedence: cozy > snug > tight.
+  // Inter-badge gap (pick one; default `compact`, the hand-off's 6). Precedence: cozy > snug > compact > tight.
   tight?: boolean;
+  compact?: boolean;
   snug?: boolean;
   cozy?: boolean;
   /** Accessible name for the whole group (e.g. "Rachel Chen's roles"). */
@@ -531,12 +533,13 @@ export interface BadgeGroupProps {
 }
 
 // Gap precedence when more than one is passed: first match wins, largest-first
-// (mirrors Row's gapOf ordering). Default `snug` when none is set.
+// (mirrors Row's gapOf ordering). Default `compact` when none is set.
 export function badgeGapOf(p: BadgeGroupProps): BadgeGap {
   if (p.cozy) return "cozy";
   if (p.snug) return "snug";
+  if (p.compact) return "compact";
   if (p.tight) return "tight";
-  return "snug";
+  return "compact";
 }
 
 /** A wrapping row of badges. */

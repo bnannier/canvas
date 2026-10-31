@@ -1,11 +1,32 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { View, Text, Pressable, surfaceRipple, pressDim, devWarn, tabularNums, statusColors, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import {
+  View,
+  Text,
+  Pressable,
+  surfaceRipple,
+  pressDim,
+  devWarn,
+  tabularNums,
+  statusColors,
+  type ColorTokens,
+  type LayoutStyle,
+  GlassPane,
+  paneStyle,
+  isGlass,
+  alpha,
+} from "../../style/index.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
-import { periodStatus, statusColor, statusSummary, type UptimePeriod, type PeriodStatus } from "../shared/status-strip.js";
+import {
+  periodStatus,
+  statusColor,
+  statusSummary,
+  type UptimePeriod,
+  type PeriodStatus,
+} from "../shared/status-strip.js";
 
 // Shared ServiceHealthList shell. The status-overview card (the v4 hand-off's
 // `K.def('service-health-list')`): one row per service, divided by hairlines, of a
@@ -48,6 +69,8 @@ export interface ServiceHealthListProps {
   title?: string;
   // Density (omit for the default row insets).
   compact?: boolean;
+  /** Bordered status panel with full-width history strips and explicit status labels. */
+  detailed?: boolean;
   /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
   plain?: boolean;
   /** Rows become tappable drill-in targets (open the service) when set. */
@@ -77,38 +100,77 @@ export function itemStatus(item: ServiceHealthItem): PeriodStatus {
   return "operational";
 }
 
-
 export function createServiceHealthList(skin: ChartSkin) {
   return function ServiceHealthList(props: ServiceHealthListProps) {
     const { items, title, testID, style } = props;
     const theme = useMaterialTheme({ layer: "content" });
-    const { tokens } = theme;
+    const { tokens, dark } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
     const compact = !!props.compact;
 
-    devWarn(items.length === 0, "[canvas] <ServiceHealthList />: `items` is empty; the list renders with no rows.");
+    devWarn(
+      items.length === 0,
+      "[canvas] <ServiceHealthList />: `items` is empty; the list renders with no rows."
+    );
 
     return (
       <View
-        {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
+        {...(title != null && title !== ""
+          ? {
+              role: "group" as const,
+              accessibilityLabel: `${title} chart`,
+              "aria-label": `${title} chart`,
+            }
+          : {})}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
           CHART_ROOT,
           style,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
-        {title != null && title !== "" ? (
-          <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
+        {glass && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
         ) : null}
-        <View>
+        {title != null && title !== "" ? (
+          <Text
+            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+          >
+            {title}
+          </Text>
+        ) : null}
+        <View
+          style={
+            props.detailed
+              ? {
+                  borderWidth: 1,
+                  borderColor: tokens.border,
+                  borderRadius: platformShape.web.serviceFrame,
+                  overflow: "hidden",
+                  backgroundColor:
+                    tokens["surface-sunken"] ?? tokens.background,
+                }
+              : undefined
+          }
+        >
           {items.map((item, i) => {
             const status = itemStatus(item);
-            const name = `${item.label}: ${status}${item.detail != null && item.detail !== "" ? `, ${item.detail}` : ""}`;
-            const periods = item.periods != null && item.periods.length > 0 ? item.periods : null;
+            const name = `${item.label}: ${status}${
+              item.detail != null && item.detail !== ""
+                ? `, ${item.detail}`
+                : ""
+            }`;
+            const periods =
+              item.periods != null && item.periods.length > 0
+                ? item.periods
+                : null;
             const summary = periods ? statusSummary(periods, item.label) : null;
             const recent = periods ? periods.slice(-STRIP_PERIODS) : [];
             const rowBox = {
@@ -116,17 +178,43 @@ export function createServiceHealthList(skin: ChartSkin) {
               alignItems: "center" as const,
               gap: 10,
               paddingVertical: compact ? ROW_PAD.compact : ROW_PAD.default,
-              ...(i > 0 ? { borderTopWidth: 1, borderColor: tokens.border } : null),
+              ...(i > 0
+                ? { borderTopWidth: 1, borderColor: tokens.border }
+                : null),
             };
-            const dot = <View style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: statusColor(tokens, status) }} />;
+            const dot = (
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 9999,
+                  backgroundColor: statusColor(tokens, status),
+                }}
+              />
+            );
             const labelText = (
-              <Text numberOfLines={1} style={{ flexGrow: 1, flexShrink: 1, fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>
+              <Text
+                numberOfLines={1}
+                style={{
+                  flexGrow: 1,
+                  flexShrink: 1,
+                  fontSize: 14,
+                  lineHeight: 20,
+                  color: tokens["card-foreground"],
+                }}
+              >
                 {item.label}
               </Text>
             );
             // The strip runs oldest to newest along a time axis, so it keeps LTR.
             const strip = periods ? (
-              <View style={{ flexDirection: "row", gap: STRIP_BAR.gap, direction: "ltr" }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: STRIP_BAR.gap,
+                  direction: "ltr",
+                }}
+              >
                 {recent.map((p, k) => (
                   <View
                     key={p.id ?? k}
@@ -144,11 +232,137 @@ export function createServiceHealthList(skin: ChartSkin) {
             const detail =
               item.detail != null && item.detail !== "" ? (
                 <Text
-                  style={{ minWidth: DETAIL_WIDTH, textAlign: "right", fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "500", color: detailInk(tokens, status), ...tabularNums() }}
+                  style={{
+                    minWidth: DETAIL_WIDTH,
+                    textAlign: "right",
+                    fontFamily: MONO_FONT,
+                    fontSize: 12,
+                    lineHeight: 16,
+                    fontWeight: "500",
+                    color: detailInk(tokens, status),
+                    ...tabularNums(),
+                  }}
                 >
                   {item.detail}
                 </Text>
               ) : null;
+            if (props.detailed) {
+              const statusText = status[0].toUpperCase() + status.slice(1);
+              const color = statusColor(tokens, status);
+              const content = (
+                <>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: platformShape.web.mark,
+                        backgroundColor: color,
+                        boxShadow: `0 0 0 3px ${alpha(color, dark ? 0.14 : 0.1)}`,
+                      }}
+                    />
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        fontSize: 14,
+                        lineHeight: 18,
+                        fontWeight: "500",
+                        color: tokens.foreground,
+                      }}
+                    >
+                      {item.label}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        lineHeight: 16,
+                        fontWeight: "500",
+                        color,
+                      }}
+                    >
+                      {statusText}
+                    </Text>
+                    {item.detail ? (
+                      <Text
+                        style={{
+                          width: 52,
+                          textAlign: "right",
+                          fontFamily: MONO_FONT,
+                          fontSize: 12,
+                          lineHeight: 16,
+                          color: tokens["subtle-foreground"],
+                        }}
+                      >
+                        {item.detail}
+                      </Text>
+                    ) : null}
+                  </View>
+                  {periods ? (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        gap: 2,
+                        height: 8,
+                        direction: "ltr",
+                      }}
+                    >
+                      {periods.map((p, j) => (
+                        <View
+                          key={p.id ?? j}
+                          style={{
+                            flex: 1,
+                            borderRadius: platformShape.web.cell,
+                            backgroundColor: statusColor(
+                              tokens,
+                              periodStatus(p)
+                            ),
+                          }}
+                        />
+                      ))}
+                    </View>
+                  ) : null}
+                </>
+              );
+              const detailName = summary ? `${name}; ${summary}` : name;
+              const detailBox = {
+                paddingVertical: compact ? 8 : 12,
+                paddingHorizontal: 14,
+                gap: 8,
+                ...(i > 0
+                  ? { borderTopWidth: 1, borderColor: tokens.border }
+                  : {}),
+              };
+              return props.onPressItem ? (
+                <Pressable
+                  key={item.id ?? i}
+                  role="button"
+                  accessibilityLabel={detailName}
+                  aria-label={detailName}
+                  onPress={() => props.onPressItem?.(i)}
+                  style={detailBox}
+                >
+                  {content}
+                </Pressable>
+              ) : (
+                <View
+                  key={item.id ?? i}
+                  role="img"
+                  accessibilityLabel={detailName}
+                  aria-label={detailName}
+                  style={detailBox}
+                >
+                  {content}
+                </View>
+              );
+            }
             if (props.onPressItem) {
               // The whole row is the drill-in target; its name carries the strip's tally.
               const pressName = summary ? `${name}; ${summary}` : name;
@@ -172,17 +386,40 @@ export function createServiceHealthList(skin: ChartSkin) {
             return (
               <View key={item.id ?? i} style={rowBox}>
                 {/* The service's composed name; the strip carries its own tally. */}
-                <View accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name} style={{ flexDirection: "row", alignItems: "center", gap: 10, flexGrow: 1, flexShrink: 1 }}>
+                <View
+                  accessible
+                  accessibilityRole="image"
+                  role="img"
+                  accessibilityLabel={name}
+                  aria-label={name}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                    flexGrow: 1,
+                    flexShrink: 1,
+                  }}
+                >
                   {dot}
                   {labelText}
                 </View>
                 {strip && summary ? (
-                  <View accessible accessibilityRole="image" role="img" accessibilityLabel={summary} aria-label={summary}>
+                  <View
+                    accessible
+                    accessibilityRole="image"
+                    role="img"
+                    accessibilityLabel={summary}
+                    aria-label={summary}
+                  >
                     {strip}
                   </View>
                 ) : null}
                 {detail ? (
-                  <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                  <View
+                    aria-hidden
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                  >
                     {detail}
                   </View>
                 ) : null}

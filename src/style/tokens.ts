@@ -69,12 +69,9 @@ export interface ColorTokens {
   /**
    * The RESTING border of a text field on the web and iOS skins (Input, Textarea,
    * Select, Autocomplete, InputOTP, Stepper, PhoneInput, the Command trigger), and
-   * only there: the hand-off's field line densified on the card until it stands apart
-   * from the `border` hairline, which sits BELOW the 3:1 control floor `input` holds (see
-   * `fieldBorder` in src/style/field-colors.ts for the disclosed trade-off). Focus
-   * and error still paint `ring` and `destructive`, and every non-field control
-   * (checkbox, radio, switch, pagination, the outline button) keeps `input`. Omit
-   * in legacy maps to rest on `input`.
+   * the hand-off's strong hairline (--ln2), also used by `input`. The roles remain
+   * independently overridable. Focus and error paint `ring` and `destructive`.
+   * Omit in legacy maps to rest on `input`.
    */
   "field-border"?: string;
   ring: string;
@@ -121,8 +118,8 @@ export interface ColorTokens {
    * The inverse surface (the hand-off's dark toast pill, which the Android snackbar paints in both
    * schemes) and the ink on it. Omit both in legacy maps to invert the scheme: `foreground`
    * as the pill and `background` as its ink. Override the three inverse roles together:
-   * the palette's ink and action were solved for the hand-off's pill, so an `inverse` alone keeps
-   * them.
+   * the palette's ink and action name the hand-off's matching colors; an `inverse` alone keeps
+   * those colors.
    */
   inverse?: string;
   "inverse-foreground"?: string;
@@ -162,23 +159,9 @@ export interface ColorTokens {
 // (styles/tokens/colors.css) keeps the literal oklch() forms over `--hue`, and
 // scripts/validate-tokens.ts holds the two sides equal for every palette and scheme.
 //
-// Some roles are deliberately NOT the hand-off's literal value, because the role's job is
-// a legibility floor the prototype's value misses (the review's R1 in the plan, D2):
-// - `input`, the boundary of a non-field control (a checkbox box, a radio ring, a switch
-//   track, an outline button), is the hand-off's tertiary ink family solved to WCAG 1.4.11's
-//   3:1 on every surface it sits on; the prototype draws those with its 16% hairline, which
-//   is about 1.5:1. Fields keep the hairline as `field-border` under the existing field
-//   exception (src/style/field-colors.ts).
-// - the text inks are solved (tools/v4/derive-inks.ts writes them into ./solved-inks.ts,
-//   so no bundle carries the solver): `destructive-text`, `success-text`
-//   and `warning-text` from the hand-off's status colours, `primary-text` (and `info`) from
-//   its accent text, and `inverse-primary` from the other scheme's accent text, each walked
-//   in oklch lightness at its own hue and chroma until it reads at 4.5:1 (primary text
-//   4.65:1, the margin the anchor hover and the rounding neighbourhood need) on every bed
-//   it is drawn on: the neutral surfaces, its tone's wash, the tonal selection, the
-//   calendar range band, the inverse pill under glass and its ripple, and iOS's pressed
-//   capsule. A hand-off value that already clears its beds is kept as is. The fills,
-//   washes and dots keep the hand-off's values.
+// D14 restores the hand-off literally, including its translucent boundaries, focus ring,
+// and unadjusted text inks. Contrast is measured and reported; it does not recolor the
+// reference. The text-role aliases remain separate so consumer rebrands can override them.
 
 /**
  * The glass material's own tokens, per scheme, one tint per density layer.
@@ -286,8 +269,8 @@ export const paletteHue: Record<Palette, number> = { violet: 285, cyan: 205, min
  * package does not re-export it.
  */
 export const ACCENT = {
-  dark: { fill: [0.74, 0.17], text: [0.8, 0.14], ink: "#0a0a0f", soft: 0.16, glow: 0.5 },
-  light: { fill: [0.5, 0.22], text: [0.47, 0.2], ink: "#ffffff", soft: 0.1, glow: 0.4 },
+  dark: { fill: [0.74, 0.17], text: [0.8, 0.14], ink: "#0a0a0f", soft: 0.16, glow: 0.5, ring: 0.35 },
+  light: { fill: [0.5, 0.22], text: [0.47, 0.2], ink: "#ffffff", soft: 0.1, glow: 0.4, ring: 0.28 },
 } as const;
 
 /**
@@ -317,7 +300,7 @@ export const SERIES: Record<ColorScheme, readonly (readonly [number, number, num
 
 /**
  * The scheme's neutrals, status colours, glass and shades: everything the hue does not move.
- * Internal, read by tools/v4/derive-inks.ts, which solves the text inks over these surfaces.
+ * Internal, read by tools/v4/derive-inks.ts, which mirrors the hand-off’s text aliases.
  */
 export const NEUTRALS: Record<ColorScheme, Omit<ColorTokens, AccentRole | ChartRole | InkRole>> = {
   dark: {
@@ -347,7 +330,7 @@ export const NEUTRALS: Record<ColorScheme, Omit<ColorTokens, AccentRole | ChartR
     "warning-soft": "rgba(246, 184, 76, 0.14)",
     border: "rgba(255, 255, 255, 0.08)",
     "field-border": "rgba(255, 255, 255, 0.16)",
-    input: "#686979",
+    input: "rgba(255, 255, 255, 0.16)",
     "field-fill": "#0e0e15",
     hover: "rgba(255, 255, 255, 0.05)",
     highlight: "rgba(255, 255, 255, 0.1)",
@@ -387,7 +370,7 @@ export const NEUTRALS: Record<ColorScheme, Omit<ColorTokens, AccentRole | ChartR
     "warning-soft": "rgba(165, 93, 0, 0.1)",
     border: "rgba(17, 17, 24, 0.08)",
     "field-border": "rgba(17, 17, 24, 0.16)",
-    input: "#8a8a9b",
+    input: "rgba(17, 17, 24, 0.16)",
     "field-fill": "#fafafd",
     hover: "rgba(17, 17, 24, 0.06)",
     highlight: "rgba(255, 255, 255, 0.8)",
@@ -440,12 +423,12 @@ export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
   const a = ACCENT[scheme];
   const ion = oklchHex(a.fill[0], a.fill[1], hue);
   const soft = alpha(ion, a.soft);
-  const solved = SOLVED_INKS[scheme];
-  const ionText = solved["primary-text"][palette] ?? solved["primary-text"].violet;
+  const inks = SOLVED_INKS[scheme];
+  const ionText = inks["primary-text"][palette] ?? inks["primary-text"].violet;
   const series = SERIES[scheme].map(([l, c, h]) => oklchHex(l, c, h));
   const tokens: ColorTokens = Object.freeze({
     ...NEUTRALS[scheme],
-    ...solved.status,
+    ...inks.status,
     primary: ion,
     "primary-text": ionText,
     "primary-foreground": a.ink,
@@ -456,14 +439,12 @@ export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
     "action-soft": soft,
     info: ionText,
     "info-soft": soft,
-    // The focus indicator is the solid accent: the hand-off's band is the accent at 0.28 / 0.35,
-    // about 1.5:1, under WCAG 1.4.11's 3:1 for a focus indicator.
-    ring: ion,
+    // The hand-off’s focus band keeps its 28% / 35% accent opacity.
+    ring: alpha(ion, a.ring),
     glow: alpha(ion, a.glow),
     // The inverse pill is the other scheme's page, so its brand is the other scheme's
-    // accent text (the hand-off's snackbar action, oklch(.8 .14 hue) on a dark pill),
-    // solved on the pill as every platform paints it.
-    "inverse-primary": solved["inverse-primary"][palette] ?? solved["inverse-primary"].violet,
+    // accent text (the hand-off's snackbar action, oklch(.8 .14 hue) on a dark pill).
+    "inverse-primary": inks["inverse-primary"][palette] ?? inks["inverse-primary"].violet,
     // The brand artwork: the hero's accent-to-cyan-to-mint sweep.
     "featured-start": ion,
     "featured-middle": series[0],

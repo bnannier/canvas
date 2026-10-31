@@ -1,9 +1,10 @@
 import { useState, type ReactNode, type Ref } from "react";
-import { View, Row, Column, Card, Typography, Badge, Button, DataTable, Collapsible, Icon, widths, type DataTableColumn, type DataTableGroup } from "@nannier/canvas";
+import { View, Row, Column, Card, Typography, Badge, Button, DataTable, Collapsible, Icon, widths, useTheme, type DataTableColumn, type DataTableGroup } from "@nannier/canvas";
 import type { PropDoc, PropGroup } from "../../core/scope";
 import { INHERITED_PROPS } from "../../core/examples/inherited-props";
 import { InlineMarkdown } from "../prose";
 import { DetailSection } from "./frame";
+import { HOST } from "../../core/platforms-shown";
 
 // The detail page's Props (Component.dc.html `#cv-props`): one table of the component's
 // own props interface, banded by the `//` axis headers its source declares (a pick-one
@@ -105,7 +106,10 @@ function bands(group: PropGroup, limit: number): { bands: DataTableGroup[]; tota
  */
 function PropTable({ group, limit = Infinity, footer, sub }: { group: PropGroup; limit?: number; footer?: ReactNode; sub?: boolean }) {
   const { bands: groups } = bands(group, limit);
-  return <DataTable testID="prop-table" reference alignTop attached={sub} columns={sub ? SUB_COLUMNS : COLUMNS} rows={[]} groups={groups} stacks stackBreakpoint="md" footer={footer} />;
+  // Web keeps the hand-off's four-column sheet and pans at its column floors.
+  // Native retains the readable stacked form; an iPhone table otherwise hides
+  // every column after its primary one at compact widths.
+  return <DataTable testID="prop-table" reference alignTop attached={sub} columns={sub ? SUB_COLUMNS : COLUMNS} rows={[]} groups={groups} stacks={HOST !== "web"} stackBreakpoint={HOST !== "web" ? "md" : undefined} footer={footer} />;
 }
 
 /**
@@ -132,8 +136,18 @@ function inheritedNote(name: string): string {
  */
 export function PropsSection({ groups, propsInterface, sectionRef }: { groups: readonly PropGroup[]; propsInterface: string; sectionRef?: Ref<View> }) {
   const [all, setAll] = useState(false);
+  const { tokens } = useTheme();
   const main = groups.find((group) => group.name === propsInterface) ?? groups[0];
-  if (!main) return null;
+  if (!main) {
+    const primitive = propsInterface.replace(/^react-native:/, "").replace(/Props$/, "");
+    return (
+      <DetailSection id="props" title="Props" note="A React Native primitive, re-exported as is." sectionRef={sectionRef}>
+        <View style={{ padding: 18, borderRadius: 16, borderWidth: 1, borderStyle: "dashed", borderColor: tokens["field-border"] ?? tokens.border }}>
+          <Typography sectionNote>Accepts every React Native {primitive} prop unchanged. Canvas re-exports it so every component is built from the same primitive.</Typography>
+        </View>
+      </DetailSection>
+    );
+  }
   const total = main.props.filter((p) => !/^testOnly/.test(p.name)).length;
   const subs = groups.filter((group) => group !== main);
   return (

@@ -42,6 +42,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `small` | Small | [ ] | [ ] | [ ] |  |
 | `large` | Large | [ ] | [ ] | [ ] |  |
 | `stepped` | Stepped | [ ] | [ ] | [ ] |  |
+| `percentandscale` | Percent and scale | [ ] | [ ] | [ ] |  |
 | `disabled` | Disabled | [ ] | [ ] | [ ] |  |
 | `measure` | Measure | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->

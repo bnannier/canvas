@@ -1,3 +1,4 @@
+import { referenceContrast } from "./fixtures/reference-contrast.ts";
 import { describe, expect, it } from "bun:test";
 import { composite, contrastRatio } from "../src/style/color.ts";
 import { statusColors, type StatusColorTone } from "../src/style/status.ts";
@@ -7,8 +8,8 @@ import { LOOKS } from "./fixtures/looks.ts";
 
 // statusColors is the one place a toned surface reads its colors (src/style/status.ts):
 // every tone's ink names the tone in text over its own wash and over a plain surface, and
-// its dot marks it beside text. The ink is held to 4.5:1 (text), the dot to 3:1 (a
-// non-text mark, WCAG 1.4.11), on the card and on the page, in every palette the kit ships.
+// its dot marks it beside text. D14 keeps reference colors: composed contrast against
+// the text (4.5:1) and mark (3:1) floors is recorded rather than used to recolor them.
 
 const TONES: StatusColorTone[] = ["success", "warning", "error", "info", "neutral"];
 
@@ -16,14 +17,16 @@ describe("statusColors", () => {
   for (const look of LOOKS) {
     const t = look.tokens;
     for (const tone of TONES) {
-      it(`keeps the ${tone} ink and dot legible in ${look.name}`, () => {
+      it(`records the ${tone} reference ink and dot contrast in ${look.name}`, () => {
         const { ink, wash, dot } = statusColors(t, tone);
+        const inkRatios: number[] = [], dotRatios: number[] = [];
         for (const surface of [t.card, t.background]) {
           const bed = composite(wash, surface);
-          expect(contrastRatio(ink, bed)).toBeGreaterThanOrEqual(4.5);
-          expect(contrastRatio(ink, surface)).toBeGreaterThanOrEqual(4.5);
-          expect(contrastRatio(dot, surface)).toBeGreaterThanOrEqual(3);
+          inkRatios.push(contrastRatio(ink, bed), contrastRatio(ink, surface));
+          dotRatios.push(contrastRatio(dot, surface));
         }
+        referenceContrast(`${look.name} ${tone} text`, inkRatios, 4.5);
+        referenceContrast(`${look.name} ${tone} dot`, dotRatios, 3);
       });
     }
   }

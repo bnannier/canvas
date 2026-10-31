@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { Image, View, useTheme } from "@nannier/canvas";
+import { View, useTheme } from "@nannier/canvas";
 import { GRAIN, grainOpacity, pageColor } from "./page-look";
 
 // The page behind the docs shell: the v4 hand-off's flat page, the scheme's `background`,
@@ -22,13 +22,11 @@ export function PageBackdrop() {
   );
 }
 
-// The hand-off's grain: one baked 180 px tile of desaturated fractal noise (decision S6,
-// tools/v4/bake-grain.ts, the GRAIN table in ./page-look.ts), tiled over the whole window
-// above everything at the scheme's low opacity, untouchable and silent to assistive tech.
-// Docs-only scaffolding like the page under it. Mount it last in the window's root so it
-// lies over the shell and its chrome (the hand-off's z-index 100).
-const GRAIN_TILE = require("../../assets/images/grain.png");
-
+// The rendered hand-off's grain is a constant gray film. Its design runtime rewrites
+// feTurbulence attributes in the data URI, which makes the SVG paint uniform
+// RGBA(187,187,187,128). Match those observed pixels rather than introducing the
+// procedural noise that the unprocessed SVG would have produced. The same film
+// covers web and native; its authored light/dark opacity remains unchanged.
 export function PageGrain() {
   const { scheme } = useTheme();
   return (
@@ -36,9 +34,7 @@ export function PageGrain() {
       {...(Platform.OS === "web" ? ({ dataSet: { pageGrain: "" } } as object) : null)}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: GRAIN.zIndex, pointerEvents: "none", opacity: grainOpacity(scheme) }}
-    >
-      <Image repeat source={GRAIN_TILE} width="100%" height="100%" />
-    </View>
+      style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: GRAIN.zIndex, pointerEvents: "none", opacity: grainOpacity(scheme), backgroundColor: GRAIN.renderedColor }}
+    />
   );
 }

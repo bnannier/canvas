@@ -23,7 +23,7 @@ Audit checklist for `/components/swatch`. The facts block and the variants table
 | Interaction states | recipes: hover on Palette picker (web row; desktop), focus on Palette picker (web row; desktop), pressed on Palette picker (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `swatch.shared.tsx`: hitSlop, minTarget, platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: Theme-picker radio samples pad the 16px dot to platformMinTarget through hitSlop; display swatches remain noninteractive. |
-| Tests importing it | 4: `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx`, `test/swatch.test.tsx` |
+| Tests importing it | 5: `test/button-looks.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx`, `test/swatch.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/swatch.md`, written by `bun run audit:turn -- --slug=swatch --phase=before\|after` (the before and after capture runs) |
@@ -39,11 +39,18 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `sizes` | Sizes | [ ] | [ ] | [ ] |  |
 | `circle` | Circle | [ ] | [ ] | [ ] |  |
+| `ring` | Ring | [ ] | [ ] | [ ] |  |
 | `inline` | Inline | [ ] | [ ] | [ ] |  |
 | `block` | Block | [ ] | [ ] | [ ] |  |
+| `spectrum` | Spectrum | [ ] | [ ] | [ ] |  |
+| `tiles` | Tiles | [ ] | [ ] | [ ] |  |
+| `bar` | Bar | [ ] | [ ] | [ ] |  |
+| `steps` | Steps | [ ] | [ ] | [ ] |  |
+| `compact` | Compact | [ ] | [ ] | [ ] |  |
 | `selected` | Selected | [ ] | [ ] | [ ] |  |
 | `detailline` | Detail line | [ ] | [ ] | [ ] |  |
 | `palettepicker` | Palette picker | [ ] | [ ] | [ ] |  |
+| `formsizedpalettepicker` | Form-sized palette picker | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

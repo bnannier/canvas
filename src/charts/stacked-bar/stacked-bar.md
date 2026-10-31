@@ -36,8 +36,7 @@ hold its space, such as inside a `Stats` tile.
 
 ### Strip size and wash
 
-`tall` takes the 24 band a Sparkline plots in, with the chart bar radius, so a
-composition and a trend sitting side by side draw as one family. `subtle` washes
+`tall` uses a 24 px strip, or 14 px separated bands when a capacity is supplied. `subtle` washes
 the segments for a bar that supports a headline rather than being one, where a
 solid bar would outweigh everything around it.
 
@@ -51,6 +50,12 @@ solid bar would outweigh everything around it.
     { label: "Unverified", value: 345 }
   ]}
 />
+```
+
+### Detailed capacity
+
+```tsx
+<StackedBar detailed tall max={100} segments={[{label: "Media", value: 38}, {label: "Docs", value: 22}, {label: "Code", value: 14}, {label: "Other", value: 8}]} />
 ```
 
 ## Do & Don't

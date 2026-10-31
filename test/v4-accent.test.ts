@@ -20,9 +20,6 @@ function near(got: string, want: string) {
   expect({ got, want, close: delta <= 1 }).toEqual({ got, want: want, close: true });
 }
 
-/** The looks whose accent text the floor moves off the hand-off's value. */
-const SOLVED_TEXT: Record<"dark" | "light", readonly Palette[]> = { light: ["cyan", "mint", "rose"], dark: [] };
-
 describe("v4 accent", () => {
   it("covers every palette", () => {
     expect(PALETTES.map((p) => String(paletteHue[p])).sort()).toEqual(Object.keys(samples.accent).sort());
@@ -34,11 +31,7 @@ describe("v4 accent", () => {
         const want = samples.accent[String(paletteHue[palette])]![scheme];
         const t = colorsFor(palette, scheme);
         near(t.primary, want.ion);
-        // The accent text keeps the hand-off's value unless it misses its legibility floor,
-        // when the token table solves it (tools/v4/derive-inks.ts); the solved looks are listed
-        // so a change to which ones move is a visible decision.
-        if (SOLVED_TEXT[scheme].includes(palette)) expect(t["primary-text"]).not.toBe(want.ionText);
-        else near(t["primary-text"]!, want.ionText);
+        near(t["primary-text"]!, want.ionText);
       });
     }
   }

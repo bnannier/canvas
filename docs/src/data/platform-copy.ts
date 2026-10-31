@@ -42,7 +42,7 @@ export interface PlatformCopy {
 
 export const PLATFORM_COPY: PlatformCopy = {
   heroBody:
-    "One component API, three native looks. Every surface is now lit glass: a single charged accent, functional motion, and type that carries the hierarchy on its own.",
+    "One component API, three native looks. Every surface is now lit glass: a single charged accent, spring motion, and type that carries the hierarchy on its own.",
   heroSkins: "3 platform skins",
   indexLead: "One API. Three native looks. All of it ships today.",
   indexAfter: ", native on iOS and Android and at home on the web, in five accents, light and dark, glass and solid.",
@@ -50,7 +50,7 @@ export const PLATFORM_COPY: PlatformCopy = {
   skinsLead: "One tree. iOS capsule, Material stadium, Canvas web.",
   skinsCaption: "One tree · three native shapes",
   footer:
-    "One component API for iOS, Android and the web: each platform renders its own control where it ships one, and the Canvas look everywhere else, in the same ion accent and neutral ramps.",
+    'Direction "Light as material". Restyles all 107 exports of @nannier/canvas and replaces the Dark Factory blush / mint web skin (Manrope, Geist Mono). Tokens above map 1:1 onto src/style/tokens.ts and styles/tokens/*.css; iOS and Android skins keep their platform shapes and pick up the ion + neutral ramps.',
   statFoot: "MIT licensed. Web, iOS and Android from one tree.",
   articleSkins: { title: "Designing for three skins", description: "One tree becomes an iOS capsule, a Material stadium and a lit web control." },
   samplePlatform: "Android",

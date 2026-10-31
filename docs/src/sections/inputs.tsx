@@ -1,7 +1,7 @@
+import { SectionVignette } from "../ui/showcase/section-vignette";
 import type { ReactNode } from "react";
 import {
   Autocomplete,
-  Card,
   Column,
   Divider,
   Field,
@@ -21,9 +21,8 @@ import {
   Switch,
   Textarea,
   Typography,
-  useFormFactor,
 } from "@nannier/canvas";
-import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
+import { ShowcaseCard, ShowcaseGrid } from "../ui/showcase";
 
 // The Inputs section page (`Canvas v4.0.0 Inputs.dc.html`): its hero vignette and its seven
 // cards, composed of live kit fields with the hand-off's copy. An option list the hand-off
@@ -31,24 +30,9 @@ import { ShowcaseCard, ShowcaseGrid, VignetteStage } from "../ui/showcase";
 // overlay in the kit: open, it would cover the card's next rows, and on a phone it presents
 // as a sheet over the whole page (AO-6), so each starts closed and opens on press. The differences are recorded in the Phase 5 report.
 
-/** The hero's still frame: a focused URL field and an empty verification code. */
+/** The animated hero: a focused URL field and an empty verification code. */
 export function Vignette() {
-  // Six full-size cells overrun a phone-width stage; the small cells fit it.
-  const phone = useFormFactor() === "phone";
-  return (
-    <VignetteStage>
-      <Card raised>
-        <Column relaxed>
-          <InteractionOverride focused>
-            <Input label="Workspace URL" suffix=".canvas.dev" accessibilityLabel="Workspace URL" />
-          </InteractionOverride>
-          <Field label="Verification code">
-            <InputOTP length={6} small={phone} />
-          </Field>
-        </Column>
-      </Card>
-    </VignetteStage>
-  );
+  return <SectionVignette kind="inputs" />;
 }
 
 /** Input · States: helper, focused, icon, error and disabled. */

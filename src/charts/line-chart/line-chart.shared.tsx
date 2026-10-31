@@ -1,7 +1,20 @@
 import { useId } from "react";
-import { Circle, Defs, LinearGradient, Line as SvgLine, Path, Stop } from "react-native-svg";
+import {
+  Circle,
+  Defs,
+  LinearGradient,
+  Line as SvgLine,
+  Path,
+  Stop,
+} from "react-native-svg";
 import { type ChartSkin } from "../shared/types.js";
-import { type CartesianSeriesProps, chartShell, finite, seriesPoints, useSeriesChart } from "../shared/cartesian-series.js";
+import {
+  type CartesianSeriesProps,
+  chartShell,
+  finite,
+  seriesPoints,
+  useSeriesChart,
+} from "../shared/cartesian-series.js";
 import { areaPath, linePath, monotonePath } from "../shared/chart-math.js";
 import { CHART_LOOK } from "../shared/charts.styles.js";
 
@@ -36,10 +49,20 @@ export interface LineChartProps extends CartesianSeriesProps {
 /** Build a LineChart from a platform skin. */
 export function createLineChart(skin: ChartSkin) {
   return function LineChart(props: LineChartProps) {
-    const baseline = Number.isFinite(props.baseline) ? (props.baseline as number) : undefined;
+    const baseline = Number.isFinite(props.baseline)
+      ? (props.baseline as number)
+      : undefined;
     // Gain/loss auto tone: single series vs the baseline, by its last value.
-    const lastValue = props.series.length === 1 ? finite(props.series[0].values[props.labels.length - 1]) : undefined;
-    const autoTone = baseline != null && lastValue != null ? (lastValue >= baseline ? "success" : "destructive") : undefined;
+    const lastValue =
+      props.series.length === 1
+        ? finite(props.series[0].values[props.labels.length - 1])
+        : undefined;
+    const autoTone =
+      baseline != null && lastValue != null
+        ? lastValue >= baseline
+          ? "success"
+          : "destructive"
+        : undefined;
     const ctx = useSeriesChart("LineChart", props, false, {
       extraExtent: baseline != null ? [baseline] : undefined,
       autoTone,
@@ -47,6 +70,7 @@ export function createLineChart(skin: ChartSkin) {
       // anchoring at zero, so intraday moves stay readable.
       zeroBased: baseline == null,
     });
+    const specimen = ctx.presentation?.kind === "line";
     const curved = !!props.curved;
     const dots = !!props.dots;
     const gradientId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
@@ -60,13 +84,24 @@ export function createLineChart(skin: ChartSkin) {
         {lead && props.fade ? (
           <Defs>
             <LinearGradient id={`${gradientId}f`} x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={ctx.colorOf(0)} stopOpacity={CHART_LOOK.fadeTop} />
+              <Stop
+                offset="0"
+                stopColor={ctx.colorOf(0)}
+                stopOpacity={CHART_LOOK.fadeTop}
+              />
               <Stop offset="1" stopColor={ctx.colorOf(0)} stopOpacity={0} />
             </LinearGradient>
           </Defs>
         ) : null}
         {lead && props.fade ? (
-          <Path d={areaPath(seriesPoints(lead, props.labels, layout), layout.plotH, curved)} fill={`url(#${gradientId}f)`} />
+          <Path
+            d={areaPath(
+              seriesPoints(lead, props.labels, layout),
+              layout.plotH,
+              curved
+            )}
+            fill={`url(#${gradientId}f)`}
+          />
         ) : null}
         {/* Dashed reference line (e.g. previous close). */}
         {baseline != null ? (
@@ -88,14 +123,38 @@ export function createLineChart(skin: ChartSkin) {
               key={sr.id ?? `s${i}`}
               d={curved ? monotonePath(pts) : linePath(pts)}
               stroke={color}
-              strokeWidth={i === 0 ? CHART_LOOK.leadStroke : CHART_LOOK.stroke}
-              strokeDasharray={sr.dashed ? CHART_LOOK.seriesDash : undefined}
+              strokeWidth={
+                specimen
+                  ? i === 0
+                    ? 2.5
+                    : 1.5
+                  : i === 0
+                  ? CHART_LOOK.leadStroke
+                  : CHART_LOOK.stroke
+              }
+              strokeDasharray={
+                specimen && i === 1
+                  ? "4,5"
+                  : sr.dashed
+                  ? CHART_LOOK.seriesDash
+                  : undefined
+              }
               fill="none"
               strokeLinejoin="round"
               strokeLinecap={sr.dashed ? "butt" : "round"}
             />
           );
         })}
+        {specimen && lead ? (
+          <Circle
+            cx={layout.band!.center(props.labels.length - 1)}
+            cy={layout.y(finite(lead.values[props.labels.length - 1]))}
+            r={5}
+            fill={ctx.colorOf(0)}
+            stroke={ctx.tokens.card}
+            strokeWidth={3}
+          />
+        ) : null}
         {/* Dots are width-aware: on a dense plot where bands are narrower than
             a dot, the markers would blob into the line, so they auto-suppress
             and the line alone carries the shape. */}
@@ -104,7 +163,15 @@ export function createLineChart(skin: ChartSkin) {
               const pts = seriesPoints(sr, props.labels, layout);
               const color = ctx.colorOf(i);
               return pts.map((p, j) => (
-                <Circle key={`${sr.id ?? `s${i}`}d${j}`} cx={p.x} cy={p.y} r={CHART_LOOK.dotRadius} fill={ctx.tokens.card} stroke={color} strokeWidth={CHART_LOOK.dotStroke} />
+                <Circle
+                  key={`${sr.id ?? `s${i}`}d${j}`}
+                  cx={p.x}
+                  cy={p.y}
+                  r={CHART_LOOK.dotRadius}
+                  fill={ctx.tokens.card}
+                  stroke={color}
+                  strokeWidth={CHART_LOOK.dotStroke}
+                />
               ));
             })
           : null}
