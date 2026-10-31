@@ -58,6 +58,7 @@ const DATA_ROLES: Record<string, string> = {
   "docs/src/core/data/templates/identities.tsx": "each identity's `role` is a job (Admin, Editor, Viewer)",
   "src/organisms/chat/chat.shared.tsx": "ChatMessageData types `role` as the message's author (user, assistant, system)",
   "docs/src/core/data/templates/chat.tsx": MESSAGE_AUTHOR,
+  "docs/src/ui/detail/reference-specimens.tsx": MESSAGE_AUTHOR,
   "docs/src/sections/foundations.tsx": "each type-scale row's `role` names a type-scale role (display, h1, body, eyebrow)",
   "docs/src/sections/data.tsx": MESSAGE_AUTHOR,
   "docs/src/sections/data.data.ts": MESSAGE_AUTHOR,
