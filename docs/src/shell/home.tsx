@@ -170,7 +170,7 @@ function Index() {
             <IndexLink href={column.href} style={{ gap: 8, paddingBottom: 12, borderBottomWidth: 1, borderColor: t.border }}>
               <Typography eyebrow primary>{column.num}</Typography>
               <Row between baseline snug>
-                <Typography h5 style={{ fontSize: 18, lineHeight: 20.7, letterSpacing: -0.27, fontWeight: "500", flexShrink: 1 }}>{column.title}</Typography>
+                <Typography h5 level={3} style={{ fontSize: 18, lineHeight: 20.7, letterSpacing: -0.27, fontWeight: "500", flexShrink: 1 }}>{column.title}</Typography>
                 <Typography caption mono muted style={{ lineHeight: 16, fontWeight: "500" }}>{column.items.length}</Typography>
               </Row>
             </IndexLink>

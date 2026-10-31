@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Platform } from "react-native";
 import type { ChatMessageData } from "@nannier/canvas";
 import type { ExampleScope } from "../../core/scope";
 import type { PropDescriptors } from "./knobs";
@@ -98,6 +99,7 @@ function ScrollSpecimen({ scope, horizontal }: { scope: ExampleScope; horizontal
       <ScrollView
         testID="detail-reference-scroll-view"
         accessibilityLabel="Numbered tiles"
+        tabIndex={Platform.select({ web: 0, default: undefined })}
         horizontal={horizontal}
         style={{ height: horizontal ? 102 : 180, borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens["surface-sunken"] }}
         contentContainerStyle={{ padding: 10, gap: horizontal ? 10 : 8 }}

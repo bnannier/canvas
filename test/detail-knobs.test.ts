@@ -18,6 +18,16 @@ const BUTTON_KNOBS: readonly Knob[] = [
 ];
 
 describe("reference values passed to live kit specimens", () => {
+  it("turns the Toast action label into the kit's named action and valid copyable JSX", () => {
+    const knobs = DETAIL_SPECS.toast!.knobs;
+    const props = knobProps(knobs, initialKnobs(knobs));
+    expect(props.action).toBe("Undo");
+    expect(kitProps("Toast", props).action).toEqual({ actionLabel: "Undo" });
+    expect(jsxCode("Toast", { action: "Undo" })).toBe('<Toast action={{ label: "Undo", onPress: () => {} }} />');
+    expect(kitProps("Toast", { action: " " })).not.toHaveProperty("action");
+    expect(kitProps("Toast", { message: "Saved" })).not.toHaveProperty("action");
+  });
+
   it("renders the authored oklch swatch through a supported native sRGB color", () => {
     const knobs = DETAIL_SPECS.swatch!.knobs;
     const props = knobProps(knobs, initialKnobs(knobs));

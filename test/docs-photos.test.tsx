@@ -54,4 +54,18 @@ describe("the docs' sample photo wrapper", () => {
     // The sample path still resolves to the bundled clip on every render.
     for (const source of sources) expect(source.uri).toEndWith("/docs/public/video-sample.mp4");
   });
+
+  it("resolves the Sidebar account photo to its bundled asset without changing the example data", () => {
+    const original = { name: "Northwind", detail: "24 members", src: "/grace-hopper.jpg" };
+    let received: typeof original | undefined;
+    function Sidebar({ account }: { account: typeof original }) {
+      received = account;
+      return null;
+    }
+    render(createElement(scopeOf({ Sidebar }).Sidebar, { account: original }));
+    expect(received?.src).toEndWith("/docs/public/grace-hopper.jpg");
+    expect(received?.name).toBe(original.name);
+    expect(received?.detail).toBe(original.detail);
+    expect(original.src).toBe("/grace-hopper.jpg");
+  });
 });

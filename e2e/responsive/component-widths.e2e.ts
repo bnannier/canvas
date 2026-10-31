@@ -1,5 +1,5 @@
 /**
- * Nothing scrolls sideways, and component previews follow their real container bounds.
+ * Pages stay within their bounds, and component previews follow their real containers.
  *
  * Responsiveness is a core requirement of every Canvas component rather than an
  * add-on, and horizontal overflow is how a failure of it shows up: a table that will
@@ -23,20 +23,35 @@ import { expect, test } from "../support/fixtures";
 type Overflow = { document: number; page: number };
 
 /**
- * How far past its scrollport the widest Props table's content runs (0 without one).
- * A DataTable clips inside its own horizontal scroller, so a table that will not
- * narrow never reaches the page overflow above: the Props tables once grew to their
- * longest description on one line (9,468 px on the Input page at 390), every
- * description off screen, while the page itself fit.
+ * The v4 Props reference deliberately keeps four columns on a phone. Its wider
+ * sheet must stay inside a bounded, keyboard-accessible horizontal scrollport;
+ * checking page overflow alone would miss a sheet silently clipped by its card.
  */
-async function readPropTableOverflow(page: import("@playwright/test").Page): Promise<number> {
-  return page.evaluate(() => {
-    const past = [...document.querySelectorAll('[data-testid="prop-table"]')].map((table) => {
-      const scroller = [...table.querySelectorAll("div")].find((node) => getComputedStyle(node).overflowX === "auto");
-      return scroller ? scroller.scrollWidth - scroller.clientWidth : 0;
-    });
-    return Math.max(0, ...past);
-  });
+async function expectContainedPropTables(page: import("@playwright/test").Page): Promise<void> {
+  for (const table of await page.getByTestId("prop-table").all()) {
+    // Closed sub-component disclosures do not expose their tables yet.
+    if (!(await table.isVisible())) continue;
+    const scroller = table.locator('[tabindex="0"]').filter({ has: page.getByRole("table") });
+    await expect(scroller, "the wide Props sheet needs a keyboard scroll stop").toHaveCount(1);
+    await expect(scroller).toHaveCSS("overflow-x", "auto");
+    for (const name of ["Prop", "Type", "Default", "Description"]) {
+      await expect(table.getByRole("columnheader", { name, exact: true })).toHaveCount(1);
+    }
+    const tableBox = (await table.boundingBox())!;
+    const scrollBox = (await scroller.boundingBox())!;
+    expect(tableBox.x, "the Props frame escapes the left of the page").toBeGreaterThanOrEqual(0);
+    expect(tableBox.x + tableBox.width, "the Props frame escapes the right of the page").toBeLessThanOrEqual(page.viewportSize()!.width);
+    expect(scrollBox.x).toBeGreaterThanOrEqual(tableBox.x);
+    expect(scrollBox.x + scrollBox.width).toBeLessThanOrEqual(tableBox.x + tableBox.width);
+    const initial = await scroller.evaluate((node) => ({ left: node.scrollLeft, past: node.scrollWidth - node.clientWidth }));
+    expect(initial.past, "the four-column Props sheet should pan at phone width").toBeGreaterThan(0);
+    await scroller.focus();
+    await expect(scroller).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => scroller.evaluate((node) => node.scrollLeft), { message: "the focused Props sheet does not pan with the keyboard" }).toBeGreaterThan(initial.left);
+    // Panning the sheet must not move its frame or overflow the page.
+    expect(await scroller.boundingBox()).toMatchObject({ x: scrollBox.x, width: scrollBox.width });
+  }
 }
 
 /** How far past its own box a node's content runs right now, in CSS pixels. */
@@ -112,8 +127,10 @@ test.describe("phone width", () => {
   for (const route of contentRoutes()) {
     test(`${route.kind} ${route.name} fits at 390`, async ({ page }) => {
       await expectFits(page, route.path, { width: 390, height: 844 }, KNOWN_PHONE_OVERFLOW[route.path]);
-      // A component page's Props tables stack on a phone, so none scrolls sideways.
-      expect(await settled(() => readPropTableOverflow(page)), "a Props table scrolls sideways").toBeLessThanOrEqual(0);
+      await expectContainedPropTables(page);
+      const afterPan = await overflow(page);
+      expect(afterPan.document, "panning Props overflows the document").toBeLessThanOrEqual(0);
+      expect(afterPan.page, "panning Props overflows the page scroller").toBeLessThanOrEqual(0);
     });
   }
 });

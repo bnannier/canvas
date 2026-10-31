@@ -22,8 +22,7 @@ interface Variant {
   viewport: { width: number; height: number };
 }
 
-// 375 rather than 390: it is the narrower of the two phone widths the docs' own
-// form-factor switcher offers, so it is the stricter overflow case.
+// A 375 px phone is the stricter overflow case than the suite's usual 390 px width.
 const VARIANTS: Variant[] = [
   { name: "desktop dark", scheme: "dark", viewport: { width: 1280, height: 900 } },
   { name: "phone light", scheme: "light", viewport: { width: 375, height: 812 } },
@@ -76,6 +75,9 @@ for (const variant of VARIANTS) {
         viewport: variant.viewport,
       });
       await expect(page.getByText("Page not found")).toBeVisible();
+      await expect(page).toHaveURL(new RegExp(`${BASE_PATH}/definitely-not-a-route(?:\\?|$)`));
+      await page.getByRole("button", { name: "Go home", exact: true }).click();
+      await expect(page.getByRole("heading", { level: 1, name: "Light as material.", exact: true })).toBeVisible();
     });
   });
 }

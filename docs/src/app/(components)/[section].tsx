@@ -1,6 +1,7 @@
-import { Redirect, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { Column } from "@nannier/canvas";
 import { Page } from "../../ui/page";
+import { NotFoundPage } from "../../ui/not-found";
 import { SectionHero } from "../../ui/showcase";
 import { SECTION_PAGES } from "../../sections";
 import { SECTION_ROOMS, getSectionRoom, type SectionId } from "../../data/rooms";
@@ -15,7 +16,7 @@ export async function generateStaticParams() {
 export default function SectionScreen() {
   const { section } = useLocalSearchParams<{ section: string }>();
   const room = section ? getSectionRoom(section) : undefined;
-  if (!room) return <Redirect href="/" />;
+  if (!room) return <NotFoundPage />;
   const { Vignette, Cards } = SECTION_PAGES[room.id as SectionId];
   return (
     <Page>

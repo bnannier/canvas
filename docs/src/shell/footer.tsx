@@ -10,7 +10,7 @@ export function Footer() {
       <Divider />
       <Row between wrap loose alignStart>
         <View style={{ gap: 8, maxWidth: 450.203125, flexShrink: 1 }}>
-          <Row snug alignCenter><CanvasMark size={22} /><Typography h5 style={{ fontSize: 16, lineHeight: 16, fontWeight: "600", letterSpacing: 0 }}>Canvas v4.0.0 · component library</Typography></Row>
+          <Row snug alignCenter><CanvasMark size={22} /><Typography h5 level={2} style={{ fontSize: 16, lineHeight: 16, fontWeight: "600", letterSpacing: 0 }}>Canvas v4.0.0 · component library</Typography></Row>
           <Typography small muted style={{ lineHeight: 19.5 }}>{PLATFORM_COPY.footer}</Typography>
         </View>
         <Column compact>

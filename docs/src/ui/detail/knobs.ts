@@ -13,15 +13,21 @@ export type KnobState = Readonly<Record<string, KnobValue>>;
 
 /**
  * A prop as the playground describes it before it renders: a literal, an Icon element by
- * glyph name, or another kit element by export name (an anatomy demo's slot content).
+ * glyph name, another kit element by export name, or a static specimen's action label.
  */
-export type PropValue = string | number | boolean | { icon: string } | { element: string; children?: string };
+export type PropValue = string | number | boolean | { icon: string } | { element: string; children?: string } | { actionLabel: string };
 
 /** The props a knob state passes, in the order the JSX prints them. */
 export type PropDescriptors = Readonly<Record<string, PropValue>>;
 
 /** Translate the prototype's units into the public kit API after all specimen overrides. */
 export function kitProps(component: string, props: PropDescriptors): PropDescriptors {
+  if (component === "Toast" && typeof props.action === "string") {
+    const next = { ...props };
+    if (props.action.trim()) next.action = { actionLabel: props.action };
+    else delete next.action;
+    return next;
+  }
   if (component === "Swatch" && typeof props.color === "string") {
     // RN colors use sRGB strings; keep the editable authored oklch notation in the knob.
     const match = /^oklch\(\s*(\d*\.?\d+)(%)?\s+(\d*\.?\d+)\s+([-+]?\d*\.?\d+)(?:deg)?\s*\)$/.exec(props.color);
@@ -172,6 +178,7 @@ function attribute(name: string, value: PropValue): string {
   if (typeof value === "string") return `${name}="${value}"`;
   // An icon slot prints the bare glyph: the host colours it (a Button's icon slots take its label ink).
   if ("icon" in value) return `${name}={<Icon ${value.icon} size={16} />}`;
+  if ("actionLabel" in value) return `${name}={{ label: ${JSON.stringify(value.actionLabel)}, onPress: () => {} }}`;
   return `${name}={<${value.element}${value.children ? `>${value.children}</${value.element}>` : " />"}}`;
 }
 

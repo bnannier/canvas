@@ -128,7 +128,7 @@ function resolveDeep(value: unknown, depth: number): unknown {
 // re-measures the stage).
 const wrappers = new WeakMap<object, unknown>();
 
-// Wrap an image-bearing component (Image, Avatar, MediaObject, GridList, Feed, DescriptionList) so
+// Wrap an image-bearing component (including Sidebar's nested account) so
 // any sample photo path in its props resolves to the bundled asset before the real
 // component renders. Keeps the example code clean and copy-pasteable (`src="/rachel-chen.jpg"`)
 // while making the photos load on iOS, Android, and a subpath-hosted web export.
@@ -152,7 +152,7 @@ export function withResolvedPhotos<P>(Component: ComponentType<P>): ComponentTyp
 }
 
 /** The scope keys whose components can carry a sample photo (see withResolvedPhotos). */
-export const PHOTO_COMPONENTS = ["Image", "Avatar", "AvatarMenu", "MediaObject", "CardMedia", "GridList", "Feed", "DescriptionList", "Video"] as const;
+export const PHOTO_COMPONENTS = ["Image", "Avatar", "AvatarMenu", "MediaObject", "CardMedia", "GridList", "Feed", "DescriptionList", "Video", "Sidebar"] as const;
 
 /** Wrap every photo-bearing component in a built example scope, in place. */
 export function applyResolvedPhotos(scope: Record<string, unknown>): void {

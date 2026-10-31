@@ -45,7 +45,7 @@ test("the launch URL seeds the scheme, and a later navigation does not re-seed i
   // Navigate within the app and back again: the back navigation is client-side too, and
   // lands on the launch URL, which still says scheme=light; the switch must win.
   await page.getByRole("navigation", { name: "Primary", exact: true }).getByRole("link", { name: "Controls", exact: true }).click();
-  await expect(page).toHaveURL(/\/sections\/controls/);
+  await expect(page).toHaveURL(/\/controls(?:\?|$)/);
   await page.goBack();
   await expect(page).toHaveURL(/\/components\/button\?.*scheme=light/);
   expect(await readScheme(page), "a client-side navigation re-seeded the scheme").toBe("dark");
