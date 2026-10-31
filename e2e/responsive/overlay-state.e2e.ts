@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { FIXED_TIME, animationFrames, fitElementForScreenshot, gotoDocs, previewCard, settledBox, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 import { OVERLAYS } from "../support/overlays";
@@ -63,8 +64,7 @@ for (const slug of ["dialog", "calendar", "grid-lists"] as const) {
     });
 
     try {
-      const screenshot = await frame.screenshot({ animations: "disabled" });
-      await testInfo.attach(`${slug} crop`, { body: screenshot, contentType: "image/png" });
+      await attachVisualDigest(frame, testInfo, `${slug} crop`);
       // Real frames: a resize event is delivered in a rendering update, and page.clock
       // fakes the page's own requestAnimationFrame.
       await animationFrames(page, 2);

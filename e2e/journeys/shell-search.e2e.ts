@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
@@ -23,7 +24,7 @@ for (const width of [1280, 390]) {
           await expect(input).toBeFocused();
           await expect(input).toHaveValue("");
           await input.fill("Avatar");
-          await page.screenshot({ path: testInfo.outputPath(`search-${close}.png`) });
+          await attachVisualDigest(page, testInfo, `search-${close}`);
           if (close === "Escape") await page.keyboard.press("Escape");
           else await dialog.click({ position: { x: 8, y: 8 } });
           await expect(dialog).toHaveCount(0);

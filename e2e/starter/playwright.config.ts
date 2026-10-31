@@ -29,8 +29,8 @@ export default defineConfig({
     timezoneId: "UTC",
     colorScheme: "light",
     contextOptions: { reducedMotion: "reduce" },
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
+    trace: "off",
+    screenshot: "off",
     video: "off",
   },
   projects: [

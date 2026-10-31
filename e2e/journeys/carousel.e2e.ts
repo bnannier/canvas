@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import type { Locator } from "@playwright/test";
 import { BLOCKING_IMPACTS, scan, scanStructure } from "../support/axe";
 import { gotoDocs } from "../support/docs";
@@ -73,9 +74,7 @@ for (const width of [1280, 390]) {
       // Focus can scroll the slide title beneath the fixed docs banner. Center
       // the capture target so the screenshot includes the complete component.
       await root.evaluate((element) => element.scrollIntoView({ block: "center" }));
-      const screenshot = testInfo.outputPath(`carousel-${width}-${scheme}.png`);
-      await root.screenshot({ path: screenshot });
-      await testInfo.attach("carousel", { path: screenshot, contentType: "image/png" });
+      await attachVisualDigest(root, testInfo, "carousel");
       expect((await scan(page, '[data-testid="carousel-uncontrolled"]')).filter((finding) => BLOCKING_IMPACTS.has(finding.impact))).toEqual([]);
       expect(await scanStructure(page, '[data-testid="carousel-uncontrolled"]', ["scrollable-region-focusable"])).toEqual([]);
     });

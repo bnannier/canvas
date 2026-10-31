@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
@@ -85,9 +86,7 @@ for (const scheme of ["light", "dark"] as const) {
       expect(bounds!.x).toBeGreaterThanOrEqual(0);
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
       expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(900);
-      const screenshot = testInfo.outputPath("drawer-hosted-menu.png");
-      await page.screenshot({ path: screenshot });
-      await testInfo.attach("drawer-hosted-menu", { path: screenshot, contentType: "image/png" });
+      await attachVisualDigest(page, testInfo, "drawer-hosted-menu");
       await page.keyboard.press("Escape");
       await expect(page.getByRole("menu")).toHaveCount(0);
       await expect(drawer).toBeVisible();

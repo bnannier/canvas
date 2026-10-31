@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { gotoDocs, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 import { OVERLAYS } from "../support/overlays";
@@ -36,9 +37,7 @@ for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const
       expect(box.y).toBeGreaterThanOrEqual(band.y);
       expect(box.y + box.height).toBeLessThanOrEqual(band.y + band.height);
     }
-    const shot = info.outputPath(`material-dialog-${width}-${scheme}.png`);
-    await page.screenshot({ path: shot });
-    await info.attach("viewport dialog", { path: shot, contentType: "image/png" });
+    await attachVisualDigest(page, info, "viewport dialog");
     await page.keyboard.press("Escape");
     await expect(dialog).toHaveCount(0);
     await expect(trigger).toBeFocused();
@@ -49,9 +48,7 @@ for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const
     await expect(menu.getByRole("menuitem", { name: "Keep editor", exact: true })).toBeInViewport({ ratio: 1 });
     await expect(menu.getByRole("menuitem", { name: "Review settings", exact: true })).toBeInViewport({ ratio: 1 });
     expect(await menu.evaluate(element => element.closest("[data-page-scroll]") !== null)).toBe(false);
-    const menuShot = info.outputPath(`material-menu-${width}-${scheme}.png`);
-    await page.screenshot({ path: menuShot });
-    await info.attach("viewport menu", { path: menuShot, contentType: "image/png" });
+    await attachVisualDigest(page, info, "viewport menu");
     await page.keyboard.press("Escape");
     await expect(menu).toHaveCount(0);
   });
@@ -67,9 +64,7 @@ for (const slug of ["dialog"]) test(`${slug} catalogue overlay keeps its contain
   await recipe.open(page);
   await expect(panel).toHaveCount(initial + recipe.adds);
   await expect(panel.last()).toBeVisible();
-  const shot = info.outputPath(`catalogue-${slug}-contained.png`);
-  await page.screenshot({ path: shot });
-  await info.attach("contained catalogue overlay", { path: shot, contentType: "image/png" });
+  await attachVisualDigest(page, info, "contained catalogue overlay");
   await page.keyboard.press("Escape");
   await expect(panel).toHaveCount(initial);
 });

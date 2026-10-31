@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { expect, test } from "../support/fixtures";
 import { gotoDocs } from "../support/docs";
 
@@ -74,9 +75,7 @@ for (const scheme of ["light", "dark"] as const) {
     await input.fill("Ap");
     await expect(dialog.getByRole("listbox")).toBeVisible();
     await expect(page.getByRole("listbox")).toHaveCount(1);
-    const shot = info.outputPath(`drawer-touch-${scheme}.png`);
-    await page.screenshot({ path: shot });
-    await info.attach("drawer-touch", { path: shot, contentType: "image/png" });
+    await attachVisualDigest(page, info, "drawer-touch");
     await dialog.getByRole("option", { name: "Apricot", exact: true }).tap();
     await expect(input).toHaveValue("Apricot");
     await expect(dialog).toBeVisible();

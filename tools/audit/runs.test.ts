@@ -268,8 +268,8 @@ describe("reading real runs", () => {
     root = null;
   });
 
-  it("reads the variant, state and page runners' records as they write them", () => {
-    root = checkoutWithRealRuns();
+  it("reads the variant, state and page runners' records as they write them", async () => {
+    root = await checkoutWithRealRuns();
     const listed = listRuns(root);
     expect(listed.problems).toEqual([]);
     expect(listed.runs.map((run) => [run.id, run.status, run.served, run.fresh])).toEqual([

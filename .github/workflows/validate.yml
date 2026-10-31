@@ -369,16 +369,6 @@ jobs:
       - name: End-to-end suite
         run: bunx playwright test --shard=${{ matrix.shard }}/4 --reporter=github,html
 
-      - name: Upload the shard's Playwright report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report-shard-${{ matrix.shard }}
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 7
-
   # This is an independent registry consumer. Passing library checks gate it,
   # but it builds its own app and never installs the sealed candidate package.
   # The smoke app (smoke/) built for the browser from the sealed candidate, at the three
@@ -442,17 +432,6 @@ jobs:
         env:
           SMOKE_OUTPUT: ${{ runner.temp }}/native-smoke
 
-      - name: Upload the smoke app's Playwright report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report-smoke-app
-          path: |
-            playwright-report/smoke-app/
-            test-results/smoke-app/
-          retention-days: 14
-          if-no-files-found: ignore
-
   starter:
     needs: check
     runs-on: ubuntu-latest
@@ -497,13 +476,3 @@ jobs:
 
       - name: Verify starter user journeys across browser engines and touch
         run: bunx playwright test --config e2e/starter/playwright.config.ts
-
-      - name: Upload the starter's Playwright report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report-starter
-          path: |
-            playwright-report/starter/
-            test-results/starter/
-          retention-days: 7

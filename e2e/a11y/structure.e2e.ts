@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { gotoDocs, isDetailPath } from "../support/docs";
 import { attach, describe as describeViolations, scanStructure, STRUCTURAL_RULES } from "../support/axe";
 import { expect, test } from "../support/fixtures";
@@ -87,7 +88,7 @@ for (const width of [1280, 390]) {
         await attach(testInfo, "structure", findings);
         expect(findings, describeViolations(findings)).toEqual([]);
         if (["/components", "/integration", "/components/avatar"].includes(entry.path)) {
-          await page.screenshot({ path: testInfo.outputPath("headings.png") });
+          await attachVisualDigest(page, testInfo, "headings");
         }
       });
     }

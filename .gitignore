@@ -5,8 +5,43 @@ dist/
 .env*
 coverage/
 
-# Playwright run artifacts (reports, traces, failure screenshots). The visual
-# BASELINES under e2e/visual/__screenshots__ are committed; these are not.
+# Test screenshots are temporary, including visual reference images. Keep only
+# non-reversible pixel digests and text measurements in Git; never image archives.
+**/__screenshots__/
+e2e/**/*.png
+e2e/**/*.jpg
+e2e/**/*.jpeg
+e2e/**/*.webp
+e2e/**/*.gif
+test/**/*.png
+test/**/*.jpg
+test/**/*.jpeg
+test/**/*.webp
+test/**/*.gif
+test/screenshots/
+tools/native/reference/**/*.png
+tools/native/reference/**/*.jpg
+tools/native/reference/**/*.jpeg
+tools/native/reference/**/*.webp
+tools/native/reference/**/*.gif
+tools/native/reference/**/*.mp4
+tools/native/reference/**/*.webm
+tools/native/reference/**/*.zip
+tools/native/reference/**/*.tar*
+tools/native/reference/**/*.tgz
+tools/audit/fixtures/**/*.png
+tools/audit/fixtures/**/*.jpg
+tools/audit/fixtures/**/*.jpeg
+tools/audit/fixtures/**/*.webp
+tools/audit/fixtures/**/*.gif
+tools/audit/fixtures/**/*.zip
+tools/audit/fixtures/**/*.tar*
+tools/audit/fixtures/**/*.tgz
+**/*-actual.png
+**/*-expected.png
+**/*-diff.png
+
+# Playwright reports and traces can embed screenshots, so ignore whole outputs.
 playwright-report/
 test-results/
 blob-report/

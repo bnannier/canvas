@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { expect, test } from "../support/fixtures";
 import { gotoDocs } from "../support/docs";
 import { scanStructure } from "../support/axe";
@@ -36,9 +37,7 @@ for (const scheme of ["light", "dark"] as const) {
     expect(actual.card.x).toBeGreaterThanOrEqual(0);
     expect(actual.card.right).toBeLessThanOrEqual(width);
     await expect(panel.getByRole("button", { name: "Close details", exact: true })).toBeInViewport({ ratio: 1 });
-    const shot = info.outputPath(`wide-popover-${width}-${scheme}.png`);
-    await page.screenshot({ path: shot });
-    await info.attach("wide popover", { path: shot, contentType: "image/png" });
+    await attachVisualDigest(page, info, "wide popover");
   });
 }
 
@@ -72,9 +71,7 @@ for (const scheme of ["light", "dark"] as const) {
     const covered = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('[role="navigation"]') == null, { x: 195, y: pill.y + pill.height / 2 });
     expect(covered).toBe(true);
     await expect(panel.getByRole("button", { name: "Close details", exact: true })).toBeInViewport({ ratio: 1 });
-    const shot = info.outputPath(`wide-popover-sheet-${scheme}.png`);
-    await page.screenshot({ path: shot });
-    await info.attach("wide popover sheet", { path: shot, contentType: "image/png" });
+    await attachVisualDigest(page, info, "wide popover sheet");
   });
 }
 
@@ -96,9 +93,7 @@ for (const scheme of ["light", "dark"] as const) {
     // The footer's last mono hint (the v4 footer reads "↑↓ move / ↵ open / esc close").
     await expect(page.getByText("esc close", { exact: true })).toBeInViewport({ ratio: 1 });
     await expect(input).toBeFocused();
-    const shot = info.outputPath(`command-edge-${scheme}.png`);
-    await page.screenshot({ path: shot });
-    await info.attach("fitted command", { path: shot, contentType: "image/png" });
+    await attachVisualDigest(page, info, "fitted command");
     await input.press("Enter");
     await expect(page.getByTestId("command-selection")).toHaveText("Command selection: Option 40");
     await expect(input).toHaveCount(0);
@@ -116,9 +111,7 @@ for (const scheme of ["light", "dark"] as const) {
     await input.press("End");
     const option = page.getByRole("option", { name: "Option 40", exact: true });
     await expect(option).toBeInViewport({ ratio: 1 });
-    const shot = info.outputPath(`autocomplete-edge-${scheme}.png`);
-    await page.screenshot({ path: shot });
-    await info.attach("fitted options", { path: shot, contentType: "image/png" });
+    await attachVisualDigest(page, info, "fitted options");
     await input.press("Enter");
     await expect(input).toHaveValue("Option 40");
     await expect(list).toHaveCount(0);
@@ -135,9 +128,7 @@ for (const scheme of ["light", "dark"] as const) {
     const last = page.getByRole("menuitem", { name: "Option 40", exact: true });
     await expect(last).toBeFocused();
     await expect(last).toBeInViewport({ ratio: 1 });
-    const shot = info.outputPath(`menu-edge-${scheme}.png`);
-    await page.screenshot({ path: shot });
-    await info.attach("fitted menu", { path: shot, contentType: "image/png" });
+    await attachVisualDigest(page, info, "fitted menu");
     expect(await scanStructure(page, undefined, ["scrollable-region-focusable", "aria-hidden-focus"])).toEqual([]);
     await last.press("Enter");
     await expect(last).toHaveCount(0);

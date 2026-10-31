@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page, type TestInfo } from "@playwright/test";
 import { fitElementForScreenshot, type Surface } from "./docs";
+import { pixelDigest } from "./visual-digests";
 
 /**
  * Actual painted browser effects, not React wrapper names or an iOS skin label.
@@ -98,7 +99,7 @@ export async function setDocsSurface(page: Page, surface: Surface) {
   await expect(control).toHaveAttribute("aria-checked", checked);
 }
 
-/** Glass evidence is attached for review, not treated as a portable GPU pixel baseline. */
+/** Keep material diagnostics and one-way pixel metadata, never the glass image. */
 export async function attachMaterialEvidence(
   page: Page,
   testInfo: TestInfo,
@@ -108,10 +109,10 @@ export async function attachMaterialEvidence(
   atDocumentRoot = false,
 ) {
   if (!atDocumentRoot) await fitElementForScreenshot(page, frame);
-  const png = atDocumentRoot ? await page.screenshot() : await frame.screenshot();
-  await testInfo.attach(`${name}.png`, { body: png, contentType: "image/png" });
+  const capture = { animations: "disabled" as const, caret: "hide" as const };
+  const png = atDocumentRoot ? await page.screenshot(capture) : await frame.screenshot(capture);
   await testInfo.attach(`${name}.json`, {
-    body: JSON.stringify({ ...metadata, ...await readMaterialEffects(frame) }, null, 2),
+    body: JSON.stringify({ ...metadata, ...await readMaterialEffects(frame), pixels: await pixelDigest(png) }, null, 2),
     contentType: "application/json",
   });
 }

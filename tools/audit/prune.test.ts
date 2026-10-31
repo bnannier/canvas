@@ -172,7 +172,7 @@ describe("pruning real runs", () => {
   });
 
   it("removes the run whose one state cell has two newer captures, and rebuilds a view of states and page sections that resolves", async () => {
-    root = checkoutWithRealRuns({ earlier: true });
+    root = await checkoutWithRealRuns({ earlier: true });
     await analyzeCells(currentCells(root, { only: null, runs: null }).cells, new Date("2026-10-09T18:00:00Z"));
     buildIndex(root, { runs: null, only: null }, "2026-10-09T18:00:00.000Z");
     expect(brokenLinks(root)).toEqual([]);

@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 import { scanPage } from "../support/axe";
@@ -68,9 +69,7 @@ for (const scheme of ["light", "dark"] as const) {
       const apricot = page.getByRole("option", { name: "Apricot", exact: true });
       await expect(field).toHaveAttribute("aria-activedescendant", await apricot.getAttribute("id") as string);
       await expect(field).toBeFocused();
-      const screenshot = testInfo.outputPath("autocomplete-active.png");
-      await page.screenshot({ path: screenshot });
-      await testInfo.attach("autocomplete-active", { path: screenshot, contentType: "image/png" });
+      await attachVisualDigest(page, testInfo, "autocomplete-active");
       await page.keyboard.down("Enter");
       await expect(field).toHaveValue("Apricot");
       await page.keyboard.down("Enter");

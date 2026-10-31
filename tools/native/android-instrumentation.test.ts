@@ -159,7 +159,7 @@ for (const mode of ["empty", "skip", "fail", "mutate", "wrong-target"]) test(`na
   else expect(evidence.sealedProductionUnchanged).toBe(true);
 });
 
-test("CI builds the Android release before the emulator boots, then gates the emulator on instrumentation before Maestro and archives its inputs", () => {
+test("CI builds the Android release before the emulator boots, then gates the emulator on instrumentation before Maestro and retains only test results", () => {
   const workflow = Bun.YAML.parse(fs.readFileSync(path.join(root, ".github/workflows/native-smoke.yml"), "utf8")) as { jobs: { smoke: { steps: { name?: string; uses?: string; run?: string; with?: { script?: string; path?: string; "pre-emulator-launch-script"?: string } }[] } } };
   const steps = workflow.jobs.smoke.steps;
   const index = (name: string) => steps.findIndex(step => step.name === name);
@@ -182,7 +182,9 @@ test("CI builds the Android release before the emulator boots, then gates the em
   expect(commands).toHaveLength(2);
   for (const [position, command] of ["instrument", "test"].entries()) expect(commands[position]).toContain(`native-smoke.mjs ${command} --output`);
   expect([steps[build].run!, ...commands].every(command => command.includes("--device emulator-5554"))).toBe(true);
-  const artifacts = steps.find(step => step.name === "Preserve candidate identity, build observations and native interaction evidence")!.with!.path!;
-  expect(artifacts).toContain("android-instrumentation-inputs/");
-  expect(artifacts).toContain("*-evidence/");
+  const artifacts = steps.find(step => step.name === "Preserve candidate identity and native test results")!.with!.path!;
+  expect(artifacts).toContain("*-evidence/result.json");
+  expect(artifacts).toContain("android-instrumentation-evidence/junit/**/*.xml");
+  for (const file of artifacts.trim().split("\n")) expect(file).toMatch(/(?:context\.json|\*-build\.json|result\.json|report\.xml|junit\/\*\*\/\*\.xml)$/);
+  expect(artifacts).not.toContain("android-instrumentation-inputs");
 });

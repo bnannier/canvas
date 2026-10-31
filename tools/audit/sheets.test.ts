@@ -332,7 +332,7 @@ describe("drawing sheets", () => {
   });
 
   it("lays out a component's real state captures by state and row, desktop first, a state not reached a hole saying why", async () => {
-    dir = checkoutWithRealRuns();
+    dir = await checkoutWithRealRuns();
     const { cells } = currentCells(dir, { only: null, runs: null });
     const button = await stateSheets("button", cells);
     expect(button.map((spec) => spec.file)).toEqual(["states.jpg"]);
@@ -375,7 +375,7 @@ describe("drawing sheets", () => {
   });
 
   it("lays out a page's real first screens by look and width, per surface, and draws them", async () => {
-    dir = checkoutWithRealRuns();
+    dir = await checkoutWithRealRuns();
     const { cells } = currentCells(dir, { only: null, runs: null });
     const specs = await pageSheets("template-signin", cells);
     expect(specs.map((spec) => spec.file)).toEqual(["viewport-solid.jpg", "viewport-glass.jpg"]);

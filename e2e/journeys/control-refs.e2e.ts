@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
@@ -11,9 +12,7 @@ for (const scheme of ["light", "dark"] as const) {
     }
     await expect(page.getByRole("listbox")).toHaveCount(0);
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    const screenshot = testInfo.outputPath("control-refs-focused.png");
-    await page.screenshot({ path: screenshot, fullPage: true });
-    await testInfo.attach("control-refs-focused", { path: screenshot, contentType: "image/png" });
+    await attachVisualDigest(page, testInfo, "control-refs-focused", { fullPage: true });
   });
 }
 
