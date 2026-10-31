@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import type { Locator, Page } from "@playwright/test";
 import { gotoDocs, platformRow } from "../support/docs";
 import { variantSlug } from "../support/routes";
@@ -76,9 +77,7 @@ for (const recipe of [...fields, ...additional]) for (const width of [1280, 390]
     // On the web only floating surfaces take glass (the owner's 2026-10-28 pixel-exact rule,
     // PLAN D13): in glass mode a text field keeps its complete solid skin, with no material.
     await expectNoMaterialEffects(row);
-    const screenshot = info.outputPath("clear-field.png");
-    await row.screenshot({ path: screenshot });
-    await info.attach("clear field", { path: screenshot, contentType: "image/png" });
+    await attachVisualDigest(row, info, "clear field");
     await expect(field).toHaveValue(recipe.otp ? "1234" : recipe.value);
     await expect(field).toBeFocused();
     expect(await original!.evaluate(node => node.isConnected)).toBe(true);

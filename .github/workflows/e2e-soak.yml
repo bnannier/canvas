@@ -29,7 +29,7 @@ name: E2E soak (canvas)
 # and every evaluation with whether it was answered, from Playwright's own protocol log.
 #
 # A browser that crashes outright leaves only "Target page, context or browser has been
-# closed" in the report. `crash_dumps: on` keeps the whole core dump with a gdb report of
+# closed" in the runner report. `crash_dumps: on` produces a core dump and gdb report of
 # the fault and every thread's stack (scripts/soak-crash-dumps.mjs; Playwright's Firefox
 # has no crash reporter of its own), and every lane keeps the kernel's line for a
 # process a fault killed outright, which Firefox's parent never is: it catches SIGSEGV
@@ -41,14 +41,13 @@ name: E2E soak (canvas)
 # while WebRender's render thread reads and AddRefs the same pointer with no lock. The
 # other two left no core and are consistent with it, not proven the same. The docs pages
 # do not cause it; how busy a page keeps the compositor only changes the odds.
-# The soak job holds no secrets (contents: read, none referenced), which is what lets a
-# core, holding the process environment and memory, sit in this public repository's
-# artifacts; keep it that way.
+# Only crash text is uploaded. Core dumps, browser binaries, screenshots and traces
+# remain on the runner and are discarded when the job ends.
 #
 # `ref` replays another commit of this repository with this workflow, to learn whether
-# a failure seen there still happens (a commit older than the probe runs without it;
-# Playwright's own trace and error context still land in the report). `trace`, `channel`
-# and `chromium_args` test a hypothesis about the browser: they reach the run through
+# a failure seen there still happens (a commit older than the probe runs without it).
+# Tracing stays off. `channel` and `chromium_args` test a hypothesis about the browser:
+# they reach the run through
 # playwright.soak.config.ts, never the configuration every other run uses; `pacing`
 # drops the suite's own switches and `playwright` soaks another release, both to tell
 # whether a newer Chromium still needs them. Soaks run side by side, so two hypotheses
@@ -124,13 +123,6 @@ on:
         options:
           - 'off'
           - 'on'
-      trace:
-        description: 'Playwright tracing (the suite keeps traces of failures; off also stops the screencast a trace records)'
-        default: retain-on-failure
-        type: choice
-        options:
-          - retain-on-failure
-          - 'off'
       channel:
         description: 'Chromium build: the headless shell Playwright launches by default, or full Chromium in new headless mode'
         default: headless-shell
@@ -321,7 +313,6 @@ jobs:
           PASSES: ${{ inputs.passes }}
           BROWSERS: ${{ inputs.browsers }}
           PROJECT: ${{ inputs.project }}
-          TRACE: ${{ inputs.trace }}
           E2E_SOAK_CHANNEL: ${{ inputs.channel == 'chromium' && 'chromium' || '' }}
           E2E_SOAK_CHROMIUM_ARGS: ${{ inputs.chromium_args }}
           E2E_SOAK_DEFAULT_PACING: ${{ inputs.pacing == 'chromium-default' && '1' || '' }}
@@ -340,18 +331,17 @@ jobs:
           if ! [[ "$PASSES" =~ ^[1-9][0-9]{0,3}$ ]]; then
             printf '::error::passes must be a whole number from 1 to 9999, not %q\n' "$PASSES"; exit 1
           fi
-          set -- "$SPEC" -c playwright.soak.config.ts --project="$PROJECT" --trace="$TRACE" --reporter=list,html
+          set -- "$SPEC" -c playwright.soak.config.ts --project="$PROJECT" --trace=off --reporter=list
           if [ -n "$GREP" ]; then set -- "$@" --grep "$GREP"; fi
           if [ "$BROWSERS" = shared ]; then
             bunx playwright test "$@" --repeat-each="$PASSES"
             exit
           fi
-          # One run per pass. A passing run's report is dropped and a failing one kept
-          # under its pass number, so the lane uploads the failures' evidence only.
+          # One run per pass, with results in the job log and no image-bearing reports.
           failed=0
           for pass in $(seq 1 "$PASSES"); do
-            if PLAYWRIGHT_HTML_OUTPUT_DIR="playwright-report/pass-$pass" bunx playwright test "$@" --output="test-results/pass-$pass"; then
-              rm -rf "playwright-report/pass-$pass" "test-results/pass-$pass"
+            if bunx playwright test "$@" --output="test-results/pass-$pass"; then
+              rm -rf "test-results/pass-$pass"
             else
               failed=$((failed + 1))
             fi
@@ -365,8 +355,8 @@ jobs:
       # module and offset of the instruction (a content process, say; Firefox's parent
       # catches the fault and re-raises it, which the kernel does not log). Reading the
       # log changes nothing, so every lane keeps those lines. With crash_dumps on, each
-      # core the replay left is kept, compressed, with its gdb report and the Playwright
-      # browser build that wrote it (scripts/soak-crash-dumps.mjs `keep`).
+      # core the replay left is processed with its browser build to produce a gdb report
+      # (scripts/soak-crash-dumps.mjs `keep`); only text reports are uploaded.
       - name: Keep the crashes
         if: always()
         env:
@@ -382,13 +372,13 @@ jobs:
           [ "$CRASH_DUMPS" = on ] || exit 0
           node scripts/soak-crash-dumps.mjs keep "$RUNNER_TEMP/cores" crash-reports
 
-      - name: Upload the lane's report
+      - name: Upload the lane's crash text
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: soak-report-lane-${{ matrix.lane }}
           path: |
-            playwright-report/
-            test-results/
-            crash-reports/
+            crash-reports/**/*.txt
+            crash-reports/**/*.txt.gdb
+          if-no-files-found: ignore
           retention-days: 7

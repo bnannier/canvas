@@ -523,7 +523,7 @@ describe("native accessibility", () => {
   });
 });
 
-describe("the analysis over real runs", () => {
+describe("the analysis over captured metadata and synthetic pixels", () => {
   let root: string | null = null;
   afterEach(() => {
     if (root) rmSync(root, { recursive: true, force: true });
@@ -531,8 +531,8 @@ describe("the analysis over real runs", () => {
   });
   const analysisOf = (cell: CapturedCell) => JSON.parse(readFileSync(join(cell.dir, "analysis.json"), "utf8")) as CellAnalysis;
 
-  it("places every region's texts in the photograph it was taken in: a card, a row shot with its margin, a viewport, a section", async () => {
-    root = checkoutWithRealRuns();
+  it("places every region's text boxes in the synthetic card, row with its margin, viewport or section", async () => {
+    root = await checkoutWithRealRuns();
     const { cells } = currentCells(root, { only: null, runs: null });
     const read = new Map<string, number>();
     for (const cell of cells) {
@@ -543,7 +543,8 @@ describe("the analysis over real runs", () => {
         expect("file" in region.photo).toBe(true);
         const sampler = samplerFor(region.photo as RegionPhoto)!;
         for (const text of region.texts) {
-          // Every text the DOM resolved, read again from the pixels where it was placed, as if the DOM had not.
+          // Resolved DOM colors are painted as geometric patterns at their measured
+          // coordinates. This checks placement and sampling, not browser rendering.
           if (text.contrast === null || text.disabled || text.covered || text.scrolled) continue;
           const ink = paintedInk(text);
           if (!("rgb" in ink)) continue;
@@ -553,19 +554,20 @@ describe("the analysis over real runs", () => {
         }
       }
     }
-    // The variants' cards, the states' row and viewport shots, and the page's sections all held texts to place.
+    // The generated cards, row and viewport images, and sections all hold text patterns.
     expect(read.get("variant")).toBeGreaterThan(0);
     expect(read.get("state")).toBeGreaterThan(0);
     expect(read.get("page")).toBeGreaterThan(0);
   });
 
   it("analyzes every family the same way, and files a state's own flags, its release's, and one not reached", async () => {
-    root = checkoutWithRealRuns();
+    root = await checkoutWithRealRuns();
     const { cells } = currentCells(root, { only: null, runs: null });
     const totals = await analyzeCells(cells, new Date("2026-10-09T18:00:00Z"));
     expect(totals).toMatchObject({ cells: 10, analyzed: 10, skipped: 0, families: { variant: 2, state: 7, page: 1 }, unmeasured: 0 });
     const of = (id: string) => analysisOf(cells.find((cell) => cell.id === id)!);
-    // The page: three sections, each its own region, read from its own photograph under glass.
+    // Three generated sections: the synthetic split-screen panel deliberately puts
+    // four muted labels on [220, 220, 235], giving known 3.79:1 contrast.
     const page = of("web-pages/template-signin/phone.blush.glass");
     expect(page).toMatchObject({ family: "page", flags: ["contrast-likely"] });
     expect(Object.keys(page.regions!)).toEqual(["section:centeredcard", "section:splitscreen", "section:magiclink"]);
@@ -581,9 +583,10 @@ describe("the analysis over real runs", () => {
     expect(Object.keys(tooltip.regions!)).toEqual(["web"]);
     expect(tooltip.contrast.dom.checked).toBe(2);
     expect(tooltip).toMatchObject({ flags: ["hover-unstable"], state: { state: "open", row: "web", variant: "onhover", label: "On hover", reached: true, stateFlags: ["hover-unstable"], releaseFlags: [] } });
-    // The pressed Button: dimmed as a whole in solid (a DOM fail at 4.09), its label alone dimmed over the brand pane under glass.
+    // Original DOM metadata records the whole solid button dimmed at 4.09:1.
+    // The generated glass pattern dims white ink alone over [33, 128, 75], 4.32:1.
     expect(of("web-states/button/pressed.web/desktop.blush.solid").contrast.texts).toMatchObject([{ method: "dom", contrast: 4.09, verdict: "fail" }]);
-    expect(of("web-states/button/pressed.web/desktop.blush.glass")).toMatchObject({ flags: ["contrast-review"], contrast: { texts: [{ method: CONTRAST_METHODS.paintedInk, contrast: 4.06, verdict: "review" }] } });
+    expect(of("web-states/button/pressed.web/desktop.blush.glass")).toMatchObject({ flags: ["contrast-review"], contrast: { texts: [{ method: CONTRAST_METHODS.paintedInk, contrast: 4.32, verdict: "review" }] } });
     // A release that found the press not cancelled, and a state not reached with its reason.
     expect(of("web-states/slider/pressed.web/desktop.blush.solid")).toMatchObject({ flags: ["press-not-cancelled"], state: { reached: true, releaseFlags: ["press-not-cancelled"] } });
     const heatmap = of("web-states/heatmap/pressed.web/desktop.blush.solid");

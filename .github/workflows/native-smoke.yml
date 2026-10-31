@@ -170,19 +170,17 @@ jobs:
         if: always() && inputs.platform == 'android'
         run: node scripts/android-host-diagnostics.mjs finalize --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics"
 
-      # The wildcard also retains the passive ios-bundle-evidence directory.
-      - name: Preserve candidate identity, build observations and native interaction evidence
+      # Captures, traces, logs, bundles and input archives remain on the runner.
+      - name: Preserve candidate identity and native test results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: native-${{ inputs.platform }}-${{ inputs.form_factor }}-evidence
+          name: native-${{ inputs.platform }}-${{ inputs.form_factor }}-results
           path: |
             ${{ runner.temp }}/native-smoke/context.json
-            ${{ runner.temp }}/native-smoke/android-autolinking.json
-            ${{ runner.temp }}/native-smoke/android-instrumentation-inputs/
-            ${{ runner.temp }}/native-smoke/android-instrumentation-inputs.tar
             ${{ runner.temp }}/native-smoke/*-build.json
-            ${{ runner.temp }}/native-smoke/*-evidence/
-            ${{ runner.temp }}/native-smoke/android-host-diagnostics/
+            ${{ runner.temp }}/native-smoke/*-evidence/result.json
+            ${{ runner.temp }}/native-smoke/*-evidence/*/*/report.xml
+            ${{ runner.temp }}/native-smoke/android-instrumentation-evidence/junit/**/*.xml
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 7

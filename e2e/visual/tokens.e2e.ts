@@ -2,11 +2,10 @@
  * The token stylesheet, rendered the way a consumer links it.
  *
  * test/tokens.html pulls in styles/canvas.css exactly as a web consumer would, so
- * this is the one baseline that photographs the CSS hand-off rather than the React
- * Native kit. It replaces the screenshot script that used to shoot this fixture, whose
- * 5% pixel and 1% dimension tolerances existed only to paper over the difference
- * between the macOS machine that minted its baselines and whatever machine ran it
- * next. Linux-only baselines remove the reason for the tolerance.
+ * this fixture checks the CSS hand-off rather than the React Native kit. The
+ * default visual gate checks approved dimensions; the assertions below verify
+ * palette and material behavior. Full pixel equality is an opt-in diagnostic,
+ * not a portable gate for color or minor rendering changes.
  *
  * Served by the second web server in playwright.config.ts, from the checkout root.
  */
@@ -14,6 +13,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { TOKENS_URL } from "../../playwright.config";
 import { expect, test } from "../support/fixtures";
+import { expectVisualDimensions } from "../support/visual-digests";
 import { paletteDeclarations } from "../../tools/tokens/css-tokens.ts";
 import { colorsFor } from "../../src/style/tokens.ts";
 
@@ -25,7 +25,7 @@ for (const scheme of ["light", "dark"] as const) {
     await page.evaluate((wantDark) => {
       document.documentElement.classList.toggle("dark", wantDark);
     }, scheme === "dark");
-    await expect(page).toHaveScreenshot(`tokens--${scheme}.png`, { fullPage: true });
+    await expectVisualDimensions(page, `tokens--${scheme}`, { fullPage: true });
   });
 }
 

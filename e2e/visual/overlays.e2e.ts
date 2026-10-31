@@ -1,9 +1,9 @@
 /**
- * A picture of every overlay while it is open.
+ * Open-overlay flows and approved capture dimensions.
  *
- * The component baselines catch the resting state; an overlay's whole point is the
- * state you cannot see at rest. An open dialog's scrim, a menu's elevation, a
- * listbox's selected row: none of that appears in the card shot.
+ * The component checks cover resting previews; these flows cover the open state.
+ * Dimensions are checked by default. Strict pixel hashes are an optional
+ * diagnostic, and ephemeral hand-off review is still needed for visual fidelity.
  *
  * Anchored overlays are placed within the Playground's stage (a card that closes on
  * an outside tap paints in the app root's outlet, over the stage), so the stage is the
@@ -15,6 +15,7 @@
 import { OVERLAYS } from "../support/overlays";
 import { FIXED_TIME, fitElementForScreenshot, gotoDocs, settledBox, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
+import { expectVisualDimensions } from "../support/visual-digests";
 
 for (const scheme of ["dark", "light"] as const) {
   for (const recipe of OVERLAYS) {
@@ -34,18 +35,18 @@ for (const scheme of ["dark", "light"] as const) {
       await expect(recipe.panel(page).last()).toBeVisible();
       // Visible is not settled. An anchored overlay portals into the stage, and the
       // stage grows to hold it a layout pass LATER, so a shot taken here catches the
-      // closed height. toHaveScreenshot's own retry stabilises pixels, not the box,
+      // closed height. The digest helper stabilises pixels, not the box,
       // so it cannot see the difference: it happily agreed with itself twice at the
       // wrong size and minted a baseline of a dialog that had not opened yet.
       await settledBox(stage(page));
 
-      const name = `overlays/${recipe.slug}--${scheme}.png`;
+      const name = `overlays/${recipe.slug}--${scheme}`;
       if (recipe.atDocumentRoot || recipe.inWindowLayer) {
         // Window-layer menus extend past the fixed-height platform card. Capture
         // their whole window, and prove the open panel fits inside that frame.
         // Keep the configured viewport for document-root Modals as well.
         await expect(recipe.panel(page).last()).toBeInViewport({ ratio: 1 });
-        await expect(page).toHaveScreenshot(name, { fullPage: false });
+        await expectVisualDimensions(page, name, { fullPage: false });
       } else {
         await fitElementForScreenshot(page, stage(page));
         await expect(recipe.panel(page).last()).toBeVisible();
@@ -56,7 +57,7 @@ for (const scheme of ["dark", "light"] as const) {
         expect(panel.y).toBeGreaterThanOrEqual(frame.y - 0.5);
         expect(panel.x + panel.width).toBeLessThanOrEqual(frame.x + frame.width + 0.5);
         expect(panel.y + panel.height).toBeLessThanOrEqual(frame.y + frame.height + 0.5);
-        await expect(stage(page)).toHaveScreenshot(name);
+        await expectVisualDimensions(stage(page), name);
         await expect(recipe.panel(page).last()).toBeVisible();
       }
     });

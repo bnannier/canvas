@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import { attach, describe as describeViolations, scan } from "../support/axe";
 import { fitElementForScreenshot, gotoDocs, platformRow } from "../support/docs";
 import { expect, test } from "../support/fixtures";
@@ -102,9 +103,7 @@ for (const scheme of ["light", "dark"] as const) {
       await attach(testInfo, "listbox", findings);
       expect(findings, describeViolations(findings)).toEqual([]);
       await fitElementForScreenshot(page, content);
-      const screenshot = testInfo.outputPath("listbox-and-checkbox.png");
-      await content.screenshot({ path: screenshot });
-      await testInfo.attach("listbox-and-checkbox", { path: screenshot, contentType: "image/png" });
+      await attachVisualDigest(content, testInfo, "listbox-and-checkbox");
     });
   }
 }

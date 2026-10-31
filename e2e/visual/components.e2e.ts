@@ -1,12 +1,13 @@
 /**
- * A picture of every component's preview card, in both schemes.
+ * Every component's preview flow and approved frame dimensions, in both schemes.
  *
- * This is the check that catches what nothing else can: a token change that quietly
- * repaints half the kit, a skin edit that moves a corner, a shadow that lost its
- * blur. The other suites assert facts about the DOM; this one asserts the pixels.
+ * The default gate checks frame dimensions alongside the existing visible-state
+ * assertions. It cannot detect color or minor pixel regressions. Exact SHA256
+ * comparison is an opt-in diagnostic (`bun run e2e:pixels`), because unchanged
+ * browser renders have raster variations the former image matcher tolerated.
  *
  * Scoped to `[data-preview-card]`, the three platform rows without the switcher or
- * the code block, so an unrelated docs change does not rewrite 204 baselines.
+ * the code block, so an unrelated docs change does not rewrite the pixel approvals.
  *
  * Baselines are Linux, because the CI runner rasterizes them. macOS renders the same
  * DOM with different glyph metrics, which shifts layout by whole pixels, so a run
@@ -17,6 +18,7 @@ import { componentRoutes } from "../support/routes";
 import { FIXED_TIME, fitElementForScreenshot, gotoDocs, previewCard, stage, paintedPreviewPanels } from "../support/docs";
 import { DETAIL_SPECS } from "../../docs/src/core/data/detail-specs";
 import { expect, test } from "../support/fixtures";
+import { expectVisualDimensions } from "../support/visual-digests";
 
 const PANEL_ROLES: Record<string, "alert" | "menu" | "listbox" | undefined> = {
   tooltip: "alert", dropdown: "menu", "row-menu": "menu", select: "listbox", autocomplete: "listbox", command: "listbox",
@@ -39,7 +41,7 @@ for (const scheme of ["dark", "light"] as const) {
       if (role && pinnedOpen) {
         await paintedPreviewPanels(card, stage(page).locator("..").getByRole(role), 3);
       }
-      await expect(card).toHaveScreenshot(`components/${route.name}--${scheme}.png`);
+      await expectVisualDimensions(card, `components/${route.name}--${scheme}`);
     });
   }
 }

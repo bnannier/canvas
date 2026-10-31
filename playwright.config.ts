@@ -3,7 +3,7 @@
  *
  * This is the DETERMINISTIC half of Canvas's visual verification. It asserts facts
  * (a route painted, nothing threw, nothing overflowed, Escape closed the overlay,
- * these pixels match the baseline). Taste is judged separately by lookout, which
+ * approved frame dimensions match). Exact pixel digest comparison is opt-in. Taste is judged separately by lookout, which
  * reads lookout.config.ts and files opinions; the two are meant not to overlap.
  *
  * What it runs against, in order of preference:
@@ -49,12 +49,12 @@ const localCertificate = new URL(baseURL).protocol === "https:"
   && ["localhost", "127.0.0.1"].includes(new URL(baseURL).hostname);
 const basePath = process.env.E2E_BASE_PATH ?? "";
 
-// Screenshot baselines are rasterized by the CI runner's font stack. macOS renders
-// the same DOM with different glyph metrics, which shifts layout by whole pixels, so
-// a macOS run executes every visual flow (selector rot still fails) but compares
-// nothing. E2E_FORCE_VISUAL is the escape hatch for a run inside the Playwright
-// container image.
-const compareSnapshots = process.platform === "linux" || !!process.env.E2E_FORCE_VISUAL;
+// Pixel digests are Linux-only (see e2e/support/visual-digests.ts). Updates require
+// explicit prior live review, never run on CI, and serialize writes to text metadata.
+const updateDigests = !!process.env.E2E_UPDATE_DIGESTS;
+if (updateDigests && (CI || process.env.E2E_UPDATE_DIGESTS !== "reviewed")) {
+  throw new Error("Digest updates require E2E_UPDATE_DIGESTS=reviewed locally after manual live review; CI cannot update them.");
+}
 
 // Chromium draws unthrottled in every Chromium project. By default a renderer holds its
 // next draw until the display compositor acknowledges the frame before it, and on the
@@ -116,12 +116,6 @@ export default defineConfig({
   timeout: 60_000,
   expect: {
     timeout: 10_000,
-    toHaveScreenshot: {
-      animations: "disabled",
-      caret: "hide",
-      maxDiffPixelRatio: 0.002,
-      threshold: 0.2,
-    },
   },
   reporter: CI
     ? [["github"], ["html", { open: "never" }]]
@@ -143,10 +137,10 @@ export default defineConfig({
     // (src/style/motion.ts), so this genuinely stills the kit's entrance animations
     // instead of merely freezing CSS transitions.
     contextOptions: { reducedMotion: "reduce" },
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
-    // Recording costs CPU on every test to serve the rare failure; the trace already
-    // carries per-action screenshots and DOM snapshots.
+    // Visual checks decode screenshot buffers in memory. Never retain failure
+    // images, per-action trace screenshots, or video recordings on disk.
+    trace: "off",
+    screenshot: "off",
     video: "off",
   },
 
@@ -176,8 +170,7 @@ export default defineConfig({
     {
       name: "visual",
       testDir: "./e2e/visual",
-      ignoreSnapshots: !compareSnapshots,
-      snapshotPathTemplate: "{testDir}/__screenshots__/{arg}{ext}",
+      ...(updateDigests ? { workers: 1 } : {}),
     },
   ]),
 

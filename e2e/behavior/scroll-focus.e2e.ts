@@ -1,3 +1,4 @@
+import { attachVisualDigest } from "../support/visual-digests";
 import type { Locator, Page } from "@playwright/test";
 import { colorsFor } from "../../src/style/tokens.ts";
 import { BLOCKING_IMPACTS, scanPage, scanStructure } from "../support/axe";
@@ -99,9 +100,7 @@ for (const width of [1280, 390]) {
         }
         await page.keyboard.press("ArrowRight");
         await expect.poll(() => scrollport.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
-        const screenshot = testInfo.outputPath(`scroll-${name}-focused.png`);
-        await page.screenshot({ path: screenshot });
-        await testInfo.attach(`scroll-${name}-focused`, { path: screenshot, contentType: "image/png" });
+        await attachVisualDigest(page, testInfo, `scroll-${name}-focused`);
       }
       await expect(page.getByTestId("scroll-wrap").locator('[tabindex="0"]')).toHaveCount(0);
       await expect(page.getByTestId("scroll-inline").locator('[tabindex="0"]')).toHaveCount(0);
@@ -148,9 +147,7 @@ for (const width of [1280, 390]) {
       expect(await ringShows(page, table, ring)).toEqual(ALL_SIDES);
       await page.keyboard.press("ArrowDown");
       await expect.poll(() => body.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
-      const screenshot = testInfo.outputPath("scroll-windowed-focused.png");
-      await page.screenshot({ path: screenshot });
-      await testInfo.attach("scroll-windowed-focused", { path: screenshot, contentType: "image/png" });
+      await attachVisualDigest(page, testInfo, "scroll-windowed-focused");
       await page.keyboard.press("Tab");
       await expect(page.getByTestId("after-windowed")).toBeFocused();
       await expect.poll(async () => (await outlineOf(table)).style).toBe("none");
@@ -217,9 +214,7 @@ for (const width of [1280, 390]) {
         expect(places.every((place, index) => index === 0 || place > places[index - 1]!)).toBe(true);
         expect(midway.filter((row) => row.setsize !== "200")).toEqual([]);
         expect(midway.filter((row) => !row.text.includes(ROW_TEXT[name]!(Number(row.posinset))))).toEqual([]);
-        const screenshot = testInfo.outputPath(`scroll-${name}-focused.png`);
-        await page.screenshot({ path: screenshot });
-        await testInfo.attach(`scroll-${name}-focused`, { path: screenshot, contentType: "image/png" });
+        await attachVisualDigest(page, testInfo, `scroll-${name}-focused`);
         await page.keyboard.press("Tab");
         await expect(page.getByTestId(`after-${name}`)).toBeFocused();
         await expect.poll(() => drawsOutline(list)).toBe(false);
@@ -308,9 +303,7 @@ for (const width of [1280, 390]) {
       expect(await card.evaluate((node, input) => node.contains(input), await field.elementHandle())).toBe(true);
       expect(await outlineOf(card)).toEqual({ style: "solid", color: ring });
       expect(await ringShows(page, card, ring)).toEqual(ALL_SIDES);
-      const screenshot = testInfo.outputPath("list-port-focused.png");
-      await page.screenshot({ path: screenshot });
-      await testInfo.attach("list-port-focused", { path: screenshot, contentType: "image/png" });
+      await attachVisualDigest(page, testInfo, "list-port-focused");
       // Back onto the field: the port lost focus, so the card's ring goes.
       await page.keyboard.press("Shift+Tab");
       await expect(field).toBeFocused();
@@ -375,9 +368,7 @@ for (const scheme of ["light", "dark"] as const) {
     await gotoDocs(page, "/tokens/colors", { scheme, viewport: { width: 390, height: 900 } });
     await expect(page.getByRole("heading", { level: 1, name: "Colors & Theme" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2 }).first()).toBeVisible();
-    const screenshot = testInfo.outputPath(`token-colors-phone-${scheme}.png`);
-    await page.screenshot({ path: screenshot, fullPage: true });
-    await testInfo.attach("token-colors-phone", { path: screenshot, contentType: "image/png" });
+    await attachVisualDigest(page, testInfo, "token-colors-phone", { fullPage: true });
     const findings = await scanPage(page, testInfo, `token-colors-phone-${scheme}`);
     expect(findings.filter((finding) => BLOCKING_IMPACTS.has(finding.impact))).toEqual([]);
     expect(await scanStructure(page, "body", ["page-has-heading-one", "scrollable-region-focusable"])).toEqual([]);

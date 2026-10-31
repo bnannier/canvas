@@ -84,8 +84,8 @@ identities. A failed command cannot pass because a report exists, and previous
 connected-test reports are removed before the attempt. Candidate/module hashes,
 preserved test inventories, current tooling hashes, device API/fingerprint, actual
 Gradle project/source configuration, logs, and XML/HTML reports are retained in
-`android-instrumentation-evidence`. CI uploads that directory and its input archive
-even when the gate fails. This reuses the independent consumer and emulator;
+`android-instrumentation-evidence` during the run. CI retains only its result JSON
+and JUnit XML, even when the gate fails. This reuses the independent consumer and emulator;
 it does not build a second docs project or claim all supported Android versions.
 
 The release builds contain embedded JavaScript, so they do not require Metro.
@@ -116,8 +116,11 @@ theme in diagnostics, and restores the device's prior appearance. It writes
 `*-evidence/result.json`, separate JUnit reports, Maestro command logs and
 screenshots. A result is written as passed only after both complete flows succeed.
 Binary digests and app source inventories prevent an old binary or edited fixture
-from being reused as candidate evidence. Preserve these files with the candidate
-artifact. Device API level, OS and framework versions identify what was exercised;
+from being reused as candidate evidence. CI uploads only candidate identity, build
+and result JSON plus JUnit XML. Screenshots, command logs, bundle observations and
+input archives remain on the runner and are discarded when the job ends. Local runs
+can inspect their output directory while diagnosing a failure.
+Device API level, OS and framework versions identify what was exercised;
 one device run does not prove every supported OS version.
 
 To exercise an unchanged binary after correcting test infrastructure, pass

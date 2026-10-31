@@ -223,7 +223,7 @@ describe("the index over real runs", () => {
   });
 
   it("indexes real variant, state and page captures: the states table, the page's sections linked, nothing dangling", async () => {
-    root = checkoutWithRealRuns();
+    root = await checkoutWithRealRuns();
     await analyzeCells(currentCells(root, { only: null, runs: null }).cells, new Date("2026-10-09T18:00:00Z"));
     const result = buildIndex(root, { runs: null, only: null }, "2026-10-09T18:00:00.000Z");
     expect(result).toMatchObject({ cells: 10, entries: 5, unanalyzed: 0, states: 7, notReached: 1, written: 5, removed: [], warnings: [] });
