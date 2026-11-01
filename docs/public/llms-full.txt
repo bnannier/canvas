@@ -2,7 +2,7 @@
 <!-- Generated from tools/agent-docs/agents.md; edit the template, then regenerate. -->
 # Build with Canvas
 
-Repository package version: 4.0.0. This is source documentation, not proof
+Repository package version: 4.1.0. This is source documentation, not proof
 that npm has published this version.
 
 Canvas (`@nannier/canvas`) is a React Native UI kit for native iOS and Android
@@ -17,12 +17,12 @@ This page describes the source package's onboarding workflow. As of 2026-11-01,
 the published `4.0.0` package does **not** include the CLI shown below. These
 commands require a package containing the CLI. Check the installed package's
 `package.json` for the `canvas` executable before using them; otherwise follow
-the [installation guide](/ai/4.0.0/installation.md) and installed declarations.
+the [installation guide](/ai/4.1.0/installation.md) and installed declarations.
 Repository previews and generated source snapshots do not prove publication.
 
 In an existing project, read the resolved version in your lockfile or run
 `npm ls @nannier/canvas`. Use documentation and declarations matching that
-installed version. The currently generated [documentation index](/ai/4.0.0/index.md)
+installed version. The currently generated [documentation index](/ai/4.1.0/index.md)
 identifies its package version, source snapshot status and source digest.
 
 ## Start a project with an available CLI
@@ -69,11 +69,11 @@ or a working application without verification.
 ## Read the API
 
 - [Discovery index](/llms.txt) and [combined documentation](/llms-full.txt)
-- [Installation](/ai/4.0.0/installation.md)
-- [Theming](/ai/4.0.0/theming.md)
-- [Layout](/ai/4.0.0/layout.md)
-- [Overlays](/ai/4.0.0/overlays.md)
-- [Component catalog](/ai/4.0.0/catalog.json) and [source/content manifest](/ai/4.0.0/manifest.json)
+- [Installation](/ai/4.1.0/installation.md)
+- [Theming](/ai/4.1.0/theming.md)
+- [Layout](/ai/4.1.0/layout.md)
+- [Overlays](/ai/4.1.0/overlays.md)
+- [Component catalog](/ai/4.1.0/catalog.json) and [source/content manifest](/ai/4.1.0/manifest.json)
 
 Compose existing Canvas components. Use boolean styling such as
 `<Button primary large>` and layout components such as `Container`, `Row`,
@@ -92,13 +92,13 @@ above do not require access to the private source repository.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/accordion.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/accordion.md -->
 # Accordion
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/accordion/accordion.md`
 Human reference: https://canvas.nannier.com/components/accordion
@@ -277,17 +277,17 @@ in that header as Canvas controls so they retain independent targets.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/action-panels.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/action-panels.md -->
 # ActionPanel
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/action-panels/action-panels.md`
 Human reference: https://canvas.nannier.com/components/action-panels
@@ -452,17 +452,17 @@ press runs it.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/action-sheet.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/action-sheet.md -->
 # ActionSheet
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/action-sheet/action-sheet.md`
 Human reference: https://canvas.nannier.com/components/action-sheet
@@ -662,17 +662,17 @@ passes touches through. A `trigger` always opens the live modal sheet instead.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition for the bottom-anchored stack, composed onto the stack container; not a restyle hook. (The device's bottom safe-area inset is applied automatically, so it clears the home indicator without a manual `paddingBottom`.) |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/alert-dialog.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/alert-dialog.md -->
 # AlertDialog
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/alert-dialog/alert-dialog.md`
 Human reference: https://canvas.nannier.com/components/alert-dialog
@@ -935,17 +935,17 @@ docs-only state holder; in an app you would hold `open` with `useState`.)
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/alert.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/alert.md -->
 # Alert
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/alert/alert.md`
 Human reference: https://canvas.nannier.com/components/alert
@@ -1181,17 +1181,17 @@ look, so the tone booleans do not apply to it.
 | actions | ReactNode | no |  | A footer action region rendered under the body. The Alert owns the layout: it separates the actions from the description above and lays the buttons out in a row, so a call site passes the buttons directly (`actions={<Button primary small>Upgrade plan</Button>}`) with no wrapper. Pass a fragment for more than one action. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/app-frame.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/app-frame.md -->
 # AppFrame
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/app-frame/app-frame.md`
 Human reference: https://canvas.nannier.com/components/app-frame
@@ -1349,17 +1349,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/area-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/area-chart.md -->
 # AreaChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/area-chart/area-chart.md`
 Human reference: https://canvas.nannier.com/components/area-chart
@@ -1463,17 +1463,17 @@ Includes `CartesianSeriesProps`; their supported fields are expanded below.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/autocomplete.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/autocomplete.md -->
 # Autocomplete
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/autocomplete/autocomplete.md`
 Human reference: https://canvas.nannier.com/components/autocomplete
@@ -1731,17 +1731,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/avatar.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/avatar.md -->
 # Avatar
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/avatar/avatar.md`
 Human reference: https://canvas.nannier.com/components/avatar
@@ -2273,17 +2273,17 @@ The menu hangs from the pill's trailing edge by default, the edge a topbar parks
 | accessibilityLabel | string \| undefined | no |  | Accessible name for the whole group (e.g. "8 members"). |
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/badge.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/badge.md -->
 # Badge
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/badge/badge.md`
 Human reference: https://canvas.nannier.com/components/badge
@@ -2767,17 +2767,17 @@ text that names it. Give it an `accessibilityLabel` when it carries meaning of i
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/bar-list.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/bar-list.md -->
 # BarList
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/bar-list/bar-list.md`
 Human reference: https://canvas.nannier.com/components/bar-list
@@ -2896,17 +2896,17 @@ items={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/board.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/board.md -->
 # Board
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/board/board.md`
 Human reference: https://canvas.nannier.com/components/board
@@ -3129,17 +3129,17 @@ An empty column shows `emptyLabel` in a dashed slot and stays a valid drop targe
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/box-plot.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/box-plot.md -->
 # BoxPlot
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/box-plot/box-plot.md`
 Human reference: https://canvas.nannier.com/components/box-plot
@@ -3242,17 +3242,17 @@ data={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/breadcrumb.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/breadcrumb.md -->
 # Breadcrumb
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/breadcrumb/breadcrumb.md`
 Human reference: https://canvas.nannier.com/components/breadcrumb
@@ -3494,17 +3494,17 @@ regular weight, so the trail recedes under the title.
 | onPress | ((event: GestureResponderEvent) => void) \| undefined | no |  |  |
 | style | StyleProp<TextStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/bullet-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/bullet-chart.md -->
 # BulletChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/bullet-chart/bullet-chart.md`
 Human reference: https://canvas.nannier.com/components/bullet-chart
@@ -3624,17 +3624,17 @@ data={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/button-group.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/button-group.md -->
 # ButtonGroup
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/button-group/button-group.md`
 Human reference: https://canvas.nannier.com/components/button-group
@@ -3898,17 +3898,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/button.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/button.md -->
 # Button
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/button/button.md`
 Human reference: https://canvas.nannier.com/components/button
@@ -4415,17 +4415,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/calendar.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/calendar.md -->
 # Calendar
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/calendar/calendar.md`
 Human reference: https://canvas.nannier.com/components/calendar
@@ -4776,17 +4776,17 @@ With `dayPeek`, pressing a marked day opens that day's hour timeline (the same t
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/candlestick-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/candlestick-chart.md -->
 # CandlestickChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/candlestick-chart/candlestick-chart.md`
 Human reference: https://canvas.nannier.com/components/candlestick-chart
@@ -4975,17 +4975,17 @@ The legend names Up and Down and each overlay; `legendCaption` adds a note at th
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/card.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/card.md -->
 # Card
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/card/card.md`
 Human reference: https://canvas.nannier.com/components/card
@@ -5653,17 +5653,17 @@ iOS and Android keep their own press feedback.
 | playground | boolean \| undefined | no | false | A playground's stage: 340 px at least, a 44 x 28 inset, growing to the height and the remaining width of a panel beside it (a live specimen beside its knobs). |
 | testID | string \| undefined | no |  | E2E hook forwarded to the image, or to the well. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/carousel.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/carousel.md -->
 # Carousel
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/carousel/carousel.md`
 Human reference: https://canvas.nannier.com/components/carousel
@@ -5857,17 +5857,17 @@ the snap paging, the synced dots, and the per-slide accessibility.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/chart.md -->
 # Chart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/chart/chart.md`
 Human reference: https://canvas.nannier.com/components/chart
@@ -6062,17 +6062,17 @@ Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/chat.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/chat.md -->
 # Chat
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/chat/chat.md`
 Human reference: https://canvas.nannier.com/components/chat
@@ -6353,17 +6353,17 @@ Move through one question at a time. This example controls the saved position an
 | accessibilityLabel | string \| undefined | no |  |  |
 | testID | string \| undefined | no |  |  |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/checkbox.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/checkbox.md -->
 # Checkbox
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/checkbox/checkbox.md`
 Human reference: https://canvas.nannier.com/components/checkbox
@@ -6601,17 +6601,17 @@ in your own component.)
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 | ref | React.Ref<View> | no |  | Ref to the interactive checkbox row, including its label. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/chip.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/chip.md -->
 # Chip
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/chip/chip.md`
 Human reference: https://canvas.nannier.com/components/chip
@@ -6938,17 +6938,17 @@ Android chips that meet the minimum's width reach nothing sideways, so a Row of 
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For layout composition only (not styling). |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/code-block.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/code-block.md -->
 # CodeBlock
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/code-block/code-block.md`
 Human reference: https://canvas.nannier.com/components/code-block
@@ -7394,17 +7394,17 @@ npm run build`} />
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/collapsible.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/collapsible.md -->
 # Collapsible
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/collapsible/collapsible.md`
 Human reference: https://canvas.nannier.com/components/collapsible
@@ -7541,17 +7541,17 @@ Collapsible already renders as the inset-grouped card, so `reference` changes no
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/command.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/command.md -->
 # Command
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/command/command.md`
 Human reference: https://canvas.nannier.com/components/command
@@ -7764,17 +7764,17 @@ actions match), and groups left with no match drop out.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element; the scrolling results list gets `${testID}-results`. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/composed-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/composed-chart.md -->
 # ComposedChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/composed-chart/composed-chart.md`
 Human reference: https://canvas.nannier.com/components/composed-chart
@@ -7907,17 +7907,17 @@ Includes `Omit<CartesianSeriesProps, "series">`; their supported fields are expa
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/container.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/container.md -->
 # Container
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/container/container.md`
 Human reference: https://canvas.nannier.com/components/container
@@ -8049,17 +8049,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/dashboard-grid.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/dashboard-grid.md -->
 # DashboardGrid
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/dashboard-grid/dashboard-grid.md`
 Human reference: https://canvas.nannier.com/components/dashboard-grid
@@ -8294,17 +8294,17 @@ The density axis tightens the space between cells.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/data-table.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/data-table.md -->
 # DataTable
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/data-table/data-table.md`
 Human reference: https://canvas.nannier.com/components/data-table
@@ -8937,17 +8937,17 @@ Above the breakpoint it is the ordinary table.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/depth-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/depth-chart.md -->
 # DepthChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/depth-chart/depth-chart.md`
 Human reference: https://canvas.nannier.com/components/depth-chart
@@ -9096,17 +9096,17 @@ The order-book view: cumulative bid and ask step areas mirrored around the sprea
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/description-lists.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/description-lists.md -->
 # DescriptionList
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/description-lists/description-lists.md`
 Human reference: https://canvas.nannier.com/components/description-lists
@@ -9361,17 +9361,17 @@ Each value explains its term: a key and what it does, the value in the small typ
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/dialog.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/dialog.md -->
 # Dialog
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/dialog/dialog.md`
 Human reference: https://canvas.nannier.com/components/dialog
@@ -9720,17 +9720,17 @@ the close and any `workspaceHeader`) over a rule, the body, and the footer under
 | accessibilityLabel | string \| undefined | no |  | The dialog's accessible name, for the case where `children` supply the panel body. Children REPLACE the built-in title/description, so there is no element left for `aria-labelledby` to point at, and the dialog would otherwise be announced with no name at all. That is merely poor for a `dialog` and invalid for the `alertdialog` a destructive confirm renders. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/divider.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/divider.md -->
 # Divider
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/divider/divider.md`
 Human reference: https://canvas.nannier.com/components/divider
@@ -9928,17 +9928,17 @@ The hairline by default; `strong` for a firmer line, `soft` for a quieter one.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/drag-drop.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/drag-drop.md -->
 # Drag & drop
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/drag-drop/drag-drop.md`
 Human reference: https://canvas.nannier.com/components/drag-drop
@@ -10159,17 +10159,17 @@ shared list is a flat array with a `zone` field, and `applyDrop` re-homes the ca
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/drawer.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/drawer.md -->
 # Drawer
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/drawer/drawer.md`
 Human reference: https://canvas.nannier.com/components/drawer
@@ -10330,17 +10330,17 @@ trigger and fills the parent it is given.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition for the panel surface, never a restyle hook. (Device safe-area insets are applied automatically.) |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/dropdown.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/dropdown.md -->
 # Dropdown
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/dropdown/dropdown.md`
 Human reference: https://canvas.nannier.com/components/dropdown
@@ -10727,17 +10727,17 @@ item draws a trailing chevron, the hint that its `onSelect` opens another menu.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/emblem.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/emblem.md -->
 # Emblem
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/emblem/emblem.md`
 Human reference: https://canvas.nannier.com/components/emblem
@@ -10872,17 +10872,17 @@ with no ring and no lit edge, at a 12 px corner. It composes with every tone and
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For layout composition only (not styling): the tint, radius, and size come from props. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/empty-state.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/empty-state.md -->
 # EmptyState
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/empty-state/empty-state.md`
 Human reference: https://canvas.nannier.com/components/empty-state
@@ -11108,17 +11108,17 @@ docs-only helper standing in for your own state; in an app you would hold the fi
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/feeds.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/feeds.md -->
 # Feed
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/feeds/feeds.md`
 Human reference: https://canvas.nannier.com/components/feeds
@@ -11300,17 +11300,17 @@ with the person's 28px avatar on the same connector.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/field.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/field.md -->
 # Field
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/field/field.md`
 Human reference: https://canvas.nannier.com/components/field
@@ -11535,17 +11535,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/filter-panel.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/filter-panel.md -->
 # FilterPanel
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/filter-panel/filter-panel.md`
 Human reference: https://canvas.nannier.com/components/filter-panel
@@ -11675,17 +11675,17 @@ drawer.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/form.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/form.md -->
 # Form
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/form/form.md`
 Human reference: https://canvas.nannier.com/components/form
@@ -12063,17 +12063,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/funnel-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/funnel-chart.md -->
 # FunnelChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/funnel-chart/funnel-chart.md`
 Human reference: https://canvas.nannier.com/components/funnel-chart
@@ -12186,17 +12186,17 @@ stages={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/gauge.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/gauge.md -->
 # Gauge
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/gauge/gauge.md`
 Human reference: https://canvas.nannier.com/components/gauge
@@ -12277,17 +12277,17 @@ A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For sizing/composition only. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/geo-map.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/geo-map.md -->
 # GeoMap
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/geo-map/geo-map.md`
 Human reference: https://canvas.nannier.com/components/geo-map
@@ -12490,17 +12490,17 @@ points={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/grid-lists.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/grid-lists.md -->
 # GridList
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/grid-lists/grid-lists.md`
 Human reference: https://canvas.nannier.com/components/grid-lists
@@ -12664,17 +12664,17 @@ Each tile action carries its own `onPress`, so every button on a card fires your
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/grid.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/grid.md -->
 # Grid
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/grid/grid.md`
 Human reference: https://canvas.nannier.com/components/grid
@@ -12865,17 +12865,17 @@ collapse by hand.
 | wide | boolean \| undefined | no | false | Span two cells when the grid has more than one column (a hero tile). One cell in a one-column grid. |
 | testID | string \| undefined | no |  | E2E hook forwarded to the item element. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/heatmap.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/heatmap.md -->
 # Heatmap
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/heatmap/heatmap.md`
 Human reference: https://canvas.nannier.com/components/heatmap
@@ -12976,17 +12976,17 @@ Density cells whose fill encodes each value. Pass `calendar` for a GitHub-style 
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For sizing/composition only. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/histogram.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/histogram.md -->
 # Histogram
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/histogram/histogram.md`
 Human reference: https://canvas.nannier.com/components/histogram
@@ -13081,17 +13081,17 @@ data={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/icon.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/icon.md -->
 # Icon
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/icon/icon.md`
 Human reference: https://canvas.nannier.com/components/icon
@@ -13723,17 +13723,17 @@ and stroke props keep their usual meaning.
 | zoomIn | boolean \| undefined | no |  | `zoom-in` |
 | zoomOut | boolean \| undefined | no |  | `zoom-out` |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/image.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/image.md -->
 # Image
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/image/image.md`
 Human reference: https://canvas.nannier.com/components/image
@@ -13869,17 +13869,17 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then 
 | accessibilityLargeContentTitle | string \| undefined | no |  | When `accessibilityShowsLargeContentViewer` is set, this string will be used as title for the large content viewer. https://reactnative.dev/docs/accessibility#accessibilitylargecontenttitle |
 | accessibilityRespondsToUserInteraction | boolean \| undefined | no | false | Blocks the user from interacting with the component through keyboard while still allowing screen reader to interact with it if this View is still accessible. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/input-otp.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/input-otp.md -->
 # InputOTP
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/input-otp/input-otp.md`
 Human reference: https://canvas.nannier.com/components/input-otp
@@ -13982,17 +13982,17 @@ Because that one input spans the whole row, the caret is pinned to the end of th
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 | ref | React.Ref<RNTextInput> | no |  | Ref to the underlying React Native host. Supports object refs and callback refs; native methods follow the platform's behavior. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/input.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/input.md -->
 # Input
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/input/input.md`
 Human reference: https://canvas.nannier.com/components/input
@@ -14332,17 +14332,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/kbd.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/kbd.md -->
 # Kbd
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/kbd/kbd.md`
 Human reference: https://canvas.nannier.com/components/kbd
@@ -14500,17 +14500,17 @@ all round instead of the raised 2 px bottom, and the label in the secondary ink.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/line-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/line-chart.md -->
 # LineChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/line-chart/line-chart.md`
 Human reference: https://canvas.nannier.com/components/line-chart
@@ -14718,17 +14718,17 @@ Includes `CartesianSeriesProps`; their supported fields are expanded below.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/listbox.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/listbox.md -->
 # Listbox
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/listbox/listbox.md`
 Human reference: https://canvas.nannier.com/components/listbox
@@ -14958,17 +14958,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/media-objects.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/media-objects.md -->
 # MediaObject
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/media-objects/media-objects.md`
 Human reference: https://canvas.nannier.com/components/media-objects
@@ -15119,17 +15119,17 @@ handler and every tap runs it.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/metric-breakdown.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/metric-breakdown.md -->
 # MetricBreakdown
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/metric-breakdown/metric-breakdown.md`
 Human reference: https://canvas.nannier.com/components/metric-breakdown
@@ -15264,17 +15264,17 @@ breakdown={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/navbars.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/navbars.md -->
 # Navbar
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/navbars/navbars.md`
 Human reference: https://canvas.nannier.com/components/navbars
@@ -15570,17 +15570,17 @@ opens its own navigation, such as a Drawer of grouped sections. It replaces `lin
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/pagination.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/pagination.md -->
 # Pagination
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/pagination/pagination.md`
 Human reference: https://canvas.nannier.com/components/pagination
@@ -15782,17 +15782,17 @@ drops out). Solid mode keeps the accent fill.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/phone-input.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/phone-input.md -->
 # PhoneInput
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/phone-input/phone-input.md`
 Human reference: https://canvas.nannier.com/components/phone-input
@@ -16011,17 +16011,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/pie-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/pie-chart.md -->
 # PieChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/pie-chart/pie-chart.md`
 Human reference: https://canvas.nannier.com/components/pie-chart
@@ -16137,17 +16137,17 @@ Proportional composition as arc slices in the `chart-1`..`chart-8` token colors,
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For sizing/composition only. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/popover.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/popover.md -->
 # Popover
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/popover/popover.md`
 Human reference: https://canvas.nannier.com/components/popover
@@ -16371,17 +16371,17 @@ Touch closes it with a tap anywhere outside it, and on phones a tap on the scrim
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/pressable.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/pressable.md -->
 # Pressable
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/pressable/pressable.md`
 Human reference: https://canvas.nannier.com/components/pressable
@@ -16498,17 +16498,17 @@ A disabled Pressable ignores presses.
 | pressed | boolean \| undefined | no |  | Every kit control in the subtree renders as if it were held down. |
 | children | ReactNode | no |  | The subtree that resolves the pinned states. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/progress-ring.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/progress-ring.md -->
 # ProgressRing
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/progress-ring/progress-ring.md`
 Human reference: https://canvas.nannier.com/components/progress-ring
@@ -16596,17 +16596,17 @@ A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-c
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For sizing/composition only. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/progress.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/progress.md -->
 # Progress
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/progress/progress.md`
 Human reference: https://canvas.nannier.com/components/progress
@@ -16803,17 +16803,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/qrcode.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/qrcode.md -->
 # QRCode
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/qrcode/qrcode.md`
 Human reference: https://canvas.nannier.com/components/qrcode
@@ -16879,17 +16879,17 @@ The code stays a fixed dark-on-white card so any camera can read it, whatever th
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/radar-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/radar-chart.md -->
 # RadarChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/radar-chart/radar-chart.md`
 Human reference: https://canvas.nannier.com/components/radar-chart
@@ -16994,17 +16994,17 @@ series={[{ label: "Revenue", values: [4, 5, 6, 7, 8, 9] }]}
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/radial-bar-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/radial-bar-chart.md -->
 # RadialBarChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/radial-bar-chart/radial-bar-chart.md`
 Human reference: https://canvas.nannier.com/components/radial-bar-chart
@@ -17119,17 +17119,17 @@ Concentric arc rings, one per category, outermost first: each pairs a muted full
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For sizing/composition only. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/radio.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/radio.md -->
 # Radio
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/radio/radio.md`
 Human reference: https://canvas.nannier.com/components/radio
@@ -17357,17 +17357,17 @@ A `card` radio takes an `icon` over its title, which turns the accent when it is
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 | ref | React.Ref<View> | no |  | Ref to the interactive radio row, preserving group navigation. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/range-area-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/range-area-chart.md -->
 # RangeAreaChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/range-area-chart/range-area-chart.md`
 Human reference: https://canvas.nannier.com/components/range-area-chart
@@ -17491,17 +17491,17 @@ series={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/reveal.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/reveal.md -->
 # Reveal
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/reveal/reveal.md`
 Human reference: https://canvas.nannier.com/components/reveal
@@ -17823,17 +17823,17 @@ The trigger is measured against the window rather than the nearest scrolling par
 | style | LayoutStyle | no |  | Outer layout composition ONLY: how this wrapper sits in its parent (a `minWidth` of 0 so a grid child may shrink below its content, a `height` of 100% so cards in a row stay even, a flex share). It is NOT a restyle hook: the entrance itself is chosen entirely with the boolean props above, and the revealed content styles itself. A wrapper that cannot be told how to sit in its parent forces callers to add a second wrapper around it, which is worse. |
 | testID | string \| undefined | no |  | E2E hook forwarded to the wrapper. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/row-column.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/row-column.md -->
 # Row & Column
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/layout/layout.md`
 Human reference: https://canvas.nannier.com/components/row-column
@@ -18201,17 +18201,17 @@ line.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Layout containers are the exception to the no-sizing rule: for sizing and composition only (a `maxWidth` on a shell, a `flex` inside an app frame), never for styling or spacing. Gap, margin, padding, and flex layout come from the props above, and the codegen guardrail rejects those keys in `style`. Prefer a Container step or a `span` where one fits. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/row-menu.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/row-menu.md -->
 # RowMenu
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/row-menu/row-menu.md`
 Human reference: https://canvas.nannier.com/components/row-menu
@@ -18418,17 +18418,17 @@ grouped link list instead (below).
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/scatter-plot.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/scatter-plot.md -->
 # ScatterPlot
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/scatter-plot/scatter-plot.md`
 Human reference: https://canvas.nannier.com/components/scatter-plot
@@ -18519,17 +18519,17 @@ Numeric x/y point clouds with nice ticks on both axes and horizontal gridlines. 
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/scroll-view.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/scroll-view.md -->
 # ScrollView
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/scroll-view/scroll-view.md`
 Human reference: https://canvas.nannier.com/components/scroll-view
@@ -18763,17 +18763,17 @@ Unlike a plain View, a ScrollView lets its children exceed its size and scroll. 
 | ref | Ref<ScrollView> \| undefined | no |  | Allows getting a ref to the component instance. Once the component unmounts, React will set `ref.current` to `null` (or call the ref with `null` if you passed a callback ref). |
 | key | Key \| null \| undefined | no |  |  |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/select.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/select.md -->
 # Select
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/select/select.md`
 Human reference: https://canvas.nannier.com/components/select
@@ -19052,17 +19052,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/service-health-list.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/service-health-list.md -->
 # ServiceHealthList
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/service-health-list/service-health-list.md`
 Human reference: https://canvas.nannier.com/components/service-health-list
@@ -19178,17 +19178,17 @@ items={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/sidebar.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/sidebar.md -->
 # Sidebar
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/sidebar/sidebar.md`
 Human reference: https://canvas.nannier.com/components/sidebar
@@ -19466,17 +19466,17 @@ name and a detail line in the third ink (the collapsed rail keeps the avatar).
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/skeleton.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/skeleton.md -->
 # Skeleton
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/skeleton/skeleton.md`
 Human reference: https://canvas.nannier.com/components/skeleton
@@ -19644,17 +19644,17 @@ Placeholders for loading content.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/slider.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/slider.md -->
 # Slider
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/slider/slider.md`
 Human reference: https://canvas.nannier.com/components/slider
@@ -19851,17 +19851,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/sparkline.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/sparkline.md -->
 # Sparkline
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/sparkline/sparkline.md`
 Human reference: https://canvas.nannier.com/components/sparkline
@@ -19978,17 +19978,17 @@ a lone sparkline inside running text is usually better without.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For sizing/composition only (e.g. maxWidth); not a styling escape hatch. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/spinner.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/spinner.md -->
 # Spinner
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/spinner/spinner.md`
 Human reference: https://canvas.nannier.com/components/spinner
@@ -20132,17 +20132,17 @@ Animated loading spinner in three sizes.
 | accessibilityLabel | string \| undefined | no |  | Accessible description of what is loading. When absent, a string label (children) becomes the accessible name; when neither is present it defaults to "Loading". |
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/stacked-bar.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/stacked-bar.md -->
 # StackedBar
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/stacked-bar/stacked-bar.md`
 Human reference: https://canvas.nannier.com/components/stacked-bar
@@ -20265,17 +20265,17 @@ solid bar would outweigh everything around it.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For sizing/composition only. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/stacked-lists.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/stacked-lists.md -->
 # StackedList
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/stacked-lists/stacked-lists.md`
 Human reference: https://canvas.nannier.com/components/stacked-lists
@@ -20544,17 +20544,17 @@ A per-item `trailing` slot renders right-aligned before the badge/meta cluster, 
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/stats.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/stats.md -->
 # Stats
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/molecules/stats/stats.md`
 Human reference: https://canvas.nannier.com/components/stats
@@ -20825,17 +20825,17 @@ that varies.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/stepper.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/stepper.md -->
 # Stepper
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/stepper/stepper.md`
 Human reference: https://canvas.nannier.com/components/stepper
@@ -20968,17 +20968,17 @@ from `aria-required` on the web's numeric field and from its name ("Quantity, re
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 | ref | React.Ref<RNTextInput> | no |  | Ref to the underlying React Native host. Supports object refs and callback refs; native methods follow the platform's behavior. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/steps.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/steps.md -->
 # Steps
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/steps/steps.md`
 Human reference: https://canvas.nannier.com/components/steps
@@ -21197,17 +21197,17 @@ column stacks too.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/swatch.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/swatch.md -->
 # Swatch
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/swatch/swatch.md`
 Human reference: https://canvas.nannier.com/components/swatch
@@ -21487,17 +21487,17 @@ The token chip's swatch: a 20px disc edged by a 1px inset ring.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For layout composition only (not styling): the fill, radius, and size come from props. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/switch.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/switch.md -->
 # Switch
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/switch/switch.md`
 Human reference: https://canvas.nannier.com/components/switch
@@ -21661,17 +21661,17 @@ On the web, Space activates the focused control on key release, and Enter also a
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 | ref | React.Ref<View> | no |  | Ref to the interactive switch row, including its label. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/tab-bar.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/tab-bar.md -->
 # TabBar
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/tab-bar/tab-bar.md`
 Human reference: https://canvas.nannier.com/components/tab-bar
@@ -21797,17 +21797,17 @@ the rest stay muted, so the current tab is always singular and unmistakable. On 
 | bottomInset | number \| undefined | no | 0 | Safe-area bottom inset, e.g. `insets.bottom`. It is added BELOW the bar's own symmetric vertical padding (not in place of it), so the bar clears the home indicator without making the bottom margin heavier than the top. Defaults to 0 (web desktop / no inset). |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only. Use bottomInset for the safe area. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/tabs.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/tabs.md -->
 # Tabs
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/tabs/tabs.md`
 Human reference: https://canvas.nannier.com/components/tabs
@@ -22024,17 +22024,17 @@ vertical rail honors `wrap` once it flattens.
 | disabled | boolean \| undefined | no | false |  |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/text-input.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/text-input.md -->
 # TextInput
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/text-input/text-input.md`
 Human reference: https://canvas.nannier.com/components/text-input
@@ -22287,17 +22287,17 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 | ref | Ref<TextInput> \| undefined | no |  | Allows getting a ref to the component instance. Once the component unmounts, React will set `ref.current` to `null` (or call the ref with `null` if you passed a callback ref). |
 | key | Key \| null \| undefined | no |  |  |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/text.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/text.md -->
 # Text
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/text/text.md`
 Human reference: https://canvas.nannier.com/components/text
@@ -22437,17 +22437,17 @@ Renders text. In React Native every string must live inside a Text element, so y
 | ref | Ref<Text> \| undefined | no |  | Allows getting a ref to the component instance. Once the component unmounts, React will set `ref.current` to `null` (or call the ref with `null` if you passed a callback ref). |
 | key | Key \| null \| undefined | no |  |  |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/textarea.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/textarea.md -->
 # Textarea
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/textarea/textarea.md`
 Human reference: https://canvas.nannier.com/components/textarea
@@ -22707,17 +22707,17 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | page | boolean \| undefined | no | false | Measure (pick one; omit to take the parent's bounds). Caps the component at a step of the width scale, centered in its column; `start` pins it to the leading edge. |
 | start | boolean \| undefined | no | false | Pin a capped component to the leading edge instead of centering it in its column. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/toast.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/toast.md -->
 # Toast
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/toast/toast.md`
 Human reference: https://canvas.nannier.com/components/toast
@@ -22841,17 +22841,17 @@ Toast is usually driven imperatively: mount a `<ToastProvider>` near your app ro
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/tooltip.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/tooltip.md -->
 # Tooltip
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/tooltip/tooltip.md`
 Human reference: https://canvas.nannier.com/components/tooltip
@@ -23038,17 +23038,17 @@ bubble floats and takes no room of its own.
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/treemap.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/treemap.md -->
 # Treemap
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/treemap/treemap.md`
 Human reference: https://canvas.nannier.com/components/treemap
@@ -23168,17 +23168,17 @@ data={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/typography.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/typography.md -->
 # Typography
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/typography/typography.md`
 Human reference: https://canvas.nannier.com/components/typography
@@ -24081,17 +24081,17 @@ Inline text that NAVIGATES should be a real link, not pressable text that sets `
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<TextStyle> | no |  | For layout/positioning composition only (margins handled by Row/Column). Not a styling escape hatch: size, color, and weight come from the props above. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/uptime-bar.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/uptime-bar.md -->
 # UptimeBar
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/uptime-bar/uptime-bar.md`
 Human reference: https://canvas.nannier.com/components/uptime-bar
@@ -24220,17 +24220,17 @@ periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : {}))}
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/video.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/video.md -->
 # Video
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/video/video.md`
 Human reference: https://canvas.nannier.com/components/video
@@ -24318,17 +24318,17 @@ the kit's control bar under the picture, with play and pause, the elapsed time, 
 | testID | string \| undefined | no |  | E2E hook forwarded to the frame. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/view.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/view.md -->
 # View
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/atoms/view/view.md`
 Human reference: https://canvas.nannier.com/components/view
@@ -24523,17 +24523,17 @@ Reach for it directly only when no semantic primitive covers what you need: arra
 | accessibilityLargeContentTitle | string \| undefined | no |  | When `accessibilityShowsLargeContentViewer` is set, this string will be used as title for the large content viewer. https://reactnative.dev/docs/accessibility#accessibilitylargecontenttitle |
 | accessibilityRespondsToUserInteraction | boolean \| undefined | no |  | Blocks the user from interacting with the component through keyboard while still allowing screen reader to interact with it if this View is still accessible. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/waterfall-chart.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/waterfall-chart.md -->
 # WaterfallChart
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/charts/waterfall-chart/waterfall-chart.md`
 Human reference: https://canvas.nannier.com/components/waterfall-chart
@@ -24645,17 +24645,17 @@ data={[
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/components/wizard.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/components/wizard.md -->
 # Wizard
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Source: `src/organisms/wizard/wizard.md`
 Human reference: https://canvas.nannier.com/components/wizard
@@ -24777,148 +24777,148 @@ Dialog supplies the accessible modal name, focus management, live close action, 
 | embedded | boolean \| undefined | no | false | Show the open wizard as a non-modal specimen, for a catalogue or a showcase: it keeps its look, its dialog role and its labelling, but does not take focus, trap Tab, claim `aria-modal`, or close on Escape or native back. It renders in place, in the flow of the page, as Dialog's contained form does, rather than presenting into an OverlayProvider. |
 | testID | string \| undefined | no |  | Prefix for modal, steps, body-scroll and footer test hooks. |
 
-See [installation](https://canvas.nannier.com/ai/4.0.0/installation.md) for required peers and feature fallbacks.
+See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for required peers and feature fallbacks.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/index.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/index.md -->
 # Canvas agent documentation
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
-This generated source snapshot describes `@nannier/canvas` at repository package version `4.0.0`. Check the application's installed package version and its declarations before using an API. A source snapshot is not a claim that npm has published this version.
+This generated source snapshot describes `@nannier/canvas` at repository package version `4.1.0`. Check the application's installed package version and its declarations before using an API. A source snapshot is not a claim that npm has published this version.
 
 ## Guides
 
-- [installation](https://canvas.nannier.com/ai/4.0.0/installation.md)
-- [theming](https://canvas.nannier.com/ai/4.0.0/theming.md)
-- [layout](https://canvas.nannier.com/ai/4.0.0/layout.md)
-- [overlays](https://canvas.nannier.com/ai/4.0.0/overlays.md)
-- [Machine catalog](https://canvas.nannier.com/ai/4.0.0/catalog.json)
-- [Content and source manifest](https://canvas.nannier.com/ai/4.0.0/manifest.json)
+- [installation](https://canvas.nannier.com/ai/4.1.0/installation.md)
+- [theming](https://canvas.nannier.com/ai/4.1.0/theming.md)
+- [layout](https://canvas.nannier.com/ai/4.1.0/layout.md)
+- [overlays](https://canvas.nannier.com/ai/4.1.0/overlays.md)
+- [Machine catalog](https://canvas.nannier.com/ai/4.1.0/catalog.json)
+- [Content and source manifest](https://canvas.nannier.com/ai/4.1.0/manifest.json)
 
 ## Components
 
-- [Accordion](https://canvas.nannier.com/ai/4.0.0/components/accordion.md): A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates when the row opens) over a collapsible content panel.
-- [ActionPanel](https://canvas.nannier.com/ai/4.0.0/components/action-panels.md): Section panel with headline, body text, and one action. Used to surface a single decision or call-to-action.
-- [ActionSheet](https://canvas.nannier.com/ai/4.0.0/components/action-sheet.md): A modal sheet of contextual actions, the iOS action sheet idiom: a bottom sheet of choices summoned in response to a user action, over a dimmed scrim that glass on the web also blurs.
-- [Alert](https://canvas.nannier.com/ai/4.0.0/components/alert.md): Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.
-- [AlertDialog](https://canvas.nannier.com/ai/4.0.0/components/alert-dialog.md): Catalyst-style confirmation dialog: a centered panel over a dimmed backdrop, which glass on the web also blurs, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.
-- [AppFrame](https://canvas.nannier.com/ai/4.0.0/components/app-frame.md): The app's root frame and its scrolling screens. `AppFrame` mounts the safe-area context and the app-root overlay host, pads all four safe-area edges over the theme background, renders the app's top chrome in a banner region and lets its body (a router's Stack) fill the height left. `Page` is one screen inside it: the main region, a scroller with page gutters whose content is capped and centered at a step of the width scale.
-- [AreaChart](https://canvas.nannier.com/ai/4.0.0/components/area-chart.md): Categorical-x series fills: overlapping translucent areas by default, or running-sum bands with `stacked`. Shares the line chart's curve, density, furniture, and scrub-to-inspect axes.
-- [Autocomplete](https://canvas.nannier.com/ai/4.0.0/components/autocomplete.md): Text input + dropdown: searchable single-select.
-- [Avatar](https://canvas.nannier.com/ai/4.0.0/components/avatar.md): A photo when the account has one, falling back to one or two initials on an identity disc: the name resolves to one of ten hues (or `hue` picks one), and the disc is that hue's soft wash under initials in the same hue, so one person keeps one colour on every platform and stays distinct in a stack or list. The initials sit at weight 600, 38% of the disc, and their ink is held to 4.5:1 on the wash in both schemes.
-- [Badge](https://canvas.nannier.com/ai/4.0.0/components/badge.md): Two families on one Badge component, picked by boolean props. The metadata badge labels a schema, role, or tag: with no tone it is the accent's soft pill, and the tones give `default` the solid call-to-action pill, `secondary` the quiet surface pill, `outline` a hairline pill and `destructive` the soft red pill; add `mono` for token names. A status tone (`success`, `warning`, `error`, `info`, `neutral`) paints the pill in that tone's wash and ink and leads it with a dot. The status badge (`status`) has no pill: a dot in the tone's color, ringed in its wash, beside a muted label, for live state like active, pending, or failed.
-- [BarList](https://canvas.nannier.com/ai/4.0.0/components/bar-list.md): Ranked label and value rows: each row is a proportional tone wash behind a truncating label, with a right-aligned mono value and an optional delta.
-- [Board](https://canvas.nannier.com/ai/4.0.0/components/board.md): A data-driven kanban board: columns scroll horizontally, each column is a drop zone in a sunken well headed by its label and item count, and every card carries a drag grip, an optional trailing badge, a two-line description, a free-form chips slot, and an optional kebab menu.
-- [BoxPlot](https://canvas.nannier.com/ai/4.0.0/components/box-plot.md): Quartile boxes, whiskers, and outlier dots per category, computed by the chart from raw samples: quartiles by linear interpolation, whiskers at the most extreme data inside the 1.5 IQR fences, outliers beyond them. Scrub a category to flag its five-number summary; each category's summary also folds into the accessible name.
-- [Breadcrumb](https://canvas.nannier.com/ai/4.0.0/components/breadcrumb.md): Hierarchical navigation showing where you are.
-- [BulletChart](https://canvas.nannier.com/ai/4.0.0/components/bullet-chart.md): Goal-attainment rows: each datum is a leading label, a track holding qualitative background bands (`ranges`, ascending bounds in fading washes), the tone-colored measure bar, an optional vertical target tick, and the trailing formatted value.
-- [Button](https://canvas.nannier.com/ai/4.0.0/components/button.md): Six intents × three sizes (plus the icon square) × disabled / focus / hover states. Always semantic: the intent communicates what the button does (default = the primary action, destructive = irreversible, ghost = chrome).
-- [ButtonGroup](https://canvas.nannier.com/ai/4.0.0/components/button-group.md): Segmented controls, split buttons, attached groups.
-- [Calendar](https://canvas.nannier.com/ai/4.0.0/components/calendar.md): Month grid, week timeline, and day timeline in one component. Events mark their days with a dot in the month grid and week strip, and timed events render as blocks on the week/day hour timelines.
-- [CandlestickChart](https://canvas.nannier.com/ai/4.0.0/components/candlestick-chart.md): The trading instrument view: OHLC candles colored by direction from the success/destructive tokens, an optional docked volume pane, and optional overlay series (moving averages) in the series tokens. Press or scrub a candle to read its Open/High/Low/Close and volume.
-- [Card](https://canvas.nannier.com/ai/4.0.0/components/card.md): A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface, `sunken` drops the shadow and sinks the fill to the well beneath the page (`surface-sunken`, the hand-off's `--bg2` tiles, stages and panels set into a card) under the hairline, and `outlined` drops the shadow and keeps the card fill under the hairline (the hand-off's page cards; a platform whose card control draws an outline instead of a shadow draws both the same), and `heroShadow` is the medium shadow (the hand-off's `--sh-md`, its section hero's stage), between the resting card and the raised one. Precedence is `raised`, `flat`, `sunken`, `outlined`, `heroShadow`. On Android `sunken` is the Material 3 filled card: the well's fill with no outline. A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
-- [Carousel](https://canvas.nannier.com/ai/4.0.0/components/carousel.md): A horizontally paged slide viewer: swipe (or use the prev/next arrows and the dot indicators) to move one slide at a time.
-- [Chart](https://canvas.nannier.com/ai/4.0.0/components/chart.md): A single- or multi-series bar chart: vertical columns (or horizontal rows) sized against the axis max, with per-category values and labels.
-- [Chat](https://canvas.nannier.com/ai/4.0.0/components/chat.md): A controlled assistant conversation with independently scrolling messages, clear author and provider identities, and an anchored multiline composer. The parent supplies the bounds; Chat fills the available height without choosing a fixed height of its own.
-- [Checkbox](https://canvas.nannier.com/ai/4.0.0/components/checkbox.md): Multi-select option, single yes/no, grouped lists.
-- [Chip](https://canvas.nannier.com/ai/4.0.0/components/chip.md): An interactive pill for filter chips, tags, and selectable tokens. It carries an optional leading icon and a label, becomes tappable with `onPress`, and grows a trailing "×" remove button with `onRemove`.
-- [CodeBlock](https://canvas.nannier.com/ai/4.0.0/components/code-block.md): Syntax-highlighted code display with clipboard copy, horizontal scrolling, line emphasis, diff rendering, collapsible folding, and tabbed alternatives.
-- [Collapsible](https://canvas.nannier.com/ai/4.0.0/components/collapsible.md): A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates when open) over one collapsible content panel.
-- [Command](https://canvas.nannier.com/ai/4.0.0/components/command.md): Cmd+K search: navigation, actions, recent items.
-- [ComposedChart](https://canvas.nannier.com/ai/4.0.0/components/composed-chart.md): Bars, lines, and gradient-washed areas sharing one categorical axis: each series picks its mark with a `line` or `area` boolean (bars by default; precedence line > area > bars).
-- [Container](https://canvas.nannier.com/ai/4.0.0/components/container.md): The bounds provider. A Canvas component never dictates its own width: `Container` conforms to its parent (full width, no cap) by default, and a named step of the shared width scale (`xxxs` 192 through `page` 1280) caps and centers it, so the reading measure of a form, an article, or a card stack is a step you can name instead of a width invented at the call site.
-- [DashboardGrid](https://canvas.nannier.com/ai/4.0.0/components/dashboard-grid.md): A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width.
-- [DataTable](https://canvas.nannier.com/ai/4.0.0/components/data-table.md): A data table rendered from column and row data, with sorting, row selection, pagination, and the loading and empty states built in.
-- [DepthChart](https://canvas.nannier.com/ai/4.0.0/components/depth-chart.md): The order-book view: cumulative bid and ask step areas mirrored around the spread, bids in the success tone and asks in destructive, on a numeric price axis.
-- [DescriptionList](https://canvas.nannier.com/ai/4.0.0/components/description-lists.md): Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views. Rows flagged `update` carry a working in-place editor: Update opens it, Enter or Save commits the new value and fires `onUpdate`, Escape or Cancel dismisses it. `muted` sets each text value as a note beside its term, in the small type and the muted ink, for a list that explains its terms (a key and its effect) rather than reporting data; a node value renders as given, and a platform skin whose value detail is already the secondary ink keeps its type.
-- [Dialog](https://canvas.nannier.com/ai/4.0.0/components/dialog.md): A modal dialog: a centered panel over a dimmed backdrop, which glass on the web also blurs, with a title, an optional description, a body for real content like a form, and right-aligned actions. Use it for a focused task that warrants interrupting the page; reach for the Alert Dialog for a terse yes/no confirmation.
-- [Divider](https://canvas.nannier.com/ai/4.0.0/components/divider.md): Horizontal, vertical, with label, with action.
-- [Drag & drop](https://canvas.nannier.com/ai/4.0.0/components/drag-drop.md): A reusable drag-and-drop context: wrap a surface in a `DragDropProvider`, mark droppable regions with `DropZone`, and make items draggable with `Draggable` plus a `DragHandle` grip.
-- [Drawer](https://canvas.nannier.com/ai/4.0.0/components/drawer.md): A full-screen panel that slides in from an edge: a navigation drawer, a mobile menu, or a bottom action sheet. Built on React Native's Modal, so it floats over the whole app on iOS, Android, and the web, over a dimmed scrim that glass on the web also blurs. For a small contextual menu, reach for Dropdown or RowMenu instead.
-- [Dropdown](https://canvas.nannier.com/ai/4.0.0/components/dropdown.md): Floating menus triggered by a button: actions, options, navigation.
-- [Emblem](https://canvas.nannier.com/ai/4.0.0/components/emblem.md): A tinted rounded square (or circle) that holds a single `Icon` or a short monogram, the recurring "icon on a soft background" used in cards, media objects, empty states, and feeds. Emblem owns the surface and the icon color: pick a tone and it tints the square and paints the glyph to match, so a call site never hand-composes `borderRadius` + `backgroundColor` to build an icon background.
-- [EmptyState](https://canvas.nannier.com/ai/4.0.0/components/empty-state.md): Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.
-- [Feed](https://canvas.nannier.com/ai/4.0.0/components/feeds.md): Vertical activity streams with icons and timestamps. Used for audit logs, change history, and notification lists.
-- [Field](https://canvas.nannier.com/ai/4.0.0/components/field.md): A form row: a label, the control, and one message line under it. Field exists for the part no control owns on its own: every field family already owns its label, but nothing else in the kit renders helper or error text, so that message is what Field adds.
-- [FilterPanel](https://canvas.nannier.com/ai/4.0.0/components/filter-panel.md): Sidebar filter rail: grouped checkbox options under mono group headings, each with its count, and a "Clear N" action in the header while any filter is on (a plain accent text action). On the web an option's label is the 400 14px row label, 10px from its box.
-- [Form](https://canvas.nannier.com/ai/4.0.0/components/form.md): Stitch your own fields inside it; Form adds the stacked or two-column rhythm, titled sections, the submit and cancel actions row, and Enter to submit.
-- [FunnelChart](https://canvas.nannier.com/ai/4.0.0/components/funnel-chart.md): Stage-by-stage conversion bars: one centered row per stage, labelled on the left and valued on the right.
-- [Gauge](https://canvas.nannier.com/ai/4.0.0/components/gauge.md): A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value arc) for a 0-100 value, the percent readout in the open center of the semicircle, and an optional label below the graphic.
-- [GeoMap](https://canvas.nannier.com/ai/4.0.0/components/geo-map.md): A world map with a bubble per place, its area proportional to its count, over coastlines and country borders precomputed at build time. Optionally zoomable, merging crowded places into one bubble that splits as you zoom in.
-- [Grid](https://canvas.nannier.com/ai/4.0.0/components/grid.md): The container-measured auto-fit tile grid. `minTileWidth` sets the floor (default 240): the grid fits as many equal-width columns of at least that width as its own measured container allows, and re-fits as the container changes, so the same grid renders three-up on a desktop, two-up on a tablet, and a single column on a phone with no breakpoint at the call site.
-- [GridList](https://canvas.nannier.com/ai/4.0.0/components/grid-lists.md): Tiled card grids for people directories, item collections, and image galleries.
-- [Heatmap](https://canvas.nannier.com/ai/4.0.0/components/heatmap.md): Density cells whose fill encodes each value. Pass `calendar` for a GitHub-style contribution graph: seven-day week columns with weekday and month labels, discrete less-to-more levels, and press or hover to inspect a day's count and date. The calendar layout IS the kit's activity calendar, so a contribution graph needs no separate component.
-- [Histogram](https://canvas.nannier.com/ai/4.0.0/components/histogram.md): An auto-binned frequency distribution: pass raw sample `values` and the chart bins them into nice-edged uniform buckets (Sturges' rule by default, `bins` to override) and draws contiguous bars on a numeric axis. Press or scrub a bar to inspect its range and count. The accessible name lists every bin with its bounds and tally.
-- [Icon](https://canvas.nannier.com/ai/4.0.0/components/icon.md): Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to the theme foreground token and tracks light and dark automatically; pick other hues with the semantic color booleans (`primary`, `destructive`, `success`, `warning`, `muted`, `subtle`; that order is the precedence). `muted` is the third ink (`subtle-foreground`) and `subtle` the second (`muted-foreground`), the names Typography gives the same two inks. Inside a control that owns a label ink (a Button's `iconLeft` and `iconRight` slots) a glyph with no tone takes that ink instead, the way the hand-off's icons inherit `currentColor`: the primary's contrast ink on a primary button, the muted ink on a quiet one. The precedence is the explicit tone, then the host's ink, then the foreground, so a toned glyph keeps its tone anywhere.
-- [Image](https://canvas.nannier.com/ai/4.0.0/components/image.md): Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then choose how it fills its box with a fit prop: `cover` (the default) fills the box and crops the overflow, while `contain` fits the whole image inside and letterboxes the spare space.
-- [Input](https://canvas.nannier.com/ai/4.0.0/components/input.md): The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `compact`, `disabled`), plus prefix/suffix addons, overlaid icons (`leadingIcon` / `trailingIcon` with any Canvas glyph as `icon`), a `passwordToggle` eye for a `secureTextEntry` value, a `clearable` clear button, and a `shortcut` keycap. Input is single-line; for multi-line entry use the dedicated Textarea.
-- [InputOTP](https://canvas.nannier.com/ai/4.0.0/components/input-otp.md): A segmented one-time-code field: `length` cells display the typed characters while one underlying text input captures the keystrokes, so native SMS autofill, the one-time-code keyboard suggestion, and paste all flow into a single value.
-- [Kbd](https://canvas.nannier.com/ai/4.0.0/components/kbd.md): Keyboard shortcut indicator: a raised 24 px key cap with a mono label. `keys` composes a whole shortcut, one cap per key; `sequence` says "then" between the caps of keys pressed one after another. A shortcut reads as one accessible name ("⌘+K", "G then C"). `comfortable` pads the cap 3 px above and below its label and 8 px at the sides (25 px tall) for a key set beside what it does, as a reference's keyboard table lists it; omit it for the 24 px cap with 6 px sides.
-- [LineChart](https://canvas.nannier.com/ai/4.0.0/components/line-chart.md): Categorical-x series lines with nice y ticks, gridlines, and a legend for multiple series.
-- [Listbox](https://canvas.nannier.com/ai/4.0.0/components/listbox.md): A custom select whose options stay on screen: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when the options need rich rows; prefer `Select` for a simple short list.
-- [MediaObject](https://canvas.nannier.com/ai/4.0.0/components/media-objects.md): Image or icon paired with text content. The fundamental building block for list items, notifications, and comment layouts.
-- [MetricBreakdown](https://canvas.nannier.com/ai/4.0.0/components/metric-breakdown.md): The decomposed-metric dashboard card: headline value, tone-aware rate, Sparkline trend, per-category share rows, and a chip footer.
-- [Navbar](https://canvas.nannier.com/ai/4.0.0/components/navbars.md): Topbars with a brand, navigation links, and an action button. Used as the primary app-level navigation.
-- [Pagination](https://canvas.nannier.com/ai/4.0.0/components/pagination.md): Page-of-N navigation for tables and lists.
-- [PhoneInput](https://canvas.nannier.com/ai/4.0.0/components/phone-input.md): A phone number field: the Input's box with a country segment at its start (the chosen country and a caret, which open a list of countries with their names and dial codes) and that country's dial code inline before the number. On the web the segment is a small chip inside the field naming the country by its ISO code, and the dial code and the number are set in the mono face, and in the country list each row is a 16px flag 10px from the name with the dial code a 12px mono note at its end; on iOS and Android it is the country's flag.
-- [PieChart](https://canvas.nannier.com/ai/4.0.0/components/pie-chart.md): Proportional composition as arc slices in the `chart-1`..`chart-8` token colors, with a percent legend. `donut` centers the total (or the selected slice while inspecting); pressing a slice dims the others.
-- [Popover](https://canvas.nannier.com/ai/4.0.0/components/popover.md): Floating panel with a title, supporting text, rich content such as form fields, and a single follow-up action, anchored to its trigger. Pass children to host custom content in the panel body, between the description and the action.
-- [Pressable](https://canvas.nannier.com/ai/4.0.0/components/pressable.md): The touchable primitive: wraps content, fires `onPress`, and exposes the press state to its style for feedback.
-- [Progress](https://canvas.nannier.com/ai/4.0.0/components/progress.md): Determinate and indeterminate progress bars: a rounded bar that reports how far a task has gotten, or that work is underway.
-- [ProgressRing](https://canvas.nannier.com/ai/4.0.0/components/progress-ring.md): A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-colored value arc revealed clockwise from 12 o'clock with rounded caps, the whole-percent readout centered inside, and an optional label below the graphic. The same 0-100 value contract, tone axis, and rounding rules as Gauge, in the circular anatomy that reads as "completion" rather than "level".
-- [QRCode](https://canvas.nannier.com/ai/4.0.0/components/qrcode.md): Encodes a string as a scannable QR code. Built on react-native-svg, so it renders the same on iOS, Android, and the web. The code stays a fixed dark-on-white card so any camera can read it, whatever the app theme.
-- [RadarChart](https://canvas.nannier.com/ai/4.0.0/components/radar-chart.md): A polygonal multi-axis comparison: concentric rings at nice tick fractions, a spoke per axis, and one closed polygon per series (ramp stroke over a soft matching wash), with the spoke labels just beyond the outer ring. Values align to `axes` by index and the accessible name folds every axis and value; press-to-inspect is deferred scope for this chart.
-- [RadialBarChart](https://canvas.nannier.com/ai/4.0.0/components/radial-bar-chart.md): Concentric arc rings, one per category, outermost first: each pairs a muted full-circle track with a ramp-colored value arc revealed clockwise from 12 o'clock, and a column legend carries the formatted values. Every ring sweeps against the same `max` (the largest entry by default), so the chart compares attainment, not shares. Press a ring to select it (the others dim); press elsewhere to clear.
-- [Radio](https://canvas.nannier.com/ai/4.0.0/components/radio.md): Single-pick selection: stacked, inline, card-style.
-- [RangeAreaChart](https://canvas.nannier.com/ai/4.0.0/components/range-area-chart.md): A min/max envelope: a translucent band between each label's `low` and `high`, an optional solid `mid` line through it, and the standard scrub-to-inspect flag showing High, Mid, and Low. The y domain hugs the data rather than anchoring at zero, since an envelope is a range idiom, not a magnitude bar. Forecast bands, error envelopes, and daily temperature ranges all read this way.
-- [Reveal](https://canvas.nannier.com/ai/4.0.0/components/reveal.md): An entrance for page content: what it wraps starts slightly offset and transparent, then travels into place and fades in when it reaches the viewport. It fires once and stays, so content that has arrived never leaves again.
-- [Row & Column](https://canvas.nannier.com/ai/4.0.0/components/row-column.md): The layout primitives. `Row` lays children out horizontally, `Column` vertically. Both own arrangement through semantic boolean axes, a gap scale (`flush` / `tight` / `snug` / `cozy` / `relaxed` / `loose`), main-axis distribution (`center`, `between`, …), cross-axis alignment (`alignCenter`, `baseline`, …), and `wrap` / `fill` / `grow` / `shrink`, so a call site never hand-rolls `flexDirection`, `gap`, or `alignItems`.
-- [RowMenu](https://canvas.nannier.com/ai/4.0.0/components/row-menu.md): Vertical action menu items and navigation links.
-- [ScatterPlot](https://canvas.nannier.com/ai/4.0.0/components/scatter-plot.md): Numeric x/y point clouds with nice ticks on both axes and horizontal gridlines. Multi-series clouds use the series tokens; pressing near a point rings it and flags its coordinates.
-- [ScrollView](https://canvas.nannier.com/ai/4.0.0/components/scroll-view.md): A scrollable container for content larger than its bounds: vertical by default, `horizontal` for a row.
-- [Select](https://canvas.nannier.com/ai/4.0.0/components/select.md): A single-choice dropdown field: a trigger showing the chosen value that opens a panel of options, styled to match Canvas inputs.
-- [ServiceHealthList](https://canvas.nannier.com/ai/4.0.0/components/service-health-list.md): Per-service status rows: a status dot (down > degraded > operational), the service name, an optional right-aligned `detail` such as an uptime percentage, and, when the item carries `periods`, an inline strip of its latest 14 periods beside the detail.
-- [Sidebar](https://canvas.nannier.com/ai/4.0.0/components/sidebar.md): App navigation rail with collapsible sections and active highlighting. The sidebar on the left of this page is a thin adapter over this very `Sidebar` component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.
-- [Skeleton](https://canvas.nannier.com/ai/4.0.0/components/skeleton.md): Placeholders for loading content.
-- [Slider](https://canvas.nannier.com/ai/4.0.0/components/slider.md): Drag (or tap) along a track to pick a value in a range; the keyboard and screen readers step it too. Controlled by `value`, bounded by `min` / `max`, and snapped to `step`.
-- [Sparkline](https://canvas.nannier.com/ai/4.0.0/components/sparkline.md): A compact trend strip: a row of thin bars whose heights track a series of values, with the series in a soft wash of the tone and the latest bar in the full accent. Pass `values` and it sizes each bar against the series max and paints the tone, so no call site hand-composes a row of `flexGrow` + `height` + `backgroundColor` Views to draw an inline trend on a stat card or dashboard.
-- [Spinner](https://canvas.nannier.com/ai/4.0.0/components/spinner.md): Animated loading spinner in three sizes.
-- [StackedBar](https://canvas.nannier.com/ai/4.0.0/components/stacked-bar.md): One proportional horizontal bar split into colored segments (the `chart-1`..`chart-8` tokens in fixed order), with a legend carrying each segment's label and share.
-- [StackedList](https://canvas.nannier.com/ai/4.0.0/components/stacked-lists.md): Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.
-- [Stats](https://canvas.nannier.com/ai/4.0.0/components/stats.md): Single value, grouped row, with sparkline, with comparison. Used for dashboards and overview pages.
-- [Stepper](https://canvas.nannier.com/ai/4.0.0/components/stepper.md): Increment, decrement, or type a number in a bounded range. A − button, an editable numeric center field, and a + button, controlled by `value` and clamped to `min` / `max` by `step`. This is the ± numeric control (the iOS UIStepper idiom); for a multi-step progress indicator see Steps.
-- [Steps](https://canvas.nannier.com/ai/4.0.0/components/steps.md): Multi-step progress indicators: horizontal, vertical, with progress.
-- [Swatch](https://canvas.nannier.com/ai/4.0.0/components/swatch.md): A color sample: a filled rounded block with the token's name and value beneath it, the anatomy a design-system color sheet repeats down a page. Swatch owns the whole lockup, so a sheet never sets a bare block next to a hand-built text column and drifts row to row.
-- [Switch](https://canvas.nannier.com/ai/4.0.0/components/switch.md): On / off switch, isolated or grouped in a settings list.
-- [TabBar](https://canvas.nannier.com/ai/4.0.0/components/tab-bar.md): Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (the iOS 26 floating tab bar / Material 3 navigation bar), rendered through the glass functional layer.
-- [Tabs](https://canvas.nannier.com/ai/4.0.0/components/tabs.md): Underline, pill, vertical, with badges.
-- [Text](https://canvas.nannier.com/ai/4.0.0/components/text.md): Renders text. In React Native every string must live inside a Text element, so you cannot put a bare string in a View. For type scale and tone in app code, reach for `<Typography>` (e.g. `<Typography h3>`, `<Typography body>`, `<Typography tiny muted>`), which owns the kit's roles and colors; use the raw Text primitive for the primitive-level cases it does not cover: `numberOfLines` truncation and nested inline runs.
-- [TextInput](https://canvas.nannier.com/ai/4.0.0/components/text-input.md): Single-line (or multiline) text entry. Control it with `value` + `onChangeText`, and style the box with the usual View style props. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.
-- [Textarea](https://canvas.nannier.com/ai/4.0.0/components/textarea.md): Multi-line input, with character count, with toolbar.
-- [Toast](https://canvas.nannier.com/ai/4.0.0/components/toast.md): A transient notification card. Render a `<Toast>` directly, or drive them imperatively: mount a `<ToastProvider>` near your app root and call `toast(...)` from the `useToast()` hook to enqueue auto-dismissing toasts that stack over the app.
-- [Tooltip](https://canvas.nannier.com/ai/4.0.0/components/tooltip.md): Small floating helper text on hover or focus.
-- [Treemap](https://canvas.nannier.com/ai/4.0.0/components/treemap.md): Squarified value tiles: each datum becomes a ramp-colored rectangle whose area is proportional to its value, packed largest-first with near-square aspect ratios, with the label and formatted value rendered inside only when the tile fits them.
-- [Typography](https://canvas.nannier.com/ai/4.0.0/components/typography.md): Type scale classes for headings, body text, and helper styles.
-- [UptimeBar](https://canvas.nannier.com/ai/4.0.0/components/uptime-bar.md): The statuspage strip: per-period status pills (operational, degraded, down, unknown) with a summary caption and edge labels.
-- [Video](https://canvas.nannier.com/ai/4.0.0/components/video.md): Plays a clip with an optional poster: tap to play inline, or full transport controls (the platform's own on iOS and Android, the kit's bar on the web), with boolean fit, `autoplay`, `loop` and `muted` props.
-- [View](https://canvas.nannier.com/ai/4.0.0/components/view.md): The layout primitive: a flex container that runs identically on iOS, Android, and the web. A View is a column by default.
-- [WaterfallChart](https://canvas.nannier.com/ai/4.0.0/components/waterfall-chart.md): The running-total bridge: each step floats from the running total by its signed `value`, and a `total` step snapshots the running total as an absolute bar from zero.
-- [Wizard](https://canvas.nannier.com/ai/4.0.0/components/wizard.md): A modal workflow with a fixed step sidebar, a title and status header, and footer actions around a bounded, scrolling body. The application owns stage content, validation, saving and transitions; Wizard composes the existing Dialog, Steps and Button controls.
+- [Accordion](https://canvas.nannier.com/ai/4.1.0/components/accordion.md): A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates when the row opens) over a collapsible content panel.
+- [ActionPanel](https://canvas.nannier.com/ai/4.1.0/components/action-panels.md): Section panel with headline, body text, and one action. Used to surface a single decision or call-to-action.
+- [ActionSheet](https://canvas.nannier.com/ai/4.1.0/components/action-sheet.md): A modal sheet of contextual actions, the iOS action sheet idiom: a bottom sheet of choices summoned in response to a user action, over a dimmed scrim that glass on the web also blurs.
+- [Alert](https://canvas.nannier.com/ai/4.1.0/components/alert.md): Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.
+- [AlertDialog](https://canvas.nannier.com/ai/4.1.0/components/alert-dialog.md): Catalyst-style confirmation dialog: a centered panel over a dimmed backdrop, which glass on the web also blurs, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.
+- [AppFrame](https://canvas.nannier.com/ai/4.1.0/components/app-frame.md): The app's root frame and its scrolling screens. `AppFrame` mounts the safe-area context and the app-root overlay host, pads all four safe-area edges over the theme background, renders the app's top chrome in a banner region and lets its body (a router's Stack) fill the height left. `Page` is one screen inside it: the main region, a scroller with page gutters whose content is capped and centered at a step of the width scale.
+- [AreaChart](https://canvas.nannier.com/ai/4.1.0/components/area-chart.md): Categorical-x series fills: overlapping translucent areas by default, or running-sum bands with `stacked`. Shares the line chart's curve, density, furniture, and scrub-to-inspect axes.
+- [Autocomplete](https://canvas.nannier.com/ai/4.1.0/components/autocomplete.md): Text input + dropdown: searchable single-select.
+- [Avatar](https://canvas.nannier.com/ai/4.1.0/components/avatar.md): A photo when the account has one, falling back to one or two initials on an identity disc: the name resolves to one of ten hues (or `hue` picks one), and the disc is that hue's soft wash under initials in the same hue, so one person keeps one colour on every platform and stays distinct in a stack or list. The initials sit at weight 600, 38% of the disc, and their ink is held to 4.5:1 on the wash in both schemes.
+- [Badge](https://canvas.nannier.com/ai/4.1.0/components/badge.md): Two families on one Badge component, picked by boolean props. The metadata badge labels a schema, role, or tag: with no tone it is the accent's soft pill, and the tones give `default` the solid call-to-action pill, `secondary` the quiet surface pill, `outline` a hairline pill and `destructive` the soft red pill; add `mono` for token names. A status tone (`success`, `warning`, `error`, `info`, `neutral`) paints the pill in that tone's wash and ink and leads it with a dot. The status badge (`status`) has no pill: a dot in the tone's color, ringed in its wash, beside a muted label, for live state like active, pending, or failed.
+- [BarList](https://canvas.nannier.com/ai/4.1.0/components/bar-list.md): Ranked label and value rows: each row is a proportional tone wash behind a truncating label, with a right-aligned mono value and an optional delta.
+- [Board](https://canvas.nannier.com/ai/4.1.0/components/board.md): A data-driven kanban board: columns scroll horizontally, each column is a drop zone in a sunken well headed by its label and item count, and every card carries a drag grip, an optional trailing badge, a two-line description, a free-form chips slot, and an optional kebab menu.
+- [BoxPlot](https://canvas.nannier.com/ai/4.1.0/components/box-plot.md): Quartile boxes, whiskers, and outlier dots per category, computed by the chart from raw samples: quartiles by linear interpolation, whiskers at the most extreme data inside the 1.5 IQR fences, outliers beyond them. Scrub a category to flag its five-number summary; each category's summary also folds into the accessible name.
+- [Breadcrumb](https://canvas.nannier.com/ai/4.1.0/components/breadcrumb.md): Hierarchical navigation showing where you are.
+- [BulletChart](https://canvas.nannier.com/ai/4.1.0/components/bullet-chart.md): Goal-attainment rows: each datum is a leading label, a track holding qualitative background bands (`ranges`, ascending bounds in fading washes), the tone-colored measure bar, an optional vertical target tick, and the trailing formatted value.
+- [Button](https://canvas.nannier.com/ai/4.1.0/components/button.md): Six intents × three sizes (plus the icon square) × disabled / focus / hover states. Always semantic: the intent communicates what the button does (default = the primary action, destructive = irreversible, ghost = chrome).
+- [ButtonGroup](https://canvas.nannier.com/ai/4.1.0/components/button-group.md): Segmented controls, split buttons, attached groups.
+- [Calendar](https://canvas.nannier.com/ai/4.1.0/components/calendar.md): Month grid, week timeline, and day timeline in one component. Events mark their days with a dot in the month grid and week strip, and timed events render as blocks on the week/day hour timelines.
+- [CandlestickChart](https://canvas.nannier.com/ai/4.1.0/components/candlestick-chart.md): The trading instrument view: OHLC candles colored by direction from the success/destructive tokens, an optional docked volume pane, and optional overlay series (moving averages) in the series tokens. Press or scrub a candle to read its Open/High/Low/Close and volume.
+- [Card](https://canvas.nannier.com/ai/4.1.0/components/card.md): A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface, `sunken` drops the shadow and sinks the fill to the well beneath the page (`surface-sunken`, the hand-off's `--bg2` tiles, stages and panels set into a card) under the hairline, and `outlined` drops the shadow and keeps the card fill under the hairline (the hand-off's page cards; a platform whose card control draws an outline instead of a shadow draws both the same), and `heroShadow` is the medium shadow (the hand-off's `--sh-md`, its section hero's stage), between the resting card and the raised one. Precedence is `raised`, `flat`, `sunken`, `outlined`, `heroShadow`. On Android `sunken` is the Material 3 filled card: the well's fill with no outline. A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
+- [Carousel](https://canvas.nannier.com/ai/4.1.0/components/carousel.md): A horizontally paged slide viewer: swipe (or use the prev/next arrows and the dot indicators) to move one slide at a time.
+- [Chart](https://canvas.nannier.com/ai/4.1.0/components/chart.md): A single- or multi-series bar chart: vertical columns (or horizontal rows) sized against the axis max, with per-category values and labels.
+- [Chat](https://canvas.nannier.com/ai/4.1.0/components/chat.md): A controlled assistant conversation with independently scrolling messages, clear author and provider identities, and an anchored multiline composer. The parent supplies the bounds; Chat fills the available height without choosing a fixed height of its own.
+- [Checkbox](https://canvas.nannier.com/ai/4.1.0/components/checkbox.md): Multi-select option, single yes/no, grouped lists.
+- [Chip](https://canvas.nannier.com/ai/4.1.0/components/chip.md): An interactive pill for filter chips, tags, and selectable tokens. It carries an optional leading icon and a label, becomes tappable with `onPress`, and grows a trailing "×" remove button with `onRemove`.
+- [CodeBlock](https://canvas.nannier.com/ai/4.1.0/components/code-block.md): Syntax-highlighted code display with clipboard copy, horizontal scrolling, line emphasis, diff rendering, collapsible folding, and tabbed alternatives.
+- [Collapsible](https://canvas.nannier.com/ai/4.1.0/components/collapsible.md): A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates when open) over one collapsible content panel.
+- [Command](https://canvas.nannier.com/ai/4.1.0/components/command.md): Cmd+K search: navigation, actions, recent items.
+- [ComposedChart](https://canvas.nannier.com/ai/4.1.0/components/composed-chart.md): Bars, lines, and gradient-washed areas sharing one categorical axis: each series picks its mark with a `line` or `area` boolean (bars by default; precedence line > area > bars).
+- [Container](https://canvas.nannier.com/ai/4.1.0/components/container.md): The bounds provider. A Canvas component never dictates its own width: `Container` conforms to its parent (full width, no cap) by default, and a named step of the shared width scale (`xxxs` 192 through `page` 1280) caps and centers it, so the reading measure of a form, an article, or a card stack is a step you can name instead of a width invented at the call site.
+- [DashboardGrid](https://canvas.nannier.com/ai/4.1.0/components/dashboard-grid.md): A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width.
+- [DataTable](https://canvas.nannier.com/ai/4.1.0/components/data-table.md): A data table rendered from column and row data, with sorting, row selection, pagination, and the loading and empty states built in.
+- [DepthChart](https://canvas.nannier.com/ai/4.1.0/components/depth-chart.md): The order-book view: cumulative bid and ask step areas mirrored around the spread, bids in the success tone and asks in destructive, on a numeric price axis.
+- [DescriptionList](https://canvas.nannier.com/ai/4.1.0/components/description-lists.md): Key-value pairs in stacked, two-column, or inline-edit layouts. Used for detail panels, settings, and profile views. Rows flagged `update` carry a working in-place editor: Update opens it, Enter or Save commits the new value and fires `onUpdate`, Escape or Cancel dismisses it. `muted` sets each text value as a note beside its term, in the small type and the muted ink, for a list that explains its terms (a key and its effect) rather than reporting data; a node value renders as given, and a platform skin whose value detail is already the secondary ink keeps its type.
+- [Dialog](https://canvas.nannier.com/ai/4.1.0/components/dialog.md): A modal dialog: a centered panel over a dimmed backdrop, which glass on the web also blurs, with a title, an optional description, a body for real content like a form, and right-aligned actions. Use it for a focused task that warrants interrupting the page; reach for the Alert Dialog for a terse yes/no confirmation.
+- [Divider](https://canvas.nannier.com/ai/4.1.0/components/divider.md): Horizontal, vertical, with label, with action.
+- [Drag & drop](https://canvas.nannier.com/ai/4.1.0/components/drag-drop.md): A reusable drag-and-drop context: wrap a surface in a `DragDropProvider`, mark droppable regions with `DropZone`, and make items draggable with `Draggable` plus a `DragHandle` grip.
+- [Drawer](https://canvas.nannier.com/ai/4.1.0/components/drawer.md): A full-screen panel that slides in from an edge: a navigation drawer, a mobile menu, or a bottom action sheet. Built on React Native's Modal, so it floats over the whole app on iOS, Android, and the web, over a dimmed scrim that glass on the web also blurs. For a small contextual menu, reach for Dropdown or RowMenu instead.
+- [Dropdown](https://canvas.nannier.com/ai/4.1.0/components/dropdown.md): Floating menus triggered by a button: actions, options, navigation.
+- [Emblem](https://canvas.nannier.com/ai/4.1.0/components/emblem.md): A tinted rounded square (or circle) that holds a single `Icon` or a short monogram, the recurring "icon on a soft background" used in cards, media objects, empty states, and feeds. Emblem owns the surface and the icon color: pick a tone and it tints the square and paints the glyph to match, so a call site never hand-composes `borderRadius` + `backgroundColor` to build an icon background.
+- [EmptyState](https://canvas.nannier.com/ai/4.1.0/components/empty-state.md): Centered, calm, never blame the user. Always tell them what could be here, and ideally how to get there.
+- [Feed](https://canvas.nannier.com/ai/4.1.0/components/feeds.md): Vertical activity streams with icons and timestamps. Used for audit logs, change history, and notification lists.
+- [Field](https://canvas.nannier.com/ai/4.1.0/components/field.md): A form row: a label, the control, and one message line under it. Field exists for the part no control owns on its own: every field family already owns its label, but nothing else in the kit renders helper or error text, so that message is what Field adds.
+- [FilterPanel](https://canvas.nannier.com/ai/4.1.0/components/filter-panel.md): Sidebar filter rail: grouped checkbox options under mono group headings, each with its count, and a "Clear N" action in the header while any filter is on (a plain accent text action). On the web an option's label is the 400 14px row label, 10px from its box.
+- [Form](https://canvas.nannier.com/ai/4.1.0/components/form.md): Stitch your own fields inside it; Form adds the stacked or two-column rhythm, titled sections, the submit and cancel actions row, and Enter to submit.
+- [FunnelChart](https://canvas.nannier.com/ai/4.1.0/components/funnel-chart.md): Stage-by-stage conversion bars: one centered row per stage, labelled on the left and valued on the right.
+- [Gauge](https://canvas.nannier.com/ai/4.1.0/components/gauge.md): A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value arc) for a 0-100 value, the percent readout in the open center of the semicircle, and an optional label below the graphic.
+- [GeoMap](https://canvas.nannier.com/ai/4.1.0/components/geo-map.md): A world map with a bubble per place, its area proportional to its count, over coastlines and country borders precomputed at build time. Optionally zoomable, merging crowded places into one bubble that splits as you zoom in.
+- [Grid](https://canvas.nannier.com/ai/4.1.0/components/grid.md): The container-measured auto-fit tile grid. `minTileWidth` sets the floor (default 240): the grid fits as many equal-width columns of at least that width as its own measured container allows, and re-fits as the container changes, so the same grid renders three-up on a desktop, two-up on a tablet, and a single column on a phone with no breakpoint at the call site.
+- [GridList](https://canvas.nannier.com/ai/4.1.0/components/grid-lists.md): Tiled card grids for people directories, item collections, and image galleries.
+- [Heatmap](https://canvas.nannier.com/ai/4.1.0/components/heatmap.md): Density cells whose fill encodes each value. Pass `calendar` for a GitHub-style contribution graph: seven-day week columns with weekday and month labels, discrete less-to-more levels, and press or hover to inspect a day's count and date. The calendar layout IS the kit's activity calendar, so a contribution graph needs no separate component.
+- [Histogram](https://canvas.nannier.com/ai/4.1.0/components/histogram.md): An auto-binned frequency distribution: pass raw sample `values` and the chart bins them into nice-edged uniform buckets (Sturges' rule by default, `bins` to override) and draws contiguous bars on a numeric axis. Press or scrub a bar to inspect its range and count. The accessible name lists every bin with its bounds and tally.
+- [Icon](https://canvas.nannier.com/ai/4.1.0/components/icon.md): Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to the theme foreground token and tracks light and dark automatically; pick other hues with the semantic color booleans (`primary`, `destructive`, `success`, `warning`, `muted`, `subtle`; that order is the precedence). `muted` is the third ink (`subtle-foreground`) and `subtle` the second (`muted-foreground`), the names Typography gives the same two inks. Inside a control that owns a label ink (a Button's `iconLeft` and `iconRight` slots) a glyph with no tone takes that ink instead, the way the hand-off's icons inherit `currentColor`: the primary's contrast ink on a primary button, the muted ink on a quiet one. The precedence is the explicit tone, then the host's ink, then the foreground, so a toned glyph keeps its tone anywhere.
+- [Image](https://canvas.nannier.com/ai/4.1.0/components/image.md): Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then choose how it fills its box with a fit prop: `cover` (the default) fills the box and crops the overflow, while `contain` fits the whole image inside and letterboxes the spare space.
+- [Input](https://canvas.nannier.com/ai/4.1.0/components/input.md): The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `compact`, `disabled`), plus prefix/suffix addons, overlaid icons (`leadingIcon` / `trailingIcon` with any Canvas glyph as `icon`), a `passwordToggle` eye for a `secureTextEntry` value, a `clearable` clear button, and a `shortcut` keycap. Input is single-line; for multi-line entry use the dedicated Textarea.
+- [InputOTP](https://canvas.nannier.com/ai/4.1.0/components/input-otp.md): A segmented one-time-code field: `length` cells display the typed characters while one underlying text input captures the keystrokes, so native SMS autofill, the one-time-code keyboard suggestion, and paste all flow into a single value.
+- [Kbd](https://canvas.nannier.com/ai/4.1.0/components/kbd.md): Keyboard shortcut indicator: a raised 24 px key cap with a mono label. `keys` composes a whole shortcut, one cap per key; `sequence` says "then" between the caps of keys pressed one after another. A shortcut reads as one accessible name ("⌘+K", "G then C"). `comfortable` pads the cap 3 px above and below its label and 8 px at the sides (25 px tall) for a key set beside what it does, as a reference's keyboard table lists it; omit it for the 24 px cap with 6 px sides.
+- [LineChart](https://canvas.nannier.com/ai/4.1.0/components/line-chart.md): Categorical-x series lines with nice y ticks, gridlines, and a legend for multiple series.
+- [Listbox](https://canvas.nannier.com/ai/4.1.0/components/listbox.md): A custom select whose options stay on screen: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when the options need rich rows; prefer `Select` for a simple short list.
+- [MediaObject](https://canvas.nannier.com/ai/4.1.0/components/media-objects.md): Image or icon paired with text content. The fundamental building block for list items, notifications, and comment layouts.
+- [MetricBreakdown](https://canvas.nannier.com/ai/4.1.0/components/metric-breakdown.md): The decomposed-metric dashboard card: headline value, tone-aware rate, Sparkline trend, per-category share rows, and a chip footer.
+- [Navbar](https://canvas.nannier.com/ai/4.1.0/components/navbars.md): Topbars with a brand, navigation links, and an action button. Used as the primary app-level navigation.
+- [Pagination](https://canvas.nannier.com/ai/4.1.0/components/pagination.md): Page-of-N navigation for tables and lists.
+- [PhoneInput](https://canvas.nannier.com/ai/4.1.0/components/phone-input.md): A phone number field: the Input's box with a country segment at its start (the chosen country and a caret, which open a list of countries with their names and dial codes) and that country's dial code inline before the number. On the web the segment is a small chip inside the field naming the country by its ISO code, and the dial code and the number are set in the mono face, and in the country list each row is a 16px flag 10px from the name with the dial code a 12px mono note at its end; on iOS and Android it is the country's flag.
+- [PieChart](https://canvas.nannier.com/ai/4.1.0/components/pie-chart.md): Proportional composition as arc slices in the `chart-1`..`chart-8` token colors, with a percent legend. `donut` centers the total (or the selected slice while inspecting); pressing a slice dims the others.
+- [Popover](https://canvas.nannier.com/ai/4.1.0/components/popover.md): Floating panel with a title, supporting text, rich content such as form fields, and a single follow-up action, anchored to its trigger. Pass children to host custom content in the panel body, between the description and the action.
+- [Pressable](https://canvas.nannier.com/ai/4.1.0/components/pressable.md): The touchable primitive: wraps content, fires `onPress`, and exposes the press state to its style for feedback.
+- [Progress](https://canvas.nannier.com/ai/4.1.0/components/progress.md): Determinate and indeterminate progress bars: a rounded bar that reports how far a task has gotten, or that work is underway.
+- [ProgressRing](https://canvas.nannier.com/ai/4.1.0/components/progress-ring.md): A full-circle completion ring, the Gauge's sibling: a muted track ring, a tone-colored value arc revealed clockwise from 12 o'clock with rounded caps, the whole-percent readout centered inside, and an optional label below the graphic. The same 0-100 value contract, tone axis, and rounding rules as Gauge, in the circular anatomy that reads as "completion" rather than "level".
+- [QRCode](https://canvas.nannier.com/ai/4.1.0/components/qrcode.md): Encodes a string as a scannable QR code. Built on react-native-svg, so it renders the same on iOS, Android, and the web. The code stays a fixed dark-on-white card so any camera can read it, whatever the app theme.
+- [RadarChart](https://canvas.nannier.com/ai/4.1.0/components/radar-chart.md): A polygonal multi-axis comparison: concentric rings at nice tick fractions, a spoke per axis, and one closed polygon per series (ramp stroke over a soft matching wash), with the spoke labels just beyond the outer ring. Values align to `axes` by index and the accessible name folds every axis and value; press-to-inspect is deferred scope for this chart.
+- [RadialBarChart](https://canvas.nannier.com/ai/4.1.0/components/radial-bar-chart.md): Concentric arc rings, one per category, outermost first: each pairs a muted full-circle track with a ramp-colored value arc revealed clockwise from 12 o'clock, and a column legend carries the formatted values. Every ring sweeps against the same `max` (the largest entry by default), so the chart compares attainment, not shares. Press a ring to select it (the others dim); press elsewhere to clear.
+- [Radio](https://canvas.nannier.com/ai/4.1.0/components/radio.md): Single-pick selection: stacked, inline, card-style.
+- [RangeAreaChart](https://canvas.nannier.com/ai/4.1.0/components/range-area-chart.md): A min/max envelope: a translucent band between each label's `low` and `high`, an optional solid `mid` line through it, and the standard scrub-to-inspect flag showing High, Mid, and Low. The y domain hugs the data rather than anchoring at zero, since an envelope is a range idiom, not a magnitude bar. Forecast bands, error envelopes, and daily temperature ranges all read this way.
+- [Reveal](https://canvas.nannier.com/ai/4.1.0/components/reveal.md): An entrance for page content: what it wraps starts slightly offset and transparent, then travels into place and fades in when it reaches the viewport. It fires once and stays, so content that has arrived never leaves again.
+- [Row & Column](https://canvas.nannier.com/ai/4.1.0/components/row-column.md): The layout primitives. `Row` lays children out horizontally, `Column` vertically. Both own arrangement through semantic boolean axes, a gap scale (`flush` / `tight` / `snug` / `cozy` / `relaxed` / `loose`), main-axis distribution (`center`, `between`, …), cross-axis alignment (`alignCenter`, `baseline`, …), and `wrap` / `fill` / `grow` / `shrink`, so a call site never hand-rolls `flexDirection`, `gap`, or `alignItems`.
+- [RowMenu](https://canvas.nannier.com/ai/4.1.0/components/row-menu.md): Vertical action menu items and navigation links.
+- [ScatterPlot](https://canvas.nannier.com/ai/4.1.0/components/scatter-plot.md): Numeric x/y point clouds with nice ticks on both axes and horizontal gridlines. Multi-series clouds use the series tokens; pressing near a point rings it and flags its coordinates.
+- [ScrollView](https://canvas.nannier.com/ai/4.1.0/components/scroll-view.md): A scrollable container for content larger than its bounds: vertical by default, `horizontal` for a row.
+- [Select](https://canvas.nannier.com/ai/4.1.0/components/select.md): A single-choice dropdown field: a trigger showing the chosen value that opens a panel of options, styled to match Canvas inputs.
+- [ServiceHealthList](https://canvas.nannier.com/ai/4.1.0/components/service-health-list.md): Per-service status rows: a status dot (down > degraded > operational), the service name, an optional right-aligned `detail` such as an uptime percentage, and, when the item carries `periods`, an inline strip of its latest 14 periods beside the detail.
+- [Sidebar](https://canvas.nannier.com/ai/4.1.0/components/sidebar.md): App navigation rail with collapsible sections and active highlighting. The sidebar on the left of this page is a thin adapter over this very `Sidebar` component: it feeds the docs' nav tree in and gets the same collapse, accordion, and active-highlight behavior back.
+- [Skeleton](https://canvas.nannier.com/ai/4.1.0/components/skeleton.md): Placeholders for loading content.
+- [Slider](https://canvas.nannier.com/ai/4.1.0/components/slider.md): Drag (or tap) along a track to pick a value in a range; the keyboard and screen readers step it too. Controlled by `value`, bounded by `min` / `max`, and snapped to `step`.
+- [Sparkline](https://canvas.nannier.com/ai/4.1.0/components/sparkline.md): A compact trend strip: a row of thin bars whose heights track a series of values, with the series in a soft wash of the tone and the latest bar in the full accent. Pass `values` and it sizes each bar against the series max and paints the tone, so no call site hand-composes a row of `flexGrow` + `height` + `backgroundColor` Views to draw an inline trend on a stat card or dashboard.
+- [Spinner](https://canvas.nannier.com/ai/4.1.0/components/spinner.md): Animated loading spinner in three sizes.
+- [StackedBar](https://canvas.nannier.com/ai/4.1.0/components/stacked-bar.md): One proportional horizontal bar split into colored segments (the `chart-1`..`chart-8` tokens in fixed order), with a legend carrying each segment's label and share.
+- [StackedList](https://canvas.nannier.com/ai/4.1.0/components/stacked-lists.md): Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.
+- [Stats](https://canvas.nannier.com/ai/4.1.0/components/stats.md): Single value, grouped row, with sparkline, with comparison. Used for dashboards and overview pages.
+- [Stepper](https://canvas.nannier.com/ai/4.1.0/components/stepper.md): Increment, decrement, or type a number in a bounded range. A − button, an editable numeric center field, and a + button, controlled by `value` and clamped to `min` / `max` by `step`. This is the ± numeric control (the iOS UIStepper idiom); for a multi-step progress indicator see Steps.
+- [Steps](https://canvas.nannier.com/ai/4.1.0/components/steps.md): Multi-step progress indicators: horizontal, vertical, with progress.
+- [Swatch](https://canvas.nannier.com/ai/4.1.0/components/swatch.md): A color sample: a filled rounded block with the token's name and value beneath it, the anatomy a design-system color sheet repeats down a page. Swatch owns the whole lockup, so a sheet never sets a bare block next to a hand-built text column and drifts row to row.
+- [Switch](https://canvas.nannier.com/ai/4.1.0/components/switch.md): On / off switch, isolated or grouped in a settings list.
+- [TabBar](https://canvas.nannier.com/ai/4.1.0/components/tab-bar.md): Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (the iOS 26 floating tab bar / Material 3 navigation bar), rendered through the glass functional layer.
+- [Tabs](https://canvas.nannier.com/ai/4.1.0/components/tabs.md): Underline, pill, vertical, with badges.
+- [Text](https://canvas.nannier.com/ai/4.1.0/components/text.md): Renders text. In React Native every string must live inside a Text element, so you cannot put a bare string in a View. For type scale and tone in app code, reach for `<Typography>` (e.g. `<Typography h3>`, `<Typography body>`, `<Typography tiny muted>`), which owns the kit's roles and colors; use the raw Text primitive for the primitive-level cases it does not cover: `numberOfLines` truncation and nested inline runs.
+- [TextInput](https://canvas.nannier.com/ai/4.1.0/components/text-input.md): Single-line (or multiline) text entry. Control it with `value` + `onChangeText`, and style the box with the usual View style props. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.
+- [Textarea](https://canvas.nannier.com/ai/4.1.0/components/textarea.md): Multi-line input, with character count, with toolbar.
+- [Toast](https://canvas.nannier.com/ai/4.1.0/components/toast.md): A transient notification card. Render a `<Toast>` directly, or drive them imperatively: mount a `<ToastProvider>` near your app root and call `toast(...)` from the `useToast()` hook to enqueue auto-dismissing toasts that stack over the app.
+- [Tooltip](https://canvas.nannier.com/ai/4.1.0/components/tooltip.md): Small floating helper text on hover or focus.
+- [Treemap](https://canvas.nannier.com/ai/4.1.0/components/treemap.md): Squarified value tiles: each datum becomes a ramp-colored rectangle whose area is proportional to its value, packed largest-first with near-square aspect ratios, with the label and formatted value rendered inside only when the tile fits them.
+- [Typography](https://canvas.nannier.com/ai/4.1.0/components/typography.md): Type scale classes for headings, body text, and helper styles.
+- [UptimeBar](https://canvas.nannier.com/ai/4.1.0/components/uptime-bar.md): The statuspage strip: per-period status pills (operational, degraded, down, unknown) with a summary caption and edge labels.
+- [Video](https://canvas.nannier.com/ai/4.1.0/components/video.md): Plays a clip with an optional poster: tap to play inline, or full transport controls (the platform's own on iOS and Android, the kit's bar on the web), with boolean fit, `autoplay`, `loop` and `muted` props.
+- [View](https://canvas.nannier.com/ai/4.1.0/components/view.md): The layout primitive: a flex container that runs identically on iOS, Android, and the web. A View is a column by default.
+- [WaterfallChart](https://canvas.nannier.com/ai/4.1.0/components/waterfall-chart.md): The running-total bridge: each step floats from the running total by its signed `value`, and a `total` step snapshots the running total as an absolute bar from zero.
+- [Wizard](https://canvas.nannier.com/ai/4.1.0/components/wizard.md): A modal workflow with a fixed step sidebar, a title and status header, and footer actions around a bounded, scrolling body. The application owns stage content, validation, saving and transitions; Wizard composes the existing Dialog, Steps and Button controls.
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/installation.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/installation.md -->
 # Installation and runtime support
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Install Canvas into an existing Expo, React Native, or React Native Web application.
 For an Expo app, let Expo select the SVG version compatible with its SDK:
@@ -24944,7 +24944,7 @@ Canvas ships compiled (no Canvas build step in your app). Its **required** peer
 dependencies are React 18 or later, React Native 0.74 or later, and
 react-native-svg 15.8.0 or later. Use a React version compatible with your React
 Native version. Web applications also need React DOM, React Native Web, and their
-bundler's RNW configuration; see [Platforms](https://canvas.nannier.com/ai/4.0.0/installation.md#platforms).
+bundler's RNW configuration; see [Platforms](https://canvas.nannier.com/ai/4.1.0/installation.md#platforms).
 
 ### Package and documentation versions
 
@@ -25050,19 +25050,19 @@ Use the declarations installed with your dependency as the final API authority; 
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/layout.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/layout.md -->
 # Layout and responsive bounds
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Parents provide bounds. Use `Container` measure steps, `Row` and `Column` spacing/alignment booleans, `span` for twelfths, and `Grid` for responsive tiles. A field fills its parent; a button hugs its contents unless `block` or a supported measure step changes it. Do not set fixed component widths or invent string variant props. Measure the component's own container for internal reflow; viewport breakpoints are for application chrome.
 
-- [container](https://canvas.nannier.com/ai/4.0.0/components/container.md)
-- [row-column](https://canvas.nannier.com/ai/4.0.0/components/row-column.md)
-- [grid](https://canvas.nannier.com/ai/4.0.0/components/grid.md)
+- [container](https://canvas.nannier.com/ai/4.1.0/components/container.md)
+- [row-column](https://canvas.nannier.com/ai/4.1.0/components/row-column.md)
+- [grid](https://canvas.nannier.com/ai/4.1.0/components/grid.md)
 
 ### MeasureProps
 
@@ -25085,13 +25085,13 @@ Parents provide bounds. Use `Container` measure steps, `Row` and `Column` spacin
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/overlays.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/overlays.md -->
 # Overlay hosting
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Mount an `OverlayProvider` inside `ThemeProvider`, outside scrolling page content,
 and let it fill the app window. Dropdowns, selects, autocompletes and popovers then
@@ -25149,17 +25149,17 @@ but has no viewport fitting or outside-tap backdrop.
 
 Keep the trigger mounted and focusable while the dialog opens so the focus manager can capture the return target. Avoid disabling that trigger on the same render that sets `open`; use the modal backdrop and focus isolation to prevent background interaction. On close, return focus to the trigger.
 
-Component behavior and controlled/uncontrolled props: [Dialog](https://canvas.nannier.com/ai/4.0.0/components/dialog.md), [Popover](https://canvas.nannier.com/ai/4.0.0/components/popover.md), [Select](https://canvas.nannier.com/ai/4.0.0/components/select.md).
+Component behavior and controlled/uncontrolled props: [Dialog](https://canvas.nannier.com/ai/4.1.0/components/dialog.md), [Popover](https://canvas.nannier.com/ai/4.1.0/components/popover.md), [Select](https://canvas.nannier.com/ai/4.1.0/components/select.md).
 
 ---
 
-<!-- Source: https://canvas.nannier.com/ai/4.0.0/theming.md -->
+<!-- Source: https://canvas.nannier.com/ai/4.1.0/theming.md -->
 # Theming and semantic props
 
 Package: @nannier/canvas
-Version: 4.0.0
+Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: d245658f4bbe4b0d228e837d45b679ef7d0b430b11e0391463a008af7a4548de
+Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
 
 Wrap the application in `ThemeProvider`. Use flat boolean styling props; choose at most one prop per visual axis, such as `primary`, `large`, and `loading`.
 

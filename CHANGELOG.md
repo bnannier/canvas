@@ -1,5 +1,20 @@
 # @nannier/canvas
 
+## 4.1.0
+
+### Minor Changes
+
+- 198c70e: Ship versioned agent-readable component references, a consumer skill for Codex and
+  Claude Code, and offline documentation, setup diagnostics and recipe scaffolding
+  commands in the existing Canvas package. Include settings, dashboard and booking
+  recipes, and generate a sitemap for the documentation export.
+
+### Patch Changes
+
+- 198c70e: Clarify Expo installation, required peer versions and published-package guidance.
+  Update the independent starter to the released Canvas 4 package and add a
+  repeatable consumer-agent evaluation protocol.
+
 ## 4.0.0
 
 ### Major Changes
