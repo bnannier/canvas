@@ -101,14 +101,14 @@ bun run changeset
 
 Use `patch` by default. A `minor` needs a written justification naming the new
 user-visible capability, such as a component, public API, option, or platform.
-Major releases require the owner's explicit authorization and are blocked by
-both automatic and manual release jobs. Write the summary for a consumer reading
-the changelog.
+Major releases require the owner's explicit authorization: tick the `major` input
+and enter the exact next major in `major_version` on the release dispatch. Write
+the summary for a consumer reading the changelog.
 
 ### Run CI locally before pushing
 
-Run the CI validation on your machine before every push, so GitHub's build minutes
-confirm a result instead of discovering a failure:
+Run the CI validation on your machine before every push. GitHub repeats these
+checks when a release is requested, rather than on commits or pull requests:
 
 ```bash
 brew install colima docker act
@@ -133,12 +133,14 @@ Publication goes through CI; do not run `npm publish` locally. The `release`
 script is CI-only and requires the prepared candidate and validated artifact
 directories.
 
-The main-push Deploy workflow prepares the versioned candidate before the shared
-validation jobs run. CI validates the candidate, packs the npm package, and tests
-the prepared web artifact. Publication uses a normal fast-forward candidate push
-and the validated tarballs. If main advances, it discards the candidate without
-publishing; the newer main run prepares and validates another. Cloudflare receives
-the tested docs artifact. The manual workflow uses the same gates.
+Start a release by manually dispatching the Deploy workflow on `main`. Commits and
+pull requests do not trigger GitHub CI/CD. Deploy prepares the versioned candidate
+before the shared validation jobs run. CI validates the candidate, packs the npm
+package, and tests the prepared web artifact. Publication uses a normal
+fast-forward candidate push and the validated tarballs. If main advances, it
+discards the candidate without publishing; manually dispatch another release from
+the current main revision. Cloudflare receives the tested docs artifact. Manual
+soak tests and npm deprecation remain explicit troubleshooting and maintenance tools.
 
 Canvas is one npm package, `@nannier/canvas`, and its Android capture module ships
 inside it (`android/`, autolinked through the root `expo-module.config.json`). Every

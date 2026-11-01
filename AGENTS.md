@@ -3,6 +3,15 @@
 Canvas is a React Native UI kit, published as `@nannier/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
+## Release-only GitHub CI/CD — 2026-10-31
+
+The owner requires GitHub CI/CD to run only when releasing, never automatically
+on commits or pull requests. Manually dispatch `.github/workflows/deploy.yml` on
+`main`; its reusable validation workflows keep the full release checks. Local
+verification and push hooks remain required. Manual soak diagnostics and npm
+deprecation remain explicit maintenance tools. If main advances during validation,
+dispatch another release; a push does not schedule a replacement.
+
 ## Current v4 hand-off authority — 2026-10-29
 
 ### Test image retention — 2026-10-31

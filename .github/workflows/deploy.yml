@@ -1,10 +1,8 @@
 name: Deploy - canvas
 
-# One main-push pipeline prepares, validates and publishes a frozen candidate.
-# All paths qualify so an advancing main always schedules a replacement candidate.
+# A manually requested release prepares, validates and publishes a frozen candidate.
+# Commits and pull requests do not start GitHub CI/CD.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       pages:
@@ -66,7 +64,7 @@ jobs:
         run: node scripts/release.mjs prepare "$RUNNER_TEMP/candidate"
         env:
           SOURCE_SHA: ${{ github.sha }}
-          RELEASE_NPM: ${{ github.event_name == 'push' || inputs.npm || inputs.major }}
+          RELEASE_NPM: ${{ inputs.npm || inputs.major }}
           # Only a manual dispatch with BOTH the major box and the typed version authorizes
           # a major; a push, or the generic npm box, never does.
           RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
@@ -158,7 +156,7 @@ jobs:
             echo "Publication step: ${OUTCOME:-not started}. Candidate result: ${STATUS:-not accepted}."
             case "$STATUS" in
               published) echo 'The validated package tarballs were published and their version tags were pushed.' ;;
-              stale) echo 'Main advanced. No artifact was published and no tag was pushed; the newer main run owns release preparation.' ;;
+              stale) echo 'Main advanced. No artifact was published and no tag was pushed; manually dispatch another release from the current main revision.' ;;
               blocked-major) echo 'A major is pending and nothing authorized it. Dispatch this workflow with the major box ticked and the exact next major typed into major_version; the generic npm checkbox never authorizes a major.' ;;
               no-changesets|not-requested) echo 'No npm publication was requested by this candidate.' ;;
               *) echo 'Publication did not complete. Inspect the failed stage. After a partial release, fix the cause and add a new changeset for the next version.' ;;
@@ -167,7 +165,7 @@ jobs:
 
   cloudflare:
     needs: [validate, publish]
-    if: ${{ !cancelled() && needs.validate.result == 'success' && github.ref == 'refs/heads/main' && needs.publish.outputs.accepted == 'true' && (github.event_name == 'push' || inputs.pages) && vars.CLOUDFLARE_ENABLED == 'true' }}
+    if: ${{ !cancelled() && needs.validate.result == 'success' && github.ref == 'refs/heads/main' && needs.publish.outputs.accepted == 'true' && inputs.pages && vars.CLOUDFLARE_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
