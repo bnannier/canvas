@@ -1,9 +1,0 @@
----
-"@nannier/canvas": minor
----
-
-The Controls section's cards take the v4 hand-off's look (justification for the minor: new public options on existing components). New options: Button `rounded` (the pill on a text button), `dashed` (a dashed edge) and `unread` (the accent corner dot); ButtonGroup `attached` (one edged box of divided full-height cells), an item's `display` node, and the stepper's `decrementIcon` / `incrementIcon` slots; Radio `meta` (a trailing note on the title's line) and a card radio's `icon`; RadioGroup `equal` (equal-share cells in a `row`) and `inlineLabel` (the label at the start of a `row`); Switch `listed` and `divided` (a settings list's row inset and the hairline between rows); Slider `percent` and `scale`; Stepper `suffix`; Avatar `online` (the presence dot); AvatarMenu and Dropdown `inline` (the menu drawn open in flow, a specimen); BadgeGroup `compact`; Typography `italic`; DataTable `matrix` (the specimen grid) and a column's `fit` (the widest cell's width).
-
-Skin changes on the web: a Button label's line equals its size; the split button and the stepper take the hand-off's cells, glyphs and boxed stepper; a checkbox's and a radio's label and description take the 14 and 12 px lines; a chosen card radio takes the accent edge over the soft accent wash; the Stepper's end cells are as wide as the control is tall; the AvatarGroup "+N" count is 600 13 px; and the AvatarMenu capsule takes the hand-off's hairline edge round the popover fill. BadgeGroup's default gap is now the hand-off's 6 px (`compact`); `snug` keeps the 8.
-
-The generic AvatarMenu now follows its component renderer: a 32 px disc (28 px compact), the reference identity hue assignment and flat initials paint, 13 px / 11 px identity text with a 2 px gap, and no disc glow. Compact leaves only the avatar. The original account composition keeps its own metrics.
