@@ -47,16 +47,18 @@ LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 bun run ios
 
 ## Validation and web deployment
 
-The **Deploy** workflow in `.github/workflows/deploy.yml` runs for main pushes and
-supports manual runs on main. It prepares version metadata before calling the
-shared validation workflow. Validation builds the package and web docs, checks
-their types and generated sources, and runs the unit and browser suites.
+The **Deploy** workflow in `.github/workflows/deploy.yml` runs only when a release
+is manually requested on main. Commits and pull requests do not trigger GitHub
+CI/CD. Deploy prepares version metadata before calling the shared validation
+workflow. Validation builds the package and web docs, checks their types and
+generated sources, and runs the unit and browser suites.
 
 Publication accepts the frozen candidate only while its source is still the
-current main revision. If main advances, the candidate is discarded and the newer
-main run prepares another. Cloudflare Pages receives the same prepared web
-artifact that the browser tests exercised, at <https://canvas.nannier.com/>.
-The npm release publishes the validated Canvas and optional module tarballs through CI. See the repository's
+current main revision. If main advances, the candidate is discarded; manually
+dispatch another release from the current main revision. Cloudflare Pages receives
+the same prepared web artifact that the browser tests exercised, at
+<https://canvas.nannier.com/>. The npm release publishes the validated Canvas
+tarball, including its native module, through CI. See the repository's
 [contribution guide](../CONTRIBUTING.md) for changeset and recovery rules.
 
 `EXPO_BASE_URL` remains available for deployments under a subpath through

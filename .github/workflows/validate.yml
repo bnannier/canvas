@@ -25,7 +25,10 @@ env:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # A cold browser cache plus the full docs export exceeded 15 minutes before
+    # consumer verification could start (run 41257178727). Keep every check and
+    # give the complete release preparation enough time on a hosted runner.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
@@ -220,7 +223,7 @@ jobs:
         working-directory: docs
         run: bun run typecheck
 
-      # Kept per-push: it is the only check that catches CI-only Metro/export bugs
+      # Required for each release: it catches CI-only Metro/export bugs
       # before a Pages deploy trips over them. `build:web` is what deploy.yml runs, so
       # this exercises the shipping configuration exactly, including the three
       # post-processors (inlined stylesheet, Pages preparation, paint-first loader)
