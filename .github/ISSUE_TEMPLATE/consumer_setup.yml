@@ -1,0 +1,67 @@
+name: Consumer setup report
+description: Report an installation, recipe, agent guidance or CLI setup blocker.
+title: "[Setup]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share a small text reproduction. Remove tokens, credentials, private paths
+        and other sensitive information before posting. Screenshots and recordings
+        are not required. A source snapshot may differ from your installed release.
+  - type: input
+    id: version
+    attributes:
+      label: Resolved Canvas version
+      description: Use the lockfile or npm ls @nannier/canvas. Note a local tarball or source overlay.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Framework and tool versions
+      description: React, React Native, Expo or web framework, Node, package manager and operating system versions.
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: Intended platforms
+      multiple: true
+      options:
+        - Web (React Native Web)
+        - iOS
+        - Android
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: Coding agent or client, if used
+      description: Name/version and whether the project-local Canvas skill was installed. Leave blank if unused.
+  - type: textarea
+    id: command
+    attributes:
+      label: Task, exact command and steps
+      description: Include the recipe if relevant and whether this was the first attempt or a retry.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected result and actual error
+      description: Paste the smallest useful error excerpt. A public minimal reproduction is welcome.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Doctor output, if available
+      description: Run npx --no-install canvas doctor --json only if your installed version includes the CLI. Review and redact output before sharing; otherwise state unavailable.
+      render: text
+  - type: input
+    id: docs
+    attributes:
+      label: Documentation or recipe reference
+      description: Link the guide/snapshot used, including its version when available.

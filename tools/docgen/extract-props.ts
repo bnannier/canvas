@@ -198,7 +198,7 @@ function describe(checker: ts.TypeChecker, sym: ts.Symbol, platform: DocPlatform
   const raw = ts.displayPartsToString(sym.getDocumentationComment(checker));
   if (raw.trim()) {
     const key = platform === "web" ? undefined : foreignKey(sym);
-    const own = key === undefined ? undefined : FOREIGN_DOCS[key]?.[platform];
+    const own = key === undefined || platform === "web" ? undefined : FOREIGN_DOCS[key]?.[platform];
     return { desc: own ?? viewText(raw, platform, decl ? where(decl) : sym.getName()), source: "jsdoc" };
   }
   if (decl) {

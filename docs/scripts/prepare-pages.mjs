@@ -12,6 +12,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { appPages, htmlPages } from "./html-pages.mjs";
+import { writeSitemap } from "./sitemap.mjs";
 
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
   const file = path.join(dir, entry.name);
@@ -91,6 +92,8 @@ export function preparePages(dist) {
     preloads = fonts.length;
   }
   const shipped = shipDocsChunks(dist, pages);
+  const indexed = writeSitemap(dist);
+  console.log(`Sitemap ready: ${indexed} canonical page and Markdown URLs`);
   console.log(`Pages artifact ready: ${pages.length} app pages, ${preloads} font preloads each resolve, 404/privacy/headers present, ${pruned} unreachable copies pruned, ${shipped} component pages ship their docs chunk`);
 }
 

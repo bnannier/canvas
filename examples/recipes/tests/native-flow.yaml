@@ -1,0 +1,99 @@
+appId: com.nannier.canvas.recipes
+name: Published Canvas recipes native interaction flow
+---
+- launchApp:
+    clearState: true
+- assertVisible: Make it yours.
+- tapOn:
+    id: settings-name
+- eraseText
+- inputText: Jamie Rivera
+- pressKey: Enter
+- scrollUntilVisible:
+    element: Save settings
+    direction: DOWN
+- tapOn: Save settings
+- scrollUntilVisible:
+    element: Settings saved for this session.
+    direction: UP
+- assertVisible: Settings saved for this session.
+- tapOn: Dashboard
+- assertVisible: A clearer workday.
+- scrollUntilVisible:
+    element:
+      id: dashboard-search
+    direction: DOWN
+- tapOn:
+    id: dashboard-search
+- inputText: Maya
+- pressKey: Enter
+- scrollUntilVisible:
+    element: 2 matching items
+    direction: DOWN
+- assertVisible: 2 matching items
+- scrollUntilVisible:
+    element: Refresh sample data
+    direction: UP
+- tapOn: Refresh sample data
+- scrollUntilVisible:
+    element: Studio launch progress updated to 79%.
+    direction: DOWN
+- assertVisible: Studio launch progress updated to 79%.
+- swipe:
+    start: "90%, 10%"
+    end: "25%, 10%"
+- tapOn: Booking
+- assertVisible: Make space to create.
+- scrollUntilVisible:
+    element: Service, required
+    direction: DOWN
+- tapOn: Service, required
+- tapOn: Design consultation · 30 min
+- tapOn: Appointment date, required
+- tapOn: ${APPOINTMENT_DATE}
+- scrollUntilVisible:
+    element: 9:00 AM
+    direction: DOWN
+    centerElement: true
+- tapOn: 9:00 AM
+- scrollUntilVisible:
+    element:
+      id: booking-name
+    direction: DOWN
+- tapOn:
+    id: booking-name
+- inputText: Jamie Rivera
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: booking-email
+    direction: DOWN
+- tapOn:
+    id: booking-email
+- inputText: jamie@example.com
+- pressKey: Enter
+- scrollUntilVisible:
+    element: Confirm booking
+    direction: DOWN
+- tapOn: Confirm booking
+- scrollUntilVisible:
+    element: Sample reservation confirmed
+    direction: UP
+- assertVisible: Sample reservation confirmed
+- scrollUntilVisible:
+    element: Cancel sample reservation
+    direction: DOWN
+- tapOn: Cancel sample reservation
+- scrollUntilVisible:
+    element: Sample reservation cancelled. Choose another time to book again.
+    direction: UP
+- assertVisible: Sample reservation cancelled. Choose another time to book again.
+- swipe:
+    start: "20%, 10%"
+    end: "90%, 10%"
+- tapOn: Settings
+- scrollUntilVisible:
+    element:
+      id: settings-name
+    direction: DOWN
+- assertVisible: Jamie Rivera

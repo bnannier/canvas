@@ -1,13 +1,13 @@
 # Canvas starter
 
-A small Expo application using the published Canvas package: `@nannier-com/canvas` today, `@ionizeio/canvas` once that scope's first release is on the registry. It runs on web, iOS, and Android with one component tree and Expo's default Metro resolution. It has its own dependency manifest and lockfile and does not import the Canvas checkout or docs app.
+A small Expo application using the published Canvas package: `@nannier/canvas@4.0.0`. It runs on web, iOS, and Android with one component tree and Expo's default Metro resolution. It has its own dependency manifest and lockfile and does not import the Canvas checkout or docs app.
 
 ## Run
 
 With access to the source repository:
 
 ```sh
-git clone https://github.com/ionizeio/canvas.git
+git clone https://github.com/bnannier/canvas.git
 cd canvas/examples/starter
 bun install --frozen-lockfile
 bun run web
@@ -20,7 +20,7 @@ bun run ios
 bun run android
 ```
 
-`bun run start` starts Metro without choosing a platform. The native commands create the ignored `ios/` or `android/` project and build the application on a connected device or simulator/emulator. iOS requires macOS, compatible Xcode and CocoaPods; Android requires the Android SDK and a supported JDK. No EAS project or cloud account is configured.
+`bun run start` starts Metro without choosing a platform. The native commands create the ignored `ios/` or `android/` project and build the application on a connected device or simulator/emulator. iOS requires macOS, compatible Xcode and CocoaPods; Android requires the Android SDK and JDK 17, the version used to verify this starter. Point `JAVA_HOME` at that JDK if Android Studio supplies a different version. No EAS project or cloud account is configured.
 
 The locked Expo Modules JSI 57.1.1 dependency carries a compiler compatibility patch in `patches/`. Apple clang 17 rejects Swift's retained-return annotation on these constructors; the patch omits that annotation only for affected compilers and keeps it on clang 18 and newer. It also rebinds the call-scoped pointers inside the synchronous host-context closure, so the actor closure captures those local bindings. This preserves their lifetime, the existing concurrency checks, and the callback's allocation behavior. Bun applies the patch during installation.
 
@@ -59,7 +59,7 @@ Controls, typography and layouts are Canvas components using semantic props. The
 
 ## Published dependency and candidate checks
 
-`package.json` pins the registry package to `@nannier-com/canvas@2.62.1`, the scope the registry serves Canvas from today, and pins the SDK57 React19.2.3 / React Native0.86.3 pair. The package's own name is now `@ionizeio/canvas`; the dependency line, lockfile and imports here move to that scope once its first release is published, because this app must install from the registry as it is. Run installation inside this directory. There are no source aliases, custom Canvas Metro resolvers, package links or development overlays. To use Canvas in an existing app, install the package and its required peers there instead of copying this starter's SDK dependency versions into an unrelated project.
+`package.json` pins the registry package to `@nannier/canvas@4.0.0` and pins the SDK 57 React 19.2.3 / React Native 0.86.3 pair. Run installation inside this directory. There are no source aliases, custom Canvas Metro resolvers, package links or development overlays. To use Canvas in an existing app, install the package and its required peers there instead of copying this starter's SDK dependency versions into an unrelated project.
 
 The app uses `com.nannier.canvas.starter` and the `canvas-starter` URL scheme. Native verification of a Canvas candidate does not use this example: it runs on the separate smoke app in `smoke/` at the repository root (see `tools/native/README.md`).
 

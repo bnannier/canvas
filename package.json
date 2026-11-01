@@ -27,7 +27,11 @@
     "material-design",
     "accessibility",
     "design-tokens",
-    "expo"
+    "expo",
+    "ai",
+    "agent-skills",
+    "codex",
+    "claude-code"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -48,7 +52,12 @@
     "android/src/main",
     "expo-module.config.json",
     "CHANGELOG.md",
-    "DESIGN.md"
+    "DESIGN.md",
+    "consumer",
+    "docs/public/ai",
+    "docs/public/llms.txt",
+    "docs/public/llms-full.txt",
+    "docs/public/agents.md"
   ],
   "sideEffects": [
     "*.css"
@@ -61,7 +70,7 @@
     "build": "rm -rf dist && tsc -p tsconfig.build.json && bun scripts/build-native.ts",
     "dev": "bun scripts/dev.ts",
     "verify-package": "bun scripts/verify-package.ts",
-    "prepublishOnly": "node tools/licensegen/generate.mjs && bun run build && bun run verify-package",
+    "prepublishOnly": "node tools/licensegen/generate.mjs && bun run agent-docs:gen && bun run consumer:gen && bun run build && bun run verify-package",
     "test": "bun test --timeout 20000 ./test ./tools",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
@@ -119,7 +128,11 @@
     "notices:gen:check": "bun tools/noticegen/generate.ts --check",
     "verify-native-consumer": "node scripts/verify-native-consumer.mjs",
     "verify-consumer-support": "node scripts/verify-consumer-support.mjs",
-    "ci:local": "node scripts/ci-local.mjs"
+    "ci:local": "node scripts/ci-local.mjs",
+    "agent-docs:gen": "bun tools/agent-docs/generate.ts",
+    "agent-docs:gen:check": "bun tools/agent-docs/generate.ts --check",
+    "consumer:gen": "node tools/consumer/generate.mjs",
+    "consumer:gen:check": "node tools/consumer/generate.mjs --check"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
@@ -203,5 +216,8 @@
   "overrides": {
     "playwright-core": "1.64.0-alpha-2026-09-25"
   },
-  "react-native": "./dist/native/index.js"
+  "react-native": "./dist/native/index.js",
+  "bin": {
+    "canvas": "./consumer/cli.mjs"
+  }
 }

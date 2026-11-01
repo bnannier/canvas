@@ -1,0 +1,4 @@
+interface:
+  display_name: "Canvas UI"
+  short_description: "Build apps with the Canvas universal UI kit"
+  default_prompt: "Use $canvas to build this screen with @nannier/canvas for web, iOS, and Android."

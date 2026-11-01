@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Stack, usePathname, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { Button, Column, Drawer, Dropdown, Icon, Navbar, OverlayProvider, ThemeProvider, Typography, View, useTheme } from "@nannier-com/canvas";
+import { Button, Column, Drawer, Dropdown, Icon, Navbar, OverlayProvider, ThemeProvider, Typography, View, useTheme } from "@nannier/canvas";
 import { SessionProvider, useSession } from "../state/session";
 
 function AppFrame() {

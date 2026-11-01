@@ -1,0 +1,2015 @@
+{
+  "recordKind": "consumer-skill-forward-test-diagnostics",
+  "schemaVersion": 1,
+  "date": "2026-11-01",
+  "suiteId": "canvas-consumer-phase1",
+  "suiteRevision": 1,
+  "baseRevision": "1b51bef68135a9426fed9ef7e0dc3fa3dcb274bb",
+  "scope": "Five fixed informed tasks per client, one matched fresh Codex discovery dialog, and a fresh Claude dashboard rerun after a narrow skill revision. No overall pass-rate or model-ranking inference.",
+  "artifactRoot": "/private/tmp/canvas-adoption-phase3",
+  "budget": {
+    "wallClockMinutesPerRun": 20,
+    "maximumCorrections": 0
+  },
+  "environment": {
+    "node": "26.10.0",
+    "npm": "11.19.1",
+    "os": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "architecture": "arm64",
+    "codexCli": "0.166.0",
+    "claudeCode": "2.1.310",
+    "requestedModels": {
+      "codex": "gpt-6.1-sol medium",
+      "claude": "sonnet medium; trace reports claude-sonnet-5-5"
+    },
+    "browser": "Playwright Chromium; independent parent verification outside child sandbox",
+    "viewportCssPixels": [
+      [
+        1280,
+        900
+      ],
+      [
+        390,
+        900
+      ]
+    ],
+    "dashboardZoom": "Real Chromium tabs.setZoom(2), verified factor=2 and innerWidth halved to 640/195",
+    "generatedAppNativeRuntime": "not_run"
+  },
+  "scaffold": {
+    "generator": {
+      "version": "5.0.0",
+      "command": "npm exec --cache /private/tmp/canvas-agent-npm-cache --yes --package create-expo-app@5.0.0 -- create-expo-app /private/tmp/canvas-agent-scaffold --template expo-template-blank-typescript@57.0.33 --no-install --yes",
+      "template": "expo-template-blank-typescript@57.0.33",
+      "templateTagEvidence": "npm view expo-template-blank-typescript dist-tags --json returned sdk-57=57.0.33; exact template metadata declares Expo~57.0.31/RN0.86.3/React19.2.3",
+      "discardedProvisioning": "Unqualified blank-typescript initially generated SDK58 despite generator SDK57 message; removed that entire temporary workspace and regenerated exact SDK57, without manually downgrading."
+    },
+    "package": {
+      "name": "canvas-agent-scaffold",
+      "version": "1.0.0",
+      "main": "index.ts",
+      "dependencies": {
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "scripts": {
+        "start": "expo start",
+        "android": "expo start --android",
+        "ios": "expo start --ios",
+        "web": "expo start --web"
+      },
+      "private": true
+    },
+    "sourceManifestSha256": "67aac97bbe9b0f64c15d3b7d36ac8c4e89587f75a81a74e524dae46693c3bd51",
+    "lockfileSha256": "7d8c239d4560b4c5181531a848ef081ead3ef39eaa175deb81f89f77934cf900",
+    "seedArchiveSha256": "ddac51f9d2876996d8ad347743ba34c3f9efd6e04377914fe37ce310250c0399"
+  },
+  "configuration": {
+    "codex": "exec --ignore-user-config --ephemeral --sandbox workspace-write --skip-git-repo-check; medium; project_doc_max_bytes=0; bundled/global skill directory+file+realpath disables; plugins/apps/memories disabled; sandbox network enabled.",
+    "claude": "print; setting-sources empty; strict MCP; slash commands disabled; user CLAUDE.md/rules excluded; auto memory off; acceptEdits with explicit tools; npm/Canvas/Expo domains allowed; no session persistence.",
+    "skillInvocation": "Explicit instruction to read copied skill file. Automatic discovery/routing not measured. All informed traces contain the consumer skill read; no unrelated skill-file reads observed. Full instruction isolation remains unproven.",
+    "verification": "No generated application changes. Typecheck and unique production web export per run; browser request routing serves those exports. No verifier screenshots, videos or traces."
+  },
+  "frozenPrompts": [
+    {
+      "id": "install-expo-rnw",
+      "prompt": "Starting in this empty workspace, create a TypeScript Expo app that also runs on the web through React Native Web. Install Canvas and show a welcome screen with the heading “Canvas consumer check” and a button labeled “Count: 0”. Each activation must increase the displayed count by one. Keep the same application code usable on iOS, Android, and web.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "sha256": "6eb2e6dbae562b9c87cfd0187dd4edea0bcc8477e4f33f0fed18c47226062a62"
+    },
+    {
+      "id": "settings-form",
+      "prompt": "Build a settings screen in this TypeScript Expo app for web, iOS, and Android. Include a display name initially “Alex”, email initially “alex@example.com”, email notifications initially enabled, and a Save button. Users must be able to edit every value. Saving with a blank name or invalid email must show a useful error and must not update the saved summary. Saving valid values must show the saved name, email, and notification state. No backend or persistence across app restarts is required. Use Canvas controls and layout.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "sha256": "5d1e8fc3d84c29de25eda54b74bf88256f30ab9d2dd2cf2e371ef9bd7132f101"
+    },
+    {
+      "id": "responsive-dashboard",
+      "prompt": "Build a small operations dashboard in this TypeScript Expo app for web, iOS, and Android. Show three labeled metrics (Revenue $12,400; Orders 86; Customers 42), an activity list with at least five entries, and a “Refresh” action that increments a visible refresh count without changing those metric values. Use Canvas components and layout. At a 1280px web viewport the metrics should sit side by side. At 390px they should form a readable single column. Keep all content and actions reachable without horizontal page scrolling, including at 200% browser zoom.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "sha256": "a7feda4b0e1a718b1c18ad04331545b8eccd7cca1a08d019a4fd416accea83e8"
+    },
+    {
+      "id": "accessible-dialog",
+      "prompt": "Build a screen in this TypeScript Expo app with an “Edit profile” button that opens a modal dialog titled “Edit profile”, a labeled display-name field initially “Alex”, and Cancel and Save actions. Cancel discards edits; Save updates a visible profile summary. Use Canvas components for web, iOS, and Android. On web, opening must place focus inside the dialog, keyboard focus must remain inside while open, Escape must cancel, and closing must restore focus to the opener. Give the dialog and its controls useful accessible names. Keep background actions unavailable while it is open.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "sha256": "1f2445a687a2a2adda40848de98dc224af1186655af8917ea13f717a8b0799be"
+    },
+    {
+      "id": "optional-peer-fallback",
+      "prompt": "Build a share screen in this TypeScript Expo app for web, iOS, and Android. It should request a Canvas QR display for https://example.com/share and provide a separately labeled “Copy link” action with visible success feedback. Deliberately keep the optional QR rendering dependency react-native-qrcode-svg absent from the entire installed dependency tree. Keep the share screen usable in that state and allow Canvas to display its documented fallback. Do not install the missing dependency, replace Canvas’s QR display with a custom renderer, patch the package, or hide the QR display to avoid the missing-dependency path.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "sha256": "99e9fd9d5b932b1a393c2e391e0ee4aaa540f0a7aed39e28f77038ce65ed6caa"
+    }
+  ],
+  "skillRevisions": [
+    {
+      "sha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "revision": 1,
+      "change": "Initial consumer skill tested with published package declaration fallback."
+    },
+    {
+      "sha256": "d488962faba3341dfab044ca73e934fa82d4f7c7911da456994528ad2f0f75bf",
+      "revision": 2,
+      "change": "Clarifies token width-step values and fitting desktop tile counts inside parent bounds."
+    }
+  ],
+  "packageAudit": {
+    "reference": {
+      "path": "/private/tmp/canvas-adoption-baseline/claude-dialog/node_modules/@nannier/canvas",
+      "fileCount": 4083,
+      "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b"
+    },
+    "digestScope": "SHA-256 of JSON array of sorted relative file paths, byte counts and content SHA-256; compared with retained phase-1 registry installation, not an independently re-downloaded tarball.",
+    "observations": [
+      "All completed installations have 4083 package files identical to the phase-1 npm reference.",
+      "Exact package pins and npm tarball/integrity agree; no symlinked Canvas installation.",
+      "Generated application source/config manifests and lock hashes are retained below.",
+      "Current npm 4.0.0 lacks the new CLI and packaged AI docs, and public AI docs returned 404; informed agents used installed declarations. This tests skill guidance, not deployment of the new documentation."
+    ]
+  },
+  "limitations": [
+    "Explicit-file skill guidance only; no automatic skill routing measurement.",
+    "One stochastic attempt per condition except the documented dashboard revision rerun; no causal uplift or cross-model ranking.",
+    "Only the fresh Codex discovery/informed dialog pair has matched current within-client baseline settings. Phase-1 pilots remain diagnostics and are not a clean baseline.",
+    "Generated app native device behavior and screen readers not run; native exports are build evidence only.",
+    "Child Codex Chromium launches were sandbox blocked; independent evaluator browser checks ran outside that child sandbox.",
+    "Optional-peer initial verifier incorrectly treated npm empty missing-peer placeholders as installed. Those invalid evaluator JSON files were preserved separately; corrected verification did not modify apps.",
+    "The original Claude dashboard failed desktop geometry and remains unchanged. Revision-2 skill rerun is additional evidence rather than a replacement for that failure."
+  ],
+  "runs": [
+    {
+      "label": "claude-dashboard-skill",
+      "caseId": "responsive-dashboard",
+      "client": "claude",
+      "clientVersion": "2.1.310 (Claude Code)",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "a7feda4b0e1a718b1c18ad04331545b8eccd7cca1a08d019a4fd416accea83e8",
+      "promptSha256": "ec6c5b4858e94c28e43ec7a30632093499f0bf918d730f8c4341b6e18565d02b",
+      "promptUtf8Bytes": 1109,
+      "configurationSha256": "51446e1f6b8f7e500da833c307ef55059ac537bbaec54ecce5f0d01eed884b1a",
+      "startedAt": "2026-11-01T22:14:50.047Z",
+      "finishedAt": "2026-11-01T22:16:25.508Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/claude-dashboard-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/claude-dashboard-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "claude-dashboard-skill-metadata.json",
+        "prompt": "claude-dashboard-skill-prompt.txt",
+        "trace": "claude-dashboard-skill.jsonl",
+        "traceSha256": "eda1cb73bc711326ac669526fb8fe6e0e88df8212342fcba7a2c160e1cafc4d0",
+        "verification": "claude-dashboard-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "{\"tool\":\"Read\",\"input\":{\"file_path\":\"/private/tmp/canvas-adoption-phase3/claude-dashboard-skill/.claude/skills/canvas/SKILL.md\"}}"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-svg": "15.15.4",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "26dae2898122ba93f8aee3d66b17ba352efe9928df9455a5f4e83e10dd338031",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 2326,
+          "sha256": "e9d5bb7a944990c0a3c50d7e46c47ed376bd7f2d6d9e0853d4192f396ed5a82a"
+        },
+        {
+          "path": "canvas-css.d.ts",
+          "bytes": 52,
+          "sha256": "53bca77414c582554114c1c30ccaf68bc8566e5d8bd9fee2c3b362e0d3060b6f"
+        },
+        {
+          "path": "canvas-styles.ts",
+          "bytes": 97,
+          "sha256": "c2a91afce163bd31e1a23388d88525b6f5f846a0bb35061614d15adf2ec3f022"
+        },
+        {
+          "path": "canvas-styles.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 307,
+          "sha256": "5c157f4d44972d9c84415e1e4bda595b3abcd8cf733f8a9cd20935bec3eccc42"
+        },
+        {
+          "path": "package.json",
+          "bytes": 594,
+          "sha256": "11bf350be5158953bf67a0e83c5640ff6b26e7b66f4202c2026d47a14936964e"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "366f73b54fb745a99687f5845b21d3022b35aca91657af9bfef73edb8c7f9b1a",
+        "tree": {
+          "label": "claude-dashboard-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "fail",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "fail",
+            "observations": [
+              "Exact metric labels/values; pointer and Enter Refresh produce count 2 without changing values; at least five activity entries individually scrolled into view",
+              "Real Tabs API browser zoom=2, CSS viewport halves; metrics/values/Refresh/all activity entries remain reachable and horizontally within viewport; no horizontal page overflow at 200%"
+            ],
+            "metricPositions": [
+              {
+                "x": 419,
+                "y": 230.453125,
+                "width": 442,
+                "height": 16
+              },
+              {
+                "x": 419,
+                "y": 336.453125,
+                "width": 442,
+                "height": 16
+              },
+              {
+                "x": 419,
+                "y": 442.453125,
+                "width": 442,
+                "height": 16
+              }
+            ],
+            "activityCount": 6,
+            "zoom200": {
+              "factor": 2,
+              "innerWidth": 640,
+              "scrollWidth": 640
+            },
+            "error": "Metrics must be a desktop row and phone column\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Exact metric labels/values; pointer and Enter Refresh produce count 2 without changing values; at least five activity entries individually scrolled into view",
+              "Real Tabs API browser zoom=2, CSS viewport halves; metrics/values/Refresh/all activity entries remain reachable and horizontally within viewport; no horizontal page overflow at 200%",
+              "Metrics form the requested desktop row/phone column",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "metricPositions": [
+              {
+                "x": 35,
+                "y": 230.453125,
+                "width": 320,
+                "height": 16
+              },
+              {
+                "x": 35,
+                "y": 336.453125,
+                "width": 320,
+                "height": 16
+              },
+              {
+                "x": 35,
+                "y": 442.453125,
+                "width": 320,
+                "height": 16
+              }
+            ],
+            "activityCount": 6,
+            "zoom200": {
+              "factor": 2,
+              "innerWidth": 195,
+              "scrollWidth": 195
+            }
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "claude-dashboard-skill-r2",
+      "caseId": "responsive-dashboard",
+      "client": "claude",
+      "clientVersion": "2.1.310 (Claude Code)",
+      "condition": "skill",
+      "skillSha256": "d488962faba3341dfab044ca73e934fa82d4f7c7911da456994528ad2f0f75bf",
+      "skillRevision": 2,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "a7feda4b0e1a718b1c18ad04331545b8eccd7cca1a08d019a4fd416accea83e8",
+      "promptSha256": "ec6c5b4858e94c28e43ec7a30632093499f0bf918d730f8c4341b6e18565d02b",
+      "promptUtf8Bytes": 1109,
+      "configurationSha256": "51446e1f6b8f7e500da833c307ef55059ac537bbaec54ecce5f0d01eed884b1a",
+      "startedAt": "2026-11-01T22:18:52.727Z",
+      "finishedAt": "2026-11-01T22:20:45.704Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/claude-dashboard-skill-r2-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/claude-dashboard-skill-r2-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "claude-dashboard-skill-r2-metadata.json",
+        "prompt": "claude-dashboard-skill-r2-prompt.txt",
+        "trace": "claude-dashboard-skill-r2.jsonl",
+        "traceSha256": "8fd60347b81fca38342cb6e9131774e0c778b0d3fdca27a50267e14d02d56fd5",
+        "verification": "claude-dashboard-skill-r2-verification.json"
+      },
+      "observedSkillReads": [
+        "{\"tool\":\"Read\",\"input\":{\"file_path\":\"/private/tmp/canvas-adoption-phase3/claude-dashboard-skill-r2/.claude/skills/canvas/SKILL.md\"}}"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-svg": "15.15.4",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "c60d8295809dfe5f8ed4327263c1b4ddb975c115371105db93779b3839746397",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 2285,
+          "sha256": "26ae2d3ad2ea0835a253598a2bf393f9e956644247bee0c30e90461bd96b6fce"
+        },
+        {
+          "path": "canvas-styles.ts",
+          "bytes": 120,
+          "sha256": "1294aa21e6057312ae26e23faf15ca1efb6aead41e5c960dca93bda8165fbf27"
+        },
+        {
+          "path": "canvas-styles.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "css.d.ts",
+          "bytes": 24,
+          "sha256": "da5bf71d48cf909584a01c80b445f730507068f5b34c920f352e2bfcf0315e4c"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 307,
+          "sha256": "5c157f4d44972d9c84415e1e4bda595b3abcd8cf733f8a9cd20935bec3eccc42"
+        },
+        {
+          "path": "package.json",
+          "bytes": 594,
+          "sha256": "11bf350be5158953bf67a0e83c5640ff6b26e7b66f4202c2026d47a14936964e"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "366f73b54fb745a99687f5845b21d3022b35aca91657af9bfef73edb8c7f9b1a",
+        "tree": {
+          "label": "claude-dashboard-skill-r2",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Exact metric labels/values; pointer and Enter Refresh produce count 2 without changing values; at least five activity entries individually scrolled into view",
+              "Real Tabs API browser zoom=2, CSS viewport halves; metrics/values/Refresh/all activity entries remain reachable and horizontally within viewport; no horizontal page overflow at 200%",
+              "Metrics form the requested desktop row/phone column",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "metricPositions": [
+              {
+                "x": 35,
+                "y": 159.703125,
+                "width": 371.15625,
+                "height": 16
+              },
+              {
+                "x": 454.15625,
+                "y": 159.703125,
+                "width": 371.15625,
+                "height": 16
+              },
+              {
+                "x": 873.3125,
+                "y": 159.703125,
+                "width": 371.15625,
+                "height": 16
+              }
+            ],
+            "activityCount": 6,
+            "zoom200": {
+              "factor": 2,
+              "innerWidth": 640,
+              "scrollWidth": 640
+            }
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Exact metric labels/values; pointer and Enter Refresh produce count 2 without changing values; at least five activity entries individually scrolled into view",
+              "Real Tabs API browser zoom=2, CSS viewport halves; metrics/values/Refresh/all activity entries remain reachable and horizontally within viewport; no horizontal page overflow at 200%",
+              "Metrics form the requested desktop row/phone column",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "metricPositions": [
+              {
+                "x": 35,
+                "y": 231.703125,
+                "width": 320,
+                "height": 16
+              },
+              {
+                "x": 35,
+                "y": 337.703125,
+                "width": 320,
+                "height": 16
+              },
+              {
+                "x": 35,
+                "y": 443.703125,
+                "width": 320,
+                "height": 16
+              }
+            ],
+            "activityCount": 6,
+            "zoom200": {
+              "factor": 2,
+              "innerWidth": 195,
+              "scrollWidth": 195
+            }
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "claude-dialog-skill",
+      "caseId": "accessible-dialog",
+      "client": "claude",
+      "clientVersion": "2.1.310 (Claude Code)",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "1f2445a687a2a2adda40848de98dc224af1186655af8917ea13f717a8b0799be",
+      "promptSha256": "da2cc681d7559aaa5184306086aa6c2080be87e376995d5dec754776144b49ae",
+      "promptUtf8Bytes": 1142,
+      "configurationSha256": "51446e1f6b8f7e500da833c307ef55059ac537bbaec54ecce5f0d01eed884b1a",
+      "startedAt": "2026-11-01T22:08:44.142Z",
+      "finishedAt": "2026-11-01T22:10:04.175Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/claude-dialog-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/claude-dialog-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "claude-dialog-skill-metadata.json",
+        "prompt": "claude-dialog-skill-prompt.txt",
+        "trace": "claude-dialog-skill.jsonl",
+        "traceSha256": "dd79c3ac9ad822136f45ee74a4461c6d4bbd842bdf3e2b75f09aeab051b145d4",
+        "verification": "claude-dialog-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "{\"tool\":\"Read\",\"input\":{\"file_path\":\"/private/tmp/canvas-adoption-phase3/claude-dialog-skill/.claude/skills/canvas/SKILL.md\"}}"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-svg": "15.15.4",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "0f76a06bd0b3cf3344c1eb23e20e26d937a95ea2d867162149b7b2f265a61c61",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 2136,
+          "sha256": "2bbd475a9676ac17e400e86d442f93d269eb0f0a29250ad8859e5baf08d7e6cb"
+        },
+        {
+          "path": "canvas-styles.ts",
+          "bytes": 99,
+          "sha256": "7dff8551e2e8e080005305ca9dbe95f49c81eb9488b75eee813818c84ac7a1d8"
+        },
+        {
+          "path": "canvas-styles.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "css.d.ts",
+          "bytes": 24,
+          "sha256": "da5bf71d48cf909584a01c80b445f730507068f5b34c920f352e2bfcf0315e4c"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 307,
+          "sha256": "5c157f4d44972d9c84415e1e4bda595b3abcd8cf733f8a9cd20935bec3eccc42"
+        },
+        {
+          "path": "package.json",
+          "bytes": 594,
+          "sha256": "11bf350be5158953bf67a0e83c5640ff6b26e7b66f4202c2026d47a14936964e"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "366f73b54fb745a99687f5845b21d3022b35aca91657af9bfef73edb8c7f9b1a",
+        "tree": {
+          "label": "claude-dialog-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Named modal and labeled field; pointer-open focus; 12 Tab and 12 Shift+Tab moves contained; overlay intercepts opener hit point",
+              "Header Close cancels and restores focus",
+              "Keyboard opening; Escape/Cancel discard; Save persists; focus returns after every tested close; reopen saved value; no page errors/overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Named modal and labeled field; pointer-open focus; 12 Tab and 12 Shift+Tab moves contained; overlay intercepts opener hit point",
+              "Header Close cancels and restores focus",
+              "Keyboard opening; Escape/Cancel discard; Save persists; focus returns after every tested close; reopen saved value; no page errors/overflow"
+            ]
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "claude-install-skill",
+      "caseId": "install-expo-rnw",
+      "client": "claude",
+      "clientVersion": "2.1.310 (Claude Code)",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "6eb2e6dbae562b9c87cfd0187dd4edea0bcc8477e4f33f0fed18c47226062a62",
+      "promptSha256": "6ab384df73d05405980da5d4e25aa928a632f7c15312faedc70eeb34ed7f0e8d",
+      "promptUtf8Bytes": 904,
+      "configurationSha256": "51446e1f6b8f7e500da833c307ef55059ac537bbaec54ecce5f0d01eed884b1a",
+      "startedAt": "2026-11-01T22:11:57.929Z",
+      "finishedAt": "2026-11-01T22:14:28.066Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "not applicable: empty workspace",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/claude-install-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/claude-install-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "claude-install-skill-metadata.json",
+        "prompt": "claude-install-skill-prompt.txt",
+        "trace": "claude-install-skill.jsonl",
+        "traceSha256": "c8fa21ce80a9fb7a06c8ac683188160e82839010f05bb0dcc8f96a7c536b5972",
+        "verification": "claude-install-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "{\"tool\":\"Read\",\"input\":{\"file_path\":\"/private/tmp/canvas-adoption-phase3/claude-install-skill/.claude/skills/canvas/SKILL.md\"}}"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@expo/metro-runtime": "~58.0.16",
+        "@nannier/canvas": "4.0.0",
+        "expo": "~58.0.22",
+        "expo-status-bar": "~58.0.4",
+        "react": "19.3.0",
+        "react-dom": "^19.3.0",
+        "react-native": "0.88.1",
+        "react-native-svg": "^15.16.0",
+        "react-native-web": "^0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "~19.3.0",
+        "typescript": "~6.0.3"
+      },
+      "sourceManifestSha256": "66a20db8e78c26f4fa1b0a52e7511bed6984c33c880cd1d5e55b1b4c62aedf71",
+      "sourceFiles": [
+        {
+          "path": "AGENTS.md",
+          "bytes": 2598,
+          "sha256": "b7d381dd55800d242252e8bf89a40b026586d254e34908210931bc35582396a3"
+        },
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8446d894438c6995c17e14d11e99ecbc10ad5e3e0612f77b73b9dbef2b81a292"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 733,
+          "sha256": "7bd3aa6f786b9458b928ad45e7859c906797e441f076af34c7ff8d451cb5ea28"
+        },
+        {
+          "path": "canvas-styles.ts",
+          "bytes": 85,
+          "sha256": "c375457b3b976cec0da0fe73cce39d2ffa2f01d97e251f005e80f90bc70c6ec4"
+        },
+        {
+          "path": "canvas-styles.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "declarations.d.ts",
+          "bytes": 24,
+          "sha256": "da5bf71d48cf909584a01c80b445f730507068f5b34c920f352e2bfcf0315e4c"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 307,
+          "sha256": "5c157f4d44972d9c84415e1e4bda595b3abcd8cf733f8a9cd20935bec3eccc42"
+        },
+        {
+          "path": "package.json",
+          "bytes": 639,
+          "sha256": "593c4dd0df1bc2ef151f46268a8fb1760dc42d3ea60f4f4032d9f0305a75c0de"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "690cc8ed50467772dde6840ebdae3421b1e82c8e86063565aeb7217ae1862c16",
+        "tree": {
+          "label": "claude-install-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Named heading; pointer increments 0 to 1; Enter increments 1 to 2",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Named heading; pointer increments 0 to 1; Enter increments 1 to 2",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "claude-optional-skill",
+      "caseId": "optional-peer-fallback",
+      "client": "claude",
+      "clientVersion": "2.1.310 (Claude Code)",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "99e9fd9d5b932b1a393c2e391e0ee4aaa540f0a7aed39e28f77038ce65ed6caa",
+      "promptSha256": "4ac41cea46fc3cd735e60c84b464ebb979d4686481cf0c71bcc901f594326163",
+      "promptUtf8Bytes": 1173,
+      "configurationSha256": "51446e1f6b8f7e500da833c307ef55059ac537bbaec54ecce5f0d01eed884b1a",
+      "startedAt": "2026-11-01T22:14:50.653Z",
+      "finishedAt": "2026-11-01T22:16:39.396Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/claude-optional-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/claude-optional-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "claude-optional-skill-metadata.json",
+        "prompt": "claude-optional-skill-prompt.txt",
+        "trace": "claude-optional-skill.jsonl",
+        "traceSha256": "cf5d77c7034de71a4784d56932e2d62899f86cd385d1e841e8afa2ccdfa3c986",
+        "verification": "claude-optional-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "{\"tool\":\"Read\",\"input\":{\"file_path\":\"/private/tmp/canvas-adoption-phase3/claude-optional-skill/.claude/skills/canvas/SKILL.md\"}}"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-clipboard": "57.0.2",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "3e5f86f90099405f2c9b43db7e14c6c9799c9819de18908384f6f3600bc9768e",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 524,
+          "sha256": "4989102d0c2807ff32a970b42cda69793521a6638bbe9fe8bed97fbcd785e1a1"
+        },
+        {
+          "path": "css.d.ts",
+          "bytes": 24,
+          "sha256": "da5bf71d48cf909584a01c80b445f730507068f5b34c920f352e2bfcf0315e4c"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 307,
+          "sha256": "5c157f4d44972d9c84415e1e4bda595b3abcd8cf733f8a9cd20935bec3eccc42"
+        },
+        {
+          "path": "package.json",
+          "bytes": 591,
+          "sha256": "6966314a8fe719bfd7fe6effe9d2b020a386b68832cfca9c18f2fa3db6286720"
+        },
+        {
+          "path": "ShareScreen.tsx",
+          "bytes": 2208,
+          "sha256": "a5292ae343f71689102b5fdca1ace3c13940a52712884cc323d831726978921c"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        },
+        {
+          "path": "webStyles.ts",
+          "bytes": 90,
+          "sha256": "080f9ef144c3fd2560160dbc88074ab1f611510f28cbc90908e963be010c34a4"
+        },
+        {
+          "path": "webStyles.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "eac26db9984e600df3b488d0dc0e113771838be289360ee3bda1bfd208372a6e",
+        "tree": {
+          "label": "claude-optional-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "QR peer cannot resolve from Canvas and npm whole-tree lacks installed QR peer; accessible image fallback mounted; Copy link copies exact URL with visible success",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "optionalPeer": {
+              "canvasResolution": "MODULE_NOT_FOUND",
+              "installedTreeEntries": []
+            }
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "QR peer cannot resolve from Canvas and npm whole-tree lacks installed QR peer; accessible image fallback mounted; Copy link copies exact URL with visible success",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "optionalPeer": {
+              "canvasResolution": "MODULE_NOT_FOUND",
+              "installedTreeEntries": []
+            }
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "claude-settings-skill",
+      "caseId": "settings-form",
+      "client": "claude",
+      "clientVersion": "2.1.310 (Claude Code)",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "5d1e8fc3d84c29de25eda54b74bf88256f30ab9d2dd2cf2e371ef9bd7132f101",
+      "promptSha256": "4dfce34662bced40604309ba165c4e590e67175e9941410031bbcb79097fcc00",
+      "promptUtf8Bytes": 1080,
+      "configurationSha256": "51446e1f6b8f7e500da833c307ef55059ac537bbaec54ecce5f0d01eed884b1a",
+      "startedAt": "2026-11-01T22:11:55.954Z",
+      "finishedAt": "2026-11-01T22:13:21.530Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/claude-settings-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/claude-settings-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "claude-settings-skill-metadata.json",
+        "prompt": "claude-settings-skill-prompt.txt",
+        "trace": "claude-settings-skill.jsonl",
+        "traceSha256": "1d835c37a1bf0d62c17c8cdffa830888c40e5c26cc9de29a581e4b79b818df3c",
+        "verification": "claude-settings-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "{\"tool\":\"Read\",\"input\":{\"file_path\":\"/private/tmp/canvas-adoption-phase3/claude-settings-skill/.claude/skills/canvas/SKILL.md\"}}"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-svg": "15.15.4",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "00c6347dbfce39b6722c46953909959488e1dd13e7376b15862d097a6ddf9305",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 4423,
+          "sha256": "43e527eb57fc13efa07cb818b45fbe88e891387d295657ad0e715378d63aa288"
+        },
+        {
+          "path": "css.d.ts",
+          "bytes": 52,
+          "sha256": "53bca77414c582554114c1c30ccaf68bc8566e5d8bd9fee2c3b362e0d3060b6f"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 325,
+          "sha256": "2fc89fd49d432721159bad0f8b49503ca85eee9dfbbb3176a4016944e8842394"
+        },
+        {
+          "path": "package.json",
+          "bytes": 594,
+          "sha256": "11bf350be5158953bf67a0e83c5640ff6b26e7b66f4202c2026d47a14936964e"
+        },
+        {
+          "path": "setup.ts",
+          "bytes": 91,
+          "sha256": "e087f72756e27cc4368f4e143ad7654afdea84890ab04c84233219d96ac5bf2b"
+        },
+        {
+          "path": "setup.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        },
+        {
+          "path": "validation.ts",
+          "bytes": 665,
+          "sha256": "85aa418941daa3083a896ce8931c87338139223b8eb9004906063db403c13e75"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "366f73b54fb745a99687f5845b21d3022b35aca91657af9bfef73edb8c7f9b1a",
+        "tree": {
+          "label": "claude-settings-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Named editable fields and switch; pointer/Space toggle; blank-name and invalid-email aria-invalid states; invalid saves preserve summary; Enter saves Sam/sam@example.com/notifications off; draft remains separate",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Named editable fields and switch; pointer/Space toggle; blank-name and invalid-email aria-invalid states; invalid saves preserve summary; Enter saves Sam/sam@example.com/notifications off; draft remains separate",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "codex-dashboard-skill",
+      "caseId": "responsive-dashboard",
+      "client": "codex",
+      "clientVersion": "codex-cli 0.166.0",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "a7feda4b0e1a718b1c18ad04331545b8eccd7cca1a08d019a4fd416accea83e8",
+      "promptSha256": "4d9acd33b23defb0a4fe0ab24bdcf25b6864558885bd7e98cd72577537dba76d",
+      "promptUtf8Bytes": 1109,
+      "configurationSha256": "3714cf615775002a5eb35b4b2be59d84f6c703a67fd22c2819bf6a3d5943ba43",
+      "startedAt": "2026-11-01T22:14:50.047Z",
+      "finishedAt": "2026-11-01T22:17:16.222Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/codex-dashboard-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/codex-dashboard-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "codex-dashboard-skill-metadata.json",
+        "prompt": "codex-dashboard-skill-prompt.txt",
+        "trace": "codex-dashboard-skill.jsonl",
+        "traceSha256": "71abaf61dfd0fbc4454620068d65134f5a85686631986385082312df46cc23ac",
+        "verification": "codex-dashboard-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "/bin/zsh -lc 'cat .agents/skills/canvas/SKILL.md'"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-safe-area-context": "~5.7.0",
+        "react-native-svg": "15.15.4",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "2b8baa0e25ec583d2af7feccac94911710ce728510dac430225d7850813186a9",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 4353,
+          "sha256": "96a542420868dd99f4c841212ae52d0384f30bd399b55f7da76bbef7bb3fd335"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 333,
+          "sha256": "74b131c3a2938d72358714d8910d0995d3fb62581647e05d5014df817a34f727"
+        },
+        {
+          "path": "package.json",
+          "bytes": 675,
+          "sha256": "f499ed1ecad682b2716010922e996f73bc05eb09cf4bcb58ee4fbaaff36c1813"
+        },
+        {
+          "path": "platformSetup.ts",
+          "bytes": 78,
+          "sha256": "2b2eae95cc7038ab3a8669de81e974a6cd05651b1f73912e53d1f8e2fd7b0789"
+        },
+        {
+          "path": "platformSetup.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "README.md",
+          "bytes": 3736,
+          "sha256": "038dd1f3b67a0a764d14fc4015ddcc41eddc03b66500605dca8b1734c866b280"
+        },
+        {
+          "path": "styles.d.ts",
+          "bytes": 24,
+          "sha256": "da5bf71d48cf909584a01c80b445f730507068f5b34c920f352e2bfcf0315e4c"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "99c1393e1b6171593d3e501e15340b0c049612453fcbfd02976fd888947cbce1",
+        "tree": {
+          "label": "codex-dashboard-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Exact metric labels/values; pointer and Enter Refresh produce count 2 without changing values; at least five activity entries individually scrolled into view",
+              "Real Tabs API browser zoom=2, CSS viewport halves; metrics/values/Refresh/all activity entries remain reachable and horizontally within viewport; no horizontal page overflow at 200%",
+              "Metrics form the requested desktop row/phone column",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "metricPositions": [
+              {
+                "x": 37,
+                "y": 190.859375,
+                "width": 364.5,
+                "height": 23.25
+              },
+              {
+                "x": 457.5,
+                "y": 190.859375,
+                "width": 364.5,
+                "height": 23.25
+              },
+              {
+                "x": 878,
+                "y": 190.859375,
+                "width": 364.5,
+                "height": 23.25
+              }
+            ],
+            "activityCount": 6,
+            "zoom200": {
+              "factor": 2,
+              "innerWidth": 640,
+              "scrollWidth": 640
+            }
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Exact metric labels/values; pointer and Enter Refresh produce count 2 without changing values; at least five activity entries individually scrolled into view",
+              "Real Tabs API browser zoom=2, CSS viewport halves; metrics/values/Refresh/all activity entries remain reachable and horizontally within viewport; no horizontal page overflow at 200%",
+              "Metrics form the requested desktop row/phone column",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "metricPositions": [
+              {
+                "x": 37,
+                "y": 322.5625,
+                "width": 316,
+                "height": 23.25
+              },
+              {
+                "x": 37,
+                "y": 489.3125,
+                "width": 316,
+                "height": 23.25
+              },
+              {
+                "x": 37,
+                "y": 656.0625,
+                "width": 316,
+                "height": 23.25
+              }
+            ],
+            "activityCount": 6,
+            "zoom200": {
+              "factor": 2,
+              "innerWidth": 195,
+              "scrollWidth": 195
+            }
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "codex-dialog-discovery",
+      "caseId": "accessible-dialog",
+      "client": "codex",
+      "clientVersion": "codex-cli 0.166.0",
+      "condition": "discovery",
+      "skillSha256": null,
+      "skillRevision": null,
+      "invocation": "no consumer skill",
+      "originalPromptSha256": "1f2445a687a2a2adda40848de98dc224af1186655af8917ea13f717a8b0799be",
+      "promptSha256": "1f2445a687a2a2adda40848de98dc224af1186655af8917ea13f717a8b0799be",
+      "promptUtf8Bytes": 1037,
+      "configurationSha256": "3714cf615775002a5eb35b4b2be59d84f6c703a67fd22c2819bf6a3d5943ba43",
+      "startedAt": "2026-11-01T22:08:40.910Z",
+      "finishedAt": "2026-11-01T22:11:16.587Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/codex-dialog-discovery-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/codex-dialog-discovery-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "codex-dialog-discovery-metadata.json",
+        "prompt": "codex-dialog-discovery-prompt.txt",
+        "trace": "codex-dialog-discovery.jsonl",
+        "traceSha256": "1a4d3514f9842739f1bc85dfed0b36115a29d307e8c4cbb37f9738a180947986",
+        "verification": "codex-dialog-discovery-verification.json"
+      },
+      "observedSkillReads": [],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@playwright/test": "1.64.1",
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "71441bf6bac40eb8a4d78105fc63e3eb03c94336d996500a62cdc438fc2ce1c8",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 3397,
+          "sha256": "e8623c2ccecd89ca9253f984cc3f282dc2848f83a0f8943af8fe6a7e2d88d589"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 307,
+          "sha256": "5c157f4d44972d9c84415e1e4bda595b3abcd8cf733f8a9cd20935bec3eccc42"
+        },
+        {
+          "path": "package.json",
+          "bytes": 691,
+          "sha256": "c5803c4964221e4c48cf4492e3e6701203d90d8430b10dc91e00d26c8f72f5a5"
+        },
+        {
+          "path": "playwright.config.ts",
+          "bytes": 325,
+          "sha256": "178a91400a4c6384ec1a8f5e395a056be889ff0909de1969c0a839d20cb86e63"
+        },
+        {
+          "path": "README.md",
+          "bytes": 2509,
+          "sha256": "c2239d225d88885329b390702bc5bb4fca2f31da930c5ecc5287b76731743092"
+        },
+        {
+          "path": "tests/profile.spec.ts",
+          "bytes": 2416,
+          "sha256": "b0762ef1543e601dbaff3bac34ab9177d016b5f8850a3463825f6df9493b4065"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "fb7932ee679abaf757f297a7f9afe289ac97f70c8cd946cbf9e505ea317afb28",
+        "tree": {
+          "label": "codex-dialog-discovery",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Named modal and labeled field; pointer-open focus; 12 Tab and 12 Shift+Tab moves contained; overlay intercepts opener hit point",
+              "Header Close cancels and restores focus",
+              "Keyboard opening; Escape/Cancel discard; Save persists; focus returns after every tested close; reopen saved value; no page errors/overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Named modal and labeled field; pointer-open focus; 12 Tab and 12 Shift+Tab moves contained; overlay intercepts opener hit point",
+              "Header Close cancels and restores focus",
+              "Keyboard opening; Escape/Cancel discard; Save persists; focus returns after every tested close; reopen saved value; no page errors/overflow"
+            ]
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "codex-dialog-skill",
+      "caseId": "accessible-dialog",
+      "client": "codex",
+      "clientVersion": "codex-cli 0.166.0",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "1f2445a687a2a2adda40848de98dc224af1186655af8917ea13f717a8b0799be",
+      "promptSha256": "a1a902858a618bd21c5c7081912e81a2ddf3b53577126199fa4d681b0dc7a20f",
+      "promptUtf8Bytes": 1142,
+      "configurationSha256": "3714cf615775002a5eb35b4b2be59d84f6c703a67fd22c2819bf6a3d5943ba43",
+      "startedAt": "2026-11-01T22:08:40.910Z",
+      "finishedAt": "2026-11-01T22:10:57.265Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/codex-dialog-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/codex-dialog-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "codex-dialog-skill-metadata.json",
+        "prompt": "codex-dialog-skill-prompt.txt",
+        "trace": "codex-dialog-skill.jsonl",
+        "traceSha256": "00f5bf718fc6d2da0b56c488c4bd32c28291c9240c589ffb640dc531115b6cb7",
+        "verification": "codex-dialog-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "/bin/zsh -lc 'cat .agents/skills/canvas/SKILL.md'"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-svg": "15.15.4",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@playwright/test": "^1.64.1",
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "b16092c5d4bc256bb33f3727af48434102996d271497acec676cd14d0848fb54",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 2680,
+          "sha256": "5b113d9ea45e10b0bb7863c4ff7105b0897b63f3ec43412a568a09e1e82e9c3c"
+        },
+        {
+          "path": "canvas-styles.ts",
+          "bytes": 79,
+          "sha256": "c32ec4c630835ed4b19bc6eee19645a80fd6426988a89bda18843d0160184b0a"
+        },
+        {
+          "path": "canvas-styles.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 333,
+          "sha256": "46418298255e7ad2ff467188dd89253dc585c7f701d6356ee397bc352d1b0b12"
+        },
+        {
+          "path": "package.json",
+          "bytes": 744,
+          "sha256": "279a9de28ab2e5f3cb0646352df4bb7b8d6c2cd03b536509af59d4b584382929"
+        },
+        {
+          "path": "playwright.config.ts",
+          "bytes": 454,
+          "sha256": "6c519cf34c75320a0ae2da1f1c21f1e95d057076f922e5a427492511f172da92"
+        },
+        {
+          "path": "README.md",
+          "bytes": 2664,
+          "sha256": "1df8a527bc05a178b7e4c0cab5952f653ccb786d10d62773bb068f7171d11580"
+        },
+        {
+          "path": "scripts/serve-web.mjs",
+          "bytes": 819,
+          "sha256": "d7636e22829b3b32ca185afb4175b25af2b3d693ad49a6b0f53ec96df0f63f57"
+        },
+        {
+          "path": "styles.d.ts",
+          "bytes": 52,
+          "sha256": "53bca77414c582554114c1c30ccaf68bc8566e5d8bd9fee2c3b362e0d3060b6f"
+        },
+        {
+          "path": "tests/profile.spec.ts",
+          "bytes": 3480,
+          "sha256": "cf0060d75bd9c429387de78f407abf627461c30e52df54300e182032a9c3e4d1"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "6c89888ea94673ed3004a31f199518b29b731ddbe23da0e945794e0c081f785a",
+        "tree": {
+          "label": "codex-dialog-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Named modal and labeled field; pointer-open focus; 12 Tab and 12 Shift+Tab moves contained; overlay intercepts opener hit point",
+              "Header Close cancels and restores focus",
+              "Keyboard opening; Escape/Cancel discard; Save persists; focus returns after every tested close; reopen saved value; no page errors/overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Named modal and labeled field; pointer-open focus; 12 Tab and 12 Shift+Tab moves contained; overlay intercepts opener hit point",
+              "Header Close cancels and restores focus",
+              "Keyboard opening; Escape/Cancel discard; Save persists; focus returns after every tested close; reopen saved value; no page errors/overflow"
+            ]
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "codex-install-skill",
+      "caseId": "install-expo-rnw",
+      "client": "codex",
+      "clientVersion": "codex-cli 0.166.0",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "6eb2e6dbae562b9c87cfd0187dd4edea0bcc8477e4f33f0fed18c47226062a62",
+      "promptSha256": "97f17427a5750f78d0f2510c426386f0ee581ad9e37c30fb06c2306bd1bd613f",
+      "promptUtf8Bytes": 904,
+      "configurationSha256": "3714cf615775002a5eb35b4b2be59d84f6c703a67fd22c2819bf6a3d5943ba43",
+      "startedAt": "2026-11-01T22:11:55.233Z",
+      "finishedAt": "2026-11-01T22:14:34.049Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "not applicable: empty workspace",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/codex-install-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/codex-install-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "codex-install-skill-metadata.json",
+        "prompt": "codex-install-skill-prompt.txt",
+        "trace": "codex-install-skill.jsonl",
+        "traceSha256": "55244f03afb5cdf72c995e01b2565887e3f0b0331b66d8f8e2a76ce8d0e13b12",
+        "verification": "codex-install-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "/bin/zsh -lc 'cat .agents/skills/canvas/SKILL.md'"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "~58.0.22",
+        "expo-status-bar": "~58.0.4",
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "react-native": "0.88.1",
+        "react-native-svg": "15.16.0",
+        "react-native-web": "^0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "~19.3.0",
+        "eslint": "^9.0.0",
+        "eslint-config-expo": "~58.0.4",
+        "typescript": "~6.0.3"
+      },
+      "sourceManifestSha256": "85e94b5873894f14094236771870b1c51cf2125c322f331bcb7d81b5f9299c0e",
+      "sourceFiles": [
+        {
+          "path": "AGENTS.md",
+          "bytes": 2598,
+          "sha256": "b7d381dd55800d242252e8bf89a40b026586d254e34908210931bc35582396a3"
+        },
+        {
+          "path": "app.json",
+          "bytes": 652,
+          "sha256": "a7901bb5b617ab422ac32c7112c5e71298aaff700bc8147fb50bf06deadc3531"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 956,
+          "sha256": "7f7c7d666c1799450ef376d7d2d810d9c27e4d703282cdcfba3bd1fedef04492"
+        },
+        {
+          "path": "canvas-setup.ts",
+          "bytes": 60,
+          "sha256": "e47f65d419426a0ccba9a0a7d3c7835fc016f93e52a752410bc4891a6708b308"
+        },
+        {
+          "path": "canvas-setup.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "eslint.config.js",
+          "bytes": 237,
+          "sha256": "3b0c823fd936f964905db962e66e92e24773b7085c0c82750a4d4f0b1808c41c"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 332,
+          "sha256": "2f07a58dea00ed5a7eff28f37fb8104e6e75a602100773b0c36045bcd8784517"
+        },
+        {
+          "path": "package.json",
+          "bytes": 804,
+          "sha256": "5a0be5fd39c675386597565c79458ba7468501c2216177d8749d99a71a8a1b86"
+        },
+        {
+          "path": "README.md",
+          "bytes": 3818,
+          "sha256": "ea9a8b53bf17f435491a4de7cb7a740518ef09212de854190fe6b19a2a0e51a5"
+        },
+        {
+          "path": "styles.d.ts",
+          "bytes": 52,
+          "sha256": "53bca77414c582554114c1c30ccaf68bc8566e5d8bd9fee2c3b362e0d3060b6f"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "8981196aa1661b28afdd3f0e0acd3a0f3ebe5d35b682e6afe7d2da581b078bfb",
+        "tree": {
+          "label": "codex-install-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Named heading; pointer increments 0 to 1; Enter increments 1 to 2",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Named heading; pointer increments 0 to 1; Enter increments 1 to 2",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "codex-optional-skill",
+      "caseId": "optional-peer-fallback",
+      "client": "codex",
+      "clientVersion": "codex-cli 0.166.0",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "99e9fd9d5b932b1a393c2e391e0ee4aaa540f0a7aed39e28f77038ce65ed6caa",
+      "promptSha256": "75ab4484adedf74e49423987c19059518021a55da3e44ebfd6343935baa9a64a",
+      "promptUtf8Bytes": 1173,
+      "configurationSha256": "3714cf615775002a5eb35b4b2be59d84f6c703a67fd22c2819bf6a3d5943ba43",
+      "startedAt": "2026-11-01T22:14:50.047Z",
+      "finishedAt": "2026-11-01T22:16:59.032Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/codex-optional-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/codex-optional-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "codex-optional-skill-metadata.json",
+        "prompt": "codex-optional-skill-prompt.txt",
+        "trace": "codex-optional-skill.jsonl",
+        "traceSha256": "76cc6537a98ae8dbdc988e38b5382617b3057406755045294f3545afcc2d1581",
+        "verification": "codex-optional-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "/bin/zsh -lc 'cat .agents/skills/canvas/SKILL.md'",
+        "/bin/zsh -lc \"cat > VERIFICATION.md <<'EOF'\n# Share screen verification\n\nThe consumer uses the released npm tarball for \"'`@nannier/canvas`, pinned to `4.0.0` in package.json and package-lock.json. No library changes, aliases, overlays, or local links are used.\n\n`App.tsx` always mounts `<QRCode large value=\"https://example.com/share\" />`. With the optional QR peer absent, Canvas retains its accessible blank frame. A separately labeled Copy link button uses Expo Clipboard and shows success only when copying resolves true; rejection or false produces visible error feedback. The URL remains visible.\n\nCommands and results:\n\n- `cat .agents/skills/canvas/SKILL.md`: read before implementation.\n- `npm view @nannier/canvas@4.0.0 version dist peerDependencies peerDependenciesMeta --json`: confirmed npm release provenance and optional QR peer.\n- `curl -fsSL https://canvas.nannier.com/llms.txt`: returned 404. The web lookup also failed. Installed public declarations and implementation were inspected instead.\n- `npm install --save-exact @nannier/canvas@4.0.0`: passed.\n- `npx --no-install canvas docs --list`: unavailable; this release has no CLI or packaged documentation.\n- `npx expo install expo-clipboard react-native-safe-area-context react-native-svg`: passed; selected SDK 57 compatible versions. npm reported 13 audit findings (2 low, 9 moderate, 2 high).\n- `npm run typecheck`: passed after adding the stylesheet module declaration.\n- `npx expo export --platform all`: passed for web, iOS, and Android; generated output is ignored under dist/.\n- `npm ls --depth=0`: confirmed `@nannier/canvas@4.0.0`.\n- `npm ls react-native-qrcode-svg --all`: empty tree (npm exits 1 for the empty query).\n- A recursive filesystem scan of node_modules and a scan of all package-lock package entries found no installed QR package at any depth. The lockfile records Canvas'\"'s registry.npmjs.org tarball and integrity.\n- \"'`git status --short`: unavailable because this workspace is not a Git repository.\n\nRuntime checks used tooling installed outside the project:\n\n- `npm install --prefix /private/tmp/canvas-share-verification --no-package-lock --no-audit --no-fund playwright`\n- `python3 -m http.server 4187 --directory dist`\n- `node /private/tmp/canvas-share-verification/check.cjs`: browser launch blocked by the sandbox (`MachPortRendezvousServer: Permission denied`). Desktop/phone layout, keyboard, and real clipboard checks could not run.\n- `npm install --prefix /private/tmp/canvas-share-verification --no-package-lock --no-audit --no-fund jsdom`\n- `node /private/tmp/canvas-share-verification/dom-check.cjs`: passed against the actual exported web bundle. Confirmed the real Canvas QR component mounts its labeled blank frame with a 200px child and no SVG; clicking Copy link writes the exact URL to a stubbed clipboard and renders success; a rejected write renders error feedback. No DOM runtime errors were observed. This does not verify browser layout or the real system clipboard.\n\nNo iOS or Android device/simulator runtime checks were performed. Successful native exports establish bundling, not device behavior. The browser launch restriction prevented visual inspection, narrow-width overflow checks, and keyboard verification.\n\nRun locally with `npm run web`, `npm run ios`, or `npm run android` to complete runtime checks. Keep `react-native-qrcode-svg` absent to retain the requested fallback path.\nEOF'"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-clipboard": "~57.0.2",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-safe-area-context": "~5.7.0",
+        "react-native-svg": "15.15.4",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "c1b9e16b91f3993add8fe8847fb57183d66be4df5fc8810bedf9637f00b4bf32",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 3415,
+          "sha256": "e9ee7a429ce9445a5e26e4c6b42b22ff58f8d40e86fa8d12fcd0b332cb1a3ff1"
+        },
+        {
+          "path": "canvas-styles.ts",
+          "bytes": 66,
+          "sha256": "5a084c4cb681d35bb3b0a3016bf94bb11a3c01aba7abf22ec0c6c7d04a697872"
+        },
+        {
+          "path": "canvas-styles.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 333,
+          "sha256": "46418298255e7ad2ff467188dd89253dc585c7f701d6356ee397bc352d1b0b12"
+        },
+        {
+          "path": "package.json",
+          "bytes": 708,
+          "sha256": "5e04aea6c6d9584f51ec608b5dcf5bbce370b2d379c35e70b431918467b3749e"
+        },
+        {
+          "path": "styles.d.ts",
+          "bytes": 52,
+          "sha256": "53bca77414c582554114c1c30ccaf68bc8566e5d8bd9fee2c3b362e0d3060b6f"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        },
+        {
+          "path": "VERIFICATION.md",
+          "bytes": 3364,
+          "sha256": "87122d59d41e899b468280cb0bb6eb4debe11423332b5d67a4619d5c999ace6e"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "e85cc9d164b7870e5db362539d0c1227aa5097df3c9b2701482c193fde73a476",
+        "tree": {
+          "label": "codex-optional-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "QR peer cannot resolve from Canvas and npm whole-tree lacks installed QR peer; accessible image fallback mounted; Copy link copies exact URL with visible success",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "optionalPeer": {
+              "canvasResolution": "MODULE_NOT_FOUND",
+              "installedTreeEntries": []
+            }
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "QR peer cannot resolve from Canvas and npm whole-tree lacks installed QR peer; accessible image fallback mounted; Copy link copies exact URL with visible success",
+              "No uncaught browser errors or horizontal page overflow"
+            ],
+            "optionalPeer": {
+              "canvasResolution": "MODULE_NOT_FOUND",
+              "installedTreeEntries": []
+            }
+          }
+        ],
+        "errors": []
+      }
+    },
+    {
+      "label": "codex-settings-skill",
+      "caseId": "settings-form",
+      "client": "codex",
+      "clientVersion": "codex-cli 0.166.0",
+      "condition": "skill",
+      "skillSha256": "f3200be793c590e3ecab1c333c75215e4c559db19b8d9af58cd588aab3d9d98f",
+      "skillRevision": 1,
+      "invocation": "explicit_file_read; not automatic routing",
+      "originalPromptSha256": "5d1e8fc3d84c29de25eda54b74bf88256f30ab9d2dd2cf2e371ef9bd7132f101",
+      "promptSha256": "d335b2f5b552d379ba0f3d3d51dcf1d8c0fe093fe3984fc7945a7afe05a1aa9e",
+      "promptUtf8Bytes": 1080,
+      "configurationSha256": "3714cf615775002a5eb35b4b2be59d84f6c703a67fd22c2819bf6a3d5943ba43",
+      "startedAt": "2026-11-01T22:11:55.547Z",
+      "finishedAt": "2026-11-01T22:15:05.913Z",
+      "exitCode": 0,
+      "timedOut": false,
+      "preflight": "typecheck and web export passed",
+      "environmentOverrides": {
+        "TMPDIR": "/private/tmp",
+        "npm_config_cache": "/private/tmp/canvas-adoption-phase3/codex-settings-skill-npm-cache",
+        "__UNSAFE_EXPO_HOME_DIRECTORY": "/private/tmp/canvas-adoption-phase3/codex-settings-skill-expo-state",
+        "EXPO_NO_TELEMETRY": "1"
+      },
+      "rawArtifacts": {
+        "metadata": "codex-settings-skill-metadata.json",
+        "prompt": "codex-settings-skill-prompt.txt",
+        "trace": "codex-settings-skill.jsonl",
+        "traceSha256": "0934bb5357bc0d3c5572e518c82ce8a163ab2e2633a238f54a553cc4b8a65ae5",
+        "verification": "codex-settings-skill-verification.json"
+      },
+      "observedSkillReads": [
+        "/bin/zsh -lc 'cat .agents/skills/canvas/SKILL.md'"
+      ],
+      "instructionIsolationVerified": false,
+      "dependencies": {
+        "@nannier/canvas": "4.0.0",
+        "expo": "57.0.31",
+        "expo-status-bar": "57.0.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-safe-area-context": "~5.7.0",
+        "react-native-svg": "15.15.4",
+        "react-native-web": "0.21.4"
+      },
+      "devDependencies": {
+        "@types/react": "19.2.18",
+        "typescript": "6.0.3"
+      },
+      "sourceManifestSha256": "f1dd7a76904a80de60d631f670b749e285dc6f0b9902048d7c3676ca5e43cb1e",
+      "sourceFiles": [
+        {
+          "path": "app.json",
+          "bytes": 664,
+          "sha256": "8de6e36aa8c0343a21c9af6ad52938e4fdd35553bab9919cb50f00cf6618020d"
+        },
+        {
+          "path": "App.tsx",
+          "bytes": 6568,
+          "sha256": "ec637152e346fb5e7ff090c8f831e7dd2c1d3fcf482d5ec220eafcbf999bcac9"
+        },
+        {
+          "path": "index.ts",
+          "bytes": 334,
+          "sha256": "3a8b4f1f591c398352ee61a502e9af13959880cd1af2032e3eb91779dbad06de"
+        },
+        {
+          "path": "package.json",
+          "bytes": 675,
+          "sha256": "f499ed1ecad682b2716010922e996f73bc05eb09cf4bcb58ee4fbaaff36c1813"
+        },
+        {
+          "path": "platform-setup.ts",
+          "bytes": 81,
+          "sha256": "e614b73160c6fe8a56f37acdc4e5f0825c306a9e397cc6a80f767304ebed7ff7"
+        },
+        {
+          "path": "platform-setup.web.ts",
+          "bytes": 44,
+          "sha256": "82cf5bc51e67de52d9eb0efd247c5db712f99640117c2ef8c9169618b2d2a094"
+        },
+        {
+          "path": "styles.d.ts",
+          "bytes": 52,
+          "sha256": "53bca77414c582554114c1c30ccaf68bc8566e5d8bd9fee2c3b362e0d3060b6f"
+        },
+        {
+          "path": "tsconfig.json",
+          "bytes": 85,
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        },
+        {
+          "path": "VERIFICATION.md",
+          "bytes": 3522,
+          "sha256": "fe321cd5f75233895fa15e425e7e5bd293abdbe902cb3582f00f8d2541fb31f0"
+        }
+      ],
+      "package": {
+        "requested": "4.0.0",
+        "installed": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "99c1393e1b6171593d3e501e15340b0c049612453fcbfd02976fd888947cbce1",
+        "tree": {
+          "label": "codex-settings-skill",
+          "fileCount": 4083,
+          "digest": "bf33aefa306787dedc9d5a2ecf7669be1e6896efe03df7807322b749bb3c312b",
+          "matchesReference": true
+        }
+      },
+      "verification": {
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "webRuntime": "pass",
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Named editable fields and switch; pointer/Space toggle; blank-name and invalid-email aria-invalid states; invalid saves preserve summary; Enter saves Sam/sam@example.com/notifications off; draft remains separate",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Named editable fields and switch; pointer/Space toggle; blank-name and invalid-email aria-invalid states; invalid saves preserve summary; Enter saves Sam/sam@example.com/notifications off; draft remains separate",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": []
+      }
+    }
+  ],
+  "matchedFreshDialogComparison": {
+    "labels": [
+      "codex-dialog-discovery",
+      "codex-dialog-skill"
+    ],
+    "identicalConfiguration": true,
+    "observed": "Both pass the same independent checks. Discovery added explicit public-ref web focus restoration; informed kept its opener enabled and used Canvas layout. No demonstrated success-rate uplift."
+  },
+  "evaluatorCorrections": [
+    {
+      "issue": "npm ls includes absent declared optional peer as an empty object",
+      "invalidArtifacts": [
+        "codex-optional-skill-verification-invalid-npm-placeholder-check.json",
+        "claude-optional-skill-verification-invalid-npm-placeholder-check.json"
+      ],
+      "correction": "Inspect populated installed dependency nodes and Canvas module resolution; no app changes."
+    },
+    {
+      "issue": "Activity titles vary across generated applications",
+      "invalidArtifacts": [
+        "claude-dashboard-skill-r2-verification-invalid-activity-title-check.json"
+      ],
+      "correction": "Count semantic list items or composed activity rows; no app changes."
+    }
+  ]
+}

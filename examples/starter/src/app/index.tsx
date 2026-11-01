@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { type TextInput } from "react-native";
-import { Alert, Autocomplete, Badge, Card, Column, DescriptionList, Field, Form, Grid, Input, Listbox, Row, Typography } from "@nannier-com/canvas";
+import { Alert, Autocomplete, Badge, Card, Column, DescriptionList, Field, Form, Grid, Input, Listbox, Row, Typography } from "@nannier/canvas";
 import { Screen } from "../app-frame/screen";
 import { CITIES, WORKSTREAMS, useSession } from "../state/session";
 
