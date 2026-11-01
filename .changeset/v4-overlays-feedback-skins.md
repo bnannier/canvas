@@ -1,5 +1,0 @@
----
-"@nannier/canvas": patch
----
-
-v4 overlay and feedback skins: Dialog, AlertDialog, Drawer, ActionSheet, Popover, Tooltip, Dropdown, Command, Wizard, Toast, Alert, EmptyState, Progress, Spinner and Skeleton take the Canvas v4 hand-off's look on the web (the field-border hairline and large shadow on every floating panel, the display face on dialog and popover titles, mono section labels and shortcuts in Dropdown and Command), with the native skins in the hand-off's colours where they keep a platform shape. Look changes with no new prop or component, so a patch: Alert draws a tone glyph by default, Toast gains its sparkle mark and card face, AlertDialog shows a tone tile above its title with full-width actions, Popover draws a beak pointing at its anchor on the web, and Command shows an esc keycap in its search row and mono shortcuts on its rows. Behaviour notes: Dropdown `compact` is now the hand-off's 30 px rows, segmented Progress fills its parent, Spinner defaults to the primary ink, EmptyState is always padded, the Drawer side panel defaults to 300 px, the Wizard back action is a ghost button, and the Command footer reads "move / open / close".
