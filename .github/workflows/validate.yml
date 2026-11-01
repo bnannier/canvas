@@ -303,13 +303,12 @@ jobs:
   e2e:
     needs: check
     runs-on: ubuntu-latest
-    # Playwright shards by file, not by duration: shards 3 and 4 carry 9 to 11 minutes
-    # of tests behind about 4 minutes of setup, and the fourth shard hit a 15 minute
-    # limit on a routine main run (GitHub reports that as cancelled). The third shard,
-    # which carries the keyboard-ring sweep of every component page, took 21 minutes on
-    # the last green run (2026-10-14) and ran past 25 once Chat and Wizard added their
-    # routes (run 39614900956), so the limit is 35.
-    timeout-minutes: 35
+    # Playwright shards by file, not duration. In release run 41259230060, shards
+    # 1/2 passed 856 tests each in 22 minutes; shards 3/4 were still passing tests
+    # when the 35-minute job limit stopped them. System-package installation alone
+    # took up to 14 minutes, even with cached browsers. Allow setup and the full
+    # suite to finish without removing checks or retrying failed assertions.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
