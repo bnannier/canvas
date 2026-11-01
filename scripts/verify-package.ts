@@ -79,7 +79,25 @@ export function verifyPackage(root: string): string[] {
     if (!files.some((file) => file.startsWith(native) && file.endsWith(`.${platform}.js`))) errors.push(`Native output has no ${platform} forks`);
   }
   errors.push(...verifyCaptureModule(root, metadata));
+  if (metadata.bin?.canvas) errors.push(...verifyConsumerAssets(root, metadata));
   return [...new Set(errors)];
+}
+
+function verifyConsumerAssets(root: string, metadata: { version: string; bin: { canvas: string } }): string[] {
+  const errors: string[] = [];
+  if (metadata.bin.canvas !== "./consumer/cli.mjs") errors.push("Canvas CLI must select ./consumer/cli.mjs");
+  const docs = `docs/public/ai/${metadata.version}`;
+  for (const file of ["consumer/cli.mjs", "consumer/canvas/SKILL.md", "consumer/recipes/App.tsx", "consumer/recipes/package.json", "consumer/recipes/recipe-config.json", "consumer/recipes/gitignore", `${docs}/catalog.json`, `${docs}/manifest.json`, `${docs}/index.md`, "docs/public/llms.txt", "docs/public/llms-full.txt", "docs/public/agents.md"]) {
+    if (!fs.existsSync(path.join(root, file))) errors.push(`Consumer asset missing: ${file}`);
+  }
+  try {
+    const catalog = JSON.parse(fs.readFileSync(path.join(root, docs, "catalog.json"), "utf8"));
+    if (catalog.package !== "@nannier/canvas" || catalog.version !== metadata.version || !catalog.components?.length) errors.push("Agent catalog identity/components do not match the package");
+  } catch { errors.push("Agent catalog could not be read"); }
+  for (const forbidden of ["node_modules", "ios", "android", "test-results", "tests", "bun.lock"]) {
+    if (fs.existsSync(path.join(root, "consumer/recipes", forbidden))) errors.push(`Consumer scaffold must not ship ${forbidden}`);
+  }
+  return errors;
 }
 
 // Canvas's own Android capture module (android/), which Expo autolinks from the package

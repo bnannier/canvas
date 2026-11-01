@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "suiteId": "canvas-consumer-phase1",
+  "suiteRevision": 1,
+  "runId": null,
+  "caseId": null,
+  "startedAt": null,
+  "finishedAt": null,
+  "condition": {
+    "context": "discovery",
+    "workspaceMode": "isolated",
+    "sequenceId": null,
+    "sequencePosition": null,
+    "previousCaseIds": [],
+    "skill": {
+      "name": null,
+      "version": null,
+      "sha256": null,
+      "source": null
+    },
+    "extraContext": []
+  },
+  "agent": {
+    "provider": null,
+    "requestedModel": null,
+    "resolvedModel": null,
+    "client": null,
+    "clientVersion": null,
+    "settings": {
+      "reasoningEffort": null,
+      "temperature": null,
+      "seed": null,
+      "maxOutputTokens": null,
+      "approvalMode": null,
+      "sandboxMode": null,
+      "networkMode": null,
+      "other": {}
+    },
+    "tools": [],
+    "configurationEvidence": null
+  },
+  "inputs": {
+    "promptSha256": null,
+    "promptUtf8Bytes": null,
+    "extraMessages": [],
+    "prerequisiteModel": null,
+    "scaffoldGeneratorCommand": null,
+    "scaffoldSha256": null,
+    "initialLockfileSha256": null,
+    "instructionIsolationVerified": null
+  },
+  "package": {
+    "name": "@nannier/canvas",
+    "requestedVersion": "4.0.0",
+    "installedVersion": null,
+    "registry": null,
+    "tarballUrl": null,
+    "integrity": null,
+    "lockfileSha256": null,
+    "provenanceEvidenceIds": [],
+    "sourceSubstitutionsAbsent": null
+  },
+  "documentation": {
+    "requestedUrl": "https://canvas.nannier.com/",
+    "claimedVersion": null,
+    "versionEvidence": null,
+    "accessedAt": null,
+    "pages": [],
+    "contentSha256": null,
+    "versionMatch": null
+  },
+  "environment": {
+    "workspace": null,
+    "os": null,
+    "architecture": null,
+    "node": null,
+    "packageManager": null,
+    "expoSdk": null,
+    "react": null,
+    "reactNative": null,
+    "reactNativeWeb": null,
+    "typescript": null,
+    "browser": null,
+    "iosRuntime": null,
+    "androidRuntime": null,
+    "availableTools": [],
+    "network": null,
+    "locale": null,
+    "timezone": null
+  },
+  "budget": {
+    "wallClockMinutes": 20,
+    "maximumCorrections": 2
+  },
+  "attempts": [],
+  "corrections": [],
+  "commandEvidence": [],
+  "checks": {
+    "prerequisites": {
+      "status": "not_run",
+      "commandEvidenceIds": [],
+      "observations": [],
+      "errors": [],
+      "blockReason": null
+    },
+    "packageProvenance": {
+      "status": "not_run",
+      "commandEvidenceIds": [],
+      "observations": [],
+      "errors": [],
+      "blockReason": null
+    },
+    "typecheck": {
+      "status": "not_run",
+      "commandEvidenceIds": [],
+      "observations": [],
+      "errors": [],
+      "blockReason": null
+    },
+    "webBuild": {
+      "status": "not_run",
+      "commandEvidenceIds": [],
+      "observations": [],
+      "errors": [],
+      "blockReason": null
+    },
+    "webRuntime": {
+      "status": "not_run",
+      "commandEvidenceIds": [],
+      "observations": [],
+      "errors": [],
+      "blockReason": null
+    },
+    "iosRuntime": {
+      "status": "not_run",
+      "commandEvidenceIds": [],
+      "observations": [],
+      "errors": [],
+      "blockReason": null
+    },
+    "androidRuntime": {
+      "status": "not_run",
+      "commandEvidenceIds": [],
+      "observations": [],
+      "errors": [],
+      "blockReason": null
+    }
+  },
+  "criteria": [],
+  "errors": [],
+  "metrics": {
+    "wallClockSeconds": null,
+    "agentActiveSeconds": null,
+    "inputTokens": null,
+    "outputTokens": null,
+    "cachedInputTokens": null,
+    "tokenSource": null,
+    "cost": null,
+    "currency": null
+  },
+  "outcome": {
+    "firstAttemptWeb": "not_run",
+    "firstAttemptUniversal": "not_run",
+    "finalWeb": "not_run",
+    "finalUniversal": "not_run",
+    "infrastructureBlocked": null,
+    "infrastructureBlockReasons": [],
+    "limitations": []
+  },
+  "reviewer": {
+    "name": null,
+    "reviewedAt": null,
+    "evidenceNotes": null
+  }
+}

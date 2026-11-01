@@ -6,7 +6,7 @@
 # as directives: Lighthouse read it as 74 malformed rules. The export is static now
 # and a miss is a real 404, but a real file is still the right answer.
 #
-# No Sitemap line on purpose: there is no sitemap.xml to point at. Add the directive
-# in the same commit that starts generating the file.
+# prepare-pages.mjs generates the sitemap from the actual static export.
 User-agent: *
 Allow: /
+Sitemap: https://canvas.nannier.com/sitemap.xml

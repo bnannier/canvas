@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-11-01",
+  "package": "@nannier/canvas",
+  "npm": {
+    "source": "https://api.npmjs.org/downloads/point/last-week/@nannier%2Fcanvas",
+    "downloads": 1486,
+    "start": "2026-10-23",
+    "end": "2026-10-29",
+    "interpretation": "Package downloads across versions, including automation and CI. Not unique users, AI recommendations, retention or evidence of this rollout's effect. Dates are the API's returned reporting window."
+  },
+  "repository": {
+    "name": "bnannier/canvas",
+    "visibility": "private",
+    "evidence": "gh repo view --json nameWithOwner,url,isPrivate,viewerPermission",
+    "visibilityChanged": false,
+    "publicIssueTrackerAvailable": false
+  },
+  "externalConsumerReports": [],
+  "returningExternalConsumers": null,
+  "publication": "not_dispatched",
+  "notes": [
+    "No adoption events are fabricated from internal tests.",
+    "Public feedback contact requested from the owner; repository issue templates currently serve invited collaborators only.",
+    "No telemetry was added and no outreach messages were sent."
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "canvas-application-recipes",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "web": "expo start --web",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "typecheck": "tsc --noEmit",
+    "build:web": "expo export --platform web"
+  },
+  "dependencies": {
+    "@nannier/canvas": "4.0.0",
+    "expo": "57.0.27",
+    "expo-build-properties": "57.0.22",
+    "expo-font": "57.0.4",
+    "expo-status-bar": "57.0.1",
+    "expo-system-ui": "57.0.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "5.7.0",
+    "react-native-svg": "15.15.4",
+    "react-native-web": "0.21.2"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "typescript": "6.0.3"
+  },
+  "overrides": {
+    "expo-modules-core": "57.0.24",
+    "expo-modules-jsi": "57.1.3"
+  }
+}

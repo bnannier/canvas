@@ -5,7 +5,7 @@
     "": {
       "name": "canvas-starter",
       "dependencies": {
-        "@nannier-com/canvas": "2.62.1",
+        "@nannier/canvas": "4.0.0",
         "expo": "57.0.27",
         "expo-build-properties": "57.0.22",
         "expo-constants": "57.0.21",
@@ -263,7 +263,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
-    "@nannier-com/canvas": ["@nannier-com/canvas@2.62.1", "", { "peerDependencies": { "@shopify/react-native-skia": ">=2", "expo-blur": "*", "expo-clipboard": "*", "expo-glass-effect": "*", "react": ">=18", "react-native": ">=0.74", "react-native-qrcode-svg": ">=6", "react-native-safe-area-context": ">=4", "react-native-svg": ">=14" }, "optionalPeers": ["@shopify/react-native-skia", "expo-blur", "expo-clipboard", "expo-glass-effect", "react-native-qrcode-svg", "react-native-safe-area-context"] }, "sha512-BtY6N4Uq914pkRZq3PofYO9KG2J0olzCCIqbIHoRNvYekgl/QHhIB5UGPmFCyyzxpXeu6PzF5o/d32qiDjrK1Q=="],
+    "@nannier/canvas": ["@nannier/canvas@4.0.0", "", { "peerDependencies": { "expo-blur": "*", "expo-clipboard": "*", "expo-glass-effect": "*", "expo-modules-core": "*", "expo-video": "*", "react": ">=18", "react-native": ">=0.74", "react-native-qrcode-svg": ">=6", "react-native-safe-area-context": ">=4", "react-native-svg": ">=15.8.0" }, "optionalPeers": ["expo-blur", "expo-clipboard", "expo-glass-effect", "expo-modules-core", "expo-video", "react-native-qrcode-svg", "react-native-safe-area-context"] }, "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ=="],
 
     "@radix-ui/primitive": ["@radix-ui/primitive@1.1.7", "", {}, "sha512-rqWnm76nYT8HoNNqEjpgJ7Pw/DrBj5iBTrmEPo6HTX5+VJyBNOqTdv4g89G63HuR5g0AaENoAcH7Is5fF2kZ8Q=="],
 

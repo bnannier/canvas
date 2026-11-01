@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "suiteId": "canvas-consumer-phase1",
+  "revision": 1,
+  "package": {
+    "name": "@nannier/canvas",
+    "version": "4.0.0",
+    "source": "https://registry.npmjs.org",
+    "officialDocsUrl": "https://canvas.nannier.com/"
+  },
+  "cases": [
+    {
+      "id": "install-expo-rnw",
+      "title": "Install Canvas in Expo and React Native Web",
+      "prompt": "Starting in this empty workspace, create a TypeScript Expo app that also runs on the web through React Native Web. Install Canvas and show a welcome screen with the heading “Canvas consumer check” and a button labeled “Count: 0”. Each activation must increase the displayed count by one. Keep the same application code usable on iOS, Android, and web.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "prerequisites": {
+        "model": "empty_workspace",
+        "dependsOnCase": null,
+        "requirements": [
+          "Empty temporary workspace outside this repository and its parent instruction tree.",
+          "Node, package manager, registry access, and any promised runtime tools are provisioned by the evaluator; their exact versions and availability are recorded."
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "install.published",
+          "verification": "package",
+          "requirement": "The manifest pins @nannier/canvas to 4.0.0 and the lockfile and installed package prove npm provenance; no local substitutions."
+        },
+        {
+          "id": "install.typecheck",
+          "verification": "typecheck",
+          "requirement": "The complete consumer typechecks without suppressed Canvas errors."
+        },
+        {
+          "id": "install.web-build",
+          "verification": "web_build",
+          "requirement": "A production web export/build completes."
+        },
+        {
+          "id": "install.web-counter",
+          "verification": "web_runtime",
+          "requirement": "In a browser the heading is visible; pointer activation and keyboard activation increase the count from 0 to 1 to 2 without an uncaught error."
+        },
+        {
+          "id": "install.native-counter",
+          "verification": "native_runtime",
+          "requirement": "On each available iOS and Android runtime the same screen loads and two taps increase the count to 2 without an uncaught error."
+        }
+      ]
+    },
+    {
+      "id": "settings-form",
+      "title": "Working settings form",
+      "prompt": "Build a settings screen in this TypeScript Expo app for web, iOS, and Android. Include a display name initially “Alex”, email initially “alex@example.com”, email notifications initially enabled, and a Save button. Users must be able to edit every value. Saving with a blank name or invalid email must show a useful error and must not update the saved summary. Saving valid values must show the saved name, email, and notification state. No backend or persistence across app restarts is required. Use Canvas controls and layout.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "prerequisites": {
+        "model": "fresh_expo_scaffold_without_canvas",
+        "dependsOnCase": null,
+        "requirements": [
+          "Independent copy of the same externally generated blank TypeScript Expo scaffold with React Native Web enabled; no Canvas dependency, imports, examples, or instructions.",
+          "Record generator command and exact generator, SDK, React, React Native, React Native Web, Node and package-manager versions, baseline file hash and lockfile hash.",
+          "Evaluator confirms the unmodified scaffold typechecks and exports for web before the run; record failures as infrastructure blocks."
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "settings.edits",
+          "verification": "web_runtime",
+          "requirement": "Name and email accept edits and notification state toggles with both pointer and keyboard; accessible names identify all controls."
+        },
+        {
+          "id": "settings.validation",
+          "verification": "web_runtime",
+          "requirement": "Blank name and malformed email each prevent saving and expose useful field-associated errors; the last saved summary remains unchanged."
+        },
+        {
+          "id": "settings.save",
+          "verification": "web_runtime",
+          "requirement": "After setting name to Sam, email to sam@example.com and notifications off, Save shows exactly those saved values; later unsaved edits do not change the summary."
+        },
+        {
+          "id": "settings.build",
+          "verification": "build",
+          "requirement": "The consumer typecheck and production web export succeed."
+        },
+        {
+          "id": "settings.native",
+          "verification": "native_runtime",
+          "requirement": "On each available native platform editing, validation and valid saving work using the same application implementation."
+        }
+      ]
+    },
+    {
+      "id": "responsive-dashboard",
+      "title": "Responsive dashboard",
+      "prompt": "Build a small operations dashboard in this TypeScript Expo app for web, iOS, and Android. Show three labeled metrics (Revenue $12,400; Orders 86; Customers 42), an activity list with at least five entries, and a “Refresh” action that increments a visible refresh count without changing those metric values. Use Canvas components and layout. At a 1280px web viewport the metrics should sit side by side. At 390px they should form a readable single column. Keep all content and actions reachable without horizontal page scrolling, including at 200% browser zoom.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "prerequisites": {
+        "model": "fresh_expo_scaffold_without_canvas",
+        "dependsOnCase": null,
+        "requirements": [
+          "Independent copy of the same externally generated blank TypeScript Expo scaffold with React Native Web enabled; no Canvas dependency, imports, examples, or instructions.",
+          "Record generator command and exact generator, SDK, React, React Native, React Native Web, Node and package-manager versions, baseline file hash and lockfile hash.",
+          "Evaluator confirms the unmodified scaffold typechecks and exports for web before the run; record failures as infrastructure blocks."
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "dashboard.content",
+          "verification": "web_runtime",
+          "requirement": "All three exact metric labels/values and at least five activity entries appear."
+        },
+        {
+          "id": "dashboard.reflow",
+          "verification": "web_runtime",
+          "requirement": "At 1280px metrics are side by side; at 390px they form a single column with no clipped text or horizontal page scrolling. At 200% browser zoom all content and actions remain reachable."
+        },
+        {
+          "id": "dashboard.action",
+          "verification": "web_runtime",
+          "requirement": "Two Refresh activations produce a count of 2 and leave metric values unchanged; action is keyboard operable."
+        },
+        {
+          "id": "dashboard.build",
+          "verification": "build",
+          "requirement": "The consumer typecheck and production web export succeed."
+        },
+        {
+          "id": "dashboard.native",
+          "verification": "native_runtime",
+          "requirement": "On each available native platform the dashboard is readable, scrollable, and Refresh increments its count without clipped essential content."
+        }
+      ]
+    },
+    {
+      "id": "accessible-dialog",
+      "title": "Accessible dialog",
+      "prompt": "Build a screen in this TypeScript Expo app with an “Edit profile” button that opens a modal dialog titled “Edit profile”, a labeled display-name field initially “Alex”, and Cancel and Save actions. Cancel discards edits; Save updates a visible profile summary. Use Canvas components for web, iOS, and Android. On web, opening must place focus inside the dialog, keyboard focus must remain inside while open, Escape must cancel, and closing must restore focus to the opener. Give the dialog and its controls useful accessible names. Keep background actions unavailable while it is open.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "prerequisites": {
+        "model": "fresh_expo_scaffold_without_canvas",
+        "dependsOnCase": null,
+        "requirements": [
+          "Independent copy of the same externally generated blank TypeScript Expo scaffold with React Native Web enabled; no Canvas dependency, imports, examples, or instructions.",
+          "Record generator command and exact generator, SDK, React, React Native, React Native Web, Node and package-manager versions, baseline file hash and lockfile hash.",
+          "Evaluator confirms the unmodified scaffold typechecks and exports for web before the run; record failures as infrastructure blocks."
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "dialog.semantics",
+          "verification": "web_runtime",
+          "requirement": "Browser accessibility inspection identifies a named modal dialog and a labeled display-name field; background controls cannot be activated while open."
+        },
+        {
+          "id": "dialog.focus",
+          "verification": "web_runtime",
+          "requirement": "Opening focuses inside; Tab and Shift+Tab cycle within; Escape cancels; every close path restores focus to Edit profile."
+        },
+        {
+          "id": "dialog.state",
+          "verification": "web_runtime",
+          "requirement": "Cancel after an edit preserves Alex; Save after entering Sam updates the summary to Sam; reopening reflects the saved value."
+        },
+        {
+          "id": "dialog.build",
+          "verification": "build",
+          "requirement": "The consumer typecheck and production web export succeed."
+        },
+        {
+          "id": "dialog.native",
+          "verification": "native_runtime",
+          "requirement": "On each available native runtime opening, editing, Cancel and Save work and accessible names are inspectable; test Android hardware Back separately when available."
+        }
+      ]
+    },
+    {
+      "id": "optional-peer-fallback",
+      "title": "Missing optional peer fallback",
+      "prompt": "Build a share screen in this TypeScript Expo app for web, iOS, and Android. It should request a Canvas QR display for https://example.com/share and provide a separately labeled “Copy link” action with visible success feedback. Deliberately keep the optional QR rendering dependency react-native-qrcode-svg absent from the entire installed dependency tree. Keep the share screen usable in that state and allow Canvas to display its documented fallback. Do not install the missing dependency, replace Canvas’s QR display with a custom renderer, patch the package, or hide the QR display to avoid the missing-dependency path.\n\nUse Canvas (@nannier/canvas), pinned to the released npm version 4.0.0, for the interface. Official documentation: https://canvas.nannier.com/. Use the npm release in this consumer project; do not use a source checkout, local package links, source aliases, copied package overlays, or modifications to the library. Deliver working TypeScript code and report the commands you ran, their results, and any verification you could not perform.",
+      "prerequisites": {
+        "model": "fresh_expo_scaffold_without_canvas",
+        "dependsOnCase": null,
+        "requirements": [
+          "Independent copy of the same externally generated blank TypeScript Expo scaffold with React Native Web enabled; no Canvas dependency, imports, examples, or instructions.",
+          "Record generator command and exact generator, SDK, React, React Native, React Native Web, Node and package-manager versions, baseline file hash and lockfile hash.",
+          "Evaluator confirms the unmodified scaffold typechecks and exports for web before the run; record failures as infrastructure blocks."
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "optional.absent",
+          "verification": "package",
+          "requirement": "The released package manifest confirms react-native-qrcode-svg is optional; package-manager tree and resolution evidence confirm it is absent throughout the test, including transitive dependencies."
+        },
+        {
+          "id": "optional.mount",
+          "verification": "web_runtime",
+          "requirement": "The actual Canvas QR display is mounted with the requested URL and shows the documented fallback without an uncaught import/render error."
+        },
+        {
+          "id": "optional.action",
+          "verification": "web_runtime",
+          "requirement": "Copy link copies the exact URL and displays success feedback; confirm the clipboard when supported, otherwise mark this observation blocked rather than passed."
+        },
+        {
+          "id": "optional.build",
+          "verification": "build",
+          "requirement": "The consumer typecheck and production web export succeed with the optional peer absent; fallback by removing the import or component fails the criterion."
+        },
+        {
+          "id": "optional.native",
+          "verification": "native_runtime",
+          "requirement": "On each available native platform the absent-peer path mounts without a crash and the remaining Copy link action works."
+        }
+      ]
+    }
+  ]
+}

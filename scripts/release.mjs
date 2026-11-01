@@ -133,10 +133,22 @@ export function prepare(cwd, dir, source, publish) {
       }
       // Freeze versioned workspace metadata and lockfile in the same candidate.
       if (fs.existsSync(path.join(cwd, "bun.lock"))) run(cwd, "bun", ["install", "--lockfile-only", "--ignore-scripts"]);
+      // Freeze the new version's machine reference and consumer scaffold into
+      // the candidate before validation. Old version snapshots stay archived.
+      const generated = [];
+      const scripts = read(path.join(cwd, "package.json")).scripts ?? {};
+      if (scripts["agent-docs:gen"]) {
+        run(cwd, "bun", ["run", "agent-docs:gen"]);
+        generated.push("docs/public/ai", "docs/public/llms.txt", "docs/public/llms-full.txt", "docs/public/agents.md");
+      }
+      if (scripts["consumer:gen"]) {
+        run(cwd, "bun", ["run", "consumer:gen"]);
+        generated.push("consumer/recipes");
+      }
       const stage = before.flatMap((p) => [path.join(p.directory, "package.json"), path.join(p.directory, "CHANGELOG.md")])
         .filter((file) => fs.existsSync(path.join(cwd, file)));
       if (fs.existsSync(path.join(cwd, "bun.lock"))) stage.push("bun.lock");
-      git(cwd, "add", "--", ...stage, ".changeset");
+      git(cwd, "add", "--", ...stage, ...generated, ".changeset");
       git(cwd, "-c", "user.name=github-actions[bot]", "-c", "user.email=41898282+github-actions[bot]@users.noreply.github.com", "commit", "-m", "chore: version validated release [skip ci]");
       git(cwd, "bundle", "create", path.join(dir, "candidate.bundle"), `${source}..HEAD`);
       status = "ready";
@@ -176,13 +188,15 @@ export function seal(cwd, candidateDir, artifactDir) {
     if (pack.name !== pkg.name || pack.version !== pkg.version || path.basename(pack.filename) !== pack.filename) throw new Error("Packed a different package");
     const required = ["LICENSE", "dist/index.js", "dist/index.d.ts", "dist/native/index.js", "package.json",
       "expo-module.config.json", "android/build.gradle", "android/src/main/AndroidManifest.xml"];
+    const metadata = read(path.join(directory, "package.json"));
+    if (metadata.bin?.canvas) required.push("consumer/cli.mjs", "consumer/canvas/SKILL.md", "consumer/recipes/App.tsx", `docs/public/ai/${pkg.version}/catalog.json`);
     if (!required.every((name) => pack.files.some((file) => file.path === name))) throw new Error("Package is missing a required distribution file");
     const unpacked = fs.mkdtempSync(path.join(artifactDir, "unpacked-"));
     try {
       run(cwd, "tar", ["-xzf", path.join(artifactDir, pack.filename), "-C", unpacked]);
       const root = path.join(unpacked, "package");
       run(cwd, "bun", ["scripts/verify-package.ts", root]);
-      for (const child of ["dist", "styles", "android/src/main", "android/build.gradle", "expo-module.config.json"]) {
+      for (const child of ["dist", "styles", "android/src/main", "android/build.gradle", "expo-module.config.json", ...(metadata.bin?.canvas ? ["consumer", "docs/public/ai"] : [])]) {
         run(cwd, "diff", ["-r", path.join(directory, child), path.join(root, child)]);
       }
     } finally { fs.rmSync(unpacked, { recursive: true, force: true }); }

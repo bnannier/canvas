@@ -1,0 +1,1107 @@
+{
+  "recordKind": "diagnostic-pilot-summary",
+  "schemaVersion": 1,
+  "date": "2026-11-01",
+  "suiteId": "canvas-consumer-phase1",
+  "suiteRevision": 1,
+  "baseRevision": "1b51bef68135a9426fed9ef7e0dc3fa3dcb274bb",
+  "scope": "Five fixed tasks per client; one completed pilot per task. This compact troubleshooting record is not the formal result-template schema or a controlled model comparison.",
+  "environment": {
+    "os": "macOS 27.0.1",
+    "architecture": "arm64",
+    "node": "26.10.0",
+    "npm": "11.19.1",
+    "codexCli": "0.166.0",
+    "claudeCode": "2.1.310",
+    "browser": "Playwright Chromium",
+    "viewportCssPixels": [
+      [
+        1280,
+        900
+      ],
+      [
+        390,
+        900
+      ]
+    ],
+    "browserZoom": "100%; 200% not tested",
+    "generatedAppNativeRuntime": "not_run"
+  },
+  "budget": {
+    "wallClockMinutesPerRun": 20,
+    "maximumCorrections": 0
+  },
+  "configuration": {
+    "codex": "exec --ignore-user-config --ephemeral --sandbox workspace-write --skip-git-repo-check --model gpt-6.1-sol; medium reasoning; project_doc_max_bytes=0; bundled skills, plugins, apps and memories disabled; sandbox network enabled. Personal skill directories disabled initially; file and realpath disables added for dialog/optional. Isolation remains unproven.",
+    "claude": "print mode; --setting-sources empty; --strict-mcp-config; --disable-slash-commands; no session persistence; user CLAUDE.md/rules excluded; autoMemoryEnabled=false; model sonnet; effort medium; acceptEdits with Bash/Edit/Read/Write/Glob/Grep/WebFetch/WebSearch; sandbox enabled with registry.npmjs.org, canvas.nannier.com, docs.expo.dev and expo.dev allowed.",
+    "verification": "Independent parent verification outside nested agent sandbox. It does not edit generated applications. Typecheck: node node_modules/typescript/bin/tsc --noEmit. Web export: node node_modules/expo/bin/cli export --platform web --max-workers 2 --output-dir <temporary output>, EXPO_OFFLINE=1. Chromium serves that production export through request routing, with no screenshots, video or traces."
+  },
+  "scaffold": {
+    "generator": {
+      "version": "5.0.0",
+      "command": "npm exec --cache /private/tmp/canvas-agent-npm-cache --yes --package create-expo-app@5.0.0 -- create-expo-app /private/tmp/canvas-agent-scaffold --template expo-template-blank-typescript@57.0.33 --no-install --yes",
+      "template": "expo-template-blank-typescript@57.0.33",
+      "templateTagEvidence": "npm view expo-template-blank-typescript dist-tags --json returned sdk-57=57.0.33; exact template metadata declares Expo~57.0.31/RN0.86.3/React19.2.3",
+      "discardedProvisioning": "Unqualified blank-typescript initially generated SDK58 despite generator SDK57 message; removed that entire temporary workspace and regenerated exact SDK57, without manually downgrading."
+    },
+    "dependencies": {
+      "expo": "57.0.31",
+      "expo-status-bar": "57.0.1",
+      "react": "19.2.3",
+      "react-dom": "19.2.3",
+      "react-native": "0.86.3",
+      "react-native-web": "0.21.4"
+    },
+    "devDependencies": {
+      "@types/react": "19.2.18",
+      "typescript": "6.0.3"
+    },
+    "sourceManifestSha256": "67aac97bbe9b0f64c15d3b7d36ac8c4e89587f75a81a74e524dae46693c3bd51",
+    "seedArchiveSha256": "ddac51f9d2876996d8ad347743ba34c3f9efd6e04377914fe37ce310250c0399",
+    "lockfileSha256": "7d8c239d4560b4c5181531a848ef081ead3ef39eaa175deb81f89f77934cf900",
+    "verification": "Unmodified fixture and independent copies typechecked and exported before valid runs. Install tasks started empty; other tasks used independent copies without Canvas. No licensed starter source supplied."
+  },
+  "packageAudit": {
+    "name": "@nannier/canvas",
+    "version": "4.0.0",
+    "filesPerInstalledPackage": 4083,
+    "identicalInstalledTreeDigest": "7727ceee84f03b72c7a9d2d0397c7721abe05a51a7fb694658f01f43f1886b05",
+    "digestScope": "Canonical file-path plus content hashes compared across ten installed packages, not an independently re-downloaded tarball digest.",
+    "observations": [
+      "All manifests, installed versions and npm lock tarball/integrity entries agree.",
+      "No Canvas symlinks, .origin, local package overlays, consumer patches or source aliases found.",
+      "No @ts-ignore, @ts-nocheck, explicit any, as any, skipLibCheck or paths/resolver overrides found in pruned consumer source/config review.",
+      "Both optional cases have zero react-native-qrcode-svg entries in locks and whole installed trees; module resolution fails MODULE_NOT_FOUND. Published manifest declares that peer optional.",
+      "Both optional apps mount real Canvas QRCode with https://example.com/share; independent browser checks confirm fallback and clipboard action."
+    ]
+  },
+  "limitations": [
+    "This is a diagnostic batch, not a controlled clean baseline. Personal skills were read in two completed Codex runs.",
+    "Client sandbox/network policies differed, including infrastructure failures during pilot setup.",
+    "Install tasks selected different Expo SDKs. The other eight completed tasks used the same verified blank SDK 57 scaffold.",
+    "Only Chromium was used for generated applications. The separate starter browser/native results do not transfer to generated applications.",
+    "Generated app iOS/Android runtime, dashboard 200% browser zoom and full visual clipping inspection were not run.",
+    "No overall success rate, model ranking or causal skill-effect claim is made. Raw transcripts and generated consumers remain temporary, outside Git."
+  ],
+  "invalidatedOrBlockedRuns": [
+    {
+      "runId": "claude",
+      "caseId": "install-expo-rnw",
+      "classification": "infrastructure_blocked",
+      "reason": "Nested sandbox denied npm registry access; no application. Separate fresh claude-registry run used scoped domain allowance."
+    },
+    {
+      "runId": "codex-settings",
+      "caseId": "settings-form",
+      "classification": "invalid_fixture",
+      "reason": "Fixture copy mistakenly excluded nested dependency dist directories; stopped and discarded."
+    },
+    {
+      "runId": "claude-settings",
+      "caseId": "settings-form",
+      "classification": "invalid_fixture",
+      "reason": "Same broken fixture copy; stopped and discarded."
+    },
+    {
+      "runId": "codex-settings-valid",
+      "caseId": "settings-form",
+      "classification": "stopped_context_contamination",
+      "reason": "Personal solid-ui skill loaded; stopped. Later codex-settings-clean also loaded it and is explicitly retained only as a personalized diagnostic pilot."
+    }
+  ],
+  "observedSelfCorrections": [
+    {
+      "runId": "codex-dashboard",
+      "error": "Icon name prop rejected by TypeScript",
+      "repair": "Used boolean icon props."
+    },
+    {
+      "runId": "codex-dialog",
+      "error": "useTheme().colors rejected by TypeScript",
+      "repair": "Used tokens."
+    },
+    {
+      "runId": "codex-optional",
+      "error": "Typography selectable rejected by TypeScript",
+      "repair": "Used Canvas Text selectable."
+    },
+    {
+      "runId": "claude-optional",
+      "error": "Typography selectable rejected by TypeScript",
+      "repair": "Removed unsupported prop."
+    },
+    {
+      "runId": "multiple Codex pilots",
+      "error": "TS2882 side-effect CSS import declaration missing",
+      "repair": "Added ambient CSS import declarations; no Canvas type errors suppressed."
+    }
+  ],
+  "documentationFinding": {
+    "url": "https://canvas.nannier.com/",
+    "cachedRetrievalVersion": "3.12.1",
+    "directFetchVersion": "4.0.0",
+    "directFetchDate": "2026-11-01",
+    "directHtmlSha256": "6b3f16751b73fdd5ac8e68571596a1629a6499815e41a7b2538435129022624b",
+    "interpretation": "Stale retrieved content, not proof of an old live deployment."
+  },
+  "verificationScriptSha256": "3bb5060a0da8b1c87e9758c7c6b9a46275c2f2cdf04c920897c053296a1a3c41",
+  "supplementScriptSha256": "759fe86ebb5e8e2d114d9b9e65b019adafa6e025d9aff51db4fe9d6694f570d2",
+  "runs": [
+    {
+      "runId": "codex",
+      "caseId": "install-expo-rnw",
+      "client": "codex",
+      "requestedModel": "gpt-6.1-sol",
+      "resolvedModel": null,
+      "resolvedModelNote": "CLI requested model recorded; separate resolved model identifier was not exposed.",
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T18:43:33.955Z",
+      "finishedAt": "2026-11-01T18:48:08.969Z",
+      "wallClockSeconds": 275,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "6eb2e6dbae562b9c87cfd0187dd4edea0bcc8477e4f33f0fed18c47226062a62",
+      "promptUtf8Bytes": 799,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": null,
+      "configurationMetadataSha256": "d64e15f4508ee2233c4d4f164af6a0edf007e951b3a0eb1af59a641f2daa458a",
+      "transcriptSha256": "b87281d6cb5434afc332835b1cbfa7afbdc7a9b7335df6509fd08ee206d176e0",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "f219d0b58acf787b614f516a52ad99ff54eb853135a919cf0a65ed05a2c7fe43",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "7cd8b5e8f4977fa23df499d04fc99280a2364676c2f89f6cdb8d33d6dfa1e846"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "codex",
+        "task": "install-expo-rnw",
+        "checkedAt": "2026-11-01T19:06:57.159Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Counter advanced 0→1 with pointer and 1→2 with Enter",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Counter advanced 0→1 with pointer and 1→2 with Enter",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI turn.completed usage",
+        "inputTokens": 2182821,
+        "outputTokens": 9759,
+        "cachedInputTokens": 2098944,
+        "cacheCreationInputTokens": null,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "claude-registry",
+      "caseId": "install-expo-rnw",
+      "client": "claude",
+      "requestedModel": "sonnet",
+      "resolvedModel": "claude-sonnet-5-5",
+      "resolvedModelNote": null,
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T18:45:30.094Z",
+      "finishedAt": "2026-11-01T18:48:01.526Z",
+      "wallClockSeconds": 151,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "6eb2e6dbae562b9c87cfd0187dd4edea0bcc8477e4f33f0fed18c47226062a62",
+      "promptUtf8Bytes": 799,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": null,
+      "configurationMetadataSha256": "ace729db0701956decdb62bba8c09847126991eed4f68b621068a34fb439f6bd",
+      "transcriptSha256": "f3103ada3a075821c49905c55b3e3fc8b60824842ba0dd430145a0bbd2551bd2",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "690cc8ed50467772dde6840ebdae3421b1e82c8e86063565aeb7217ae1862c16",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "58.0.22",
+        "react": "19.3.0",
+        "react-native": "0.88.1",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "d201dd4eb1c095008287e5e8347d5dc10aa910628ecdfb47b735f64b86947baa"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "claude-registry",
+        "task": "install-expo-rnw",
+        "checkedAt": "2026-11-01T19:06:59.555Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Counter advanced 0→1 with pointer and 1→2 with Enter",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Counter advanced 0→1 with pointer and 1→2 with Enter",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI result usage",
+        "inputTokens": 46,
+        "outputTokens": 9886,
+        "cachedInputTokens": 806401,
+        "cacheCreationInputTokens": 25708,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "codex-settings-clean",
+      "caseId": "settings-form",
+      "client": "codex",
+      "requestedModel": "gpt-6.1-sol",
+      "resolvedModel": null,
+      "resolvedModelNote": "CLI requested model recorded; separate resolved model identifier was not exposed.",
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T18:54:36.757Z",
+      "finishedAt": "2026-11-01T18:57:16.082Z",
+      "wallClockSeconds": 159,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "5d1e8fc3d84c29de25eda54b74bf88256f30ab9d2dd2cf2e371ef9bd7132f101",
+      "promptUtf8Bytes": 975,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": "solid-ui",
+      "configurationMetadataSha256": "996b9bf5f46f1ede7f5da212bf6b09e12976301735331ac3155f31723364b658",
+      "transcriptSha256": "697f4db6aa4154f6d3ed11b969355df6cb3ff19e7bf0885856e334f78eeb7e79",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "3c91829eabb56db99215a6bde2b0547eb82d75dc73773a252294333f9d30e31a",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "dc71126aceb5f28b341e5e838fba57f11841fe5f364f2f95ab8ef0adcce716ff"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "codex-settings-clean",
+        "task": "settings-form",
+        "checkedAt": "2026-11-01T18:57:31.513Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Editable controls, pointer/keyboard notification toggle, field invalid states, valid save and draft/saved separation",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Editable controls, pointer/keyboard notification toggle, field invalid states, valid save and draft/saved separation",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI turn.completed usage",
+        "inputTokens": 761123,
+        "outputTokens": 8208,
+        "cachedInputTokens": 672768,
+        "cacheCreationInputTokens": null,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "claude-settings-valid",
+      "caseId": "settings-form",
+      "client": "claude",
+      "requestedModel": "sonnet",
+      "resolvedModel": "claude-sonnet-5-5",
+      "resolvedModelNote": null,
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T18:53:19.100Z",
+      "finishedAt": "2026-11-01T18:54:27.337Z",
+      "wallClockSeconds": 68,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "5d1e8fc3d84c29de25eda54b74bf88256f30ab9d2dd2cf2e371ef9bd7132f101",
+      "promptUtf8Bytes": 975,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": null,
+      "configurationMetadataSha256": "24005ba5d1b235ccd41ad75d3b89d0962ec126bf4dac6d2c41774cee5a5916f2",
+      "transcriptSha256": "d039e7ea7821e120c9dcbe481c19eb4fb696008b29ecc2c9069481fbedfc87bb",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "710a58dca26ab37f72810d7066fd33dac128a0d31ababeaff33339e8a1f71f2c",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "53d95325df2c0a545265bf0f601ab8073f764b6e785e76d49efcb01c67422d3d"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "claude-settings-valid",
+        "task": "settings-form",
+        "checkedAt": "2026-11-01T18:56:44.176Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Editable controls, pointer/keyboard notification toggle, field invalid states, valid save and draft/saved separation",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Editable controls, pointer/keyboard notification toggle, field invalid states, valid save and draft/saved separation",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI result usage",
+        "inputTokens": 34,
+        "outputTokens": 6583,
+        "cachedInputTokens": 351655,
+        "cacheCreationInputTokens": 23738,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "codex-dashboard",
+      "caseId": "responsive-dashboard",
+      "client": "codex",
+      "requestedModel": "gpt-6.1-sol",
+      "resolvedModel": null,
+      "resolvedModelNote": "CLI requested model recorded; separate resolved model identifier was not exposed.",
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T18:57:32.499Z",
+      "finishedAt": "2026-11-01T19:00:31.529Z",
+      "wallClockSeconds": 179,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "a7feda4b0e1a718b1c18ad04331545b8eccd7cca1a08d019a4fd416accea83e8",
+      "promptUtf8Bytes": 1004,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": "solid-ui",
+      "configurationMetadataSha256": "3d846bba0dbb9dfce5657680ab60fc9eee764f73b7616007a4a9924c79b748b7",
+      "transcriptSha256": "71d044ce02619fc8d247dbf7cbd354af1cc883acdb15efc4d78e5a238d2ab6b4",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "68e573313fcf284d2fbf4db78fd002939cb5f1c2b3af22b3a226dfbd662422e6",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "079b66baf6ad317e1cbc990cf1eb22340271f74b6bcf292fa0319eac9e8e7a37"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "codex-dashboard",
+        "task": "responsive-dashboard",
+        "checkedAt": "2026-11-01T19:00:53.542Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Metric arrangement, fixed values after refresh; refresh count/activity/200% browser zoom still require independent review",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Metric arrangement, fixed values after refresh; refresh count/activity/200% browser zoom still require independent review",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Refresh pointer then Enter produces 2; metrics unchanged; 5 distinct activity entries scroll into viewport"
+            ],
+            "notRun": [
+              "200% browser zoom",
+              "manual visual inspection of all text clipping"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Refresh pointer then Enter produces 2; metrics unchanged; 5 distinct activity entries scroll into viewport"
+            ],
+            "notRun": [
+              "200% browser zoom",
+              "manual visual inspection of all text clipping"
+            ]
+          }
+        ],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI turn.completed usage",
+        "inputTokens": 672262,
+        "outputTokens": 6209,
+        "cachedInputTokens": 623744,
+        "cacheCreationInputTokens": null,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "claude-dashboard",
+      "caseId": "responsive-dashboard",
+      "client": "claude",
+      "requestedModel": "sonnet",
+      "resolvedModel": "claude-sonnet-5-5",
+      "resolvedModelNote": null,
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T18:55:30.290Z",
+      "finishedAt": "2026-11-01T18:56:50.319Z",
+      "wallClockSeconds": 80,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "a7feda4b0e1a718b1c18ad04331545b8eccd7cca1a08d019a4fd416accea83e8",
+      "promptUtf8Bytes": 1004,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": null,
+      "configurationMetadataSha256": "4040b97edf3851dee30d14a443ddc4dd78a2ffeb7a31f764ca7ab999af0294fc",
+      "transcriptSha256": "8f2dbfbf79e24edc695803415f011e5ba8058b53a186f60761c262f9ccab03f6",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "366f73b54fb745a99687f5845b21d3022b35aca91657af9bfef73edb8c7f9b1a",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "ca0d1861ac7a8045360446a6e39eb079a29ad1d51bcce651434ec1fcecdbfd1a"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "claude-dashboard",
+        "task": "responsive-dashboard",
+        "checkedAt": "2026-11-01T18:57:13.451Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Metric arrangement, fixed values after refresh; refresh count/activity/200% browser zoom still require independent review",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Metric arrangement, fixed values after refresh; refresh count/activity/200% browser zoom still require independent review",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Refresh pointer then Enter produces 2; metrics unchanged; 5 distinct activity entries scroll into viewport"
+            ],
+            "notRun": [
+              "200% browser zoom",
+              "manual visual inspection of all text clipping"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Refresh pointer then Enter produces 2; metrics unchanged; 5 distinct activity entries scroll into viewport"
+            ],
+            "notRun": [
+              "200% browser zoom",
+              "manual visual inspection of all text clipping"
+            ]
+          }
+        ],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI result usage",
+        "inputTokens": 40,
+        "outputTokens": 7456,
+        "cachedInputTokens": 541435,
+        "cacheCreationInputTokens": 36065,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "codex-dialog",
+      "caseId": "accessible-dialog",
+      "client": "codex",
+      "requestedModel": "gpt-6.1-sol",
+      "resolvedModel": null,
+      "resolvedModelNote": "CLI requested model recorded; separate resolved model identifier was not exposed.",
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T19:00:34.888Z",
+      "finishedAt": "2026-11-01T19:09:02.139Z",
+      "wallClockSeconds": 507,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "1f2445a687a2a2adda40848de98dc224af1186655af8917ea13f717a8b0799be",
+      "promptUtf8Bytes": 1037,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": null,
+      "configurationMetadataSha256": "3a309531c90c0e7c987ac3e57ecbe290a52d04f8424e9814894d352331bfceda",
+      "transcriptSha256": "999d5cecb1c86d952d66a7e44cae961e9ad8c1c3e2bf7da3cba501254030bb30",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "b116ca093cc583cbebf8c7bbd4aba41f6e0744a640548d41eec411770a8a0639",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "661d5e13c555667840d2b2ac4bc636fab59b84e7afa403cea7d5bab8d318eb0f"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "codex-dialog",
+        "task": "accessible-dialog",
+        "checkedAt": "2026-11-01T19:09:13.860Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "fail",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "fail",
+            "observations": [],
+            "error": "expect(locator).toBeFocused() failed\n\nLocator:  getByRole('button', { name: 'Edit profile', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toBeFocused\" getByRole('button', { name: 'Edit profile', exact: true }) with timeout 5000ms\n  - waiting for getByRole('button', { name: 'Edit profile', exact: true })\n    14 × locator resolved to <button tabindex=\"0\" role=\"button\" type=\"button\" aria-expanded=\"false\" aria-haspopup=\"dialog\" class=\"css-g5y9jx r-1loqt21 r-1otgn73\">…</button>\n       - unexpected value \"inactive\"\n",
+            "snapshot": "ACCOUNT\nYour profile\nA little about you, in your own words.\nProfile summary\nDisplay name\nAlex\nEdit profile"
+          },
+          {
+            "width": 390,
+            "status": "fail",
+            "observations": [],
+            "error": "expect(locator).toBeFocused() failed\n\nLocator:  getByRole('button', { name: 'Edit profile', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toBeFocused\" getByRole('button', { name: 'Edit profile', exact: true }) with timeout 5000ms\n  - waiting for getByRole('button', { name: 'Edit profile', exact: true })\n    14 × locator resolved to <button tabindex=\"0\" role=\"button\" type=\"button\" aria-expanded=\"false\" aria-haspopup=\"dialog\" class=\"css-g5y9jx r-1loqt21 r-1otgn73\">…</button>\n       - unexpected value \"inactive\"\n",
+            "snapshot": "ACCOUNT\nYour profile\nA little about you, in your own words.\nProfile summary\nDisplay name\nAlex\nEdit profile"
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [
+          {
+            "width": 1280,
+            "status": "fail",
+            "observations": [],
+            "error": "expect(locator).toBeFocused() failed\n\nLocator:  getByRole('button', { name: 'Edit profile', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toBeFocused\" getByRole('button', { name: 'Edit profile', exact: true }) with timeout 5000ms\n  - waiting for getByRole('button', { name: 'Edit profile', exact: true })\n    14 × locator resolved to <button tabindex=\"0\" role=\"button\" type=\"button\" aria-expanded=\"false\" aria-haspopup=\"dialog\" class=\"css-g5y9jx r-1loqt21 r-1otgn73\">…</button>\n       - unexpected value \"inactive\"\n"
+          },
+          {
+            "width": 390,
+            "status": "fail",
+            "observations": [],
+            "error": "expect(locator).toBeFocused() failed\n\nLocator:  getByRole('button', { name: 'Edit profile', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toBeFocused\" getByRole('button', { name: 'Edit profile', exact: true }) with timeout 5000ms\n  - waiting for getByRole('button', { name: 'Edit profile', exact: true })\n    14 × locator resolved to <button tabindex=\"0\" role=\"button\" type=\"button\" aria-expanded=\"false\" aria-haspopup=\"dialog\" class=\"css-g5y9jx r-1loqt21 r-1otgn73\">…</button>\n       - unexpected value \"inactive\"\n"
+          }
+        ],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI turn.completed usage",
+        "inputTokens": 1101466,
+        "outputTokens": 7154,
+        "cachedInputTokens": 1041280,
+        "cacheCreationInputTokens": null,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "claude-dialog",
+      "caseId": "accessible-dialog",
+      "client": "claude",
+      "requestedModel": "sonnet",
+      "resolvedModel": "claude-sonnet-5-5",
+      "resolvedModelNote": null,
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T18:57:14.609Z",
+      "finishedAt": "2026-11-01T18:58:53.464Z",
+      "wallClockSeconds": 99,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "1f2445a687a2a2adda40848de98dc224af1186655af8917ea13f717a8b0799be",
+      "promptUtf8Bytes": 1037,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": null,
+      "configurationMetadataSha256": "de45e4a180827df271943b0c7bdb450420859537fc616f6451e579833d59d3ca",
+      "transcriptSha256": "ce41c2f35173964be73850e7fcb8eb06f62bce73143ce3c619f952af6df21ff0",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "710a58dca26ab37f72810d7066fd33dac128a0d31ababeaff33339e8a1f71f2c",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "6a6fdc467b4102934ae12c8183d200765061dc97fd5dee45ca5b1bc8ae0b4893"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "claude-dialog",
+        "task": "accessible-dialog",
+        "checkedAt": "2026-11-01T19:01:28.228Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "Named dialog, initial focus, forward/reverse focus trap, Escape discards, Save persists, focus returns",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "Named dialog, initial focus, forward/reverse focus trap, Escape discards, Save persists, focus returns",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "aria-modal=true; background opener pointer blocked; Cancel discards and restores focus; reopening after Save reflects Sam"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "aria-modal=true; background opener pointer blocked; Cancel discards and restores focus; reopening after Save reflects Sam"
+            ]
+          }
+        ],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI result usage",
+        "inputTokens": 46,
+        "outputTokens": 9170,
+        "cachedInputTokens": 739947,
+        "cacheCreationInputTokens": 39316,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "codex-optional",
+      "caseId": "optional-peer-fallback",
+      "client": "codex",
+      "requestedModel": "gpt-6.1-sol",
+      "resolvedModel": null,
+      "resolvedModelNote": "CLI requested model recorded; separate resolved model identifier was not exposed.",
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T19:00:53.622Z",
+      "finishedAt": "2026-11-01T19:03:42.633Z",
+      "wallClockSeconds": 169,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "99e9fd9d5b932b1a393c2e391e0ee4aaa540f0a7aed39e28f77038ce65ed6caa",
+      "promptUtf8Bytes": 1068,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": null,
+      "configurationMetadataSha256": "57f7f34a67ba51e82e2ad41288f8dc747f50e0127f74e1b8a992eb97a27d5080",
+      "transcriptSha256": "8818e5d4a3e66877948121581b462ff259779df4447c6ae4501137a0d89aa00c",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "e85cc9d164b7870e5db362539d0c1227aa5097df3c9b2701482c193fde73a476",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "3fff9a8032899ee8d5c3d9846cd504c56f0cdbbec02394e1ab4f7418fc09b75e"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "codex-optional",
+        "task": "optional-peer-fallback",
+        "checkedAt": "2026-11-01T19:04:08.799Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "QR peer cannot resolve, accessible image fallback mounted, Copy link writes exact URL to clipboard with visible success feedback",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "QR peer cannot resolve, accessible image fallback mounted, Copy link writes exact URL to clipboard with visible success feedback",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI turn.completed usage",
+        "inputTokens": 1114048,
+        "outputTokens": 8066,
+        "cachedInputTokens": 1060480,
+        "cacheCreationInputTokens": null,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    },
+    {
+      "runId": "claude-optional",
+      "caseId": "optional-peer-fallback",
+      "client": "claude",
+      "requestedModel": "sonnet",
+      "resolvedModel": "claude-sonnet-5-5",
+      "resolvedModelNote": null,
+      "reasoningEffort": "medium",
+      "startedAt": "2026-11-01T18:59:50.816Z",
+      "finishedAt": "2026-11-01T19:01:23.016Z",
+      "wallClockSeconds": 92,
+      "exitCode": 0,
+      "timedOut": false,
+      "correctionMessages": 0,
+      "promptSha256": "99e9fd9d5b932b1a393c2e391e0ee4aaa540f0a7aed39e28f77038ce65ed6caa",
+      "promptUtf8Bytes": 1068,
+      "instructionIsolationVerified": false,
+      "personalSkillReadObserved": null,
+      "configurationMetadataSha256": "17d57ddc5dcb0d5b66283096a68f1a99906027ce9311a41175424ea5b4b6f415",
+      "transcriptSha256": "dca95fc201ea285ece6360ef102745cdbb1a64e6ceb17ccc7ccdbc8518e87110",
+      "package": {
+        "manifestVersion": "4.0.0",
+        "installedVersion": "4.0.0",
+        "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.0.0.tgz",
+        "integrity": "sha512-Q1DuTEBMn4WbxrKcvHjnZeW23ZUJ9EjQxlPqhWXcOuC8nJt+LiPYKSyyx9NQgs4uBozzPJVva42U+M395uvkNQ==",
+        "lockfileSha256": "aac0da6e3f535e08bf259da2f04670a7246bc8f4a7bcb47838d50d453c35afb3",
+        "sourceSubstitutionsAbsent": true
+      },
+      "dependencies": {
+        "expo": "57.0.31",
+        "react": "19.2.3",
+        "react-native": "0.86.3",
+        "react-native-web": "0.21.4",
+        "typescript": "6.0.3"
+      },
+      "sourceEvidence": [
+        {
+          "file": "App.tsx",
+          "sha256": "25f92d07908b7c30f66e7cfbcfb52d6d6f0e5fb895ba66d0d26a5909887a6e6a"
+        },
+        {
+          "file": "src/ShareScreen.tsx",
+          "sha256": "b197cc2ee18ab754638888ae150505bf68be236d5d2db284cfff4dd532120966"
+        },
+        {
+          "file": "tsconfig.json",
+          "sha256": "712583ff9cdb4b4e4f9b000a4a56d68db8dc1921cbfbc36d490a3a9f2be3dd72"
+        }
+      ],
+      "verification": {
+        "label": "claude-optional",
+        "task": "optional-peer-fallback",
+        "checkedAt": "2026-11-01T19:01:41.395Z",
+        "typecheck": "pass",
+        "webBuild": "pass",
+        "runtime": "pass",
+        "checks": [
+          {
+            "width": 1280,
+            "status": "pass",
+            "observations": [
+              "QR peer cannot resolve, accessible image fallback mounted, Copy link writes exact URL to clipboard with visible success feedback",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          },
+          {
+            "width": 390,
+            "status": "pass",
+            "observations": [
+              "QR peer cannot resolve, accessible image fallback mounted, Copy link writes exact URL to clipboard with visible success feedback",
+              "No uncaught browser errors or horizontal page overflow"
+            ]
+          }
+        ],
+        "errors": [],
+        "iosRuntime": "not_run",
+        "androidRuntime": "not_run",
+        "supplementalChecks": [],
+        "formalWebOutcome": "not_scored",
+        "formalUniversalOutcome": "not_run",
+        "note": "Observed checks only; no complete-criteria or clean-baseline claim."
+      },
+      "usage": {
+        "source": "CLI result usage",
+        "inputTokens": 42,
+        "outputTokens": 6971,
+        "cachedInputTokens": 441412,
+        "cacheCreationInputTokens": 24861,
+        "cost": null,
+        "note": "Client accounting differs. These counts are not normalized across providers; no monetary charge inferred."
+      }
+    }
+  ]
+}

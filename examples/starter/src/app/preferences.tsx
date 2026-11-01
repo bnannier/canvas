@@ -1,4 +1,4 @@
-import { Alert, Card, Column, Form, FormSection, Grid, Listbox, Switch, Typography } from "@nannier-com/canvas";
+import { Alert, Card, Column, Form, FormSection, Grid, Listbox, Switch, Typography } from "@nannier/canvas";
 import { Screen } from "../app-frame/screen";
 import { APPEARANCES, APPEARANCE_VALUES, useSession } from "../state/session";
 

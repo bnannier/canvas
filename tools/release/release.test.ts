@@ -90,6 +90,26 @@ function advance(f: ReturnType<typeof fixture>) {
 }
 
 describe("frozen release transaction", () => {
+  test("freezes generated consumer docs after the candidate version changes", () => {
+    const f = fixture("patch");
+    const metadata = JSON.parse(fs.readFileSync(path.join(f.repo, "package.json"), "utf8"));
+    metadata.scripts["agent-docs:gen"] = "node generate-agent-docs.cjs";
+    metadata.scripts["consumer:gen"] = "node generate-consumer.cjs";
+    write(path.join(f.repo, "package.json"), metadata);
+    fs.writeFileSync(path.join(f.repo, "generate-agent-docs.cjs"), `const fs=require('node:fs');const v=require('./package.json').version;fs.mkdirSync('docs/public/ai/'+v,{recursive:true});fs.writeFileSync('docs/public/ai/'+v+'/catalog.json',JSON.stringify({version:v}));for(const f of ['llms.txt','llms-full.txt','agents.md'])fs.writeFileSync('docs/public/'+f,v);`);
+    fs.writeFileSync(path.join(f.repo, "generate-consumer.cjs"), `const fs=require('node:fs');fs.mkdirSync('consumer/recipes',{recursive:true});fs.writeFileSync('consumer/recipes/README.md','Prepared scaffold');`);
+    git(f.repo, "add", ".");
+    git(f.repo, "commit", "-m", "add generators");
+    f.source = git(f.repo, "rev-parse", "HEAD");
+    const candidate = prepare(f.repo, f.candidateDir, f.source, true);
+    expect(candidate.version).toBe("2.3.5");
+    expect(JSON.parse(git(f.repo, "show", "HEAD:docs/public/ai/2.3.5/catalog.json")).version).toBe("2.3.5");
+    expect(git(f.repo, "show", "HEAD:docs/public/llms.txt")).toBe("2.3.5");
+    expect(git(f.repo, "show", "HEAD:docs/public/agents.md")).toBe("2.3.5");
+    expect(git(f.repo, "show", "HEAD:consumer/recipes/README.md")).toBe("Prepared scaffold");
+    expect(git(f.repo, "status", "--porcelain", "--untracked-files=no")).toBe("");
+  }, 30_000);
+
   test("versions and tags the one Canvas package", () => {
     const f = fixture("minor");
     const c = prepare(f.repo, f.candidateDir, f.source, true);

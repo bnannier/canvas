@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Column, OverlayProvider, ScrollView, View } from "@nannier-com/canvas";
+import { Column, OverlayProvider, ScrollView, View } from "@nannier/canvas";
 
 // App-frame scaffolding owns the scroll viewport and readable page measure.
 // Page content uses Canvas layout props for all spacing and arrangement.

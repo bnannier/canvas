@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Button, Column, Typography } from "@nannier-com/canvas";
+import { Button, Column, Typography } from "@nannier/canvas";
 import { Screen } from "../app-frame/screen";
 
 export default function NotFoundScreen() {

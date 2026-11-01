@@ -12,15 +12,49 @@ Write your screen once and it runs everywhere. Canvas is built from React Native
 
 ## Install
 
-```bash
-npm install @nannier/canvas
-```
-
-Canvas ships compiled (no build step in your app) and declares three **required** peer dependencies you install alongside it:
+Install Canvas into an existing Expo, React Native, or React Native Web application.
+For an Expo app, let Expo select the SVG version compatible with its SDK:
 
 ```bash
-npm install react react-native react-native-svg
+npx expo install @nannier/canvas react-native-svg
 ```
+
+Keep the React and React Native versions supplied by your Expo SDK. For web support,
+also install Expo's web dependencies if the app does not already have them:
+
+```bash
+npx expo install react-dom react-native-web
+```
+
+In an existing bare React Native or React Native Web app:
+
+```bash
+npm install @nannier/canvas react-native-svg
+```
+
+Canvas ships compiled (no Canvas build step in your app). Its **required** peer
+dependencies are React 18 or later, React Native 0.74 or later, and
+react-native-svg 15.8.0 or later. Use a React version compatible with your React
+Native version. Web applications also need React DOM, React Native Web, and their
+bundler's RNW configuration; see [Platforms](#platforms).
+
+### Package and documentation versions
+
+The published package is `@nannier/canvas`; use that name for both installation
+and imports. The [Expo starter](./examples/starter/README.md) pins a released
+version in its own manifest and lockfile. Check the registry and your installed
+version when following an example:
+
+```bash
+npm view @nannier/canvas version
+npm ls @nannier/canvas
+```
+
+The repository's documentation describes its current source revision. A design
+preview label or a change on `main` does not establish what npm has published.
+For an installed release, its package declarations and changelog describe the
+available API. The compiled npm package is MIT-licensed; the repository and
+starter have separate [source terms](#license).
 
 ### Optional peers
 
@@ -179,15 +213,64 @@ in consumer apps. Public declarations and the web ESM build remain in `dist/`.
 Native consumer for both platforms with all optional peers omitted. CI also runs
 this check on the exact sealed tarball before it can be published.
 
+## Consumer tools and AI guidance
+
+Canvas's consumer tools ship in the same npm package as the kit. They provide
+local API lookup, setup diagnostics, project-local skills and three Expo recipes.
+These commands require a distribution containing `consumer/cli.mjs`; to preview
+the current source implementation, run `node consumer/cli.mjs --help` here.
+
+In a project with that Canvas release installed:
+
+```sh
+npx --no-install canvas docs --list
+npx --no-install canvas docs button
+npx --no-install canvas docs dialog --json
+npx --no-install canvas doctor --json
+npx --no-install canvas skills install --client both
+```
+
+The skill installer writes `.agents/skills/canvas` for Codex and
+`.claude/skills/canvas` for Claude Code. Choose `--client codex` or `--client claude`
+for one client. It preserves an identical installation and refuses to overwrite
+different files. It does not change global instructions or select Canvas over a
+library the user explicitly chose.
+
+Create a new app from the settings, dashboard or booking recipe:
+
+```sh
+npx @nannier/canvas init --recipe booking --dir ./my-app
+cd my-app
+bun install
+bun run web
+```
+
+The scaffold pins Canvas to the CLI's version. It includes all three screens,
+working local interactions, typechecking and native build commands. It uses
+session state; saving settings and confirming a booking do not contact a backend.
+The CLI does not install dependencies, contact a server or collect telemetry.
+
+The [agent entry guide](./docs/public/agents.md) explains version matching.
+`llms.txt` links versioned Markdown and a typed component catalog under
+`/ai/<version>/`. Those are source snapshots with content manifests, not proof
+that an API is present in a published release; installed declarations remain the
+authority. Local lookup uses the installed package version and refuses to replace
+it with a different version's reference. `llms.txt` helps discovery but does not
+guarantee that a model will select Canvas.
+
+Recipe and skill files obtained through the npm distribution carry its included
+MIT license. The CLI preserves that notice when copying them. The repository and
+its source examples retain their existing source terms.
+
 ## Theming
 
 `ThemeProvider` reads the OS color scheme by default and exposes the resolved tokens to every Canvas component through the `useTheme` hook. Optional props control it:
 
 - `dark` / `light` (booleans): the scheme axis, spelled like every other Canvas axis (`dark` wins if both are passed). Omit both to follow the OS appearance. The legacy `scheme` value prop (`"light" | "dark"`) stays supported for code that already holds a scheme value.
-- `mint` (boolean): the palette axis. Omit it for Dark Factory's blush palette, the light default; pass it for Dark Factory's mint. Dark Factory has one dark palette, so `dark` wins over `mint`. `ssrPalette` holds a server-rendered palette through hydration the way `ssrScheme` holds the scheme, and on the web `setPalette("mint")` / `getPalette()` switch the CSS hand-off through `data-palette="mint"` (`.dark` still wins).
+- `violet`, `cyan`, `mint`, `rose`, `amber` (booleans): the palette axis. Violet is the default; a palette applies in both light and dark schemes, so `<ThemeProvider dark mint>` uses mint in dark mode. Pass one palette. `ssrPalette` holds a server-rendered palette through hydration the way `ssrScheme` holds the scheme. On web, `setPalette("mint")` / `getPalette()` switch the CSS hand-off through `data-palette="mint"`.
 - `glass` / `solid` (booleans): the surface axis, spelled like every other Canvas axis. Omit both for the platform default (glass on supported iOS 26+, solid elsewhere); `glass` requests the material treatment, and `solid` requests complete opaque surfaces. Accessibility preferences and runtime capability determine the rendered material. `glass` wins if both are passed. The legacy `surface` value prop (`"solid" | "glass"`) stays supported for config-driven code holding a `Surface` value.
 - `tokens`: brand token overrides merged over the active palette, so you can rebrand without forking the token files. Pass a flat `Partial<ColorTokens>` to apply to both schemes, or `{ light, dark }` to override each separately. Use a stable reference (a module constant or memoized object). A nested provider resolves only its own `tokens` (and its own scheme, palette and surface), which is how a subtree shows a palette or brand of its own; pass the same constant again to carry a rebrand into it.
-- `fonts`: the typefaces the app registered (`typeface.sans` is Manrope, `typeface.mono` Geist Mono), as one family per role or a map from weight to the registered face. Pass it once, on the root provider: a nested `ThemeProvider` that omits it keeps the nearest parent's faces, and one that passes it uses its own map in place of the parent's (`{}` returns that subtree to the system face). Omit it on the root and the kit renders in the system face. Use a stable reference.
+- `fonts`: the typefaces the app registered (Instrument Sans for `sans`, Bricolage Grotesque for `display`, JetBrains Mono for `mono`), as one family per role or a map from weight to the registered face. Pass it once, on the root provider: a nested `ThemeProvider` that omits it keeps the nearest parent's faces, and one that passes it uses its own map in place of the parent's (`{}` returns that subtree to the system face). Omit it on the root and the kit renders in the system face. Use a stable reference.
 
 ```jsx
 const brand = { primary: "#7c3aed" };
@@ -200,9 +283,8 @@ const brand = { primary: "#7c3aed" };
 `primary` colors filled controls, and `primary-foreground` colors their labels.
 The optional `action` and `action-foreground` roles color the call-to-action (the
 primary Button and the split button's action) apart from `primary`, which keeps
-what is selected, checked, current, linked or focused. The default palette, Dark
-Factory's, sets the two apart: a green call to action beside a violet selection
-color. Omitted from a custom token map, actions paint with `primary`; a
+what is selected, checked, current, linked or focused. Canvas v4 uses the active
+palette's accent for both roles by default. Omitted from a custom token map, actions paint with `primary`; a
 `tokens={{ primary: ... }}` rebrand repaints actions with its primary pair unless you
 pass `action` too.
 The optional `primary-text` token colors brand text on neutral surfaces, including
@@ -283,8 +365,9 @@ public issues for security problems.
 
 ## License
 
-The compiled package distributed on npm as `@nannier/canvas` is licensed under
-MIT. Its tarball includes the license and copyright notice.
+The package distributed on npm as `@nannier/canvas`, including its compiled kit
+and packaged consumer assets, is licensed under MIT. Its tarball includes the
+license and copyright notice.
 
 The source repository is not covered by that grant and remains all rights reserved.
 These are separate terms for the distributed package and the repository source.

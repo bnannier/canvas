@@ -129,6 +129,11 @@ jobs:
       - name: Check generated docs core is up to date
         run: bun run docs:gen:check
 
+      - name: Check generated consumer guidance and recipes
+        run: |
+          bun run agent-docs:gen:check
+          bun run consumer:gen:check
+
       - name: Check handwritten docs use Canvas components
         run: bun run check:docs-components
 
