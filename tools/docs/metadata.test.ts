@@ -8,8 +8,8 @@ import {
 } from "../../docs/src/data/privacy-policy.ts";
 
 test("the optional-peer table covers every declared optional dependency", () => {
-  const readme = readFileSync(new URL("../../README.md", import.meta.url), "utf8");
-  const section = readme.split("### Optional peers\n")[1]?.split("\n## ")[0] ?? "";
+  const guide = readFileSync(new URL("../../USAGE.md", import.meta.url), "utf8");
+  const section = guide.split("### Optional peers\n")[1]?.split("\n## ")[0] ?? "";
   const documented = [...section.matchAll(/^\| `([^`]+)` \|/gm)].map((match) => match[1]);
   const optional = Object.entries(manifest.peerDependenciesMeta)
     .filter(([, metadata]) => metadata.optional)

@@ -98,7 +98,7 @@ above do not require access to the private source repository.
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/accordion/accordion.md`
 Human reference: https://canvas.nannier.com/components/accordion
@@ -287,7 +287,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/action-panels/action-panels.md`
 Human reference: https://canvas.nannier.com/components/action-panels
@@ -462,7 +462,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/action-sheet/action-sheet.md`
 Human reference: https://canvas.nannier.com/components/action-sheet
@@ -672,7 +672,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/alert-dialog/alert-dialog.md`
 Human reference: https://canvas.nannier.com/components/alert-dialog
@@ -945,7 +945,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/alert/alert.md`
 Human reference: https://canvas.nannier.com/components/alert
@@ -1191,7 +1191,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/app-frame/app-frame.md`
 Human reference: https://canvas.nannier.com/components/app-frame
@@ -1359,7 +1359,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/area-chart/area-chart.md`
 Human reference: https://canvas.nannier.com/components/area-chart
@@ -1473,7 +1473,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/autocomplete/autocomplete.md`
 Human reference: https://canvas.nannier.com/components/autocomplete
@@ -1741,7 +1741,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/avatar/avatar.md`
 Human reference: https://canvas.nannier.com/components/avatar
@@ -2283,7 +2283,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/badge/badge.md`
 Human reference: https://canvas.nannier.com/components/badge
@@ -2777,7 +2777,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/bar-list/bar-list.md`
 Human reference: https://canvas.nannier.com/components/bar-list
@@ -2906,7 +2906,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/board/board.md`
 Human reference: https://canvas.nannier.com/components/board
@@ -3139,7 +3139,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/box-plot/box-plot.md`
 Human reference: https://canvas.nannier.com/components/box-plot
@@ -3252,7 +3252,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/breadcrumb/breadcrumb.md`
 Human reference: https://canvas.nannier.com/components/breadcrumb
@@ -3504,7 +3504,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/bullet-chart/bullet-chart.md`
 Human reference: https://canvas.nannier.com/components/bullet-chart
@@ -3634,7 +3634,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/button-group/button-group.md`
 Human reference: https://canvas.nannier.com/components/button-group
@@ -3908,7 +3908,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/button/button.md`
 Human reference: https://canvas.nannier.com/components/button
@@ -4425,7 +4425,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/calendar/calendar.md`
 Human reference: https://canvas.nannier.com/components/calendar
@@ -4786,7 +4786,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/candlestick-chart/candlestick-chart.md`
 Human reference: https://canvas.nannier.com/components/candlestick-chart
@@ -4985,7 +4985,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/card/card.md`
 Human reference: https://canvas.nannier.com/components/card
@@ -5663,7 +5663,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/carousel/carousel.md`
 Human reference: https://canvas.nannier.com/components/carousel
@@ -5867,7 +5867,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/chart/chart.md`
 Human reference: https://canvas.nannier.com/components/chart
@@ -6072,7 +6072,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/chat/chat.md`
 Human reference: https://canvas.nannier.com/components/chat
@@ -6363,7 +6363,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/checkbox/checkbox.md`
 Human reference: https://canvas.nannier.com/components/checkbox
@@ -6611,7 +6611,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/chip/chip.md`
 Human reference: https://canvas.nannier.com/components/chip
@@ -6948,7 +6948,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/code-block/code-block.md`
 Human reference: https://canvas.nannier.com/components/code-block
@@ -7404,7 +7404,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/collapsible/collapsible.md`
 Human reference: https://canvas.nannier.com/components/collapsible
@@ -7551,7 +7551,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/command/command.md`
 Human reference: https://canvas.nannier.com/components/command
@@ -7774,7 +7774,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/composed-chart/composed-chart.md`
 Human reference: https://canvas.nannier.com/components/composed-chart
@@ -7917,7 +7917,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/container/container.md`
 Human reference: https://canvas.nannier.com/components/container
@@ -8059,7 +8059,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/dashboard-grid/dashboard-grid.md`
 Human reference: https://canvas.nannier.com/components/dashboard-grid
@@ -8304,7 +8304,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/data-table/data-table.md`
 Human reference: https://canvas.nannier.com/components/data-table
@@ -8947,7 +8947,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/depth-chart/depth-chart.md`
 Human reference: https://canvas.nannier.com/components/depth-chart
@@ -9106,7 +9106,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/description-lists/description-lists.md`
 Human reference: https://canvas.nannier.com/components/description-lists
@@ -9371,7 +9371,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/dialog/dialog.md`
 Human reference: https://canvas.nannier.com/components/dialog
@@ -9730,7 +9730,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/divider/divider.md`
 Human reference: https://canvas.nannier.com/components/divider
@@ -9938,7 +9938,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/drag-drop/drag-drop.md`
 Human reference: https://canvas.nannier.com/components/drag-drop
@@ -10169,7 +10169,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/drawer/drawer.md`
 Human reference: https://canvas.nannier.com/components/drawer
@@ -10340,7 +10340,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/dropdown/dropdown.md`
 Human reference: https://canvas.nannier.com/components/dropdown
@@ -10737,7 +10737,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/emblem/emblem.md`
 Human reference: https://canvas.nannier.com/components/emblem
@@ -10882,7 +10882,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/empty-state/empty-state.md`
 Human reference: https://canvas.nannier.com/components/empty-state
@@ -11118,7 +11118,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/feeds/feeds.md`
 Human reference: https://canvas.nannier.com/components/feeds
@@ -11310,7 +11310,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/field/field.md`
 Human reference: https://canvas.nannier.com/components/field
@@ -11545,7 +11545,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/filter-panel/filter-panel.md`
 Human reference: https://canvas.nannier.com/components/filter-panel
@@ -11685,7 +11685,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/form/form.md`
 Human reference: https://canvas.nannier.com/components/form
@@ -12073,7 +12073,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/funnel-chart/funnel-chart.md`
 Human reference: https://canvas.nannier.com/components/funnel-chart
@@ -12196,7 +12196,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/gauge/gauge.md`
 Human reference: https://canvas.nannier.com/components/gauge
@@ -12287,7 +12287,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/geo-map/geo-map.md`
 Human reference: https://canvas.nannier.com/components/geo-map
@@ -12500,7 +12500,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/grid-lists/grid-lists.md`
 Human reference: https://canvas.nannier.com/components/grid-lists
@@ -12674,7 +12674,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/grid/grid.md`
 Human reference: https://canvas.nannier.com/components/grid
@@ -12875,7 +12875,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/heatmap/heatmap.md`
 Human reference: https://canvas.nannier.com/components/heatmap
@@ -12986,7 +12986,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/histogram/histogram.md`
 Human reference: https://canvas.nannier.com/components/histogram
@@ -13091,7 +13091,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/icon/icon.md`
 Human reference: https://canvas.nannier.com/components/icon
@@ -13733,7 +13733,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/image/image.md`
 Human reference: https://canvas.nannier.com/components/image
@@ -13879,7 +13879,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/input-otp/input-otp.md`
 Human reference: https://canvas.nannier.com/components/input-otp
@@ -13992,7 +13992,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/input/input.md`
 Human reference: https://canvas.nannier.com/components/input
@@ -14342,7 +14342,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/kbd/kbd.md`
 Human reference: https://canvas.nannier.com/components/kbd
@@ -14510,7 +14510,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/line-chart/line-chart.md`
 Human reference: https://canvas.nannier.com/components/line-chart
@@ -14728,7 +14728,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/listbox/listbox.md`
 Human reference: https://canvas.nannier.com/components/listbox
@@ -14968,7 +14968,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/media-objects/media-objects.md`
 Human reference: https://canvas.nannier.com/components/media-objects
@@ -15129,7 +15129,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/metric-breakdown/metric-breakdown.md`
 Human reference: https://canvas.nannier.com/components/metric-breakdown
@@ -15274,7 +15274,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/navbars/navbars.md`
 Human reference: https://canvas.nannier.com/components/navbars
@@ -15580,7 +15580,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/pagination/pagination.md`
 Human reference: https://canvas.nannier.com/components/pagination
@@ -15792,7 +15792,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/phone-input/phone-input.md`
 Human reference: https://canvas.nannier.com/components/phone-input
@@ -16021,7 +16021,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/pie-chart/pie-chart.md`
 Human reference: https://canvas.nannier.com/components/pie-chart
@@ -16147,7 +16147,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/popover/popover.md`
 Human reference: https://canvas.nannier.com/components/popover
@@ -16381,7 +16381,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/pressable/pressable.md`
 Human reference: https://canvas.nannier.com/components/pressable
@@ -16508,7 +16508,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/progress-ring/progress-ring.md`
 Human reference: https://canvas.nannier.com/components/progress-ring
@@ -16606,7 +16606,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/progress/progress.md`
 Human reference: https://canvas.nannier.com/components/progress
@@ -16813,7 +16813,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/qrcode/qrcode.md`
 Human reference: https://canvas.nannier.com/components/qrcode
@@ -16889,7 +16889,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/radar-chart/radar-chart.md`
 Human reference: https://canvas.nannier.com/components/radar-chart
@@ -17004,7 +17004,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/radial-bar-chart/radial-bar-chart.md`
 Human reference: https://canvas.nannier.com/components/radial-bar-chart
@@ -17129,7 +17129,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/radio/radio.md`
 Human reference: https://canvas.nannier.com/components/radio
@@ -17367,7 +17367,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/range-area-chart/range-area-chart.md`
 Human reference: https://canvas.nannier.com/components/range-area-chart
@@ -17501,7 +17501,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/reveal/reveal.md`
 Human reference: https://canvas.nannier.com/components/reveal
@@ -17833,7 +17833,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/layout/layout.md`
 Human reference: https://canvas.nannier.com/components/row-column
@@ -18211,7 +18211,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/row-menu/row-menu.md`
 Human reference: https://canvas.nannier.com/components/row-menu
@@ -18428,7 +18428,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/scatter-plot/scatter-plot.md`
 Human reference: https://canvas.nannier.com/components/scatter-plot
@@ -18529,7 +18529,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/scroll-view/scroll-view.md`
 Human reference: https://canvas.nannier.com/components/scroll-view
@@ -18773,7 +18773,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/select/select.md`
 Human reference: https://canvas.nannier.com/components/select
@@ -19062,7 +19062,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/service-health-list/service-health-list.md`
 Human reference: https://canvas.nannier.com/components/service-health-list
@@ -19188,7 +19188,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/sidebar/sidebar.md`
 Human reference: https://canvas.nannier.com/components/sidebar
@@ -19476,7 +19476,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/skeleton/skeleton.md`
 Human reference: https://canvas.nannier.com/components/skeleton
@@ -19654,7 +19654,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/slider/slider.md`
 Human reference: https://canvas.nannier.com/components/slider
@@ -19861,7 +19861,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/sparkline/sparkline.md`
 Human reference: https://canvas.nannier.com/components/sparkline
@@ -19988,7 +19988,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/spinner/spinner.md`
 Human reference: https://canvas.nannier.com/components/spinner
@@ -20142,7 +20142,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/stacked-bar/stacked-bar.md`
 Human reference: https://canvas.nannier.com/components/stacked-bar
@@ -20275,7 +20275,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/stacked-lists/stacked-lists.md`
 Human reference: https://canvas.nannier.com/components/stacked-lists
@@ -20554,7 +20554,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/molecules/stats/stats.md`
 Human reference: https://canvas.nannier.com/components/stats
@@ -20835,7 +20835,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/stepper/stepper.md`
 Human reference: https://canvas.nannier.com/components/stepper
@@ -20978,7 +20978,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/steps/steps.md`
 Human reference: https://canvas.nannier.com/components/steps
@@ -21207,7 +21207,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/swatch/swatch.md`
 Human reference: https://canvas.nannier.com/components/swatch
@@ -21497,7 +21497,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/switch/switch.md`
 Human reference: https://canvas.nannier.com/components/switch
@@ -21671,7 +21671,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/tab-bar/tab-bar.md`
 Human reference: https://canvas.nannier.com/components/tab-bar
@@ -21807,7 +21807,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/tabs/tabs.md`
 Human reference: https://canvas.nannier.com/components/tabs
@@ -22034,7 +22034,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/text-input/text-input.md`
 Human reference: https://canvas.nannier.com/components/text-input
@@ -22297,7 +22297,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/text/text.md`
 Human reference: https://canvas.nannier.com/components/text
@@ -22447,7 +22447,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/textarea/textarea.md`
 Human reference: https://canvas.nannier.com/components/textarea
@@ -22717,7 +22717,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/toast/toast.md`
 Human reference: https://canvas.nannier.com/components/toast
@@ -22851,7 +22851,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/tooltip/tooltip.md`
 Human reference: https://canvas.nannier.com/components/tooltip
@@ -23048,7 +23048,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/treemap/treemap.md`
 Human reference: https://canvas.nannier.com/components/treemap
@@ -23178,7 +23178,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/typography/typography.md`
 Human reference: https://canvas.nannier.com/components/typography
@@ -24091,7 +24091,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/uptime-bar/uptime-bar.md`
 Human reference: https://canvas.nannier.com/components/uptime-bar
@@ -24230,7 +24230,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/video/video.md`
 Human reference: https://canvas.nannier.com/components/video
@@ -24328,7 +24328,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/atoms/view/view.md`
 Human reference: https://canvas.nannier.com/components/view
@@ -24533,7 +24533,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/charts/waterfall-chart/waterfall-chart.md`
 Human reference: https://canvas.nannier.com/components/waterfall-chart
@@ -24655,7 +24655,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Source: `src/organisms/wizard/wizard.md`
 Human reference: https://canvas.nannier.com/components/wizard
@@ -24787,7 +24787,7 @@ See [installation](https://canvas.nannier.com/ai/4.1.0/installation.md) for requ
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 This generated source snapshot describes `@nannier/canvas` at repository package version `4.1.0`. Check the application's installed package version and its declarations before using an API. A source snapshot is not a claim that npm has published this version.
 
@@ -24918,7 +24918,7 @@ This generated source snapshot describes `@nannier/canvas` at repository package
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Install Canvas into an existing Expo, React Native, or React Native Web application.
 For an Expo app, let Expo select the SVG version compatible with its SDK:
@@ -25056,7 +25056,7 @@ Use the declarations installed with your dependency as the final API authority; 
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Parents provide bounds. Use `Container` measure steps, `Row` and `Column` spacing/alignment booleans, `span` for twelfths, and `Grid` for responsive tiles. A field fills its parent; a button hugs its contents unless `block` or a supported measure step changes it. Do not set fixed component widths or invent string variant props. Measure the component's own container for internal reflow; viewport breakpoints are for application chrome.
 
@@ -25091,7 +25091,7 @@ Parents provide bounds. Use `Container` measure steps, `Row` and `Column` spacin
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Mount an `OverlayProvider` inside `ThemeProvider`, outside scrolling page content,
 and let it fill the app window. Dropdowns, selects, autocompletes and popovers then
@@ -25159,7 +25159,7 @@ Component behavior and controlled/uncontrolled props: [Dialog](https://canvas.na
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643
+Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
 
 Wrap the application in `ThemeProvider`. Use flat boolean styling props; choose at most one prop per visual axis, such as `primary`, `large`, and `loading`.
 

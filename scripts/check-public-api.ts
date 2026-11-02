@@ -44,7 +44,7 @@ const result = checkPublicApi(
     auditTurns,
     // The Markdown the package ships beside its code (CHANGELOG.md is history, and names
     // what each release changed by design).
-    packageDocs: new Map(["DESIGN.md", "README.md"].map((file) => [file, markdownUses(readFileSync(resolve(root, file), "utf8"))])),
+    packageDocs: new Map(["DESIGN.md", "README.md", "USAGE.md"].map((file) => [file, markdownUses(readFileSync(resolve(root, file), "utf8"))])),
   },
   { entryPoints, publicApi, files, pendingDocs: PENDING_DOCS, plannedRoutes: PLANNED_ROUTES },
 );
