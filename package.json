@@ -53,6 +53,7 @@
     "expo-module.config.json",
     "CHANGELOG.md",
     "DESIGN.md",
+    "USAGE.md",
     "consumer",
     "docs/public/ai",
     "docs/public/llms.txt",

@@ -43,11 +43,11 @@ handlers and React hooks must be supplied, and `tokens` comes from `useTheme()`.
 Raw React Native primitives expose their host signature props. Types describe the
 public source API; use installed declarations when the dependency differs.
 
-Installation, runtime support and overlay guidance reuse the corresponding README
+Installation, runtime support and overlay guidance reuse the corresponding `USAGE.md`
 sections; theming props come from `ThemeProviderProps`, and layout links the existing
-Container, Row/Column and Grid pages. The generator does not use the README's legacy
+Container, Row/Column and Grid pages. The generator does not use the usage guide's legacy
 theme prose as a source of palette or font values.
-README navigation is mapped to public versioned guides and onboarding/terms anchors;
+Usage-guide navigation is mapped to public versioned guides and onboarding/terms anchors;
 unmapped repository links fail generation instead of sending readers to private source.
 
 `manifest.json` stores SHA-256 digests for source inputs and every versioned output
