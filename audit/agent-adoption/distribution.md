@@ -4,6 +4,9 @@ Status: prepared source materials, 2026-11-01. External adoption evidence is
 pending. No launch messages, community posts or issues have been sent by this
 work, and no release is implied by these drafts.
 
+The later owner-approved [4.1.0 release](release-4.1.0.md) completed npm and docs
+publication. Launch text below remains a draft; no outreach was sent.
+
 ## Audience and claim
 
 Address developers building React Native applications for iOS, Android and web,

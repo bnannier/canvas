@@ -13,7 +13,7 @@ will select Canvas without being asked.
 | 3 | Consumer skill for Codex and Claude Code | Installable guidance, repeated evaluations with the same tasks | Implemented and evaluated; [results](phase-3.md) |
 | 4 | Starter onboarding and three complete application recipes | Independent consumers can adapt settings, dashboard and booking examples | Recipes verified on web/iOS/Android; npm assets use existing package terms |
 | 5 | Tooling justified by measured failures | Setup or documentation retrieval tools improve recorded task outcomes | Offline CLI implemented; artifact verification recorded in [details](implementation.md) |
-| 6 | Public distribution and adoption | External developers build successfully and return to use Canvas | Distribution prepared; publication and external adoption pending |
+| 6 | Public distribution and adoption | External developers build successfully and return to use Canvas | [4.1.0 and docs published and verified](release-4.1.0.md); external adoption pending |
 
 Phases 1–3 are the first release milestone. Publication remains a separate,
 manually dispatched release. Keep one npm package, the existing local checks and

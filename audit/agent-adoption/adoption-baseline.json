@@ -21,6 +21,7 @@
   "notes": [
     "No adoption events are fabricated from internal tests.",
     "Public feedback contact requested from the owner; repository issue templates currently serve invited collaborators only.",
-    "No telemetry was added and no outreach messages were sent."
+    "No telemetry was added and no outreach messages were sent.",
+    "This is the pre-release baseline; subsequent publication and verification are recorded in release-4.1.0.md."
   ]
 }

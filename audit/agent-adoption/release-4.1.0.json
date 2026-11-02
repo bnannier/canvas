@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "kind": "published-release-verification",
+  "release": "4.1.0",
+  "source": "198c70ef562fb96552458c1af3dade367ce276dd",
+  "candidate": "d7bb5af31414552ed286562ce4fa91d0faf1debd",
+  "tag": "v4.1.0",
+  "workflow": {
+    "url": "https://github.com/bnannier/canvas/actions/runs/41362322417",
+    "conclusion": "success",
+    "inputs": {
+      "npm": true,
+      "pages": true,
+      "major": false,
+      "ios": false,
+      "android": false
+    },
+    "jobs": [
+      {
+        "name": "prepare",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125015144635"
+      },
+      {
+        "name": "validate / check",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125015268384"
+      },
+      {
+        "name": "validate / smoke-web",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438100"
+      },
+      {
+        "name": "validate / e2e (3)",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438115"
+      },
+      {
+        "name": "validate / e2e (1)",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438163"
+      },
+      {
+        "name": "validate / e2e (4)",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438196"
+      },
+      {
+        "name": "validate / native (ios, tablet) / smoke",
+        "conclusion": "failure",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438239"
+      },
+      {
+        "name": "validate / native (android, tablet) / smoke",
+        "conclusion": "failure",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438246"
+      },
+      {
+        "name": "validate / e2e (2)",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438251"
+      },
+      {
+        "name": "validate / native (android, phone) / smoke",
+        "conclusion": "failure",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438299"
+      },
+      {
+        "name": "validate / native (ios, phone) / smoke",
+        "conclusion": "failure",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438300"
+      },
+      {
+        "name": "validate / starter",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125019438459"
+      },
+      {
+        "name": "publish",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125029840256"
+      },
+      {
+        "name": "cloudflare",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125029959896"
+      },
+      {
+        "name": "android",
+        "conclusion": "skipped",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125029961300"
+      },
+      {
+        "name": "ios",
+        "conclusion": "skipped",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125029961742"
+      },
+      {
+        "name": "summary",
+        "conclusion": "success",
+        "url": "https://github.com/bnannier/canvas/actions/runs/41362322417/job/125030180078"
+      }
+    ]
+  },
+  "tests": {
+    "jobs": [
+      {
+        "job": "check",
+        "passed": 8761,
+        "skipped": 8,
+        "failed": 0
+      },
+      {
+        "job": "starter",
+        "passed": 30,
+        "skipped": null,
+        "failed": null
+      },
+      {
+        "job": "smoke-web",
+        "passed": 333,
+        "skipped": null,
+        "failed": null
+      },
+      {
+        "job": "e2e-1",
+        "passed": 856,
+        "skipped": null,
+        "failed": null
+      },
+      {
+        "job": "e2e-2",
+        "passed": 856,
+        "skipped": null,
+        "failed": null
+      },
+      {
+        "job": "e2e-3",
+        "passed": 856,
+        "skipped": null,
+        "failed": null
+      },
+      {
+        "job": "e2e-4",
+        "passed": 856,
+        "skipped": null,
+        "failed": null
+      }
+    ],
+    "totals": {
+      "e2ePassed": 3424,
+      "browserPassed": 3787,
+      "sourceTestsPassed": 8761,
+      "sourceTestsSkipped": 8,
+      "sourceTestsFailed": 0,
+      "allReportedPassed": 12548
+    }
+  },
+  "delivery": {
+    "version": "4.1.0",
+    "origin": "https://canvas.nannier.com",
+    "registry": "https://registry.npmjs.org/@nannier%2Fcanvas/4.1.0",
+    "checkedAt": "2026-11-02T00:35:07.842Z",
+    "public": {
+      "versionedFiles": 113,
+      "globalFiles": 3,
+      "sourceHash": "63292636c7ff2f224185aef7c96ac78124f9170a170b90ee11718addfa280643",
+      "manifestSha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+      "catalogSha256": "f1966ca33c1f5280e431ffaf9af225f7804d247a5de1f978c500fa83e503dfd9",
+      "buttonSha256": "6b584029b19c1424267c4220ceca7a05db7955eef40b1e0a15e341234485f509",
+      "sitemapSha256": "9577e36a2da106646f428e6bde52d8d10e31f1e28e6dd6f6f48b9fa00fde3abd",
+      "archived400Index": true
+    },
+    "npm": {
+      "tarball": "https://registry.npmjs.org/@nannier/canvas/-/canvas-4.1.0.tgz",
+      "integrity": "sha512-PlZre81dxq9d++H098BslkxoPiz3iUfcdaA1Q80lY7BuxVLmIw3xoaDAEE41k+TFPLww9atTq9lMxUpOb5wPgg==",
+      "tarballSha256": "a740d41a06c58b23aa23cf43dbbf60203ee304e5e9d7eec3b0bcc3dd686f9df5",
+      "matchedManifest": true,
+      "matchedCatalog": true,
+      "matchedPublicArtifacts": 116
+    },
+    "ok": true
+  },
+  "publicConsumer": {
+    "packageVersion": "4.1.0",
+    "docsVersion": "4.1.0",
+    "init": "passed",
+    "dependencyInstallation": "passed",
+    "doctor": "passed",
+    "skillsBothAndIdempotency": "passed",
+    "typecheck": "passed",
+    "webExport": "passed",
+    "dependencyLifecycleScriptsDuringNpmExec": "disabled"
+  },
+  "nativeAdvisories": {
+    "ios": "Both builds succeeded; both journeys failed the prior-release Work item 40 command-palette visibility assertion.",
+    "android": "Both builds failed after disk exhaustion; runtime checks did not run."
+  },
+  "availability": {
+    "cliReportedSuccessAt": "2026-11-02T00:27:38Z",
+    "metadataObservedAt": "2026-11-02T00:32:08Z",
+    "registryPublishedAt": "2026-11-02T00:31:47.516Z",
+    "tarballObservedAt": "2026-11-02T00:34:58.696Z",
+    "publicationRetries": 0
+  },
+  "adoption": {
+    "externalSuccessfulBuilds": "unmeasured",
+    "externalRepeatUse": "unmeasured",
+    "outreachSent": false,
+    "repositoryVisibility": "private",
+    "publicSupportContact": "pending"
+  }
+}
