@@ -88,6 +88,10 @@ changeset prepares the next release through the existing manually dispatched
 workflow. Independent users' successful builds and return usage remain external
 outcomes to measure after publication.
 
+The subsequent owner-approved [4.1.0 release](release-4.1.0.md) published the
+package and docs. Its verification record includes the required CI results,
+public artifact comparisons and advisory native failures.
+
 ## Final verification
 
 The full suite passed with the repository's pinned Bun 1.4.0: 8,758 passed,
@@ -129,5 +133,6 @@ after deployment. Drift checks verified 117 generated documentation files and
 
 Independent review found and resolved npm's symlink entry-point behavior, private
 links in installation guidance and version drift in the public entry guide. Its
-final review reported no remaining blocker. Nothing was committed, pushed,
-published or dispatched as part of this implementation.
+final review reported no remaining blocker. At this implementation checkpoint,
+nothing had been committed, pushed, published or dispatched; subsequent release
+authorization and outcomes are recorded separately above.
