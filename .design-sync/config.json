@@ -31,6 +31,80 @@
     "View": "src/style/primitives.ts",
     "AnatomyPart": null,
     "AnatomyProvider": null,
-    "InteractionOverride": null
+    "InteractionOverride": null,
+    "GlassSurface": null,
+    "GlassBlurPlane": null,
+    "GlassBlurScope": null,
+    "GlassModalBlurTarget": null
+  },
+  "overrides": {
+    "Dialog": {
+      "cardMode": "single",
+      "viewport": "900x640"
+    },
+    "AlertDialog": {
+      "cardMode": "single",
+      "viewport": "900x640"
+    },
+    "ActionSheet": {
+      "cardMode": "single",
+      "viewport": "900x640"
+    },
+    "Drawer": {
+      "cardMode": "single",
+      "viewport": "900x640"
+    },
+    "Command": {
+      "cardMode": "single",
+      "viewport": "900x640"
+    },
+    "DataTable": {
+      "cardMode": "column"
+    },
+    "Board": {
+      "cardMode": "column"
+    },
+    "Calendar": {
+      "cardMode": "column"
+    },
+    "AppFrame": {
+      "cardMode": "column"
+    },
+    "Navbar": {
+      "cardMode": "column"
+    },
+    "Page": {
+      "cardMode": "column"
+    },
+    "DashboardGrid": {
+      "cardMode": "column"
+    },
+    "Chat": {
+      "cardMode": "column"
+    },
+    "ChatThread": {
+      "cardMode": "column"
+    },
+    "Wizard": {
+      "cardMode": "column"
+    },
+    "GeoMap": {
+      "cardMode": "column"
+    },
+    "Heatmap": {
+      "cardMode": "column"
+    },
+    "CandlestickChart": {
+      "cardMode": "column"
+    },
+    "Sidebar": {
+      "cardMode": "column"
+    },
+    "FilterPanel": {
+      "cardMode": "column"
+    },
+    "BreakpointOverride": {
+      "cardMode": "column"
+    }
   }
 }
