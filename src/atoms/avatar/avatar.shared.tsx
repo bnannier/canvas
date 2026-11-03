@@ -6,7 +6,7 @@ import { GlassPane, paneRipple, paneStyle } from "../../style/glass-surface/glas
 import { actionFill } from "../../style/action.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { identityDisc, identityHue, type IdentityDisc } from "../../style/identity-hue.js";
+import { identityDisc, identityHue, washHue, type IdentityDisc } from "../../style/identity-hue.js";
 import { alpha, composite, contrastRatio, oklchHex } from "../../style/color.js";
 import { Image } from "../image/image.js";
 import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
@@ -22,7 +22,8 @@ import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 // and menus), optionally a rounded square.
 //
 // The initials fallback is the Canvas v4 hand-off's (`K.def('avatar')`): the name resolves
-// to an identity hue (src/style/identity-hue.ts, or the `hue` prop), and the disc is that
+// to the hand-off's identity hue (`washHue` in src/style/identity-hue.ts, its `K.hueOf`, or
+// the `hue` prop), and the disc is that
 // hue's soft wash, oklch(0.72 0.14 h) at 22%, under its ink, oklch(0.82 0.12 h) walked in
 // lightness until it holds 4.5:1 on the wash over the page (the hand-off's ink already does
 // on the dark page; on the light page it darkens). The initials sit at weight 600. Argus's
@@ -290,11 +291,12 @@ export function createAvatar(skin: AvatarSkin) {
     // content, so it paints over the material rather than taking it. Only the neutral
     // glyph-less trigger is a plain control puck.
     const colored = glyph !== "";
-    const discHue = props.hue ?? identityHue(identity);
     const paint = referencePaintOf(props);
     // Argus's reference geometry and paints keep their gradient; a stock disc is the
-    // hand-off's flat wash.
+    // hand-off's flat wash. Each resolves a name through its own source's hues: the
+    // gradient through Dark Factory's stage hues, the wash through the hand-off's.
     const gradient = colored && (referenceGeometry != null || paint !== "identity");
+    const discHue = props.hue ?? (gradient ? identityHue(identity) : washHue(identity));
     const disc = gradient ? paint === "logo" ? { from: actionFill(tokens), to: tokens.ring, mid: actionFill(tokens), ink: "#ffffff" } : paint === "orchid" ? { from: "#d9b8ea", to: "#b559a6", mid: "#d9b8ea", ink: "#ffffff" } : identityDisc(discHue) : null;
     const wash = colored && !gradient ? skin.initialsPaint?.(discHue) ?? initialsDisc(discHue, tokens.background, dark) : null;
     const gradientId = `avatar-disc-${useId().replace(/:/g, "")}`;
@@ -388,14 +390,11 @@ export function createAvatar(skin: AvatarSkin) {
 
 export type Overlap = "tight" | "snug" | "loose";
 
-// Overlap (negative marginLeft) per size and tightness. The magic negative margin
-// is owned here, once, instead of at every call site.
-const OVERLAP: Record<Size, Record<Overlap, number>> = {
-  tiny: { tight: -11, snug: -7, loose: -3 },
-  small: { tight: -13, snug: -8, loose: -3 },
-  default: { tight: -16, snug: -10, loose: -5 },
-  large: { tight: -20, snug: -13, loose: -7 },
-};
+// Overlap (negative marginStart) per tightness. The magic negative margin is owned
+// here, once, instead of at every call site. The default (`tight`) is the hand-off's
+// stack: every avatar after the first pulls 10px under its neighbour whatever its
+// size (its `margin-left:-10px`). `snug` and `loose` keep the same ratio looser.
+const OVERLAP: Record<Overlap, number> = { tight: -10, snug: -6, loose: -3 };
 
 export interface AvatarGroupProps {
   /** Avatar elements to stack. */
@@ -432,7 +431,7 @@ export function createAvatarGroup(skin: AvatarSkin) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const size = sizeOf(props);
-    const overlap = OVERLAP[size][overlapOf(props)];
+    const overlap = OVERLAP[overlapOf(props)];
 
     const items = Children.toArray(children).filter(isValidElement) as ReactElement<AvatarProps>[];
     const cap = max ?? items.length;
