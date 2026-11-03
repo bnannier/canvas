@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { AccessibilityInfo } from "react-native";
-import { View, Grid, Container, Navbar, Icon, OverlayProvider, Row, Column, Button, Typography, Card, Avatar, Skeleton, Input, Chip, ChipGroup, EmptyState, ICON_NAMES, ICON_CATEGORIES, useResponsive, type IconProps, type ToastHandle } from "@nannier/canvas";
+import { View, Grid, Container, Navbar, Icon, OverlayProvider, Row, Column, Button, Typography, Card, Avatar, Skeleton, Input, Sidebar, EmptyState, ICON_NAMES, ICON_CATEGORIES, useResponsive, type IconProps, type ToastHandle } from "@nannier/canvas";
 // Public API only: the smoke app (smoke/) renders these same examples against the
 // sealed package, which has no kit source to import from.
 
@@ -231,12 +231,14 @@ function glyphByName(name: string): IconProps {
 }
 
 // Docs-only Icon catalog (not a Canvas component, not shipped): every kit glyph in a labeled
-// grid, browsed through a search field and a category menu. The search matches a glyph's prop
-// name or label; the menu is a single-choice ChipGroup of the kit's ICON_CATEGORIES, each chip
-// counting the glyphs that match the search in that category, so the counts follow the query.
-// Rendered as the Icon page's "Gallery" example. The kit Icon draws a single glyph; browsing the
-// whole set is a docs concern, so the catalog lives here rather than as an Icon prop. Keep its
-// type in sync with the `IconGalleryHelper` alias in ./scope.ts.
+// grid, browsed from a category sidebar beside it. The sidebar is the kit Sidebar embedded, as
+// the docs' own room rail is: the search field in its header slot, then one row per entry of
+// the kit's ICON_CATEGORIES after "All", each counting the glyphs that match the search there,
+// so the counts follow the query. The search matches a glyph's prop name or label. The Row
+// stacks the sidebar above the grid when the card is phone-narrow. Rendered as the Icon page's
+// "Gallery" example. The kit Icon draws a single glyph; browsing the whole set is a docs
+// concern, so the catalog lives here rather than as an Icon prop. Keep its type in sync with
+// the `IconGalleryHelper` alias in ./scope.ts.
 const ALL_ICONS = "All";
 
 export function IconGallery(): ReactNode {
@@ -248,29 +250,49 @@ export function IconGallery(): ReactNode {
     : ICON_NAMES;
   const matches = category === ALL_ICONS ? searched : searched.filter((icon) => icon.category === category);
   const countIn = (name: string) => searched.filter((icon) => icon.category === name).length;
-  return <Column cozy>
-    <Input
-      leadingIcon
-      icon="search"
-      clearable
-      placeholder="Search icons"
-      accessibilityLabel="Search icons"
-      value={query}
-      onChangeText={setQuery}
-      autoCapitalize="none"
-      autoCorrect={false}
-    />
-    <ChipGroup accessibilityLabel="Icon category" value={category} onChange={(value) => setCategory(String(value))}>
-      <Chip value={ALL_ICONS} count={searched.length}>{ALL_ICONS}</Chip>
-      {ICON_CATEGORIES.map((name) => <Chip key={name} value={name} count={countIn(name)}>{name}</Chip>)}
-    </ChipGroup>
-    {matches.length === 0
-      ? <EmptyState compact icon={<Icon search />} title="No icons found" description="Try another name, or pick All." />
-      : <Grid minTileWidth={80} columns={12} snug>
-        {matches.map(({ key, label }) => <Column key={key} snug alignCenter padTight>
-          <Icon {...glyphByName(key)} size={20} />
-          <Typography tiny subtle>{label}</Typography>
-        </Column>)}
-      </Grid>}
-  </Column>;
+  // The stage centres its example, so a Container (full width by default) gives the split
+  // Row the card's whole width to measure its spans against.
+  return <Container>
+    <Row stacks relaxed alignStart>
+      <Column span={4}>
+        <Sidebar
+          embedded
+          compact
+          markers
+          active={category}
+          onSelect={(item) => setCategory(String(item.id))}
+          accessibilityLabel="Icon categories"
+          header={<Input
+            small
+            leadingIcon
+            icon="search"
+            clearable
+            placeholder={`Search ${ICON_NAMES.length} icons`}
+            accessibilityLabel="Search icons"
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />}
+          sections={[{
+            title: "Categories",
+            items: [
+              { id: ALL_ICONS, label: ALL_ICONS, meta: String(searched.length) },
+              ...ICON_CATEGORIES.map((name) => ({ id: name, label: name, meta: String(countIn(name)) })),
+            ],
+          }]}
+        />
+      </Column>
+      <Column span={8}>
+        {matches.length === 0
+          ? <EmptyState compact icon={<Icon search />} title="No icons found" description="Try another name, or pick All." />
+          : <Grid minTileWidth={80} columns={12} snug>
+            {matches.map(({ key, label }) => <Column key={key} snug alignCenter padTight>
+              <Icon {...glyphByName(key)} size={20} />
+              <Typography tiny subtle>{label}</Typography>
+            </Column>)}
+          </Grid>}
+      </Column>
+    </Row>
+  </Container>;
 }
