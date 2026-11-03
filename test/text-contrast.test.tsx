@@ -11,7 +11,7 @@ import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
 import { darkColors, lightColors, palette, type ColorTokens } from "../src/style/tokens.ts";
 import { inverseDenseTint } from "../src/style/glass-fill.ts";
 import { composite as compositeOver, contrastRatio } from "../src/style/color.ts";
-import { IDENTITY_HUES, identityDisc, identityHue } from "../src/style/identity-hue.ts";
+import { IDENTITY_HUES, WASH_HUES, identityDisc, washHue } from "../src/style/identity-hue.ts";
 import { LOOKS, lookDeclarations, lookProps, type Look } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
@@ -577,9 +577,9 @@ describe("Avatar initials contrast", () => {
       expect(contrastRatio(disc.ink, compositeOver(disc.wash, look.tokens.background)), `${look.name} hue ${hue}`).toBeGreaterThanOrEqual(4.5);
     }
   });
-  // Enough names to land on most of the ten identity hues (the hash is the component's
-  // own, so the test asserts the coverage rather than assuming it).
-  const first = ["Ada", "Grace", "Alan", "Edsger", "Barbara", "Donald", "Frances", "Ken"];
+  // Enough names to land on every one of the hand-off's eight wash hues (the hash is the
+  // component's own, so the test asserts the coverage rather than assuming it).
+  const first = ["Ada", "Grace", "Alan", "Edsger", "Barbara", "Donald", "Frances", "Ken", "Radia", "Margaret"];
   const last = ["Byron", "Hopper", "Turing", "Dijkstra", "Liskov"];
   const names = first.flatMap((f) => last.map((l) => `${f} ${l}`));
   for (const look of LOOKS) for (const { name, Component } of avatarPlatforms) {
@@ -589,14 +589,14 @@ describe("Avatar initials contrast", () => {
         render(<ThemeProvider {...lookProps(look)} solid><Component name={person} testID="identity" /></ThemeProvider>);
         const container = screen.getByTestId("identity");
         const initials = within(container).getByText(person.split(" ").map((part) => part[0]).join(""));
-        const hue = identityHue(person);
+        const hue = washHue(person);
         hues.add(hue);
         const disc = initialsDisc(hue, look.tokens.background, look.scheme === "dark");
         expect(rgba(initials.style.color)).toEqual(rgba(disc.ink));
         expect(rgba(container.style.backgroundColor)).toEqual(rgba(disc.wash));
         cleanup();
       }
-      expect(hues.size).toBeGreaterThanOrEqual(8);
+      expect(hues.size).toBe(WASH_HUES.length);
     });
   }
 });

@@ -4,7 +4,6 @@ import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from "react-nat
 import { View, Text, Pressable, useTheme, useReducedMotion, pressDim, shadow, mixOklab, alpha } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
 import { HOVER } from "../../style/motion.js";
-import { identityHue } from "../../style/identity-hue.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { colorsFor, type ColorTokens } from "../../style/tokens.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
@@ -128,7 +127,7 @@ export function createBrandCard(skin: Pick<CardSkin, "radius" | "titleFont">) {
     const elevation = props.flat ? shadow("none") : shadow(props.raised || active ? "lg" : "sm", tokens);
     const surface: StyleProp<ViewStyle> = [s.surface(compact), corner, { backgroundColor: tokens.card, borderColor: rim }, elevation, props.hoverEnabled ? liftStyle(active, HOVER.card, reduced, !props.raised && !props.flat) : null];
 
-    const identity = props.initials ? <Avatar initials={props.initials} name={props.title} hue={props.hue ?? identityHue(props.title ?? "")} /> : null;
+    const identity = props.initials ? <Avatar initials={props.initials} name={props.title} hue={props.hue} /> : null;
     const top = props.eyebrow || props.badge ? <View style={s.topRow}>
       {props.eyebrow ? <Text style={[c.eyebrow(tokens), { fontFamily: MONO_FONT }, promo ? { color: tokens.foreground } : null]}>{props.eyebrow}</Text> : <View />}
       {props.badge ? <Badge secondary mono small>{props.badge}</Badge> : null}

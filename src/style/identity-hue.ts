@@ -33,6 +33,23 @@ export function identityHue(identity: string): number {
   return IDENTITY_HUES[Math.abs(h) % IDENTITY_HUES.length];
 }
 
+/**
+ * The v4 hand-off's identity hues (cv-kit-code.js `K.hueOf`): the hues a stock initials
+ * disc's flat wash resolves into. Argus's reference discs keep the stage hues above.
+ */
+export const WASH_HUES = [285, 205, 165, 20, 75, 250, 330, 125] as const;
+
+/**
+ * The hue a stock initials disc takes for an identity string: the hand-off's own hash (an
+ * unsigned 32-bit `h * 31 + code`, over each code point) into its eight hues, so a name
+ * gets the disc colour the hand-off draws for it.
+ */
+export function washHue(identity: string): number {
+  let h = 0;
+  for (const ch of identity) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return WASH_HUES[h % WASH_HUES.length];
+}
+
 // OKLCH to sRGB hex exactly as Dark Factory converts it (theme/color.ts: OKLab to linear
 // sRGB, each channel clamped before the sRGB curve), so a disc here is Dark Factory's
 // disc bit for bit.
