@@ -16,10 +16,29 @@ interface ReferenceComponent {
   a11y: string[];
 }
 
+/**
+ * The owner's explicit reorderings of a reference's specimens, each the full label list
+ * in the order the detail page shows it. Icon: the owner asked on 2026-11-02 for the
+ * Disclosure indicator card to come before the Gallery card.
+ */
+export const OWNER_VARIANT_ORDER: Readonly<Record<string, readonly string[]>> = {
+  icon: ["Primary", "Destructive", "Success", "Warning", "Muted", "Disclosure indicator", "Gallery"],
+};
+
+function ownerOrder(slug: string, variants: ReferenceComponent["variants"]): ReferenceComponent["variants"] {
+  const order = OWNER_VARIANT_ORDER[slug];
+  if (!order) return variants;
+  const labels = variants.map((v) => v.t);
+  if (order.length !== labels.length || !labels.every((label) => order.includes(label))) {
+    throw new Error(`OWNER_VARIANT_ORDER.${slug} no longer lists exactly the reference's variants: ${labels.join(", ")}`);
+  }
+  return order.map((label) => variants.find((v) => v.t === label)!);
+}
+
 export function presentationFromSource(source: string) {
   const registry = JSON.parse(source.replace(/^window\.CV_DOCS\s*=\s*/, "").replace(/;\s*$/, "")) as { c: Record<string, ReferenceComponent>; rooms?: { slugs: string[] }[] };
   return Object.fromEntries(Object.entries(registry.c).map(([slug, c]) => [slug, {
-    variants: c.variants.map((v) => v.t),
+    variants: ownerOrder(slug, c.variants).map((v) => v.t),
     variantNotes: c.variants.filter((v) => !!v.d).map((v) => v.t),
     introCount: c.intro.length,
     guidance: c.sections.slice(0, 6).map((section) => ({ title: section.t, paragraphs: Math.min(3, section.p.length), code: !!section.code })),
