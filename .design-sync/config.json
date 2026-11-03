@@ -25,7 +25,8 @@
     "USAGE.md"
   ],
   "libOverrides": {
-    "source-kit.mjs": "group = the kit tier dir (src/<tier>/...); a part exported from its parent file is matched by its export"
+    "source-kit.mjs": "group = the kit tier dir (src/<tier>/...); a part exported from its parent file is matched by its export",
+    "emit.mjs": "cards mount one page-wide root (ThemeProvider light > OverlayProvider) and portal each story into its cell, so menus and popovers open above the cells instead of being clipped by them"
   },
   "componentSrcMap": {
     "View": "src/style/primitives.ts",
@@ -108,7 +109,8 @@
       "primaryStory": "DesktopRail"
     },
     "Autocomplete": {
-      "cardMode": "column"
+      "cardMode": "column",
+      "primaryStory": "OpenWithQuery"
     },
     "Emblem": {
       "cardMode": "column"
@@ -123,7 +125,8 @@
       "cardMode": "column"
     },
     "Select": {
-      "cardMode": "column"
+      "cardMode": "column",
+      "primaryStory": "Open"
     },
     "Tooltip": {
       "cardMode": "column"

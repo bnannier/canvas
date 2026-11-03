@@ -10,7 +10,7 @@ export const Basic = () => <Select label="Country" options={countries} defaultVa
 
 export const Placeholder = () => <Select label="Role" placeholder="Choose a role" options={["Owner", "Admin", "Member", "Guest"]} />;
 
-export const Open = () => <Select label="Region" defaultOpen options={["US East", "EU West", "Asia Pacific"]} defaultValue="EU West" />;
+export const Open = () => <Select label="Region" open options={["US East", "EU West", "Asia Pacific"]} defaultValue="EU West" />;
 
 export const Sizes = () => (
   <>

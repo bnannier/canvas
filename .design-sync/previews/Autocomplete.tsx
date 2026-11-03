@@ -7,7 +7,7 @@ export const Default = () => (
 );
 
 export const OpenWithQuery = () => (
-  <Autocomplete label="Assigned to" defaultOpen defaultQuery="a" options={people} />
+  <Autocomplete label="Assigned to" open defaultQuery="a" options={people} />
 );
 
 export const WithDetails = () => (

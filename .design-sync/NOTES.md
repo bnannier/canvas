@@ -68,10 +68,40 @@ config cannot say.
 - Card parts (CardTitle, CardHeader, ...) and other parts (BreadcrumbItem, GridItem,
   RadioGroup, ChatMessage) are previewed as their full parent composition.
 
+## Card harness fork (overlays)
+
+- `overrides/emit.mjs` (declared in `cfg.libOverrides`) changes one function,
+  `previewHtmlModule`: a card mounts ONE React root (the configured provider >
+  `ThemeProvider light` > a page-wide `OverlayProvider`) and portals each story into its
+  cell. Canvas floats menus, popovers, lists and tooltips in the nearest OverlayProvider's
+  outlet; with none they render inline and the cell's `overflow:hidden` cut them off (the
+  owner reported "all drop downs are being hidden", 2026-11-03). A provider PER CELL is
+  worse: a root provider bounds its overlays by its own box, so they squash into the cell
+  (tried, screenshot-verified). The cells keep their clip and transform.
+- The kit places overlays against the visible browser viewport (and flips them up near its
+  bottom edge), not the page. So a story drawn open must sit near the top of its card:
+  Select and Autocomplete are column cards with the open story as `primaryStory`. After
+  fonts load, the fork grows each cell that an open overlay hangs from until it contains
+  it, in one pass that reads every position before writing.
+- Draw a specimen open with the CONTROLLED `open` prop, not `defaultOpen`: an
+  uncontrolled open list lays the kit's tap-outside-to-close layer over the whole card,
+  which swallows the first click anywhere. Controlled `open` installs no such layer.
+  Dropdown and RowMenu also have `inline`, the kit's in-flow specimen mode.
+- Every card renders in the light scheme (the card page is white), whatever the viewer's
+  OS appearance.
+- The validator warns `[GRID_OVERFLOW] ... (fixed/portal)` for Autocomplete, Dropdown,
+  Select, Tooltip and RowMenu: it flags ANY overlay showing outside a cell in grid or
+  column mode. Benign here (each card was screenshot-checked at 728 x 500, the product's
+  width and fold); do not take its `cardMode: single` remedy, which would drop the other
+  stories. Its Stats `FramedStrips` "wide" warning is a timing artifact of its 680 px
+  re-measure; the strip fits at that width in a real render.
+- The fork is the bundled `emit.mjs` plus the change above: diff it against
+  `.ds-sync/lib/emit.mjs` on every re-sync and re-apply. Adding or changing it moves every
+  component's grade key (a full regrade).
+
 ## Kit observations (component behavior seen while previewing, not sync defects)
 
 - AvatarGroup `small` (the docs' own example): the initials crowd under the overlap.
-- Stats `Plain`: the title sits flush left with no inset.
 - GridList `cols2` with four tiles draws narrow, widely spaced tiles.
 - RadialBarChart `Detailed`: the legend stretches full width.
 - The bare `TextInput` primitive draws no field box (expected; `Input` is the field).
@@ -83,6 +113,10 @@ config cannot say.
 - `web-entry.mjs` mirrors Expo's web resolution by hand (alias, `.web.js` first, defines).
   A new native peer with a different web entry convention needs a line there.
 - The `source-kit.mjs` fork tracks the bundled converter's copy: diff it on every re-sync.
+- `package-capture.mjs` takes no `--config` flag (it reads the bundle's manifest); passing
+  one only prints an ignored-argument note.
+- When the remote anchor cache is missing, `ds-bundle/_ds_sync.json` can stand in for it
+  only if its hashes match what was last uploaded.
 - Reveal/RevealGroup grades are verified outside the capture harness (see above).
 - Preview data for charts is inline literal data; it does not track docs changes.
 
