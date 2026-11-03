@@ -5,6 +5,8 @@ import type { ColorTokens } from "@nannier/canvas";
 export interface DetailPresentation {
   variants: readonly string[];
   variantNotes?: readonly string[];
+  /** Variants whose card spans every column of the Variants grid. */
+  fullRow?: readonly string[];
   introCount: number;
   guidance: readonly { title: string; paragraphs: number; code: boolean }[];
   noteCount: number;
@@ -54,7 +56,7 @@ export function referenceVariants(examples: readonly DocExample[], presentation?
     // The palette API replaced the hand-off's older "Theme picker" name.
     const currentLabel = label === "Theme picker" ? "Palette picker" : label;
     const match = variants.find(({ example }) => example.label === label) ?? variants.find(({ example }) => example.label === currentLabel);
-    return match ? [{ ...match, example: { ...match.example, label, note: presentation.variantNotes?.includes(label) ? match.example.note : undefined } }] : [];
+    return match ? [{ ...match, example: { ...match.example, label, note: presentation.variantNotes?.includes(label) ? match.example.note : undefined }, full: !!presentation.fullRow?.includes(label) }] : [];
   });
 }
 
