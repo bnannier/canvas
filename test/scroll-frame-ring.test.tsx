@@ -545,22 +545,23 @@ describe("a windowed GridList", () => {
   });
 
   // The scroller's layout feeds both the grid's own width (its columns) and the stop.
-  it("drops to one column at a phone width, and the remounted scroller measures its own stop", () => {
+  it("drops to one column under the hand-off's 140px floor, and the remounted scroller measures its own stop", () => {
     ui(<GridList testID="subject" gallery cols3 virtualized style={BOUNDED} items={TILES} />);
     const wide = screen.getByTestId("subject");
     layOutRows(wide, 196, 2000, GRID_WIDTH);
     expect(wide.getAttribute("tabindex")).toBe("0");
-    layOut(wide, 375, 196);
+    // Two 140px columns and their gap need 292px, so a 280px grid is one column.
+    layOut(wide, 280, 196);
     // FlatList cannot change its column count live, so the grid remounts its scroller.
     const narrow = screen.getByTestId("subject");
     expect(narrow).not.toBe(wide);
     const tile = screen.getByText("IMG_1000.jpg").closest('[role="listitem"]') as HTMLElement;
-    expect(tile.style.width).toBe("100%");
+    expect(tile.style.width).toBe("280px");
     // The new scroller's own measurements decide the stop: rows that fit take it away,
     // rows that overflow give it back.
-    layOutRows(narrow, 196, 150, 375);
+    layOutRows(narrow, 196, 150, 280);
     expect(narrow.getAttribute("tabindex")).toBe("-1");
-    layOutRows(narrow, 196, 6000, 375);
+    layOutRows(narrow, 196, 6000, 280);
     expect(narrow.getAttribute("tabindex")).toBe("0");
   });
 });

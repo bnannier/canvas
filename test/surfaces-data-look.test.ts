@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { lightColors as t } from "../src/style/tokens.ts";
-import { shadow } from "../src/style/index.ts";
+import { shadow, mixOklch, oklchHex } from "../src/style/index.ts";
+import { columnsOf } from "../src/molecules/grid-lists/grid-lists.shared.tsx";
 import { MONO_FONT, DISPLAY_FONT } from "../src/style/mono.ts";
 import * as stats from "../src/molecules/stats/stats.styles.ts";
 import * as table from "../src/organisms/data-table/data-table.styles.ts";
@@ -91,6 +92,36 @@ describe("the v4 grid list", () => {
     expect(grid.galleryThumb).toMatchObject({ height: 110 });
     expect(grid.webSkin.galleryCaption).toMatchObject({ paddingVertical: 10, paddingHorizontal: 12, gap: 2 });
     expect(grid.webSkin.gap).toEqual({ default: 12, compact: 8 });
+  });
+
+  it("lays three 140px-floored columns by default, as the hand-off's auto-fill grid does", () => {
+    expect(columnsOf({ items: [] })).toBe("cols3");
+    expect(grid.COLUMN_COUNT).toEqual({ cols2: 2, cols3: 3 });
+    expect(grid.MIN_TILE_WIDTH).toBe(140);
+  });
+
+  it("washes the thumbnail in the item's hand-off family, 70% into the family mixed 25% into secondary", () => {
+    expect(grid.mediaColor(t, "blue-500")).toBe(oklchHex(0.66, 0.16, 255));
+    expect(grid.mediaColor(t, "emerald-500")).toBe(oklchHex(0.66, 0.16, 165));
+    expect(grid.mediaColor(t, "primary")).toBe(t.primary);
+    expect(grid.mediaColor(t)).toBe(t.primary);
+    // A kit token the hand-off has no family for keeps its own colour.
+    expect(grid.mediaColor(t, "destructive")).toBe(t.destructive);
+    expect(grid.MEDIA_ANGLE).toBe(135);
+    const [from, to] = grid.mediaStops(t, "emerald-500");
+    expect(from).toEqual({ color: oklchHex(0.66, 0.16, 165), at: 0, opacity: 0.7 });
+    expect(to).toEqual({ color: mixOklch(t.secondary, oklchHex(0.66, 0.16, 165), 0.25), at: 1 });
+  });
+});
+
+describe("mixOklch", () => {
+  // Chrome's own `color-mix(in oklch, <over> 25%, <base>)` for these pairs, read from a
+  // canvas pixel; a near-grey base (chroma under 0.02) takes the other colour's hue.
+  it("matches Chrome's color-mix", () => {
+    expect(mixOklch("#1e1e29", oklchHex(0.66, 0.16, 255), 0.25)).toBe("#323656");
+    expect(mixOklch("#f1f1f6", "#00b079", 0.25)).toBe("#c2e3d2");
+    expect(mixOklch("#1e1e29", "#a78bfa", 0.25)).toBe("#3a3858");
+    expect(mixOklch("#ffffff", "#000000", 0.5)).toBe("#636363");
   });
 });
 

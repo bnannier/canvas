@@ -121,6 +121,28 @@ export function mixOklab(base: string, over: string, t: number): string {
   return `rgb(${r}, ${g}, ${bl})`;
 }
 
+// The chroma under which Chrome gives a colour converted from hex no hue of its own.
+const ACHROMATIC_CHROMA = 0.02;
+
+/**
+ * Blend `over` into `base` by `t` (a 0..1 fraction) in OKLCH, returning `#rrggbb`: the RN
+ * equivalent of the hand-off's `color-mix(in oklch, <over> <t*100>%, <base>)`. Lightness and
+ * chroma blend linearly and the hue along the shorter arc. A near-grey has no hue of its own
+ * and takes the other's, as Chrome treats a hex colour whose chroma is under 0.02 (measured
+ * against its `color-mix`: 0.0196 has no hue, 0.0204 keeps its own). Both colours must be
+ * opaque hex; otherwise `base` comes back unchanged.
+ */
+export function mixOklch(base: string, over: string, t: number): string {
+  const a = oklchOf(base);
+  const b = oklchOf(over);
+  if (!a || !b) return base;
+  const powerless = (c: number) => c < ACHROMATIC_CHROMA;
+  const ha = powerless(a[1]) ? b[2] : a[2];
+  const hb = powerless(b[1]) ? a[2] : b[2];
+  const turn = ((hb - ha + 540) % 360) - 180;
+  return oklchHex(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, (ha + turn * t + 360) % 360);
+}
+
 // --- WCAG contrast -----------------------------------------------------------
 // The kit tunes its translucent fills (the brand-tinted glass puck) against the ink
 // they carry, so the legibility floor is computed where the fill is chosen rather than
