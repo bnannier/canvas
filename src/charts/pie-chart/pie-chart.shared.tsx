@@ -1,9 +1,11 @@
 import { compositionInspectProps } from "../pie-chart/composition-inspect.js";
 import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, alpha, type LayoutStyle } from "../../style/index.js";
+import { View, Text, Pressable, useControllableState, devWarn, alpha, GlassPane, paneStyle, isGlass, type LayoutStyle } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { platformShape } from "../../style/platform-shape.js";
-import { seriesFill } from "../shared/charts.styles.js";
+import { seriesFill, surface, surfacePadCompact, surfacePadDefault, webSkin } from "../shared/charts.styles.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
@@ -17,7 +19,9 @@ import { type StackedSegment } from "../shared/types.js";
 
 // PieChart: proportional composition as arc slices (donut with the total and a
 // label centered inside), colored by the chart-1..8 tokens in fixed order,
-// with the StackedBar-style legend identifying each slice.
+// with the StackedBar-style legend identifying each slice, inside the v4 hand-off's chart
+// frame (cv-kit-code4.js `pie-chart` through `FR`: a 16 inset, 12 compact, at the card
+// corner under the small shadow), which `plain` strips.
 
 export interface PieChartProps {
   /** The slices, in order; each takes its share of the circle. */
@@ -32,6 +36,8 @@ export interface PieChartProps {
   detailed?: boolean;
   /** Smaller diameter. */
   compact?: boolean;
+  /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
+  plain?: boolean;
   /** Press-to-inspect: the selected slice index (controlled). Pass null for none. */
   selected?: number | null;
   /** Press-to-inspect: the initially selected slice (uncontrolled). */
@@ -58,7 +64,9 @@ export function PieChart(props: PieChartProps) {
   const slicePart = useAnatomyPart("Slice");
   const centerPart = useAnatomyPart("Center value");
   const legendPart = useAnatomyPart("Legend");
-  const { tokens, dark } = useTheme();
+  const theme = useMaterialTheme({ static: true });
+  const { tokens, dark } = theme;
+  const surfaceShape = surface(tokens, webSkin.surfaceRadius);
   const clean = slices.map((sl) => (Number.isFinite(sl.value) && sl.value > 0 ? sl.value : 0));
   const rawTotal = clean.reduce((a, b) => a + b, 0);
   const total = Math.max(1, rawTotal);
@@ -118,8 +126,17 @@ export function PieChart(props: PieChartProps) {
 
   return (
     <AnatomyScope>
-    <View testID={testID} style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: props.detailed ? 18 : LEGEND_GAP }, style]} {...(hideLegend ? { ...img, ...compositionInspectProps(slices.length, selected, setSelected) } : {})}>
-      <View ref={framePart?.ref} onLayout={framePart?.onLayout} {...(hideLegend ? {} : { ...img, ...compositionInspectProps(slices.length, selected, setSelected) })} style={{ width: size, height: size, ...(props.detailed ? { borderRadius: 9999, boxShadow: [{ offsetX: 0, offsetY: 12, blurRadius: 30, spreadDistance: -14, color: alpha(tokens.primary, dark ? .5 : .4) }] } : {}), alignItems: "center", justifyContent: "center" }}>
+    <View
+      ref={framePart?.ref}
+      onLayout={framePart?.onLayout}
+      testID={testID}
+      style={[props.plain ? null : paneStyle(theme, [surfaceShape, compact ? surfacePadCompact : surfacePadDefault]), CHART_ROOT, style]}
+      {...(hideLegend ? { ...img, ...compositionInspectProps(slices.length, selected, setSelected) } : {})}
+    >
+      {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+      {isGlass(theme) && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: props.detailed ? 18 : LEGEND_GAP }}>
+      <View {...(hideLegend ? {} : { ...img, ...compositionInspectProps(slices.length, selected, setSelected) })} style={{ width: size, height: size, ...(props.detailed ? { borderRadius: 9999, boxShadow: [{ offsetX: 0, offsetY: 12, blurRadius: 30, spreadDistance: -14, color: alpha(tokens.primary, dark ? .5 : .4) }] } : {}), alignItems: "center", justifyContent: "center" }}>
         <Svg width={size} height={size} style={{ position: "absolute" }}>
           {layout.map((slice, i) =>
             slice.fraction > 0 ? (
@@ -179,6 +196,7 @@ export function PieChart(props: PieChartProps) {
         />
         </AnatomyPart>
       )}
+      </View>
     </View>
     </AnatomyScope>
   );

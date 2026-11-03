@@ -1,12 +1,13 @@
 import { compositionInspectProps } from "../pie-chart/composition-inspect.js";
 import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, type LayoutStyle } from "../../style/index.js";
+import { View, Text, Pressable, useControllableState, devWarn, GlassPane, paneStyle, isGlass, type LayoutStyle } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { platformShape } from "../../style/platform-shape.js";
-import { CHART_LOOK } from "../shared/charts.styles.js";
-import { seriesFill } from "../shared/charts.styles.js";
+import { CHART_LOOK, seriesFill, surface, surfacePadCompact, surfacePadDefault, webSkin } from "../shared/charts.styles.js";
 import { type StackedSegment } from "../shared/types.js";
 import { ChartLegend } from "../shared/chart-legend.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { formatCompact, polarPoint } from "../shared/chart-math.js";
@@ -30,6 +31,8 @@ export interface RadialBarChartProps {
   max?: number;
   // Density (omit for the default 160 disc; compact is 120).
   compact?: boolean;
+  /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
+  plain?: boolean;
   /** Hide the value legend (the accessible name still carries every value). */
   hideLegend?: boolean;
   /** A compact disc with a separate value column and shared maximum caption. */
@@ -50,6 +53,14 @@ export interface RadialBarChartProps {
 
 const MAX_RINGS = 6;
 
+// The hand-off's ring geometry, in its 180 unit square: the outermost ring at r 74, each
+// next 16 in, a 10 unit stroke, and no ring under r 12.
+const VIEW = 180;
+const RING_OUTER = 74;
+const RING_STEP = 16;
+const RING_STROKE = 10;
+const RING_MIN = 12;
+
 // A full circle as a stroked path: two half arcs from 12 o'clock, so a dash
 // reveal starts at the top (an SVG circle's dash origin sits at 3 o'clock).
 function circlePath(cx: number, cy: number, r: number): string {
@@ -65,7 +76,8 @@ export function RadialBarChart(props: RadialBarChartProps) {
   const barPart = useAnatomyPart("Bar");
   const trackPart = useAnatomyPart("Track");
   const legendPart = useAnatomyPart("Legend");
-  const { tokens } = useTheme();
+  const theme = useMaterialTheme({ static: true });
+  const { tokens } = theme;
   const compact = !!props.compact;
   const formatValue = props.formatValue ?? formatCompact;
 
@@ -80,14 +92,16 @@ export function RadialBarChart(props: RadialBarChartProps) {
   const pctOf = (v: number): number => Math.round(Math.max(0, Math.min(1, v / max)) * 100);
 
   const size = props.detailed ? 132 : compact ? 120 : 160;
-  const stroke = props.detailed ? 11 * 132 / 160 : compact ? 8 : 10;
-  // The hand-off's rings sit 16 apart at a 10 stroke: a 6 px gap.
-  const gap = props.detailed ? 3 * 132 / 160 : 6;
-  const center = size / 2;
-  // The first series is the outermost ring, hugging the disc, and each next ring steps
-  // inward (the renderer's `r = 74 - i * 16`).
-  const rOuter = props.detailed ? 64 * 132 / 160 : center - stroke / 2;
-  const radiusOf = (i: number): number => rOuter - i * (stroke + gap);
+  // The rings are laid out in the hand-off's 180 unit square (the detailed disc keeps its
+  // own 132 px geometry) and scaled to the disc, so a press is mapped back into units.
+  const units = props.detailed ? size : VIEW;
+  const stroke = props.detailed ? 11 * 132 / 160 : RING_STROKE;
+  const center = units / 2;
+  // The first series is the outermost ring and each next ring steps inward (the
+  // renderer's `r = 74 - i * 16`); the detailed disc's rings sit 3 units apart.
+  const radiusOf = (i: number): number => (props.detailed ? 64 * 132 / 160 - i * (stroke + 3 * 132 / 160) : RING_OUTER - i * RING_STEP);
+  const drawn = (i: number): boolean => radiusOf(i) >= (props.detailed ? stroke : RING_MIN);
+  const scale = size / units;
 
   // Press-to-inspect: nearest ring by press radius, cleared elsewhere.
   const [selected, setSelectedRaw] = useControllableState<number | null>(props.selected, props.defaultSelected ?? null, props.onSelect);
@@ -97,9 +111,9 @@ export function RadialBarChart(props: RadialBarChartProps) {
   };
   const toggle = (i: number) => setSelected(selected === i ? null : i);
   const onPlotPress = (x: number, y: number) => {
-    const dist = Math.hypot(x - center, y - center);
+    const dist = Math.hypot(x / scale - center, y / scale - center);
     for (let i = 0; i < data.length; i++) {
-      if (Math.abs(dist - radiusOf(i)) <= stroke / 2 + 2) {
+      if (drawn(i) && Math.abs(dist - radiusOf(i)) <= stroke / 2 + 2 / scale) {
         toggle(i);
         return;
       }
@@ -115,26 +129,36 @@ export function RadialBarChart(props: RadialBarChartProps) {
   // The first ring's Bar and Track part boxes: measurable views on the outermost ring
   // (SVG paths have no layout on native), the bar's at the end of its sweep and the
   // track's at the ring's left, both as wide as the stroke.
-  const barRing = data.findIndex((_, i) => radiusOf(i) >= stroke && clean[i] > 0);
+  const barRing = data.findIndex((_, i) => drawn(i) && clean[i] > 0);
   const barEnd = barRing >= 0 ? polarPoint(center, center, radiusOf(barRing), 2 * Math.PI * Math.max(0, Math.min(1, clean[barRing] / max))) : null;
-  const trackRing = data.findIndex((_, i) => radiusOf(i) >= stroke);
+  const trackRing = data.findIndex((_, i) => drawn(i));
   const trackAt = trackRing >= 0 ? polarPoint(center, center, radiusOf(trackRing), (3 * Math.PI) / 2) : null;
-  const probe = (at: { x: number; y: number }) => ({ position: "absolute" as const, left: at.x - stroke / 2, top: at.y - stroke / 2, width: stroke, height: stroke });
+  const probe = (at: { x: number; y: number }) => ({ position: "absolute" as const, left: (at.x - stroke / 2) * scale, top: (at.y - stroke / 2) * scale, width: stroke * scale, height: stroke * scale });
+  const surfaceShape = surface(tokens, webSkin.surfaceRadius);
 
+  const inspect = compositionInspectProps(data.length, selected, setSelected);
   return (
     <AnatomyScope>
-    <View testID={testID} style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: props.detailed ? 16 : 20 }, style]} {...(props.hideLegend ? { ...img, ...compositionInspectProps(data.length, selected, setSelected) } : {})}>
-      <View ref={framePart?.ref} onLayout={framePart?.onLayout} {...(props.hideLegend ? {} : { ...img, ...compositionInspectProps(data.length, selected, setSelected) })} style={{ width: size, height: size }}>
-        <Svg width={size} height={size} style={{ position: "absolute" }}>
+    <View
+      ref={framePart?.ref}
+      onLayout={framePart?.onLayout}
+      testID={testID}
+      style={[props.plain ? null : paneStyle(theme, [surfaceShape, compact ? surfacePadCompact : surfacePadDefault]), CHART_ROOT, style]}
+      {...(props.hideLegend ? { ...img, ...inspect } : {})}
+    >
+      {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+      {isGlass(theme) && !props.plain ? <GlassPane layer="content" shape={surfaceShape} /> : null}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: props.detailed ? 16 : 20 }}>
+      <View {...(props.hideLegend ? {} : { ...img, ...inspect })} style={{ width: size, height: size }}>
+        <Svg width={size} height={size} viewBox={`0 0 ${units} ${units}`} style={{ position: "absolute" }}>
           {data.map((d, i) => {
-            const r = radiusOf(i);
-            if (r < stroke) return null;
+            if (!drawn(i)) return null;
             const dim = selected != null && selected !== i ? DIM_OPACITY : 1;
-            return <Path key={i} d={circlePath(center, center, r)} fill="none" stroke={props.detailed ? tokens["surface-raised"] ?? tokens.muted : tokens.muted} strokeWidth={stroke} opacity={dim} />;
+            return <Path key={i} d={circlePath(center, center, radiusOf(i))} fill="none" stroke={props.detailed ? tokens["surface-raised"] ?? tokens.muted : tokens.muted} strokeWidth={stroke} opacity={dim} />;
           })}
           {data.map((d, i) => {
+            if (!drawn(i)) return null;
             const r = radiusOf(i);
-            if (r < stroke) return null;
             const circumference = 2 * Math.PI * r;
             const dim = selected != null && selected !== i ? DIM_OPACITY : 1;
             const fraction = Math.max(0, Math.min(1, clean[i] / max));
@@ -186,6 +210,7 @@ export function RadialBarChart(props: RadialBarChartProps) {
           />
         </AnatomyPart>
       )}
+      </View>
     </View>
     </AnatomyScope>
   );

@@ -71,6 +71,8 @@ const framed: Record<string, ReactElement<{ testID?: string; plain?: boolean }>>
   Histogram: <Histogram values={[1, 2, 2, 3]} />,
   LineChart: <LineChart labels={labels} series={series} />,
   MetricBreakdown: <MetricBreakdown value="16" label="Requests" spark={[4, 7, 5]} />,
+  RadialBarChart: <RadialBarChart data={[{ label: "GET", value: 4 }]} />,
+  PieChart: <PieChart slices={[{ label: "GET", value: 4 }]} />,
   RadarChart: <RadarChart axes={["A", "B", "C"]} series={series} />,
   RangeAreaChart: <RangeAreaChart labels={["Mon"]} data={[{ low: 1, high: 3, mid: 2 }]} />,
   ScatterPlot: <ScatterPlot series={[{ label: "Load", points: [{ x: 1, y: 2 }] }]} />,
@@ -81,9 +83,7 @@ const framed: Record<string, ReactElement<{ testID?: string; plain?: boolean }>>
 const intrinsic: Record<string, ReactElement<{ testID?: string; plain?: boolean }>> = {
   Gauge: <Gauge value={72} label="Uptime" />,
   Heatmap: <Heatmap values={[0.2, 0.8]} />,
-  PieChart: <PieChart slices={[{ label: "GET", value: 4 }]} />,
   ProgressRing: <ProgressRing value={72} />,
-  RadialBarChart: <RadialBarChart data={[{ label: "GET", value: 4 }]} />,
   Sparkline: <Sparkline values={[4, 7, 5]} />,
   StackedBar: <StackedBar segments={[{ label: "GET", value: 4 }]} />,
   UptimeBar: <UptimeBar periods={[{}, { down: true }]} />,
