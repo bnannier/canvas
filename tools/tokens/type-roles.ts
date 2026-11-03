@@ -38,6 +38,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   // A drop zone's mono eyebrow (the hand-off's 11px uppercase zone label).
   "src/organisms/drag-drop/drag-drop.styles.ts": { zoneLabel: "caption" },
   "src/molecules/feeds/feeds.styles.ts": { traceKind: "caption" },
+  // A share strip's legend (the hand-off's 400 11 px segment names).
+  "src/molecules/stats/stats.styles.ts": { shareLegendText: "small" },
   "src/style/field-label.ts": { fieldEyebrow: "caption" },
   "src/atoms/select/select.styles.ts": { "webSkin.reference.label": "caption" },
   // An Autocomplete option's trailing detail (the hand-off's 11 px mono note), a muted secondary line.

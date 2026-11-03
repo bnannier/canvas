@@ -459,27 +459,31 @@ describe("Charts — Gauge & Heatmap", () => {
     expect(name).toContain("2 cells");
   });
 
-  it("Heatmap calendar mode shows weekday + month labels and names the day span", () => {
+  it("Heatmap calendar mode draws the hand-off's titled cells; detailed adds weekday + month labels", () => {
     // Fourteen consecutive days spanning a month boundary (Jan → Feb 2026).
     const values = Array.from({ length: 14 }, (_, i) => {
       const day = 25 + i; // Jan 25 … Feb 7
       const iso = day <= 31 ? `2026-01-${String(day).padStart(2, "0")}` : `2026-02-${String(day - 31).padStart(2, "0")}`;
       return { value: (i % 5) / 4, count: i, date: iso };
     });
-    const { container } = ui(<Heatmap calendar values={values} label="Contribution activity" />);
+    const { container, unmount } = ui(<Heatmap calendar values={values} label="Contribution activity" />);
     const name = container.querySelector("[aria-label]")?.getAttribute("aria-label") ?? "";
     expect(name).toContain("Contribution activity");
     expect(name).toContain("14 days");
+    // The hand-off's calendar (cv-kit-code4.js `heatmap`): the label as its title over
+    // unlabelled 11 px cells, then the less-to-more legend.
     const text = container.textContent ?? "";
-    // GitHub-style furniture: alternating weekday labels + the two month names.
-    expect(text).toContain("Mon");
-    expect(text).toContain("Wed");
-    expect(text).toContain("Fri");
-    expect(text).toContain("Jan");
-    expect(text).toContain("Feb");
-    // The discrete less-to-more legend renders by default.
+    expect(text).toContain("Contribution activity");
+    expect(text).not.toContain("Wed");
+    expect(text).not.toContain("Jan");
     expect(text).toContain("Less");
     expect(text).toContain("More");
+    unmount();
+    // The detailed calendar keeps the GitHub furniture: alternating weekday labels and a
+    // month's name over the column that opens its first week (Feb 1 here).
+    const { container: detailed } = ui(<Heatmap calendar detailed values={values} label="Contribution activity" />);
+    const full = detailed.textContent ?? "";
+    for (const word of ["Mon", "Wed", "Fri", "Feb", "less", "more"]) expect(full).toContain(word);
   });
 
   it("Heatmap calendar name reports the contribution total when cells carry counts", () => {

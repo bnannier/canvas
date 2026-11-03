@@ -503,7 +503,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "PhoneInput.size", components: ["PhoneInput"], pages: ["phone-input"], resolver: "src/molecules/phone-input/phone-input.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: phoneInputSize }),
   subject({ id: "StackedList.variant", components: ["StackedList"], pages: ["stacked-lists"], resolver: "src/molecules/stacked-lists/stacked-lists.shared.tsx#variantOf", members: ["clickable", "card"], resolve: stackedListVariant }),
   subject({ id: "StackedList.item badge", components: ["StackedList"], pages: ["stacked-lists"], resolver: "src/molecules/stacked-lists/stacked-lists.shared.tsx#badgeToneOf", members: ["success", "error", "warning", "info", "neutral"], resolve: badgeToneOf }),
-  subject({ id: "Stats.surface", components: ["Stats"], pages: ["stats"], resolver: "src/molecules/stats/stats.shared.tsx#surfaceOf", members: ["plain"], resolve: statsSurface }),
+  subject({ id: "Stats.surface", components: ["Stats"], pages: ["stats"], resolver: "src/molecules/stats/stats.shared.tsx#surfaceOf", members: ["plain", "framed", "compact", "large"], resolve: statsSurface }),
   subject({ id: "Stats.item accent", components: ["Stats"], pages: ["stats"], resolver: "src/molecules/stats/stats.shared.tsx#accentOf", members: SLOTS, resolve: accentOf }),
   subject({ id: "Stats.item delta", components: ["Stats"], pages: ["stats"], resolver: "src/molecules/stats/stats.shared.tsx#deltaOf", members: ["steady", "down"], resolve: deltaOf }),
 

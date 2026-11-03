@@ -140,13 +140,17 @@ describe("the state recipe table", () => {
   it("captures the hover of every component whose source takes a resting pointer, and no other", () => {
     const withHover = Object.keys(STATE_RECIPES).filter((slug) => recipesOf(slug).some((r) => r.state === "hover")).sort();
     const byOpening = Object.keys(STATE_RECIPES).filter((slug) => recipesOf(slug).some((r) => r.alsoAnswers?.includes("hover"))).sort();
+    // A hover gated by a prop no rail example passes (a GridList gallery tile lifts only with
+    // `onPressItem`) is answered by its exemption, which the coverage test holds to the source.
+    const exempted = Object.keys(STATE_RECIPES).filter((slug) => (STATE_RECIPES[slug] as { exempt?: Record<string, unknown> }).exempt?.hover).sort();
     const resting = pages.filter((c) => STATE_RECIPES[c.slug] && componentSignals(reader, c).some((s) => s.state === "hover")).map((c) => c.slug).sort();
     // Held to the source, not to a list: a component the source gives a hover has a hover
-    // recipe or an opening a resting pointer makes, and no hover recipe goes without one.
-    expect([...new Set([...withHover, ...byOpening])].sort()).toEqual(resting);
+    // recipe, an opening a resting pointer makes or a holding exemption, and no hover recipe
+    // goes without one.
+    expect([...new Set([...withHover, ...byOpening, ...exempted])].sort()).toEqual(resting);
     // Every reader of the hover primitive is among them.
-    expect(hoverDeclarers()).toEqual(["accordion", "autocomplete", "avatar", "badge", "button", "button-group", "card", "checkbox", "chip", "code-block", "collapsible", "dropdown", "icon", "input", "listbox", "navbars", "pagination", "radio", "row-menu", "select", "sidebar", "slider", "stepper", "swatch", "switch", "tabs", "textarea"]);
-    for (const slug of hoverDeclarers()) expect(withHover).toContain(slug);
+    expect(hoverDeclarers()).toEqual(["accordion", "autocomplete", "avatar", "badge", "button", "button-group", "card", "checkbox", "chip", "code-block", "collapsible", "dropdown", "grid-lists", "icon", "input", "listbox", "navbars", "pagination", "radio", "row-menu", "select", "sidebar", "slider", "stats", "stepper", "swatch", "switch", "tabs", "textarea"]);
+    for (const slug of hoverDeclarers()) expect([...withHover, ...exempted]).toContain(slug);
     // Spread handlers count: the Calendar's blocks take `{...hoverProps}` and Tooltip's
     // triggers `{...disclosure}`; Tooltip's hover is its open recipe's (a resting pointer opens it).
     expect(resting).toContain("calendar");
@@ -334,6 +338,7 @@ describe("the states each component's source gives it", () => {
       "feeds focus: holds",
       "feeds pressed: holds",
       "grid-lists focus: holds",
+      "grid-lists hover: holds",
       "grid-lists pressed: holds",
       "steps focus: holds",
       "steps pressed: holds",
@@ -652,10 +657,11 @@ describe("the states each component's source gives it", () => {
     expect(states("metric-breakdown")).toEqual([]);
     // The heatmap's day cells exist only in the calendar layout, kept out of the tab order
     // (no web tab stops, native marks retain activation); its scroller is a stop once the year overflows it
-    // (`{...scrollport}`, the style layer's useHorizontalScrollFocus).
+    // (`{...scrollport}`, the style layer's useHorizontalScrollFocus), as the plain grid's is.
     expect(states("heatmap")).toEqual([
       "focus tab-stop: a tab stop: <Pressable> [calendar] via CalendarHeatmap>HeatCell",
       "focus tab-stop: focusable on <ScrollView> [calendar] via CalendarHeatmap",
+      "focus tab-stop: focusable on <ScrollView> via GridHeatmap",
       "hover hover-in: onHoverIn on <Pressable> [calendar] via CalendarHeatmap>HeatCell",
       "hover hover-in: onHoverOut on <Pressable> [calendar] via CalendarHeatmap>HeatCell",
       "pressed press: onPress on <Pressable> [calendar] via CalendarHeatmap>HeatCell",

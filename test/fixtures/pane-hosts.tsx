@@ -7,8 +7,8 @@ import type { ReactNode } from "react";
 import { Text } from "react-native";
 import {
   ActionPanel, Alert, Autocomplete, Avatar, AvatarGroup, AvatarMenu, Badge, BarList, BoxPlot, BulletChart, Button, Calendar, CandlestickChart, Card,
-  Carousel, Chart, Chip, CodeBlock, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, GridList, Histogram, Icon, Input,
-  InputOTP, Kbd, LineChart, Listbox, MediaObject, MetricBreakdown, Navbar, Pagination, PhoneInput, Progress, RadarChart, Radio,
+  Carousel, Chart, Chip, CodeBlock, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, GridList, Heatmap, Histogram, Icon, Input,
+  InputOTP, Kbd, LineChart, Listbox, MediaObject, MetricBreakdown, Navbar, Pagination, PhoneInput, PieChart, Progress, RadarChart, RadialBarChart, Radio,
   RadioGroup, RangeAreaChart, ScatterPlot, Select, ServiceHealthList, Sidebar, Skeleton, Slider, Stats, Stepper, Steps,
   TabBar, Tabs, Textarea, Tooltip, Treemap, Video, WaterfallChart,
 } from "../../src/index.ts";
@@ -66,9 +66,12 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/charts/depth-chart/depth-chart.shared.tsx", name: "DepthChart", node: <DepthChart title="Book" bids={[{ price: 191.3, size: 80 }, { price: 191.15, size: 120 }]} asks={[{ price: 191.6, size: 90 }, { price: 191.75, size: 122 }]} /> },
   { file: "src/charts/funnel-chart/funnel-chart.shared.tsx", name: "FunnelChart", node: <FunnelChart stages={[{ label: "Visits", value: 12400 }, { label: "Paid", value: 480 }]} /> },
   { file: "src/charts/geo-map/geo-map.shared.tsx", name: "GeoMap", node: <GeoMap title="Installs" points={[{ label: "London", lat: 51.5072, lng: -0.1276, count: 5170 }]} /> },
+  { file: "src/charts/heatmap/heatmap.shared.tsx", name: "Heatmap", node: <Heatmap label="Commits" values={[0.2, 0.8, 0, 0.5]} /> },
   { file: "src/charts/histogram/histogram.shared.tsx", name: "Histogram", node: <Histogram title="Response times" label="Latency ms" values={[42, 38, 51, 44, 47, 39]} /> },
   { file: "src/charts/metric-breakdown/metric-breakdown.shared.tsx", name: "MetricBreakdown", node: <MetricBreakdown value="3,771" label="Tokens" breakdown={[{ label: "code", value: 1842 }, { label: "refresh", value: 1264 }]} /> },
+  { file: "src/charts/pie-chart/pie-chart.shared.tsx", name: "PieChart", node: <PieChart slices={[{ label: "Web", value: 62 }, { label: "iOS", value: 38 }]} /> },
   { file: "src/charts/radar-chart/radar-chart.shared.tsx", name: "RadarChart", node: <RadarChart title="Skills" axes={["A", "B", "C"]} series={[{ label: "Casey", values: [8, 6, 9] }]} /> },
+  { file: "src/charts/radial-bar-chart/radial-bar-chart.shared.tsx", name: "RadialBarChart", node: <RadialBarChart data={[{ label: "Q1", value: 72 }, { label: "Q2", value: 48 }]} /> },
   { file: "src/charts/range-area-chart/range-area-chart.shared.tsx", name: "RangeAreaChart", node: <RangeAreaChart label="p50 to p99" labels={["Mon", "Tue"]} data={[{ low: 42, high: 118, mid: 61 }, { low: 38, high: 102, mid: 55 }]} /> },
   { file: "src/charts/scatter-plot/scatter-plot.shared.tsx", name: "ScatterPlot", node: <ScatterPlot title="Load" series={[{ label: "us-east", points: [{ x: 94, y: 20 }, { x: 220, y: 37 }] }]} /> },
   { file: "src/charts/service-health-list/service-health-list.shared.tsx", name: "ServiceHealthList", node: <ServiceHealthList title="Status" items={[{ label: "API", detail: "99.98%", periods: days }]} /> },
@@ -81,7 +84,7 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/molecules/media-objects/media-objects.shared.tsx", name: "MediaObject", node: <MediaObject avatar="RC" title="Rachel Chen" description="Lead" body="Reviewed the change." bordered onPress={() => {}} /> },
   { file: "src/molecules/grid-lists/grid-lists.shared.tsx", name: "GridList gallery tile", node: <GridList gallery onPressItem={() => {}} items={[{ title: "IMG_1000.jpg", subtitle: "2.4 MB", color: "primary" }, { title: "notes.txt" }]} /> },
   { file: "src/molecules/phone-input/phone-input.shared.tsx", name: "PhoneInput", node: <PhoneInput label="Phone number" /> },
-  { file: "src/molecules/stats/stats.shared.tsx", name: "Stats", node: <Stats onPressItem={() => {}} items={[{ label: "Active users", value: "71,897" }]} /> },
+  { file: "src/molecules/stats/stats.shared.tsx", name: "Stats", node: <Stats framed onPressItem={() => {}} items={[{ label: "Active users", value: "71,897" }]} /> },
   { file: "src/organisms/calendar/calendar.shared.tsx", name: "Calendar", node: <Calendar month="May 2026" today={23} defaultSelected={24} daysInMonth={31} startWeekday={4} /> },
   { file: "src/organisms/carousel/carousel.shared.tsx", name: "Carousel", node: <Carousel showArrows items={[{ key: "one", content: "Slide 1" }, { key: "two", content: "Slide 2" }]} /> },
   {

@@ -250,49 +250,53 @@ export function createGridList(
   }
 
   // The framed gallery tile (the v4 hand-off's): the thumbnail square at the top of a
-  // content pane, clipped by its corner, over the padded caption. Pressable, the pane
-  // rides inside the Pressable so the tap, ripple and dim stay on it.
+  // content pane, clipped by its corner, over the padded caption.
   function FramedGalleryTile({ item, cell, listItem, onPress, frame, parts }: { item: GridListItem; cell: ViewStyle[]; listItem: ViewProps; onPress?: () => void; frame: ViewStyle; parts?: TileParts }) {
-    const theme = useMaterialTheme({ static: true });
-    const { tokens } = theme;
-    // The thumbnail is the hand-off's 135 degree wash of the item's colour, a paint inside
-    // the pane in either surface mode (it is artwork, not a fill role).
-    const block = (
-      <View ref={parts?.media?.ref} onLayout={parts?.media?.onLayout} style={s.galleryThumb}>
-        <GradientFill angle={s.MEDIA_ANGLE} stops={s.mediaStops(tokens, item.color)} />
+    if (onPress) return <PressableFramedTile item={item} cell={cell} listItem={listItem} onPress={onPress} frame={frame} parts={parts} />;
+    return (
+      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={cell}>
+        <GlassSurface layer="content" style={frame}><FramedTileContent item={item} parts={parts} /></GlassSurface>
       </View>
     );
-    const { hovered, target: hoverTarget } = useHover(skin.hoverShadow != null && onPress != null);
-    const inner = (
+  }
+
+  // A tappable framed tile: the pane rides inside the Pressable so the tap, ripple and dim
+  // stay on it, and the pointer lifts it to the skin's hover shadow.
+  function PressableFramedTile({ item, cell, listItem, onPress, frame, parts }: { item: GridListItem; cell: ViewStyle[]; listItem: ViewProps; onPress: () => void; frame: ViewStyle; parts?: TileParts }) {
+    const theme = useMaterialTheme({ static: true });
+    const { tokens } = theme;
+    const { hovered, target: hoverTarget } = useHover(skin.hoverShadow != null);
+    const ripple = paneRipple(theme, skin.ripple ? skin.ripple(tokens) : undefined);
+    return (
+      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={cell}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onPress}
+          android_ripple={ripple}
+          {...hoverTarget}
+          style={({ pressed }) => [paneStyle(theme, frame), hovered && skin.hoverShadow ? skin.hoverShadow(tokens) : null, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+        >
+          <GlassPane layer="content" shape={frame} />
+          <FramedTileContent item={item} parts={parts} />
+        </Pressable>
+      </View>
+    );
+  }
+
+  // The framed tile's thumbnail, the hand-off's 135 degree wash of the item's colour (a
+  // paint inside the pane in either surface mode: artwork, not a fill role), over its caption.
+  function FramedTileContent({ item, parts }: { item: GridListItem; parts?: TileParts }) {
+    const { tokens } = useMaterialTheme({ static: true });
+    return (
       <>
-        {block}
+        <View ref={parts?.media?.ref} onLayout={parts?.media?.onLayout} style={s.galleryThumb}>
+          <GradientFill angle={s.MEDIA_ANGLE} stops={s.mediaStops(tokens, item.color)} />
+        </View>
         <View ref={parts?.caption?.ref} onLayout={parts?.caption?.onLayout} style={skin.galleryCaption}>
           <Text style={skin.galleryTitle(tokens)} numberOfLines={1}>{item.title}</Text>
           {item.subtitle != null ? <Text style={skin.gallerySubtitle(tokens)}>{item.subtitle}</Text> : null}
         </View>
       </>
-    );
-    if (onPress) {
-      const ripple = paneRipple(theme, skin.ripple ? skin.ripple(tokens) : undefined);
-      return (
-        <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={cell}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onPress}
-            android_ripple={ripple}
-            {...hoverTarget}
-            style={({ pressed }) => [paneStyle(theme, frame), hovered && skin.hoverShadow ? skin.hoverShadow(tokens) : null, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
-          >
-            <GlassPane layer="content" shape={frame} />
-            {inner}
-          </Pressable>
-        </View>
-      );
-    }
-    return (
-      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={cell}>
-        <GlassSurface layer="content" style={frame}>{inner}</GlassSurface>
-      </View>
     );
   }
 

@@ -7018,7 +7018,7 @@
       "cols3",
       "cols2"
     ],
-    "none": "cols2",
+    "none": "cols3",
     "single": {
       "cols3": "cols3",
       "cols2": "cols2"
@@ -7170,7 +7170,7 @@
     }
   },
   "Stats.surface": {
-    "kind": "toggle",
+    "kind": "axis",
     "components": [
       "Stats"
     ],
@@ -7179,13 +7179,25 @@
     ],
     "resolver": "src/molecules/stats/stats.shared.tsx#surfaceOf",
     "order": [
-      "plain"
+      "framed",
+      "plain",
+      "compact|large"
     ],
-    "none": "card",
+    "none": "plain",
     "single": {
-      "plain": "plain"
+      "framed": "card",
+      "plain": "plain",
+      "compact": "card",
+      "large": "card"
     },
-    "pairs": {}
+    "pairs": {
+      "compact + framed": "compact|framed",
+      "compact + large": "compact|large",
+      "compact + plain": "plain",
+      "framed + large": "framed|large",
+      "framed + plain": "framed",
+      "large + plain": "plain"
+    }
   },
   "Stats.item accent": {
     "kind": "axis",
