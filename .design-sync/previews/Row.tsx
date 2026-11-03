@@ -3,7 +3,7 @@ import { Row, Column, Button, Badge, Typography, Card } from "@nannier/canvas";
 export const Actions = () => (
   <Row>
     <Button primary>Save</Button>
-    <Button>Cancel</Button>
+    <Button outline>Cancel</Button>
     <Button ghost>Discard</Button>
   </Row>
 );
