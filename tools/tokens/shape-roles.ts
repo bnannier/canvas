@@ -51,7 +51,6 @@ export const SHAPE_ROLES: Record<ShapeRole, ShapeMember[]> = {
   card: [
     { token: "p-card-radius", on: ALL },
     { token: "p-ac-menu-radius", on: ["ios"], why: "iOS ships no combo box: its list is the web look's panel at the iOS card corner" },
-    { token: "p-stat-radius", on: ["web"], why: "iOS and Android ship no stat tile and draw the web skin's tile (the web card corner)" },
     { token: "p-feed-radius", on: ["web"], why: "iOS and Android ship no activity feed and draw the web skin's card (the web card corner)" },
     { token: "p-cal-radius", on: ALL },
     { token: "p-acc-card-radius", on: ["web", "ios"], why: "Android ships no accordion and draws the web skin's card (the web card corner)" },
@@ -418,7 +417,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "molecules/media-objects": ["tile", "emblem", "emblemSmall"],
   "molecules/phone-input": ["key"],
   "molecules/stacked-lists": ["control", "card", "groupedList", "listFrame"],
-  "molecules/stats": ["card"],
+  "molecules/stats": ["card", "statTile", "statSwatch"],
   "organisms/action-sheet": ["sheet", "actionSheet", "menu"],
   "organisms/board": ["lane", "laneCard"],
   "organisms/calendar": ["control", "card", "menu", "event"],
