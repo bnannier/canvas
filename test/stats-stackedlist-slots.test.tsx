@@ -4,8 +4,6 @@ import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Stats } from "../src/molecules/stats/stats.tsx";
-import { shareStrip, sparkStrip } from "../src/molecules/stats/stats.styles.ts";
-import { webSkin as sparklineSkin } from "../src/charts/sparkline/sparkline.styles.ts";
 import { StackedBar } from "../src/charts/stacked-bar/stacked-bar.tsx";
 import { StackedList } from "../src/molecules/stacked-lists/stacked-lists.tsx";
 
@@ -34,18 +32,24 @@ describe("Stats per-metric slots", () => {
     expect(getByText("489")).toBeTruthy();
   });
 
-  it("accents the value from the chart ramp", () => {
-    const { getByText } = ui(<Stats items={[{ label: "Clients", value: "12", chart4: true }]} />);
-    // The accent paints a colour; an untoned metric leaves the value's own style.
-    expect(getByText("12").style.color).toBeTruthy();
+  // The hand-off marks an accent with an 8px swatch before the label (cv-kit-code3.js
+  // `stats`) and leaves the figure in the foreground.
+  const swatchOf = (label: HTMLElement) => (label.previousElementSibling as HTMLElement | null)?.style.backgroundColor ?? "";
+
+  it("marks the accent with a swatch from the chart ramp, leaving the value's color", () => {
+    const accented = ui(<Stats items={[{ label: "Clients", value: "12", chart4: true }]} />);
+    expect(swatchOf(accented.getByText("Clients"))).toBeTruthy();
+    const value = accented.getByText("12").style.color;
+    cleanup();
+    expect(ui(<Stats items={[{ label: "Clients", value: "12" }]} />).getByText("12").style.color).toBe(value);
   });
 
   it("resolves the accent axis by first match", () => {
     // Rendered one at a time: both trees would otherwise share the document body
     // and the text queries would match twice.
-    const both = ui(<Stats items={[{ label: "A", value: "1", chart1: true, chart8: true }]} />).getByText("1").style.color;
+    const both = swatchOf(ui(<Stats items={[{ label: "A", value: "1", chart1: true, chart8: true }]} />).getByText("A"));
     cleanup();
-    const first = ui(<Stats items={[{ label: "A", value: "1", chart1: true }]} />).getByText("1").style.color;
+    const first = swatchOf(ui(<Stats items={[{ label: "A", value: "1", chart1: true }]} />).getByText("A"));
     expect(both).toBe(first);
   });
 
@@ -91,18 +95,21 @@ describe("Stats strip slot", () => {
     expect(container.querySelector('[role="img"]')).toBeTruthy();
   });
 
-  it("reserves the trend strip's height for the composition strip", () => {
-    // What keeps a row that mixes the two at ONE card height: the cards stretch
-    // to the tallest sibling, so the two strips have to occupy the same band.
-    expect(shareStrip.height).toBe(sparklineSkin.height.default);
-    expect(shareStrip.marginTop).toBe(sparkStrip.marginTop);
-  });
-
-  it("stands the composition bar on the trend strip's floor", () => {
-    // A Sparkline's bars sit on the bottom of the band, so a centred
-    // composition bar would float above its neighbours' baseline in a row that
-    // mixes the two.
-    expect(shareStrip.justifyContent).toBe("flex-end");
+  it("draws the composition as the hand-off's 6px bar over its legend", () => {
+    const { container, getByText } = ui(
+      <ThemeProvider dark solid>
+        <Stats items={[{ label: "Verified", value: "80%", share: [{ label: "Yes", value: 8 }, { label: "No", value: 2 }] }]} />
+      </ThemeProvider>,
+    );
+    const bar = container.querySelector('[aria-label^="Verified:"]') as HTMLElement;
+    expect(bar.style.height).toBe("6px");
+    const [yes, no] = [...bar.children] as HTMLElement[];
+    expect(yes.style.flexGrow).toBe("0.8");
+    expect(no.style.flexGrow).toBe("0.2");
+    // The first segment in the accent, the rest in the raised surface.
+    expect(no.style.backgroundColor).not.toBe(yes.style.backgroundColor);
+    expect(getByText("Yes")).toBeTruthy();
+    expect(getByText("No")).toBeTruthy();
   });
 
   it("prefers the trend over the composition when a metric carries both", () => {
@@ -129,43 +136,32 @@ describe("Stats strip slot", () => {
   });
 });
 
-describe("Stats framed strips", () => {
-  const strip = (container: HTMLElement, label: string) => container.querySelector(`[aria-label="${label}"]`) as HTMLElement;
+describe("Stats surfaces", () => {
+  // The hand-off's group is one bordered box with the metrics edge to edge inside it;
+  // `framed` separates them into tiles 12 apart.
+  const rowOf = (node: ReactNode) => (ui(node).getByTestId("stats").lastElementChild as HTMLElement);
+  const items = [{ label: "Requests", value: "24.5k" }, { label: "Errors", value: "0" }];
 
-  it("frames a trend strip on the muted track only when the row asks", () => {
-    const bare = strip(ui(<Stats items={[{ label: "Requests", value: "1", spark: [0, 0, 0] }]} />).container, "Requests trend");
-    expect(bare.style.backgroundColor).toBe("");
-    cleanup();
-    const framed = strip(ui(<Stats framed items={[{ label: "Requests", value: "1", spark: [0, 0, 0] }]} />).container, "Requests trend");
-    // The frame is what makes an all-zero series read as a chart sitting at
-    // zero rather than one that failed to load.
-    expect(framed.style.backgroundColor).toBeTruthy();
+  it("groups the metrics in one bordered surface by default", () => {
+    const root = ui(<Stats testID="stats" items={items} />).getByTestId("stats");
+    expect(root.style.borderTopWidth || root.style.borderWidth).toBeTruthy();
+    const second = (root.lastElementChild as HTMLElement).children[1] as HTMLElement;
+    expect(second.style.borderLeftWidth).toBe("1px");
   });
 
-  it("fills the band with the composition when framed, so both strips are one shape", () => {
-    const { container } = ui(
-      <Stats framed items={[{ label: "Verified", value: "80%", share: [{ label: "Yes", value: 8 }, { label: "No", value: 2 }] }]} />,
-    );
-    const bar = (container.querySelector('[aria-label^="Verified:"]') as HTMLElement).firstElementChild as HTMLElement;
-    expect(bar.style.height).toBe("24px");
-    expect(shareStrip.height).toBe(24);
+  it("separates the metrics into tiles when framed", () => {
+    const row = rowOf(<Stats framed testID="stats" items={items} />);
+    expect(row.style.gap).toBe("12px");
+    const tile = row.firstElementChild as HTMLElement;
+    expect(tile.style.borderTopLeftRadius || tile.style.borderRadius).toBe("14px");
   });
 
-  it("draws a tile's composition as a wash, framed or not", () => {
-    // Inside a tile the strip supports the value rather than being it, which is
-    // the same reason a Sparkline washes its own marks.
-    const segment = (framed: boolean) => {
-      const { container } = ui(
-        <Stats framed={framed} items={[{ label: "Verified", value: "80%", share: [{ label: "Yes", value: 8 }] }]} />,
-      );
-      const bar = (container.querySelector('[aria-label^="Verified:"]') as HTMLElement).firstElementChild as HTMLElement;
-      return (bar.firstElementChild as HTMLElement).style.backgroundColor;
-    };
-    const framed = segment(true);
-    cleanup();
-    const plain = segment(false);
-    expect(framed).toContain("rgba");
-    expect(plain).toBe(framed);
+  it("draws the trend beside the value rather than under it", () => {
+    // The test renderer stubs react-native-svg, so the line's own geometry is pinned
+    // through `sparkPoints` (surfaces-data-look.test.ts); here, its place in the tile.
+    const { getByText, container } = ui(<Stats items={[{ label: "Errors", value: "3", down: true, spark: [1, 2, 3] }]} />);
+    const trend = container.querySelector('[aria-label="Errors trend"]') as HTMLElement;
+    expect(trend.parentElement).toBe(getByText("3").parentElement);
   });
 });
 

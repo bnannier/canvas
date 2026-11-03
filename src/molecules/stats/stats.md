@@ -4,11 +4,12 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 
 Under the value each tile can draw one strip: its trend (`spark`) or its composition (`share`). Both reserve the same height, so a row that mixes them keeps one card height and no tile is left half empty. `framed` puts every strip on a muted track, which is what makes a ROW of them scan evenly.
 
-Each metric is a tile: the card fill on a hairline at the card corner, an 18px inset,
-a 12px label, a 28px figure and a 12px mono delta. `plain` sets the metrics edge to edge
-inside one bordered surface, a hairline between each. `compact` renders value-first rail
-tiles with a 12px inset and 20px figures; `large` renders 36px dashboard headlines;
-compact wins if both are set. Each item may include a muted `description`.
+The metrics sit edge to edge inside one bordered surface, a hairline between each: a 16px
+inset, a 13px label, a 28px figure and a 12px delta led by its direction arrow. `framed`
+separates them into tiles 12px apart. A trend draws as a small line beside the figure and
+a composition as a thin bar over its legend. `compact` renders value-first rail tiles with
+a 12px inset and 20px figures; `large` renders 36px dashboard headlines; compact wins if
+both are set. Each item may include a muted `description`.
 
 ## Usage
 
