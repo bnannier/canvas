@@ -1,6 +1,7 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
@@ -206,6 +207,14 @@ export function createInputOTP(skin: InputOTPSkin) {
     // HUG: the cell row keeps its content width inside a stretching Column.
     const hug = useHugStyle();
     const [focusedState, setFocused] = useState(false);
+    const inputRef = useRef<RNTextInput>(null);
+    const hostRef = useComposedRefs(inputRef, ref);
+    // A prerendered autoFocus input may already own focus before hydration attaches
+    // onFocus. Read the native input's focus state after it mounts so the active cell
+    // and caret reflect that focus too; subsequent focus changes use the handlers.
+    useEffect(() => {
+      setFocused(inputRef.current?.isFocused() ?? false);
+    }, []);
     // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
     const focused = usePinnedFocus(!disabled) || focusedState;
 
@@ -366,7 +375,7 @@ export function createInputOTP(skin: InputOTPSkin) {
               the cells paint the value. A Pressable wrapper is NOT needed — the input
               itself fills the row, so a tap anywhere focuses it. */}
           <TextInput
-            ref={ref}
+            ref={hostRef}
             value={value}
             onChangeText={handleChange}
             {...textEntryState({ disabled })}

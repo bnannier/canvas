@@ -1,5 +1,7 @@
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, act, screen } from "@testing-library/react";
+import { createRef } from "react";
+import type { TextInput } from "react-native";
 
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { darkColors, lightColors } from "../src/style/tokens.ts";
@@ -61,6 +63,17 @@ describe("the InputOTP cells follow the hand-off", () => {
 });
 
 describe("the rendered InputOTP", () => {
+  it("forwards the original input with its focus, blur and isFocused methods", () => {
+    const ref = createRef<TextInput>();
+    render(<ThemeProvider light solid><InputOTP ref={ref} /></ThemeProvider>);
+    expect(ref.current).toBe(screen.getByLabelText("One-time code") as unknown as TextInput);
+    expect(ref.current?.isFocused()).toBe(false);
+    act(() => ref.current?.focus());
+    expect(ref.current?.isFocused()).toBe(true);
+    act(() => ref.current?.blur());
+    expect(ref.current?.isFocused()).toBe(false);
+  });
+
   it("lays the cells and the group dash out 8 apart", () => {
     const { container } = render(
       <ThemeProvider light solid>

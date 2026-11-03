@@ -55,6 +55,31 @@ for (const [slug, spec] of Object.entries(DETAIL_SPECS)) {
   });
 }
 
+test("input-otp: the caret follows prerendered autofocus, blur and refocus", async ({ page }) => {
+  await gotoDocs(page, "/components/input-otp", { viewport: DESKTOP });
+  const section = page.locator('[data-detail-section="an"]');
+  await section.scrollIntoViewIfNeeded();
+  const input = section.getByRole("textbox", { name: "One-time code" });
+  const mark = section.locator('[data-anatomy-mark="3"]');
+  const legend = section.locator('[data-anatomy-part="Caret"]');
+
+  // The browser focuses the prerendered input before its onFocus listener hydrates.
+  // The caret must reflect that initial focus without requiring a second focus event.
+  await expect(input).toBeFocused();
+  await expect(mark).toHaveCount(1);
+  await expect(legend).toHaveAttribute("data-anatomy-shown", "true");
+
+  await input.blur();
+  await expect(input).not.toBeFocused();
+  await expect(mark).toHaveCount(0);
+  await expect(legend).toHaveAttribute("data-anatomy-shown", "false");
+
+  await input.focus();
+  await expect(input).toBeFocused();
+  await expect(mark).toHaveCount(1);
+  await expect(legend).toHaveAttribute("data-anatomy-shown", "true");
+});
+
 test("every undrawn part is a part its spec lists", () => {
   for (const [slug, parts] of Object.entries(UNDRAWN)) for (const part of Object.keys(parts)) expect(DETAIL_SPECS[slug]?.anatomy.parts).toContain(part);
 });
