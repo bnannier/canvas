@@ -78,3 +78,10 @@ android/.cxx/
 
 # Reference images photographed from the vendored v4 hand-off (tools/v4/capture-references.ts).
 .v4-reference/
+
+# design-sync (Claude Design import): staged converter, build output, machine state
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

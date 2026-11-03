@@ -1,0 +1,36 @@
+{
+  "projectId": "8df37eee-45c5-4019-8bdc-c0641f30e81d",
+  "shape": "package",
+  "pkg": "@nannier/canvas",
+  "globalName": "Canvas",
+  "buildCmd": "bun run build && node .design-sync/web-entry.mjs",
+  "entry": "./.design-sync/.cache/web/index.mjs",
+  "cssEntry": "./.design-sync/.cache/web/canvas.css",
+  "extraFonts": [
+    ".design-sync/fonts.css"
+  ],
+  "provider": {
+    "component": "ThemeProvider",
+    "props": {
+      "fonts": {
+        "sans": "\"Instrument Sans\", system-ui, sans-serif",
+        "display": "\"Bricolage Grotesque\", system-ui, sans-serif",
+        "mono": "\"JetBrains Mono\", ui-monospace, Menlo, monospace"
+      }
+    }
+  },
+  "docsDir": "src",
+  "guidelinesGlob": [
+    "DESIGN.md",
+    "USAGE.md"
+  ],
+  "libOverrides": {
+    "source-kit.mjs": "group = the kit tier dir (src/<tier>/...); a part exported from its parent file is matched by its export"
+  },
+  "componentSrcMap": {
+    "View": "src/style/primitives.ts",
+    "AnatomyPart": null,
+    "AnatomyProvider": null,
+    "InteractionOverride": null
+  }
+}
