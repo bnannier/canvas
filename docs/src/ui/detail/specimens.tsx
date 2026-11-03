@@ -1,6 +1,6 @@
 import type { ReactNode, Ref } from "react";
 import { Platform } from "react-native";
-import { View, Grid, Card, CardMedia, CardContent, CardSeparator, Column, Typography, InteractionOverride, CodeBlock } from "@nannier/canvas";
+import { View, Grid, GridItem, Card, CardMedia, CardContent, CardSeparator, Column, Typography, InteractionOverride, CodeBlock } from "@nannier/canvas";
 import type { DocExample, ExampleScope } from "../../core/scope";
 import type { DetailSpec } from "../../core/data/detail-specs";
 import { ExampleErrorBoundary, FitStage } from "../stage";
@@ -34,7 +34,7 @@ export function Well({ compact, tall, pinsRing, code, children }: { compact?: bo
 
 export function VariantsSection({ examples, path, scope, sectionRef }: {
   /** The page's examples after the first (the Usage example, shown in Usage). */
-  examples: readonly { example: DocExample; index: number }[];
+  examples: readonly { example: DocExample; index: number; full?: boolean }[];
   /** The .md the examples come from, for the note. */
   path: string;
   scope: ExampleScope;
@@ -48,22 +48,24 @@ export function VariantsSection({ examples, path, scope, sectionRef }: {
       sectionRef={sectionRef}
     >
       <Grid minTileWidth={340} roomy>
-        {examples.map(({ example }) => (
+        {examples.map(({ example, full }) => (
           // The hand-off's variant card (line 182): `border:1px solid var(--ln);border-radius:18px;
-          // overflow:hidden;background:var(--sf)`, no shadow.
-          <Card key={example.label} flush clip largeCorners outlined>
-            <Well code={example.code}>{example.render(scope)}</Well>
-            <CardSeparator />
-            <CardContent cozy>
-              <Column snug>
-                {/* The card's title (line 185: `font:500 14px/1.3 var(--ft)`), the kit's variantTitle;
-                    its note (line 186: `400 13px/1.5 var(--ft);color:var(--tx2)`) is the small role in the subtle ink. */}
-                <Typography variantTitle>{example.label}</Typography>
-                {example.note?.length ? <Prose blocks={example.note} small subtle /> : null}
-                <CodeBlock headerless code={example.code} language="tsx" compact />
-              </Column>
-            </CardContent>
-          </Card>
+          // overflow:hidden;background:var(--sf)`, no shadow. A `full` card spans the row.
+          <GridItem key={example.label} full={full}>
+            <Card flush clip largeCorners outlined>
+              <Well code={example.code}>{example.render(scope)}</Well>
+              <CardSeparator />
+              <CardContent cozy>
+                <Column snug>
+                  {/* The card's title (line 185: `font:500 14px/1.3 var(--ft)`), the kit's variantTitle;
+                      its note (line 186: `400 13px/1.5 var(--ft);color:var(--tx2)`) is the small role in the subtle ink. */}
+                  <Typography variantTitle>{example.label}</Typography>
+                  {example.note?.length ? <Prose blocks={example.note} small subtle /> : null}
+                  <CodeBlock headerless code={example.code} language="tsx" compact />
+                </Column>
+              </CardContent>
+            </Card>
+          </GridItem>
         ))}
       </Grid>
     </DetailSection>

@@ -25,6 +25,14 @@ export const OWNER_VARIANT_ORDER: Readonly<Record<string, readonly string[]>> = 
   icon: ["Primary", "Destructive", "Success", "Warning", "Muted", "Disclosure indicator", "Gallery"],
 };
 
+/**
+ * The owner's specimens that span every column of the Variants grid. Icon: the owner
+ * asked on 2026-11-02 for the icon list (Gallery) card to span the whole row.
+ */
+export const OWNER_FULL_ROW: Readonly<Record<string, readonly string[]>> = {
+  icon: ["Gallery"],
+};
+
 function ownerOrder(slug: string, variants: ReferenceComponent["variants"]): ReferenceComponent["variants"] {
   const order = OWNER_VARIANT_ORDER[slug];
   if (!order) return variants;
@@ -35,11 +43,19 @@ function ownerOrder(slug: string, variants: ReferenceComponent["variants"]): Ref
   return order.map((label) => variants.find((v) => v.t === label)!);
 }
 
+function fullRow(slug: string, variants: ReferenceComponent["variants"]): readonly string[] {
+  const labels = OWNER_FULL_ROW[slug]!;
+  const missing = labels.filter((label) => !variants.some((v) => v.t === label));
+  if (missing.length) throw new Error(`OWNER_FULL_ROW.${slug} names variants the reference lacks: ${missing.join(", ")}`);
+  return labels;
+}
+
 export function presentationFromSource(source: string) {
   const registry = JSON.parse(source.replace(/^window\.CV_DOCS\s*=\s*/, "").replace(/;\s*$/, "")) as { c: Record<string, ReferenceComponent>; rooms?: { slugs: string[] }[] };
   return Object.fromEntries(Object.entries(registry.c).map(([slug, c]) => [slug, {
     variants: ownerOrder(slug, c.variants).map((v) => v.t),
     variantNotes: c.variants.filter((v) => !!v.d).map((v) => v.t),
+    ...(OWNER_FULL_ROW[slug] ? { fullRow: fullRow(slug, c.variants) } : null),
     introCount: c.intro.length,
     guidance: c.sections.slice(0, 6).map((section) => ({ title: section.t, paragraphs: Math.min(3, section.p.length), code: !!section.code })),
     noteCount: c.a11y.length,

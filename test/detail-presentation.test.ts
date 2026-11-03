@@ -31,6 +31,12 @@ describe("the reference's detail presentation", () => {
     expect(variants.slice(-2)).toEqual(["Disclosure indicator", "Gallery"]);
   });
 
+  it("marks Icon's Gallery card to span the whole Variants row", () => {
+    const current: DocExample[] = ["Default", "Muted", "Gallery"].map((label) => ({ label, code: "", render: () => null }));
+    const result = referenceVariants(current, presentationFor("icon"));
+    expect(result.map(({ example, full }) => [example.label, full])).toEqual([["Muted", false], ["Gallery", true]]);
+  });
+
   it("does not invent a Variants section when the reference contains no variants", () => {
     const reference = presentationFromSource('window.CV_DOCS={"c":{"primitive":{"intro":[],"variants":[],"sections":[],"a11y":[]}}};').primitive!;
     const current: DocExample[] = [{ label: "Default", code: "", render: () => null }, { label: "New example", code: "", render: () => null }];

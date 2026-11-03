@@ -193,6 +193,9 @@ export const DETAIL_PRESENTATION = {
       "Gallery",
       "Disclosure indicator"
     ],
+    "fullRow": [
+      "Gallery"
+    ],
     "introCount": 0,
     "guidance": [],
     "noteCount": 1,
