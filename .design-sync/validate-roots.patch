@@ -1,0 +1,5 @@
+--- a/package-validate.mjs
++++ b/package-validate.mjs
+@@ -526 +526 @@
+-          const roots = document.querySelectorAll('#root, [id^="r"]');
++          const roots = document.querySelectorAll('#root, [id^="r"]:not(style):not(script)');

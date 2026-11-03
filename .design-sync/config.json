@@ -104,7 +104,75 @@
       "cardMode": "column"
     },
     "BreakpointOverride": {
+      "cardMode": "single",
+      "primaryStory": "DesktopRail"
+    },
+    "Autocomplete": {
+      "cardMode": "column"
+    },
+    "Emblem": {
+      "cardMode": "column"
+    },
+    "Grid": {
+      "cardMode": "column"
+    },
+    "GridItem": {
+      "cardMode": "column"
+    },
+    "QRCode": {
+      "cardMode": "column"
+    },
+    "Select": {
+      "cardMode": "column"
+    },
+    "Tooltip": {
+      "cardMode": "column"
+    },
+    "AreaChart": {
+      "cardMode": "column"
+    },
+    "BoxPlot": {
+      "cardMode": "column"
+    },
+    "Chart": {
+      "cardMode": "column"
+    },
+    "ComposedChart": {
+      "cardMode": "column"
+    },
+    "DepthChart": {
+      "cardMode": "column"
+    },
+    "Gauge": {
+      "cardMode": "column"
+    },
+    "Histogram": {
+      "cardMode": "column"
+    },
+    "LineChart": {
+      "cardMode": "column"
+    },
+    "ProgressRing": {
+      "cardMode": "column"
+    },
+    "RadarChart": {
+      "cardMode": "column"
+    },
+    "RangeAreaChart": {
+      "cardMode": "column"
+    },
+    "ScatterPlot": {
+      "cardMode": "column"
+    },
+    "Treemap": {
+      "cardMode": "column"
+    },
+    "WaterfallChart": {
+      "cardMode": "column"
+    },
+    "DropZone": {
       "cardMode": "column"
     }
-  }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
 }
