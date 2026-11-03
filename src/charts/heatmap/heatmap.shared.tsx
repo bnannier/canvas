@@ -1,18 +1,24 @@
 import { CHART_LOOK } from "../shared/charts.styles.js";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Animated, Easing, Platform, ScrollView } from "react-native";
 import {
   View,
   Text,
   Pressable,
-  useTheme,
   useReducedMotion,
   supportsNativeDriver,
   alpha,
   devWarn,
+  GlassPane,
+  paneStyle,
+  isGlass,
+  innerFill,
   type ColorTokens,
   type LayoutStyle,
 } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { surface, surfacePadDefault, webSkin } from "../shared/charts.styles.js";
+import { CHART_ROOT } from "../shared/chart-frame.js";
 import {
   announceSelection,
   ChartInspectionSurface,
@@ -29,12 +35,17 @@ import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/an
 // Heatmap is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
 //
-// Density cells whose fill encodes each value (0–1). Two layouts share the same
-// data and legend:
-//   • the default wrapping grid (a wash of the primary hue per cell), and
-//   • `calendar` — a GitHub-contribution-graph: week columns of seven day cells,
-//     weekday + month labels, discrete less-to-more levels, and press/hover-to-
-//     inspect showing the day's count and date.
+// Density cells whose fill encodes each value (0–1), drawn as the v4 hand-off's heatmap
+// (cv-kit-code4.js `O('heatmap')`): the chart frame (the card fill on a 1 px hairline at
+// the chart corner under the small shadow, 16 inset, its rows 12 apart; `plain` strips
+// it), an optional 500 13 title, 11 px cells on a 13 px pitch in seven-row columns that
+// scroll sideways where they overflow, and a less-to-more legend. An empty cell is the
+// secondary surface; a valued one washes chart-1 from .18 to .98. Two layouts share it:
+//   • the default cell grid, and
+//   • `calendar`, the same columns as days, with press/hover-to-inspect showing the
+//     day's count and date.
+// `detailed` is the docs' authored contribution calendar: unframed, with month and
+// weekday labels and discrete levels.
 
 /** One heatmap cell. A bare number is shorthand for `{ value }`. */
 export interface HeatmapCell {
@@ -55,12 +66,14 @@ export interface HeatmapProps {
   values: HeatmapValue[];
   /** What the grid measures (e.g. "Contribution activity"); leads the accessible name. */
   label?: string;
-  /** GitHub-style: lay the cells into seven-row week columns with weekday + month labels. */
+  /** GitHub-style: the cells are days, each inspectable for its count and date. */
   calendar?: boolean;
-  /** Fixed-size contribution calendar with the authored month, weekday and level styling. */
+  /** Unframed contribution calendar with the authored month, weekday and level styling. */
   detailed?: boolean;
-  /** A summary line above the grid (e.g. "248 contributions in the last year"). */
+  /** A summary line above the grid (e.g. "248 contributions in the last year"); shown in place of `label`. */
   caption?: string;
+  /** Strip the card surface for nesting inside an existing card (mirrors Stats). */
+  plain?: boolean;
   /** Hide the less-to-more legend row. */
   hideLegend?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -89,14 +102,33 @@ const HEATMAP_WEEKDAYS = ["Mon", "", "Wed", "", "Fri", "", ""];
 // The v4 hand-off's ramp (`K.def('heatmap')`): chart-1 washed from .1 (no activity) to
 // .95, the steps its less-to-more legend draws.
 const HEATMAP_LEVEL_ALPHA = [0.1, 0.3, 0.55, 0.8, 0.95];
-// The grid's continuous wash: .08 at zero, climbing .85 to the full value.
-const GRID_FLOOR = 0.08;
-const GRID_SPAN = 0.85;
+// The hand-off's cell: 11 px squares 2 apart (a 13 px pitch) in seven-row columns.
+const CAL_CELL = 11;
+const CAL_GAP = 2;
+const CAL_ROWS = 7;
+// The continuous wash: chart-1 at .18 for the faintest value, climbing .8 to the full
+// one, and the legend's five steps along it.
+const HEAT_FLOOR = 0.18;
+const HEAT_SPAN = 0.8;
+const LEGEND_STEPS = [0.18, 0.4, 0.6, 0.8, 0.98];
+// The frame's rows (title, cells, legend) stand 12 apart.
+const FRAME_GAP = 12;
+// The cells' box is the hand-off's SVG viewBox: a full 13 px pitch per column and row
+// (the trailing gap included), at least 100 px wide.
+const cellsBox = (cols: number) => ({ width: Math.max(100, cols * (CAL_CELL + CAL_GAP)), height: CAL_ROWS * (CAL_CELL + CAL_GAP) });
 
 const clamp01 = (n: number) =>
   Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
 const normCell = (v: HeatmapValue): HeatmapCell =>
   typeof v === "number" ? { value: v } : v;
+
+type MaterialTheme = ReturnType<typeof useMaterialTheme>;
+
+/** A cell's fill: the secondary surface when empty, else the chart-1 wash for its value. */
+function heatFill(theme: MaterialTheme, value: number): string {
+  const t = clamp01(value);
+  return t > 0 ? alpha(theme.tokens["chart-1"], HEAT_FLOOR + HEAT_SPAN * t) : innerFill(theme, "secondary");
+}
 
 /** Bucket a 0–1 intensity into the five discrete GitHub-style levels. */
 function heatLevel(value: number): number {
@@ -176,83 +208,127 @@ export function Heatmap(props: HeatmapProps) {
   );
 }
 
-// The default wrapping grid: one alpha-washed square per value, with the shared
-// less-to-more legend. Unchanged behavior from the original Heatmap.
+// The chart frame around the cells: a CONTENT-layer pane under glass, nothing extra in
+// solid mode, and no surface at all when `plain`.
+function HeatmapFrame({
+  theme,
+  plain,
+  testID,
+  style,
+  a11y,
+  children,
+}: {
+  theme: MaterialTheme;
+  plain?: boolean;
+  testID?: string;
+  style?: LayoutStyle;
+  a11y?: object;
+  children: ReactNode;
+}) {
+  const shape = surface(theme.tokens, webSkin.surfaceRadius);
+  return (
+    <View testID={testID} style={[plain ? null : paneStyle(theme, [shape, surfacePadDefault]), { gap: FRAME_GAP }, CHART_ROOT, style]} {...a11y}>
+      {isGlass(theme) && !plain ? <GlassPane layer="content" shape={shape} /> : null}
+      {children}
+    </View>
+  );
+}
+
+// The title line: 500 13 in the card ink.
+function HeatmapTitle({ tokens, part, children }: { tokens: ColorTokens; part?: AnatomyTarget; children: string }) {
+  return (
+    <Text ref={part?.ref} onLayout={part?.onLayout} style={{ fontSize: 13, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"] }}>
+      {children}
+    </Text>
+  );
+}
+
+// The less-to-more legend: Less, the five wash steps at the cell's size and corner, More,
+// 4 apart at the trailing edge in the 400 11 subtle ink.
+function HeatmapLegend({ tokens, part }: { tokens: ColorTokens; part?: AnatomyTarget }) {
+  return (
+    <View ref={part?.ref} onLayout={part?.onLayout} style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 4 }}>
+      <Text style={legendText(tokens)}>Less</Text>
+      {LEGEND_STEPS.map((step) => (
+        <View key={step} style={{ width: CAL_CELL, height: CAL_CELL, borderRadius: platformShape.web.heatCell, backgroundColor: alpha(tokens["chart-1"], step) }} />
+      ))}
+      <Text style={legendText(tokens)}>More</Text>
+    </View>
+  );
+}
+
+// The default cell grid: one washed square per value in seven-row columns, which scroll
+// sideways (the calendar's scrollport, a keyboard stop only while they overflow).
 function GridHeatmap({
   cells,
   label,
+  caption,
   hideLegend,
+  plain,
   testID,
   style,
 }: HeatmapProps & { cells: HeatmapCell[] }) {
   // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
-  // hand-off's order: Grid, Cell (the first), Title, Legend. The wrapping grid has no Title.
+  // hand-off's order: Grid, Cell (the first), Title, Legend.
   const gridPart = useAnatomyPart("Grid");
   const cellPart = useAnatomyPart("Cell");
+  const titlePart = useAnatomyPart("Title");
   const legendPart = useAnatomyPart("Legend");
-  const { tokens } = useTheme();
-  const cell = (intensity: number, box: number, key: number) => (
-    <View
-      key={key}
-      ref={key === 0 ? cellPart?.ref : undefined}
-      onLayout={key === 0 ? cellPart?.onLayout : undefined}
-      style={{
-        borderRadius: platformShape.web.heatCell,
-        height: box,
-        width: box,
-        backgroundColor: alpha(
-          tokens["chart-1"],
-          GRID_FLOOR + GRID_SPAN * clamp01(intensity)
-        ),
-      }}
-    />
-  );
+  const theme = useMaterialTheme({ static: true });
+  const { tokens } = theme;
+  const scrollport = useHorizontalScrollFocus();
+  const focusRing = useFocusRingStyle();
+  const title = caption ?? label;
+  const cols = Math.ceil(cells.length / CAL_ROWS);
   // Name the grid with its size so assistive tech hears the scope of the data.
   const name = `${label ?? "Heatmap"}, ${cells.length} cells`;
-  // Same img-placement rule as StackedBar: while the less-to-more legend renders,
-  // the image role sits on the cell grid only so the legend text stays reachable.
+  // Same img-placement rule as StackedBar: while a title or the legend renders, the
+  // image role sits on the cells only so that text stays reachable.
   const img = {
     accessibilityRole: "image",
     accessibilityLabel: name,
     "aria-label": name,
   } as const;
+  const imgOnRoot = hideLegend && !title;
   return (
     <AnatomyScope>
-    <View testID={testID} style={style} {...(hideLegend ? img : {})}>
-      <View
-        ref={gridPart?.ref}
-        onLayout={gridPart?.onLayout}
-        {...(hideLegend ? {} : img)}
-        style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}
-      >
-        {cells.map((c, i) => cell(c.value, 18, i))}
-      </View>
-      {hideLegend ? null : (
+    <HeatmapFrame theme={theme} plain={plain} testID={testID} style={style} a11y={imgOnRoot ? img : undefined}>
+      {title ? <HeatmapTitle tokens={tokens} part={titlePart}>{title}</HeatmapTitle> : null}
+      <ScrollView {...scrollport} horizontal showsHorizontalScrollIndicator={false} style={focusRing}>
         <View
-          ref={legendPart?.ref}
-          onLayout={legendPart?.onLayout}
-          style={{
-            marginTop: 14,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            gap: 4,
-          }}
+          ref={gridPart?.ref}
+          onLayout={gridPart?.onLayout}
+          {...(imgOnRoot ? {} : img)}
+          style={{ flexDirection: "row", gap: CAL_GAP, ...cellsBox(cols) }}
         >
-          <Text style={legendText(tokens)}>Less</Text>
-          {[0.02, 0.26, 0.55, 0.85, 1].map((v, i) =>
-            cell(v, CAL_CELL, 100 + i)
-          )}
-          <Text style={legendText(tokens)}>More</Text>
+          {Array.from({ length: cols }).map((_, c) => (
+            <View key={c} style={{ gap: CAL_GAP }}>
+              {cells.slice(c * CAL_ROWS, c * CAL_ROWS + CAL_ROWS).map((cell, r) => (
+                <View
+                  key={r}
+                  ref={c + r === 0 ? cellPart?.ref : undefined}
+                  onLayout={c + r === 0 ? cellPart?.onLayout : undefined}
+                  style={{ width: CAL_CELL, height: CAL_CELL, borderRadius: platformShape.web.heatCell, backgroundColor: heatFill(theme, cell.value) }}
+                />
+              ))}
+            </View>
+          ))}
         </View>
-      )}
-    </View>
+      </ScrollView>
+      {hideLegend ? null : <HeatmapLegend tokens={tokens} part={legendPart} />}
+    </HeatmapFrame>
     </AnatomyScope>
   );
 }
 
-// The discrete less-to-more legend for calendar mode: the empty box plus the
-// four climbing levels, matching the cells' bucketing.
+// The detailed calendar is the docs' authored art, laid in its own showcase card, so it
+// takes no frame of its own; every other calendar takes the chart frame.
+function CalendarFrame({ detailed, ...frame }: { detailed: boolean } & Parameters<typeof HeatmapFrame>[0]) {
+  return detailed ? <View testID={frame.testID} style={frame.style}>{frame.children}</View> : <HeatmapFrame {...frame} />;
+}
+
+// The detailed calendar's discrete less-to-more legend: the empty box plus the four
+// climbing levels, matching the cells' bucketing.
 function HeatmapLevelLegend({
   tokens,
   calendar = false,
@@ -323,15 +399,10 @@ function HeatmapLevelLegend({
 // image inside, so it announces the same summary (e2e/behavior/scroll-focus.e2e.ts
 // reads that name). It takes no role or name of its own, which would only repeat the
 // image's (and a region would add a landmark).
-const CAL_CELL = 11;
-const CAL_GAP = 2;
-const CAL_ROWS = 7;
-const CAL_GUTTER = 32; // weekday-label column, wide enough for "Wed" at 10px
-const CAL_MONTH_H = 15; // month-label row
-// The calendar's axis labels (the month row, the weekday gutter) and the inspection
-// flag's second line.
-const CAL_MONTH_TYPE = { fontFamily: MONO_FONT, fontSize: CHART_LOOK.axisSize, lineHeight: CAL_MONTH_H };
-const CAL_WEEKDAY_TYPE = { fontFamily: MONO_FONT, fontSize: CHART_LOOK.axisSize, lineHeight: 11 };
+// The detailed calendar's axis labels (the month row, the weekday gutter) and the
+// inspection flag's second line.
+const CAL_MONTH_TYPE = { fontFamily: MONO_FONT, fontSize: CHART_LOOK.authoredAxisSize, lineHeight: 12 };
+const CAL_WEEKDAY_TYPE = { fontFamily: MONO_FONT, fontSize: CHART_LOOK.authoredAxisSize, lineHeight: 12 };
 const FLAG_DETAIL_TYPE = { fontSize: CHART_LOOK.legendCaptionSize, lineHeight: 15 };
 // The detail line on the inverse pill reads a step back, as the hand-off's pinned readouts set
 // their secondary line (the candlestick card's volume at .6).
@@ -343,15 +414,17 @@ function CalendarHeatmap({
   caption,
   detailed = false,
   hideLegend,
+  plain,
   testID,
   style,
 }: HeatmapProps & { cells: HeatmapCell[] }) {
-  // The calendar's anatomy parts, as the grid's, with the Title on the caption.
+  // The calendar's anatomy parts, as the grid's.
   const gridPart = useAnatomyPart("Grid");
   const cellPart = useAnatomyPart("Cell");
   const titlePart = useAnatomyPart("Title");
   const legendPart = useAnatomyPart("Legend");
-  const { tokens } = useTheme();
+  const theme = useMaterialTheme({ static: true });
+  const { tokens } = theme;
   const [pinned, setPinned] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
   const active = hovered ?? pinned;
@@ -359,17 +432,16 @@ function CalendarHeatmap({
   const focusRing = useFocusRingStyle();
 
   const cols = Math.ceil(cells.length / CAL_ROWS);
-  const [frameW, setFrameW] = useState(0);
-  const gutter = detailed ? 22.25 : CAL_GUTTER;
-  const baseSize = detailed ? 12 : CAL_CELL;
-  const baseGap = detailed ? 3 : CAL_GAP;
-  const natural = cols * (baseSize + baseGap) - baseGap;
-  const k = !detailed && frameW > gutter + natural ? (frameW - gutter) / natural : 1;
-  const size = baseSize * k;
-  const gap = baseGap * k;
+  // The detailed calendar's authored 12 px cells 3 apart beside a weekday gutter; the
+  // hand-off's 11 px cells 2 apart with no axes otherwise.
+  const gutter = detailed ? 22.25 : 0;
+  const size = detailed ? 12 : CAL_CELL;
+  const gap = detailed ? 3 : CAL_GAP;
   const pitch = size + gap;
   const gridW = cols * pitch - gap;
   const hasDates = cells.some((c) => c.date);
+  // The frame's title: the caption, else the label (the detailed calendar shows only a caption).
+  const title = detailed ? caption : caption ?? label;
 
   // Place a month abbreviation at each column where the (topmost dated) month changes.
   const monthLabels: (string | null)[] = [];
@@ -438,8 +510,8 @@ function CalendarHeatmap({
 
   return (
     <AnatomyScope>
-    <View testID={testID} style={style} onLayout={(e) => setFrameW(e.nativeEvent.layout.width)}>
-      {caption ? (
+    <CalendarFrame detailed={detailed} theme={theme} plain={plain} testID={testID} style={style}>
+      {title && detailed ? (
         <Text
           ref={titlePart?.ref}
           onLayout={titlePart?.onLayout}
@@ -451,8 +523,10 @@ function CalendarHeatmap({
             color: tokens["card-foreground"],
           }}
         >
-          {caption}
+          {title}
         </Text>
+      ) : title ? (
+        <HeatmapTitle tokens={tokens} part={titlePart}>{title}</HeatmapTitle>
       ) : null}
       <ScrollView
         {...scrollport}
@@ -461,13 +535,13 @@ function CalendarHeatmap({
         style={[focusRing, detailed ? { paddingBottom: 4 } : null]}
       >
         <View {...img}>
-          {hasDates ? (
+          {detailed && hasDates ? (
             // Month labels are absolutely placed at their column so each abbreviation
             // renders in full, overflowing its narrow slot to the right (GitHub style),
             // rather than being clipped to one cell's width.
             <View
               style={{
-                height: detailed ? 17 : CAL_MONTH_H,
+                height: 17,
                 marginLeft: gutter,
                 width: gridW,
               }}
@@ -482,7 +556,6 @@ function CalendarHeatmap({
                       left: c * pitch,
                       top: 0,
                       ...CAL_MONTH_TYPE,
-                      ...(detailed ? { fontSize: CHART_LOOK.authoredAxisSize, lineHeight: 12 } : {}),
                       color:
                         tokens["subtle-foreground"] ??
                         tokens["muted-foreground"],
@@ -495,9 +568,9 @@ function CalendarHeatmap({
             </View>
           ) : null}
           <View style={{ flexDirection: "row" }}>
-            {/* Weekday gutter: Mon / Wed / Fri, aligned to the cell rows. */}
-            <View style={{ width: gutter, gap: gap, paddingRight: detailed ? 6 : 4 }}>
-              {(detailed ? HEATMAP_WEEKDAYS : ["", "Mon", "", "Wed", "", "Fri", ""]).map((wd, r) => (
+            {/* The detailed weekday gutter: Mon / Wed / Fri, aligned to the cell rows. */}
+            {detailed ? <View style={{ width: gutter, gap: gap, paddingRight: 6 }}>
+              {HEATMAP_WEEKDAYS.map((wd, r) => (
                 <View
                   key={r}
                   style={{ height: size, justifyContent: "center" }}
@@ -507,7 +580,6 @@ function CalendarHeatmap({
                       numberOfLines={1}
                       style={{
                         ...CAL_WEEKDAY_TYPE,
-                        ...(detailed ? { fontSize: CHART_LOOK.authoredAxisSize, lineHeight: 12 } : {}),
                         textAlign: "right",
                         color:
                           tokens["subtle-foreground"] ??
@@ -519,9 +591,9 @@ function CalendarHeatmap({
                   ) : null}
                 </View>
               ))}
-            </View>
+            </View> : null}
             <View>
-              <View ref={gridPart?.ref} onLayout={gridPart?.onLayout} style={{ flexDirection: "row", gap: gap }}>
+              <View ref={gridPart?.ref} onLayout={gridPart?.onLayout} style={{ flexDirection: "row", gap: gap, ...(detailed ? null : cellsBox(cols)) }}>
                 {Array.from({ length: cols }).map((_, c) => (
                   <View key={c} style={{ gap: gap }}>
                     {Array.from({ length: CAL_ROWS }).map((_, r) => {
@@ -532,7 +604,7 @@ function CalendarHeatmap({
                           <View key={r} style={{ width: size, height: size }} />
                         );
                       const lvl =
-                        detailed && cell.count != null
+                        cell.count != null
                           ? cell.count === 0
                             ? 0
                             : cell.count < 3
@@ -549,7 +621,7 @@ function CalendarHeatmap({
                           key={r}
                           part={idx === 0 ? cellPart : undefined}
                           size={size}
-                          fill={levelFill(tokens, lvl, detailed && hasDates)}
+                          fill={detailed ? levelFill(tokens, lvl, hasDates) : heatFill(theme, cell.value)}
                           detailed={detailed}
                           edge={tokens.foreground}
                           active={isActive}
@@ -607,10 +679,12 @@ function CalendarHeatmap({
           </View>
         </View>
       </ScrollView>
-      {hideLegend ? null : (
-        <HeatmapLevelLegend tokens={tokens} calendar={detailed && hasDates} part={legendPart} />
+      {hideLegend ? null : detailed ? (
+        <HeatmapLevelLegend tokens={tokens} calendar={hasDates} part={legendPart} />
+      ) : (
+        <HeatmapLegend tokens={tokens} part={legendPart} />
       )}
-    </View>
+    </CalendarFrame>
     </AnatomyScope>
   );
 }

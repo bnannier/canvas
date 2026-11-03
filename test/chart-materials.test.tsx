@@ -68,6 +68,7 @@ const framed: Record<string, ReactElement<{ testID?: string; plain?: boolean }>>
   DepthChart: <DepthChart bids={[{ price: 10, size: 5 }]} asks={[{ price: 11, size: 4 }]} />,
   FunnelChart: <FunnelChart stages={[{ label: "Visits", value: 100 }, { label: "Paid", value: 20 }]} />,
   GeoMap: <GeoMap points={[{ label: "London", lat: 51.5, lng: -0.13, count: 40 }]} />,
+  Heatmap: <Heatmap values={[0.2, 0.8]} />,
   Histogram: <Histogram values={[1, 2, 2, 3]} />,
   LineChart: <LineChart labels={labels} series={series} />,
   MetricBreakdown: <MetricBreakdown value="16" label="Requests" spark={[4, 7, 5]} />,
@@ -82,7 +83,6 @@ const framed: Record<string, ReactElement<{ testID?: string; plain?: boolean }>>
 };
 const intrinsic: Record<string, ReactElement<{ testID?: string; plain?: boolean }>> = {
   Gauge: <Gauge value={72} label="Uptime" />,
-  Heatmap: <Heatmap values={[0.2, 0.8]} />,
   ProgressRing: <ProgressRing value={72} />,
   Sparkline: <Sparkline values={[4, 7, 5]} />,
   StackedBar: <StackedBar segments={[{ label: "GET", value: 4 }]} />,
@@ -211,7 +211,8 @@ it("keeps Heatmap inspection selection and scrolling in both material directions
     expect(screen.getByText("9 contributions").parentElement).toBe(flag);
     expect([flag.style.top, flag.style.left, flag.style.width]).toEqual(placement);
     expect(scroll.scrollLeft).toBe(20);
-    expect(materials(root)).toHaveLength(glass ? 1 : 0);
+    // The chart frame's pane and the inspection flag's.
+    expect(materials(root)).toHaveLength(glass ? 2 : 0);
   }
 });
 

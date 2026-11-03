@@ -2354,6 +2354,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
         "virtualized",
       ),
       pressed: unpassed("A gallery tile is a button only with `onPressItem`; the Gallery example does not pass it, and the Tappable example's tiles are kit Cards.", "onPressItem"),
+      hover: unpassed("A gallery tile lifts to the md shadow under a resting pointer only with `onPressItem`; the Gallery example does not pass it, and the Tappable example's tiles are kit Cards.", "onPressItem"),
     },
   },
   "media-objects": {
@@ -2380,6 +2381,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("clickable", byRole("button", /^RC/)),
   },
   stats: {
+    // A tappable tile takes the secondary wash under a resting pointer.
+    hover: hover("tappable", byRole("button", /^Active users/)),
     focus: focus("tappable", byRole("button", /^Active users/)),
     pressed: pressed("tappable", byRole("button", /^Active users/)),
   },
@@ -2611,7 +2614,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   "stacked-bar": { static: true, reason: CHART_STATIC },
   gauge: { static: true, reason: CHART_STATIC },
   heatmap: {
-    // The calendar's day cells inspect under a resting pointer and pin on a press; the plain grid takes no input.
+    // The calendar's day cells inspect under a resting pointer and pin on a press; the plain grid's cells take no input.
     hover: hoverInspect("calendar", HEATMAP_DAY, { how: "the pointer rests on the eleventh day of the calendar" }),
     // Its scroller is a tab stop only where the year overflows it, below `sm` (e2e/behavior/scroll-focus.e2e.ts);
     // the day cells are pointer-only.
