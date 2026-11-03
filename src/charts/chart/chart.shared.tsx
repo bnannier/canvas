@@ -36,6 +36,8 @@ import {
 import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
 import { niceBound } from "../shared/chart-math.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
+import { ChartAnatomyScope } from "../shared/chart-anatomy.js";
+import { useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 
 // Shared Chart shell. The boolean-prop axes (tone + orientation + arrangement +
 // density), the bar geometry, the data-shape types, and the token-backed fill logic
@@ -220,6 +222,14 @@ export function barRects(
 
 export function createChart(skin: ChartSkin) {
   return function Chart(props: ChartProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Series, Axis labels, Legend, Gridlines, taken before the
+    // tree's AnatomyScope and handed to the shared frame and legend (chart-anatomy.tsx).
+    const framePart = useAnatomyPart("Chart frame");
+    const seriesPart = useAnatomyPart("Series");
+    const axisPart = useAnatomyPart("Axis labels");
+    const legendPart = useAnatomyPart("Legend");
+    const gridPart = useAnatomyPart("Gridlines");
     const { title, testID, style } = props;
     const tone = toneOf(props);
     const compact = !!props.compact;
@@ -416,164 +426,173 @@ export function createChart(skin: ChartSkin) {
     const travel = userMax ?? niceBound(dataMax);
 
     return (
-      <View
-        role="group"
-        accessibilityLabel={chartName}
-        aria-label={chartName}
-        testID={testID}
-        style={[
-          props.plain
-            ? null
-            : paneStyle(theme, [
-                surfaceShape,
-                compact ? s.surfacePadCompact : s.surfacePadDefault,
-              ]),
-          CHART_ROOT,
-          style,
-        ]}
-      >
-        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? (
-          <GlassPane layer="content" shape={surfaceShape} />
-        ) : null}
-        {title != null && title !== "" ? (
-          <Text
-            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
-          >
-            {title}
-          </Text>
-        ) : null}
-
-        {horizontal ? (
-          // Horizontal: each row is a label, the bar, and the value after it.
-          <View
-            onLayout={(e) => setRowsWidth(e.nativeEvent.layout.width)}
-            style={{ width: "100%", paddingTop: ROW.top * k, gap: ROW.gap * k }}
-          >
-            {data.map((d, i) => {
-              const v = valueOf(series[0], i);
-              const w =
-                (Math.max(0, Math.min(v, travel)) / travel) * ROW.travel * k;
-              return (
-                // Each row is one accessible item announcing "label: value".
-                <View
-                  key={d.id ?? i}
-                  accessible
-                  accessibilityRole="image"
-                  role="img"
-                  accessibilityLabel={`${d.label}: ${fmt(d.value)}`}
-                  aria-label={`${d.label}: ${fmt(d.value)}`}
-                  style={[s.barRow, { height: ROW.height * k }]}
-                >
-                  <Text
-                    numberOfLines={1}
-                    style={[s.rowLabel(tokens), { width: ROW.label * k }]}
-                  >
-                    {d.label}
-                  </Text>
-                  <View
-                    style={s.horizontalBar(
-                      colorOf(0),
-                      w,
-                      skin.barRadius,
-                      ROW.height * k
-                    )}
-                  />
-                  <Text
-                    numberOfLines={1}
-                    style={[
-                      s.axisLabel(tokens),
-                      { marginLeft: ROW.valueGap * k },
-                    ]}
-                  >
-                    {fmt(d.value)}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
-        ) : (
-          <View
-            accessible
-            accessibilityRole="image"
-            role="img"
-            accessibilityLabel={plotName}
-            aria-label={plotName}
-          >
-            <CartesianFrame
-              yExtent={[0, userMax ?? (dataMax > 0 ? dataMax : 1)]}
-              yExact={userMax != null}
-              xLabels={labels}
-              plotHeight={PLOT_HEIGHT.default}
-              aspect
-              bandInset={BAR.bandInset}
-              compact={compact}
-              formatValue={props.formatValue}
-              noGuide
-              selectedBand={selected}
-              onBandScrub={setSelected}
-              plotHoverProps={specimen ? (layout) => ({
-                onPointerMove: (event) => {
-                  const point = pressPoint(event);
-                  if (!point || !layout.band) { setHoveredBar(null); return; }
-                  const index = Math.floor(point.x / layout.band.step);
-                  const bw = layout.band.step - 8;
-                  const left = index * layout.band.step;
-                  const inBar = index >= 0 && index < labels.length && point.x >= left && point.x <= left + bw && point.y >= layout.y(valueOf(series[0], index)) && point.y <= layout.plotH - 9;
-                  setHoveredBar(inBar ? index : null);
-                },
-                onPointerLeave: () => setHoveredBar(null),
-              }) : undefined}
-              overlay={(layout) =>
-                selected != null && layout.band && labels[selected] != null ? (
-                  // The axis names the inspected category in the card ink, so the pill carries the values.
-                  specimen ? (
-                    <PresentationFlag
-                      lines={[fmt(valueOf(series[0], selected))]}
-                      x={layout.band.center(selected)}
-                      y={layout.y(valueOf(series[0], selected)) - 38}
-                      before
-                      gap={
-                        -(
-                          fmt(valueOf(series[0], selected)).length * 12 * 0.6 +
-                          16
-                        ) / 2
-                      }
-                      radius={platformShape.web.chartFlagCompact}
-                      padV={6}
-                      fontSize={12}
-                      lineHeight={16}
-                    />
-                  ) : (
-                    <ChartValueFlag
-                      rows={series.map((sr, j) => ({
-                        label: multi ? sr.label : undefined,
-                        color: multi ? colorOf(j) : undefined,
-                        value: fmt(valueOf(sr, selected)),
-                      }))}
-                      x={layout.band.center(selected)}
-                      plotW={layout.plotW}
-                    />
-                  )
-                ) : null
-              }
+      <ChartAnatomyScope parts={{ frame: framePart, marks: [seriesPart], axisLabels: axisPart, legend: legendPart, gridlines: gridPart }}>
+        <View
+          role="group"
+          accessibilityLabel={chartName}
+          aria-label={chartName}
+          testID={testID}
+          style={[
+            props.plain
+              ? null
+              : paneStyle(theme, [
+                  surfaceShape,
+                  compact ? s.surfacePadCompact : s.surfacePadDefault,
+                ]),
+            CHART_ROOT,
+            style,
+          ]}
+        >
+          {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+          {glass && !props.plain ? (
+            <GlassPane layer="content" shape={surfaceShape} />
+          ) : null}
+          {title != null && title !== "" ? (
+            <Text
+              style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
             >
-              {columns}
-            </CartesianFrame>
-          </View>
-        )}
+              {title}
+            </Text>
+          ) : null}
 
-        {/* Series identity for several series, outside the plot image. */}
-        {multi && !props.hideLegend ? (
-          <ChartLegend
-            horizontal
-            items={series.map((sr, j) => ({
-              label: sr.label,
-              color: colorOf(j),
-            }))}
-          />
-        ) : null}
-      </View>
+          {horizontal ? (
+            // Horizontal: each row is a label, the bar, and the value after it. The rows are
+            // the chart frame (no grid is drawn), the first row's label the axis labels and
+            // its bar the series.
+            <View
+              ref={framePart?.ref}
+              onLayout={withPartLayout(framePart, (e) => setRowsWidth(e.nativeEvent.layout.width))}
+              style={{ width: "100%", paddingTop: ROW.top * k, gap: ROW.gap * k }}
+            >
+              {data.map((d, i) => {
+                const v = valueOf(series[0], i);
+                const w =
+                  (Math.max(0, Math.min(v, travel)) / travel) * ROW.travel * k;
+                return (
+                  // Each row is one accessible item announcing "label: value".
+                  <View
+                    key={d.id ?? i}
+                    accessible
+                    accessibilityRole="image"
+                    role="img"
+                    accessibilityLabel={`${d.label}: ${fmt(d.value)}`}
+                    aria-label={`${d.label}: ${fmt(d.value)}`}
+                    style={[s.barRow, { height: ROW.height * k }]}
+                  >
+                    <Text
+                      ref={i === 0 ? axisPart?.ref : undefined}
+                      onLayout={i === 0 ? axisPart?.onLayout : undefined}
+                      numberOfLines={1}
+                      style={[s.rowLabel(tokens), { width: ROW.label * k }]}
+                    >
+                      {d.label}
+                    </Text>
+                    <View
+                      ref={i === 0 ? seriesPart?.ref : undefined}
+                      onLayout={i === 0 ? seriesPart?.onLayout : undefined}
+                      style={s.horizontalBar(
+                        colorOf(0),
+                        w,
+                        skin.barRadius,
+                        ROW.height * k
+                      )}
+                    />
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        s.axisLabel(tokens),
+                        { marginLeft: ROW.valueGap * k },
+                      ]}
+                    >
+                      {fmt(d.value)}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          ) : (
+            <View
+              accessible
+              accessibilityRole="image"
+              role="img"
+              accessibilityLabel={plotName}
+              aria-label={plotName}
+            >
+              <CartesianFrame
+                yExtent={[0, userMax ?? (dataMax > 0 ? dataMax : 1)]}
+                yExact={userMax != null}
+                xLabels={labels}
+                plotHeight={PLOT_HEIGHT.default}
+                aspect
+                bandInset={BAR.bandInset}
+                compact={compact}
+                formatValue={props.formatValue}
+                noGuide
+                selectedBand={selected}
+                onBandScrub={setSelected}
+                plotHoverProps={specimen ? (layout) => ({
+                  onPointerMove: (event) => {
+                    const point = pressPoint(event);
+                    if (!point || !layout.band) { setHoveredBar(null); return; }
+                    const index = Math.floor(point.x / layout.band.step);
+                    const bw = layout.band.step - 8;
+                    const left = index * layout.band.step;
+                    const inBar = index >= 0 && index < labels.length && point.x >= left && point.x <= left + bw && point.y >= layout.y(valueOf(series[0], index)) && point.y <= layout.plotH - 9;
+                    setHoveredBar(inBar ? index : null);
+                  },
+                  onPointerLeave: () => setHoveredBar(null),
+                }) : undefined}
+                overlay={(layout) =>
+                  selected != null && layout.band && labels[selected] != null ? (
+                    // The axis names the inspected category in the card ink, so the pill carries the values.
+                    specimen ? (
+                      <PresentationFlag
+                        lines={[fmt(valueOf(series[0], selected))]}
+                        x={layout.band.center(selected)}
+                        y={layout.y(valueOf(series[0], selected)) - 38}
+                        before
+                        gap={
+                          -(
+                            fmt(valueOf(series[0], selected)).length * 12 * 0.6 +
+                            16
+                          ) / 2
+                        }
+                        radius={platformShape.web.chartFlagCompact}
+                        padV={6}
+                        fontSize={12}
+                        lineHeight={16}
+                      />
+                    ) : (
+                      <ChartValueFlag
+                        rows={series.map((sr, j) => ({
+                          label: multi ? sr.label : undefined,
+                          color: multi ? colorOf(j) : undefined,
+                          value: fmt(valueOf(sr, selected)),
+                        }))}
+                        x={layout.band.center(selected)}
+                        plotW={layout.plotW}
+                      />
+                    )
+                  ) : null
+                }
+              >
+                {columns}
+              </CartesianFrame>
+            </View>
+          )}
+
+          {/* Series identity for several series, outside the plot image. */}
+          {multi && !props.hideLegend ? (
+            <ChartLegend
+              horizontal
+              items={series.map((sr, j) => ({
+                label: sr.label,
+                color: colorOf(j),
+              }))}
+            />
+          ) : null}
+        </View>
+      </ChartAnatomyScope>
     );
   };
 }

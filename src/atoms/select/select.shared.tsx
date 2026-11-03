@@ -10,6 +10,8 @@ import { LISTBOX } from "../../style/listbox-role.js";
 import { useHover, hoverFill } from "../../style/hover.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { Icon } from "../icon/icon.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
+import { useDelegatedParts } from "../input/delegated-parts.js";
 import { root, rootLifted, PANEL_ANCHOR, type SelectDisclosure, type SelectSkin, type Size } from "./select.styles.js";
 
 // The option list is a SCROLLPORT inside the card's `maxHeight` cap. The cap bounds
@@ -183,18 +185,18 @@ const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ?
 // wedge drawn from borders, centered in its box), turned over while open where the skin
 // says so. Decorative: the trigger's expanded state names it. Autocomplete's toggle
 // draws the same disclosure.
-export function Disclosure({ spec, size, color, open, style }: { spec: SelectDisclosure; size: number; color: string; open: boolean; style?: StyleProp<ViewStyle> }) {
+export function Disclosure({ spec, size, color, open, style, part }: { spec: SelectDisclosure; size: number; color: string; open: boolean; style?: StyleProp<ViewStyle>; part?: AnatomyTarget }) {
   const turn = spec.flips && open ? { transform: [{ rotate: "180deg" }] } : null;
   if (spec.glyph === "triangle") {
     return (
-      <View {...DECORATIVE_MARK} style={[{ width: size, height: size, alignItems: "center", justifyContent: "center" }, turn, style]}>
+      <View ref={part?.ref} onLayout={part?.onLayout} {...DECORATIVE_MARK} style={[{ width: size, height: size, alignItems: "center", justifyContent: "center" }, turn, style]}>
         <View style={{ width: 0, height: 0, borderStartWidth: 5, borderEndWidth: 5, borderTopWidth: 5, borderStartColor: "transparent", borderEndColor: "transparent", borderTopColor: color }} />
       </View>
     );
   }
   const glyph = spec.glyph === "chevronsUpDown" ? { chevronsUpDown: true } : { chevronDown: true };
   return (
-    <View {...DECORATIVE_MARK} style={[turn, style]}>
+    <View ref={part?.ref} onLayout={part?.onLayout} {...DECORATIVE_MARK} style={[turn, style]}>
       <Icon {...glyph} color={color} size={size} decorative />
     </View>
   );
@@ -272,7 +274,17 @@ export function createSelect(skin: SelectSkin) {
     // draws its own focus edge and halo (the web); the hover edge likewise.
     const focusFrame = useFocusFrame();
     const hover = useHover(!!skin.hover && !disabled);
-    const hostRef = useComposedRefs(triggerRef, ref, focusFrame.target.ref);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Label, Trigger, Value, Chevron, Menu, taken before the tree's
+    // AnatomyScope. A Field that delegated its label hands down its Label, Control and Required mark
+    // (input/delegated-parts.ts).
+    const delegated = useDelegatedParts();
+    const labelPart = useAnatomyPart("Label") ?? delegated?.label;
+    const triggerPart = useAnatomyPart("Trigger") ?? delegated?.control;
+    const valuePart = useAnatomyPart("Value");
+    const chevronPart = useAnatomyPart("Chevron");
+    const menuPart = useAnatomyPart("Menu");
+    const hostRef = useComposedRefs(triggerRef, ref, focusFrame.target.ref, triggerPart?.ref);
     const { ref: _frameRef, ...frameEvents } = focusFrame.target;
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
@@ -345,10 +357,11 @@ export function createSelect(skin: SelectSkin) {
     const markSize = asNum(mark.fontSize, 14);
 
     return (
+      <AnatomyScope>
       <View style={[root, open && !host ? rootLifted : null, widthCap, style]}>
         {above ? (
-          <Text nativeID={labelId} style={props.eyebrow && skin.reference ? skin.reference.label(tokens) : skin.label(tokens, size)} {...labelA11y(label!, labelNames)}>
-            <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+          <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} nativeID={labelId} style={props.eyebrow && skin.reference ? skin.reference.label(tokens) : skin.label(tokens, size)} {...labelA11y(label!, labelNames)}>
+            <LabelContent label={label!} required={required} starColor={tokens.destructive} starPart={delegated?.required} />
           </Text>
         ) : null}
         {/* The trigger's bounded Android ripple is clipped to its rounded (top-corner)
@@ -361,7 +374,7 @@ export function createSelect(skin: SelectSkin) {
           {...(skin.focusHalo ? frameEvents : null)}
           ref={hostRef}
           {...hover.target}
-          onLayout={onTriggerLayout}
+          onLayout={withPartLayout(triggerPart, onTriggerLayout)}
           style={({ pressed }) => [
             paneStyle(theme, triggerShape, open || keyFocused),
             glassTrigger,
@@ -410,15 +423,15 @@ export function createSelect(skin: SelectSkin) {
                 ]}
               >
                 {inline ? (
-                  <Text nativeID={labelId} style={skin.inlineLabel(tokens, size)} {...labelA11y(label!, labelNames)}>
-                    <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+                  <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} nativeID={labelId} style={skin.inlineLabel(tokens, size)} {...labelA11y(label!, labelNames)}>
+                    <LabelContent label={label!} required={required} starColor={tokens.destructive} starPart={delegated?.required} />
                   </Text>
                 ) : null}
                 {icon ? <Icon globe color={skin.icon.color(tokens)} size={skin.icon.size} decorative /> : null}
                 {selectedLeading != null ? <Text style={skin.valueText(tokens, size, true)}>{selectedLeading}</Text> : null}
-                <Text numberOfLines={dense ? 1 : undefined} style={dense ? [skin.reference!.value(tokens), { flex: 1 }] : skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
+                <Text ref={valuePart?.ref} onLayout={valuePart?.onLayout} numberOfLines={dense ? 1 : undefined} style={dense ? [skin.reference!.value(tokens), { flex: 1 }] : skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
               </View>
-              <Disclosure spec={skin.disclosure} size={disclosureSize} color={skin.disclosure.color(tokens, open)} open={open} style={ink} />
+              <Disclosure spec={skin.disclosure} size={disclosureSize} color={skin.disclosure.color(tokens, open)} open={open} style={ink} part={chevronPart} />
               {floating ? (
                 <View style={[panePlaced(theme, triggerShape, floatingLabelLayer, open), ink]}>
                   <FloatingLabel
@@ -435,6 +448,8 @@ export function createSelect(skin: SelectSkin) {
                     end={labelEnd}
                     names={labelNames}
                     onLine={room.onLine}
+                    part={labelPart}
+                    starPart={delegated?.required}
                   />
                 </View>
               ) : null}
@@ -471,7 +486,7 @@ export function createSelect(skin: SelectSkin) {
                 does not reach them through the card's padding. See src/style/ripple-clip. */}
             <OverlayScrollView style={optionScroll} bounces={false}>
             <RippleClip shape={cornerRadii(panelShape)}>
-            <View nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} aria-required={required || undefined}>
+            <View ref={menuPart?.ref} onLayout={menuPart?.onLayout} nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} aria-required={required || undefined}>
             {items.map((option, i) => {
               const selected = option.value === value;
               return (
@@ -524,6 +539,7 @@ export function createSelect(skin: SelectSkin) {
         </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>
+      </AnatomyScope>
     );
   });
   Select.displayName = "Select";

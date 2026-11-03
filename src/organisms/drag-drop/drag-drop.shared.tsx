@@ -16,6 +16,8 @@ import { PINNED_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
 import { useInteractionOverride } from "../../style/interaction-override.js";
 import { useSeamLimit } from "../../style/touch-seam.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type DragDropSkin } from "./drag-drop.styles.js";
 import {
   hitTestZone,
@@ -201,7 +203,7 @@ interface DragDropApi {
 }
 
 const DragDropContext = createContext<DragDropApi | null>(null);
-const DropZoneContext = createContext<{ zoneId: string; horizontal: boolean } | null>(null);
+const DropZoneContext = createContext<{ zoneId: string; horizontal: boolean; draggablePart?: AnatomyTarget } | null>(null);
 const DraggableContext = createContext<{
   id: string;
   cardRef: RefObject<View | null>;
@@ -245,6 +247,17 @@ const HANDLE_HIT_SLOP = 8;
 
 /** Build the DragDrop family from a platform skin. */
 export function createDragDrop(skin: DragDropSkin) {
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Drop zone, Draggable, Lifted item, Drop indicator. A zone or a
+  // draggable drawn many times registers its first instance only: a part's handlers are
+  // one object per registry, so the first id to claim them keeps them.
+  const claims = new WeakMap<AnatomyTarget, string>();
+  function firstOf(part: AnatomyTarget | undefined, id: string): AnatomyTarget | undefined {
+    if (!part) return undefined;
+    if (!claims.has(part)) claims.set(part, id);
+    return claims.get(part) === id ? part : undefined;
+  }
+
   // ---- Provider -----------------------------------------------------------
   function DragDropProvider({ children, style, testID }: DragDropProviderProps) {
     const provRef = useRef<View>(null);
@@ -558,11 +571,14 @@ export function createDragDrop(skin: DragDropSkin) {
   function GhostOutlet() {
     const api = useContext(DragDropContext)!;
     const { tokens } = useTheme();
+    const liftedPart = useAnatomyPart("Lifted item");
     const s = useSyncExternalStore(api.subscribe, api.getSnapshot, api.getSnapshot);
     if (!s.active || s.keyboard || !s.ghost || !s.ghostSize) return <View style={S.overlay} />;
     return (
       <View style={S.overlay}>
         <Animated.View
+          ref={liftedPart?.ref}
+          onLayout={liftedPart?.onLayout}
           accessible={false}
           style={[
             S.ghost,
@@ -581,6 +597,11 @@ export function createDragDrop(skin: DragDropSkin) {
     const api = useContext(DragDropContext);
     const { tokens } = useTheme();
     const ref = useRef<View>(null);
+    const zonePart = firstOf(useAnatomyPart("Drop zone"), id);
+    const indicatorPart = useAnatomyPart("Drop indicator");
+    // Taken here, above the zone's AnatomyScope, for the zone's Draggables to measure with.
+    const draggablePart = useAnatomyPart("Draggable");
+    const hostRef = useComposedRefs<View>(ref, zonePart?.ref);
     // Keep the registered entry's callbacks fresh without re-registering every render.
     const entryRef = useRef<ZoneEntry>({ ref, label, disabled, horizontal, onDrop });
     entryRef.current = { ref, label, disabled, horizontal, onDrop };
@@ -611,22 +632,23 @@ export function createDragDrop(skin: DragDropSkin) {
       ? { top: INDICATOR_INSET, bottom: INDICATOR_INSET, insetInlineStart: s.insertionOffset - thickness / 2, width: thickness }
       : { left: INDICATOR_INSET, right: INDICATOR_INSET, top: s.insertionOffset - thickness / 2, height: thickness };
     // Stable context value so subscribed Draggables don't re-render on every provider render.
-    const zoneCtx = useMemo(() => ({ zoneId: id, horizontal }), [id, horizontal]);
+    const zoneCtx = useMemo(() => ({ zoneId: id, horizontal, draggablePart }), [id, horizontal, draggablePart]);
 
     return (
       <DropZoneContext.Provider value={zoneCtx}>
         <View
-          ref={ref}
+          ref={hostRef}
+          onLayout={zonePart?.onLayout}
           testID={testID}
           collapsable={false}
           style={[bordered ? skin.zoneWell(tokens) : null, bordered && isOver ? skin.zoneWellActive(tokens) : null, style]}
         >
           {bordered ? <Text style={skin.zoneLabel(tokens)}>{label}</Text> : null}
-          {children}
+          <AnatomyScope>{children}</AnatomyScope>
           {isOver ? (
             <>
               {bordered ? null : <View style={[S.overlay, skin.zoneActive(tokens)]} />}
-              <View style={[S.passthrough, { position: "absolute" }, skin.indicator(tokens), indicatorStyle]} />
+              <View ref={indicatorPart?.ref} onLayout={indicatorPart?.onLayout} style={[S.passthrough, { position: "absolute" }, skin.indicator(tokens), indicatorStyle]} />
             </>
           ) : null}
         </View>
@@ -639,6 +661,8 @@ export function createDragDrop(skin: DragDropSkin) {
     const api = useContext(DragDropContext);
     const zone = useContext(DropZoneContext);
     const cardRef = useRef<View>(null);
+    const draggablePart = firstOf(zone?.draggablePart, id);
+    const hostRef = useComposedRefs<View>(cardRef, draggablePart?.ref);
     const zoneId = zone?.zoneId ?? "";
     // The provider reads current data/label/preview through this ref (kept fresh each render).
     const info = useRef<{ data: unknown; label: string; getPreview: () => ReactNode }>({ data, label: label ?? id, getPreview: () => preview ?? children });
@@ -660,8 +684,8 @@ export function createDragDrop(skin: DragDropSkin) {
 
     return (
       <DraggableContext.Provider value={draggableCtx}>
-        <View ref={cardRef} testID={testID} collapsable={false} style={[dragging ? { opacity: SOURCE_OPACITY } : null, style]}>
-          {children}
+        <View ref={hostRef} onLayout={draggablePart?.onLayout} testID={testID} collapsable={false} style={[dragging ? { opacity: SOURCE_OPACITY } : null, style]}>
+          <AnatomyScope>{children}</AnatomyScope>
         </View>
       </DraggableContext.Provider>
     );

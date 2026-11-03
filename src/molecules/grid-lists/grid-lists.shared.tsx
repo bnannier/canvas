@@ -10,6 +10,7 @@ import { type CardProps } from "../card/card.shared.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, listProps, windowedListItem } from "../../style/list-semantics.js";
@@ -173,6 +174,16 @@ export function columnsOf(p: GridListProps): Columns {
   return "cols2";
 }
 
+// The handlers of the parts the first tile draws, handed to that tile only.
+interface TileParts {
+  tile: AnatomyTarget | undefined;
+  media: AnatomyTarget | undefined;
+  caption: AnatomyTarget | undefined;
+}
+
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 export function createGridList(
   skin: GridListSkin,
   Card: CardComponent = WebCard,
@@ -183,11 +194,11 @@ export function createGridList(
   // A borderless gallery thumbnail: a square color block with a filename and size
   // below. The parent GridList resolves the responsive width ONCE and passes it
   // down, so an N-tile grid carries one viewport subscription, not N.
-  function GalleryTile({ item, width, listItem, onPress }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void }) {
+  function GalleryTile({ item, width, listItem, onPress, parts }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void; parts?: TileParts }) {
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     const frame = skin.galleryTile ? skin.galleryTile(tokens) : null;
-    if (frame) return <FramedGalleryTile item={item} width={width} listItem={listItem} onPress={onPress} frame={frame} />;
+    if (frame) return <FramedGalleryTile item={item} width={width} listItem={listItem} onPress={onPress} frame={frame} parts={parts} />;
     const inner = (
       <>
         {/* Square color block. A single translucent tint stands in for the legacy
@@ -201,8 +212,11 @@ export function createGridList(
             { borderRadius: skin.galleryRadius, ...(skin.galleryCurve ? { borderCurve: skin.galleryCurve } : null) },
             s.galleryBlockFill(tokens, item.color),
           ]}
-        />
-        <View style={s.galleryMeta}>
+        >
+          {/* The Media part's box: GlassSurface has no ref, so a pass-through fill measures it. */}
+          {parts?.media ? <View ref={parts.media.ref} onLayout={parts.media.onLayout} style={MEASURE_BOX} /> : null}
+        </GlassSurface>
+        <View ref={parts?.caption?.ref} onLayout={parts?.caption?.onLayout} style={s.galleryMeta}>
           <Text style={skin.galleryTitle(tokens)}>{item.title}</Text>
           {item.subtitle != null ? <Text style={skin.gallerySubtitle(tokens)}>{item.subtitle}</Text> : null}
         </View>
@@ -215,7 +229,7 @@ export function createGridList(
       // wraps the button, and the button fills the cell as it did when it was one.
       const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
       return (
-        <View {...listItem} style={[s.tileGrow, { width }]}>
+        <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[s.tileGrow, { width }]}>
           <Pressable
             accessibilityRole="button"
             onPress={onPress}
@@ -227,23 +241,23 @@ export function createGridList(
         </View>
       );
     }
-    return <View {...listItem} style={[s.tileGrow, { width }]}>{inner}</View>;
+    return <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[s.tileGrow, { width }]}>{inner}</View>;
   }
 
   // The framed gallery tile (the v4 hand-off's): the thumbnail square at the top of a
   // content pane, clipped by its corner, over the padded caption. Pressable, the pane
   // rides inside the Pressable so the tap, ripple and dim stay on it.
-  function FramedGalleryTile({ item, width, listItem, onPress, frame }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void; frame: ViewStyle }) {
+  function FramedGalleryTile({ item, width, listItem, onPress, frame, parts }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void; frame: ViewStyle; parts?: TileParts }) {
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     // A coloured thumbnail keeps its translucent hue under glass; the neutral one is a
     // fill inside the pane, an ink tint under glass.
     const fill = s.galleryBlockFill(tokens, item.color);
-    const block = <View style={[s.galleryThumb, item.color != null ? fill : withInnerFill(theme, fill, "soft")]} />;
+    const block = <View ref={parts?.media?.ref} onLayout={parts?.media?.onLayout} style={[s.galleryThumb, item.color != null ? fill : withInnerFill(theme, fill, "soft")]} />;
     const inner = (
       <>
         {block}
-        <View style={skin.galleryCaption}>
+        <View ref={parts?.caption?.ref} onLayout={parts?.caption?.onLayout} style={skin.galleryCaption}>
           <Text style={skin.galleryTitle(tokens)} numberOfLines={1}>{item.title}</Text>
           {item.subtitle != null ? <Text style={skin.gallerySubtitle(tokens)}>{item.subtitle}</Text> : null}
         </View>
@@ -252,7 +266,7 @@ export function createGridList(
     if (onPress) {
       const ripple = paneRipple(theme, skin.ripple ? skin.ripple(tokens) : undefined);
       return (
-        <View {...listItem} style={[s.tileGrow, { width }]}>
+        <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[s.tileGrow, { width }]}>
           <Pressable
             accessibilityRole="button"
             onPress={onPress}
@@ -266,7 +280,7 @@ export function createGridList(
       );
     }
     return (
-      <View {...listItem} style={[s.tileGrow, { width }]}>
+      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[s.tileGrow, { width }]}>
         <GlassSurface layer="content" style={frame}>{inner}</GlassSurface>
       </View>
     );
@@ -277,7 +291,7 @@ export function createGridList(
   // responsive width once and passes it down. Its surface and press feedback come
   // from the Card atom (already platform-correct per build), so the skin only sets
   // the tile padding density and the title type.
-  function PeopleTile({ item, width, compact, listItem, onPress }: { item: GridListItem; width: DimensionValue; compact: boolean; listItem: ViewProps; onPress?: () => void }) {
+  function PeopleTile({ item, width, compact, listItem, onPress, parts }: { item: GridListItem; width: DimensionValue; compact: boolean; listItem: ViewProps; onPress?: () => void; parts?: TileParts }) {
     const { tokens } = useTheme();
     const pad = compact ? skin.tilePad.compact : skin.tilePad.default;
     // The tile cell owns the measured width (a layout cell) and is the list item; the
@@ -285,15 +299,23 @@ export function createGridList(
     // button, so its actions are not buttons nested in a button.
     const actions = item.actions ?? [];
     const hasActions = actions.length > 0;
+    const caption = (
+      <>
+        <Text style={skin.cardTitle(tokens)}>{item.title}</Text>
+        {item.subtitle != null ? <Text style={skin.cardSubtitle(tokens)}>{item.subtitle}</Text> : null}
+      </>
+    );
     return (
-      <View {...listItem} style={{ width, flexGrow: 1 }}>
+      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={{ width, flexGrow: 1 }}>
         <Card onPress={onPress} interactiveContents={hasActions} style={{ alignItems: "center", padding: pad }}>
         <View style={s.cardInner}>
-          <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
-            {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
-          </Avatar>
-          <Text style={skin.cardTitle(tokens)}>{item.title}</Text>
-          {item.subtitle != null ? <Text style={skin.cardSubtitle(tokens)}>{item.subtitle}</Text> : null}
+          <AnatomyPart part={parts?.media}>
+            <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
+              {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
+            </Avatar>
+          </AnatomyPart>
+          {/* A same-layout box (the column's own centring and gap) only under a docs AnatomyProvider, to measure the Caption. */}
+          {parts?.caption ? <View ref={parts.caption.ref} onLayout={parts.caption.onLayout} style={s.cardInner}>{caption}</View> : caption}
           {item.badge != null ? (
             <View style={s.badgeSpacing}>
               <Badge secondary>{item.badge}</Badge>
@@ -315,6 +337,12 @@ export function createGridList(
   }
 
   return function GridList(props: GridListProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Grid, Tile, Media, Caption. The last three are the first tile's,
+    // taken before the tree's AnatomyScope so the tile's Card, Avatar and Badge register
+    // nothing. A windowed grid has no host node to measure, so it registers none.
+    const gridPart = useAnatomyPart("Grid");
+    const firstParts: TileParts = { tile: useAnatomyPart("Tile"), media: useAnatomyPart("Media"), caption: useAnatomyPart("Caption") };
     const { items, gallery, compact, label, virtualized, testID, style, onPressItem } = props;
     const columns = columnsOf(props);
     const gap = compact ? skin.gap.compact : skin.gap.default;
@@ -348,9 +376,9 @@ export function createGridList(
     const renderTile = (item: GridListItem, index: number, listItem: ViewProps) => {
       const onPress = onPressItem ? () => onPressItem(index) : undefined;
       return gallery ? (
-        <GalleryTile item={item} width={tileWidth} listItem={listItem} onPress={onPress} />
+        <GalleryTile item={item} width={tileWidth} listItem={listItem} onPress={onPress} parts={index === 0 ? firstParts : undefined} />
       ) : (
-        <PeopleTile item={item} width={tileWidth} compact={!!compact} listItem={listItem} onPress={onPress} />
+        <PeopleTile item={item} width={tileWidth} compact={!!compact} listItem={listItem} onPress={onPress} parts={index === 0 ? firstParts : undefined} />
       );
     };
     // The tiles are a list named by `label`: the grid's root in both paths, as Tailwind
@@ -382,6 +410,7 @@ export function createGridList(
     // its one flex-wrap container, which is the list.
     if (virtualized && bounded) {
       return (
+        <AnatomyScope>
         <FlatList
           // FlatList cannot change numColumns on a live list; remount when the
           // responsive column count crosses the breakpoint.
@@ -409,15 +438,18 @@ export function createGridList(
           CellRendererComponent={WindowedListCell}
           showsVerticalScrollIndicator={false}
         />
+        </AnatomyScope>
       );
     }
 
     return (
-      <View testID={testID} onLayout={onGridLayout} {...list} style={[s.container, { gap }, style]}>
-        {items.map((item, index) => (
-          <Fragment key={keyOf(item, index)}>{renderTile(item, index, LIST_ITEM)}</Fragment>
-        ))}
-      </View>
+      <AnatomyScope>
+        <View ref={gridPart?.ref} testID={testID} onLayout={withPartLayout(gridPart, onGridLayout)} {...list} style={[s.container, { gap }, style]}>
+          {items.map((item, index) => (
+            <Fragment key={keyOf(item, index)}>{renderTile(item, index, LIST_ITEM)}</Fragment>
+          ))}
+        </View>
+      </AnatomyScope>
     );
   };
 }

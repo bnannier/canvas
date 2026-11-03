@@ -19,6 +19,7 @@ import {
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useHover } from "../../style/hover.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Collapsible shell. A Collapsible is a SINGLE disclosure: one header
 // carrying a label (the `title`, or a custom `trigger` node) and a rotating
@@ -194,6 +195,12 @@ enableAndroidLayoutAnimations();
 /** Build a Collapsible component from a platform skin. */
 export function createCollapsible(skin: CollapsibleSkin) {
   return function Collapsible(props: CollapsibleProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Trigger, Chevron, Content, taken before the tree's AnatomyScope so
+    // the caller's trigger and content register nothing of their own.
+    const triggerPart = useAnatomyPart("Trigger");
+    const chevronPart = useAnatomyPart("Chevron");
+    const contentPart = useAnatomyPart("Content");
     const { title, description, trigger, children, open: openProp, onOpenChange, defaultOpen = false, disabled, card, reference, testID, style } = props;
     // The reference sheet's card is the skin's where the skin draws one (web, Android);
     // iOS keeps its own disclosure group (design-language item 4).
@@ -257,9 +264,12 @@ export function createCollapsible(skin: CollapsibleSkin) {
     // A sensible accessibility label when only a custom trigger is given.
     const a11yLabel = title ?? "Toggle section";
     return (
+      <AnatomyScope>
       <Root testID={testID} style={[containerStyle, fill, style]} {...(surfaced ? { layer: "content" as const } : null)}>
         <Pressable
           {...target}
+          ref={triggerPart?.ref}
+          onLayout={triggerPart?.onLayout}
           onPress={disabled ? undefined : toggle}
           disabled={disabled}
           android_ripple={skin.ripple && !disabled ? skin.ripple(tokens) : undefined}
@@ -302,11 +312,14 @@ export function createCollapsible(skin: CollapsibleSkin) {
           )}
           <Animated.View style={{ transform: [{ rotate }] }}>
             {/* Skin picks the disclosure glyph: chevronRight (iOS) or chevronDown (web, Android). */}
-            <Icon {...{ [skin.chevronGlyph]: true }} color={tokens["subtle-foreground"]} size={skin.chevronSize} />
+            {/* An Animated.View's ref is not a measurable host node, so the chevron's part measures the icon. */}
+            <AnatomyPart part={chevronPart}>
+              <Icon {...{ [skin.chevronGlyph]: true }} color={tokens["subtle-foreground"]} size={skin.chevronSize} />
+            </AnatomyPart>
           </Animated.View>
         </Pressable>
         {open ? (
-          <View style={[skin.content(tokens), framed ? skin.cardContentInset : null, sheet ? sheet.content : null]}>
+          <View ref={contentPart?.ref} onLayout={contentPart?.onLayout} style={[skin.content(tokens), framed ? skin.cardContentInset : null, sheet ? sheet.content : null]}>
             {typeof children === "string" ? (
               <Text style={skin.contentText(tokens)}>{children}</Text>
             ) : (
@@ -315,6 +328,7 @@ export function createCollapsible(skin: CollapsibleSkin) {
           </View>
         ) : null}
       </Root>
+      </AnatomyScope>
     );
   };
 }

@@ -21,6 +21,7 @@ import {
   type UptimePeriod,
 } from "../shared/status-strip.js";
 import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 
 // UptimeBar is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -86,9 +87,18 @@ export function UptimeBar(props: UptimeBarProps) {
     testID,
     style,
   } = props;
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Strip, Degraded period, Healthy period, Range labels. The pills are
+  // taken on the first pill of each status, in the detailed marks or the shared StatusStrip.
+  const stripPart = useAnatomyPart("Strip");
+  const degradedPart = useAnatomyPart("Degraded period");
+  const healthyPart = useAnatomyPart("Healthy period");
+  const rangePart = useAnatomyPart("Range labels");
   const { tokens, dark } = useTheme();
   const compact = !!props.compact;
   const detailed = !!props.detailed;
+  const firstDegraded = periods.findIndex((period) => periodStatus(period) === "degraded");
+  const firstHealthy = periods.findIndex((period) => periodStatus(period) === "operational");
 
   devWarn(
     periods.length === 0,
@@ -110,6 +120,7 @@ export function UptimeBar(props: UptimeBarProps) {
   const subtle = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
 
   return (
+    <AnatomyScope>
     <View
       testID={testID}
       style={[CHART_ROOT, { gap: detailed ? 14 : 8 }, style]}
@@ -187,6 +198,8 @@ export function UptimeBar(props: UptimeBarProps) {
       ) : null}
       {/* The strip is the image; its name tallies every status. */}
       <View
+        ref={stripPart?.ref}
+        onLayout={stripPart?.onLayout}
         accessible
         accessibilityRole="image"
         role="img"
@@ -206,6 +219,7 @@ export function UptimeBar(props: UptimeBarProps) {
               <UptimeMark
                 key={period.id ?? i}
                 index={i}
+                part={i === firstDegraded ? degradedPart : i === firstHealthy ? healthyPart : undefined}
                 label={period.label}
                 fill={
                   period.unknown
@@ -220,6 +234,7 @@ export function UptimeBar(props: UptimeBarProps) {
             periods={periods}
             height={compact ? PILL_HEIGHT.compact : PILL_HEIGHT.default}
             tokens={tokens}
+            anatomy={{ degraded: degradedPart, healthy: healthyPart }}
           />
         )}
       </View>
@@ -228,6 +243,8 @@ export function UptimeBar(props: UptimeBarProps) {
         // With a middle caption the edges keep their words and the middle one wraps,
         // centred, in the room between them (a phone's narrow strip).
         <View
+          ref={rangePart?.ref}
+          onLayout={rangePart?.onLayout}
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
@@ -274,11 +291,12 @@ export function UptimeBar(props: UptimeBarProps) {
         </View>
       ) : null}
     </View>
+    </AnatomyScope>
   );
 }
 
 // Status periods expand with the hand-off's overshooting 300ms hover transition.
-function UptimeMark({ index, label, fill }: { index: number; label?: string; fill: string }) {
+function UptimeMark({ index, label, fill, part }: { index: number; label?: string; fill: string; part?: AnatomyTarget }) {
   const progress = useRef(new Animated.Value(1)).current;
   const reduced = useReducedMotion();
   const animate = (value: number) => {
@@ -296,6 +314,8 @@ function UptimeMark({ index, label, fill }: { index: number; label?: string; fil
   };
   return (
     <View
+      ref={part?.ref}
+      onLayout={part?.onLayout}
       testID={`uptime-period-${index}`}
       accessible={false}
       onPointerEnter={(event) => { if (event.nativeEvent.pointerType !== "touch") animate(1.18); }}

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import {
   Image as RNImage,
   View,
@@ -115,6 +117,12 @@ export function fitOf(p: ImageProps): ImageResizeMode {
  * repeat, none).
  */
 export function Image(props: ImageProps) {
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Frame, Image. The kit's image box is the frame and the picture at
+  // once, so both measure the one node.
+  const framePart = useAnatomyPart("Frame");
+  const imagePart = useAnatomyPart("Image");
+  const hostRef = useComposedRefs<View>(framePart?.ref, imagePart?.ref);
   // Strip the atom's own props (fit booleans, dimensions, radius) so they never leak to the
   // native / DOM node. `box` carries the size and rounding into the RN Image style; `style`
   // merges after it as a composition-only override. Everything else forwards untouched.
@@ -124,12 +132,13 @@ export function Image(props: ImageProps) {
   if (height !== undefined) box.height = height;
   if (radius !== undefined) box.borderRadius = radiusScale[radius];
   const fit = fitOf(props);
-  if (fit === "repeat" && declaresPointSize(rest.source)) return <TiledImage {...rest} source={rest.source} box={box} style={style} />;
+  if (fit === "repeat" && declaresPointSize(rest.source)) return <TiledImage {...rest} source={rest.source} box={box} style={style} parts={[framePart, imagePart]} />;
   // React Native's own order: aria-label, then accessibilityLabel, then alt. A caller's
   // own role stays; otherwise the runtime's role for a named image (none on the web).
   const label = imageLabel(rest);
   const name = label ? { role: rest.role ?? namedImageRole(), accessibilityLabel: label, "aria-label": label } : null;
-  return <RNImage {...rest} {...name} style={[box, style]} resizeMode={fit} />;
+  const onLayout = withPartLayout(framePart, withPartLayout(imagePart, rest.onLayout));
+  return <RNImage {...rest} {...name} ref={framePart || imagePart ? hostRef : undefined} onLayout={onLayout} style={[box, style]} resizeMode={fit} />;
 }
 
 /** Whether a source states its own point size: a bundled asset (`require(...)`, whose
@@ -151,21 +160,24 @@ const sameSize = (a: Size | null, b: Size) => a != null && a.width === b.width &
 type TiledImageProps = Omit<ImageProps, "contain" | "cover" | "stretch" | "center" | "repeat" | "none" | "width" | "height" | "radius" | "source"> & {
   source: ImageSourcePropType;
   box: ImageStyle;
+  parts: (AnatomyTarget | undefined)[];
 };
 
 // The repeat fit, tiled by the kit (see the header). The first frame mounts one tile, the
 // one that measures the asset's point size; once the box and the tile are measured, the
 // grid fills the box. The grid sits absolutely in the box, so it never sizes it: a box
 // with no size of its own takes one tile's size, as a bundled image does.
-function TiledImage({ source, box, style, testID, nativeID, onLayout, onLoad, onLoadStart, onLoadEnd, onError, role, alt, accessibilityLabel, "aria-label": ariaLabel, ...imageProps }: TiledImageProps) {
+function TiledImage({ source, box, style, parts, testID, nativeID, onLayout, onLoad, onLoadStart, onLoadEnd, onError, role, alt, accessibilityLabel, "aria-label": ariaLabel, ...imageProps }: TiledImageProps) {
   const [boxSize, setBoxSize] = useState<Size | null>(null);
   const [tile, setTile] = useState<Size | null>(null);
   const label = imageLabel({ "aria-label": ariaLabel, accessibilityLabel, alt });
   const name = label ? { accessible: true, role: role ?? "img", accessibilityLabel: label, "aria-label": label } : role ? { role } : null;
   const rows = tile && boxSize ? tileCount(boxSize.height, tile.height) : 1;
   const cols = tile && boxSize ? tileCount(boxSize.width, tile.width) : 1;
+  const hostRef = useComposedRefs<View>(...parts.map((part) => part?.ref));
   const measureBox = (e: LayoutChangeEvent) => {
     onLayout?.(e);
+    for (const part of parts) part?.onLayout();
     const next = sizeOf(e);
     if (!sameSize(boxSize, next)) setBoxSize(next);
   };
@@ -176,7 +188,7 @@ function TiledImage({ source, box, style, testID, nativeID, onLayout, onLoad, on
   // An ImageStyle's composition keys are view layout keys; the box itself is a View.
   const rootStyle = [styles.root, tile, box, style] as StyleProp<ViewStyle>;
   return (
-    <View testID={testID} nativeID={nativeID} {...name} onLayout={measureBox} style={rootStyle}>
+    <View ref={parts.some(Boolean) ? hostRef : undefined} testID={testID} nativeID={nativeID} {...name} onLayout={measureBox} style={rootStyle}>
       <View style={styles.grid} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {Array.from({ length: rows }, (_, r) => (
           <View key={r} style={styles.row}>

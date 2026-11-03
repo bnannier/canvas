@@ -3,6 +3,7 @@ import { View, useTheme, type LayoutStyle, type ViewStyle } from "../../style/in
 import { useHover, washStyle, webHover } from "../../style/hover.js";
 import { HOVER, useReducedMotion } from "../../style/motion.js";
 import { platformShape } from "../../style/platform-shape.js";
+import type { AnatomyTarget } from "../../style/anatomy.js";
 
 // Icon's `cell`: the glyph centred in a square cell (the Foundations page's icon grid,
 // `aspect-ratio:1;border-radius:10px;display:grid;place-items:center`, hovered
@@ -27,10 +28,12 @@ export interface IconCellProps {
   decorative?: boolean;
   testID?: string;
   style?: LayoutStyle;
+  /** The Icon's Bounding box part (src/style/anatomy.tsx), which the cell draws; undefined outside a docs AnatomyProvider. */
+  part?: AnatomyTarget;
 }
 
 /** The glyph in its square cell, the cell's hover wash under it. */
-export function IconCell({ glyph, accessibilityLabel, decorative, testID, style }: IconCellProps) {
+export function IconCell({ glyph, accessibilityLabel, decorative, testID, style, part }: IconCellProps) {
   const { tokens } = useTheme();
   const { hovered, target } = useHover(WEB_CELL_HOVER != null);
   const reduced = useReducedMotion();
@@ -39,6 +42,8 @@ export function IconCell({ glyph, accessibilityLabel, decorative, testID, style 
   return (
     <View
       {...target}
+      ref={part?.ref}
+      onLayout={part?.onLayout}
       testID={testID}
       accessibilityRole={named ? "image" : undefined}
       accessibilityLabel={named ? accessibilityLabel : undefined}

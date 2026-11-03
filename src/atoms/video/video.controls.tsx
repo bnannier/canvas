@@ -1,4 +1,6 @@
+import { type ReactNode } from "react";
 import { type ViewStyle } from "react-native";
+import { type AnatomyTarget } from "../../style/anatomy.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { GlassPane, paneStyle, View } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
@@ -32,6 +34,8 @@ export interface VideoTransport {
   onFullscreen: () => void;
   /** The bar's surface, from the platform skin. */
   style: ViewStyle;
+  /** The anatomy handlers of the seek slider's part, inside a docs AnatomyProvider only. */
+  scrubberPart?: AnatomyTarget;
   /** The platform's Button, taken as a part (the web build by default). */
   Button?: typeof WebButton;
   /** The platform's Slider, taken as a part (the web build by default). */
@@ -48,6 +52,7 @@ export function VideoControls(props: VideoTransport) {
   const { playing, muted, currentTime, duration, label } = props;
   const Button = props.Button ?? WebButton;
   const Slider = props.Slider ?? WebSlider;
+  const { scrubberPart } = props;
   // The bar is a content pane under glass (the clip above it keeps its own pixels): the
   // node keeps its layout and drops its fill, and the pane paints the material behind it.
   // Where that material resolves solid the pane renders nothing, so the bar keeps its fill.
@@ -64,7 +69,7 @@ export function VideoControls(props: VideoTransport) {
           onPress={props.onTogglePlay}
         />
         <Typography tiny muted>{clock(currentTime)}</Typography>
-        <Slider
+        {withScrubber(scrubberPart, <Slider
           small
           min={0}
           max={duration > 0 ? duration : 1}
@@ -73,7 +78,7 @@ export function VideoControls(props: VideoTransport) {
           disabled={duration <= 0}
           onChange={props.onSeek}
           accessibilityLabel={`Seek ${label}`}
-        />
+        />)}
         <Typography tiny muted>{clock(duration)}</Typography>
         <Button
           ghost
@@ -93,3 +98,11 @@ export function VideoControls(props: VideoTransport) {
     </View>
   );
 }
+
+// The seek slider's part: inside a docs AnatomyProvider the slider takes a measuring box that
+// fills the Row's remainder as the slider does; outside one it renders bare.
+function withScrubber(part: AnatomyTarget | undefined, slider: ReactNode) {
+  return part ? <View ref={part.ref} onLayout={part.onLayout} style={SCRUBBER_BOX}>{slider}</View> : slider;
+}
+
+const SCRUBBER_BOX: ViewStyle = { flex: 1 };

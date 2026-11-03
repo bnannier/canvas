@@ -2,6 +2,7 @@ import { type ComponentType, type ReactNode } from "react";
 import { View, Text, useFillStyle, GlassPane, paneStyle, isGlass, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Switch as WebSwitch } from "../../atoms/switch/switch.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -124,6 +125,13 @@ export function createActionPanel(
   Switch: SwitchComponent = WebSwitch,
 ) {
   return function ActionPanel(props: ActionPanelProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Panel, Title, Description, Action, taken before the tree's
+    // AnatomyScope so the kit Button or Switch and the caller's children register nothing.
+    const panelPart = useAnatomyPart("Panel");
+    const titlePart = useAnatomyPart("Title");
+    const descriptionPart = useAnatomyPart("Description");
+    const actionPart = useAnatomyPart("Action");
     const { title, description, actionLabel, onAction, toggle, checked, defaultChecked, onToggle, children, testID, style } = props;
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
@@ -139,10 +147,10 @@ export function createActionPanel(
     const copy = (
       <View style={[{ gap: skin.copyGap }, layout === "inline" ? { flexGrow: 1, flexShrink: 1, flexBasis: skin.inlineCopyBasis, minWidth: 0 } : null]}>
         {title != null ? (
-          <Text style={[skin.titleType, { color: titleColor(tokens, tone) }]}>{title}</Text>
+          <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} style={[skin.titleType, { color: titleColor(tokens, tone) }]}>{title}</Text>
         ) : null}
         {description != null ? (
-          <Text style={[skin.descriptionType, { color: tokens["muted-foreground"] }]}>{description}</Text>
+          <Text ref={descriptionPart?.ref} onLayout={descriptionPart?.onLayout} style={[skin.descriptionType, { color: tokens["muted-foreground"] }]}>{description}</Text>
         ) : null}
       </View>
     );
@@ -158,7 +166,7 @@ export function createActionPanel(
 
     // The pinned action: the toggle Switch, or (without embedded content) the Button.
     const pinned = toggle ? (
-      <View style={actionPinned}>
+      <View ref={actionPart?.ref} onLayout={actionPart?.onLayout} style={actionPinned}>
         <Switch
           checked={checked}
           defaultChecked={defaultChecked}
@@ -167,7 +175,7 @@ export function createActionPanel(
         />
       </View>
     ) : !hosts && actionLabel != null ? (
-      <View style={layout === "inline" ? actionPinned : actionStacked}>{button(false)}</View>
+      <View ref={actionPart?.ref} onLayout={actionPart?.onLayout} style={layout === "inline" ? actionPinned : actionStacked}>{button(false)}</View>
     ) : null;
 
     const head =
@@ -185,12 +193,13 @@ export function createActionPanel(
 
     // Embedded content joins the panel's column under the copy, in its own rhythm; the
     // Button then closes the panel on the right, over a hairline.
-    const footer = hosts && !toggle && actionLabel != null ? <View style={[skin.footer, footerColor(tokens)]}>{button(true)}</View> : null;
+    const footer = hosts && !toggle && actionLabel != null ? <View ref={actionPart?.ref} onLayout={actionPart?.onLayout} style={[skin.footer, footerColor(tokens)]}>{button(true)}</View> : null;
 
     const box = [skin.container, panelColor(tokens, tone)];
     const stateBorder = tone === "destructive";
     return (
-      <View testID={testID} style={[paneStyle(theme, box, stateBorder), fill, style]}>
+      <AnatomyScope>
+      <View ref={panelPart?.ref} onLayout={panelPart?.onLayout} testID={testID} style={[paneStyle(theme, box, stateBorder), fill, style]}>
         <GlassPane layer="content" shape={box} stateBorder={stateBorder} tint={panelTint(tokens, tone)} />
         <MaterialBehind rendered={glass}>
           {head}
@@ -198,6 +207,7 @@ export function createActionPanel(
           {footer}
         </MaterialBehind>
       </View>
+      </AnatomyScope>
     );
   };
 }

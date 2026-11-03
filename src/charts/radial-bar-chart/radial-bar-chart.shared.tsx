@@ -9,7 +9,8 @@ import { type StackedSegment } from "../shared/types.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { MONO_FONT } from "../../style/mono.js";
-import { formatCompact } from "../shared/chart-math.js";
+import { formatCompact, polarPoint } from "../shared/chart-math.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // RadialBarChart is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -58,6 +59,12 @@ function circlePath(cx: number, cy: number, r: number): string {
 /** Concentric arc rings, one per category, over a muted track. */
 export function RadialBarChart(props: RadialBarChartProps) {
   const { data, testID, style } = props;
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Chart frame, Bar, Track, Legend.
+  const framePart = useAnatomyPart("Chart frame");
+  const barPart = useAnatomyPart("Bar");
+  const trackPart = useAnatomyPart("Track");
+  const legendPart = useAnatomyPart("Legend");
   const { tokens } = useTheme();
   const compact = !!props.compact;
   const formatValue = props.formatValue ?? formatCompact;
@@ -105,9 +112,19 @@ export function RadialBarChart(props: RadialBarChartProps) {
   const name = `${props.label ?? "Radial bar chart"}: ${data.map((d, i) => `${d.label} ${pctOf(clean[i])}%`).join(", ")}`;
   const img = { accessibilityRole: "image", accessibilityLabel: name, "aria-label": name } as const;
 
+  // The first ring's Bar and Track part boxes: measurable views on the outermost ring
+  // (SVG paths have no layout on native), the bar's at the end of its sweep and the
+  // track's at the ring's left, both as wide as the stroke.
+  const barRing = data.findIndex((_, i) => radiusOf(i) >= stroke && clean[i] > 0);
+  const barEnd = barRing >= 0 ? polarPoint(center, center, radiusOf(barRing), 2 * Math.PI * Math.max(0, Math.min(1, clean[barRing] / max))) : null;
+  const trackRing = data.findIndex((_, i) => radiusOf(i) >= stroke);
+  const trackAt = trackRing >= 0 ? polarPoint(center, center, radiusOf(trackRing), (3 * Math.PI) / 2) : null;
+  const probe = (at: { x: number; y: number }) => ({ position: "absolute" as const, left: at.x - stroke / 2, top: at.y - stroke / 2, width: stroke, height: stroke });
+
   return (
+    <AnatomyScope>
     <View testID={testID} style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: props.detailed ? 16 : 20 }, style]} {...(props.hideLegend ? { ...img, ...compositionInspectProps(data.length, selected, setSelected) } : {})}>
-      <View {...(props.hideLegend ? {} : { ...img, ...compositionInspectProps(data.length, selected, setSelected) })} style={{ width: size, height: size }}>
+      <View ref={framePart?.ref} onLayout={framePart?.onLayout} {...(props.hideLegend ? {} : { ...img, ...compositionInspectProps(data.length, selected, setSelected) })} style={{ width: size, height: size }}>
         <Svg width={size} height={size} style={{ position: "absolute" }}>
           {data.map((d, i) => {
             const r = radiusOf(i);
@@ -136,6 +153,8 @@ export function RadialBarChart(props: RadialBarChartProps) {
             );
           })}
         </Svg>
+        {barPart && barEnd ? <View ref={barPart.ref} onLayout={barPart.onLayout} style={[probe(barEnd), { pointerEvents: "none" }]} /> : null}
+        {trackPart && trackAt ? <View ref={trackPart.ref} onLayout={trackPart.onLayout} style={[probe(trackAt), { pointerEvents: "none" }]} /> : null}
         {/* Empty hit layer on top: the press target must be this Pressable
             itself so web offsetX coordinates stay plot-relative. */}
         <Pressable
@@ -148,7 +167,7 @@ export function RadialBarChart(props: RadialBarChartProps) {
         />
       </View>
       {props.hideLegend ? null : props.detailed ? (
-        <View style={{ flex: 1, minWidth: 100, gap: 8 }}>
+        <View ref={legendPart?.ref} onLayout={legendPart?.onLayout} style={{ flex: 1, minWidth: 100, gap: 8 }}>
           {data.map((d, i) => <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <View style={{ width: 8, height: 8, borderRadius: platformShape.web.cell, backgroundColor: seriesFill(tokens, i) }} />
             <Text style={{ flex: 1, fontSize: 13, lineHeight: 16, color: tokens["muted-foreground"] }}>{d.label}</Text>
@@ -157,14 +176,17 @@ export function RadialBarChart(props: RadialBarChartProps) {
           <Text style={{ borderTopWidth: 1, borderTopColor: tokens.border, paddingTop: 6, fontFamily: MONO_FONT, fontSize: CHART_LOOK.legendCaptionSize, lineHeight: 14, color: tokens["subtle-foreground"] }}>max {formatValue(max)}</Text>
         </View>
       ) : (
-        <ChartLegend
-          flush
-          items={data.map((d, i) => ({
-            label: `${d.label} ${formatValue(clean[i])}`,
-            color: seriesFill(tokens, i),
-          }))}
-        />
+        <AnatomyPart part={legendPart}>
+          <ChartLegend
+            flush
+            items={data.map((d, i) => ({
+              label: `${d.label} ${formatValue(clean[i])}`,
+              color: seriesFill(tokens, i),
+            }))}
+          />
+        </AnatomyPart>
       )}
     </View>
+    </AnatomyScope>
   );
 }

@@ -25,6 +25,12 @@
 // Typography's `href` link took the browser's own ring colour before, as a raw scroller
 // did before the ScrollView primitive carried it. A link's ring shows on keyboard focus
 // only, as a control's does.
+//
+// Inside a docs AnatomyProvider (src/style/anatomy.tsx) a bare Text numbers itself as the
+// hand-off's Text run, and a bare TextInput as its Native input, each on its own node and
+// without closing the registry, since their children and neighbours are the caller's. A
+// kit component that renders them inside its AnatomyScope registers nothing through them.
+// Outside a provider each costs one context read and adds no node, ref or handler.
 
 import { createContext, forwardRef, useContext, useMemo } from "react";
 import {
@@ -39,6 +45,7 @@ import {
 import { resolveFontFace, type ThemeFonts } from "./fonts.js";
 import { DISPLAY_FONT, MONO_FONT } from "./mono.js";
 import { useFocusRingStyle } from "./pressable.js";
+import { useAnatomyPart, withPartLayout, withPartRef } from "./anatomy.js";
 import { useTheme } from "./theme.js";
 
 /**
@@ -104,7 +111,9 @@ function isLink(props: LinkTextProps): boolean {
  * in the brand face without a `fontFamily` at the call site. A link Text (an `href`, or
  * the `link` role) also carries the kit's themed focus ring, as Pressable does.
  */
-export const Text = forwardRef<RNText, TextProps>(function Text({ style, children, ...rest }, ref) {
+export const Text = forwardRef<RNText, TextProps>(function Text({ style, children, onLayout, ...rest }, ref) {
+  // The anatomy part: the run itself (the hand-off's Text run).
+  const runPart = useAnatomyPart("Text run");
   const ring = useFocusRingStyle();
   const inherited = useContext(FaceRoleContext);
   const font = useFontStyle(style, inherited);
@@ -116,7 +125,7 @@ export const Text = forwardRef<RNText, TextProps>(function Text({ style, childre
   // sans label adds no provider.
   const role = useMemo(() => roleOf((StyleSheet.flatten(style) as TextStyle | undefined)?.fontFamily, inherited), [style, inherited]);
   return (
-    <RNText ref={ref} {...rest} style={themed}>
+    <RNText ref={withPartRef(runPart, ref)} {...rest} onLayout={withPartLayout(runPart, onLayout)} style={themed}>
       {role === inherited ? children : <FaceRoleContext.Provider value={role}>{children}</FaceRoleContext.Provider>}
     </RNText>
   );
@@ -131,10 +140,12 @@ export interface CanvasTextInputProps extends TextInputProps {
  * React Native's TextInput with the theme's registered typefaces applied. Kit fields
  * (Input, Textarea, Select) build on it; reach for them first.
  */
-export const TextInput = forwardRef<RNTextInput, CanvasTextInputProps>(function TextInput({ style, systemFocus, ...rest }, ref) {
+export const TextInput = forwardRef<RNTextInput, CanvasTextInputProps>(function TextInput({ style, systemFocus, onLayout, ...rest }, ref) {
+  // The anatomy part: the editing node itself (the hand-off's Native input).
+  const inputPart = useAnatomyPart("Native input");
   const ring = useFocusRingStyle();
   const font = useFontStyle(style);
   // The ring goes first in the list so a field's own outline style wins.
   const themed = useMemo(() => systemFocus ? font : [ring, font], [ring, font, systemFocus]);
-  return <RNTextInput ref={ref} {...rest} style={themed} />;
+  return <RNTextInput ref={withPartRef(inputPart, ref)} {...rest} onLayout={withPartLayout(inputPart, onLayout)} style={themed} />;
 });

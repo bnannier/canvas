@@ -1,8 +1,9 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Animated, Easing } from "react-native";
-import { useReducedMotion, supportsNativeDriver, type View, type LayoutStyle } from "../../style/index.js";
+import { View, useReducedMotion, supportsNativeDriver, type LayoutStyle } from "../../style/index.js";
 import { useInView } from "../../style/in-view.js";
 import { useRevealOrdinal } from "./reveal-context.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Reveal shell. The structure (one Animated.View wrapping the content), the
 // boolean-prop axes, the ordinal-to-delay conversion, and the Reduce Motion policy all
@@ -146,6 +147,13 @@ export function revealDelay(ordinal: number, stepMs: number, maxSteps: number): 
 
 export function createReveal(skin: RevealSkin) {
   return function Reveal(props: RevealProps) {
+    // The anatomy part a docs AnatomyProvider numbers (src/style/anatomy.tsx): the block
+    // that travels in (the hand-off's Entering block), taken before the AnatomyScope so the
+    // caller's content registers nothing of its own. It is measured by a view drawn only
+    // inside a provider, filling the travelling wrapper: an Animated.View hands its host
+    // to a new ref whenever its animated props change, and a part dropped that way would
+    // lose its rectangle until the next layout.
+    const blockPart = useAnatomyPart("Entering block");
     const { children, style, testID } = props;
     const reduced = useReducedMotion();
     // Position within an enclosing RevealGroup (0 when there is none).
@@ -202,7 +210,7 @@ export function createReveal(skin: RevealSkin) {
         testID={testID}
         style={[style, { opacity: progress, transform: [axis === "y" ? { translateY: translate } : { translateX: translate }] }]}
       >
-        {children}
+        <AnatomyScope>{blockPart == null ? children : <View ref={blockPart.ref} onLayout={blockPart.onLayout}>{children}</View>}</AnatomyScope>
       </Animated.View>
     );
   };

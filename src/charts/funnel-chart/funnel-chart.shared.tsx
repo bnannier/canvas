@@ -12,6 +12,7 @@ import { announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-insp
 import { formatCompact } from "../shared/chart-math.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { MONO_FONT } from "../../style/mono.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared FunnelChart shell. Stage-by-stage conversion: a row per stage of its label,
 // a centered ramp-colored bar whose width is the stage's share of the first, and its
@@ -67,6 +68,12 @@ const VALUE_WIDTH = 56;
 export function createFunnelChart(skin: ChartSkin) {
   return function FunnelChart(props: FunnelChartProps) {
     const { stages, title, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Stage bar, Stage label, Value (the first stage's).
+    const framePart = useAnatomyPart("Chart frame");
+    const barPart = useAnatomyPart("Stage bar");
+    const labelPart = useAnatomyPart("Stage label");
+    const valuePart = useAnatomyPart("Value");
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
@@ -108,6 +115,7 @@ export function createFunnelChart(skin: ChartSkin) {
     const toggle = (i: number) => setSelected(selected === i ? null : i);
 
     return (
+      <AnatomyScope>
       <View
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
@@ -122,7 +130,7 @@ export function createFunnelChart(skin: ChartSkin) {
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}
-        <View {...compositionInspectProps(stages.length, selected, setSelected)} accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name} style={{ gap: rowGap }}>
+        <View ref={framePart?.ref} onLayout={framePart?.onLayout} {...compositionInspectProps(stages.length, selected, setSelected)} accessible accessibilityRole="image" role="img" accessibilityLabel={name} aria-label={name} style={{ gap: rowGap }}>
           {stages.map((st, i) => {
             const share = peak > 0 ? (clean[i] / peak) * 100 : 0;
             return (
@@ -130,16 +138,16 @@ export function createFunnelChart(skin: ChartSkin) {
                 key={i}
                 style={[{ flexDirection: "row", alignItems: "center", gap: props.tapered ? 8 : COLUMN_GAP, height: barH, opacity: selected != null && selected !== i ? DIM_OPACITY : 1 }]}
               >
-                {props.tapered ? <View style={{ width: 74 }}>
+                {props.tapered ? <View ref={i === 0 ? labelPart?.ref : undefined} onLayout={i === 0 ? labelPart?.onLayout : undefined} style={{ width: 74 }}>
                   <Text style={{ fontSize: 12, lineHeight: 14.4, fontWeight: "500", color: tokens.foreground }}>{st.label}</Text>
                   <Text style={{ fontFamily: MONO_FONT, fontSize: s.CHART_LOOK.legendCaptionSize, lineHeight: 14, color: tokens["subtle-foreground"] }}>{formatValue(clean[i])}</Text>
-                </View> : <Text numberOfLines={1} style={{ width: LABEL_WIDTH, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{st.label}</Text>}
+                </View> : <Text ref={i === 0 ? labelPart?.ref : undefined} onLayout={i === 0 ? labelPart?.onLayout : undefined} numberOfLines={1} style={{ width: LABEL_WIDTH, fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>{st.label}</Text>}
                 <View onLayout={props.tapered ? (e) => setPlotWidth(e.nativeEvent.layout.width) : undefined} style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", alignItems: "center" }}>
-                  {props.tapered ? <Svg width={plotWidth} height={barH}>
+                  {props.tapered ? <AnatomyPart part={i === 0 ? barPart : undefined}><Svg width={plotWidth} height={barH}>
                     <Path d={funnelTrapezoid(plotWidth, barH, share / 100, i + 1 < clean.length ? clean[i + 1] / Math.max(1, peak) : share / 100 * .81)} fill={s.seriesFill(tokens, 0)} opacity={[1, .8, .62, .45][Math.min(i, 3)]} />
-                  </Svg> : <View style={{ height: barH, width: `${share}%`, borderRadius: platformShape.web.funnelBar, backgroundColor: s.seriesFill(tokens, i) }} />}
+                  </Svg></AnatomyPart> : <View ref={i === 0 ? barPart?.ref : undefined} onLayout={i === 0 ? barPart?.onLayout : undefined} style={{ height: barH, width: `${share}%`, borderRadius: platformShape.web.funnelBar, backgroundColor: s.seriesFill(tokens, i) }} />}
                 </View>
-                <Text numberOfLines={1} style={{ width: props.tapered ? 40 : VALUE_WIDTH, textAlign: "right", fontFamily: MONO_FONT, fontSize: props.tapered ? s.CHART_LOOK.legendCaptionSize : 12, lineHeight: 16, fontWeight: "500", color: props.tapered && i === 0 ? tokens["subtle-foreground"] : props.tapered && i === stages.length - 1 ? tokens.warning : tokens["card-foreground"], ...tabularNums() }}>
+                <Text ref={i === 0 ? valuePart?.ref : undefined} onLayout={i === 0 ? valuePart?.onLayout : undefined} numberOfLines={1} style={{ width: props.tapered ? 40 : VALUE_WIDTH, textAlign: "right", fontFamily: MONO_FONT, fontSize: props.tapered ? s.CHART_LOOK.legendCaptionSize : 12, lineHeight: 16, fontWeight: "500", color: props.tapered && i === 0 ? tokens["subtle-foreground"] : props.tapered && i === stages.length - 1 ? tokens.warning : tokens["card-foreground"], ...tabularNums() }}>
                   {props.tapered ? i === 0 ? "—" : `${(100 * clean[i] / Math.max(1, props.share ? clean[0] : clean[i - 1])).toFixed(1)}%` : props.share ? `${Math.round(share)}%` : formatValue(clean[i])}
                 </Text>
               </View>
@@ -158,6 +166,7 @@ export function createFunnelChart(skin: ChartSkin) {
           />
         </View>
       </View>
+      </AnatomyScope>
     );
   };
 }

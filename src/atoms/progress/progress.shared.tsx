@@ -1,4 +1,5 @@
 import { SEGMENTED_METER } from "./progress.styles.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
@@ -196,6 +197,13 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const glass = isGlass(theme);
     // FILL, appended after the skin's width:"100%" (the row-sharing pair).
     const widthStyle = useFillStyle("Progress", props);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Label, Track, Fill, Value.
+    const labelPart = useAnatomyPart("Label");
+    const trackPart = useAnatomyPart("Track");
+    const fillPart = useAnatomyPart("Fill");
+    const valuePart = useAnatomyPart("Value");
+    const fillAnatomy = { ref: fillPart?.ref, onLayout: fillPart?.onLayout };
 
     const height = skin.height[size];
     // The track and the fill are capsules on every platform: 9999 clamps to half the bar.
@@ -313,9 +321,9 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
       <View style={HEADER_COLUMN}>
         {children != null || hasReadout ? (
           <View style={TITLE_ROW}>
-            {children != null ? <Text style={skin.label(tokens)}>{children}</Text> : null}
+            {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={skin.label(tokens)}>{children}</Text> : null}
             {hasReadout ? (
-              <Text style={[skin.valueReadout(tokens), VALUE_READOUT_LAYOUT]}>{status ?? `${Math.round(fraction * 100)}%`}</Text>
+              <Text ref={valuePart?.ref} onLayout={valuePart?.onLayout} style={[skin.valueReadout(tokens), VALUE_READOUT_LAYOUT]}>{status ?? `${Math.round(fraction * 100)}%`}</Text>
             ) : null}
           </View>
         ) : null}
@@ -330,10 +338,11 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
       const meter = <View accessibilityRole="progressbar" accessibilityLabel={accessibilityName}
         accessibilityValue={{ min: 0, max: 100, now: Math.round(fraction * 100) }}
         aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(fraction * 100)}
+        ref={trackPart?.ref} onLayout={trackPart?.onLayout}
         testID={hasHeader ? undefined : testID} style={[SEGMENTED_METER.row, hasHeader ? null : widthStyle, hasHeader ? null : style]}>
-        {Array.from({ length: count }, (_, i) => <View key={i} style={[SEGMENTED_METER.segment, { height, backgroundColor: (i + 1) / count <= fraction + 0.00001 ? fillColor : trackColor }]} />)}
+        {Array.from({ length: count }, (_, i) => <View key={i} {...(i === 0 && fraction > 0 ? fillAnatomy : null)} style={[SEGMENTED_METER.segment, { height, backgroundColor: (i + 1) / count <= fraction + 0.00001 ? fillColor : trackColor }]} />)}
       </View>;
-      return hasHeader ? <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>{header}{meter}</View> : meter;
+      return <AnatomyScope>{hasHeader ? <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>{header}{meter}</View> : meter}</AnatomyScope>;
     }
 
     if (indeterminate && IndeterminateSpinner) {
@@ -344,18 +353,22 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
       // original). With a header it sits left-aligned under the stacked title.
       if (!hasHeader) {
         return (
-          <View testID={testID} style={[{ alignItems: "center" }, widthStyle, style]}>
-            {spinner}
-          </View>
+          <AnatomyScope>
+            <View testID={testID} style={[{ alignItems: "center" }, widthStyle, style]}>
+              {spinner}
+            </View>
+          </AnatomyScope>
         );
       }
       // With a header the activity indicator leads the title line, as iOS sets a
       // spinner beside its "Loading" label.
       return (
-        <View testID={testID} style={[SPINNER_ROW, widthStyle, style]}>
-          {spinner}
-          <View style={SPINNER_TEXT}>{header}</View>
-        </View>
+        <AnatomyScope>
+          <View testID={testID} style={[SPINNER_ROW, widthStyle, style]}>
+            {spinner}
+            <View style={SPINNER_TEXT}>{header}</View>
+          </View>
+        </AnatomyScope>
       );
     }
 
@@ -395,7 +408,8 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
         // composition, and the testID; the track keeps only the progressbar role and its
         // own shape. Header-less, they stay on the track so the render is byte-identical.
         testID={hasHeader ? undefined : testID}
-        onLayout={onLayout}
+        ref={trackPart?.ref}
+        onLayout={withPartLayout(trackPart, onLayout)}
         style={[
           // overflow:hidden clips the sliding indeterminate bar AND the translated
           // determinate fill/segments to the rounded rail. The continuous structure paints
@@ -409,8 +423,15 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
         ]}
       >
         {segmented ? null : <GlassPane static layer="control" shape={{ borderRadius: radius }} />}
+        {/* The anatomy Fill of a measured determinate bar: the eased fill is a full-width
+            Animated view translated into place, whose layout box is the whole track, so an
+            invisible box spanning the filled fraction measures the part. */}
+        {fillPart && !indeterminate && trackWidth > 0 ? (
+          <View ref={fillPart.ref} onLayout={fillPart.onLayout} pointerEvents="none" style={{ position: "absolute", top: 0, bottom: 0, start: 0, width: `${fraction * 100}%` }} />
+        ) : null}
         {indeterminate ? (
           <Animated.View
+            {...fillAnatomy}
             style={[{
               position: "absolute",
               top: 0,
@@ -473,6 +494,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
                 />
                 {fraction > 0 ? (
                   <View
+                    {...fillAnatomy}
                     style={{
                       height: "100%",
                       width: `${fraction * 100}%`,
@@ -518,6 +540,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
         ) : (
           // Pre-measurement fallback: static percent-width fill so the value paints at once.
           <View
+            {...fillAnatomy}
             style={[{
               height: "100%",
               width: `${fraction * 100}%`,
@@ -532,12 +555,14 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     // Header-less: the track IS the root node (byte-identical to the original render).
     // With a header: an outer column stacks the header over the track and carries the
     // width axis, the outer style composition, and the testID.
-    if (!hasHeader) return track;
+    if (!hasHeader) return <AnatomyScope>{track}</AnatomyScope>;
     return (
-      <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>
-        {header}
-        {track}
-      </View>
+      <AnatomyScope>
+        <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>
+          {header}
+          {track}
+        </View>
+      </AnatomyScope>
     );
   };
 }

@@ -1,6 +1,8 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
+import { useDelegatedParts } from "../../atoms/input/delegated-parts.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import {
@@ -191,11 +193,23 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     // wears the kit's ring while the number field has keyboard focus
     // (src/style/focus-frame.tsx), as an errored Input's group box does.
     const errorFrame = useFocusFrame();
-    const hostRef = useComposedRefs(numberRef, ref, errorFrame.target.ref);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Label, Country trigger, Dial code, Number, taken before the tree's
+    // AnatomyScope. PhoneInput draws no message line: its Error part is Field's message.
+    // A Field that delegated its label hands down its Label, Required mark and Control (the box,
+    // atoms/input/delegated-parts.ts).
+    const delegated = useDelegatedParts();
+    const labelPart = useAnatomyPart("Label") ?? delegated?.label;
+    const countryPart = useAnatomyPart("Country trigger");
+    const dialPart = useAnatomyPart("Dial code");
+    const numberPart = useAnatomyPart("Number");
+    const hostRef = useComposedRefs(numberRef, ref, errorFrame.target.ref, numberPart?.ref);
     // The whole box anchors the list (the trigger's measured width is its minimum).
     const boxRef = useRef<View>(null);
+    const boxHostRef = useComposedRefs(boxRef, delegated?.control?.ref);
     // The country segment, where focus returns when the list closes without a pick.
     const countryRef = useRef<View>(null);
+    const countryHostRef = useComposedRefs(countryRef, countryPart?.ref);
     const { width: boxWidth, onLayout: onBoxLayout } = useMeasuredWidth();
 
     const close = () => setOpen(false);
@@ -230,13 +244,14 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const halo = active && field.focusHalo && !(isError && errorFrame.focused) ? field.focusHalo(tokens, isError) : null;
     const box = (
       <View
-        ref={boxRef}
-        onLayout={onBoxLayout}
+        ref={boxHostRef}
+        onLayout={withPartLayout(delegated?.control, onBoxLayout)}
         style={[boxSurface.style, { minHeight: field.groupedHeight(size) }, halo, isError && !disabled ? errorFrame.ring() : null]}
       >
         <GlassPane {...entryMaterial.paneProps} stateBorder={boxSurface.keepsBorder} shape={boxShape} tint={isError ? legibleWash(theme, "error", entryMaterial.paneProps) : undefined} />
         <Pressable
-          ref={countryRef}
+          ref={countryHostRef}
+          onLayout={countryPart?.onLayout}
           onPress={() => setOpen(!open)}
           disabled={!editable}
           style={({ pressed }) => [entryMaterial.inkFill(skin.country(tokens, state, size)), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
@@ -264,12 +279,13 @@ export function createPhoneInput(skin: PhoneInputSkin) {
 
         <View style={NUMBER_AREA}>
           {selected ? (
-            <Text style={[text, skin.numberFace, skin.dial(tokens), { alignSelf: "center" }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <Text ref={dialPart?.ref} onLayout={dialPart?.onLayout} style={[text, skin.numberFace, skin.dial(tokens), { alignSelf: "center" }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               {selected.dialCode}
             </Text>
           ) : null}
           <TextInput
             ref={hostRef}
+            onLayout={numberPart?.onLayout}
             style={[
               field.groupField(tokens, { leadingIcon: false, trailingIcon: false, hasPrefix: false, hasSuffix: false }),
               { paddingStart: skin.numberGap },
@@ -381,15 +397,17 @@ export function createPhoneInput(skin: PhoneInputSkin) {
 
     const dim = disabled ? { opacity: field.disabledOpacity } : null;
     return (
+      <AnatomyScope>
       <View style={[root, open ? rootLifted : null, label != null ? { gap: field.labelGap } : null, dim, widthCap, style]}>
         {label != null ? (
-          <Text nativeID={labelId} style={field.labelAbove(tokens, size)} {...labelA11y(label, props.accessibilityLabel == null)}>
-            <LabelContent label={label} required={required} starColor={tokens.destructive} />
+          <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} nativeID={labelId} style={field.labelAbove(tokens, size)} {...labelA11y(label, props.accessibilityLabel == null)}>
+            <LabelContent label={label} required={required} starColor={tokens.destructive} starPart={delegated?.required} />
           </Text>
         ) : null}
         {box}
         {list}
       </View>
+      </AnatomyScope>
     );
   });
   PhoneInput.displayName = "PhoneInput";

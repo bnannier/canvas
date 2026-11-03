@@ -3,6 +3,7 @@ import { OverlayProvider, ScrollView, View, stepOf, useTheme, type MeasureProps,
 import { SafeAreaProvider, SafeAreaView } from "../../style/safe-area.js";
 import { Container } from "../../atoms/container/container.js";
 import { Column } from "../../atoms/layout/layout.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import * as s from "./app-frame.styles.js";
 import { type AppFrameSkin } from "./app-frame.styles.js";
 
@@ -67,13 +68,25 @@ export function pageMeasureOf(p: PageProps): WidthKey | "fluid" {
 /** Build AppFrame from a platform skin (the shared frame fill). */
 export function createAppFrame(skin: AppFrameSkin) {
   return function AppFrame({ header, children, testID }: AppFrameProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Frame, Header (the banner) and Body, taken before the AnatomyScope
+    // so the header's Navbar and the body's Page register nothing of their own.
+    const framePart = useAnatomyPart("Frame");
+    const headerPart = useAnatomyPart("Header");
+    const bodyPart = useAnatomyPart("Body");
     const { tokens } = useTheme();
+    // The safe-area peer's SafeAreaView forwards its ref to its host view, as the View
+    // standing in for it does; its declared props are ViewProps alone, so the ref goes in
+    // beside them.
+    const frameTarget = framePart == null ? null : ({ ref: framePart.ref, onLayout: framePart.onLayout } as object);
     return (
       <SafeAreaProvider style={s.root}>
         <OverlayProvider>
-          <SafeAreaView edges={ALL_EDGES} style={[s.root, skin.frame(tokens)]} testID={testID}>
-            {header != null ? <View role="banner">{header}</View> : null}
-            <View style={s.body}>{children}</View>
+          <SafeAreaView {...frameTarget} edges={ALL_EDGES} style={[s.root, skin.frame(tokens)]} testID={testID}>
+            <AnatomyScope>
+              {header != null ? <View ref={headerPart?.ref} onLayout={headerPart?.onLayout} role="banner">{header}</View> : null}
+              <View ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={s.body}>{children}</View>
+            </AnatomyScope>
           </SafeAreaView>
         </OverlayProvider>
       </SafeAreaProvider>

@@ -31,6 +31,16 @@ import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { rowSeam } from "../../style/touch-seam.js";
 import { useEscapeLayer } from "../../style/escape-layer.js";
 import { type GlassLayer } from "../../style/glass-surface/glass-surface-props.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
+
+// The anatomy parts a standalone Toast hands its capsule (see Toast below).
+interface ToastAnatomy {
+  toast?: AnatomyTarget;
+  icon?: AnatomyTarget;
+  message?: AnatomyTarget;
+  description?: AnatomyTarget;
+  action?: AnatomyTarget;
+}
 
 // Shared Toast shell. Two layers live here once and a platform file supplies only
 // its skin (capsule shape, type, action/dismiss feedback) and calls createToastSystem:
@@ -248,7 +258,7 @@ export function createToastSystem(skin: ToastSkin) {
   // swaps capsules inside its single persistent region (a per-capsule region
   // would both nest regions, double-firing, and mount together with its content,
   // which assistive tech misses).
-  function ToastCapsule(props: Omit<ToastProps, "testID" | "style">) {
+  function ToastCapsule({ anatomy, ...props }: Omit<ToastProps, "testID" | "style"> & { anatomy?: ToastAnatomy }) {
     const { message, description, action, icon, onDismiss } = props;
     const layer = skin.glassLayer ?? "dense";
     const theme = useMaterialTheme({ layer, floating: true });
@@ -279,13 +289,13 @@ export function createToastSystem(skin: ToastSkin) {
 
     const content = (
       <>
-        {glyph != null && glyph !== false ? <View style={[ICON_SLOT, props.brief ? null : skin.iconSlot]}>{glyph}</View> : null}
+        {glyph != null && glyph !== false ? <View ref={anatomy?.icon?.ref} onLayout={anatomy?.icon?.onLayout} style={[ICON_SLOT, props.brief ? null : skin.iconSlot]}>{glyph}</View> : null}
         <View style={[TEXT_COL, skin.textGap != null ? { gap: skin.textGap } : null]}>
-          <Text style={props.brief && skin.briefMessage ? skin.briefMessage(tokens) : skin.message(tokens)} numberOfLines={props.brief ? 1 : 2}>
+          <Text ref={anatomy?.message?.ref} onLayout={anatomy?.message?.onLayout} style={props.brief && skin.briefMessage ? skin.briefMessage(tokens) : skin.message(tokens)} numberOfLines={props.brief ? 1 : 2}>
             {message}
           </Text>
           {description != null && description !== "" ? (
-            <Text style={skin.description(tokens)} numberOfLines={3}>
+            <Text ref={anatomy?.description?.ref} onLayout={anatomy?.description?.onLayout} style={skin.description(tokens)} numberOfLines={3}>
               {description}
             </Text>
           ) : null}
@@ -295,6 +305,8 @@ export function createToastSystem(skin: ToastSkin) {
           // parent (a node can never clip its own ripple on Android); nothing to move.
           <RippleClip shape={cornerRadii(skin.actionButton(tokens))} hitSlop={actionSlop}>
             <Pressable
+              ref={anatomy?.action?.ref}
+              onLayout={anatomy?.action?.onLayout}
               onPress={action.onPress}
               accessibilityRole="button"
               accessibilityLabel={action.label}
@@ -336,6 +348,8 @@ export function createToastSystem(skin: ToastSkin) {
     const inverse = (StyleSheet.flatten(containerStyle) as ViewStyle).backgroundColor === fill;
     return (
       <GlassSurface layer={layer} floating tint={inverse ? inverseDenseTint(theme, fill) : undefined} style={containerStyle}>
+        {/* The capsule's own box, for the anatomy Toast part: GlassSurface has no ref, so a pass-through fill measures it. */}
+        {anatomy?.toast ? <View ref={anatomy.toast.ref} onLayout={anatomy.toast.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
         {content}
       </GlassSurface>
     );
@@ -343,6 +357,16 @@ export function createToastSystem(skin: ToastSkin) {
 
   function Toast(props: ToastProps) {
     const { testID, style, ...content } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Toast, Icon, Message, Description, Action. Taken before the
+    // tree's AnatomyScope so the glyph and the dismiss Icon register nothing of their own.
+    const anatomy: ToastAnatomy = {
+      toast: useAnatomyPart("Toast"),
+      icon: useAnatomyPart("Icon"),
+      message: useAnatomyPart("Message"),
+      description: useAnatomyPart("Description"),
+      action: useAnatomyPart("Action"),
+    };
 
     return (
       // A directly rendered capsule announces itself as a polite status region (so
@@ -352,16 +376,18 @@ export function createToastSystem(skin: ToastSkin) {
       // with its content, so screen readers can miss a toast that pops into
       // existence; for reliable announcements render through <ToastProvider>,
       // whose live region is persistent.
-      <EscapeDismiss
-        onEscape={content.onDismiss}
-        role="status"
-        accessibilityLiveRegion="polite"
-        aria-live="polite"
-        testID={testID}
-        style={style}
-      >
-        <ToastCapsule {...content} />
-      </EscapeDismiss>
+      <AnatomyScope>
+        <EscapeDismiss
+          onEscape={content.onDismiss}
+          role="status"
+          accessibilityLiveRegion="polite"
+          aria-live="polite"
+          testID={testID}
+          style={style}
+        >
+          <ToastCapsule {...content} anatomy={anatomy} />
+        </EscapeDismiss>
+      </AnatomyScope>
     );
   }
 

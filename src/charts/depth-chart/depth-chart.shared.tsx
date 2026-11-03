@@ -13,6 +13,8 @@ import {
 } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
+import { ChartAnatomyScope } from "../shared/chart-anatomy.js";
+import { useAnatomyPart } from "../../style/anatomy.js";
 import {
   CartesianFrame,
   CHART_ROOT,
@@ -81,6 +83,14 @@ const styles = StyleSheet.create({ passthrough: { pointerEvents: "none" } });
 /** Build a DepthChart from a platform skin. */
 export function createDepthChart(skin: ChartSkin) {
   return function DepthChart(props: DepthChartProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Bids, Asks, Legend, Gridlines, taken before the
+    // tree's AnatomyScope and handed to the shared frame and legend (chart-anatomy.tsx).
+    const framePart = useAnatomyPart("Chart frame");
+    const bidsPart = useAnatomyPart("Bids");
+    const asksPart = useAnatomyPart("Asks");
+    const legendPart = useAnatomyPart("Legend");
+    const gridPart = useAnatomyPart("Gridlines");
     const { bids, asks, title, testID, style } = props;
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
@@ -136,232 +146,234 @@ export function createDepthChart(skin: ChartSkin) {
     } ask levels totalling ${formatValue(askTotal)}`;
 
     return (
-      <View
-        {...(title != null && title !== ""
-          ? {
-              role: "group" as const,
-              accessibilityLabel: `${title} chart`,
-              "aria-label": `${title} chart`,
-            }
-          : {})}
-        testID={testID}
-        style={[
-          props.plain
-            ? null
-            : paneStyle(theme, [
-                surfaceShape,
-                compact ? s.surfacePadCompact : s.surfacePadDefault,
-              ]),
-          CHART_ROOT,
-          style,
-        ]}
-      >
-        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? (
-          <GlassPane layer="content" shape={surfaceShape} />
-        ) : null}
-        {title != null && title !== "" ? (
-          <Text
-            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
-          >
-            {title}
-          </Text>
-        ) : null}
-
+      <ChartAnatomyScope parts={{ frame: framePart, marks: [bidDepth.length > 0 ? bidsPart : undefined, askDepth.length > 0 ? asksPart : undefined], legend: legendPart, gridlines: gridPart }}>
         <View
-          accessible
-          accessibilityRole="image"
-          role="img"
-          accessibilityLabel={name}
-          aria-label={name}
+          {...(title != null && title !== ""
+            ? {
+                role: "group" as const,
+                accessibilityLabel: `${title} chart`,
+                "aria-label": `${title} chart`,
+              }
+            : {})}
+          testID={testID}
+          style={[
+            props.plain
+              ? null
+              : paneStyle(theme, [
+                  surfaceShape,
+                  compact ? s.surfacePadCompact : s.surfacePadDefault,
+                ]),
+            CHART_ROOT,
+            style,
+          ]}
         >
-          <CartesianFrame
-            yExtent={[0, maxDepth]}
-            xDomain={xDomain}
-            plotHeight={PLOT_HEIGHT[compact ? "compact" : "default"]}
-            compact={compact}
-            hideGrid={props.hideGrid}
-            hideAxes={props.hideAxes}
-            formatValue={formatValue}
-            overlay={(layout) =>
-              props.spread && mid(layout) != null ? (
-                // The section card's spread pill, centred on the guide 6 below the plot's top.
-                <View
-                  style={[
-                    styles.passthrough,
-                    {
-                      position: "absolute",
-                      top: SPREAD.top,
-                      left: 0,
-                      right: 0,
-                      alignItems: "center",
-                    },
-                  ]}
-                >
+          {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+          {glass && !props.plain ? (
+            <GlassPane layer="content" shape={surfaceShape} />
+          ) : null}
+          {title != null && title !== "" ? (
+            <Text
+              style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+            >
+              {title}
+            </Text>
+          ) : null}
+
+          <View
+            accessible
+            accessibilityRole="image"
+            role="img"
+            accessibilityLabel={name}
+            aria-label={name}
+          >
+            <CartesianFrame
+              yExtent={[0, maxDepth]}
+              xDomain={xDomain}
+              plotHeight={PLOT_HEIGHT[compact ? "compact" : "default"]}
+              compact={compact}
+              hideGrid={props.hideGrid}
+              hideAxes={props.hideAxes}
+              formatValue={formatValue}
+              overlay={(layout) =>
+                props.spread && mid(layout) != null ? (
+                  // The section card's spread pill, centred on the guide 6 below the plot's top.
                   <View
-                    style={{
-                      height: SPREAD.height,
-                      paddingHorizontal: SPREAD.padH,
-                      borderRadius: 9999,
-                      borderWidth: 1,
-                      borderColor: tokens["field-border"] ?? tokens.border,
-                      backgroundColor: tokens.muted,
-                      justifyContent: "center",
-                      transform: [
-                        {
-                          translateX:
-                            (mid(layout) as number) - layout.plotW / 2,
-                        },
-                      ],
-                    }}
+                    style={[
+                      styles.passthrough,
+                      {
+                        position: "absolute",
+                        top: SPREAD.top,
+                        left: 0,
+                        right: 0,
+                        alignItems: "center",
+                      },
+                    ]}
                   >
-                    <Text
-                      numberOfLines={1}
+                    <View
                       style={{
-                        ...SPREAD_TYPE,
-                        color: tokens["muted-foreground"],
+                        height: SPREAD.height,
+                        paddingHorizontal: SPREAD.padH,
+                        borderRadius: 9999,
+                        borderWidth: 1,
+                        borderColor: tokens["field-border"] ?? tokens.border,
+                        backgroundColor: tokens.muted,
+                        justifyContent: "center",
+                        transform: [
+                          {
+                            translateX:
+                              (mid(layout) as number) - layout.plotW / 2,
+                          },
+                        ],
                       }}
                     >
-                      {props.spread}
-                    </Text>
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          ...SPREAD_TYPE,
+                          color: tokens["muted-foreground"],
+                        }}
+                      >
+                        {props.spread}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              ) : null
-            }
-          >
-            {(layout) => {
-              const toPts = (pts: { price: number; depth: number }[]) =>
-                pts.map((p) => ({
-                  x: layout.x(p.price),
-                  y: layout.y(p.depth),
-                }));
-              // Extend each side's total-depth shelf to its plot edge, so the
-              // outermost step has width instead of ending in a bare spike.
-              const bidPts = toPts(bidDepth);
-              if (bidPts.length) bidPts.unshift({ x: 0, y: bidPts[0].y });
-              const askPts = toPts(askDepth);
-              if (askPts.length)
-                askPts.push({
-                  x: layout.plotW,
-                  y: askPts[askPts.length - 1].y,
-                });
-              if (specimen) {
-                const sx = layout.plotW / 300;
-                // The best price has an explicit zero-depth endpoint on each side.
-                if (bidPts.length)
-                  bidPts.push({ x: 144 * sx, y: layout.plotH });
+                ) : null
+              }
+            >
+              {(layout) => {
+                const toPts = (pts: { price: number; depth: number }[]) =>
+                  pts.map((p) => ({
+                    x: layout.x(p.price),
+                    y: layout.y(p.depth),
+                  }));
+                // Extend each side's total-depth shelf to its plot edge, so the
+                // outermost step has width instead of ending in a bare spike.
+                const bidPts = toPts(bidDepth);
+                if (bidPts.length) bidPts.unshift({ x: 0, y: bidPts[0].y });
+                const askPts = toPts(askDepth);
                 if (askPts.length)
-                  askPts.unshift({ x: 156 * sx, y: layout.plotH });
-                const step = (points: { x: number; y: number }[]) =>
-                  points.length
-                    ? `M${points[0].x},${points[0].y}` +
-                      points
-                        .slice(1)
-                        .map((p, i) => ` H${p.x} V${p.y}`)
-                        .join("")
-                    : "";
-                const bidLine = step(bidPts);
-                const askLine = step(askPts);
+                  askPts.push({
+                    x: layout.plotW,
+                    y: askPts[askPts.length - 1].y,
+                  });
+                if (specimen) {
+                  const sx = layout.plotW / 300;
+                  // The best price has an explicit zero-depth endpoint on each side.
+                  if (bidPts.length)
+                    bidPts.push({ x: 144 * sx, y: layout.plotH });
+                  if (askPts.length)
+                    askPts.unshift({ x: 156 * sx, y: layout.plotH });
+                  const step = (points: { x: number; y: number }[]) =>
+                    points.length
+                      ? `M${points[0].x},${points[0].y}` +
+                        points
+                          .slice(1)
+                          .map((p, i) => ` H${p.x} V${p.y}`)
+                          .join("")
+                      : "";
+                  const bidLine = step(bidPts);
+                  const askLine = step(askPts);
+                  return (
+                    <>
+                      <Path
+                        d={`${bidLine} L0,${layout.plotH}Z`}
+                        fill={tokens.success}
+                        fillOpacity={0.18}
+                      />
+                      <Path
+                        d={bidLine}
+                        fill="none"
+                        stroke={tokens.success}
+                        strokeWidth={1.8}
+                      />
+                      <Path
+                        d={`${askLine} L${layout.plotW},${layout.plotH}Z`}
+                        fill={tokens.destructive}
+                        fillOpacity={0.16}
+                      />
+                      <Path
+                        d={askLine}
+                        fill="none"
+                        stroke={tokens.destructive}
+                        strokeWidth={1.8}
+                      />
+                      {props.spread ? (
+                        <Line
+                          x1={layout.plotW / 2}
+                          x2={layout.plotW / 2}
+                          y1={0}
+                          y2={layout.plotH}
+                          stroke={tokens["subtle-foreground"]}
+                          strokeDasharray="3,4"
+                        />
+                      ) : null}
+                    </>
+                  );
+                }
+                const guide = props.spread ? mid(layout) : null;
                 return (
                   <>
-                    <Path
-                      d={`${bidLine} L0,${layout.plotH}Z`}
-                      fill={tokens.success}
-                      fillOpacity={0.18}
-                    />
-                    <Path
-                      d={bidLine}
-                      fill="none"
-                      stroke={tokens.success}
-                      strokeWidth={1.8}
-                    />
-                    <Path
-                      d={`${askLine} L${layout.plotW},${layout.plotH}Z`}
-                      fill={tokens.destructive}
-                      fillOpacity={0.16}
-                    />
-                    <Path
-                      d={askLine}
-                      fill="none"
-                      stroke={tokens.destructive}
-                      strokeWidth={1.8}
-                    />
-                    {props.spread ? (
+                    {guide != null ? (
                       <Line
-                        x1={layout.plotW / 2}
-                        x2={layout.plotW / 2}
+                        x1={guide}
                         y1={0}
+                        x2={guide}
                         y2={layout.plotH}
-                        stroke={tokens["subtle-foreground"]}
-                        strokeDasharray="3,4"
+                        stroke={
+                          tokens["subtle-foreground"] ??
+                          tokens["muted-foreground"]
+                        }
+                        strokeWidth={1}
+                        strokeDasharray={s.CHART_LOOK.guideDash}
                       />
+                    ) : null}
+                    {bidPts.length ? (
+                      <>
+                        <Path
+                          d={stepAreaPath(bidPts, layout.plotH, true)}
+                          fill={alpha(tokens.success, 0.25)}
+                        />
+                        <Path
+                          d={stepAreaPath(bidPts, layout.plotH, true)}
+                          fill="none"
+                          stroke={tokens.success}
+                          strokeWidth={2}
+                          strokeLinejoin="round"
+                        />
+                      </>
+                    ) : null}
+                    {askPts.length ? (
+                      <>
+                        <Path
+                          d={stepAreaPath(askPts, layout.plotH)}
+                          fill={alpha(tokens.destructive, 0.22)}
+                        />
+                        <Path
+                          d={stepAreaPath(askPts, layout.plotH)}
+                          fill="none"
+                          stroke={tokens.destructive}
+                          strokeWidth={2}
+                          strokeLinejoin="round"
+                        />
+                      </>
                     ) : null}
                   </>
                 );
-              }
-              const guide = props.spread ? mid(layout) : null;
-              return (
-                <>
-                  {guide != null ? (
-                    <Line
-                      x1={guide}
-                      y1={0}
-                      x2={guide}
-                      y2={layout.plotH}
-                      stroke={
-                        tokens["subtle-foreground"] ??
-                        tokens["muted-foreground"]
-                      }
-                      strokeWidth={1}
-                      strokeDasharray={s.CHART_LOOK.guideDash}
-                    />
-                  ) : null}
-                  {bidPts.length ? (
-                    <>
-                      <Path
-                        d={stepAreaPath(bidPts, layout.plotH, true)}
-                        fill={alpha(tokens.success, 0.25)}
-                      />
-                      <Path
-                        d={stepAreaPath(bidPts, layout.plotH, true)}
-                        fill="none"
-                        stroke={tokens.success}
-                        strokeWidth={2}
-                        strokeLinejoin="round"
-                      />
-                    </>
-                  ) : null}
-                  {askPts.length ? (
-                    <>
-                      <Path
-                        d={stepAreaPath(askPts, layout.plotH)}
-                        fill={alpha(tokens.destructive, 0.22)}
-                      />
-                      <Path
-                        d={stepAreaPath(askPts, layout.plotH)}
-                        fill="none"
-                        stroke={tokens.destructive}
-                        strokeWidth={2}
-                        strokeLinejoin="round"
-                      />
-                    </>
-                  ) : null}
-                </>
-              );
-            }}
-          </CartesianFrame>
-        </View>
+              }}
+            </CartesianFrame>
+          </View>
 
-        {props.hideLegend ? null : (
-          <ChartLegend
-            horizontal
-            items={[
-              { label: "Bids", color: tokens.success },
-              { label: "Asks", color: tokens.destructive },
-            ]}
-          />
-        )}
-      </View>
+          {props.hideLegend ? null : (
+            <ChartLegend
+              horizontal
+              items={[
+                { label: "Bids", color: tokens.success },
+                { label: "Asks", color: tokens.destructive },
+              ]}
+            />
+          )}
+        </View>
+      </ChartAnatomyScope>
     );
   };
 }

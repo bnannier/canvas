@@ -5,6 +5,7 @@ import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, useControllableState, useTheme, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { CheckboxContent, CHECKBOX_ROW } from "./indicator/shared.js";
 import { useHover } from "../../style/hover.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Checkbox shell. Uses React Native's primitives DIRECTLY and reads the
 // active brand tokens via useTheme, so colors follow light/dark and the glass
@@ -143,6 +144,9 @@ export function createCheckbox(skin: CheckboxSkin, parts: CheckboxParts = {}) {
 
 function createCheckboxBox(skin: CheckboxSkin) {
   const CheckboxBox = forwardRef<View, CheckboxProps>(function CheckboxBox(props, ref) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Box, Check mark, Label, Description.
+    const anatomy = { box: useAnatomyPart("Box"), mark: useAnatomyPart("Check mark"), label: useAnatomyPart("Label"), description: useAnatomyPart("Description") };
     const hostRef = useComposedRefs(ref);
     const { children, description, indeterminate, onChange, onValueChange, disabled, style } = props;
     const size = sizeOf(props);
@@ -174,6 +178,7 @@ function createCheckboxBox(skin: CheckboxSkin) {
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
+      <AnatomyScope>
       <Pressable
         ref={hostRef}
         {...(keyboard as object)}
@@ -199,10 +204,11 @@ function createCheckboxBox(skin: CheckboxSkin) {
         ]}
       >
         <CheckboxContent skin={skin} tokens={tokens} size={size} checked={checked}
-          indeterminate={indeterminate} description={description} hovered={hovered}>
+          indeterminate={indeterminate} description={description} hovered={hovered} anatomy={anatomy}>
           {children}
         </CheckboxContent>
       </Pressable>
+      </AnatomyScope>
     );
   });
   CheckboxBox.displayName = "Checkbox";

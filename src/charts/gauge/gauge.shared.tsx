@@ -4,6 +4,7 @@ import { Defs, GlowFilter } from "../shared/chart-glow.js";
 import { View, Text, useTheme, statusColors, devWarn, alpha, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 import { CHART_LOOK } from "../shared/charts.styles.js";
 import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Gauge is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -74,6 +75,12 @@ export function gaugeArc(v: number): { d: string; dasharray: string } {
 /** A radial dial: a track, a tone-colored fill arc and the value inside. */
 export function Gauge(props: GaugeProps) {
   const { value, label, testID, style } = props;
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Track, Fill arc, Value, Scale labels.
+  const trackPart = useAnatomyPart("Track");
+  const fillPart = useAnatomyPart("Fill arc");
+  const valuePart = useAnatomyPart("Value");
+  const scalePart = useAnatomyPart("Scale labels");
   const { tokens, dark } = useTheme();
   const size = props.large ? 250 : SIZE;
   const scale = size / VIEW_W;
@@ -95,7 +102,14 @@ export function Gauge(props: GaugeProps) {
   const arc = gaugeArc(v);
   const glowId = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}glow`;
 
+  // The fill arc's part box: a measurable view on the stroke at the end of the filled
+  // sweep (SVG paths have no layout on native), as wide as the stroke.
+  const sweep = Math.PI * (v / 100);
+  const arcSide = STROKE * scale;
+  const arcEnd = { x: (VIEW_W / 2 - RADIUS * Math.cos(sweep)) * scale, y: (BASE - RADIUS * Math.sin(sweep)) * scale };
+
   return (
+    <AnatomyScope>
     <View
       testID={testID}
       style={[{ width: size }, style]}
@@ -103,6 +117,7 @@ export function Gauge(props: GaugeProps) {
       accessibilityLabel={`${label ?? "Gauge"}: ${pct}%`}
       aria-label={`${label ?? "Gauge"}: ${pct}%`}
     >
+      <AnatomyPart part={trackPart}>
       <Svg width={size} height={VIEW_H * scale} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
         <Defs>
           {/* The arc's glow, in the view's units: the renderer's `drop-shadow(0 0 8px <tone>)`. */}
@@ -119,9 +134,13 @@ export function Gauge(props: GaugeProps) {
           strokeDasharray={arc.dasharray}
         />
       </Svg>
+      </AnatomyPart>
+      {fillPart && v > 0 ? <View ref={fillPart.ref} onLayout={fillPart.onLayout} style={[{ position: "absolute", left: arcEnd.x - arcSide / 2, top: arcEnd.y - arcSide / 2, width: arcSide, height: arcSide }, { pointerEvents: "none" }]} /> : null}
       {/* The readout sits in the open center of the semicircle, its baseline on the
           hand-off's y 96: the component's own anatomy, not a call-site shim. */}
       <Text
+        ref={valuePart?.ref}
+        onLayout={valuePart?.onLayout}
         style={{
           position: "absolute",
           top: valueTop,
@@ -139,12 +158,13 @@ export function Gauge(props: GaugeProps) {
         {pct}%
       </Text>
       {/* The scale row: the dial's ends with the caption between them. */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: props.large ? 8 : -6, paddingHorizontal: 6 }}>
+      <View ref={scalePart?.ref} onLayout={scalePart?.onLayout} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: props.large ? 8 : -6, paddingHorizontal: 6 }}>
         <Text style={scaleText(tokens)}>0</Text>
         {label ? <Text style={{ fontSize: 12, lineHeight: 15, fontWeight: "500", color: tokens["muted-foreground"] }}>{label}</Text> : null}
         <Text style={scaleText(tokens)}>100</Text>
       </View>
     </View>
+    </AnatomyScope>
   );
 }
 

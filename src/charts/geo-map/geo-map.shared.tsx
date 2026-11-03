@@ -1,6 +1,6 @@
 import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Animated, Easing, Platform, PanResponder, StyleSheet } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -25,6 +25,7 @@ import {
 import { GESTURE_SURFACE, useWheel, alpha } from "../../style/index.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -322,6 +323,12 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
   const Button = parts.Button ?? WebButton;
   return function GeoMap(props: GeoMapProps) {
     const { points, title, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Map, Point (the first), Region outline, Zoom control.
+    const mapPart = useAnatomyPart("Map");
+    const pointPart = useAnatomyPart("Point");
+    const regionPart = useAnatomyPart("Region outline");
+    const zoomPart = useAnatomyPart("Zoom control");
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
@@ -496,7 +503,7 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
       live.current.setCamera(next);
       return true;
     });
-    const mapRef = useComposedRefs(wheelRef, frame.target.ref);
+    const mapRef = useComposedRefs(wheelRef, frame.target.ref, mapPart?.ref);
 
     // Pinch, and drag-to-pan once zoomed.
     const gesture = useRef<GeoMapGesture>(GEO_MAP_GESTURE_IDLE);
@@ -609,7 +616,26 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
       [landFill, coastInk, camera.k, detailed, tokens.card]
     );
 
+    // The zoom bar's part box. GlassSurface takes no ref, so inside an anatomy provider the
+    // bar's placement moves onto a measuring view and the bar keeps its own look inside it.
+    const zoomBarStyle = [
+      s.zoomBar,
+      s.zoomStack(tokens),
+      detailed
+        ? {
+            top: title ? 42 : 10,
+            bottom: "auto" as const,
+            right: 10,
+            borderRadius: platformShape.web.mapZoom,
+            ...shadow("md", tokens),
+          }
+        : null,
+    ];
+    const zoomBarPlace = detailed ? { position: s.zoomBar.position, top: title ? 42 : 10, right: 10 } : { position: s.zoomBar.position, right: s.zoomBar.right, bottom: s.zoomBar.bottom };
+    const zoomBarInner = [{ flexDirection: s.zoomBar.flexDirection }, s.zoomStack(tokens), detailed ? { borderRadius: platformShape.web.mapZoom, ...shadow("md", tokens) } : null];
+
     return (
+      <AnatomyScope>
       <View
         {...(title != null && title !== ""
           ? {
@@ -650,8 +676,8 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           accessibilityLabel={name}
           aria-label={name}
           {...(zoomable ? frame.target : null)}
-          ref={zoomable ? mapRef : undefined}
-          onLayout={onLayout}
+          ref={zoomable ? mapRef : mapPart?.ref}
+          onLayout={mapPart ? (event) => { onLayout(event); mapPart.onLayout(); } : onLayout}
           {...(zoomable ? responder.panHandlers : null)}
           // A pointer-free user has no wheel and no fingers to pinch with, so the
           // map itself takes focus and the arrow / +- / 0 keys drive the camera.
@@ -786,6 +812,10 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
                   />
                 ) : null}
               </Svg>
+              {/* The Region outline and Point part boxes: measurable views over the land's Svg
+                  and the first bubble (SVG shapes have no layout on native). */}
+              {regionPart ? <View ref={regionPart.ref} onLayout={regionPart.onLayout} style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]} /> : null}
+              {pointPart && !detailed && placed.length > 0 ? <View ref={pointPart.ref} onLayout={pointPart.onLayout} style={[{ position: "absolute", left: (placed[0].x - placed[0].r) * scale, top: (placed[0].y - placed[0].r) * scale, width: placed[0].r * 2 * scale, height: placed[0].r * 2 * scale }, { pointerEvents: "none" }]} /> : null}
               {/* The value flag for the selection, in px over the Svg. Suppressed
                   once the selected bubble has been panned off screen, so the flag
                   never clamps to the plot edge and points at the wrong place. */}
@@ -858,7 +888,7 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
                 const point = points[cluster.lead];
                 const max = Math.max(1, ...points.map(p => Number.isFinite(p.count) ? p.count : 0));
                 const diameter = Math.round(8 + Math.sqrt(Math.max(0, point.count) / max) * 30);
-                return <GeoPlaceMark key={point.id ?? cluster.lead} left={Math.round(placed[index].x / WORLD_VIEW_BOX.width * 10000) / 100} top={Math.round(placed[index].y / WORLD_VIEW_BOX.height * 10000) / 100} diameter={diameter} color={tokens.primary} label={`${point.label} · ${formatValue(point.count)}`} glow={alpha(tokens.primary, theme.dark ? 0.5 : 0.4)} onPress={() => pressCluster(index)} />;
+                return <GeoPlaceMark key={point.id ?? cluster.lead} left={Math.round(placed[index].x / WORLD_VIEW_BOX.width * 10000) / 100} top={Math.round(placed[index].y / WORLD_VIEW_BOX.height * 10000) / 100} diameter={diameter} color={tokens.primary} label={`${point.label} · ${formatValue(point.count)}`} glow={alpha(tokens.primary, theme.dark ? 0.5 : 0.4)} onPress={() => pressCluster(index)} part={index === 0 ? pointPart : undefined} />;
               }) : null}
             </>
           ) : null}
@@ -872,20 +902,9 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           // The renderer's zoom control: zoom in over zoom out in one framed column at the
           // plot's corner, a hairline between them; the reset joins the column once the map
           // has moved off the world view.
+          <ZoomAnchor part={zoomPart} place={zoomBarPlace}>
           <GlassSurface floating={detailed}
-            style={[
-              s.zoomBar,
-              s.zoomStack(tokens),
-              detailed
-                ? {
-                    top: title ? 42 : 10,
-                    bottom: "auto",
-                    right: 10,
-                    borderRadius: platformShape.web.mapZoom,
-                    ...shadow("md", tokens),
-                  }
-                : null,
-            ]}
+            style={zoomPart ? zoomBarInner : zoomBarStyle}
           >
             <Button
               icon
@@ -926,15 +945,23 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
               </>
             )}
           </GlassSurface>
+          </ZoomAnchor>
         ) : null}
       </View>
+      </AnatomyScope>
     );
   };
 }
 
-function GeoPlaceMark({ left, top, diameter, color, label, glow, onPress }: { left: number; top: number; diameter: number; color: string; label: string; glow: string; onPress: () => void }) {
+// The zoom bar's measuring view inside an anatomy provider: it takes the bar's absolute
+// placement and the bar lays out inside it. Outside a provider it renders the bar bare.
+function ZoomAnchor({ part, place, children }: { part?: AnatomyTarget; place: object; children: ReactNode }) {
+  return part ? <View ref={part.ref} onLayout={part.onLayout} style={place}>{children}</View> : children;
+}
+
+function GeoPlaceMark({ left, top, diameter, color, label, glow, onPress, part }: { part?: AnatomyTarget; left: number; top: number; diameter: number; color: string; label: string; glow: string; onPress: () => void }) {
   const scale = useRef(new Animated.Value(1)).current;
   const reduced = useReducedMotion();
   const animate = (value: number) => { scale.stopAnimation(); if (reduced) { scale.setValue(1); return; } Animated.timing(scale, { toValue: value, duration: 400, easing: Easing.bezier(0.34, 1.56, 0.64, 1), useNativeDriver: supportsNativeDriver }).start(); };
-  return <Pressable testID={`geo-map-place-${label}`} accessible={false} {...Platform.select({ web: { focusable: false, tabIndex: -1 }, default: { focusable: true, tabIndex: 0 } })} onPress={onPress} onHoverIn={() => animate(1.18)} onHoverOut={() => animate(1)} style={{ position: "absolute", left: `${left}%`, top: `${top}%`, marginLeft: -diameter / 2, marginTop: -diameter / 2, width: diameter, height: diameter }} {...({ title: label } as object)}><Animated.View style={{ width: diameter, height: diameter, borderRadius: 9999, backgroundColor: alpha(color, 0.32), borderWidth: 1.5, borderColor: color, boxShadow: `0 0 18px ${glow}`, transform: [{ scale }] }} /></Pressable>;
+  return <Pressable ref={part?.ref} onLayout={part?.onLayout} testID={`geo-map-place-${label}`} accessible={false} {...Platform.select({ web: { focusable: false, tabIndex: -1 }, default: { focusable: true, tabIndex: 0 } })} onPress={onPress} onHoverIn={() => animate(1.18)} onHoverOut={() => animate(1)} style={{ position: "absolute", left: `${left}%`, top: `${top}%`, marginLeft: -diameter / 2, marginTop: -diameter / 2, width: diameter, height: diameter }} {...({ title: label } as object)}><Animated.View style={{ width: diameter, height: diameter, borderRadius: 9999, backgroundColor: alpha(color, 0.32), borderWidth: 1.5, borderColor: color, boxShadow: `0 0 18px ${glow}`, transform: [{ scale }] }} /></Pressable>;
 }

@@ -3,6 +3,7 @@ import { type Role } from "react-native";
 import { View, Text, useTheme, useContainerWidth, widths, type ColorTokens, type TextStyle, type ViewStyle, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
 import * as s from "./form.styles.js";
 
 // Shared Form shell. Form is a COMPOSITION surface: the caller stitches the field
@@ -148,11 +149,19 @@ export interface FormProps extends MeasureProps {
  */
 // Whether a row is the form's first: an aside section takes no inset above the first row.
 const FirstRow = createContext(false);
+// The Form's anatomy "Field" part, handed to its first section when the form's rows are
+// all sections, so the section numbers its own first row.
+const SectionRowPart = createContext<AnatomyTarget | undefined>(undefined);
 
 export function createFormSection(skin: FormSkin) {
   function FormSection({ title, description, aside, children, testID, style }: FormSectionProps) {
     const { tokens } = useTheme();
     const first = useContext(FirstRow);
+    const rowPart = useContext(SectionRowPart);
+    // The form's first row, when it is this section's first (see SectionRowPart).
+    const rows = rowPart
+      ? Children.toArray(children).map((child, i) => (i === 0 ? <AnatomyPart key={isValidElement(child) && child.key != null ? child.key : i} part={rowPart}>{child}</AnatomyPart> : child))
+      : children;
     // The aside rail stands beside the rows in a section wider than the stacking step; the
     // unmeasured frame is the desktop (side by side) variant.
     const { width, onLayout } = useContainerWidth();
@@ -174,7 +183,7 @@ export function createFormSection(skin: FormSkin) {
             </View>
           ) : null}
           <View style={skin.aside.rows(side)}>
-            <FirstRow.Provider value={false}>{children}</FirstRow.Provider>
+            <FirstRow.Provider value={false}>{rows}</FirstRow.Provider>
           </View>
         </View>
       );
@@ -187,7 +196,7 @@ export function createFormSection(skin: FormSkin) {
             {description != null ? <Text style={skin.sectionDescription(tokens)}>{description}</Text> : null}
           </View>
         ) : null}
-        {children}
+        {rows}
       </View>
     );
   }
@@ -209,6 +218,13 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     // dual-alias precedent). An unnamed form renders exactly the markup it did before.
     const nameProps = accessibilityLabel != null ? { accessibilityLabel, "aria-label": accessibilityLabel } : null;
     const { tokens } = useTheme();
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Section (the first FormSection, else the two-column rows), Field
+    // (the first row that is no section), Actions, taken before the tree's AnatomyScope
+    // so the fields and buttons inside register nothing.
+    const sectionPart = useAnatomyPart("Section");
+    const fieldPart = useAnatomyPart("Field");
+    const actionsPart = useAnatomyPart("Actions");
 
     // The two-column flow: exactly two columns in wide CONTAINERS, one full-width column in
     // narrow ones (desktop-first). The form measures its own row wrapper rather than the
@@ -230,9 +246,26 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     let column = 0;
     const kids = Children.toArray(children);
     // The first row learns it is first (an aside section then takes no inset above it).
-    const marked = (child: ReactNode, i: number) => (i === 0 ? <FirstRow.Provider key="first" value>{child}</FirstRow.Provider> : child);
+    const firstSection = kids.findIndex(isSection);
+    const firstField = kids.findIndex((child) => !isSection(child));
+    // A row carrying a part is measured in AnatomyPart; a form of sections only hands its
+    // Field part to the first section, which numbers its own first row.
+    const parted = (child: ReactNode, i: number): ReactNode => {
+      const key = isValidElement(child) && child.key != null ? child.key : i;
+      if (i === firstSection) {
+        return (
+          <AnatomyPart key={key} part={sectionPart}>
+            <SectionRowPart.Provider value={firstField < 0 ? fieldPart : undefined}>{child}</SectionRowPart.Provider>
+          </AnatomyPart>
+        );
+      }
+      return i === firstField ? <AnatomyPart key={key} part={fieldPart}>{child}</AnatomyPart> : child;
+    };
+    const marked = (child: ReactNode, i: number) => (i === 0 ? <FirstRow.Provider key="first" value>{parted(child, i)}</FirstRow.Provider> : parted(child, i));
+    // With no FormSection, the two-column rows are the form's section.
+    const rowsPart = firstSection < 0 ? sectionPart : undefined;
     const rows = twoColumn ? (
-      <View onLayout={onRowsLayout} style={twoUp ? s.twoUpRows : s.stackedRows}>
+      <View ref={rowsPart?.ref} onLayout={withPartLayout(rowsPart, onRowsLayout)} style={twoUp ? s.twoUpRows : s.stackedRows}>
         {kids.map((child, i) => {
           let cell: ViewStyle = s.stackedCell;
           if (twoUp && isSection(child)) {
@@ -272,7 +305,7 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     const afterAside = kids.length > 0 && isAsideSection(kids[kids.length - 1]);
     const actions =
       buttons != null || hints != null ? (
-        <View style={[skin.actions(tokens), afterAside ? skin.actionsAfterAside : null, hints != null ? skin.actionsWithHints : null]}>
+        <View ref={actionsPart?.ref} onLayout={actionsPart?.onLayout} style={[skin.actions(tokens), afterAside ? skin.actionsAfterAside : null, hints != null ? skin.actionsWithHints : null]}>
           {hints != null ? (
             <>
               <View>{hints}</View>
@@ -345,10 +378,12 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     }, [enterActive, formId]);
 
     return (
+      <AnatomyScope>
       <View ref={rootRef} nativeID={formId} testID={testID} role={FORM} {...nameProps} style={[skin.stack, disabled ? { opacity: skin.disabledOpacity } : null, fill, style]}>
         {rows}
         {actions}
       </View>
+      </AnatomyScope>
     );
   };
 }

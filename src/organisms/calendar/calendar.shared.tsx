@@ -8,6 +8,7 @@ import { ButtonGroup as WebButtonGroup } from "../../atoms/button-group/button-g
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Calendar shell. The structure (header with prev/next chevrons + view
 // label, the month grid, and the week/day timelines), the density and view
@@ -233,6 +234,19 @@ export interface CalendarParts {
 export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
   const ButtonGroup = parts.ButtonGroup ?? WebButtonGroup;
   return function Calendar(props: CalendarProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Header, Weekday row, Day, Selected day, Event dot. Each view renders
+    // inside AnatomyScope, so the day peek's overlay, the format toggle and the caller's
+    // events register nothing of their own.
+    const anatomy = {
+      header: useAnatomyPart("Header"),
+      weekdays: useAnatomyPart("Weekday row"),
+      day: useAnatomyPart("Day"),
+      selected: useAnatomyPart("Selected day"),
+      dot: useAnatomyPart("Event dot"),
+    };
+    // A part drawn many times registers on its first instance of this render only.
+    const taken = { day: false, selected: false, dot: false };
     const {
       month = "June 2026",
       today,
@@ -367,7 +381,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
     // The label at the start and the two chevrons together at the end: the iOS inline date
     // picker's, the Material 3 date picker's and the hand-off's header alike.
     const header = (label: string) => (
-      <View style={skin.header}>
+      <View ref={anatomy.header?.ref} onLayout={anatomy.header?.onLayout} style={skin.header}>
         <Text style={skin.monthLabel(tokens)}>{label}</Text>
         <View style={skin.chevrons}>
           <Pressable
@@ -442,6 +456,8 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
       // soft tint, which is translucent already and reads as a wash on the pane.
       const selectedPuck = dayGlass && isSelected;
       const daySurface = [skin.dayCellBase, skin.dayCellState(tokens, state)];
+      const cellPart = isSelected ? (taken.selected ? undefined : ((taken.selected = true), anatomy.selected)) : taken.day ? undefined : ((taken.day = true), anatomy.day);
+      const dotPart = count > 0 && !taken.dot ? ((taken.dot = true), anatomy.dot) : undefined;
       const rangeNote = r?.isStart ? ", start of range" : r?.isEnd ? ", end of range" : r?.between ? ", in range" : "";
       const band =
         r && r.spans && (r.isStart || r.isEnd || r.between) ? (
@@ -453,7 +469,8 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
           />
         ) : null;
       return (
-        <View key={dayNum} style={{ position: "relative" }}>
+        // The part sits on this wrapper, which the cell fills: the cell's own ref callback is new each render.
+        <View key={dayNum} ref={cellPart?.ref} onLayout={cellPart?.onLayout} style={{ position: "relative" }}>
           {band}
           <RippleClip shape={cornerRadii(skin.dayCellBase)}>
             <Pressable
@@ -492,7 +509,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
             >
               {selectedPuck ? <GlassPane layer="control" shape={daySurface} brand={tokens.primary} /> : null}
               <Text style={[m.label, skin.dayLabel(tokens, state)]}>{dayNum}</Text>
-              {count > 0 ? <View style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}
+              {count > 0 ? <View ref={dotPart?.ref} onLayout={dotPart?.onLayout} style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}
             </Pressable>
           </RippleClip>
         </View>
@@ -704,88 +721,94 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
     if (view === "day") {
       const label = `${WEEKDAYS_FULL[weekdayOf(anchor)]}, ${monthName} ${anchor}`;
       return (
-        <GlassSurface layer="content" testID={testID} style={rootStyle}>
-          {header(label)}
-          {formatToggle}
-          {timeScroller(
-            <View style={{ flexDirection: "row" }}>
-              {hourAxis}
-              <View style={{ flex: 1 }}>
-                {slotLines}
-                {eventLayer(anchor, true)}
-              </View>
-            </View>,
-          )}
-          {hoverCard()}
-        </GlassSurface>
+        <AnatomyScope>
+          <GlassSurface layer="content" testID={testID} style={rootStyle}>
+            {header(label)}
+            {formatToggle}
+            {timeScroller(
+              <View style={{ flexDirection: "row" }}>
+                {hourAxis}
+                <View style={{ flex: 1 }}>
+                  {slotLines}
+                  {eventLayer(anchor, true)}
+                </View>
+              </View>,
+            )}
+            {hoverCard()}
+          </GlassSurface>
+        </AnatomyScope>
       );
     }
 
     if (view === "week") {
       const weekDays = Array.from({ length: 7 }, (_, i) => weekStart + i);
       return (
-        <GlassSurface layer="content" testID={testID} style={rootStyle}>
-          {header(month)}
-          {formatToggle}
-          {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
-          <View style={{ flexDirection: "row" }}>
-            <View style={{ width: tm.axisWidth }} />
-            {weekDays.map((dayNum, i) => (
-              <View key={`strip-${i}`} style={{ flex: 1, alignItems: "center" }}>
-                {/* The strip starts at the week's first weekday, so column i is weekday i. */}
-                <View style={skin.headCell}>
-                  <Text style={skin.weekdayLabel(tokens)}>{skin.weekdays[i]}</Text>
-                </View>
-                {dayNum >= 1 && dayNum <= daysInMonth ? (
-                  dayCell(dayNum)
-                ) : (
-                  <View style={[skin.headCell, m.cell]} />
-                )}
-              </View>
-            ))}
-          </View>
-          <View style={{ marginTop: 4 }}>
-            {timeScroller(
-              <View style={{ flexDirection: "row" }}>
-                {hourAxis}
-                {weekDays.map((dayNum, i) => (
-                  <View key={`col-${i}`} style={[{ flex: 1 }, skin.colDivider(tokens)]}>
-                    {slotLines}
-                    {dayNum >= 1 && dayNum <= daysInMonth ? eventLayer(dayNum, false) : null}
+        <AnatomyScope>
+          <GlassSurface layer="content" testID={testID} style={rootStyle}>
+            {header(month)}
+            {formatToggle}
+            {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
+            <View style={{ flexDirection: "row" }}>
+              <View style={{ width: tm.axisWidth }} />
+              {weekDays.map((dayNum, i) => (
+                <View key={`strip-${i}`} style={{ flex: 1, alignItems: "center" }}>
+                  {/* The strip starts at the week's first weekday, so column i is weekday i. */}
+                  <View style={skin.headCell}>
+                    <Text style={skin.weekdayLabel(tokens)}>{skin.weekdays[i]}</Text>
                   </View>
-                ))}
-              </View>,
-            )}
-          </View>
-          {hoverCard()}
-        </GlassSurface>
+                  {dayNum >= 1 && dayNum <= daysInMonth ? (
+                    dayCell(dayNum)
+                  ) : (
+                    <View style={[skin.headCell, m.cell]} />
+                  )}
+                </View>
+              ))}
+            </View>
+            <View style={{ marginTop: 4 }}>
+              {timeScroller(
+                <View style={{ flexDirection: "row" }}>
+                  {hourAxis}
+                  {weekDays.map((dayNum, i) => (
+                    <View key={`col-${i}`} style={[{ flex: 1 }, skin.colDivider(tokens)]}>
+                      {slotLines}
+                      {dayNum >= 1 && dayNum <= daysInMonth ? eventLayer(dayNum, false) : null}
+                    </View>
+                  ))}
+                </View>,
+              )}
+            </View>
+            {hoverCard()}
+          </GlassSurface>
+        </AnatomyScope>
       );
     }
 
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     return (
-      <GlassSurface layer="content" testID={testID} onLayout={onMonthLayout} style={rootStyle}>
-        {header(month)}
+      <AnatomyScope>
+        <GlassSurface layer="content" testID={testID} onLayout={onMonthLayout} style={rootStyle}>
+          {header(month)}
 
-        {/* Weekday label row. */}
-        <View style={[skin.grid, { width: m.gridWidth }]}>
-          {skin.weekdays.map((wd, i) => (
-            <View key={`wd-${i}`} style={[skin.headCell, m.head]}>
-              <Text style={skin.weekdayLabel(tokens)}>{wd}</Text>
-            </View>
-          ))}
-        </View>
+          {/* Weekday label row. */}
+          <View ref={anatomy.weekdays?.ref} onLayout={anatomy.weekdays?.onLayout} style={[skin.grid, { width: m.gridWidth }]}>
+            {skin.weekdays.map((wd, i) => (
+              <View key={`wd-${i}`} style={[skin.headCell, m.head]}>
+                <Text style={skin.weekdayLabel(tokens)}>{wd}</Text>
+              </View>
+            ))}
+          </View>
 
-        {/* Day grid: leading blanks, then one cell per day. */}
-        <View style={[skin.grid, { width: m.gridWidth }]}>
-          {Array.from({ length: lead }, (_, i) => (
-            <View key={`blank-${i}`} style={[skin.headCell, m.cell]} />
-          ))}
-          {days.map((dayNum) => dayCell(dayNum))}
-        </View>
+          {/* Day grid: leading blanks, then one cell per day. */}
+          <View style={[skin.grid, { width: m.gridWidth }]}>
+            {Array.from({ length: lead }, (_, i) => (
+              <View key={`blank-${i}`} style={[skin.headCell, m.cell]} />
+            ))}
+            {days.map((dayNum) => dayCell(dayNum))}
+          </View>
 
-        {dayPeekOverlay()}
-      </GlassSurface>
+          {dayPeekOverlay()}
+        </GlassSurface>
+      </AnatomyScope>
     );
   };
 }

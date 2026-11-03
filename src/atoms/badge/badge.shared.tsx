@@ -8,6 +8,7 @@ import { useHover } from "../../style/hover.js";
 import { actionFill, actionInk } from "../../style/action.js";
 import { primaryText } from "../../style/primary-text.js";
 import { Icon } from "../icon/icon.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Badge shell. The structure (a metadata pill, or a status dot beside its label),
 // the boolean-prop axes, and the semantic color logic live here once; a platform file
@@ -356,6 +357,11 @@ const fieldBorder = (tokens: ColorTokens) => tokens["field-border"] ?? tokens.in
 export function createBadge(skin: BadgeSkin) {
   return function Badge(props: BadgeProps) {
     const { children, mono, style, accessibilityLabel, testID } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Container, Status dot, Label. Outside a provider each is undefined.
+    const containerPart = useAnatomyPart("Container");
+    const dotPart = useAnatomyPart("Status dot");
+    const labelPart = useAnatomyPart("Label");
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     // HUG: content width inside a stretching Column, content-sized in a Row.
@@ -392,7 +398,10 @@ export function createBadge(skin: BadgeSkin) {
       // the label sits the skin's gap from the dot itself.
       const ringed = skin.statusDot + skin.statusRing * 2;
       return (
+        <AnatomyScope>
         <View
+          ref={containerPart?.ref}
+          onLayout={containerPart?.onLayout}
           style={[{ flexDirection: "row", alignItems: "center", gap: skin.gap }, hug, style]}
           testID={testID}
           {...(role === "img"
@@ -404,12 +413,13 @@ export function createBadge(skin: BadgeSkin) {
           aria-label={statusName}
         >
           <View style={{ width: ringed, height: ringed, marginHorizontal: -skin.statusRing, borderRadius: 9999, backgroundColor: colors.wash, alignItems: "center", justifyContent: "center" }}>
-            <View style={{ width: skin.statusDot, height: skin.statusDot, borderRadius: 9999, backgroundColor: colors.dot }} />
+            <View ref={dotPart?.ref} onLayout={dotPart?.onLayout} style={{ width: skin.statusDot, height: skin.statusDot, borderRadius: 9999, backgroundColor: colors.dot }} />
           </View>
           {children != null ? (
-            <Text style={{ fontSize: size.fontSize, lineHeight: size.lineHeight, fontWeight: skin.weight, color: tokens["muted-foreground"] }}>{children}</Text>
+            <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={{ fontSize: size.fontSize, lineHeight: size.lineHeight, fontWeight: skin.weight, color: tokens["muted-foreground"] }}>{children}</Text>
           ) : null}
         </View>
+        </AnatomyScope>
       );
     }
 
@@ -482,19 +492,21 @@ export function createBadge(skin: BadgeSkin) {
 
     const content = <>
       {surfaced ? <GlassPane static layer="control" shape={base} brand={look.brand} tint={look.tint} /> : null}
-      {props.dot || toned ? <View style={{ width: skin.dotSize, height: skin.dotSize, borderRadius: 9999, backgroundColor: ink }} /> : null}
-      {children != null ? <Text style={[label, monoStyle]}>{children}</Text> : null}
+      {props.dot || toned ? <View ref={dotPart?.ref} onLayout={dotPart?.onLayout} style={{ width: skin.dotSize, height: skin.dotSize, borderRadius: 9999, backgroundColor: ink }} /> : null}
+      {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[label, monoStyle]}>{children}</Text> : null}
       {reference && props.href ? <Icon decorative arrowUpRight size={11} primary /> : null}
     </>;
     // Under glass a reference key's resting hairline drops: the material's rim is its edge.
     const rootStyle = [surfaced || theme.increasedContrast ? paneStyle(theme, [base, fill]) : [base, fill], markerShadow, hug, props.start ? { alignSelf: "flex-start" as const } : null, style];
     const minTarget = platformMinTarget();
     const linkSlop = minTarget == null ? undefined : Math.max(0, (minTarget - size.height) / 2);
-    if (props.href) return <Pressable hitSlop={linkSlop} accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? `Open ${children}`} onPress={() => Linking.openURL(props.href!)} style={[rootStyle, hovered ? { opacity: 0.85 } : null]} {...target} testID={testID}>{content}</Pressable>;
+    if (props.href) return <AnatomyScope><Pressable ref={containerPart?.ref} onLayout={containerPart?.onLayout} hitSlop={linkSlop} accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? `Open ${children}`} onPress={() => Linking.openURL(props.href!)} style={[rootStyle, hovered ? { opacity: 0.85 } : null]} {...target} testID={testID}>{content}</Pressable></AnatomyScope>;
     return (
-      <View style={rootStyle} testID={testID}>
-        {content}
-      </View>
+      <AnatomyScope>
+        <View ref={containerPart?.ref} onLayout={containerPart?.onLayout} style={rootStyle} testID={testID}>
+          {content}
+        </View>
+      </AnatomyScope>
     );
   };
 }

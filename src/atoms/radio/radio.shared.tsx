@@ -10,6 +10,7 @@ import { primaryText } from "../../style/primary-text.js";
 import { useHover } from "../../style/hover.js";
 import { Icon } from "../icon/icon.js";
 import { useRadioGroup } from "./radio-context.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
 // brand tokens via so colors follow light/dark and the glass surface. The
@@ -191,6 +192,8 @@ const TEXT_COLUMN: ViewStyle = { flexShrink: 1, minWidth: 0 };
 const TITLE_LINE: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
 const TITLE_GROWS: TextStyle = { flexGrow: 1, flexShrink: 1 };
 const META_CELL: ViewStyle = { flexShrink: 0 };
+// The centre of a ring with no dot of its own, which a docs anatomy specimen measures.
+const HOLLOW_DOT: ViewStyle = { width: 4, height: 4 };
 
 // A `card` tile with an `icon`: the icon and the mark share the top line at its ends, the
 // title and description under them (the Controls page's plan tiles, `c-radio`:
@@ -204,6 +207,13 @@ const TILE_HEAD: ViewStyle = { flexDirection: "row", alignItems: "center", justi
  */
 export function createRadio(skin: RadioSkin) {
   const Radio = forwardRef<View, RadioProps>(function Radio(props, ref) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Ring, Dot, Label, Description. A group's options draw them many
+    // times, so only its first option registers them.
+    const ringPart = useAnatomyPart("Ring");
+    const dotPart = useAnatomyPart("Dot");
+    const labelPart = useAnatomyPart("Label");
+    const descriptionPart = useAnatomyPart("Description");
     const { checked, selected, onChange, children, description, card, meta, style } = props;
     const tileIcon = card ? props.icon : undefined;
     const size = sizeOf(props);
@@ -222,6 +232,8 @@ export function createRadio(skin: RadioSkin) {
     // selected. The group can also disable the whole set.
     const group = useRadioGroup();
     const inGroup = group != null && props.value !== undefined;
+    const numbered = !inGroup || group.first === props.value;
+    const label = numbered && labelPart ? { ref: labelPart.ref, onLayout: labelPart.onLayout } : {};
     const isChecked = inGroup ? group.value === props.value : !!(checked ?? selected);
     const disabled = !!props.disabled || !!group?.disabled;
     // A plain option inside a group that forms a list (iOS) is one of the section's rows:
@@ -266,8 +278,12 @@ export function createRadio(skin: RadioSkin) {
     // The ring, before the text (or at the end of a stacked tile's head). A stacked tile's
     // ring needs no nudge: it centres on the head line, not on the title.
     const ringMark = mark.kind === "ring" ? (
-      <View style={[contrastStyle(theme, mark.ring(tokens, size, isChecked, hasText && tileIcon == null)), hovered && !isChecked && mark.hover ? mark.hover(tokens) : null]}>
-        {isChecked && mark.dot ? <View style={mark.dot(tokens, size)} /> : null}
+      <View ref={numbered ? ringPart?.ref : undefined} onLayout={numbered ? ringPart?.onLayout : undefined} style={[contrastStyle(theme, mark.ring(tokens, size, isChecked, hasText && tileIcon == null)), hovered && !isChecked && mark.hover ? mark.hover(tokens) : null]}>
+        {numbered && dotPart ? (
+          // Inside a docs AnatomyProvider the dot is always a node, as the hand-off draws it:
+          // the skin's dot when chosen, else a hollow centre the part measures.
+          <View ref={dotPart.ref} onLayout={dotPart.onLayout} style={isChecked && mark.dot ? mark.dot(tokens, size) : HOLLOW_DOT} />
+        ) : isChecked && mark.dot ? <View style={mark.dot(tokens, size)} /> : null}
       </View>
     ) : null;
     const control = (
@@ -320,14 +336,14 @@ export function createRadio(skin: RadioSkin) {
             <View style={[TEXT_COLUMN, mark.kind === "check" || meta != null ? CHECK_TEXT : null]}>
               {meta != null ? (
                 <View style={TITLE_LINE}>
-                  {children != null ? <Text style={[skin.label(tokens, size, !!disabled), TITLE_GROWS]}>{children}</Text> : null}
+                  {children != null ? <Text {...label} style={[skin.label(tokens, size, !!disabled), TITLE_GROWS]}>{children}</Text> : null}
                   <View style={META_CELL}>{typeof meta === "string" || typeof meta === "number" ? <Text style={skin.meta(tokens)}>{meta}</Text> : meta}</View>
                 </View>
-              ) : children != null ? <Text style={skin.label(tokens, size, !!disabled)}>{children}</Text> : null}
-              {description != null ? <Text style={skin.description(tokens, size, !!disabled)}>{description}</Text> : null}
+              ) : children != null ? <Text {...label} style={skin.label(tokens, size, !!disabled)}>{children}</Text> : null}
+              {description != null ? <Text ref={numbered ? descriptionPart?.ref : undefined} onLayout={numbered ? descriptionPart?.onLayout : undefined} style={skin.description(tokens, size, !!disabled)}>{description}</Text> : null}
             </View>
           ) : (
-            <Text style={[skin.label(tokens, size, !!disabled), mark.kind === "check" ? CHECK_TEXT : null]}>{children}</Text>
+            <Text {...label} style={[skin.label(tokens, size, !!disabled), mark.kind === "check" ? CHECK_TEXT : null]}>{children}</Text>
           )
         ) : null}
         {glyph ? (
@@ -343,12 +359,16 @@ export function createRadio(skin: RadioSkin) {
     // A card wraps the pressable in RippleClip so its bounded Android ripple is clipped to
     // the card's rounded corners (on iOS/web RippleClip is a transparent layout passthrough
     // that still owns the outer `style`). A plain radio returns the pressable unchanged.
-    return card ? (
-      <RippleClip shape={cornerRadii(cardChrome)} style={style}>
-        {control}
-      </RippleClip>
-    ) : (
-      control
+    return (
+      <AnatomyScope>
+        {card ? (
+          <RippleClip shape={cornerRadii(cardChrome)} style={style}>
+            {control}
+          </RippleClip>
+        ) : (
+          control
+        )}
+      </AnatomyScope>
     );
   });
   Radio.displayName = "Radio";

@@ -3,12 +3,15 @@ import {
   cloneElement,
   isValidElement,
   useId,
+  useMemo,
   type ComponentType,
   type ReactElement,
   type ReactNode,
 } from "react";
 import { View, Text, useTheme, LabelContent, labelA11y, requiredName, type LayoutStyle, type MeasureProps, type ViewStyle, useFillStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
+import { DelegatedPartsContext } from "../../atoms/input/delegated-parts.js";
 import { type FieldSkin } from "./field.styles.js";
 
 // Shared Field shell. A form row: a label, the control, and one message line under it.
@@ -81,6 +84,20 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
     // this wiring; a screen reader should hear the hint with the field, so the kit does it.
     const messageId = `${useId()}-message`;
 
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Label, Control, Helper or error, Required mark, taken before the tree's
+    // AnatomyScope so the control's own parts (an Input's Label and Field) register
+    // nothing. A delegated control draws the label, its star and the box, so it takes
+    // Field's Label, Required mark and Control with the label (atoms/input/delegated-parts.ts).
+    const labelPart = useAnatomyPart("Label");
+    const controlPart = useAnatomyPart("Control");
+    const messagePart = useAnatomyPart("Helper or error");
+    const requiredPart = useAnatomyPart("Required mark");
+    const delegatedParts = useMemo(
+      () => (labelPart || controlPart || requiredPart ? { label: labelPart, control: controlPart, required: requiredPart } : null),
+      [labelPart, controlPart, requiredPart],
+    );
+
     const isError = !!error;
     const message = isError ? error : helper;
 
@@ -99,14 +116,18 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
     // Delegating the error STATE as well as the text is what makes the row read as one thing: the
     // control paints its destructive border while Field paints the message under it. Without this
     // an errored Field shows red text under a neutral-bordered box, which reads as unfinished.
-    const control = delegate
-      ? cloneElement(only, {
+    const control = delegate ? (
+      <DelegatedPartsContext.Provider value={delegatedParts}>
+        {cloneElement(only, {
           label,
           required,
           ...(isError ? { error: true } : {}),
           ...(message != null && message !== "" ? { "aria-describedby": messageId } : {}),
-        })
-      : children;
+        })}
+      </DelegatedPartsContext.Provider>
+    ) : (
+      <AnatomyPart part={controlPart}>{children}</AnatomyPart>
+    );
 
     // The message line: an errored one leads with the skin's alert glyph (the web's), in
     // the message's own ink, and under a delegated filled field it keeps the skin's inset.
@@ -114,18 +135,19 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
     const glyph = isError ? skin.errorGlyph : undefined;
 
     return (
+      <AnatomyScope>
       <View testID={testID} style={[skin.stack, fill, style]}>
         {label != null && !delegate ? (
           // The label heads a control that names itself, so it stays a stop of its own
           // natively, named without its star (labelA11y). Field hands that control no
           // `required`, so natively the heading's name says it (requiredName).
-          <Text style={skin.label(tokens)} {...labelA11y(requiredName(label, required), false)}>
-            <LabelContent label={label} required={required} starColor={tokens.destructive} />
+          <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={skin.label(tokens)} {...labelA11y(requiredName(label, required), false)}>
+            <LabelContent label={label} required={required} starColor={tokens.destructive} starPart={requiredPart} />
           </Text>
         ) : null}
         {control}
         {message != null && message !== "" ? (
-          <View style={[MESSAGE_ROW, glyph ? { gap: glyph.gap } : null, delegate && skin.delegatedInset ? { paddingHorizontal: skin.delegatedInset } : null]}>
+          <View ref={messagePart?.ref} onLayout={messagePart?.onLayout} style={[MESSAGE_ROW, glyph ? { gap: glyph.gap } : null, delegate && skin.delegatedInset ? { paddingHorizontal: skin.delegatedInset } : null]}>
             {glyph ? <Icon circleAlert color={messageStyle.color as string} size={glyph.size} decorative /> : null}
             <Text
               nativeID={messageId}
@@ -138,6 +160,7 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
           </View>
         ) : null}
       </View>
+      </AnatomyScope>
     );
   }
 

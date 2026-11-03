@@ -28,6 +28,12 @@ describe("reference values passed to live kit specimens", () => {
     expect(kitProps("Toast", { message: "Saved" })).not.toHaveProperty("action");
   });
 
+  it("passes Input's icon slot as the glyph name its leading icon draws", () => {
+    expect(DETAIL_SPECS.input!.anatomy.props.icon).toEqual({ icon: "globe" });
+    expect(kitProps("Input", { icon: { icon: "globe" }, value: "northwind" })).toEqual({ icon: "globe", leadingIcon: true, value: "northwind" });
+    expect(kitProps("Input", { value: "northwind" })).toEqual({ value: "northwind" });
+  });
+
   it("renders the authored oklch swatch through a supported native sRGB color", () => {
     const knobs = DETAIL_SPECS.swatch!.knobs;
     const props = knobProps(knobs, initialKnobs(knobs));

@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Fragment, type ReactNode } from "react";
 import { View, Text, StyleSheet, useHugStyle, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Kbd shell. Kbd is a keyboard shortcut indicator: a small bordered, raised key
 // cap with a mono label. A single key comes from `children` (<Kbd>Esc</Kbd>); a whole
@@ -128,6 +129,12 @@ function keyList(keys: string | string[] | undefined): string[] | null {
 /** Build a Kbd component from a platform skin. */
 export function createKbd(skin: KbdSkin) {
   return function Kbd({ children, keys, sequence, comfortable, small, tiny, flat, testID, style }: KbdProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Keycap, Glyph, Separator. A chord draws many caps, so the first
+    // cap and the first "then" register them.
+    const keycapPart = useAnatomyPart("Keycap");
+    const glyphPart = useAnatomyPart("Glyph");
+    const separatorPart = useAnatomyPart("Separator");
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const size = sizeOf({ small, tiny });
@@ -148,10 +155,12 @@ export function createKbd(skin: KbdSkin) {
     if (list == null || list.length === 1) {
       const label = list != null ? list[0] : children;
       return (
-        <View testID={testID} style={[paneStyle(theme, [capBox, capSurface(tokens)]), hug, style]}>
-          {pane}
-          {label != null ? <Text style={[labelType, labelColor(tokens, edge)]}>{label}</Text> : null}
-        </View>
+        <AnatomyScope>
+          <View ref={keycapPart?.ref} onLayout={keycapPart?.onLayout} testID={testID} style={[paneStyle(theme, [capBox, capSurface(tokens)]), hug, style]}>
+            {pane}
+            {label != null ? <Text ref={glyphPart?.ref} onLayout={glyphPart?.onLayout} style={[labelType, labelColor(tokens, edge)]}>{label}</Text> : null}
+          </View>
+        </AnatomyScope>
       );
     }
 
@@ -161,6 +170,7 @@ export function createKbd(skin: KbdSkin) {
     // separators are hidden from the tree as decorative.
     const name = list.join(sequence ? " then " : "+");
     return (
+      <AnatomyScope>
       <View
         testID={testID}
         // The chord is announced once, as a unit, rather than cap by cap. That needs a
@@ -178,6 +188,8 @@ export function createKbd(skin: KbdSkin) {
           <Fragment key={i}>
             {i > 0 && sequence ? (
               <Text
+                ref={i === 1 ? separatorPart?.ref : undefined}
+                onLayout={i === 1 ? separatorPart?.onLayout : undefined}
                 style={[skin.separatorType, separatorColor(tokens)]}
                 importantForAccessibility="no-hide-descendants"
                 aria-hidden
@@ -186,16 +198,19 @@ export function createKbd(skin: KbdSkin) {
               </Text>
             ) : null}
             <View
+              ref={i === 0 ? keycapPart?.ref : undefined}
+              onLayout={i === 0 ? keycapPart?.onLayout : undefined}
               style={[paneStyle(theme, [capBox, capSurface(tokens)])]}
               importantForAccessibility="no-hide-descendants"
               aria-hidden
             >
               {pane}
-              <Text style={[labelType, labelColor(tokens, edge)]}>{key}</Text>
+              <Text ref={i === 0 ? glyphPart?.ref : undefined} onLayout={i === 0 ? glyphPart?.onLayout : undefined} style={[labelType, labelColor(tokens, edge)]}>{key}</Text>
             </View>
           </Fragment>
         ))}
       </View>
+      </AnatomyScope>
     );
   };
 }

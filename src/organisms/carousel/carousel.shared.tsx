@@ -25,6 +25,7 @@ import {
   FOCUS_RESET,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
@@ -208,10 +209,12 @@ export function createCarousel(skin: CarouselSkin) {
     side,
     disabled,
     onPress,
+    part,
   }: {
     side: "prev" | "next";
     disabled: boolean;
     onPress: () => void;
+    part?: AnatomyTarget;
   }) {
     const theme = useMaterialTheme({ layer: "control", floating: true });
     const { tokens } = theme;
@@ -219,6 +222,8 @@ export function createCarousel(skin: CarouselSkin) {
     return (
       <View style={ARROW_CELL}>
         <Pressable
+          ref={part?.ref}
+          onLayout={part?.onLayout}
           onPress={disabled ? undefined : onPress}
           disabled={disabled}
           hitSlop={skin.arrowHitSlop}
@@ -262,6 +267,14 @@ export function createCarousel(skin: CarouselSkin) {
       testID,
       style,
     } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Viewport, Slide, Arrow, Dots, taken before the tree's AnatomyScope so
+    // the caller's slide content registers nothing of its own. The Arrow is the first (prev)
+    // one; the Slide is the viewport's own box, which the first slide fills.
+    const viewportPart = useAnatomyPart("Viewport");
+    const slidePart = useAnatomyPart("Slide");
+    const arrowPart = useAnatomyPart("Arrow");
+    const dotsPart = useAnatomyPart("Dots");
     const { tokens } = useMaterialTheme({ layer: "content" });
     const reduced = useReducedMotion();
     const count = items.length;
@@ -435,10 +448,11 @@ export function createCarousel(skin: CarouselSkin) {
     const web = Platform.OS === "web";
 
     return (
-      <View testID={testID} style={[ROOT, style]}>
+      <AnatomyScope>
+      <View ref={viewportPart?.ref} onLayout={viewportPart?.onLayout} testID={testID} style={[ROOT, style]}>
         <View style={arrowsShown ? trackWithArrows : TRACK}>
-          {arrowsShown ? <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(currentRef.current - 1)} /> : null}
-          <View style={[VIEWPORT, focusFrame.ring(skin.slide(tokens))]} onLayout={onLayout}>
+          {arrowsShown ? <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(currentRef.current - 1)} part={arrowPart} /> : null}
+          <View ref={slidePart?.ref} style={[VIEWPORT, focusFrame.ring(skin.slide(tokens))]} onLayout={withPartLayout(slidePart, onLayout)}>
             <ScrollView
               {...scrollFocus}
               {...keyboardProps}
@@ -475,7 +489,7 @@ export function createCarousel(skin: CarouselSkin) {
         </View>
 
         {dotsVisible && count > 1 ? (
-          <View role="group" accessibilityLabel="Choose a slide" style={skin.dotsRow(tokens)}>
+          <View ref={dotsPart?.ref} onLayout={dotsPart?.onLayout} role="group" accessibilityLabel="Choose a slide" style={skin.dotsRow(tokens)}>
             {items.map((item, i) => (
               <Pressable
                 key={item.key}
@@ -496,6 +510,7 @@ export function createCarousel(skin: CarouselSkin) {
           </View>
         ) : null}
       </View>
+      </AnatomyScope>
     );
   };
 }

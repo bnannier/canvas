@@ -172,6 +172,7 @@ export function createRadioGroup(skin: RadioSkin) {
     // Memoize the context value so a parent re-render doesn't re-render every Radio
     // (it changes only when the selection, disabled flag, option set or list changes).
     const inList = list != null;
+    const first = values[0];
     const ctx = useMemo<RadioGroupContextValue>(
       () => ({
         value,
@@ -179,8 +180,9 @@ export function createRadioGroup(skin: RadioSkin) {
         disabled,
         itemProps: disabled ? undefined : itemProps,
         list: inList,
+        first,
       }),
-      [value, disabled, setValue, itemProps, inList],
+      [value, disabled, setValue, itemProps, inList, first],
     );
 
     // The group's accessible name. Both the RN accessibilityLabel and the aria-label

@@ -1,9 +1,11 @@
 import { type ComponentProps, type ComponentType, type ReactNode } from "react";
-import { type GestureResponderEvent } from "react-native";
+import { StyleSheet, type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassPane, GlassSurface, paneStyle, paneRipple, withInnerFill, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { selectionTint } from "../../style/selection-tint.js";
 import { useHover } from "../../style/hover.js";
+import { useFillStyle } from "../../style/sizing.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
@@ -247,9 +249,11 @@ interface NavLinkProps {
   href?: string;
   active: boolean;
   onPress: (event: GestureResponderEvent) => void;
+  /** The anatomy part this link carries (the active one's tile). */
+  part?: AnatomyTarget;
 }
 
-function NavLink({ skin, label, href, active, onPress }: NavLinkProps) {
+function NavLink({ skin, label, href, active, onPress, part }: NavLinkProps) {
   const { tokens, dark } = useTheme();
   const material = useMaterialTheme({ layer: "control" });
   const glass = material.surface === "glass";
@@ -280,6 +284,8 @@ function NavLink({ skin, label, href, active, onPress }: NavLinkProps) {
     <RippleClip shape={cornerRadii(tile)} {...hoverTarget}>
       <Pressable
         {...(anchor ?? undefined)}
+        ref={part?.ref}
+        onLayout={part?.onLayout}
         onPress={onPress}
         // The active tile's puck is a child of this Pressable: where it renders, the
         // ripple draws in the foreground, over it (`paneRipple`).
@@ -314,6 +320,18 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Button = parts.Button ?? WebButton;
   const Avatar = parts.Avatar ?? WebAvatar;
   return function Navbar(props: NavbarProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Bar, Brand, Links, Active link, Actions, taken before the tree's
+    // AnatomyScope so the bar's Buttons, Avatar and the caller's content register nothing.
+    const barPart = useAnatomyPart("Bar");
+    const brandPart = useAnatomyPart("Brand");
+    const linksPart = useAnatomyPart("Links");
+    const activeLinkPart = useAnatomyPart("Active link");
+    const actionsPart = useAnatomyPart("Actions");
+    // A bar relies on its parent column to stretch it; a docs AnatomyProvider centres its
+    // specimen, so inside one the bar fills its stage (else it hugs, measures narrow and
+    // folds its links into the menu button).
+    const stageFill = useFillStyle("Navbar");
     const { brand, brandContent, brandHref, onBrandPress, brandDivider, links: linkProp = [], hrefs, actions, actionLabel, onAction, avatar, onSelect, onMenu, scrolls, testID, style } = props;
     // An app menu (`onMenu`) stands in for the links row and its narrow menu at every width.
     const links = onMenu ? [] : linkProp;
@@ -354,10 +372,12 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     // A scrolling bar hands its gutter and gap to the scroller's content row, so the
     // row pans under the bar's whole inner width, as the hand-off pill's does.
     const shell: ViewStyle = scrolls ? { ...barStyle, paddingHorizontal: 0, gap: undefined } : barStyle;
-    const container: StyleProp<ViewStyle> = bare ? [shell, style] : [
+    const stage = barPart ? stageFill : null;
+    const container: StyleProp<ViewStyle> = bare ? [shell, stage, style] : [
       shell,
       skin.surface(tokens),
       skin.surfaceContainer(tokens, surface),
+      stage,
       style,
     ];
     // The bar floats over the page, so the web frosts it under glass as the hand-off's
@@ -389,6 +409,8 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
           brandHref != null || onBrandPress ? (
             <Pressable
               {...(brandHref != null ? ({ href: brandHref } as object) : undefined)}
+              ref={brandPart?.ref}
+              onLayout={brandPart?.onLayout}
               onPress={(event) => {
                 if (brandHref != null && browserOwnsClick(event)) return;
                 onBrandPress?.(event);
@@ -401,7 +423,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
               {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
             </Pressable>
           ) : (
-            <View style={skin.brandGroup(tokens, density)}>
+            <View ref={brandPart?.ref} onLayout={brandPart?.onLayout} style={skin.brandGroup(tokens, density)}>
               {brandContent}
               {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
             </View>
@@ -411,7 +433,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
           <Divider vertical inset strong />
         ) : null}
         {!hasLinks || collapsed ? null : (
-          <View style={skin.linksRow(tokens, density)}>
+          <View ref={linksPart?.ref} onLayout={linksPart?.onLayout} style={skin.linksRow(tokens, density)}>
             {links.map((link, index) => {
               const href = hrefs?.[index];
               return (
@@ -421,6 +443,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
                   label={link}
                   href={href}
                   active={index === active}
+                  part={index === active ? activeLinkPart : undefined}
                   onPress={(event) => {
                     if (href != null && browserOwnsClick(event)) return;
                     select(index, event);
@@ -433,7 +456,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
       </View>
     );
     const right = (
-      <View style={skin.rightGroup(tokens, density)}>
+      <View ref={actionsPart?.ref} onLayout={actionsPart?.onLayout} style={skin.rightGroup(tokens, density)}>
         {actions}
         {actionLabel ? (
           <Button primary small onPress={onAction}>
@@ -445,28 +468,32 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     );
 
     return (
-      <Host testID={testID} style={container} onLayout={onBarLayout}>
-        {scrolls ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            alwaysBounceHorizontal={false}
-            scrollEnabled={scrollFocus.scrollEnabled}
-            onLayout={scrollFocus.onLayout}
-            onContentSizeChange={scrollFocus.onContentSizeChange}
-            style={SCROLLER}
-            contentContainerStyle={[SCROLL_ROW, { paddingHorizontal: barStyle.paddingHorizontal, gap: barStyle.gap }]}
-          >
-            {left}
-            {right}
-          </ScrollView>
-        ) : (
-          <>
-            {left}
-            {right}
-          </>
-        )}
-      </Host>
+      <AnatomyScope>
+        <Host testID={testID} style={container} onLayout={onBarLayout}>
+          {/* The Bar part's node inside a docs provider: a pass-through fill of the bar. */}
+          {barPart ? <View ref={barPart.ref} onLayout={barPart.onLayout} style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]} /> : null}
+          {scrolls ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              alwaysBounceHorizontal={false}
+              scrollEnabled={scrollFocus.scrollEnabled}
+              onLayout={scrollFocus.onLayout}
+              onContentSizeChange={scrollFocus.onContentSizeChange}
+              style={SCROLLER}
+              contentContainerStyle={[SCROLL_ROW, { paddingHorizontal: barStyle.paddingHorizontal, gap: barStyle.gap }]}
+            >
+              {left}
+              {right}
+            </ScrollView>
+          ) : (
+            <>
+              {left}
+              {right}
+            </>
+          )}
+        </Host>
+      </AnatomyScope>
     );
   };
 }

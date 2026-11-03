@@ -10,6 +10,7 @@ import { GlassModalBlurTarget, GlassSurface, Pressable, View, isRTL, useTheme, u
 import { SafeAreaProvider, SafeAreaView } from "../../style/safe-area.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import * as s from "./drawer.styles.js";
 import { type Edge, type DrawerSkin } from "./drawer.styles.js";
 
@@ -129,6 +130,16 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     const edge = edgeOf(props);
     const insets = useSafeAreaInsetsOrNull();
     const structured = props.header != null || props.footer != null || !!props.navigation;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Scrim, Panel, Header, Body, Footer. Taken before the tree's
+    // AnatomyScope so the caller's header, body and footer register nothing of their own.
+    // The Scrim is the node the dim fills, the Panel a pass-through fill of the panel
+    // surface (GlassSurface has no ref).
+    const scrimPart = useAnatomyPart("Scrim");
+    const panelPart = useAnatomyPart("Panel");
+    const headerPart = useAnatomyPart("Header");
+    const bodyPart = useAnatomyPart("Body");
+    const footerPart = useAnatomyPart("Footer");
 
     // Uncontrolled by default: the trigger opens the drawer and the scrim closes it; a
     // controlled `open` prop overrides this.
@@ -233,15 +244,17 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     const sideInset = physicalRight ? insets?.right ?? 0 : insets?.left ?? 0;
     const panelShape = plain ? skin.plainPanel!(edge, width + sideInset, tokens) : skin.panelShape(edge, width, tokens);
     const panelBody = structured ? <>
-      {props.header != null ? <View style={[skin.band, { borderBottomWidth: 1, borderBottomColor: tokens.border }]}>{props.header}</View> : null}
-      <OverlayScrollView style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }} contentContainerStyle={props.navigation ? { flexGrow: 1 } : { padding: 18, gap: 14, ...(props.footer ? null : { paddingBottom: 0 }) }} keyboardShouldPersistTaps="handled">
+      {props.header != null ? <View ref={headerPart?.ref} onLayout={headerPart?.onLayout} style={[skin.band, { borderBottomWidth: 1, borderBottomColor: tokens.border }]}>{props.header}</View> : null}
+      <OverlayScrollView ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }} contentContainerStyle={props.navigation ? { flexGrow: 1 } : { padding: 18, gap: 14, ...(props.footer ? null : { paddingBottom: 0 }) }} keyboardShouldPersistTaps="handled">
         {children}
       </OverlayScrollView>
-      {props.footer ? <View style={[skin.band, { borderTopWidth: 1, borderTopColor: tokens.border }]}>{props.footer}</View> : null}
-    </> : children;
+      {props.footer ? <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} style={[skin.band, { borderTopWidth: 1, borderTopColor: tokens.border }]}>{props.footer}</View> : null}
+    </> : children != null ? <AnatomyPart part={bodyPart}>{children}</AnatomyPart> : null;
     const panel = (
       <View style={[s.panelPos[edge], sheetCap]} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
         <GlassSurface floating style={[panelShape, style]}>
+          {/* The panel's own box, for the anatomy Panel part: GlassSurface has no ref, so a pass-through fill measures it. */}
+          {panelPart ? <View ref={panelPart.ref} onLayout={panelPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
           <SafeAreaView
             edges={isVertical ? [edge as "top" | "bottom", "left", "right"] : ["top", "bottom", physicalRight ? "right" : "left"]}
             style={PANEL_CONTENT}
@@ -258,17 +271,19 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
       // The specimen: the dim and the docked panel in the parent's own box, still. The dim
       // takes no touches, so the page around the specimen keeps every tap and scroll.
       return open ? (
-        <View testID={testID} role="region" aria-label={accessibilityLabel} accessibilityLabel={accessibilityLabel} style={s.embeddedRoot}>
-          <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} />
-          <View style={[s.panelLayer[edge], s.embeddedLayer]}>
-            <View style={[s.slideLayer, !isVertical ? skin.sideMaxWidth : null]}>{panel}</View>
+        <AnatomyScope>
+          <View testID={testID} role="region" aria-label={accessibilityLabel} accessibilityLabel={accessibilityLabel} style={s.embeddedRoot}>
+            <View ref={scrimPart?.ref} onLayout={scrimPart?.onLayout} pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} />
+            <View style={[s.panelLayer[edge], s.embeddedLayer]}>
+              <View style={[s.slideLayer, !isVertical ? skin.sideMaxWidth : null]}>{panel}</View>
+            </View>
           </View>
-        </View>
+        </AnatomyScope>
       ) : null;
     }
 
     return (
-      <>
+      <AnatomyScope>
         {trigger != null ? (
           // The built-in trigger floors its height to the platform touch minimum
           // (iOS HIG 44pt, M3 48dp) via the skin; web is pointer-first (no floor,
@@ -325,7 +340,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                         back and accessibility escape dismiss. The panel layer above lays the
                         panel against its edge and rides it in on translateX/translateY; it is
                         box-none, so only the panel itself takes a tap. */}
-                    <View style={{ flex: 1 }} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
+                    <View ref={scrimPart?.ref} onLayout={scrimPart?.onLayout} style={{ flex: 1 }} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
                       {plain ? <GlassSurface veil tint={dimFill} pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} /> : <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />}
                       <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
                       <View style={s.panelLayer[edge]}>
@@ -338,7 +353,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
             </EscapeLayerProvider>
           </SafeAreaProvider>
         </Modal>
-      </>
+      </AnatomyScope>
     );
   };
 }

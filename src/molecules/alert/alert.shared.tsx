@@ -6,6 +6,7 @@ import { actionFill, actionInk } from "../../style/action.js";
 import { mixOklab } from "../../style/color.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import {
   View,
   Pressable,
@@ -237,6 +238,15 @@ export function createAlert(skin: AlertSkin, parts: AlertParts = {}) {
     const glass = isGlass(theme);
     const tone = toneOf(props);
     const fill = useFillStyle("Alert");
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Container, Icon, Title, Description, Dismiss, Actions. Taken
+    // before the tree's AnatomyScope so the action Buttons register nothing of their own.
+    const containerPart = useAnatomyPart("Container");
+    const iconPart = useAnatomyPart("Icon");
+    const titlePart = useAnatomyPart("Title");
+    const descriptionPart = useAnatomyPart("Description");
+    const dismissPart = useAnatomyPart("Dismiss");
+    const actionsPart = useAnatomyPart("Actions");
 
     // Dismissal obeys the kit's controlled + uncontrolled contract: pressing the
     // trailing "×" hides the banner out of the box, a controlled `dismissed` prop
@@ -278,91 +288,104 @@ export function createAlert(skin: AlertSkin, parts: AlertParts = {}) {
       const glyph = isValidElement(icon)
         ? cloneElement(icon as ReactElement<Record<string, unknown>>, { color: ink, size: a.iconSize })
         : icon === undefined ? <Icon sparkles color={ink} size={a.iconSize} decorative /> : null;
+      // The announcement's Actions part is its inline action, else the caller's actions.
       return (
-        <View
-          testID={testID}
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-          aria-live="polite"
-          style={[a.container, a.glow(tokens.glow ?? tokens.ring), fill, style]}
-        >
-          <AnnouncementFill tokens={tokens} />
-          {glyph}
-          <View style={content}>
-            {title != null && title !== "" ? <Text style={[a.message, { color: ink }]}>{title}</Text> : null}
-            {description != null && description !== "" ? <Text style={[a.message, { color: ink, fontWeight: "400" }]}>{description}</Text> : null}
-            {children}
+        <AnatomyScope>
+          <View
+            ref={containerPart?.ref}
+            onLayout={containerPart?.onLayout}
+            testID={testID}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            aria-live="polite"
+            style={[a.container, a.glow(tokens.glow ?? tokens.ring), fill, style]}
+          >
+            <AnnouncementFill tokens={tokens} />
+            {glyph != null ? <AnatomyPart part={iconPart}>{glyph}</AnatomyPart> : null}
+            <View style={content}>
+              {title != null && title !== "" ? <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} style={[a.message, { color: ink }]}>{title}</Text> : null}
+              {description != null && description !== "" ? <Text ref={descriptionPart?.ref} onLayout={descriptionPart?.onLayout} style={[a.message, { color: ink, fontWeight: "400" }]}>{description}</Text> : null}
+              {children}
+            </View>
+            {action != null ? (
+              <Pressable ref={actionsPart?.ref} onLayout={actionsPart?.onLayout} accessibilityRole="button" onPress={action.onPress} style={({ pressed }) => pressDim(pressed, skin.dismissPressedOpacity)}>
+                <Text style={[a.action, { color: ink }]}>{action.label}</Text>
+              </Pressable>
+            ) : null}
+            {actions != null ? <AnatomyPart part={action != null ? undefined : actionsPart}>{actions}</AnatomyPart> : null}
+            {dismissible ? (
+              <Pressable
+                ref={dismissPart?.ref}
+                onLayout={dismissPart?.onLayout}
+                onPress={() => setDismissed(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Dismiss"
+                hitSlop={skin.dismissHitSlop ?? undefined}
+                style={({ pressed }) => [a.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
+              >
+                <Icon x color={ink} size={a.dismissIconSize} decorative />
+              </Pressable>
+            ) : null}
           </View>
-          {action != null ? (
-            <Pressable accessibilityRole="button" onPress={action.onPress} style={({ pressed }) => pressDim(pressed, skin.dismissPressedOpacity)}>
-              <Text style={[a.action, { color: ink }]}>{action.label}</Text>
-            </Pressable>
-          ) : null}
-          {actions}
-          {dismissible ? (
-            <Pressable
-              onPress={() => setDismissed(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Dismiss"
-              hitSlop={skin.dismissHitSlop ?? undefined}
-              style={({ pressed }) => [a.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
-            >
-              <Icon x color={ink} size={a.dismissIconSize} decorative />
-            </Pressable>
-          ) : null}
-        </View>
+        </AnatomyScope>
       );
     }
 
     return (
-      <View
-        testID={testID}
-        accessibilityRole="alert"
-        accessibilityLiveRegion={live}
-        aria-live={live}
-        style={[paneStyle(theme, [skin.container, containerColor(tokens, tone)], glass), fill, style]}
-      >
-        {/* Under glass the alert is a CONTENT-layer pane tinted with its wash, painted
-            behind the live-region root, which keeps its semantics; the toned edge stays
-            over the pane. Renders nothing in solid mode. */}
-        <GlassPane layer="content" shape={[skin.container, containerColor(tokens, tone)]} stateBorder tint={paneTint(tokens, tone)} />
-        {tintedIcon != null ? (
-          <View style={skin.iconSlot}>{tintedIcon}</View>
-        ) : icon != null ? (
-          <Text style={[skin.iconType, iconColor(tokens, tone)]}>{icon}</Text>
-        ) : null}
-        <View style={content}>
-          <MaterialBehind rendered={glass}>
-          {title != null && title !== "" ? (
-            <Text style={[skin.titleType, titleColor(tokens)]}>{title}</Text>
+      <AnatomyScope>
+        <View
+          ref={containerPart?.ref}
+          onLayout={containerPart?.onLayout}
+          testID={testID}
+          accessibilityRole="alert"
+          accessibilityLiveRegion={live}
+          aria-live={live}
+          style={[paneStyle(theme, [skin.container, containerColor(tokens, tone)], glass), fill, style]}
+        >
+          {/* Under glass the alert is a CONTENT-layer pane tinted with its wash, painted
+              behind the live-region root, which keeps its semantics; the toned edge stays
+              over the pane. Renders nothing in solid mode. */}
+          <GlassPane layer="content" shape={[skin.container, containerColor(tokens, tone)]} stateBorder tint={paneTint(tokens, tone)} />
+          {tintedIcon != null ? (
+            <View ref={iconPart?.ref} onLayout={iconPart?.onLayout} style={skin.iconSlot}>{tintedIcon}</View>
+          ) : icon != null ? (
+            <Text ref={iconPart?.ref} onLayout={iconPart?.onLayout} style={[skin.iconType, iconColor(tokens, tone)]}>{icon}</Text>
           ) : null}
-          {description != null && description !== "" ? (
-            <Text style={[skin.bodyType, bodyColor(tokens)]}>{description}</Text>
+          <View style={content}>
+            <MaterialBehind rendered={glass}>
+            {title != null && title !== "" ? (
+              <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} style={[skin.titleType, titleColor(tokens)]}>{title}</Text>
+            ) : null}
+            {description != null && description !== "" ? (
+              <Text ref={descriptionPart?.ref} onLayout={descriptionPart?.onLayout} style={[skin.bodyType, bodyColor(tokens)]}>{description}</Text>
+            ) : null}
+            {children}
+            {actions != null || action != null ? (
+              <View ref={actionsPart?.ref} onLayout={actionsPart?.onLayout} style={skin.actions}>
+                {action != null ? <LinkButton link small onPress={action.onPress}>{action.label}</LinkButton> : null}
+                {actions}
+              </View>
+            ) : null}
+            </MaterialBehind>
+          </View>
+          {dismissible ? (
+            <Pressable
+              ref={dismissPart?.ref}
+              onLayout={dismissPart?.onLayout}
+              onPress={() => setDismissed(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss"
+              hitSlop={skin.dismissHitSlop ?? undefined}
+              // A borderless ripple is projected onto an ancestor's background, beneath the
+              // alert's pane: where the pane renders it draws in the foreground (`paneRipple`).
+              android_ripple={paneRipple(theme, controlRipple(tokens))}
+              style={({ pressed }) => [skin.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
+            >
+              <Icon x color={tokens["subtle-foreground"]} size={skin.dismissIconSize} decorative />
+            </Pressable>
           ) : null}
-          {children}
-          {actions != null || action != null ? (
-            <View style={skin.actions}>
-              {action != null ? <LinkButton link small onPress={action.onPress}>{action.label}</LinkButton> : null}
-              {actions}
-            </View>
-          ) : null}
-          </MaterialBehind>
         </View>
-        {dismissible ? (
-          <Pressable
-            onPress={() => setDismissed(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Dismiss"
-            hitSlop={skin.dismissHitSlop ?? undefined}
-            // A borderless ripple is projected onto an ancestor's background, beneath the
-            // alert's pane: where the pane renders it draws in the foreground (`paneRipple`).
-            android_ripple={paneRipple(theme, controlRipple(tokens))}
-            style={({ pressed }) => [skin.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
-          >
-            <Icon x color={tokens["subtle-foreground"]} size={skin.dismissIconSize} decorative />
-          </Pressable>
-        ) : null}
-      </View>
+      </AnatomyScope>
     );
   };
 }

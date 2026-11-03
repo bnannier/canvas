@@ -21,6 +21,10 @@ import type { PropDescriptors } from "./knobs";
 const MARK = 22;
 const NO_BOX: AnatomyRect = { x: 0, y: 0, width: 0, height: 0 };
 
+// Tooling attributes on the web (a marker's number, a legend row's part and whether the
+// figure draws it), so a browser test reads the figure's numbering without its pixels.
+const webData = (data: Record<string, string>) => (Platform.OS === "web" ? ({ dataSet: data } as object) : null);
+
 /**
  * The numbered markers and their leader lines, drawn over the stage (the hand-off places
  * them against the padded figure well, line 217, and clamps them inside it): a layer
@@ -47,7 +51,7 @@ function Marks({ parts, rects, box }: { parts: readonly string[]; rects: Anatomy
         </Svg>
       ) : null}
       {marks.map((m) => (
-        <View key={m.n} style={{ pointerEvents: "none", position: "absolute", left: m.x - MARK / 2, top: m.y - MARK / 2, width: MARK, height: MARK, alignItems: "center", justifyContent: "center" }}>
+        <View key={m.n} {...webData({ anatomyMark: String(m.n) })} style={{ pointerEvents: "none", position: "absolute", left: m.x - MARK / 2, top: m.y - MARK / 2, width: MARK, height: MARK, alignItems: "center", justifyContent: "center" }}>
           <Badge marker accessibilityLabel={`Part ${m.n}, ${parts[m.n - 1]}`}>{m.n}</Badge>
         </View>
       ))}
@@ -110,10 +114,12 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
                 {parts.map((part, i) => {
                   const shown = rects[part] != null;
                   return (
-                    <Row key={part} cozy alignCenter>
-                      {shown ? <Badge disc default>{i + 1}</Badge> : <Badge disc secondary>{i + 1}</Badge>}
-                      <Typography legendLabel muted={!shown}>{part}</Typography>
-                    </Row>
+                    <View key={part} {...webData({ anatomyPart: part, anatomyShown: String(shown) })}>
+                      <Row cozy alignCenter>
+                        {shown ? <Badge disc default>{i + 1}</Badge> : <Badge disc secondary>{i + 1}</Badge>}
+                        <Typography legendLabel muted={!shown}>{part}</Typography>
+                      </Row>
+                    </View>
                   );
                 })}
               </Column>

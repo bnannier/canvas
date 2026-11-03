@@ -14,6 +14,7 @@ import { deltaTone } from "../../molecules/stats/stats.styles.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { alpha } from "../../style/color.js";
+import type { AnatomyTarget } from "../../style/anatomy.js";
 
 // The proportional row engine shared by BarList and MetricBreakdown, in the v4 hand-off's
 // two looks. The meter (MetricBreakdown's `K.def('metric-breakdown')` rows): a 12 px label
@@ -123,6 +124,8 @@ export interface BreakdownRowsProps {
   bars?: boolean;
   /** Divided metric rows, with finer meters and a quieter label. */
   detailed?: boolean;
+  /** The anatomy handlers a docs specimen numbers (kit-internal): the first row's bar, value and label. */
+  anatomy?: { bar?: AnatomyTarget; value?: AnatomyTarget; label?: AnatomyTarget };
 }
 
 const METER_HEIGHT = 6;
@@ -153,6 +156,7 @@ export function BreakdownRows({
   onPressRow,
   bars,
   detailed,
+  anatomy,
 }: BreakdownRowsProps) {
   const { tokens, dark } = useTheme();
   // Negative and non-finite values cannot carry a proportional bar; they are
@@ -223,6 +227,8 @@ export function BreakdownRows({
             {/* The share as a wash behind the row. Decorative; the share reaches AT
                 through the row's name. */}
             <View
+              ref={i === 0 ? anatomy?.bar?.ref : undefined}
+              onLayout={i === 0 ? anatomy?.bar?.onLayout : undefined}
               style={{
                 position: "absolute",
                 left: 0,
@@ -237,6 +243,8 @@ export function BreakdownRows({
               }}
             />
             <Text
+              ref={i === 0 ? anatomy?.label?.ref : undefined}
+              onLayout={i === 0 ? anatomy?.label?.onLayout : undefined}
               numberOfLines={1}
               style={{
                 flexGrow: 1,
@@ -249,7 +257,7 @@ export function BreakdownRows({
             >
               {row.label}
             </Text>
-            <Text style={valueType}>{valueText}</Text>
+            <Text ref={i === 0 ? anatomy?.value?.ref : undefined} onLayout={i === 0 ? anatomy?.value?.onLayout : undefined} style={valueType}>{valueText}</Text>
             {delta}
           </>
         ) : (
@@ -258,6 +266,8 @@ export function BreakdownRows({
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
               <Text
+                ref={i === 0 ? anatomy?.label?.ref : undefined}
+                onLayout={i === 0 ? anatomy?.label?.onLayout : undefined}
                 numberOfLines={1}
                 style={{
                   flexGrow: 1,
@@ -269,7 +279,7 @@ export function BreakdownRows({
               >
                 {row.label}
               </Text>
-              <Text style={valueType}>
+              <Text ref={i === 0 ? anatomy?.value?.ref : undefined} onLayout={i === 0 ? anatomy?.value?.onLayout : undefined} style={valueType}>
                 {formatValue(Number.isFinite(row.value) ? row.value : 0)}
               </Text>
               {percent ? (
@@ -296,6 +306,8 @@ export function BreakdownRows({
               }}
             >
               <View
+                ref={i === 0 ? anatomy?.bar?.ref : undefined}
+                onLayout={i === 0 ? anatomy?.bar?.onLayout : undefined}
                 style={{
                   height: detailed ? 5 : METER_HEIGHT,
                   borderRadius: 9999,

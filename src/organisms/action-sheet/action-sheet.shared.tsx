@@ -21,6 +21,7 @@ import {
   type ViewStyle,
 } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import * as s from "./action-sheet.styles.js";
 import { type ActionSheetSkin } from "./action-sheet.styles.js";
 
@@ -199,6 +200,18 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const hasHeader = title != null || message != null;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Scrim, Sheet, Title, Action, Destructive action, Cancel. The
+    // Sheet is a pass-through fill of the actions card (GlassSurface has no ref); Action
+    // and Destructive action are the first row of each kind.
+    const scrimPart = useAnatomyPart("Scrim");
+    const sheetPart = useAnatomyPart("Sheet");
+    const titlePart = useAnatomyPart("Title");
+    const actionPart = useAnatomyPart("Action");
+    const destructivePart = useAnatomyPart("Destructive action");
+    const cancelPart = useAnatomyPart("Cancel");
+    const firstAction = actions.findIndex((action) => !action.destructive);
+    const firstDestructive = actions.findIndex((action) => action.destructive);
 
     // A press feedback wrapper shared by the action and Cancel rows: iOS/web dim on
     // press, Android shows a ripple (the skin nulls the unused one per platform).
@@ -212,40 +225,47 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
     const headerNode = hasHeader ? (
       <Fragment>
         <View style={skin.header}>
-          {title != null ? <Text style={skin.headerTitle(tokens)}>{title}</Text> : null}
+          {title != null ? <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} style={skin.headerTitle(tokens)}>{title}</Text> : null}
           {message != null ? <Text style={skin.headerMessage(tokens)}>{message}</Text> : null}
         </View>
         {skin.divider ? <View style={skin.divider(tokens)} /> : null}
       </Fragment>
     ) : null;
 
-    const actionRows = actions.map((action, i) => (
-      <Fragment key={action.id ?? action.label}>
-        {skin.divider && i > 0 ? <View style={skin.divider(tokens)} /> : null}
-        <Pressable
-          onPress={() => selectAction(action)}
-          disabled={action.disabled}
-          accessibilityRole="button"
-          accessibilityLabel={action.label}
-          accessibilityState={{ disabled: !!action.disabled }}
-          // A destructive row carries a hint so VoiceOver/TalkBack convey the
-          // weight that the red color signals visually.
-          accessibilityHint={action.destructive ? "Destructive action" : undefined}
-          android_ripple={ripple}
-          // iOS paints each row as a detached capsule (its own translucent fill);
-          // web/Android leave rowFill null so the rows take the card's fill.
-          style={({ pressed }) => [skin.row, skin.rowFill?.(tokens), pressFeedback(pressed)]}
-        >
-          <Text style={skin.rowLabel(tokens, !!action.destructive, !!action.disabled)}>{action.label}</Text>
-        </Pressable>
-      </Fragment>
-    ));
+    const actionRows = actions.map((action, i) => {
+      const rowPart = i === firstAction ? actionPart : i === firstDestructive ? destructivePart : undefined;
+      return (
+        <Fragment key={action.id ?? action.label}>
+          {skin.divider && i > 0 ? <View style={skin.divider(tokens)} /> : null}
+          <Pressable
+            ref={rowPart?.ref}
+            onLayout={rowPart?.onLayout}
+            onPress={() => selectAction(action)}
+            disabled={action.disabled}
+            accessibilityRole="button"
+            accessibilityLabel={action.label}
+            accessibilityState={{ disabled: !!action.disabled }}
+            // A destructive row carries a hint so VoiceOver/TalkBack convey the
+            // weight that the red color signals visually.
+            accessibilityHint={action.destructive ? "Destructive action" : undefined}
+            android_ripple={ripple}
+            // iOS paints each row as a detached capsule (its own translucent fill);
+            // web/Android leave rowFill null so the rows take the card's fill.
+            style={({ pressed }) => [skin.row, skin.rowFill?.(tokens), pressFeedback(pressed)]}
+          >
+            <Text style={skin.rowLabel(tokens, !!action.destructive, !!action.disabled)}>{action.label}</Text>
+          </Pressable>
+        </Fragment>
+      );
+    });
 
     // The Cancel affordance. On iOS it is a SEPARATE detached capsule below the
     // container; on web a separate rounded card; on Android it folds into the same
     // sheet as the last list row.
     const cancelRow = (
       <Pressable
+        ref={cancelPart?.ref}
+        onLayout={cancelPart?.onLayout}
         onPress={close}
         accessibilityRole="button"
         accessibilityLabel={cancelLabel}
@@ -261,6 +281,8 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
     const stack = (
                     <View style={[skin.stack, style]}>
                       <GlassSurface floating style={skin.actionsCard(tokens)}>
+                        {/* The card's own box, for the anatomy Sheet part: GlassSurface has no ref, so a pass-through fill measures it. */}
+                        {sheetPart ? <View ref={sheetPart.ref} onLayout={sheetPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
                         {/* The handle (Android) sits above the header inside the sheet. */}
                         {skin.handle ? <View style={skin.handle(tokens)} /> : null}
                         {headerNode}
@@ -299,15 +321,17 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
       // The specimen: the dim and the resting stack in the parent's own box, still. The dim
       // takes no touches, so the page around the specimen keeps every tap and scroll.
       return open ? (
-        <View testID={testID} style={s.embeddedRoot}>
-          <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} />
-          {stack}
-        </View>
+        <AnatomyScope>
+          <View testID={testID} style={s.embeddedRoot}>
+            <View ref={scrimPart?.ref} onLayout={scrimPart?.onLayout} pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} />
+            {stack}
+          </View>
+        </AnatomyScope>
       ) : null;
     }
 
     return (
-      <Fragment>
+      <AnatomyScope>
         {trigger != null ? (
           <Button outline small onPress={() => setOpen(true)}>
             {trigger}
@@ -353,7 +377,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
                     never moves, so the backdrop settles over the page while the sheet
                     rises. Purely decorative (the Pressable above it carries the dismiss
                     role), so it is unannounced. */}
-                <Animated.View style={[StyleSheet.absoluteFill, s.scrimDim, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />
+                <Animated.View ref={scrimPart?.ref} onLayout={scrimPart?.onLayout} style={[StyleSheet.absoluteFill, s.scrimDim, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />
                 <Pressable
                   style={StyleSheet.absoluteFill}
                   onPress={close}
@@ -382,7 +406,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
             </EscapeLayerProvider>
           </SafeAreaProvider>
         </Modal>
-      </Fragment>
+      </AnatomyScope>
     );
   };
 }

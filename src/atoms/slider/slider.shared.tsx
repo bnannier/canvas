@@ -13,6 +13,7 @@ import { useFocusFrame } from "../../style/focus-frame.js";
 import { useInteractionOverride } from "../../style/interaction-override.js";
 import { useHover } from "../../style/hover.js";
 import { clamp } from "../../style/math.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so the track/fill/thumb
@@ -204,6 +205,13 @@ export function createSlider(skin: SliderSkin) {
     // the focused node and the thumb, the part a user moves, draws the ring. An outline is
     // no border, so it shows over the glass knob too.
     const frame = useFocusFrame();
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Track, Fill, Thumb, Label, Value.
+    const trackPart = useAnatomyPart("Track");
+    const fillPart = useAnatomyPart("Fill");
+    const thumbPart = useAnatomyPart("Thumb");
+    const labelPart = useAnatomyPart("Label");
+    const valuePart = useAnatomyPart("Value");
     const hostRef = useComposedRefs(ref, frame.target.ref);
     const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style, children, description, showValue } = props;
     const theme = useMaterialTheme({ layer: "control" });
@@ -480,6 +488,8 @@ export function createSlider(skin: SliderSkin) {
             {/* The active segment, from the value edge (left in LTR, right in RTL) to
                 `gap` before the handle. */}
             <View
+              ref={fillPart?.ref}
+              onLayout={fillPart?.onLayout}
               style={[
                 skin.fill(tokens, size, !!disabled),
                 { position: "absolute", left: rtl ? Math.max(0, trackWidth - activeWidth) : 0, top: trackTop, width: activeWidth, height: trackHeight, pointerEvents: "none" },
@@ -487,6 +497,8 @@ export function createSlider(skin: SliderSkin) {
             />
             {/* The inactive segment, from `gap` after the handle to the far edge. */}
             <View
+              ref={trackPart?.ref}
+              onLayout={trackPart?.onLayout}
               style={[
                 paneStyle(railTheme, railShape),
                 { position: "absolute", left: rtl ? Math.max(0, trackWidth - inactiveLeft - inactiveWidth) : inactiveLeft, top: trackTop, width: inactiveWidth, height: trackHeight, pointerEvents: "none" },
@@ -512,7 +524,7 @@ export function createSlider(skin: SliderSkin) {
           // Continuous-rail anatomy: the fill overlays the full-width rail. Ticks
           // render UNDER the fill (the iOS 27 kit stacks Ticks inside the Track
           // layer, below the Fill), so the filled side covers its dots.
-          <View style={[paneStyle(railTheme, railShape), { pointerEvents: "none" }]}>
+          <View ref={trackPart?.ref} onLayout={trackPart?.onLayout} style={[paneStyle(railTheme, railShape), { pointerEvents: "none" }]}>
             <GlassPane static layer="control" shape={railShape} />
             {skin.tick
               ? tickCenters.map((cx) => (
@@ -521,7 +533,7 @@ export function createSlider(skin: SliderSkin) {
               : null}
             {/* The filled range, from the value edge to the value. The skin anchors it
                 left:0; in RTL re-anchor it to the right so it grows from the min end. */}
-            <View style={[skin.fill(tokens, size, !!disabled), { width: fillWidth, left: rtl ? Math.max(0, trackWidth - fillWidth) : 0 }]} />
+            <View ref={fillPart?.ref} onLayout={fillPart?.onLayout} style={[skin.fill(tokens, size, !!disabled), { width: fillWidth, left: rtl ? Math.max(0, trackWidth - fillWidth) : 0 }]} />
           </View>
         )}
         {/* The thumb. The parent View's PanResponder owns the whole gesture (tapping the
@@ -544,11 +556,20 @@ export function createSlider(skin: SliderSkin) {
             disabled ? null : frame.ring(),
           ]}
         />
+        {thumbPart ? (
+          // The thumb is a GlassSurface, which takes no ref: inside a docs AnatomyProvider a
+          // transparent node over its exact box (the same left, top and size) is the part.
+          <View
+            ref={thumbPart.ref}
+            onLayout={thumbPart.onLayout}
+            style={{ position: "absolute", left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop, width: thumbW, height: thumbH, pointerEvents: "none" }}
+          />
+        ) : null}
       </View>
     );
 
     // No header: the interactive rail IS the root, exactly as before.
-    if (!hasHeader) return interactive;
+    if (!hasHeader) return <AnatomyScope>{interactive}</AnatomyScope>;
 
     // With a header: the component owns a stacked column above the rail. The title row
     // carries the label at the leading edge and the optional live-value readout at the
@@ -558,12 +579,13 @@ export function createSlider(skin: SliderSkin) {
       children != null && showValue ? "space-between" : showValue ? "flex-end" : "flex-start";
 
     return (
+      <AnatomyScope>
       <View style={[OUTER, { gap: skin.headerGap }, widthCap, style]}>
         {children != null || description != null || showValue ? <View style={{ gap: skin.descriptionGap }}>
           {children != null || showValue ? (
             <View style={[TITLE_ROW, { justifyContent: titleJustify }]}>
-              {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
-              {showValue ? <Text style={skin.value(tokens, size)}>{readout(current)}</Text> : null}
+              {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={skin.label(tokens, size)}>{children}</Text> : null}
+              {showValue ? <Text ref={valuePart?.ref} onLayout={valuePart?.onLayout} style={skin.value(tokens, size)}>{readout(current)}</Text> : null}
             </View>
           ) : null}
           {description != null ? <Text style={skin.description(tokens, size)}>{description}</Text> : null}
@@ -579,6 +601,7 @@ export function createSlider(skin: SliderSkin) {
           </View>
         ) : interactive}
       </View>
+      </AnatomyScope>
     );
   });
   Slider.displayName = "Slider";

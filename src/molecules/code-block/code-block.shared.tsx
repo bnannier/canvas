@@ -6,6 +6,7 @@ import { useFocusFrame } from "../../style/focus-frame.js";
 import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin, type LayoutStyle, GlassSurface, isGlass, withInnerFill, GlassPane, paneStyle, paneRipple, useHugStyle } from "../../style/index.js";
 import { useHover, webHover } from "../../style/hover.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { MONO, type Variant } from "./code-block.styles.js";
 import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
@@ -623,6 +624,14 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // The overflowing scroller is a keyboard stop that sits flush inside the block's
     // clipping card, so the card draws its focus ring (src/style/focus-frame.tsx).
     const focusFrame = useFocusFrame();
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Frame, Filename, Code, Copy button, Line numbers, taken before the
+    // tree's AnatomyScope so the tab strip and the caller's code register nothing of their own.
+    const framePart = useAnatomyPart("Frame");
+    const filenamePart = useAnatomyPart("Filename");
+    const codePart = useAnatomyPart("Code");
+    const copyPart = useAnatomyPart("Copy button");
+    const lineNumbersPart = useAnatomyPart("Line numbers");
     const theme = useMaterialTheme({ static: true });
     const { tokens, dark } = theme;
 
@@ -849,6 +858,8 @@ export function createCodeBlock(skin: CodeBlockSkin) {
 
     const glass = isGlass(theme);
     return (
+      <AnatomyScope>
+      <AnatomyPart part={framePart}>
       <GlassSurface
         layer="content"
         testID={testID}
@@ -873,7 +884,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
             {tabList ? (
               <TabStrip tabs={tabList} active={active} onSelect={setActive} dark={false} />
             ) : (
-              <Text style={[skin.headerLabel(tokens), MONO]} numberOfLines={1}>
+              <Text ref={filenamePart?.ref} onLayout={filenamePart?.onLayout} style={[skin.headerLabel(tokens), MONO]} numberOfLines={1}>
                 {headerLeft}
               </Text>
             )}
@@ -884,7 +895,11 @@ export function createCodeBlock(skin: CodeBlockSkin) {
               {!tabList && filename && language && !props.unbadged ? (
                 <Text style={[skin.headerBadge(tokens), MONO]}>{language}</Text>
               ) : null}
-              {copy ? <CopyChip dark={false} floating={false} density={density} copied={copied} onPress={handleCopy} /> : null}
+              {copy ? (
+                <AnatomyPart part={copyPart}>
+                  <CopyChip dark={false} floating={false} density={density} copied={copied} onPress={handleCopy} />
+                </AnatomyPart>
+              ) : null}
             </View>
           </View>
         ) : null}
@@ -895,11 +910,16 @@ export function createCodeBlock(skin: CodeBlockSkin) {
             !hasHeader && attached ? skin.attachedTop : null,
           ]}
         >
-          <View style={ROW}>
+          <View ref={codePart?.ref} onLayout={codePart?.onLayout} style={ROW}>
             {gutter ? (
               <View style={[skin.gutterCol(density), skin.bodyPad(density)]}>
                 {Array.from({ length: visibleCount }, (_, i) => (
-                  <View key={i} style={[skin.gutterRow(density), rowMin, rowTint(i)]}>
+                  <View
+                    key={i}
+                    ref={i === 0 ? lineNumbersPart?.ref : undefined}
+                    onLayout={i === 0 ? lineNumbersPart?.onLayout : undefined}
+                    style={[skin.gutterRow(density), rowMin, rowTint(i)]}
+                  >
                     <Text style={[type, skin.gutterText(tokens), MONO]}>
                       {String(startLine + i)}
                     </Text>
@@ -954,6 +974,8 @@ export function createCodeBlock(skin: CodeBlockSkin) {
           </View>
         ) : null}
       </GlassSurface>
+      </AnatomyPart>
+      </AnatomyScope>
     );
   };
 }

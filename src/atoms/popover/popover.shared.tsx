@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
-import { type Text as RNText } from "react-native";
+import { cloneElement, isValidElement, useCallback, useContext, useEffect, useId, useRef, useState, type ReactElement, type ReactNode, type RefObject } from "react";
+import { StyleSheet, type Text as RNText } from "react-native";
 import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
@@ -11,6 +11,14 @@ import type { ColorTokens } from "../../style/tokens.js";
 import { EntranceReadinessContext } from "../../style/entrance-readiness.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { moveAccessibilityFocus } from "../../style/accessibility-focus.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+
+// The skin's beak (a View on the web, an Svg on iOS) registered as the anatomy Arrow part:
+// the part's handlers go on the node the skin returns, which keeps its own positioning.
+function withPart(node: ReactNode, part: AnatomyTarget | undefined): ReactNode {
+  return part && isValidElement(node) ? cloneElement(node as ReactElement<{ ref?: unknown; onLayout?: unknown }>, { ref: part.ref, onLayout: part.onLayout }) : node;
+}
 
 // The floating card's panel: the node focus enters (usePopoverFocus), named a dialog by
 // its title (or, with none, by its trigger's label) and described by its supporting line.
@@ -48,10 +56,10 @@ function PopoverFocusPanel({ focusRef, label, labelledBy, describedBy, scroll, c
 
 // The beak rides the edge facing the trigger on the side the card actually took: `top`
 // prefers above and flips below without room, and the default flips above the same way.
-function PopoverArrow({ skin, tokens }: { skin: PopoverSkin; tokens: ColorTokens }) {
+function PopoverArrow({ skin, tokens, part }: { skin: PopoverSkin; tokens: ColorTokens; part?: AnatomyTarget }) {
   const { side, centerX, cardWidth } = useOverlayAnchor();
   const placement: Placement = side === "above" ? "top" : "bottom";
-  return skin.arrow?.(tokens, placement, centerX != null && cardWidth != null ? { centerX, cardWidth } : undefined) ?? null;
+  return withPart(skin.arrow?.(tokens, placement, centerX != null && cardWidth != null ? { centerX, cardWidth } : undefined) ?? null, part);
 }
 
 // Shared Popover shell. The structure (a trigger paired with a floating card of
@@ -206,20 +214,34 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     const baseId = useId();
     const titleId = `${baseId}-title`;
     const descriptionId = `${baseId}-description`;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Trigger, Panel, Arrow, Title, Description, Action. Taken before
+    // the tree's AnatomyScope so the trigger and action Buttons and the caller's content
+    // register nothing of their own. The Panel is a pass-through fill of the card
+    // (GlassSurface has no ref; the floating card's is a non-scrolling decoration of it).
+    const triggerPart = useAnatomyPart("Trigger");
+    const panelPart = useAnatomyPart("Panel");
+    const arrowPart = useAnatomyPart("Arrow");
+    const titlePart = useAnatomyPart("Title");
+    const descriptionPart = useAnatomyPart("Description");
+    const actionPart = useAnatomyPart("Action");
+    const titleRef = useComposedRefs<RNText>(firstLineRef, titlePart?.ref);
+    const descriptionRef = useComposedRefs<RNText>(title == null ? firstLineRef : undefined, descriptionPart?.ref);
+    const panelFill = panelPart ? <View ref={panelPart.ref} onLayout={panelPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null;
 
     // The card body (heading, supporting line, custom content, optional action),
     // shared by the static inline panel and the floating overlay card.
     const panelBody = (
       <>
-        {title != null ? <Text ref={firstLineRef} nativeID={titleId} style={skin.title(tokens)}>{title}</Text> : null}
-        {description != null ? <Text ref={title == null ? firstLineRef : undefined} nativeID={descriptionId} style={skin.description(tokens)}>{description}</Text> : null}
+        {title != null ? <Text ref={titleRef} onLayout={titlePart?.onLayout} nativeID={titleId} style={skin.title(tokens)}>{title}</Text> : null}
+        {description != null ? <Text ref={descriptionRef} onLayout={descriptionPart?.onLayout} nativeID={descriptionId} style={skin.description(tokens)}>{description}</Text> : null}
         {children != null ? (
           // The custom-content slot, spaced from the title/description block above
           // it; when children are the panel's first content the margin is omitted.
           <View style={title != null || description != null ? [s.bodySlot, skin.sectionGap != null ? { marginTop: skin.sectionGap } : null] : null}>{children}</View>
         ) : null}
         {actionLabel != null ? (
-          <View style={[s.actionRow, skin.sectionGap != null ? { marginTop: skin.sectionGap } : null]}>
+          <View ref={actionPart?.ref} onLayout={actionPart?.onLayout} style={[s.actionRow, skin.sectionGap != null ? { marginTop: skin.sectionGap } : null]}>
             <Button primary small onPress={() => setOpen(false)}>
               {actionLabel}
             </Button>
@@ -234,12 +256,14 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     // outer layout.
     if (inline) {
       return (
-        <View testID={testID}>
-          <View style={style}>
-            <GlassSurface floating style={skin.card(tokens)}>{panelBody}</GlassSurface>
-            {(props.top || props.bottom) && skin.arrow != null && (surface !== "glass" || skin.arrowUnderGlass) ? skin.arrow(tokens, placement, undefined, props.alignEnd) : null}
+        <AnatomyScope>
+          <View testID={testID}>
+            <View style={style}>
+              <GlassSurface floating style={skin.card(tokens)}>{panelFill}{panelBody}</GlassSurface>
+              {(props.top || props.bottom) && skin.arrow != null && (surface !== "glass" || skin.arrowUnderGlass) ? withPart(skin.arrow(tokens, placement, undefined, props.alignEnd), arrowPart) : null}
+            </View>
           </View>
-        </View>
+        </AnatomyScope>
       );
     }
 
@@ -258,7 +282,7 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
           gap={compact ? 8 : skin.arrow != null && (surface !== "glass" || skin.arrowUnderGlass) ? skin.arrowGap ?? 4 : 4}
           cardStyle={[panelStyle, props.panelWidth == null ? { minWidth: triggerWidth } : null]}
           inlineStyle={s.cardFloating}
-          decoration={skin.arrow != null && (surface !== "glass" || skin.arrowUnderGlass) ? <PopoverArrow skin={skin} tokens={tokens} /> : null}
+          decoration={<>{panelFill}{skin.arrow != null && (surface !== "glass" || skin.arrowUnderGlass) ? <PopoverArrow skin={skin} tokens={tokens} part={arrowPart} /> : null}</>}
           // A card pinned open skips the hosted dismiss backdrop (it would only block the page).
           dismissable={dismissable}
           onCardMount={() => moveAccessibilityFocus(firstLineRef.current)}
@@ -286,7 +310,7 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
         </EscapeLayerProvider>
         </AnchoredOverlay>
     );
-    if (external) return floatingPanel;
+    if (external) return <AnatomyScope>{floatingPanel}</AnatomyScope>;
 
     // Triggered mode: a trigger button plus a floating card. The open card routes
     // through AnchoredOverlay (mirroring Dropdown): with an OverlayProvider it
@@ -297,22 +321,24 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     // whole overlay above later siblings in that no-provider fallback. The `style`
     // escape hatch composes the wrapper's outer layout.
     return (
-      <View
-        ref={triggerRef}
-        testID={testID}
-        style={[s.wrapper, open && !host ? s.wrapperLifted : null, style]}
-        onLayout={onTriggerLayout}
-      >
-        <View style={s.triggerWrap}>
-          <Button ref={buttonRef} outline small expanded={open} haspopup="dialog" onPress={() => setOpen(!open)}>
-            {trigger ?? "Open popover"}
-          </Button>
-        </View>
+      <AnatomyScope>
+        <View
+          ref={triggerRef}
+          testID={testID}
+          style={[s.wrapper, open && !host ? s.wrapperLifted : null, style]}
+          onLayout={onTriggerLayout}
+        >
+          <View ref={triggerPart?.ref} onLayout={triggerPart?.onLayout} style={s.triggerWrap}>
+            <Button ref={buttonRef} outline small expanded={open} haspopup="dialog" onPress={() => setOpen(!open)}>
+              {trigger ?? "Open popover"}
+            </Button>
+          </View>
 
-        {/* The card prefers the placement's side and flips when it lacks room; the
-            beak follows the side it took. */}
-        {floatingPanel}
-      </View>
+          {/* The card prefers the placement's side and flips when it lacks room; the
+              beak follows the side it took. */}
+          {floatingPanel}
+        </View>
+      </AnatomyScope>
     );
   };
 }

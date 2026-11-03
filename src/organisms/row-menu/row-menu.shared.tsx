@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHover } from "../../style/hover.js";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState, type Ref } from "react";
 import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useHugStyle, RippleClip, StyleSheet, cornerRadii, GlassSurface, type ViewStyle, type LayoutStyle, withInnerFill } from "../../style/index.js";
 import { useFillStyle, LayoutAxisProvider, ROW_AXIS } from "../../style/sizing.js";
 import { Icon } from "../../atoms/icon/icon.js";
@@ -10,6 +10,8 @@ import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.
 import { useSeamLimit } from "../../style/touch-seam.js";
 import { useRowFocus, type RowFocusProps } from "../../style/use-row-focus.js";
 import { focusInto } from "../../style/accessibility-focus.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
 // Shared RowMenu shell. The structure (the self-start anchor, the ⋯ icon-button
@@ -88,20 +90,37 @@ export function createRowMenu(skin: RowMenuSkin) {
     ripple: { color: string; borderless: boolean } | undefined;
     /** The menu's roving focus, or, for a link, the ref focus enters by. */
     focusProps: RowFocusProps | { ref: (node: View | null) => void };
+    /** The anatomy part this row carries (the first plain row, or the first destructive one). */
+    part?: AnatomyTarget;
   }
 
   // One menu row, its own component so the web's hover wash has a hook per row. A
   // disabled row is inert and takes the skin's disabled look: the web's muted ink, or
   // the platform's dim.
-  function MenuRow({ item, links, onPress, ripple, focusProps }: MenuRowProps) {
+  function MenuRow({ item, links, onPress, ripple, focusProps, part }: MenuRowProps) {
     const theme = useMaterialTheme({ layer: "dense" });
     const { tokens, dark } = theme;
     const disabled = !!item.disabled;
     const muted = disabled && skin.disabledRow.muted;
     const { hovered, target } = useHover(skin.itemHover != null && !disabled);
+    // The focus ref is a new function each render; composed as is, the row's node would
+    // detach and re-attach its anatomy part on every render, so inside a docs provider the
+    // part goes through a stable wrapper around the latest focus ref.
+    const focusRef = (focusProps as { ref?: Ref<View> }).ref;
+    const latestFocusRef = useRef(focusRef);
+    latestFocusRef.current = focusRef;
+    const stableFocusRef = useCallback((node: View | null) => {
+      const latest = latestFocusRef.current;
+      if (typeof latest === "function") latest(node);
+      else if (latest) (latest as { current: View | null }).current = node;
+    }, []);
+    const partRef = useComposedRefs(stableFocusRef, part?.ref);
+    const hostRef = part ? partRef : focusRef;
     return (
       <Pressable
         {...(focusProps as object)}
+        ref={hostRef}
+        onLayout={part?.onLayout}
         {...target}
         disabled={item.disabled}
         style={({ pressed }) => [
@@ -177,6 +196,14 @@ export function createRowMenu(skin: RowMenuSkin) {
   }
 
   return function RowMenu(props: RowMenuProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Trigger, Menu, Item, Destructive item. Item and Destructive item
+    // register on the first row of their kind; taken before the tree's AnatomyScope so the
+    // rows' Icons, Badges and the trigger's glyph register nothing of their own.
+    const triggerPart = useAnatomyPart("Trigger");
+    const menuPart = useAnatomyPart("Menu");
+    const itemPart = useAnatomyPart("Item");
+    const destructivePart = useAnatomyPart("Destructive item");
     // The trailing menu trigger is a 32pt (iOS) or 40dp (Android) glyph square: the
     // right visual weight beside a row of content, and under both platforms' minimum. The
     // slop is seeded from that fixed size, so it is in place before the first layout
@@ -213,11 +240,17 @@ export function createRowMenu(skin: RowMenuSkin) {
     const triggerRef = useRef<View>(null);
     // The ⋯ control itself, where focus returns on close.
     const controlRef = useRef<View>(null);
+    const controlHostRef = useComposedRefs(controlRef, triggerPart?.ref);
     const host = useOverlayHost();
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     // The menu's rows (src/style/use-row-focus.ts), or, as links, plain tab stops.
     const rows = useRowFocus(items.length);
     const linkNodes = useRef<(View | null)[]>([]);
+    const firstPlain = items.findIndex((item) => !item.destructive);
+    const firstDestructive = items.findIndex((item) => item.destructive);
+    const partOf = (item: RowMenuItem, index: number) => (item.destructive ? (index === firstDestructive ? destructivePart : undefined) : index === firstPlain ? itemPart : undefined);
+    // The Menu part's node: a pass-through fill of the card, which has no ref of its own.
+    const menuNode = menuPart ? <View ref={menuPart.ref} onLayout={menuPart.onLayout} style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]} /> : null;
     const firstEnabled = Math.max(0, items.findIndex((item) => !item.disabled));
     const enterMenu = () => (links ? focusInto(linkNodes.current[firstEnabled]) : rows.enter(firstEnabled));
 
@@ -229,141 +262,151 @@ export function createRowMenu(skin: RowMenuSkin) {
       // hairline-split link rows; the action menu its own panel holding the menu's rows.
       if (links) {
         return (
-          <GlassSurface layer="content" testID={testID} style={[skin.linkList(tokens), fill, style]}>
-            {items.map((item, index) => (
-              <LinkRow key={`${item.label}-${index}`} item={item} first={index === 0} onPress={() => onSelect?.(item, index)} />
-            ))}
-          </GlassSurface>
+          <AnatomyScope>
+            <GlassSurface layer="content" testID={testID} style={[skin.linkList(tokens), fill, style]}>
+              {items.map((item, index) => (
+                <LinkRow key={`${item.label}-${index}`} item={item} first={index === 0} onPress={() => onSelect?.(item, index)} />
+              ))}
+            </GlassSurface>
+          </AnatomyScope>
         );
       }
       return (
-        <GlassSurface layer="dense" testID={testID} style={[skin.menuCard(tokens), fill, style]}>
-          {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
-          <View accessibilityRole="menu" role="menu" accessibilityLabel={menuName} aria-label={menuName} style={skin.rowGap ? { gap: skin.rowGap } : undefined}>
+        <AnatomyScope>
+          <GlassSurface layer="dense" testID={testID} style={[skin.menuCard(tokens), fill, style]}>
+            {menuNode}
+            {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
+            <View accessibilityRole="menu" role="menu" accessibilityLabel={menuName} aria-label={menuName} style={skin.rowGap ? { gap: skin.rowGap } : undefined}>
+              {items.map((item, index) => (
+                <View key={`${item.label}-${index}`}>
+                  {item.separatorBefore ? <View style={skin.separator(tokens)} /> : null}
+                  <MenuRow
+                    item={item}
+                    links={false}
+                    part={partOf(item, index)}
+                    onPress={() => onSelect?.(item, index)}
+                    ripple={ripple}
+                    focusProps={rows.rowProps(index, () => {
+                      if (!item.disabled) onSelect?.(item, index);
+                    })}
+                  />
+                </View>
+              ))}
+            </View>
+          </GlassSurface>
+        </AnatomyScope>
+      );
+    }
+
+    return (
+      <AnatomyScope>
+        {/* Hugs its trigger inside a kit container; relative anchors the inline fallback menu. */}
+        <View
+          ref={triggerRef}
+          testID={testID}
+          style={[skin.anchor, hug, open && !host ? anchorLifted : null, style]}
+        >
+          {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
+              outline (a no-op on iOS/web). It is the trigger's own box, so it is what is
+              measured for the menu's width floor and what the pointer hovers. */}
+          <RippleClip shape={cornerRadii(skin.trigger)} hitSlop={hitSlop} onLayout={onTriggerLayout} {...triggerHoverTarget}>
+          <Pressable
+            ref={controlHostRef}
+            onLayout={triggerPart ? (event) => { target.onLayout?.(event); triggerPart.onLayout(); } : target.onLayout}
+            hitSlop={hitSlop}
+            style={({ pressed }) => [
+              skin.trigger,
+              skin.triggerEdge ? skin.triggerEdge(tokens) : null,
+              open && skin.triggerOpen ? skin.triggerOpen(tokens) : null,
+              triggerHovered && skin.triggerHover ? skin.triggerHover(tokens) : null,
+              // Android ripples; iOS dims via opacity; web tints the fill.
+              skin.triggerPressedOpacity != null && pressed ? { opacity: skin.triggerPressedOpacity } : null,
+              skin.ripple == null && skin.triggerPressedOpacity == null && pressed
+                ? skin.triggerPressed(tokens)
+                : null,
+            ]}
+            onPress={() => setOpen(!open)}
+            android_ripple={ripple}
+            accessibilityRole="button"
+            accessibilityLabel={triggerLabel}
+            accessibilityState={{ expanded: open }}
+            // RNW forwards neither accessibilityState nor aria-haspopup; alias both.
+            aria-expanded={open}
+            {...{ "aria-haspopup": "menu" }}
+          >
+            <Icon moreHorizontal size={skin.triggerIconSize} color={skin.triggerIconColor(tokens)} decorative />
+          </Pressable>
+          </RippleClip>
+
+          <AnchoredOverlay
+            onAccessibilityEscape={escapeScope.onAccessibilityEscape}
+            open={open}
+            onDismiss={() => setOpen(false)}
+            triggerRef={triggerRef}
+            gap={skin.menuGap}
+            cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, skin.menuMinWidth) }]}
+            inlineStyle={menuAnchor(skin.menuGap)}
+            // A row menu is a card of action rows, so under glass it takes the DENSE
+            // layer: the material under the model's densest tint. It opens over the
+            // very table row it acts on, which read straight through the functional
+            // layer's sheer tint.
+            dense
+            // A controlled `open` with no onOpenChange can never actually close, so
+            // the hosted dismiss backdrop is skipped (it would only block the page).
+            dismissable={props.open === undefined || onOpenChange !== undefined}
+            onCardMount={enterMenu}
+            dismissOnTab
+            returnFocusRef={controlRef}
+          >
+            <EscapeLayerProvider scope={escapeScope}>
+            {menuNode}
+            {/* RippleClip clips the Android bounded-ripple rows to the menu card's
+                rounded corners (a no-op on iOS/web; the card keeps no overflow). */}
+            <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
+            {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
+            {/* role="menu" gives the menuitem rows a valid ARIA parent. Without it each
+                row is an orphaned menuitem, which axe files as aria-required-parent and a
+                screen reader reads as a loose control rather than "menu, N items". The
+                rows are links rather than menu items when `links` is set, and a list of
+                links wants no menu role at all. Dropdown has carried this container since
+                it shipped; this one did not, and nothing noticed until the accessibility
+                sweep ran in a real browser. Named from the section label or the trigger,
+                so a screen-reader user hears WHICH menu opened; RNW forwards neither
+                alias on its own, hence both, per the kit's dual-a11y contract. */}
+            <View
+              {...(links
+                ? null
+                : { accessibilityRole: "menu" as const, role: "menu" as const, accessibilityLabel: menuName, "aria-label": menuName })}
+              style={skin.rowGap ? { gap: skin.rowGap } : undefined}
+            >
             {items.map((item, index) => (
               <View key={`${item.label}-${index}`}>
                 {item.separatorBefore ? <View style={skin.separator(tokens)} /> : null}
                 <MenuRow
                   item={item}
-                  links={false}
-                  onPress={() => onSelect?.(item, index)}
+                  links={links}
+                  part={partOf(item, index)}
+                  onPress={() => {
+                    onSelect?.(item, index);
+                    setOpen(false);
+                  }}
                   ripple={ripple}
-                  focusProps={rows.rowProps(index, () => {
-                    if (!item.disabled) onSelect?.(item, index);
-                  })}
+                  focusProps={links
+                    ? { ref: (node: View | null) => { linkNodes.current[index] = node; } }
+                    : rows.rowProps(index, () => {
+                      if (item.disabled) return;
+                      onSelect?.(item, index);
+                      setOpen(false);
+                    })}
                 />
               </View>
             ))}
-          </View>
-        </GlassSurface>
-      );
-    }
-
-    return (
-      // Hugs its trigger inside a kit container; relative anchors the inline fallback menu.
-      <View
-        ref={triggerRef}
-        testID={testID}
-        style={[skin.anchor, hug, open && !host ? anchorLifted : null, style]}
-      >
-        {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded
-            outline (a no-op on iOS/web). It is the trigger's own box, so it is what is
-            measured for the menu's width floor and what the pointer hovers. */}
-        <RippleClip shape={cornerRadii(skin.trigger)} hitSlop={hitSlop} onLayout={onTriggerLayout} {...triggerHoverTarget}>
-        <Pressable
-          ref={controlRef}
-          onLayout={target.onLayout}
-          hitSlop={hitSlop}
-          style={({ pressed }) => [
-            skin.trigger,
-            skin.triggerEdge ? skin.triggerEdge(tokens) : null,
-            open && skin.triggerOpen ? skin.triggerOpen(tokens) : null,
-            triggerHovered && skin.triggerHover ? skin.triggerHover(tokens) : null,
-            // Android ripples; iOS dims via opacity; web tints the fill.
-            skin.triggerPressedOpacity != null && pressed ? { opacity: skin.triggerPressedOpacity } : null,
-            skin.ripple == null && skin.triggerPressedOpacity == null && pressed
-              ? skin.triggerPressed(tokens)
-              : null,
-          ]}
-          onPress={() => setOpen(!open)}
-          android_ripple={ripple}
-          accessibilityRole="button"
-          accessibilityLabel={triggerLabel}
-          accessibilityState={{ expanded: open }}
-          // RNW forwards neither accessibilityState nor aria-haspopup; alias both.
-          aria-expanded={open}
-          {...{ "aria-haspopup": "menu" }}
-        >
-          <Icon moreHorizontal size={skin.triggerIconSize} color={skin.triggerIconColor(tokens)} decorative />
-        </Pressable>
-        </RippleClip>
-
-        <AnchoredOverlay
-          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
-          open={open}
-          onDismiss={() => setOpen(false)}
-          triggerRef={triggerRef}
-          gap={skin.menuGap}
-          cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, skin.menuMinWidth) }]}
-          inlineStyle={menuAnchor(skin.menuGap)}
-          // A row menu is a card of action rows, so under glass it takes the DENSE
-          // layer: the material under the model's densest tint. It opens over the
-          // very table row it acts on, which read straight through the functional
-          // layer's sheer tint.
-          dense
-          // A controlled `open` with no onOpenChange can never actually close, so
-          // the hosted dismiss backdrop is skipped (it would only block the page).
-          dismissable={props.open === undefined || onOpenChange !== undefined}
-          onCardMount={enterMenu}
-          dismissOnTab
-          returnFocusRef={controlRef}
-        >
-          <EscapeLayerProvider scope={escapeScope}>
-          {/* RippleClip clips the Android bounded-ripple rows to the menu card's
-              rounded corners (a no-op on iOS/web; the card keeps no overflow). */}
-          <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
-          {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
-          {/* role="menu" gives the menuitem rows a valid ARIA parent. Without it each
-              row is an orphaned menuitem, which axe files as aria-required-parent and a
-              screen reader reads as a loose control rather than "menu, N items". The
-              rows are links rather than menu items when `links` is set, and a list of
-              links wants no menu role at all. Dropdown has carried this container since
-              it shipped; this one did not, and nothing noticed until the accessibility
-              sweep ran in a real browser. Named from the section label or the trigger,
-              so a screen-reader user hears WHICH menu opened; RNW forwards neither
-              alias on its own, hence both, per the kit's dual-a11y contract. */}
-          <View
-            {...(links
-              ? null
-              : { accessibilityRole: "menu" as const, role: "menu" as const, accessibilityLabel: menuName, "aria-label": menuName })}
-            style={skin.rowGap ? { gap: skin.rowGap } : undefined}
-          >
-          {items.map((item, index) => (
-            <View key={`${item.label}-${index}`}>
-              {item.separatorBefore ? <View style={skin.separator(tokens)} /> : null}
-              <MenuRow
-                item={item}
-                links={links}
-                onPress={() => {
-                  onSelect?.(item, index);
-                  setOpen(false);
-                }}
-                ripple={ripple}
-                focusProps={links
-                  ? { ref: (node: View | null) => { linkNodes.current[index] = node; } }
-                  : rows.rowProps(index, () => {
-                    if (item.disabled) return;
-                    onSelect?.(item, index);
-                    setOpen(false);
-                  })}
-              />
             </View>
-          ))}
-          </View>
-          </RippleClip>
-        </EscapeLayerProvider>
-        </AnchoredOverlay>
-      </View>
+            </RippleClip>
+          </EscapeLayerProvider>
+          </AnchoredOverlay>
+        </View>
+      </AnatomyScope>
     );
   };
 }

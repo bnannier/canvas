@@ -12,6 +12,7 @@ import { actionFill, actionInk } from "../../style/action.js";
 import * as s from "./button-group.styles.js";
 import { GroupGlass, GlassSelection } from "./button-group-glass.js";
 import { paneRipple, paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 
 // Shared ButtonGroup shell. The structure (the four kinds, their layout, the
 // uncontrolled stepper position, the split dropdown), the accessibility, the
@@ -362,9 +363,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     onPressIn?: () => void;
     onPressOut?: () => void;
     onLayout?: (event: LayoutChangeEvent) => void;
+    /** The anatomy part this segment draws, when it is the one a docs specimen numbers. */
+    part?: AnatomyTarget;
   }
 
-  function Segment({ label, icon, display, attached, iconOnly, selected, movingSelection, minimumLabelWidth, onLabelLayout, steadyPress, selectable, corners, leading, standalone, block, size, density = "default", disabled, onPress, onPressIn, onPressOut, onLayout }: SegmentProps) {
+  function Segment({ label, icon, display, attached, iconOnly, selected, movingSelection, minimumLabelWidth, onLabelLayout, steadyPress, selectable, corners, leading, standalone, block, size, density = "default", disabled, onPress, onPressIn, onPressOut, onLayout, part }: SegmentProps) {
     const theme = useMaterialTheme({ layer: "control" });
     const { tokens, surface } = theme;
     const glass = surface === "glass";
@@ -411,6 +414,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const showIconAlone = iconOnly && icon != null;
     const button = (
       <Pressable
+        ref={part?.ref}
+        onLayout={part?.onLayout}
         // An attached cell has no press look of its own (the hand-off's), only its wash.
         style={({ pressed }) => [paneStyle(theme, container), !steadyPress && !att && skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
         onPress={onPress}
@@ -716,6 +721,11 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
 
   return function ButtonGroup(props: ButtonGroupProps) {
     const { items = DEFAULT_ITEMS, onSelect, disabled, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Track, Segment, Active thumb.
+    const trackPart = useAnatomyPart("Track");
+    const segmentPart = useAnatomyPart("Segment");
+    const thumbPart = useAnatomyPart("Active thumb");
     const theme = useMaterialTheme({ layer: "control" });
     const { tokens, surface } = theme;
     const glass = surface === "glass";
@@ -850,6 +860,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // width. A content-sized flex row otherwise adds unequal intrinsic labels
     // before dividing the space, making Dark/Light about 2 px too narrow.
     const minimumLabelWidth = Math.max(0, ...Object.values(labelWidths));
+    // The Segment part is the first segment that is not the active one, as the hand-off numbers it.
+    const firstInactive = items.findIndex((_, i) => i !== active);
     const row = items.map((item, i) => (
       <Segment
         key={`${itemLabelOf(item)}-${i}`}
@@ -877,6 +889,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         onPressIn={glass ? () => setPressedSegment(i) : undefined}
         onPressOut={glass ? () => setPressedSegment((current) => current === i ? null : current) : undefined}
         onLayout={segmentMeasurements[i]}
+        part={i === active ? thumbPart : i === firstInactive ? segmentPart : undefined}
       />
     ));
     // The segments are a single mutually-exclusive control, so the row is a
@@ -888,7 +901,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const segmentCorners = attached ? { borderRadius: 0 } : rounded ? { borderRadius: 9999 } : cornerRadii(skin.joinCorners(pressedSegment ?? active, count));
     const selectionCorners = Object.keys(segmentCorners).length > 0 ? segmentCorners : undefined;
     return (
-      <View collapsable={false} accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[paneStyle(theme, wrap ?? s.segmentedContainer), sizing, props.start ? { alignSelf: "flex-start" } : null, style]} testID={testID}>
+      <AnatomyScope>
+      <View ref={trackPart?.ref} onLayout={trackPart?.onLayout} collapsable={false} accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[paneStyle(theme, wrap ?? s.segmentedContainer), sizing, props.start ? { alignSelf: "flex-start" } : null, style]} testID={testID}>
         {/* The track's material fills its whole footprint on the track's own corners (GP-1). */}
         {glass ? <GroupGlass corners={wrap ? cornerRadii(wrap) : undefined} testID={testID ? `${testID}-glass` : undefined} /> : null}
         {rounded && !glass && active >= 0 && active < count ? (
@@ -904,6 +918,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         ) : null}
         {row}
       </View>
+      </AnatomyScope>
     );
   };
 }

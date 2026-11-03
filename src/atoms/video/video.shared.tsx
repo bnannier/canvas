@@ -2,6 +2,7 @@ import type * as ExpoVideoTypes from "expo-video";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { type ImageSourcePropType, type StyleProp, type ViewStyle } from "react-native";
 import { devWarn } from "../../style/dev-warn.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { inertProps } from "../../style/inert.js";
 import { INSET_FOCUS_RING, PINNED_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
@@ -153,6 +154,13 @@ interface PlayerProps {
 
 function Player({ api, props, skin, kit, nativeControls, frame, picture, label }: PlayerProps) {
   const { source, poster, autoplay, loop, muted, controls, testID } = props;
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Frame, Poster, Play control, Scrubber, taken before the tree's
+  // AnatomyScope so the poster Image, the emblem and the bar's controls register nothing.
+  const framePart = useAnatomyPart("Frame");
+  const posterPart = useAnatomyPart("Poster");
+  const playPart = useAnatomyPart("Play control");
+  const scrubberPart = useAnatomyPart("Scrubber");
   const { tokens } = useTheme();
   const reducedMotion = useReducedMotion();
   const focusRing = useFocusRingStyle();
@@ -256,6 +264,7 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
       onToggleMute={toggleMute}
       onFullscreen={fullscreen}
       style={skin.bar(tokens)}
+      scrubberPart={scrubberPart}
       Button={kit.Button}
       Slider={kit.Slider}
     />
@@ -294,10 +303,23 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
   // keys draw nothing without a width.
   const surfaceStyle = platformControls ? [skin.layer, focusRing, pinnedFocus ? PINNED_FOCUS_RING : null, INSET_FOCUS_RING] : skin.layer;
 
+  const glyph = failed ? (
+    <Emblem circle large destructive>
+      <Icon circleAlert />
+    </Emblem>
+  ) : loading ? (
+    <Spinner large primary />
+  ) : playing ? null : (
+    <Emblem circle large primary>
+      <Icon play />
+    </Emblem>
+  );
+
   return (
-    <View style={frame} testID={testID}>
+    <AnatomyScope>
+    <View ref={framePart?.ref} onLayout={framePart?.onLayout} style={frame} testID={testID}>
       <View style={picture}>
-        <View style={skin.layer} {...surfaceLayer}>
+        <View ref={posterPart?.ref} onLayout={posterPart?.onLayout} style={skin.layer} {...surfaceLayer}>
           <api.VideoView
             ref={view}
             player={player}
@@ -320,22 +342,13 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
             {...overlayAccessibility}
             testID={testID ? `${testID}-toggle` : undefined}
           >
-            {failed ? (
-              <Emblem circle large destructive>
-                <Icon circleAlert />
-              </Emblem>
-            ) : loading ? (
-              <Spinner large primary />
-            ) : playing ? null : (
-              <Emblem circle large primary>
-                <Icon play />
-              </Emblem>
-            )}
+            {glyph != null ? <AnatomyPart part={playPart}>{glyph}</AnatomyPart> : null}
           </Pressable>
         )}
       </View>
       {bar}
     </View>
+    </AnatomyScope>
   );
 }
 

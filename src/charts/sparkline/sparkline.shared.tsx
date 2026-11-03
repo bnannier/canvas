@@ -3,6 +3,7 @@ import Svg, { Circle, Path } from "react-native-svg";
 import { View, useTheme, alpha, statusColors, devWarn, FILL, type ColorTokens, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { type SparklineSkin } from "./sparkline.styles.js";
 import { monotonePath } from "../shared/chart-math.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 
 // The v4 hand-off's line (`K.def('sparkline')`): a smooth 2 px stroke in the tone over a
 // flat .18 wash of it, closed to the strip's foot, and an r 3 end marker.
@@ -105,6 +106,11 @@ const REST_ALPHA = 0.32;
 export function createSparkline(skin: SparklineSkin) {
   return function Sparkline(props: SparklineProps) {
     const { values, accessibilityLabel, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Line, Fill, End marker (the line variant draws all three; the bar strip is the Line and its latest bar the End marker).
+    const linePart = useAnatomyPart("Line");
+    const fillPart = useAnatomyPart("Fill");
+    const endPart = useAnatomyPart("End marker");
     const { tokens } = useTheme();
     const tone = toneOf(props);
     const plot = skin.height[sizeOf(props)];
@@ -178,13 +184,19 @@ export function createSparkline(skin: SparklineSkin) {
       const areaPath =
         points.length > 0 ? `${linePath} L${points[points.length - 1].x},${plot} L${points[0].x},${plot} Z` : "";
       const marker = accentIndex >= 0 ? points[accentIndex] : null;
+      // The wash's and the end marker's part boxes: measurable views over the drawn
+      // geometry (SVG shapes have no layout on native), the wash from the line's highest
+      // point down to the strip's foot and the marker's own disc.
+      const washTop = points.length > 0 ? Math.min(...points.map((pt) => pt.y)) : 0;
       return (
+        <AnatomyScope>
         <View
+          ref={linePart?.ref}
           role="img"
           accessibilityLabel={label}
           aria-label={label}
           testID={testID}
-          onLayout={(e) => setLineWidth(e.nativeEvent.layout.width)}
+          onLayout={withPartLayout(linePart, (e) => setLineWidth(e.nativeEvent.layout.width))}
           style={[root, style]}
         >
           {lineWidth > 0 && values.length > 0 ? (
@@ -194,12 +206,18 @@ export function createSparkline(skin: SparklineSkin) {
               {marker ? <Circle cx={marker.x} cy={marker.y} r={dotR} fill={accent} /> : null}
             </Svg>
           ) : null}
+          {fillPart && lineWidth > 0 && values.length > 1 ? <View ref={fillPart.ref} onLayout={fillPart.onLayout} style={[{ position: "absolute", left: 0, top: washTop, width: lineWidth, height: plot - washTop }, { pointerEvents: "none" }]} /> : null}
+          {endPart && lineWidth > 0 && marker ? <View ref={endPart.ref} onLayout={endPart.onLayout} style={[{ position: "absolute", left: marker.x - dotR, top: marker.y - dotR, width: dotR * 2, height: dotR * 2 }, { pointerEvents: "none" }]} /> : null}
         </View>
+        </AnatomyScope>
       );
     }
 
     return (
+      <AnatomyScope>
       <View
+        ref={linePart?.ref}
+        onLayout={linePart?.onLayout}
         role="img"
         accessibilityLabel={label}
         aria-label={label}
@@ -211,6 +229,9 @@ export function createSparkline(skin: SparklineSkin) {
           return (
             <View
               key={i}
+              // The latest bar is the strip's end marker (the line variant's disc).
+              ref={i === accentIndex ? endPart?.ref : undefined}
+              onLayout={i === accentIndex ? endPart?.onLayout : undefined}
               style={{
                 flexGrow: 1,
                 flexShrink: 1,
@@ -224,6 +245,7 @@ export function createSparkline(skin: SparklineSkin) {
           );
         })}
       </View>
+      </AnatomyScope>
     );
   };
 }

@@ -15,6 +15,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Primitive pedagogy reproduces cv-kit-inputs.js's 36/88px raw input, 2px inset, literal theme ink and focus-accent underline through the real scoped TextInput on every platform.",
   },
   {
+    file: "docs/src/ui/detail/reference-specimens.tsx", owner: "TextInputSpecimen", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "The Anatomy figure's Placeholder part: the native input paints its placeholder inside its own box, so an empty, untouchable view laid over the field measures it; it paints nothing and is drawn only inside an AnatomyProvider while the field is empty.",
+  },
+  {
     file: "docs/src/ui/detail/reference-specimens.tsx", owner: "ViewSpecimen", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderRadius", "borderWidth", "gap", "minWidth", "padding"], occurrences: 1,
     reason: "The hand-off's raw View demonstration: the actual primitive's 220px minimum panel, 16px padding, 8px gap, 12px corners and sf2 surface; not a substitute kit control.",
   },

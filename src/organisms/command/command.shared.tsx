@@ -1,6 +1,6 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useId, useRef, useState } from "react";
-import { type TextInput as RNTextInput, type TextStyle, type TextInputProps } from "react-native";
+import { StyleSheet, type TextInput as RNTextInput, type TextStyle, type TextInputProps } from "react-native";
 import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { FocusFrameContext, useFocusFrame } from "../../style/focus-frame.js";
@@ -12,6 +12,7 @@ import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
 import { LayoutAxisProvider, ROW_AXIS } from "../../style/sizing.js";
 import { type CommandSkin } from "./command.styles.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import * as s from "./command.styles.js";
 
 // Shared Command shell. The structure, the public boolean-prop API, the data
@@ -177,6 +178,19 @@ export function createCommand(skin: CommandSkin) {
     // The bare card frames its result list's keyboard focus, as an anchored card does in
     // trigger mode: the list sits flush inside the card's clip (src/style/focus-frame.tsx).
     const focusFrame = useFocusFrame();
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Panel, Search field, Group label, Item, Active item, Footer hints.
+    // Taken before the tree's AnatomyScope so the rows' Icons and the Kbd caps register
+    // nothing of their own. The Panel is a pass-through fill of the card (GlassSurface has
+    // no ref; the anchored card's is a non-scrolling decoration of it); Group label and
+    // Item go on the first heading and the first row that is not the active one.
+    const panelPart = useAnatomyPart("Panel");
+    const searchPart = useAnatomyPart("Search field");
+    const groupLabelPart = useAnatomyPart("Group label");
+    const itemPart = useAnatomyPart("Item");
+    const activePart = useAnatomyPart("Active item");
+    const footerPart = useAnatomyPart("Footer hints");
+    const panelFill = panelPart ? <View ref={panelPart.ref} onLayout={panelPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null;
 
     // Escape dismisses the open TRIGGER-mode palette via browser Escape or native accessibility escape. The
     // bare inline card is left alone: it has no trigger to reopen it, so escape
@@ -213,6 +227,23 @@ export function createCommand(skin: CommandSkin) {
     const fieldName = props.accessibilityLabel?.trim() || placeholder.trim() || "Search commands";
     const searchRef = useRef<RNTextInput>(null);
     const results = useActiveOptionScroll(open ? activeId : undefined, JSON.stringify(visibleGroups), open);
+    // One ref callback per row and anatomy part, kept across renders: an inline callback
+    // detaches and re-attaches on every render (the highlight following hover), which
+    // would drop the row's part from the registry until its next layout.
+    const rowRefCache = useRef(new Map<string, (node: View | null) => void>());
+    const rowRef = (id: string, partName: string, part: AnatomyTarget | undefined) => {
+      const key = part ? `${id}|${partName}` : id;
+      let callback = rowRefCache.current.get(key);
+      if (!callback) {
+        callback = (node) => {
+          part?.ref(node);
+          if (node) results.rowRefs.current.set(id, node);
+          else results.rowRefs.current.delete(id);
+        };
+        rowRefCache.current.set(key, callback);
+      }
+      return callback;
+    };
     // Defer until parent overlay effects have captured the opener. Passing the
     // host input's autoFocus would focus during commit, before that capture.
     useEffect(() => {
@@ -275,6 +306,8 @@ export function createCommand(skin: CommandSkin) {
     // Walk a flat counter across every visible group so `active` indexes the
     // whole filtered list.
     let flat = -1;
+    const firstHeading = visibleGroups.findIndex((g) => g.heading != null);
+    const firstItem = activeIndex === 0 ? 1 : 0;
 
     // The card's inner content (search row + grouped result rows + optional
     // footer), WITHOUT the surface wrapper: the bare card wraps it in its own
@@ -284,7 +317,7 @@ export function createCommand(skin: CommandSkin) {
     // color emoji (which ignores tint and renders full-color on device).
     const cardContent = (
       <>
-        <View accessibilityRole="search" style={skin.searchRow(tokens, searchFocused)}>
+        <View ref={searchPart?.ref} onLayout={searchPart?.onLayout} accessibilityRole="search" style={skin.searchRow(tokens, searchFocused)}>
           {/* The row publishes its axis, so the `esc` cap (a HUG component) centres on the
               row's cross axis instead of pinning to its top in a stretching column. */}
           <LayoutAxisProvider value={ROW_AXIS}>
@@ -327,20 +360,22 @@ export function createCommand(skin: CommandSkin) {
         <View ref={results.listContentRef} collapsable={false} nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} style={total > 0 ? s.resultsContent : undefined}>
         {visibleGroups.map((group, gi) => (
           <View key={`group-${gi}`} role="group" aria-label={group.heading ?? undefined}>
-            {group.heading != null ? <Text style={s.groupHeading(tokens)}>{group.heading}</Text> : null}
+            {group.heading != null ? <Text ref={gi === firstHeading ? groupLabelPart?.ref : undefined} onLayout={gi === firstHeading ? groupLabelPart?.onLayout : undefined} style={s.groupHeading(tokens)}>{group.heading}</Text> : null}
             {group.items.map((item, ii) => {
               flat += 1;
               const index = flat;
               const isActive = index === activeIndex;
+              const rowPartName = isActive ? "Active item" : index === firstItem ? "Item" : "";
+              const rowPart = isActive ? activePart : index === firstItem ? itemPart : undefined;
               return (
                 <Pressable
                   key={`item-${gi}-${ii}`}
                   nativeID={optionId(index)}
-                  ref={(node) => {
-                    if (node) results.rowRefs.current.set(optionId(index), node);
-                    else results.rowRefs.current.delete(optionId(index));
+                  ref={rowRef(optionId(index), rowPartName, rowPart)}
+                  onLayout={() => {
+                    results.onRowLayout(optionId(index));
+                    rowPart?.onLayout();
                   }}
-                  onLayout={() => results.onRowLayout(optionId(index))}
                   style={({ pressed }) => [
                     skin.rowBase,
                     // The active row always takes the brand accent highlight. The
@@ -382,7 +417,7 @@ export function createCommand(skin: CommandSkin) {
         </OverlayScrollView>
 
         {footer ? (
-          <View style={s.footerBar(tokens)}>
+          <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} style={s.footerBar(tokens)}>
             <Text style={s.footerText(tokens)}>↑↓ move</Text>
             <Text style={s.footerText(tokens)}>↵ open</Text>
             <Text style={s.footerText(tokens)}>esc close</Text>
@@ -395,13 +430,16 @@ export function createCommand(skin: CommandSkin) {
     // early return above already gated it on `open`, so it renders open here; the
     // per-OS `cardShape` layers the iOS continuous corner over the shared card.
     if (!trigger && props.embedded) {
-      return <View testID={testID} style={s.embedded}>{cardContent}</View>;
+      return <AnatomyScope><View ref={panelPart?.ref} onLayout={panelPart?.onLayout} testID={testID} style={s.embedded}>{cardContent}</View></AnatomyScope>;
     }
     if (!trigger) {
       return (
-        <GlassSurface floating testID={testID} style={[s.card(tokens), skin.cardShape, focusFrame.ring()]}>
-          <FocusFrameContext.Provider value={focusFrame.target}>{cardContent}</FocusFrameContext.Provider>
-        </GlassSurface>
+        <AnatomyScope>
+          <GlassSurface floating testID={testID} style={[s.card(tokens), skin.cardShape, focusFrame.ring()]}>
+            {panelFill}
+            <FocusFrameContext.Provider value={focusFrame.target}>{cardContent}</FocusFrameContext.Provider>
+          </GlassSurface>
+        </AnatomyScope>
       );
     }
 
@@ -414,6 +452,7 @@ export function createCommand(skin: CommandSkin) {
     // anchor (s.cardFloating). The wrapper still lifts its own stacking context
     // while open for that inline-fallback case.
     return (
+      <AnatomyScope>
       <View ref={triggerRef} testID={testID} style={[s.triggerWrapper, open && !host ? s.triggerWrapperLifted : null, style]}>
         <Pressable
           ref={controlRef}
@@ -444,12 +483,14 @@ export function createCommand(skin: CommandSkin) {
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
+          decoration={panelFill}
         >
           <EscapeLayerProvider scope={escapeScope}>
           {cardContent}
         </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>
+      </AnatomyScope>
     );
   };
 }

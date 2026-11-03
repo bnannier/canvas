@@ -1,6 +1,7 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   Animated,
@@ -148,7 +149,7 @@ const BLINK = keyframes([
   [1, 0],
 ]);
 
-function Caret({ blink, style }: { blink: boolean; style: ViewStyle }) {
+function Caret({ blink, style, part }: { blink: boolean; style: ViewStyle; part?: AnatomyTarget }) {
   const opacity = useRef(new Animated.Value(1)).current;
   const reduced = useReducedMotion();
   const active = blink && !reduced;
@@ -162,8 +163,21 @@ function Caret({ blink, style }: { blink: boolean; style: ViewStyle }) {
     loop.start();
     return () => loop.stop();
   }, [active, opacity]);
-  return <Animated.View style={active ? [style, { opacity }] : style} />;
+  const fill = active ? [style, { opacity }] : style;
+  if (part == null) return <Animated.View style={fill} />;
+  // An Animated host's ref is replaced on every render (react-native's useAnimatedProps
+  // keys it on the props), so the anatomy "Caret" is measured on a steady View drawing the
+  // bar's box, the Animated bar filling it.
+  return (
+    <View ref={part.ref} onLayout={part.onLayout} style={[style, CARET_BOX]}>
+      <Animated.View style={[fill, CARET_FILL]} />
+    </View>
+  );
 }
+
+// The measured caret's box keeps the bar's size and drops its ink, which the bar inside draws.
+const CARET_BOX: ViewStyle = { backgroundColor: "transparent" };
+const CARET_FILL: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, width: "auto", height: "auto" };
 
 /** Build an InputOTP component from a platform skin. */
 export function createInputOTP(skin: InputOTPSkin) {
@@ -255,6 +269,14 @@ export function createInputOTP(skin: InputOTPSkin) {
       reportStrayCaret();
     };
 
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Cell, Digit, Caret, Group gap, each on its first instance (the
+    // first cell, the first digit, the caret, the first dash), as the hand-off numbers them.
+    const cellPart = useAnatomyPart("Cell");
+    const digitPart = useAnatomyPart("Digit");
+    const caretPart = useAnatomyPart("Caret");
+    const gapPart = useAnatomyPart("Group gap");
+
     const gap = skin.gap(size);
     // A group size below 1 would put a separator before every cell (and 0 would divide
     // by zero), so anything under 1 renders as one unbroken run.
@@ -271,6 +293,7 @@ export function createInputOTP(skin: InputOTPSkin) {
     }
 
     return (
+      <AnatomyScope>
       <View
         testID={testID}
         style={[hug, disabled ? { opacity: skin.disabledOpacity } : null, style]}
@@ -290,6 +313,8 @@ export function createInputOTP(skin: InputOTPSkin) {
                 {r > 0 ? (
                   // The dash between two runs.
                   <Text
+                    ref={r === 1 ? gapPart?.ref : undefined}
+                    onLayout={r === 1 ? gapPart?.onLayout : undefined}
                     style={[skin.separator(tokens, size), { pointerEvents: "none" }]}
                     accessibilityElementsHidden
                     importantForAccessibility="no-hide-descendants"
@@ -309,6 +334,8 @@ export function createInputOTP(skin: InputOTPSkin) {
                     return (
                       <View
                         key={index}
+                        ref={index === 0 ? cellPart?.ref : undefined}
+                        onLayout={index === 0 ? cellPart?.onLayout : undefined}
                         style={[
                           paneStyle(theme, cellShape, active),
                           glass ? { backgroundColor: "transparent", borderColor: active ? cellShape.borderColor : "transparent" } : null,
@@ -323,9 +350,9 @@ export function createInputOTP(skin: InputOTPSkin) {
                           // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
                           // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads
                           // at secure-entry weight (the iOS/Android password-dot idiom).
-                          <Text style={skin.digit(tokens, size)}>{masked ? "●" : char}</Text>
+                          <Text ref={index === 0 ? digitPart?.ref : undefined} onLayout={index === 0 ? digitPart?.onLayout : undefined} style={skin.digit(tokens, size)}>{masked ? "●" : char}</Text>
                         ) : showCaret ? (
-                          <Caret blink={skin.caretBlink} style={skin.caret(tokens, size)} />
+                          <Caret blink={skin.caretBlink} style={skin.caret(tokens, size)} part={caretPart} />
                         ) : null}
                       </View>
                     );
@@ -394,6 +421,7 @@ export function createInputOTP(skin: InputOTPSkin) {
           />
         </View>
       </View>
+      </AnatomyScope>
     );
   });
   InputOTP.displayName = "InputOTP";

@@ -8,6 +8,7 @@ import { type ChartSeries, type ChartSkin } from "../shared/types.js";
 import { Defs, GlowFilter } from "../shared/chart-glow.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartLegend } from "../shared/chart-legend.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { estimateTextWidth, formatCompact, niceTicks, polarPoint, polygonPath, seriesAccessibleName } from "../shared/chart-math.js";
 
 // Shared RadarChart shell. A polygonal multi-axis comparison: concentric
@@ -78,6 +79,13 @@ const LABEL_W = 84;
 export function createRadarChart(skin: ChartSkin) {
   return function RadarChart(props: RadarChartProps) {
     const { axes, series, title, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Series, Axis labels, Legend, Grid.
+    const framePart = useAnatomyPart("Chart frame");
+    const seriesPart = useAnatomyPart("Series");
+    const axisPart = useAnatomyPart("Axis labels");
+    const legendPart = useAnatomyPart("Legend");
+    const gridPart = useAnatomyPart("Grid");
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
@@ -128,7 +136,20 @@ export function createRadarChart(skin: ChartSkin) {
     const cx = width / 2;
     const cy = compact ? 95 + compactScale : plotHeight / 2;
 
+    // The Series and Grid part boxes: measurable views over the first polygon and the
+    // innermost ring (SVG paths have no layout on native), each the bounds of the points
+    // it is drawn through.
+    const boundsOf = (pts: { x: number; y: number }[]) => {
+      const xs = pts.map((pt) => pt.x);
+      const ys = pts.map((pt) => pt.y);
+      const left = Math.min(...xs);
+      const top = Math.min(...ys);
+      return { position: "absolute" as const, left, top, width: Math.max(...xs) - left, height: Math.max(...ys) - top };
+    };
+    const innerRing = ticks.find((t) => t > 0);
+
     return (
+      <AnatomyScope>
       <View
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
@@ -149,7 +170,8 @@ export function createRadarChart(skin: ChartSkin) {
           role="img"
           accessibilityLabel={name}
           aria-label={name}
-          onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+          ref={framePart?.ref}
+          onLayout={withPartLayout(framePart, (e) => setWidth(e.nativeEvent.layout.width))}
           style={{ height: plotHeight }}
         >
           {width > 0 && axes.length >= MIN_AXES ? (
@@ -192,6 +214,8 @@ export function createRadarChart(skin: ChartSkin) {
                   );
                 })}
               </Svg>
+              {seriesPart && series.length > 0 ? <View ref={seriesPart.ref} onLayout={seriesPart.onLayout} style={[boundsOf(axes.map((_, i) => polarPoint(cx, cy, rOf(finite(series[0].values[i])), angleOf(i)))), { pointerEvents: "none" }]} /> : null}
+              {gridPart && !props.hideGrid && innerRing != null ? <View ref={gridPart.ref} onLayout={gridPart.onLayout} style={[boundsOf(axes.map((_, i) => polarPoint(cx, cy, rOf(innerRing), angleOf(i)))), { pointerEvents: "none" }]} /> : null}
               {/* Spoke labels: real RN Text just beyond the outer ring,
                   centered on the spoke's direction. */}
               {axes.map((axis, i) => {
@@ -204,6 +228,8 @@ export function createRadarChart(skin: ChartSkin) {
                 return (
                   <Text
                     key={i}
+                    ref={i === 0 ? axisPart?.ref : undefined}
+                    onLayout={i === 0 ? axisPart?.onLayout : undefined}
                     numberOfLines={1}
                     style={{
                       position: "absolute",
@@ -224,9 +250,10 @@ export function createRadarChart(skin: ChartSkin) {
         </View>
         {/* Identity legend for multiple series, outside the img subtree. */}
         {multi && !props.hideLegend ? (
-          <View style={{ marginTop: compact ? 2 : 0 }}><ChartLegend horizontal items={series.map((sr, i) => ({ label: sr.label, color: colorOf(i) }))} /></View>
+          <View ref={legendPart?.ref} onLayout={legendPart?.onLayout} style={{ marginTop: compact ? 2 : 0 }}><ChartLegend horizontal items={series.map((sr, i) => ({ label: sr.label, color: colorOf(i) }))} /></View>
         ) : null}
       </View>
+      </AnatomyScope>
     );
   };
 }

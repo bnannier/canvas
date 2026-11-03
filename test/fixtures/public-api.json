@@ -11,6 +11,8 @@
   "AlertDialog": "value",
   "AlertDialogProps": "type",
   "AlertProps": "type",
+  "AnatomyPart": "value",
+  "AnatomyPartProps": "type",
   "AnatomyProvider": "value",
   "AnatomyProviderProps": "type",
   "AnatomyRect": "type",

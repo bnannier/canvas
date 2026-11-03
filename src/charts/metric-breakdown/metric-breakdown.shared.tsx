@@ -22,6 +22,7 @@ import { Sparkline } from "../sparkline/sparkline.js";
 import { Chip as WebChip } from "../../atoms/chip/chip.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared MetricBreakdown shell. The decomposed-metric dashboard card: a
 // preformatted headline value under its caption, an optional secondary rate
@@ -153,6 +154,13 @@ export function createMetricBreakdown(
 ) {
   const Chip = parts.Chip ?? WebChip;
   return function MetricBreakdown(props: MetricBreakdownProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Frame, Value, Rate, Breakdown rows. They are taken before the
+    // tree's AnatomyScope so the Sparkline and Chips inside it register nothing.
+    const framePart = useAnatomyPart("Frame");
+    const valuePart = useAnatomyPart("Value");
+    const ratePart = useAnatomyPart("Rate");
+    const rowsPart = useAnatomyPart("Breakdown rows");
     const {
       value,
       label,
@@ -204,7 +212,10 @@ export function createMetricBreakdown(
       : s.CHART_LOOK.gap.default;
 
     return (
+      <AnatomyScope>
       <View
+        ref={framePart?.ref}
+        onLayout={framePart?.onLayout}
         role="group"
         accessibilityLabel={label}
         aria-label={label}
@@ -242,6 +253,8 @@ export function createMetricBreakdown(
               </Text>
             )}
             <Text
+              ref={valuePart?.ref}
+              onLayout={valuePart?.onLayout}
               style={{
                 fontFamily: DISPLAY_FONT,
                 fontSize: VALUE_SIZE,
@@ -276,6 +289,8 @@ export function createMetricBreakdown(
                 ) : null}
                 {rate != null && rate !== "" ? (
                   <Text
+                    ref={ratePart?.ref}
+                    onLayout={ratePart?.onLayout}
                     style={{
                       fontFamily: detailed ? undefined : MONO_FONT,
                       fontSize: 12,
@@ -363,7 +378,9 @@ export function createMetricBreakdown(
 
         {/* The shared row engine keeps formatting, color slots and non-finite data consistent. */}
         {breakdown != null && breakdown.length > 0 ? (
-          <BreakdownRows rows={breakdown} share percent={false} tone={null} compact={compact} detailed={detailed} formatValue={formatValue} />
+          <AnatomyPart part={rowsPart}>
+            <BreakdownRows rows={breakdown} share percent={false} tone={null} compact={compact} detailed={detailed} formatValue={formatValue} />
+          </AnatomyPart>
         ) : null}
 
         {/* Chip footer, divided from the sections above it. Chip's own color
@@ -409,6 +426,7 @@ export function createMetricBreakdown(
           </View>
         ) : null}
       </View>
+      </AnatomyScope>
     );
   };
 }

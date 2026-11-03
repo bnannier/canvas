@@ -5,6 +5,7 @@ import { type StackedSegment } from "../shared/types.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { CHART_LOOK } from "../shared/charts.styles.js";
 import { MONO_FONT } from "../../style/mono.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // StackedBar is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -61,6 +62,12 @@ export interface StackedBarProps {
 
 /** One proportional bar split into colored segments, with a legend of shares. */
 export function StackedBar({ segments, label, hideLegend, track, tall, subtle, max, detailed, legendSegments, testID, style }: StackedBarProps) {
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Strip, Segment, Legend. Its Total (a readout beside the label) is
+  // not drawn by this component.
+  const stripPart = useAnatomyPart("Strip");
+  const segmentPart = useAnatomyPart("Segment");
+  const legendPart = useAnatomyPart("Legend");
   const { tokens, dark } = useTheme();
   const rawTotal = segments.reduce((sum, seg) => sum + Math.max(0, Number.isFinite(seg.value) ? seg.value : 0), 0);
   const capacity = max != null && Number.isFinite(max) && max > rawTotal ? max : null;
@@ -98,9 +105,14 @@ export function StackedBar({ segments, label, hideLegend, track, tall, subtle, m
     "aria-label": name,
   } as const;
 
+  const firstSegment = segments.findIndex((seg) => pct(seg.value) > 0);
+
   return (
+    <AnatomyScope>
     <View testID={testID} style={[{ gap: detailed ? 14 : LEGEND_GAP }, style]} {...(hideLegend ? img : {})}>
       <View
+        ref={stripPart?.ref}
+        onLayout={stripPart?.onLayout}
         {...(hideLegend ? {} : img)}
         style={{
           flexDirection: "row",
@@ -116,6 +128,8 @@ export function StackedBar({ segments, label, hideLegend, track, tall, subtle, m
           pct(seg.value) <= 0 ? null : (
             <View
               key={i}
+              ref={i === firstSegment ? segmentPart?.ref : undefined}
+              onLayout={i === firstSegment ? segmentPart?.onLayout : undefined}
               style={{
                 // The share of the strip, less its part of the 2 px gaps, so the
                 // segments and gaps fill the row exactly.
@@ -133,7 +147,7 @@ export function StackedBar({ segments, label, hideLegend, track, tall, subtle, m
         ) : null}
       </View>
       {hideLegend ? null : detailed ? (
-        <View style={{ flexDirection: "row", flexWrap: "wrap", columnGap: 16, rowGap: 8 }}>
+        <View ref={legendPart?.ref} onLayout={legendPart?.onLayout} style={{ flexDirection: "row", flexWrap: "wrap", columnGap: 16, rowGap: 8 }}>
           {(legendSegments ?? segments).map((seg, i) => <View key={i} style={{ width: "47%", flexGrow: 1, flexDirection: "row", alignItems: "center", gap: 8 }}>
             <View style={{ width: 8, height: 8, borderRadius: platformShape.web.cell, backgroundColor: seriesFill(tokens, i) }} />
             <Text style={{ flex: 1, fontSize: 12, lineHeight: 15, color: tokens["muted-foreground"] }}>{seg.label}</Text>
@@ -141,15 +155,18 @@ export function StackedBar({ segments, label, hideLegend, track, tall, subtle, m
           </View>)}
         </View>
       ) : (
-        <ChartLegend
-          horizontal
-          flush
-          items={segments.map((seg, i) => ({
-            label: `${seg.label} ${Math.round(pct(seg.value))}%`,
-            color: seriesFill(tokens, i),
-          }))}
-        />
+        <AnatomyPart part={legendPart}>
+          <ChartLegend
+            horizontal
+            flush
+            items={segments.map((seg, i) => ({
+              label: `${seg.label} ${Math.round(pct(seg.value))}%`,
+              color: seriesFill(tokens, i),
+            }))}
+          />
+        </AnatomyPart>
       )}
     </View>
+    </AnatomyScope>
   );
 }

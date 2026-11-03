@@ -20,6 +20,12 @@
 // the browser draws on keyboard focus, and a pinned press reports `pressed` to the
 // control's style and children functions (React Native's and react-native-web's own
 // `testOnly_pressed`), so every kit control shows those states without its own prop.
+//
+// Inside a docs AnatomyProvider (src/style/anatomy.tsx) a bare Pressable numbers its own
+// parts, the hand-off's Hit area (the pressable node) and Content (its children), without
+// closing the registry: its children are the caller's. Outside a provider that costs one
+// context read and adds no node, ref or handler; the kit primitives share `withPartRef`
+// (src/style/anatomy.tsx) so a part's ref joins a forwarded one without a hook.
 
 import { forwardRef, useMemo, useRef, type KeyboardEvent } from "react";
 import {
@@ -35,6 +41,8 @@ import {
 import { useTheme } from "./theme.js";
 import { frontRipple, useMaterialBehind } from "./glass-surface/material-behind.js";
 import { useInteractionOverride } from "./interaction-override.js";
+import { AnatomyPart, useAnatomyPart, withPartLayout, withPartRef } from "./anatomy.js";
+
 
 /**
  * The ring's distance from the control, the CSS hand-off's `--ring-offset`: the v4 hand-off's
@@ -132,7 +140,11 @@ function useLinkEnter(props: WebPressableProps): Pick<WebPressableProps, "onKeyD
  * drawn in the foreground inside a glass surface whose material renders, where it would
  * otherwise draw beneath the frost. Every kit control presses through it.
  */
-export const Pressable = forwardRef<View, PressableProps>(function Pressable({ style, ...rest }, ref) {
+export const Pressable = forwardRef<View, PressableProps>(function Pressable({ style, children, onLayout, ...rest }, ref) {
+  // The anatomy parts, in the hand-off's order: Hit area, then Content. Hit area is the
+  // one context read; inside a provider (and only there) the children go in an
+  // AnatomyPart that takes Content by name, so outside one nothing more is read or added.
+  const hitPart = useAnatomyPart("Hit area");
   // `focusable={false}` marks a pointer-only surface (a row's press area, a picture
   // under its own control bar). react-native-web 0.21's Pressable always passes a tab
   // index of its own (0 unless disabled), and an explicit tab index wins over
@@ -152,5 +164,14 @@ export const Pressable = forwardRef<View, PressableProps>(function Pressable({ s
   const live = pinned != null && !rest.disabled;
   const ringStyle = useRingStyle(style, live && pinned.focused);
   const testOnlyPressed = rest.testOnly_pressed ?? (live && pinned.pressed ? true : undefined);
-  return <RNPressable ref={ref} {...rest} {...linkEnter} android_ripple={androidRipple} tabIndex={tabIndex} testOnly_pressed={testOnlyPressed} style={ringStyle} />;
+  const content = hitPart == null
+    ? children
+    : typeof children === "function"
+      ? (state: PressableStateCallbackType) => <AnatomyPart name="Content">{children(state)}</AnatomyPart>
+      : <AnatomyPart name="Content">{children}</AnatomyPart>;
+  return (
+    <RNPressable ref={withPartRef(hitPart, ref)} {...rest} {...linkEnter} onLayout={withPartLayout(hitPart, onLayout)} android_ripple={androidRipple} tabIndex={tabIndex} testOnly_pressed={testOnlyPressed} style={ringStyle}>
+      {content}
+    </RNPressable>
+  );
 });

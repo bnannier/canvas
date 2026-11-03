@@ -20,6 +20,7 @@ import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { formatCompact } from "../shared/chart-math.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared BulletChart shell. The goal-attainment rows: per datum a leading
 // label, a track holding qualitative background bands (ascending `ranges`
@@ -139,6 +140,12 @@ const bandFill = (tokens: ColorTokens, i: number): string => {
 export function createBulletChart(skin: ChartSkin) {
   return function BulletChart(props: BulletChartProps) {
     const { data, title, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Frame, Measure, Target marker, Ranges (the first row's).
+    const framePart = useAnatomyPart("Frame");
+    const measurePart = useAnatomyPart("Measure");
+    const targetPart = useAnatomyPart("Target marker");
+    const rangesPart = useAnatomyPart("Ranges");
     const rangeKeyId = useId();
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens, dark } = theme;
@@ -186,6 +193,7 @@ export function createBulletChart(skin: ChartSkin) {
     const barH = detailed ? 8 : trackH * 0.4;
 
     return (
+      <AnatomyScope>
       <View
         {...(title != null && title !== ""
           ? {
@@ -218,6 +226,8 @@ export function createBulletChart(skin: ChartSkin) {
           </Text>
         ) : null}
         <View
+          ref={framePart?.ref}
+          onLayout={framePart?.onLayout}
           style={{ gap: compact ? 8 : 14, paddingVertical: detailed ? 4 : 0 }}
         >
           {data.map((d, i) => {
@@ -258,6 +268,8 @@ export function createBulletChart(skin: ChartSkin) {
                     tick. Bands paint widest (lightest) first so the narrower,
                     denser washes sit on top of them. */}
                 <View
+                  ref={i === 0 ? rangesPart?.ref : undefined}
+                  onLayout={i === 0 ? rangesPart?.onLayout : undefined}
                   style={[
                     s.horizontalTrack,
                     {
@@ -299,6 +311,8 @@ export function createBulletChart(skin: ChartSkin) {
                       />
                     ))}
                   <View
+                    ref={i === 0 ? measurePart?.ref : undefined}
+                    onLayout={i === 0 ? measurePart?.onLayout : undefined}
                     style={{
                       position: "absolute",
                       left: 0,
@@ -315,6 +329,8 @@ export function createBulletChart(skin: ChartSkin) {
                   />
                   {d.target != null && Number.isFinite(d.target) ? (
                     <View
+                      ref={i === 0 ? targetPart?.ref : undefined}
+                      onLayout={i === 0 ? targetPart?.onLayout : undefined}
                       style={{
                         position: "absolute",
                         left: `${pctOf(d.target, max)}%`,
@@ -387,6 +403,7 @@ export function createBulletChart(skin: ChartSkin) {
           </View>
         ) : null}
       </View>
+      </AnatomyScope>
     );
   };
 }

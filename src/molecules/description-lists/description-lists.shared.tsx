@@ -1,6 +1,7 @@
 import { type ComponentType, type ReactNode, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
-import { View, Text, TextInput, devWarn, useTheme, useContainerBreakpoint, containerProbe, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
+import { View, Text, TextInput, StyleSheet, devWarn, useTheme, useContainerBreakpoint, containerProbe, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -273,6 +274,9 @@ const isText = (node: ReactNode): node is string | number => typeof node === "st
 // Save and Cancel buttons; a node term falls back to the row's position.
 const termName = (term: ReactNode, index: number): string => (isText(term) ? String(term) : `row ${index + 1}`);
 
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 /**
  * Build a DescriptionList component from a platform skin and the platform-correct
  * composed atoms.
@@ -348,6 +352,14 @@ export function createDescriptionList(
   }
 
   return function DescriptionList(props: DescriptionListProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: List, Term, Detail, Action. Term and Detail are the first row's,
+    // Action the first row's Update link, taken before the tree's AnatomyScope so the kit
+    // Badge, Button and Avatar inside and the caller's node values register nothing.
+    const listPart = useAnatomyPart("List");
+    const termPart = useAnatomyPart("Term");
+    const detailPart = useAnatomyPart("Detail");
+    const actionPart = useAnatomyPart("Action");
     const { items, title, subtitle, muted, card, onUpdate, onCopy, testID, style } = props;
     const { tokens } = useTheme();
     // FILL: the list spans the parent it is given.
@@ -406,6 +418,7 @@ export function createDescriptionList(
     // ruled list's is the hand-off's fixed 110 column.
     const termColumn = layout === "twoColumn" ? (ruled ? (compact ? s.termRuledCompact(skin) : s.termRuled(skin)) : [s.termColumn, narrowTermColumn ? s.termColumnNarrow : null]) : null;
 
+    const firstAction = items.findIndex((item) => item.update && isText(item.value));
     const rows = items.map((item, index) => {
       const last = index === items.length - 1;
       // A divided list draws a hairline under each row except the last, and pads
@@ -436,11 +449,11 @@ export function createDescriptionList(
       return (
         <View key={isText(item.term) ? `${item.term}-${index}` : index} style={row}>
           {isText(item.term) ? (
-            <Text style={[stacked ? (skin.stackedTermType ? skin.stackedTermType(tokens) : [s.termStacked(tokens), skin.stackedTermTracking]) : skin.termType(tokens), termColumn]}>{item.term}</Text>
+            <Text ref={index === 0 ? termPart?.ref : undefined} onLayout={index === 0 ? termPart?.onLayout : undefined} style={[stacked ? (skin.stackedTermType ? skin.stackedTermType(tokens) : [s.termStacked(tokens), skin.stackedTermTracking]) : skin.termType(tokens), termColumn]}>{item.term}</Text>
           ) : (
             // A node term holds the term's place: the two-column label column keeps its
             // width so the values still line up.
-            <View style={termColumn}>{item.term}</View>
+            <View ref={index === 0 ? termPart?.ref : undefined} onLayout={index === 0 ? termPart?.onLayout : undefined} style={termColumn}>{item.term}</View>
           )}
           <View style={layout === "twoColumn" ? s.twoColumnValueCell : layout === "inline" ? (isEditing ? s.editCellGrow : s.inlineValueCell) : null}>
             {isEditing ? (
@@ -474,16 +487,20 @@ export function createDescriptionList(
               </View>
             ) : (
               <>
-                <Value item={item} value={shown} name={name} align={layout === "inline"} valueStyle={valueStyle} onCopy={onCopy} />
+                <AnatomyPart part={index === 0 ? detailPart : undefined}>
+                  <Value item={item} value={shown} name={name} align={layout === "inline"} valueStyle={valueStyle} onCopy={onCopy} />
+                </AnatomyPart>
                 {editable ? (
-                  <Button
-                    link
-                    small
-                    onPress={() => { setDraft(String(shown)); setEditing(index); }}
-                    accessibilityLabel={`Update ${name}`}
-                  >
-                    Update
-                  </Button>
+                  <AnatomyPart part={index === firstAction ? actionPart : undefined}>
+                    <Button
+                      link
+                      small
+                      onPress={() => { setDraft(String(shown)); setEditing(index); }}
+                      accessibilityLabel={`Update ${name}`}
+                    >
+                      Update
+                    </Button>
+                  </AnatomyPart>
                 ) : null}
               </>
             )}
@@ -496,7 +513,10 @@ export function createDescriptionList(
     // in solid mode); a bare list paints no surface of its own in either mode.
     const Root = card ? GlassSurface : View;
     return (
-      <Root testID={testID} style={container} {...(card ? { layer: "content" as const } : null)}>
+      <AnatomyScope>
+      <Root testID={testID} style={container} {...(card ? { layer: "content" as const } : { ref: listPart?.ref, onLayout: listPart?.onLayout })}>
+        {/* The List part's box on a card: GlassSurface has no ref, so a pass-through fill measures it. */}
+        {card && listPart ? <View ref={listPart.ref} onLayout={listPart.onLayout} style={MEASURE_BOX} /> : null}
         {layout === "twoColumn" ? <View style={containerProbe} onLayout={measureList} /> : null}
         {hasHeader ? (
           <View style={inset ? s.insetHeaderBand(tokens, inset.headerPadBottom) : s.headerBand(tokens, skin)}>
@@ -506,6 +526,7 @@ export function createDescriptionList(
         ) : null}
         {hasHeader ? <View style={inset ? { gap: skin.rowGap } : s.rowsWrap(skin)}>{rows}</View> : rows}
       </Root>
+      </AnatomyScope>
     );
   };
 }

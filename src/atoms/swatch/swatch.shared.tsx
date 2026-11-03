@@ -20,6 +20,7 @@ import {
 } from "../../style/index.js";
 import { useHover } from "../../style/hover.js";
 import { type SwatchSkin } from "./swatch.styles.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 
 // Shared Swatch shell. A color sample: one filled block with the token's name and
 // value beneath it, the anatomy a design-system color sheet repeats down a page. The
@@ -210,6 +211,11 @@ function dataName(name: string | null, value?: string, detail?: string, color?: 
 /** Build a Swatch from a platform skin. */
 export function createSwatch(skin: SwatchSkin) {
   return function Swatch(props: SwatchProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chip (the sample, or a palette pick's disc), Name and Value.
+    const chipPart = useAnatomyPart("Chip");
+    const namePart = useAnatomyPart("Name");
+    const valuePart = useAnatomyPart("Value");
     const { color, children, value, detail, ring, inline, block, selected, accessibilityLabel, decorative, testID, style } = props;
     const { tokens } = useTheme();
     // HUG (src/style/sizing.ts): the sample keeps its content width inside a stretching
@@ -218,7 +224,7 @@ export function createSwatch(skin: SwatchSkin) {
     const hug = useHugStyle();
     const size = sizeOf(props);
     const palette = paletteOf(props);
-    if (palette) return <PalettePick skin={skin} palette={palette} {...props} />;
+    if (palette) return <AnatomyScope><PalettePick skin={skin} palette={palette} chipPart={chipPart} {...props} /></AnatomyScope>;
 
     const steps = props.steps != null && props.steps.length > 0 ? props.steps : null;
     const form = formOf(props);
@@ -288,6 +294,8 @@ export function createSwatch(skin: SwatchSkin) {
 
     const chip = (
       <View
+        ref={chipPart?.ref}
+        onLayout={chipPart?.onLayout}
         style={[
           {
             flexShrink: inline && form === "bar" ? 1 : 0,
@@ -323,7 +331,7 @@ export function createSwatch(skin: SwatchSkin) {
         {form === "tile" && children != null ? (
           // One line, ellipsized where a name outgrows the tile, so a long token name never
           // breaks inside a word; the accessible name keeps it whole.
-          <Text numberOfLines={1} style={[skin.tile.name, MONO_TYPE, { color: props.ink ?? tokens.foreground }]}>{children}</Text>
+          <Text ref={namePart?.ref} onLayout={namePart?.onLayout} numberOfLines={1} style={[skin.tile.name, MONO_TYPE, { color: props.ink ?? tokens.foreground }]}>{children}</Text>
         ) : null}
       </View>
     );
@@ -333,34 +341,36 @@ export function createSwatch(skin: SwatchSkin) {
     const valueType = compact ? skin.compact.value : skin.value;
     const align = centered ? ({ textAlign: "center" } as const) : null;
     return (
-      <View
-        {...a11y}
-        testID={testID}
-        style={[
-          fills ? { alignSelf: "stretch" } : hug,
-          {
-            flexDirection: inline ? "row" : "column",
-            alignItems: inline || centered ? "center" : fluid ? "stretch" : "flex-start",
-            gap: inline ? skin.inlineGap : compact ? skin.compact.gap : centered ? skin.centeredGap : skin.gap,
-          },
-          style,
-        ]}
-      >
-        {chip}
-        {hasLabel ? (
-          <View style={{ flexShrink: 1, gap: compact ? skin.compact.lineGap : skin.lineGap, alignSelf: compact && !inline ? "stretch" : "auto", alignItems: centered ? "center" : undefined }}>
-            {children != null ? (
-              <Text numberOfLines={compact ? 1 : undefined} style={[nameType, align, { color: tokens.foreground }]}>{children}</Text>
-            ) : null}
-            {value != null ? (
-              <Text numberOfLines={compact ? 1 : undefined} style={[valueType, MONO_TYPE, align, { color: subtle }]}>{value}</Text>
-            ) : null}
-            {detail != null ? (
-              <Text numberOfLines={compact ? 1 : undefined} style={[compact ? skin.compact.value : skin.detail, MONO_TYPE, align, { color: subtle }]}>{detail}</Text>
-            ) : null}
-          </View>
-        ) : null}
-      </View>
+      <AnatomyScope>
+        <View
+          {...a11y}
+          testID={testID}
+          style={[
+            fills ? { alignSelf: "stretch" } : hug,
+            {
+              flexDirection: inline ? "row" : "column",
+              alignItems: inline || centered ? "center" : fluid ? "stretch" : "flex-start",
+              gap: inline ? skin.inlineGap : compact ? skin.compact.gap : centered ? skin.centeredGap : skin.gap,
+            },
+            style,
+          ]}
+        >
+          {chip}
+          {hasLabel ? (
+            <View style={{ flexShrink: 1, gap: compact ? skin.compact.lineGap : skin.lineGap, alignSelf: compact && !inline ? "stretch" : "auto", alignItems: centered ? "center" : undefined }}>
+              {children != null ? (
+                <Text ref={namePart?.ref} onLayout={namePart?.onLayout} numberOfLines={compact ? 1 : undefined} style={[nameType, align, { color: tokens.foreground }]}>{children}</Text>
+              ) : null}
+              {value != null ? (
+                <Text ref={valuePart?.ref} onLayout={valuePart?.onLayout} numberOfLines={compact ? 1 : undefined} style={[valueType, MONO_TYPE, align, { color: subtle }]}>{value}</Text>
+              ) : null}
+              {detail != null ? (
+                <Text numberOfLines={compact ? 1 : undefined} style={[compact ? skin.compact.value : skin.detail, MONO_TYPE, align, { color: subtle }]}>{detail}</Text>
+              ) : null}
+            </View>
+          ) : null}
+        </View>
+      </AnatomyScope>
     );
   };
 }
@@ -386,8 +396,8 @@ function stepCorners(skin: SwatchSkin, index: number, count: number): ViewStyle 
  * scale; the hover target is the Pressable, which never moves, and the disc inside it
  * scales, ring included, as the hand-off's button does.
  */
-function PalettePick(props: SwatchProps & { skin: SwatchSkin; palette: Palette }) {
-  const { skin, palette, selected, onPress, accessibilityLabel, testID, style } = props;
+function PalettePick(props: SwatchProps & { skin: SwatchSkin; palette: Palette; chipPart: AnatomyTarget | undefined }) {
+  const { skin, palette, selected, onPress, accessibilityLabel, testID, style, chipPart } = props;
   const { tokens } = useTheme();
   const motion = skin.pickerHover;
   const { hovered, target } = useHover(motion != null);
@@ -421,6 +431,8 @@ function PalettePick(props: SwatchProps & { skin: SwatchSkin; palette: Palette }
       style={[{ width: edge, height: edge, flexShrink: 0 }, style]}
     >
       <View
+        ref={chipPart?.ref}
+        onLayout={chipPart?.onLayout}
         style={[
           {
             pointerEvents: "none",

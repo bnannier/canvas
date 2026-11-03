@@ -15,6 +15,8 @@ import {
 } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
+import { ChartAnatomyScope } from "../shared/chart-anatomy.js";
+import { useAnatomyPart } from "../../style/anatomy.js";
 import {
   CartesianFrame,
   CHART_ROOT,
@@ -106,6 +108,14 @@ function candleColor(tokens: ColorTokens, c: Candle): string {
 /** Build a CandlestickChart from a platform skin. */
 export function createCandlestickChart(skin: ChartSkin) {
   return function CandlestickChart(props: CandlestickChartProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Series, Axis labels, Legend, Gridlines, taken before the
+    // tree's AnatomyScope and handed to the shared frame and legend (chart-anatomy.tsx).
+    const framePart = useAnatomyPart("Chart frame");
+    const seriesPart = useAnatomyPart("Series");
+    const axisPart = useAnatomyPart("Axis labels");
+    const legendPart = useAnatomyPart("Legend");
+    const gridPart = useAnatomyPart("Gridlines");
     const {
       labels,
       candles,
@@ -316,140 +326,142 @@ export function createCandlestickChart(skin: ChartSkin) {
     };
 
     return (
-      <View
-        {...(title != null && title !== ""
-          ? {
-              role: "group" as const,
-              accessibilityLabel: `${title} chart`,
-              "aria-label": `${title} chart`,
-            }
-          : {})}
-        testID={testID}
-        style={[
-          props.plain
-            ? null
-            : paneStyle(theme, [
-                surfaceShape,
-                compact ? s.surfacePadCompact : s.surfacePadDefault,
-              ]),
-          CHART_ROOT,
-          style,
-        ]}
-      >
-        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? (
-          <GlassPane layer="content" shape={surfaceShape} />
-        ) : null}
-        {title != null && title !== "" ? (
-          <Text
-            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
-          >
-            {title}
-          </Text>
-        ) : null}
-
+      <ChartAnatomyScope parts={{ frame: framePart, marks: [seriesPart], axisLabels: axisPart, legend: legendPart, gridlines: gridPart }}>
         <View
-          accessible
-          accessibilityRole="image"
-          role="img"
-          accessibilityLabel={name}
-          aria-label={name}
+          {...(title != null && title !== ""
+            ? {
+                role: "group" as const,
+                accessibilityLabel: `${title} chart`,
+                "aria-label": `${title} chart`,
+              }
+            : {})}
+          testID={testID}
+          style={[
+            props.plain
+              ? null
+              : paneStyle(theme, [
+                  surfaceShape,
+                  compact ? s.surfacePadCompact : s.surfacePadDefault,
+                ]),
+            CHART_ROOT,
+            style,
+          ]}
         >
-          <CartesianFrame
-            yExtent={yExtent}
-            xLabels={labels.slice(0, count)}
-            plotHeight={PLOT_HEIGHT[compact ? "compact" : "default"]}
-            plotInsetBottom={volumePane}
-            compact={compact}
-            hideGrid={props.hideGrid}
-            hideAxes={props.hideAxes}
-            formatValue={formatValue}
-            selectedBand={selected}
-            onBandScrub={setSelected}
-            overlay={(layout) =>
-              selected != null && selected < count && layout.band ? (
-                // The section card's readout: open and high, low and close, then the volume.
-                specimen ? (
-                  <PresentationFlag
-                    lines={
-                      !inspected && presentation?.annotation?.index === selected
-                        ? presentation.annotation.lines
-                        : [
-                            `O ${formatValue(
-                              num(candles[selected].open)
-                            )} · H ${formatValue(num(candles[selected].high))}`,
-                            `L ${formatValue(
-                              num(candles[selected].low)
-                            )} · C ${formatValue(
-                              num(candles[selected].close)
-                            )}`,
-                            `vol ${formatCompact(num(volume?.[selected]))}`,
-                          ]
-                    }
-                    x={layout.band.center(selected)}
-                    y={4}
-                    before
-                    gap={12}
-                    radius={platformShape.web.chartFlagDense}
-                    padH={9}
-                    padV={7}
-                    lineHeight={16.5}
-                    mutedLast
-                  />
-                ) : (
-                  <ChartValueFlag
-                    title={props.hideAxes ? labels[selected] : undefined}
-                    rows={[
-                      {
-                        label: "O",
-                        value: `${formatValue(
-                          num(candles[selected].open)
-                        )} · H ${formatValue(num(candles[selected].high))}`,
-                      },
-                      {
-                        label: "L",
-                        value: `${formatValue(
-                          num(candles[selected].low)
-                        )} · C ${formatValue(num(candles[selected].close))}`,
-                      },
-                      ...(volume
-                        ? [
-                            {
-                              label: "vol",
-                              value: formatCompact(num(volume[selected])),
-                            },
-                          ]
-                        : []),
-                    ]}
-                    x={layout.band.center(selected)}
-                    plotW={layout.plotW}
-                  />
-                )
-              ) : null
-            }
-          >
-            {marks}
-          </CartesianFrame>
-        </View>
+          {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+          {glass && !props.plain ? (
+            <GlassPane layer="content" shape={surfaceShape} />
+          ) : null}
+          {title != null && title !== "" ? (
+            <Text
+              style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+            >
+              {title}
+            </Text>
+          ) : null}
 
-        {/* The renderer's legend names the two candle directions; overlays follow as rules. */}
-        {!props.hideLegend ? (
-          <ChartLegend
-            horizontal
-            caption={props.legendCaption}
-            items={[
-              { label: "Up", color: tokens.success },
-              { label: "Down", color: tokens.destructive },
-              ...overlays.map((sr, i) => ({
-                label: sr.label,
-                color: overlayColor(sr, i),
-                line: true,
-                dashed: sr.dashed,
-              })),
-            ]}
-          />
-        ) : null}
-      </View>
+          <View
+            accessible
+            accessibilityRole="image"
+            role="img"
+            accessibilityLabel={name}
+            aria-label={name}
+          >
+            <CartesianFrame
+              yExtent={yExtent}
+              xLabels={labels.slice(0, count)}
+              plotHeight={PLOT_HEIGHT[compact ? "compact" : "default"]}
+              plotInsetBottom={volumePane}
+              compact={compact}
+              hideGrid={props.hideGrid}
+              hideAxes={props.hideAxes}
+              formatValue={formatValue}
+              selectedBand={selected}
+              onBandScrub={setSelected}
+              overlay={(layout) =>
+                selected != null && selected < count && layout.band ? (
+                  // The section card's readout: open and high, low and close, then the volume.
+                  specimen ? (
+                    <PresentationFlag
+                      lines={
+                        !inspected && presentation?.annotation?.index === selected
+                          ? presentation.annotation.lines
+                          : [
+                              `O ${formatValue(
+                                num(candles[selected].open)
+                              )} · H ${formatValue(num(candles[selected].high))}`,
+                              `L ${formatValue(
+                                num(candles[selected].low)
+                              )} · C ${formatValue(
+                                num(candles[selected].close)
+                              )}`,
+                              `vol ${formatCompact(num(volume?.[selected]))}`,
+                            ]
+                      }
+                      x={layout.band.center(selected)}
+                      y={4}
+                      before
+                      gap={12}
+                      radius={platformShape.web.chartFlagDense}
+                      padH={9}
+                      padV={7}
+                      lineHeight={16.5}
+                      mutedLast
+                    />
+                  ) : (
+                    <ChartValueFlag
+                      title={props.hideAxes ? labels[selected] : undefined}
+                      rows={[
+                        {
+                          label: "O",
+                          value: `${formatValue(
+                            num(candles[selected].open)
+                          )} · H ${formatValue(num(candles[selected].high))}`,
+                        },
+                        {
+                          label: "L",
+                          value: `${formatValue(
+                            num(candles[selected].low)
+                          )} · C ${formatValue(num(candles[selected].close))}`,
+                        },
+                        ...(volume
+                          ? [
+                              {
+                                label: "vol",
+                                value: formatCompact(num(volume[selected])),
+                              },
+                            ]
+                          : []),
+                      ]}
+                      x={layout.band.center(selected)}
+                      plotW={layout.plotW}
+                    />
+                  )
+                ) : null
+              }
+            >
+              {marks}
+            </CartesianFrame>
+          </View>
+
+          {/* The renderer's legend names the two candle directions; overlays follow as rules. */}
+          {!props.hideLegend ? (
+            <ChartLegend
+              horizontal
+              caption={props.legendCaption}
+              items={[
+                { label: "Up", color: tokens.success },
+                { label: "Down", color: tokens.destructive },
+                ...overlays.map((sr, i) => ({
+                  label: sr.label,
+                  color: overlayColor(sr, i),
+                  line: true,
+                  dashed: sr.dashed,
+                })),
+              ]}
+            />
+          ) : null}
+        </View>
+      </ChartAnatomyScope>
     );
   };
 }

@@ -424,6 +424,8 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   InteractionOverrideProps: { kind: "type", docs: "components/pressable" },
 
   // src/style/anatomy.tsx
+  AnatomyPart: { kind: "component", docs: "components/button" },
+  AnatomyPartProps: { kind: "type", docs: "components/button" },
   AnatomyProvider: { kind: "component", docs: "components/button" },
   AnatomyProviderProps: { kind: "type", docs: "components/button" },
   AnatomyRect: { kind: "type", docs: "components/button" },

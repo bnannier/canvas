@@ -20,6 +20,8 @@ import {
   type CartesianLayout,
 } from "./chart-frame.js";
 import { ChartLegend } from "./chart-legend.js";
+import { ChartAnatomyScope, type ChartAnatomy } from "./chart-anatomy.js";
+import { useAnatomyPart } from "../../style/anatomy.js";
 import { ChartValueFlag, announceSelection } from "./chart-inspect.js";
 import { formatAxis, seriesAccessibleName, type Pt } from "./chart-math.js";
 
@@ -90,6 +92,16 @@ export function useSeriesChart(
   opts?: { extraExtent?: number[]; autoTone?: Tone; zeroBased?: boolean }
 ) {
   const { labels, series } = props;
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Chart frame, Series, Axis labels, Legend, Gridlines, taken before the
+  // shell's AnatomyScope and handed to the frame and legend (chart-anatomy.tsx).
+  const anatomy: ChartAnatomy = {
+    frame: useAnatomyPart("Chart frame"),
+    marks: [useAnatomyPart("Series")],
+    axisLabels: useAnatomyPart("Axis labels"),
+    legend: useAnatomyPart("Legend"),
+    gridlines: useAnatomyPart("Gridlines"),
+  };
   const presentation = useChartPresentation();
   const theme = useMaterialTheme({ layer: "content" });
   const { tokens } = theme;
@@ -194,6 +206,7 @@ export function useSeriesChart(
     selected,
     setSelected,
     presentation,
+    anatomy,
   };
 }
 
@@ -223,105 +236,107 @@ export function chartShell(
   const surfaceShape = s.surface(tokens, skin.surfaceRadius);
 
   return (
-    <View
-      {...(title != null && title !== ""
-        ? {
-            role: "group" as const,
-            accessibilityLabel: `${title} chart`,
-            "aria-label": `${title} chart`,
-          }
-        : {})}
-      testID={testID}
-      style={[
-        props.plain
-          ? null
-          : paneStyle(theme, [
-              surfaceShape,
-              compact ? s.surfacePadCompact : s.surfacePadDefault,
-            ]),
-        CHART_ROOT,
-        style,
-      ]}
-    >
-      {isGlass(theme) && !props.plain ? (
-        <GlassPane layer="content" shape={surfaceShape} />
-      ) : null}
-      {title != null && title !== "" ? (
-        <Text
-          style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
-        >
-          {title}
-        </Text>
-      ) : null}
-
-      {/* The plot is the image; its accessible name carries every value. */}
+    <ChartAnatomyScope parts={ctx.anatomy}>
       <View
-        accessible
-        accessibilityRole="image"
-        role="img"
-        accessibilityLabel={name}
-        aria-label={name}
+        {...(title != null && title !== ""
+          ? {
+              role: "group" as const,
+              accessibilityLabel: `${title} chart`,
+              "aria-label": `${title} chart`,
+            }
+          : {})}
+        testID={testID}
+        style={[
+          props.plain
+            ? null
+            : paneStyle(theme, [
+                surfaceShape,
+                compact ? s.surfacePadCompact : s.surfacePadDefault,
+              ]),
+          CHART_ROOT,
+          style,
+        ]}
       >
-        <CartesianFrame
-          yExtent={yExtent}
-          yExact={props.min != null || props.max != null}
-          xLabels={labels}
-          // The hand-off's chart proportion at every density (its compact only tightens the frame).
-          plotHeight={PLOT_HEIGHT.default}
-          aspect
-          // Points run edge to edge (the renderer's line x); a chart with bars places its
-          // categories at band centres instead, so no bar hangs off the plot's ends.
-          xPoints={!opts?.bands}
-          compact={compact}
-          hideGrid={props.hideGrid}
-          hideAxes={props.hideAxes}
-          formatValue={formatValue}
-          selectedBand={ctx.selected}
-          onBandScrub={ctx.setSelected}
-          overlay={(layout) =>
-            ctx.selected != null &&
-            layout.band &&
-            labels[ctx.selected] != null ? (
-              // With the axis shown, its label names the inspected category in the card ink.
-              <ChartValueFlag
-                title={props.hideAxes ? labels[ctx.selected] : undefined}
-                rows={series.map((sr, i) => ({
-                  label: multi ? sr.label : undefined,
-                  color: multi ? colorOf(i) : undefined,
-                  value: formatValue(
-                    Number.isFinite(sr.values[ctx.selected!])
-                      ? sr.values[ctx.selected!]!
-                      : 0
-                  ),
-                }))}
-                x={layout.band.center(ctx.selected)}
-                plotW={layout.plotW}
-              />
-            ) : null
-          }
-        >
-          {marks}
-        </CartesianFrame>
-      </View>
+        {isGlass(theme) && !props.plain ? (
+          <GlassPane layer="content" shape={surfaceShape} />
+        ) : null}
+        {title != null && title !== "" ? (
+          <Text
+            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+          >
+            {title}
+          </Text>
+        ) : null}
 
-      {/* Identity legend for multiple series (a single series is named by the
-          title); rendered outside the img subtree so it stays reachable. */}
-      {multi && !props.hideLegend ? (
-        <ChartLegend
-          horizontal
-          items={series.map((sr, i) => ({
-            label: sr.label,
-            color: colorOf(i),
-            line: ctx.presentation?.kind === "line",
-            strokeWidth: ctx.presentation?.kind === "line" ? i === 0 ? 2.5 : 1.5 : undefined,
-            opacity:
-              ctx.presentation?.kind === "composed" && "area" in sr && sr.area
-                ? 0.6
-                : undefined,
-            dashed: sr.dashed || (ctx.presentation?.kind === "line" && i === 1),
-          }))}
-        />
-      ) : null}
-    </View>
+        {/* The plot is the image; its accessible name carries every value. */}
+        <View
+          accessible
+          accessibilityRole="image"
+          role="img"
+          accessibilityLabel={name}
+          aria-label={name}
+        >
+          <CartesianFrame
+            yExtent={yExtent}
+            yExact={props.min != null || props.max != null}
+            xLabels={labels}
+            // The hand-off's chart proportion at every density (its compact only tightens the frame).
+            plotHeight={PLOT_HEIGHT.default}
+            aspect
+            // Points run edge to edge (the renderer's line x); a chart with bars places its
+            // categories at band centres instead, so no bar hangs off the plot's ends.
+            xPoints={!opts?.bands}
+            compact={compact}
+            hideGrid={props.hideGrid}
+            hideAxes={props.hideAxes}
+            formatValue={formatValue}
+            selectedBand={ctx.selected}
+            onBandScrub={ctx.setSelected}
+            overlay={(layout) =>
+              ctx.selected != null &&
+              layout.band &&
+              labels[ctx.selected] != null ? (
+                // With the axis shown, its label names the inspected category in the card ink.
+                <ChartValueFlag
+                  title={props.hideAxes ? labels[ctx.selected] : undefined}
+                  rows={series.map((sr, i) => ({
+                    label: multi ? sr.label : undefined,
+                    color: multi ? colorOf(i) : undefined,
+                    value: formatValue(
+                      Number.isFinite(sr.values[ctx.selected!])
+                        ? sr.values[ctx.selected!]!
+                        : 0
+                    ),
+                  }))}
+                  x={layout.band.center(ctx.selected)}
+                  plotW={layout.plotW}
+                />
+              ) : null
+            }
+          >
+            {marks}
+          </CartesianFrame>
+        </View>
+
+        {/* Identity legend for multiple series (a single series is named by the
+            title); rendered outside the img subtree so it stays reachable. */}
+        {multi && !props.hideLegend ? (
+          <ChartLegend
+            horizontal
+            items={series.map((sr, i) => ({
+              label: sr.label,
+              color: colorOf(i),
+              line: ctx.presentation?.kind === "line",
+              strokeWidth: ctx.presentation?.kind === "line" ? i === 0 ? 2.5 : 1.5 : undefined,
+              opacity:
+                ctx.presentation?.kind === "composed" && "area" in sr && sr.area
+                  ? 0.6
+                  : undefined,
+              dashed: sr.dashed || (ctx.presentation?.kind === "line" && i === 1),
+            }))}
+          />
+        ) : null}
+      </View>
+    </ChartAnatomyScope>
   );
 }

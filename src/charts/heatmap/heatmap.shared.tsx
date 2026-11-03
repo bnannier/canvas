@@ -24,6 +24,7 @@ import { useFocusRingStyle } from "../../style/pressable.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { oklchHex, oklchOf } from "../../style/color.js";
 import { MONO_FONT } from "../../style/mono.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 
 // Heatmap is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -184,10 +185,17 @@ function GridHeatmap({
   testID,
   style,
 }: HeatmapProps & { cells: HeatmapCell[] }) {
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Grid, Cell (the first), Title, Legend. The wrapping grid has no Title.
+  const gridPart = useAnatomyPart("Grid");
+  const cellPart = useAnatomyPart("Cell");
+  const legendPart = useAnatomyPart("Legend");
   const { tokens } = useTheme();
   const cell = (intensity: number, box: number, key: number) => (
     <View
       key={key}
+      ref={key === 0 ? cellPart?.ref : undefined}
+      onLayout={key === 0 ? cellPart?.onLayout : undefined}
       style={{
         borderRadius: platformShape.web.heatCell,
         height: box,
@@ -209,8 +217,11 @@ function GridHeatmap({
     "aria-label": name,
   } as const;
   return (
+    <AnatomyScope>
     <View testID={testID} style={style} {...(hideLegend ? img : {})}>
       <View
+        ref={gridPart?.ref}
+        onLayout={gridPart?.onLayout}
         {...(hideLegend ? {} : img)}
         style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}
       >
@@ -218,6 +229,8 @@ function GridHeatmap({
       </View>
       {hideLegend ? null : (
         <View
+          ref={legendPart?.ref}
+          onLayout={legendPart?.onLayout}
           style={{
             marginTop: 14,
             flexDirection: "row",
@@ -234,6 +247,7 @@ function GridHeatmap({
         </View>
       )}
     </View>
+    </AnatomyScope>
   );
 }
 
@@ -242,12 +256,16 @@ function GridHeatmap({
 function HeatmapLevelLegend({
   tokens,
   calendar = false,
+  part,
 }: {
   tokens: ColorTokens;
   calendar?: boolean;
+  part?: AnatomyTarget;
 }) {
   return (
     <View
+      ref={part?.ref}
+      onLayout={part?.onLayout}
       style={{
         marginTop: calendar ? 14 : 12,
         flexDirection: "row",
@@ -328,6 +346,11 @@ function CalendarHeatmap({
   testID,
   style,
 }: HeatmapProps & { cells: HeatmapCell[] }) {
+  // The calendar's anatomy parts, as the grid's, with the Title on the caption.
+  const gridPart = useAnatomyPart("Grid");
+  const cellPart = useAnatomyPart("Cell");
+  const titlePart = useAnatomyPart("Title");
+  const legendPart = useAnatomyPart("Legend");
   const { tokens } = useTheme();
   const [pinned, setPinned] = useState<number | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -414,9 +437,12 @@ function CalendarHeatmap({
   };
 
   return (
+    <AnatomyScope>
     <View testID={testID} style={style} onLayout={(e) => setFrameW(e.nativeEvent.layout.width)}>
       {caption ? (
         <Text
+          ref={titlePart?.ref}
+          onLayout={titlePart?.onLayout}
           style={{
             marginBottom: 10,
             fontSize: 13,
@@ -495,7 +521,7 @@ function CalendarHeatmap({
               ))}
             </View>
             <View>
-              <View style={{ flexDirection: "row", gap: gap }}>
+              <View ref={gridPart?.ref} onLayout={gridPart?.onLayout} style={{ flexDirection: "row", gap: gap }}>
                 {Array.from({ length: cols }).map((_, c) => (
                   <View key={c} style={{ gap: gap }}>
                     {Array.from({ length: CAL_ROWS }).map((_, r) => {
@@ -521,6 +547,7 @@ function CalendarHeatmap({
                       return (
                         <HeatCell
                           key={r}
+                          part={idx === 0 ? cellPart : undefined}
                           size={size}
                           fill={levelFill(tokens, lvl, detailed && hasDates)}
                           detailed={detailed}
@@ -581,13 +608,15 @@ function CalendarHeatmap({
         </View>
       </ScrollView>
       {hideLegend ? null : (
-        <HeatmapLevelLegend tokens={tokens} calendar={detailed && hasDates} />
+        <HeatmapLevelLegend tokens={tokens} calendar={detailed && hasDates} part={legendPart} />
       )}
     </View>
+    </AnatomyScope>
   );
 }
 
 function HeatCell({
+  part,
   size,
   fill,
   active,
@@ -599,6 +628,8 @@ function HeatCell({
   onHoverIn,
   onHoverOut,
 }: {
+  /** The first day's anatomy handlers (the Cell part). */
+  part?: AnatomyTarget;
   size: number;
   fill: string;
   active: boolean;
@@ -625,9 +656,11 @@ function HeatCell({
       useNativeDriver: supportsNativeDriver,
     }).start();
   };
-  if (!detailed) return <Pressable accessible={false} {...Platform.select({ web: { focusable: false, tabIndex: -1 }, default: { focusable: true, tabIndex: 0 } })} onPress={onPress} onHoverIn={onHoverIn} onHoverOut={onHoverOut} style={{ width: size, height: size, borderRadius: platformShape.web.heatCell, backgroundColor: fill, borderWidth: 1, borderColor: active ? edge : "transparent" }} />;
+  if (!detailed) return <Pressable ref={part?.ref} onLayout={part?.onLayout} accessible={false} {...Platform.select({ web: { focusable: false, tabIndex: -1 }, default: { focusable: true, tabIndex: 0 } })} onPress={onPress} onHoverIn={onHoverIn} onHoverOut={onHoverOut} style={{ width: size, height: size, borderRadius: platformShape.web.heatCell, backgroundColor: fill, borderWidth: 1, borderColor: active ? edge : "transparent" }} />;
   return (
     <Pressable
+      ref={part?.ref}
+      onLayout={part?.onLayout}
       accessible={false}
       {...Platform.select({ web: { focusable: false, tabIndex: -1 }, default: { focusable: true, tabIndex: 0 } })}
       onPress={onPress}

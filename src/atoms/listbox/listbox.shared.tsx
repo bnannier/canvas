@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Icon } from "../icon/icon.js";
 import { View, Pressable, Text, useControllableState, useFillStyle, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, withInnerFill, GlassPane, paneStyle } from "../../style/index.js";
 import { LISTBOX } from "../../style/listbox-role.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
 // (not a popover). Each row is a Pressable. Two selection modes, mutually
@@ -151,16 +153,19 @@ export function createListbox(skin: ListboxSkin) {
     disabled: boolean;
     roving: ReturnType<ReturnType<typeof useRovingFocus>["getItemProps"]> | undefined;
     onPress: () => void;
+    /** This row's anatomy parts, on the first row (Option), the first chosen row (Selected check) and the first with a detail (Detail line). */
+    parts: { option?: AnatomyTarget; check?: AnatomyTarget; detail?: AnatomyTarget };
   }
 
   // One row, its own component so the web's hover wash has a hook per row.
-  function ListRow({ item, selected, mode, size, disabled, roving, onPress }: ListRowProps) {
+  function ListRow({ item, selected, mode, size, disabled, roving, onPress, parts }: ListRowProps) {
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const { hovered, target } = useHover(skin.rowHover != null && !disabled);
     // Name the row from its data so the title and detail stay separated,
     // and a selected option's decorative checkmark is not announced.
     const rowName = [item.label, item.detail].filter(Boolean).join(", ");
+    const rowRef = useComposedRefs(roving?.ref, parts.option?.ref);
 
     // Pressable owns Enter activation on keyup. Handling it here as well
     // toggles a multi row twice. Its checkbox/option roles need an explicit
@@ -184,7 +189,8 @@ export function createListbox(skin: ListboxSkin) {
       // own corners (overflow in the skin), so a rectangular ripple needs no clip parent.
       // See src/style/ripple-clip.
       <Pressable
-        ref={roving?.ref}
+        ref={rowRef}
+        onLayout={parts.option?.onLayout}
         {...(rovingProps as object)}
         {...target}
         // Android shows the Material ripple (a no-op off Android). The press fill is
@@ -220,11 +226,11 @@ export function createListbox(skin: ListboxSkin) {
       >
         <View style={skin.textStack}>
           <Text style={skin.label(tokens, size)}>{item.label}</Text>
-          {item.detail != null ? <Text style={skin.detail(tokens)}>{item.detail}</Text> : null}
+          {item.detail != null ? <Text ref={parts.detail?.ref} onLayout={parts.detail?.onLayout} style={skin.detail(tokens)}>{item.detail}</Text> : null}
         </View>
         {/* Decorative: the row's own state names the choice. The slot stays on an unchosen
             row, so choosing never reflows a label. */}
-        <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: skin.check.size, alignItems: "center" }}>
+        <View ref={parts.check?.ref} onLayout={parts.check?.onLayout} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: skin.check.size, alignItems: "center" }}>
           {selected ? <Icon check color={skin.check.color(tokens)} size={skin.check.size} decorative /> : null}
         </View>
       </Pressable>
@@ -240,6 +246,13 @@ export function createListbox(skin: ListboxSkin) {
     const { tokens } = theme;
     // FILL, applied to the root list View (see the note above the interface).
     const widthCap = useFillStyle("Listbox", props);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Listbox, Option, Selected check, Detail line, each row part on
+    // its first instance, taken before the tree's AnatomyScope.
+    const listboxPart = useAnatomyPart("Listbox");
+    const optionPart = useAnatomyPart("Option");
+    const checkPart = useAnatomyPart("Selected check");
+    const detailPart = useAnatomyPart("Detail line");
 
     // Normalize the single|multi selection to an index array so one code path
     // drives both modes. Controlled via `selected`; uncontrolled seeds from
@@ -302,8 +315,11 @@ export function createListbox(skin: ListboxSkin) {
     // and hoists the children out of one that only paints or carries a testID, so the list's
     // name and role reached no screen reader, or sat on an empty node beside the rows; only a
     // disabled list (its opacity) held them. React Native Web drops the prop: the DOM is unchanged.
+    const firstChosen = items.findIndex((_, index) => selectedArr.includes(index));
+    const firstDetail = items.findIndex((item) => item.detail != null);
     return (
-      <View style={container} collapsable={false} role={mode === "multi" ? "group" : LISTBOX} testID={props.testID}
+      <AnatomyScope>
+      <View ref={listboxPart?.ref} onLayout={listboxPart?.onLayout} style={container} collapsable={false} role={mode === "multi" ? "group" : LISTBOX} testID={props.testID}
         accessibilityLabel={accessibleName} aria-label={accessibleName}>
         {/* A bordered list is a CONTENT-layer pane under glass (nothing in solid mode). */}
         {bordered ? <GlassPane layer="content" shape={skin.containerBordered(tokens)} /> : null}
@@ -317,9 +333,11 @@ export function createListbox(skin: ListboxSkin) {
             disabled={!!disabled}
             roving={disabled ? undefined : getItemProps(index)}
             onPress={() => press(index)}
+            parts={{ option: index === 0 ? optionPart : undefined, check: index === firstChosen ? checkPart : undefined, detail: index === firstDetail ? detailPart : undefined }}
           />
         ))}
       </View>
+      </AnatomyScope>
     );
   };
 }

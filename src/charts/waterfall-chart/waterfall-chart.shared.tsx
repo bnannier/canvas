@@ -13,6 +13,8 @@ import {
 } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
+import { ChartAnatomyScope } from "../shared/chart-anatomy.js";
+import { useAnatomyPart } from "../../style/anatomy.js";
 import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import {
   ChartValueFlag,
@@ -81,6 +83,14 @@ export interface WaterfallChartProps {
 /** Build a WaterfallChart from a platform skin. */
 export function createWaterfallChart(skin: ChartSkin) {
   return function WaterfallChart(props: WaterfallChartProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Change bar, Axis labels, Total bar, Gridlines, taken before the
+    // tree's AnatomyScope and handed to the shared frame (chart-anatomy.tsx).
+    const framePart = useAnatomyPart("Chart frame");
+    const changePart = useAnatomyPart("Change bar");
+    const axisPart = useAnatomyPart("Axis labels");
+    const totalPart = useAnatomyPart("Total bar");
+    const gridPart = useAnatomyPart("Gridlines");
     const { steps, title, testID, style } = props;
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
@@ -136,202 +146,204 @@ export function createWaterfallChart(skin: ChartSkin) {
     };
 
     return (
-      <View
-        {...(title != null && title !== ""
-          ? {
-              role: "group" as const,
-              accessibilityLabel: `${title} chart`,
-              "aria-label": `${title} chart`,
-            }
-          : {})}
-        testID={testID}
-        style={[
-          props.plain
-            ? null
-            : paneStyle(theme, [
-                surfaceShape,
-                compact ? s.surfacePadCompact : s.surfacePadDefault,
-              ]),
-          CHART_ROOT,
-          style,
-        ]}
-      >
-        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? (
-          <GlassPane layer="content" shape={surfaceShape} />
-        ) : null}
-        {title != null && title !== "" ? (
-          <Text
-            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
-          >
-            {title}
-          </Text>
-        ) : null}
+      <ChartAnatomyScope parts={{ frame: framePart, marks: [bars.some((bar) => bar.kind !== "total") ? changePart : undefined, bars.some((bar) => bar.kind === "total") ? totalPart : undefined], axisLabels: axisPart, xLabels: true, gridlines: gridPart }}>
         <View
-          accessible
-          accessibilityRole="image"
-          role="img"
-          accessibilityLabel={name}
-          aria-label={name}
+          {...(title != null && title !== ""
+            ? {
+                role: "group" as const,
+                accessibilityLabel: `${title} chart`,
+                "aria-label": `${title} chart`,
+              }
+            : {})}
+          testID={testID}
+          style={[
+            props.plain
+              ? null
+              : paneStyle(theme, [
+                  surfaceShape,
+                  compact ? s.surfacePadCompact : s.surfacePadDefault,
+                ]),
+            CHART_ROOT,
+            style,
+          ]}
         >
-          <CartesianFrame
-            yExtent={[min, max]}
-            xLabels={labels}
-            plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
-            compact={compact}
-            hideGrid={props.hideGrid}
-            hideAxes={props.hideAxes}
-            formatValue={formatValue}
-            selectedBand={selected}
-            noGuide
-            onBandScrub={setSelected}
-            overlay={(layout) =>
-              selected != null && layout.band && bars[selected] != null ? (
-                <ChartValueFlag
-                  title={props.hideAxes ? labels[selected] : undefined}
-                  rows={
-                    bars[selected].kind === "total"
-                      ? [
-                          {
-                            label: "Total",
-                            value: formatValue(bars[selected].end),
-                          },
-                        ]
-                      : [
-                          {
-                            label: "Change",
-                            value: formatValue(
-                              steps[selected].value != null &&
-                                Number.isFinite(steps[selected].value)
-                                ? (steps[selected].value as number)
-                                : 0
-                            ),
-                          },
-                          {
-                            label: "Running",
-                            value: formatValue(bars[selected].end),
-                          },
-                        ]
-                  }
-                  x={layout.band.center(selected)}
-                  plotW={layout.plotW}
-                />
-              ) : null
-            }
+          {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+          {glass && !props.plain ? (
+            <GlassPane layer="content" shape={surfaceShape} />
+          ) : null}
+          {title != null && title !== "" ? (
+            <Text
+              style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+            >
+              {title}
+            </Text>
+          ) : null}
+          <View
+            accessible
+            accessibilityRole="image"
+            role="img"
+            accessibilityLabel={name}
+            aria-label={name}
           >
-            {(layout) => {
-              const band = layout.band;
-              if (!band) return null;
-              // The hand-off's bars: 40 units of a 64-unit step, the deltas washed at .85.
-              const barW = specimen
-                ? 36 * layout.scale
-                : Math.max(4, band.step * 0.625);
-              return (
-                <>
-                  {specimen ? (
-                    <Defs>
-                      <GlowFilter id={glowId} length={8} />
-                    </Defs>
-                  ) : null}
-                  {specimen
-                    ? bars
-                        .slice(0, -1)
-                        .map((bar, i) => (
-                          <Line
-                            key={`connector${i}`}
-                            x1={band.center(i) + barW / 2}
-                            x2={band.center(i + 1) - barW / 2}
-                            y1={layout.y(bar.end)}
-                            y2={layout.y(bar.end)}
-                            stroke={tokens["subtle-foreground"]}
-                            strokeDasharray="2,3"
-                            strokeWidth={layout.scale}
-                          />
-                        ))
-                    : null}
-                  {specimen && bars.length ? (
-                    <Rect
-                      x={band.center(bars.length - 1) - barW / 2}
-                      y={layout.y(bars[bars.length - 1].end)}
-                      width={barW}
-                      height={layout.y(0) - layout.y(bars[bars.length - 1].end)}
-                      rx={platformShape.web.mark}
-                      fill={tokens.glow ?? tokens.ring}
-                      filter={`url(#${glowId})`}
-                    />
-                  ) : null}
-                  {bars.map((bar, i) => {
-                    const x = band.center(i) - barW / 2;
-                    const yTop = layout.y(Math.max(bar.start, bar.end));
-                    const yBot = layout.y(Math.min(bar.start, bar.end));
-                    const dim =
-                      selected != null && selected !== i ? DIM_OPACITY : 1;
-                    return (
+            <CartesianFrame
+              yExtent={[min, max]}
+              xLabels={labels}
+              plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
+              compact={compact}
+              hideGrid={props.hideGrid}
+              hideAxes={props.hideAxes}
+              formatValue={formatValue}
+              selectedBand={selected}
+              noGuide
+              onBandScrub={setSelected}
+              overlay={(layout) =>
+                selected != null && layout.band && bars[selected] != null ? (
+                  <ChartValueFlag
+                    title={props.hideAxes ? labels[selected] : undefined}
+                    rows={
+                      bars[selected].kind === "total"
+                        ? [
+                            {
+                              label: "Total",
+                              value: formatValue(bars[selected].end),
+                            },
+                          ]
+                        : [
+                            {
+                              label: "Change",
+                              value: formatValue(
+                                steps[selected].value != null &&
+                                  Number.isFinite(steps[selected].value)
+                                  ? (steps[selected].value as number)
+                                  : 0
+                              ),
+                            },
+                            {
+                              label: "Running",
+                              value: formatValue(bars[selected].end),
+                            },
+                          ]
+                    }
+                    x={layout.band.center(selected)}
+                    plotW={layout.plotW}
+                  />
+                ) : null
+              }
+            >
+              {(layout) => {
+                const band = layout.band;
+                if (!band) return null;
+                // The hand-off's bars: 40 units of a 64-unit step, the deltas washed at .85.
+                const barW = specimen
+                  ? 36 * layout.scale
+                  : Math.max(4, band.step * 0.625);
+                return (
+                  <>
+                    {specimen ? (
+                      <Defs>
+                        <GlowFilter id={glowId} length={8} />
+                      </Defs>
+                    ) : null}
+                    {specimen
+                      ? bars
+                          .slice(0, -1)
+                          .map((bar, i) => (
+                            <Line
+                              key={`connector${i}`}
+                              x1={band.center(i) + barW / 2}
+                              x2={band.center(i + 1) - barW / 2}
+                              y1={layout.y(bar.end)}
+                              y2={layout.y(bar.end)}
+                              stroke={tokens["subtle-foreground"]}
+                              strokeDasharray="2,3"
+                              strokeWidth={layout.scale}
+                            />
+                          ))
+                      : null}
+                    {specimen && bars.length ? (
                       <Rect
-                        key={steps[i].id ?? i}
-                        x={x}
-                        y={yTop}
+                        x={band.center(bars.length - 1) - barW / 2}
+                        y={layout.y(bars[bars.length - 1].end)}
                         width={barW}
-                        height={Math.max(1, yBot - yTop)}
-                        rx={Math.min(platformShape.web.mark, barW / 4)}
-                        fill={barFill(bar.kind)}
-                        fillOpacity={
-                          specimen || bar.kind === "total" ? 1 : 0.85
-                        }
-                        opacity={dim}
+                        height={layout.y(0) - layout.y(bars[bars.length - 1].end)}
+                        rx={platformShape.web.mark}
+                        fill={tokens.glow ?? tokens.ring}
+                        filter={`url(#${glowId})`}
                       />
-                    );
-                  })}
-                  {specimen
-                    ? bars.map((bar, i) => {
-                        const k = layout.scale;
-                        const falling = bar.kind === "fall";
-                        const v = steps[i].value ?? 0;
-                        return (
-                          <Fragment key={i}>
-                            <SvgText
-                              key={`label${i}`}
-                              x={band.center(i)}
-                              y={143 * k}
-                              fontFamily={MONO_FONT}
-                              fontSize={s.CHART_LOOK.authoredAxisSize * k}
-                              textAnchor="middle"
-                              fill={
-                                i === bars.length - 1
-                                  ? tokens.foreground
-                                  : tokens["subtle-foreground"]
-                              }
-                            >
-                              {labels[i]}
-                            </SvgText>
-                            <SvgText
-                              key={`value${i}`}
-                              x={band.center(i)}
-                              y={
-                                falling
-                                  ? layout.y(bar.end) + 10.5 * k
-                                  : layout.y(Math.max(bar.start, bar.end)) -
-                                    5 * k
-                              }
-                              fontFamily={MONO_FONT}
-                              fontSize={s.CHART_LOOK.authoredAxisSize * k}
-                              textAnchor="middle"
-                              fill={tokens["muted-foreground"]}
-                            >
-                              {bar.kind === "total"
-                                ? bar.end
-                                : `${v < 0 ? "−" : "+"}${Math.abs(v)}`}
-                            </SvgText>
-                          </Fragment>
-                        );
-                      })
-                    : null}
-                </>
-              );
-            }}
-          </CartesianFrame>
+                    ) : null}
+                    {bars.map((bar, i) => {
+                      const x = band.center(i) - barW / 2;
+                      const yTop = layout.y(Math.max(bar.start, bar.end));
+                      const yBot = layout.y(Math.min(bar.start, bar.end));
+                      const dim =
+                        selected != null && selected !== i ? DIM_OPACITY : 1;
+                      return (
+                        <Rect
+                          key={steps[i].id ?? i}
+                          x={x}
+                          y={yTop}
+                          width={barW}
+                          height={Math.max(1, yBot - yTop)}
+                          rx={Math.min(platformShape.web.mark, barW / 4)}
+                          fill={barFill(bar.kind)}
+                          fillOpacity={
+                            specimen || bar.kind === "total" ? 1 : 0.85
+                          }
+                          opacity={dim}
+                        />
+                      );
+                    })}
+                    {specimen
+                      ? bars.map((bar, i) => {
+                          const k = layout.scale;
+                          const falling = bar.kind === "fall";
+                          const v = steps[i].value ?? 0;
+                          return (
+                            <Fragment key={i}>
+                              <SvgText
+                                key={`label${i}`}
+                                x={band.center(i)}
+                                y={143 * k}
+                                fontFamily={MONO_FONT}
+                                fontSize={s.CHART_LOOK.authoredAxisSize * k}
+                                textAnchor="middle"
+                                fill={
+                                  i === bars.length - 1
+                                    ? tokens.foreground
+                                    : tokens["subtle-foreground"]
+                                }
+                              >
+                                {labels[i]}
+                              </SvgText>
+                              <SvgText
+                                key={`value${i}`}
+                                x={band.center(i)}
+                                y={
+                                  falling
+                                    ? layout.y(bar.end) + 10.5 * k
+                                    : layout.y(Math.max(bar.start, bar.end)) -
+                                      5 * k
+                                }
+                                fontFamily={MONO_FONT}
+                                fontSize={s.CHART_LOOK.authoredAxisSize * k}
+                                textAnchor="middle"
+                                fill={tokens["muted-foreground"]}
+                              >
+                                {bar.kind === "total"
+                                  ? bar.end
+                                  : `${v < 0 ? "−" : "+"}${Math.abs(v)}`}
+                              </SvgText>
+                            </Fragment>
+                          );
+                        })
+                      : null}
+                  </>
+                );
+              }}
+            </CartesianFrame>
+          </View>
         </View>
-      </View>
+      </ChartAnatomyScope>
     );
   };
 }

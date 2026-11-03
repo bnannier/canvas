@@ -37,6 +37,7 @@ import {
   type DashboardWidget,
 } from "./dashboard-grid.logic.js";
 import { type DashboardGridSkin } from "./dashboard-grid.styles.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
 
 // Shared DashboardGrid shell. A 12-column widget board: each widget declares a span in
 // twelfths, the grid measures its OWN width, resolves every span for the tier that width
@@ -235,12 +236,16 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
     unlocked: boolean;
     compact: boolean;
     onDrop: (e: DropEvent) => void;
+    /** The anatomy parts DashboardGrid took before its AnatomyScope (undefined outside a docs AnatomyProvider). */
+    gridPart?: AnatomyTarget;
+    widgetPart?: AnatomyTarget;
+    handlePart?: AnatomyTarget;
   }
 
   // The cells live in their own component so the measurement re-renders only the grid row,
   // never the order state above it. The SAME row renders in both modes, so toggling
   // customize mode changes the paint and the drag wiring, not the arrangement.
-  function DashboardCells({ items, unlocked, compact, onDrop }: CellsProps) {
+  function DashboardCells({ items, unlocked, compact, onDrop, gridPart, widgetPart, handlePart }: CellsProps) {
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const gap = skin.gap(compact);
@@ -251,13 +256,16 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
     const { value: tier, width, onLayout } = useContainerBreakpoint<DashboardTier>(TIERS);
 
     return (
-      <View onLayout={onLayout} style={[GRID, { gap }]}>
-        {items.map((widget) => {
+      <View ref={gridPart?.ref} onLayout={withPartLayout(gridPart, onLayout)} style={[GRID, { gap }]}>
+        {items.map((widget, index) => {
+          // The first widget carries the Widget and Drag handle parts, as the hand-off
+          // numbers its first card.
+          const first = index === 0;
           const span = effectiveSpan(widget, tier);
           const cell = width > 0 ? { width: dashboardCellWidth(width, span, gap) } : null;
           if (!unlocked) {
             return (
-              <View key={widget.id} style={cell}>
+              <View key={widget.id} ref={first ? widgetPart?.ref : undefined} onLayout={first ? widgetPart?.onLayout : undefined} style={cell}>
                 <LayoutAxisProvider value={GRID_CELL_AXIS}>{widget.content}</LayoutAxisProvider>
               </View>
             );
@@ -274,9 +282,11 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
               style={cell}
             >
               <Draggable id={widget.id} data={widget} label={widget.title} style={FILL}>
-                <View style={[skin.editCell(tokens, theme.dark), FILL]}>
+                <View ref={first ? widgetPart?.ref : undefined} onLayout={first ? widgetPart?.onLayout : undefined} style={[skin.editCell(tokens, theme.dark), FILL]}>
                   <View style={skin.gripRow}>
-                    <DragHandle label={`Reorder ${widget.title}`} />
+                    <AnatomyPart part={first ? handlePart : undefined}>
+                      <DragHandle label={`Reorder ${widget.title}`} />
+                    </AnatomyPart>
                   </View>
                   <LayoutAxisProvider value={GRID_CELL_AXIS}>{widget.content}</LayoutAxisProvider>
                 </View>
@@ -289,6 +299,13 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
   }
 
   return function DashboardGrid(props: DashboardGridProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Grid, Widget (the first card) and Drag handle (its grip, drawn
+    // while unlocked), taken before the AnatomyScope so the widgets' content registers
+    // nothing of its own.
+    const gridPart = useAnatomyPart("Grid");
+    const widgetPart = useAnatomyPart("Widget");
+    const handlePart = useAnatomyPart("Drag handle");
     const { defaultOrder, onOrderChange, unlocked = false, storageKey, compact = false, testID, style } = props;
     // An unconfigured board is a legal empty state, so a grid given no items renders nothing.
     const items = props.items ?? EMPTY;
@@ -341,7 +358,11 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
       }
     };
 
-    const cells = <DashboardCells items={arranged} unlocked={unlocked} compact={compact} onDrop={handleDrop} />;
+    const cells = (
+      <AnatomyScope>
+        <DashboardCells items={arranged} unlocked={unlocked} compact={compact} onDrop={handleDrop} gridPart={gridPart} widgetPart={widgetPart} handlePart={handlePart} />
+      </AnatomyScope>
+    );
     // Locked: a plain static grid, with no drag provider mounted at all.
     if (!unlocked) {
       return (

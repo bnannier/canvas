@@ -9,6 +9,7 @@ import { ReferenceCard, referenceModeOf } from "./card.reference.js";
 import { BoardCardContent, type BoardCardProps } from "./card.board.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import { Badge } from "../../atoms/badge/badge.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
 import * as s from "./card.styles.js";
@@ -318,10 +319,22 @@ export function cornerOf(p: CardProps): Corner {
  */
 const CardCornerContext = createContext<Corner>("default");
 
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 export function createCard(skin: CardSkin) {
   // The featured, promotional and artwork modes, at this skin's corner and title face.
   const BrandCard = createBrandCard(skin);
   return function Card(props: CardProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Surface, Eyebrow, Title, Description, Badge, Footer, taken before
+    // the tree's AnatomyScope so the kit Badge and the caller's children register nothing.
+    const surfacePart = useAnatomyPart("Surface");
+    const eyebrowPart = useAnatomyPart("Eyebrow");
+    const titlePart = useAnatomyPart("Title");
+    const descriptionPart = useAnatomyPart("Description");
+    const badgePart = useAnatomyPart("Badge");
+    const footerPart = useAnatomyPart("Footer");
     const { children, title, icon, actions, description, body, footer, flush, onPress, selected, testID, style, onLiftChange } = props;
     const floating = !!props.floating;
     const theme = useMaterialTheme({ static: true, floating, layer: floating ? "functional" : "content" });
@@ -459,8 +472,8 @@ export function createCard(skin: CardSkin) {
     // express.
     const eyebrowNode = hasEyebrow ? (
       <View style={[s.eyebrowRow, sections?.eyebrow]}>
-        {props.eyebrow ? <Text style={[s.eyebrow(tokens), { fontFamily: MONO_FONT }]}>{props.eyebrow}</Text> : <View />}
-        {props.badge ? <Badge secondary mono small>{props.badge}</Badge> : null}
+        {props.eyebrow ? <Text ref={eyebrowPart?.ref} onLayout={eyebrowPart?.onLayout} style={[s.eyebrow(tokens), { fontFamily: MONO_FONT }]}>{props.eyebrow}</Text> : <View />}
+        {props.badge ? <AnatomyPart part={badgePart}><Badge secondary mono small>{props.badge}</Badge></AnatomyPart> : null}
       </View>
     ) : null;
     // The body's section inset: a density's, below a header or leading the card; none at
@@ -476,8 +489,8 @@ export function createCard(skin: CardSkin) {
               <View style={headerStyles.main}>
                 {icon}
                 <View style={[headerStyles.text, headerStyles.stack]}>
-                  {title ? <Text style={s.title(tokens, skin.titleFont)}>{title}</Text> : null}
-                  {description ? <CardDescription>{description}</CardDescription> : null}
+                  {title ? <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} style={s.title(tokens, skin.titleFont)}>{title}</Text> : null}
+                  {description ? <AnatomyPart part={descriptionPart}><CardDescription>{description}</CardDescription></AnatomyPart> : null}
                 </View>
               </View>
               {actions}
@@ -490,9 +503,11 @@ export function createCard(skin: CardSkin) {
     const footerNode = footer ? (
       <>
         <CardSeparator />
-        <CardFooter style={sections?.footer}>
-          <Text style={s.footerText(tokens)}>{footer}</Text>
-        </CardFooter>
+        <AnatomyPart part={footerPart}>
+          <CardFooter style={sections?.footer}>
+            <Text style={s.footerText(tokens)}>{footer}</Text>
+          </CardFooter>
+        </AnatomyPart>
       </>
     ) : null;
 
@@ -543,8 +558,11 @@ export function createCard(skin: CardSkin) {
       const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(hovered ? hover.elevation(elev) : elev, tokens, !!selected));
       const lift = hover != null ? liftStyle(hovered, hover.motion, reduced, shade) : null;
       return (
+        <AnatomyScope>
         <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer, raised ? RAISED : null]} {...hoverTarget}>
           <Pressable
+            ref={surfacePart?.ref}
+            onLayout={surfacePart?.onLayout}
             accessibilityRole={props.interactiveContents ? "none" : "button"}
             accessibilityLabel={props.accessibilityLabel}
             onPress={onPress}
@@ -560,12 +578,17 @@ export function createCard(skin: CardSkin) {
             </MaterialBehind>
           </Pressable>
         </RippleClip>
+        </AnatomyScope>
       );
     }
     return (
-      <GlassSurface static layer={floating ? "functional" : "content"} floating={floating} testID={testID} stateBorder={!!selected} tint={selectionWash} style={[surface, skin.elevation(elev, tokens, !!selected), outer]}>
-        <CardCornerContext.Provider value={corner}>{inner}</CardCornerContext.Provider>
-      </GlassSurface>
+      <AnatomyScope>
+        <GlassSurface static layer={floating ? "functional" : "content"} floating={floating} testID={testID} stateBorder={!!selected} tint={selectionWash} style={[surface, skin.elevation(elev, tokens, !!selected), outer]}>
+          {/* The surface's own box, for the anatomy Surface part: GlassSurface has no ref, so a pass-through fill measures it. */}
+          {surfacePart ? <View ref={surfacePart.ref} onLayout={surfacePart.onLayout} style={MEASURE_BOX} /> : null}
+          <CardCornerContext.Provider value={corner}>{inner}</CardCornerContext.Provider>
+        </GlassSurface>
+      </AnatomyScope>
     );
   };
 }

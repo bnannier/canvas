@@ -1,8 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHardwareBack } from "../../style/use-hardware-back.js";
-import { useId, useState, type ReactNode } from "react";
-import { KeyboardAvoidingView, Platform, useWindowDimensions } from "react-native";
+import { createContext, useContext, useId, useState, type ReactNode } from "react";
+import { KeyboardAvoidingView, Platform, StyleSheet, useWindowDimensions } from "react-native";
 import { View, Text, Pressable, RippleClip, cornerRadii, GlassSurface, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
@@ -15,6 +15,8 @@ import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { scrimFill } from "../../style/scrim.js";
 import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
 import { useHydrated } from "../../style/use-hydrated.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 
 // Shared Dialog shell. The structure (an optional trigger plus a modal panel
 // centered over a dimmed backdrop, a title, an optional description, an optional
@@ -149,6 +151,13 @@ export function sizeOf(p: DialogProps): Size {
 // Teleports its children into the nearest OverlayProvider when presenting as an
 // overlay, and renders them in place otherwise. Keeps the contained default
 // byte-for-byte unchanged rather than routing it through the portal layer.
+/**
+ * The anatomy part a kit component composed of a Dialog (Wizard) registers on the
+ * dialog's card: its own Panel, which the dialog's AnatomyScope would otherwise hide.
+ * Kit-internal; a Dialog resets it for everything it renders.
+ */
+export const DialogPanelPart = createContext<AnatomyTarget | undefined>(undefined);
+
 function Present({ overlay, children }: { overlay: boolean; children: ReactNode }) {
   return overlay ? <Portal>{children}</Portal> : <>{children}</>;
 }
@@ -250,6 +259,25 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     // Escape and native accessibility escape through the same Cancel policy.
     // An embedded specimen takes none of this: focus, Tab, Escape and Back stay the page's.
     const panelRef = useDialogFocus(open && modal);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Scrim, Panel, Title, Description, Body, Actions, Close. Taken
+    // before the tree's AnatomyScope so the footer and close Buttons and the caller's
+    // body register nothing of their own. The Scrim is the presentation node the dim
+    // covers, the Panel a pass-through fill of the card (GlassSurface has no ref).
+    const scrimPart = useAnatomyPart("Scrim");
+    const ownPanelPart = useAnatomyPart("Panel");
+    const panelPart = useContext(DialogPanelPart) ?? ownPanelPart;
+    const titlePart = useAnatomyPart("Title");
+    const descriptionPart = useAnatomyPart("Description");
+    const bodyPart = useAnatomyPart("Body");
+    const actionsPart = useAnatomyPart("Actions");
+    const closePart = useAnatomyPart("Close");
+    // A banded form shown in place draws no dim, so it has no Scrim.
+    const scrimTarget = embeddedBanded ? undefined : scrimPart;
+    const presentationRef = useComposedRefs<View>(panelRef, scrimTarget?.ref);
+    const titleAnatomy = { ref: titlePart?.ref, onLayout: titlePart?.onLayout };
+    const descriptionAnatomy = { ref: descriptionPart?.ref, onLayout: descriptionPart?.onLayout };
+    const actionsAnatomy = { ref: actionsPart?.ref, onLayout: actionsPart?.onLayout };
     const escapeScope = useEscapeLayer(open && modal, cancel);
     // Inline catalogue panels do not own page navigation. A presented overlay
     // consumes native Back and lets a nested escape layer dismiss first.
@@ -265,7 +293,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     //     capsule, no dividers; a pressed capsule dims.
     const footer =
       skin.footerKind === "capsules" ? (
-        <View style={skin.footer(tokens)}>
+        <View {...actionsAnatomy} style={skin.footer(tokens)}>
           {/* Cancel capsule (gray) on the left, Confirm capsule (`primary`, or gray
               with red label when destructive) on the right. */}
           {(
@@ -290,7 +318,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
           ))}
         </View>
       ) : skin.textButton != null ? (
-        <View style={skin.footer(tokens)}>
+        <View {...actionsAnatomy} style={skin.footer(tokens)}>
           {/* Android: flat text buttons, Cancel then Confirm. Each bounded ripple is
               clipped to the br20 outline by its RippleClip parent (a node can't clip
               its own ripple). Bare wrappers — the text buttons are shrink-wrap. */}
@@ -320,7 +348,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
           </RippleClip>
         </View>
       ) : (
-        <View style={skin.footer(tokens)}>
+        <View {...actionsAnatomy} style={skin.footer(tokens)}>
           {/* Web: the hand-off's ghost Cancel + primary/destructive Confirm Button row. */}
           <Button ghost onPress={cancel}>
             {cancelLabel}
@@ -353,7 +381,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
           <Present overlay={overlay}>
           <EscapeLayerProvider scope={escapeScope}>
           <View
-            ref={panelRef} testID={form && overlay && trigger == null ? testID : undefined}
+            ref={presentationRef} onLayout={scrimTarget?.onLayout} testID={form && overlay && trigger == null ? testID : undefined}
             tabIndex={modal ? -1 : undefined}
             // The overlay carries the dialog semantics so assistive tech announces
             // it. `role` ("dialog", or "alertdialog" for a destructive confirm) +
@@ -385,6 +413,8 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
             ) : null}
             <View style={[s.cardSizing, workspace && hydrated ? s.workspaceSizing(workspaceHeight, compactWorkspace) : null, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
             <GlassSurface floating={!embeddedBanded} style={[s.cardLayout, workspace ? compactWorkspace ? s.compactWorkspaceContent : s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null, banded ? [skin.bandedCard, { backgroundColor: tokens.card, borderColor: tokens.border }] : null]}>
+              {/* The card's own box, for the anatomy Panel part: GlassSurface has no ref, so a pass-through fill measures it. */}
+              {panelPart ? <View ref={panelPart.ref} onLayout={panelPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
               {/* The panel content region wraps the content in a
                   KeyboardAvoidingView so the iOS keyboard never
                   covers a form field (padding behavior on iOS; a plain passthrough
@@ -397,14 +427,14 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                       {iconTile}
                       <View style={{ flexDirection: "row", gap: banded ? 0 : 12, alignItems: banded ? "center" : "flex-start", justifyContent: banded ? "space-between" : undefined }}>
                         <View style={banded ? { flexShrink: 1, minWidth: 0, gap: 4 } : { flex: 1, gap: 4 }}>
-                          {title != null ? <Text nativeID={titleId} role="heading" style={banded ? skin.bandedTitle(tokens) : skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
-                          {description ? <Text nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
+                          {title != null ? <Text {...titleAnatomy} nativeID={titleId} role="heading" style={banded ? skin.bandedTitle(tokens) : skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
+                          {description ? <Text {...descriptionAnatomy} nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
                         </View>
                         {props.headerAccessory == null ? null : <View style={banded ? { flexShrink: 1, minWidth: 0 } : null}>{props.headerAccessory}</View>}
                         {embeddedBanded ? null : skin.close != null ? (
-                          <Button icon compactIcon ghost steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x color={skin.close.color(tokens)} size={skin.close.iconSize} decorative />} />
+                          <AnatomyPart part={closePart}><Button icon compactIcon ghost steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x color={skin.close.color(tokens)} size={skin.close.iconSize} decorative />} /></AnatomyPart>
                         ) : (
-                          <Button icon mediumIcon circle ghost inset steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x muted heavyStroke size={15} />} />
+                          <AnatomyPart part={closePart}><Button icon mediumIcon circle ghost inset steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x muted heavyStroke size={15} />} /></AnatomyPart>
                         )}
                       </View>
                       {banded && props.workspaceHeader != null ? props.workspaceHeader : null}
@@ -412,33 +442,33 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                       {workspace ? (
                         <>
                           {!banded && props.workspaceHeader != null ? <View style={s.workspaceHeader}>{props.workspaceHeader}</View> : null}
-                          <View style={[banded ? props.workspaceSidebar != null ? s.bandedSplitBody : s.bandedBody : s.workspaceBody, compactWorkspace ? s.compactWorkspaceContent : null]}>{props.workspaceSidebar}{children}</View>
-                          {props.footer ? <View style={banded ? [s.bandedFooter, ruleColor] : s.workspaceFooter}>{props.footer}</View> : null}
+                          <View ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={[banded ? props.workspaceSidebar != null ? s.bandedSplitBody : s.bandedBody : s.workspaceBody, compactWorkspace ? s.compactWorkspaceContent : null]}>{props.workspaceSidebar}{children}</View>
+                          {props.footer ? <View {...actionsAnatomy} style={banded ? [s.bandedFooter, ruleColor] : s.workspaceFooter}>{props.footer}</View> : null}
                         </>
                       ) : (
                         <OverlayScrollView style={banded ? null : { marginTop: 18 }} contentContainerStyle={banded ? null : { gap: 18, paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
-                          {banded ? <View style={s.bandedBody}>{children}</View> : children}
-                          {banded ? (props.footer ? <View style={[s.bandedFooter, ruleColor]}>{props.footer}</View> : null) : props.footer}
+                          {banded ? <View ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={s.bandedBody}>{children}</View> : children != null ? <AnatomyPart part={bodyPart}>{children}</AnatomyPart> : null}
+                          {banded ? (props.footer ? <View {...actionsAnatomy} style={[s.bandedFooter, ruleColor]}>{props.footer}</View> : null) : props.footer ? <AnatomyPart part={actionsPart}>{props.footer}</AnatomyPart> : null}
                         </OverlayScrollView>
                       )}
                     </>
                   ) : children != null ? (
-                    children
+                    <AnatomyPart part={bodyPart}>{children}</AnatomyPart>
                   ) : (
                     <>
                       {iconTile}
                       {title != null ? (
-                        <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
+                        <Text {...titleAnatomy} nativeID={titleId} role="heading" style={skin.title(tokens)}>
                           {title}
                         </Text>
                       ) : null}
                       {description != null ? (
-                        <Text nativeID={descriptionId} style={skin.body(tokens)}>
+                        <Text {...descriptionAnatomy} nativeID={descriptionId} style={skin.body(tokens)}>
                           {description}
                         </Text>
                       ) : null}
                       {withBody ? (
-                        <View style={skin.formBody}>
+                        <View ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={skin.formBody}>
                           <Text nativeID={amountId} style={skin.fieldLabel(tokens)}>Amount</Text>
                           <View style={skin.amountRow}>
                             <Text style={skin.currency(tokens)}>$</Text>
@@ -459,22 +489,26 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
           </EscapeLayerProvider>
           </Present>
     );
-    if (form && overlay && trigger == null) return open ? presentation : null;
+    if (form && overlay && trigger == null) return open ? <AnatomyScope><DialogPanelPart.Provider value={undefined}>{presentation}</DialogPanelPart.Provider></AnatomyScope> : null;
 
     // Optional trigger button plus the modal. The modal is a contained dim
     // backdrop: a centered scrim with presence in the preview (explicit
     // minHeight) so the panel reads as a modal within the area.
     return (
-      <View testID={testID} style={[s.root, !modal ? s.embeddedFill : null]}>
-        {trigger != null ? (
-          <View style={s.triggerWrap}>
-            <Button outline small onPress={() => setOpen(true)}>
-              {trigger}
-            </Button>
+      <AnatomyScope>
+        <DialogPanelPart.Provider value={undefined}>
+          <View testID={testID} style={[s.root, !modal ? s.embeddedFill : null]}>
+            {trigger != null ? (
+              <View style={s.triggerWrap}>
+                <Button outline small onPress={() => setOpen(true)}>
+                  {trigger}
+                </Button>
+              </View>
+            ) : null}
+            {open ? presentation : null}
           </View>
-        ) : null}
-        {open ? presentation : null}
-      </View>
+        </DialogPanelPart.Provider>
+      </AnatomyScope>
     );
   };
 }
