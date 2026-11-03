@@ -2,6 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { CATEGORIES as GENERATED_CATEGORIES, ICONS, NAMES } from "../src/atoms/icon/icon.glyphs.ts";
+import { nameOf } from "../src/atoms/icon/icon.shared.tsx";
 import { CATEGORIES, SOURCES, ALIASES, REQUIRED_NAMES, REFERENCE_PATHS } from "../tools/icongen/icons.ts";
 
 // The glyph set is GENERATED (tools/icongen -> src/atoms/icon/icon.glyphs.ts), so the
@@ -41,6 +42,24 @@ describe("Icon glyph set", () => {
     expect(produced).toEqual(expected);
     // ICONS and NAMES are two views of one entry list and must never diverge.
     expect(Object.keys(ICONS).sort((a, b) => a.localeCompare(b))).toEqual(expected);
+  });
+
+  it("keeps gallery labels for aliases, camelCase and numbered names", () => {
+    for (const [key, label] of [
+      ["accessibility", "accessibility"],
+      ["barChart2", "bar-chart-2"],
+      ["chartLine", "chart-line"],
+      ["chevronsLeftRight", "chevrons-left-right"],
+      ["circleQuestionMark", "circle-question-mark"],
+    ]) expect(NAMES.find((icon) => icon.key === key)?.label).toBe(label);
+  });
+
+  it("resolves every glyph boolean and preserves alphabetical first-match precedence", () => {
+    for (const { key } of NAMES) expect(nameOf({ [key]: true })).toBe(key);
+    expect(nameOf({ shield: true, check: true })).toBe("check");
+    expect(nameOf({ shield: true, check: false })).toBe("shield");
+    expect(nameOf({ check: false })).toBe("shield");
+    expect(nameOf({})).toBe("shield");
   });
 
   it("files every glyph in exactly one category, and every category has glyphs", () => {

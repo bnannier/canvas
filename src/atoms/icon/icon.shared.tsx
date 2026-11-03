@@ -1,7 +1,7 @@
 import { DisclosureRotation } from "../../style/disclosure-rotation.js";
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
 import { View, useTheme, type ColorTokens, type LayoutStyle } from "../../style/index.js";
-import { CATEGORIES, ICONS, NAMES, type Shape, type IconGlyphProps, type IconName, type IconCategory } from "./icon.glyphs.js";
+import { CATEGORIES, ICONS, KEYS, NAMES, type Shape, type IconGlyphProps, type IconName, type IconCategory } from "./icon.glyphs.js";
 import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
 import { IconCell } from "./icon-cell.js";
 import { primaryText } from "../../style/primary-text.js";
@@ -130,7 +130,7 @@ export const ICON_CATEGORIES: readonly IconCategory[] = CATEGORIES;
 
 // First-match name precedence; defaults to shield (the demo glyph).
 export function nameOf(p: IconProps): string {
-  for (const { key } of NAMES) {
+  for (const key of KEYS) {
     if ((p as Record<string, unknown>)[key]) return key;
   }
   return "shield";

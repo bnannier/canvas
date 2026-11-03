@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 65a274e5daeaf87f9df07daf7e7604143f2e07a133bcae9c9c1bfed57b45e53e
+Source SHA-256: e09f8965dff7d0af07ba1dd1deaa62611de669dfcb059d93145325e8bdbb1cbc
 
 Wrap the application in `ThemeProvider`. Use flat boolean styling props; choose at most one prop per visual axis, such as `primary`, `large`, and `loading`.
 

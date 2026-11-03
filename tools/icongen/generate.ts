@@ -29,8 +29,6 @@ const RESERVED = new Set(["key", "ref", "children"]);
 
 const camel = (s: string) =>
   s.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
-const kebab = (s: string) =>
-  s.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/([a-zA-Z])(\d)/g, "$1-$2").toLowerCase();
 const num = (v: string) => {
   const n = Number(v);
   if (Number.isNaN(n)) throw new Error(`non-numeric attr: ${v}`);
@@ -83,7 +81,7 @@ function serialize(s: Shape): string {
   }
 }
 
-interface Entry { name: string; label: string; category: string; shapes: Shape[]; source: string }
+interface Entry { name: string; category: string; shapes: Shape[]; source: string }
 
 // Each source's category: the first one that files it (a source is filed once).
 const categoryOf = new Map<string, string>();
@@ -111,7 +109,7 @@ for (const source of [...new Set(SOURCES)]) {
   }
   if (bad) { skipped.push(source); continue; }
   seen.set(name, source);
-  entries.push({ name, label: kebab(name), category: categoryOf.get(source)!, shapes: REFERENCE_PATHS[name] ? [{ t: "path", d: REFERENCE_PATHS[name]! }] : shapes, source });
+  entries.push({ name, category: categoryOf.get(source)!, shapes: REFERENCE_PATHS[name] ? [{ t: "path", d: REFERENCE_PATHS[name]! }] : shapes, source });
 }
 
 entries.sort((a, b) => a.name.localeCompare(b.name));
@@ -138,7 +136,11 @@ const iconsBlock = entries
   )
   .join("\n");
 
-const namesBlock = entries.map((e) => `  { key: ${JSON.stringify(e.name)}, label: ${JSON.stringify(e.label)}, category: ${JSON.stringify(e.category)} },`).join("\n");
+// Keep gallery-only metadata separate from the keys Icon needs for prop precedence.
+// Entries already have the same sorted insertion order in ICONS, so no second copy
+// of each key or its mechanically-derived label needs to ship.
+const categoryIndexes = entries.map((entry) => CATEGORIES.findIndex((category) => category.label === entry.category));
+const categoryIndexesBlock = categoryIndexes.map((index, i) => `${i % 24 === 0 ? "\n  " : " "}${index},`).join("");
 
 const categoriesBlock = CATEGORIES.map((c) => `  ${JSON.stringify(c.label)},`).join("\n");
 
@@ -174,10 +176,20 @@ ${categoriesBlock}
 /** One glyph category. */
 export type IconCategory = (typeof CATEGORIES)[number];
 
+/** Glyph keys in gallery/boolean-prop precedence order. */
+export const KEYS = /* @__PURE__ */ Object.keys(ICONS);
+
+// The category index for each key above. This and the gallery construction can
+// tree-shake away for consumers of Icon who do not import ICON_NAMES.
+const CATEGORY_INDEXES = [${categoryIndexesBlock}
+] as const;
+
 /** Gallery order (alphabetical): the prop name (\`key\`), its typed label and its category. */
-export const NAMES: { key: string; label: string; category: IconCategory }[] = [
-${namesBlock}
-];
+export const NAMES: { key: string; label: string; category: IconCategory }[] = /* @__PURE__ */ KEYS.map((key, index) => ({
+  key,
+  label: key.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/([a-zA-Z])(\\d)/g, "$1-$2").toLowerCase(),
+  category: CATEGORIES[CATEGORY_INDEXES[index]],
+}));
 
 /** One boolean per glyph (the name axis of IconProps). */
 export interface IconGlyphProps {

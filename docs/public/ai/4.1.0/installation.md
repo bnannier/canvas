@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 65a274e5daeaf87f9df07daf7e7604143f2e07a133bcae9c9c1bfed57b45e53e
+Source SHA-256: e09f8965dff7d0af07ba1dd1deaa62611de669dfcb059d93145325e8bdbb1cbc
 
 Install Canvas into an existing Expo, React Native, or React Native Web application.
 For an Expo app, let Expo select the SVG version compatible with its SDK:
