@@ -1,6 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
 import { StyleSheet, type LayoutChangeEvent, type ViewStyle, type StyleProp } from "react-native";
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from "react-native-svg";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { View, Text, Pressable, useTheme, useReducedMotion, pressDim, shadow, mixOklab, alpha } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
 import { HOVER } from "../../style/motion.js";
@@ -9,6 +9,7 @@ import { colorsFor, type ColorTokens } from "../../style/tokens.js";
 import { Avatar } from "../../atoms/avatar/avatar.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import type { CardProps } from "./card.shared.js";
+import { GradientFill, type GradientStop } from "../../style/gradient-fill.js";
 import * as c from "./card.styles.js";
 import type { CardSkin } from "./card.styles.js";
 import { webSkin as s } from "./card.brand.styles.js";
@@ -33,15 +34,6 @@ export function artworkInsetOf(p: CardProps) {
   return "frame";
 }
 
-/** CSS-angle endpoints for a linear gradient across a measured box. */
-export function cardGradientPoints(angle: number, width: number, height: number) {
-  const w = width > 0 ? width : 1, h = height > 0 ? height : 1;
-  const a = angle * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a);
-  const length = Math.abs(w * dx) + Math.abs(h * Math.cos(a));
-  return { x1: w / 2 - dx * length / 2, y1: h / 2 - dy * length / 2, x2: w / 2 + dx * length / 2, y2: h / 2 + dy * length / 2 };
-}
-
-type GradientStop = { color: string; at: number; opacity?: number };
 /** A radial bloom in the box's own fractions: centre, the radius its stops are laid along. */
 type Bloom = { color: string; cx: number; cy: number; r: number; fade: number };
 
@@ -55,16 +47,8 @@ const hidden = { pointerEvents: "none", "aria-hidden": true, accessibilityElemen
 
 /** A box painted with a linear gradient behind its children. */
 function ArtPanel({ angle, stops, style, children }: { angle: number; stops: GradientStop[]; style: StyleProp<ViewStyle>; children?: ReactNode }) {
-  const { size, onLayout } = useBox();
-  const id = `card-art-${useId().replace(/:/g, "")}`;
-  const points = cardGradientPoints(angle, size.width, size.height);
-  return <View style={style} onLayout={onLayout}>
-    <View style={StyleSheet.absoluteFill} {...hidden}>
-      <Svg width="100%" height="100%" viewBox={`0 0 ${size.width || 1} ${size.height || 1}`} preserveAspectRatio="none">
-        <Defs><LinearGradient id={id} gradientUnits="userSpaceOnUse" {...points}>{stops.map((stop) => <Stop key={stop.at} offset={stop.at} stopColor={stop.color} stopOpacity={stop.opacity ?? 1} />)}</LinearGradient></Defs>
-        <Rect width="100%" height="100%" fill={`url(#${id})`} />
-      </Svg>
-    </View>
+  return <View style={style}>
+    <GradientFill angle={angle} stops={stops} />
     {children}
   </View>;
 }

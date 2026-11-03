@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType } from "react";
 import { FlatList, StyleSheet, type DimensionValue, type LayoutChangeEvent, type ViewProps } from "react-native";
-import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, FOCUS_RESET, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, paneRipple, withInnerFill, alpha } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useContainerWidth, devWarn, FOCUS_RESET, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, paneRipple, alpha } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
@@ -10,6 +10,9 @@ import { type CardProps } from "../card/card.shared.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
+import { useHover } from "../../style/hover.js";
+import { GradientFill } from "../../style/gradient-fill.js";
+import { MEASURE_ROUNDING, gridCellWidth, gridColumns } from "../../atoms/grid/grid.shared.js";
 import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
@@ -28,17 +31,16 @@ import { type Columns } from "./grid-lists.styles.js";
 // or file collection, or any tiled gallery. Each item renders as a bordered
 // card tile with a leading avatar, a title, and supporting text or a badge.
 //
-// RN has no CSS grid, so the grid is built from a flex-row flex-wrap container
-// whose tiles carry a fractional flex-basis (48% / 31% width) plus grow, so they
-// share the row evenly and reflow as the row fills. Tiles are authored
-// desktop-first: they take their column share on wide viewports and collapse to
-// full width on phones and below (the `sm` responsive width).
+// RN has no CSS grid, so the grid is a flex-row flex-wrap container whose tiles take
+// the hand-off's auto-fill column width, measured on the grid itself: as many columns as
+// asked for while each holds 140 px, fewer below that, and a short last row keeps its
+// columns rather than stretching.
 //
 // Boolean-prop API: one boolean per option, grouped by axis, first-match
 // precedence within an axis (mirrors Button's intentOf).
 //
-// - Columns (pick one; default is two-up): `cols3` packs three tiles per row,
-//   `cols2` is the explicit two-up. With neither set the grid is two-up.
+// - Columns (pick one; default is three-up, the hand-off's): `cols3` is the explicit
+//   three-up, `cols2` the two-up.
 // - Density: `compact` tightens the gap and per-tile padding for denser grids.
 //
 // GridList is a "Light" platform treatment: one structure and one set of
@@ -80,6 +82,8 @@ export interface GridListSkin {
   pressedOpacity: number | null;
   /** Android ripple over the gallery pressable; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
+  /** The shadow a tappable framed tile lifts to under the pointer (the web); null elsewhere. */
+  hoverShadow: ((t: ColorTokens) => ViewStyle) | null;
 }
 
 // The composed atoms (Card / Avatar / Badge / Button) are passed in by each
@@ -129,7 +133,7 @@ export interface GridListItem {
 export interface GridListProps {
   /** The tiles to render, one card per entry. */
   items: GridListItem[];
-  // Columns (pick one; default is two-up).
+  // Columns (pick one; default is three-up).
   cols3?: boolean;
   cols2?: boolean;
   /**
@@ -171,7 +175,7 @@ export interface GridListProps {
 export function columnsOf(p: GridListProps): Columns {
   if (p.cols3) return "cols3";
   if (p.cols2) return "cols2";
-  return "cols2";
+  return "cols3";
 }
 
 // The handlers of the parts the first tile draws, handed to that tile only.
@@ -194,11 +198,12 @@ export function createGridList(
   // A borderless gallery thumbnail: a square color block with a filename and size
   // below. The parent GridList resolves the responsive width ONCE and passes it
   // down, so an N-tile grid carries one viewport subscription, not N.
-  function GalleryTile({ item, width, listItem, onPress, parts }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void; parts?: TileParts }) {
+  function GalleryTile({ item, width, grows, listItem, onPress, parts }: { item: GridListItem; width: DimensionValue; grows: boolean; listItem: ViewProps; onPress?: () => void; parts?: TileParts }) {
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     const frame = skin.galleryTile ? skin.galleryTile(tokens) : null;
-    if (frame) return <FramedGalleryTile item={item} width={width} listItem={listItem} onPress={onPress} frame={frame} parts={parts} />;
+    const cell: ViewStyle[] = [grows ? s.tileGrow : {}, { width }];
+    if (frame) return <FramedGalleryTile item={item} cell={cell} listItem={listItem} onPress={onPress} frame={frame} parts={parts} />;
     const inner = (
       <>
         {/* Square color block. A single translucent tint stands in for the legacy
@@ -229,7 +234,7 @@ export function createGridList(
       // wraps the button, and the button fills the cell as it did when it was one.
       const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
       return (
-        <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[s.tileGrow, { width }]}>
+        <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={cell}>
           <Pressable
             accessibilityRole="button"
             onPress={onPress}
@@ -241,19 +246,23 @@ export function createGridList(
         </View>
       );
     }
-    return <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[s.tileGrow, { width }]}>{inner}</View>;
+    return <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={cell}>{inner}</View>;
   }
 
   // The framed gallery tile (the v4 hand-off's): the thumbnail square at the top of a
   // content pane, clipped by its corner, over the padded caption. Pressable, the pane
   // rides inside the Pressable so the tap, ripple and dim stay on it.
-  function FramedGalleryTile({ item, width, listItem, onPress, frame, parts }: { item: GridListItem; width: DimensionValue; listItem: ViewProps; onPress?: () => void; frame: ViewStyle; parts?: TileParts }) {
+  function FramedGalleryTile({ item, cell, listItem, onPress, frame, parts }: { item: GridListItem; cell: ViewStyle[]; listItem: ViewProps; onPress?: () => void; frame: ViewStyle; parts?: TileParts }) {
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
-    // A coloured thumbnail keeps its translucent hue under glass; the neutral one is a
-    // fill inside the pane, an ink tint under glass.
-    const fill = s.galleryBlockFill(tokens, item.color);
-    const block = <View ref={parts?.media?.ref} onLayout={parts?.media?.onLayout} style={[s.galleryThumb, item.color != null ? fill : withInnerFill(theme, fill, "soft")]} />;
+    // The thumbnail is the hand-off's 135 degree wash of the item's colour, a paint inside
+    // the pane in either surface mode (it is artwork, not a fill role).
+    const block = (
+      <View ref={parts?.media?.ref} onLayout={parts?.media?.onLayout} style={s.galleryThumb}>
+        <GradientFill angle={s.MEDIA_ANGLE} stops={s.mediaStops(tokens, item.color)} />
+      </View>
+    );
+    const { hovered, target: hoverTarget } = useHover(skin.hoverShadow != null && onPress != null);
     const inner = (
       <>
         {block}
@@ -266,12 +275,13 @@ export function createGridList(
     if (onPress) {
       const ripple = paneRipple(theme, skin.ripple ? skin.ripple(tokens) : undefined);
       return (
-        <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[s.tileGrow, { width }]}>
+        <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={cell}>
           <Pressable
             accessibilityRole="button"
             onPress={onPress}
             android_ripple={ripple}
-            style={({ pressed }) => [paneStyle(theme, frame), skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+            {...hoverTarget}
+            style={({ pressed }) => [paneStyle(theme, frame), hovered && skin.hoverShadow ? skin.hoverShadow(tokens) : null, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
           >
             <GlassPane layer="content" shape={frame} />
             {inner}
@@ -280,7 +290,7 @@ export function createGridList(
       );
     }
     return (
-      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[s.tileGrow, { width }]}>
+      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={cell}>
         <GlassSurface layer="content" style={frame}>{inner}</GlassSurface>
       </View>
     );
@@ -291,7 +301,7 @@ export function createGridList(
   // responsive width once and passes it down. Its surface and press feedback come
   // from the Card atom (already platform-correct per build), so the skin only sets
   // the tile padding density and the title type.
-  function PeopleTile({ item, width, compact, listItem, onPress, parts }: { item: GridListItem; width: DimensionValue; compact: boolean; listItem: ViewProps; onPress?: () => void; parts?: TileParts }) {
+  function PeopleTile({ item, width, grows, compact, listItem, onPress, parts }: { item: GridListItem; width: DimensionValue; grows: boolean; compact: boolean; listItem: ViewProps; onPress?: () => void; parts?: TileParts }) {
     const { tokens } = useTheme();
     const pad = compact ? skin.tilePad.compact : skin.tilePad.default;
     // The tile cell owns the measured width (a layout cell) and is the list item; the
@@ -306,9 +316,12 @@ export function createGridList(
       </>
     );
     return (
-      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={{ width, flexGrow: 1 }}>
-        <Card onPress={onPress} interactiveContents={hasActions} style={{ alignItems: "center", padding: pad }}>
-        <View style={s.cardInner}>
+      <View {...listItem} ref={parts?.tile?.ref} onLayout={parts?.tile?.onLayout} style={[grows ? s.tileGrow : null, { width }]}>
+        {/* The tile's own inset rides its content, not the Card's style: a pressable
+            Card's style lands on its outer clip, where it centred the press target
+            instead of the content and left most of the tile untappable. */}
+        <Card flush onPress={onPress} interactiveContents={hasActions}>
+        <View style={[s.cardInner, { padding: pad }]}>
           <AnatomyPart part={parts?.media}>
             <Avatar large src={isPhoto(item.avatar) ? item.avatar : undefined} name={item.title}>
               {item.avatar && !isPhoto(item.avatar) ? item.avatar : undefined}
@@ -346,15 +359,13 @@ export function createGridList(
     const { items, gallery, compact, label, virtualized, testID, style, onPressItem } = props;
     const columns = columnsOf(props);
     const gap = compact ? skin.gap.compact : skin.gap.default;
-    // ONE responsive resolution for the whole grid, measured against the grid's
-    // OWN container (the DataTable precedent: a grid in a narrow desktop column
-    // collapses too, and a viewport seed keeps the first frame plausible): at
-    // narrow widths the tiles fill the row, and the windowed path's column
-    // count follows suit (it used to stay at 2-3 columns of 100%-wide tiles).
-    const { value: phone, onLayout: onGridLayout } = useContainerBreakpoint(
-      { base: false, sm: true },
-      { seedViewport: true },
-    );
+    // ONE resolution for the whole grid, measured against the grid's OWN width (a grid in
+    // a narrow desktop column drops columns too; a viewport seed keeps the first frame
+    // plausible): the hand-off's auto-fill columns, at most the asked-for count, each at
+    // least 140 px, every tile its column's width.
+    const { width: gridWidth, onLayout: onGridLayout } = useContainerWidth();
+    const asked = s.COLUMN_COUNT[columns];
+    const cols = Math.min(asked, gridColumns(gridWidth, s.MIN_TILE_WIDTH, gap));
     // A windowed grid scrolls its tiles on its own, so it is a keyboard stop while they
     // overflow, whatever the tiles hold (DataTable's windowed body is the precedent).
     // Left alone, Chromium and Firefox made a read-only grid's scroller a stop anyway
@@ -364,11 +375,10 @@ export function createGridList(
     // and draws the theme's ring around itself as the other lists' cards do.
     const gridFocus = useScrollFocus("vertical");
     const gridFrame = useFocusFrame();
-    const tileWidth: DimensionValue = phone ? "100%" : s.TILE_WIDTH[columns];
-    // FlatList lays out `numColumns` tiles per row itself (mirrors the flex-wrap
-    // grid's column count): one at phone widths, else cols3 -> 3, cols2 (the
-    // default) -> 2.
-    const numColumns = phone ? 1 : columns === "cols3" ? 3 : 2;
+    const tileWidth: DimensionValue = gridWidth > 0 ? gridCellWidth(gridWidth - (cols > 1 ? MEASURE_ROUNDING : 0), cols, gap) : s.TILE_SHARE[columns];
+    const grows = gridWidth <= 0;
+    // FlatList lays out `numColumns` tiles per row itself, the flex-wrap grid's count.
+    const numColumns = gridWidth > 0 ? cols : asked;
 
     // One tile, keyless so it can be used both by the eager `.map` (which supplies
     // the key via a Fragment) and by FlatList's renderItem (which keys via keyExtractor).
@@ -376,9 +386,9 @@ export function createGridList(
     const renderTile = (item: GridListItem, index: number, listItem: ViewProps) => {
       const onPress = onPressItem ? () => onPressItem(index) : undefined;
       return gallery ? (
-        <GalleryTile item={item} width={tileWidth} listItem={listItem} onPress={onPress} parts={index === 0 ? firstParts : undefined} />
+        <GalleryTile item={item} width={tileWidth} grows={grows} listItem={listItem} onPress={onPress} parts={index === 0 ? firstParts : undefined} />
       ) : (
-        <PeopleTile item={item} width={tileWidth} compact={!!compact} listItem={listItem} onPress={onPress} parts={index === 0 ? firstParts : undefined} />
+        <PeopleTile item={item} width={tileWidth} grows={grows} compact={!!compact} listItem={listItem} onPress={onPress} parts={index === 0 ? firstParts : undefined} />
       );
     };
     // The tiles are a list named by `label`: the grid's root in both paths, as Tailwind

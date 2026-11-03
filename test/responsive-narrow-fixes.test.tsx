@@ -201,26 +201,32 @@ describe("GridList responsive tiles (one resolution, virtualized path included)"
     return node!;
   };
 
-  it("gallery tiles collapse to full width at phone widths", () => {
+  // The hand-off's grid (cv-kit-code3.js `grid-lists`): three columns by default, fewer
+  // wherever a column would fall under 140px, so a 375px phone keeps two (only a grid
+  // under 292px drops to one, scroll-frame-ring.test.tsx). Before the grid measures
+  // itself it takes the window's width, refreshed at breakpoint granularity.
+  const cell = (width: number, cols: number) => `${Math.floor(((width - (cols > 1 ? 0.5 : 0) - 12 * (cols - 1)) / cols) * 100) / 100}px`;
+
+  it("gallery tiles keep the hand-off's 140px column floor as the window narrows", () => {
     render(
       <ThemeProvider>
         <GridList gallery items={items} />
       </ThemeProvider>,
     );
-    expect(tileOf("Design").style.width).toBe("48%");
+    expect(tileOf("Design").style.width).toBe(cell(1280, 3));
     resizeViewport(375);
-    expect(tileOf("Design").style.width).toBe("100%");
+    expect(tileOf("Design").style.width).toBe(cell(375, 2));
   });
 
-  it("virtualized grids drop to one full-width column at phone widths", () => {
+  it("virtualized grids take the same columns as the eager grid at phone widths", () => {
     resizeViewport(375);
     render(
       <ThemeProvider>
         <GridList gallery virtualized style={{ maxHeight: 480 }} items={items} />
       </ThemeProvider>,
     );
-    // Every tile is full width; the old bug kept 2-3 FlatList columns of
+    // Every tile takes the two-column cell; the old bug kept 2-3 FlatList columns of
     // 100%-wide tiles at phone widths.
-    for (const item of items) expect(tileOf(item.title).style.width).toBe("100%");
+    for (const item of items) expect(tileOf(item.title).style.width).toBe(cell(375, 2));
   });
 });
