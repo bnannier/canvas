@@ -2,6 +2,7 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { statusColors, shadow, alpha, surfaceRipple, tabularNums, shape, type ColorTokens } from "../../style/index.js";
 import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
 import { webHover } from "../../style/hover.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type StatsSkin } from "./stats.shared.js";
 
 // Co-located Stats skins, one per platform. Stats takes the Canvas v4 hand-off's stat tiles
@@ -15,8 +16,8 @@ import { type StatsSkin } from "./stats.shared.js";
 //   Group (the default, and `plain`): one bordered `card` surface at the card corner with no
 //     shadow, the metrics set edge to edge inside it, each after the first behind a 1 px
 //     `border` rule.
-//   Framed: separate tiles, the `card` fill on a 1 px `border` hairline at a 14 corner with
-//     no shadow, 12 apart.
+//   Framed: separate tiles, the `card` fill on a 1 px `border` hairline at the stat-tile
+//     corner with no shadow, 12 apart.
 //   Tile: a 16 inset, its lines 8 apart. Label: 500 13 in the secondary ink, led by the
 //     accent's 8 px swatch and the icon. Value: 600 28 (20 compact, 36 large), tracked
 //     -0.02em, tabular, in the display face on the web, with an 84 by 28 trend line beside
@@ -69,14 +70,14 @@ export function sparkPoints(values: readonly number[], width: number = SPARK.wid
 // The composition: a 6 px bar of proportional segments 2 apart (the first in the accent,
 // the rest in the raised surface) over a wrapping legend of 6 px dots.
 export const shareColumn: ViewStyle = { gap: 6 };
-export const shareBar: ViewStyle = { flexDirection: "row", height: 6, borderRadius: 999, overflow: "hidden", gap: 2 };
+export const shareBar: ViewStyle = { flexDirection: "row", height: 6, borderRadius: 9999, overflow: "hidden", gap: 2 };
 export const shareLegend: ViewStyle = { flexDirection: "row", flexWrap: "wrap", gap: 12 };
 export const shareLegendItem: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 5 };
-export const shareDot: ViewStyle = { width: 6, height: 6, borderRadius: 3 };
+export const shareDot: ViewStyle = { width: 6, height: 6, borderRadius: 9999 };
 export const shareLegendText = (tokens: ColorTokens): TextStyle => ({ fontSize: 11, lineHeight: 14, fontWeight: "400", color: subtle(tokens) });
 
-// The accent's mark before the label: an 8 px swatch at a 2 corner in the chart slot's color.
-export const swatch: ViewStyle = { width: 8, height: 8, borderRadius: 2 };
+// The accent's mark before the label: an 8 px swatch at the stat-swatch corner in the chart slot's color.
+export const swatch: ViewStyle = { width: 8, height: 8, borderRadius: platformShape.web.statSwatch };
 
 // The label cluster: the swatch, the icon and the label, 8 apart.
 export const labelCluster: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 1 };
@@ -115,7 +116,7 @@ export const VALUE_SIZE = { default: 28, compact: 20, large: 36 } as const;
 
 
 /** The framed tile's corner (the group's own box takes the card corner). */
-export const TILE_RADIUS = 14;
+export const TILE_RADIUS = platformShape.web.statTile;
 
 const tile = (tokens: ColorTokens, padding: number, gap: number, raised: boolean): ViewStyle => ({
   borderRadius: raised ? shape.web.card : TILE_RADIUS,

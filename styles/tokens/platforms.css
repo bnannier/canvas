@@ -104,9 +104,9 @@
   --p-nav-brand:15px;--p-nav-brand-lh:20px;--p-nav-brand-weight:600;
   --p-nav-links-gap:4px;--p-nav-link-radius:9999px;--p-nav-link-pad-x:10px;--p-nav-link-pad-y:7px;
   --p-nav-link-font:13px;--p-nav-link-lh:18px;
-  /* Stats (stats.styles.ts webSkin: the v4 hand-off's tile, an 18px inset, a 28px figure) */
-  --p-stat-radius:16px;--p-stat-pad:18px;--p-stat-shadow:var(--shadow-sm);--p-stat-gap:12px;
-  --p-stat-label:12px;--p-stat-label-lh:16px;--p-stat-label-tracking:0px;
+  /* Stats (stats.styles.ts webSkin: the v4 hand-off's framed tile, a 16px inset, a 28px figure) */
+  --p-stat-radius:14px;--p-stat-pad:16px;--p-stat-shadow:none;--p-stat-gap:12px;
+  --p-stat-label:13px;--p-stat-label-lh:16px;--p-stat-label-tracking:0px;
   --p-stat-value:28px;--p-stat-value-lh:28px;--p-stat-value-weight:600;--p-stat-value-tracking:-0.56px;
   --p-stat-delta-tracking:0px;
   /* DataTable (data-table.styles.ts webSkin: the v4 hand-off's framed table, a 500 12px band, 13px rows) */
