@@ -402,6 +402,28 @@ const SWEEP_LOOKS = [
   { scheme: "light", surface: "solid", palette: "violet" },
   { scheme: "light", surface: "glass", palette: "mint" },
 ] as const;
+
+for (const restingBorder of [false, true]) {
+  test(`the ring sweep ${restingBorder ? "rejects a border present at rest" : "waits for an initially focused field's blur commit"}`, async ({ page }) => {
+    // An isolated evidence-reader fixture: React commits a field's blur state after
+    // the native event, so the baseline must be collected in a later browser task.
+    const color = "rgba(120, 70, 220, 0.28)";
+    await page.setContent('<main data-page-scroll><input aria-label="Probe field" style="border:1px solid #ccc;outline:0 solid transparent"></main>');
+    await page.getByRole("textbox").evaluate((node, { color, restingBorder }) => {
+      const field = node as HTMLInputElement;
+      field.addEventListener("focus", () => { field.style.borderColor = color; });
+      field.addEventListener("blur", () => {
+        queueMicrotask(() => { field.style.borderColor = restingBorder ? color : "#ccc"; });
+      });
+      field.focus();
+    }, { color, restingBorder });
+    const reading = await ringlessStops(page, color);
+    expect(reading.stops).toBe(1);
+    expect(reading.ringless.map(({ stop }) => stop)).toEqual(restingBorder ? ['input "Probe field"'] : []);
+    expect(reading.doubled).toEqual([]);
+  });
+}
+
 for (const route of componentRoutes()) {
   for (const look of SWEEP_LOOKS) {
     const where = `${look.scheme} ${look.surface} ${look.palette}`;

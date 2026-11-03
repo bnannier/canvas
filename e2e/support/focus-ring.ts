@@ -154,6 +154,12 @@ type Reading = { out?: true; id?: number; skipped?: true; shown?: boolean; doubl
  * ring-coloured state, is passed over.
  */
 export async function ringlessStops(page: Page, color: string): Promise<{ stops: number; ringless: RinglessStop[]; doubled: DoubledStop[] }> {
+  // Blur dispatches the event synchronously, but React commits its visual state after
+  // that event. Collect rest in a later task, once that commit can remove the old cue;
+  // otherwise an initially focused field's ring is mistaken for a resting border.
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  });
   await page.evaluate(({ color, name }) => {
     const scroller = document.querySelector("[data-page-scroll]");
     if (!(scroller instanceof HTMLElement)) throw new Error("the page has no [data-page-scroll] scroller to walk");
@@ -166,7 +172,6 @@ export async function ringlessStops(page: Page, color: string): Promise<{ stops:
         style[`border${side}Color`] === color && style[`border${side}Style`] !== "none" && parseFloat(style[`border${side}Width`]) > 0);
       return (outline ? 1 : 0) | (border ? 2 : 0);
     };
-    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     // Only a border is subtracted at rest: a checked control's border is the ring colour
     // with nothing focused, while an outline in it at rest is a pinned focus specimen
     // (InteractionOverride focused), whose ring is exactly the cue the sweep looks for.
