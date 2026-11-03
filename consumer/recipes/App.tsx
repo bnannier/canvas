@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Column, Container, Navbar, OverlayProvider, ScrollView, Switch, ThemeProvider, Typography, useTheme } from "@nannier/canvas";
 import config from "./recipe-config.json";
+import packageMetadata from "./package.json";
 import { Settings, useSettings } from "./src/recipes/settings";
 import { Dashboard, useDashboard } from "./src/recipes/dashboard";
 import { Booking, useBooking } from "./src/recipes/booking";
@@ -23,7 +24,7 @@ function Recipes({ dark, onDarkChange }: { dark: boolean; onDarkChange: (dark: b
       <ScrollView key={active} role="main" keyboardShouldPersistTaps="handled" style={{ flex: 1 }}>
         <Container page><Column pad relaxed>
           {active === 0 ? <Settings model={settings} /> : active === 1 ? <Dashboard model={dashboard} /> : <Booking model={booking} />}
-          <Typography small muted>Built with @nannier/canvas 4.0.0 · Frontend state only · Reload to reset</Typography>
+          <Typography small muted>Built with @nannier/canvas {packageMetadata.dependencies["@nannier/canvas"]} · Frontend state only · Reload to reset</Typography>
         </Column></Container>
       </ScrollView>
     </SafeAreaView>

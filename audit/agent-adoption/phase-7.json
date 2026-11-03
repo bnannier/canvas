@@ -1,0 +1,1667 @@
+{
+  "schemaVersion": 1,
+  "kind": "manual-public-discovery-verification",
+  "checkedAt": "2026-11-02T05:09:10.429Z",
+  "origin": "https://canvas.nannier.com",
+  "package": "@nannier/canvas",
+  "version": "4.1.0",
+  "scope": "Bounded read-only public HTTP GETs; no screenshots, telemetry, account access, scheduled checks or external writes.",
+  "limitations": [
+    "Successful public and synthetic requests do not verify real bot access or IP identity.",
+    "Search indexing, citations, recommendations, external adoption and real crawler visits are unmeasured.",
+    "Cloudflare account settings, WAF rules and request logs were not accessed by this checker.",
+    "No external links are fetched; human routes are checked as HTTP HTML, without client-side rendering.",
+    "A supplied manifest pin connects hashes to a prior release record; without a pin, hashes establish only consistency with the served manifest."
+  ],
+  "crawlerSources": [
+    {
+      "publisher": "OpenAI",
+      "url": "https://developers.openai.com/api/docs/bots",
+      "reviewedAt": "2026-11-02",
+      "note": "Search, training and user-directed agents have independent purposes. User-directed ChatGPT requests may not apply robots.txt."
+    },
+    {
+      "publisher": "Anthropic",
+      "url": "https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler",
+      "reviewedAt": "2026-11-02",
+      "note": "Documents three robot tokens and robots.txt support; does not specify complete HTTP User-Agent strings."
+    }
+  ],
+  "crawlers": [
+    {
+      "token": "OAI-SearchBot",
+      "role": "search",
+      "template": "official example",
+      "syntheticUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36; compatible; OAI-SearchBot/1.4; +https://openai.com/searchbot"
+    },
+    {
+      "token": "GPTBot",
+      "role": "training",
+      "template": "official example",
+      "syntheticUserAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.4; +https://openai.com/gptbot"
+    },
+    {
+      "token": "ChatGPT-User",
+      "role": "user-directed retrieval",
+      "template": "official full string",
+      "syntheticUserAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot"
+    },
+    {
+      "token": "ClaudeBot",
+      "role": "training",
+      "template": "official robot token only; synthetic HTTP header, not a documented full string",
+      "syntheticUserAgent": "ClaudeBot"
+    },
+    {
+      "token": "Claude-SearchBot",
+      "role": "search",
+      "template": "official robot token only; synthetic HTTP header, not a documented full string",
+      "syntheticUserAgent": "Claude-SearchBot"
+    },
+    {
+      "token": "Claude-User",
+      "role": "user-directed retrieval",
+      "template": "official robot token only; synthetic HTTP header, not a documented full string",
+      "syntheticUserAgent": "Claude-User"
+    }
+  ],
+  "summary": {
+    "ok": true,
+    "responses": 144,
+    "failedResponses": 0,
+    "versionedHashesChecked": 113,
+    "currentGlobalHashesChecked": 3,
+    "globalHashesSkippedBecauseArchive": false,
+    "catalogComponents": 107,
+    "sitemapUrls": 1113,
+    "requiredSitemapUrls": 116,
+    "missingSitemapUrls": [],
+    "criticalLinksChecked": 123,
+    "syntheticRequests": 18
+  },
+  "releasePin": {
+    "suppliedManifestSha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+    "observedManifestSha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+    "matched": true
+  },
+  "sitemapObservations": {
+    "discoveryUrlsAbsentFromSitemap": [
+      "/llms.txt",
+      "/llms-full.txt",
+      "/ai/4.1.0/manifest.json",
+      "/ai/4.1.0/catalog.json"
+    ],
+    "note": "TXT and JSON discovery assets need not be sitemap pages; validate their public discovery links and responses separately."
+  },
+  "negativeControl": {
+    "path": "/ai/4.1.0/__canvas_discovery_missing__.json",
+    "expectedStatus": 404,
+    "observedStatus": 404,
+    "passed": true
+  },
+  "robots": {
+    "groups": [
+      {
+        "agents": [
+          "*"
+        ],
+        "rules": [
+          {
+            "allow": true,
+            "path": "/"
+          }
+        ]
+      }
+    ],
+    "sitemaps": [
+      "https://canvas.nannier.com/sitemap.xml"
+    ],
+    "checks": [
+      {
+        "token": "OAI-SearchBot",
+        "role": "search",
+        "checkedPaths": 125,
+        "blockedPaths": [],
+        "interpretation": "robots.txt policy evaluation, not observed crawler behavior"
+      },
+      {
+        "token": "GPTBot",
+        "role": "training",
+        "checkedPaths": 125,
+        "blockedPaths": [],
+        "interpretation": "robots.txt policy evaluation, not observed crawler behavior"
+      },
+      {
+        "token": "ChatGPT-User",
+        "role": "user-directed retrieval",
+        "checkedPaths": 125,
+        "blockedPaths": [],
+        "interpretation": "robots.txt policy evaluation, not observed crawler behavior"
+      },
+      {
+        "token": "ClaudeBot",
+        "role": "training",
+        "checkedPaths": 125,
+        "blockedPaths": [],
+        "interpretation": "robots.txt policy evaluation, not observed crawler behavior"
+      },
+      {
+        "token": "Claude-SearchBot",
+        "role": "search",
+        "checkedPaths": 125,
+        "blockedPaths": [],
+        "interpretation": "robots.txt policy evaluation, not observed crawler behavior"
+      },
+      {
+        "token": "Claude-User",
+        "role": "user-directed retrieval",
+        "checkedPaths": 125,
+        "blockedPaths": [],
+        "interpretation": "robots.txt policy evaluation, not observed crawler behavior"
+      }
+    ]
+  },
+  "errors": [],
+  "responses": [
+    {
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 267094,
+      "sha256": "e6fa581db965954eeb5c9da9b4e5f78d163970cdecb2ddb26d2225d6a67c1544",
+      "errors": []
+    },
+    {
+      "path": "/agents.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4402,
+      "sha256": "caeced0eae8c49b4677ea01e98b8f5eb8e0f5af771f19062b9943478fd320159",
+      "errors": []
+    },
+    {
+      "path": "/agents.md",
+      "synthetic": true,
+      "userAgent": "Claude-SearchBot",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4402,
+      "sha256": "caeced0eae8c49b4677ea01e98b8f5eb8e0f5af771f19062b9943478fd320159",
+      "errors": []
+    },
+    {
+      "path": "/agents.md",
+      "synthetic": true,
+      "userAgent": "Claude-User",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4402,
+      "sha256": "caeced0eae8c49b4677ea01e98b8f5eb8e0f5af771f19062b9943478fd320159",
+      "errors": []
+    },
+    {
+      "path": "/agents.md",
+      "synthetic": true,
+      "userAgent": "ClaudeBot",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4402,
+      "sha256": "caeced0eae8c49b4677ea01e98b8f5eb8e0f5af771f19062b9943478fd320159",
+      "errors": []
+    },
+    {
+      "path": "/agents.md",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36; compatible; OAI-SearchBot/1.4; +https://openai.com/searchbot",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4402,
+      "sha256": "caeced0eae8c49b4677ea01e98b8f5eb8e0f5af771f19062b9943478fd320159",
+      "errors": []
+    },
+    {
+      "path": "/agents.md",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4402,
+      "sha256": "caeced0eae8c49b4677ea01e98b8f5eb8e0f5af771f19062b9943478fd320159",
+      "errors": []
+    },
+    {
+      "path": "/agents.md",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.4; +https://openai.com/gptbot",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4402,
+      "sha256": "caeced0eae8c49b4677ea01e98b8f5eb8e0f5af771f19062b9943478fd320159",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.0.0/index.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 32887,
+      "sha256": "d144e6600890594eb3b0e6c22c01742e3ea94cd2cba2d7f152a463acd24a064c",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/__canvas_discovery_missing__.json",
+      "status": 404,
+      "contentType": "text/html; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 78076,
+      "sha256": "731e211d6d7d237a1d4eee43aedfb65fc64edbe95035567e004bbc238b713e9b",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/catalog.json",
+      "status": 200,
+      "contentType": "application/json",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 1274268,
+      "sha256": "f1966ca33c1f5280e431ffaf9af225f7804d247a5de1f978c500fa83e503dfd9",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/accordion.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7772,
+      "sha256": "19ebf27b7f1d80df669bcb21ef96fa4e80998071dd7bfdeceed285f57560dc96",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/action-panels.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6172,
+      "sha256": "53b0af61a52db65cd894ece691d66b66b36ecca6447ac2c8605df351934c108e",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/action-sheet.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6973,
+      "sha256": "8b1214ef4414f2598effd82a9152bcb6c3f422318491382e8b4e5a9dc96e52ec",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/alert-dialog.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 12459,
+      "sha256": "a178dd6a1392fe4042db4f3530ac9279ec50594274a39fddf916b11e5e3e2579",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/alert.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 8955,
+      "sha256": "10749e7e6a5b9e17891741770490d8057b35b4c55c0d20b97fc80aba2e556690",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/app-frame.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 9346,
+      "sha256": "e989a8a5611fad82752a337eefe4ab91ea0ce943949deb0fed49d2516a7e4cbe",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/area-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4835,
+      "sha256": "363602c1ea71004209cd4d5d51eeabb972aa117f9382525f6c154db0822c0735",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/autocomplete.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 15624,
+      "sha256": "86868be350ab205ba299d17fe5a46fdffa589a174a7ebe08d281d9c597317db8",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/avatar.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 24453,
+      "sha256": "9402a3cf56155a0306169a3e6158dba2a54269b5bf1256ffff91405425c77808",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/badge.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 23741,
+      "sha256": "47bf0085aaff312024858a0d0fec6b2c19721e2f766daa7fa9b8ae6cbe62616b",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/bar-list.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4432,
+      "sha256": "324bd427fc78147b5c307a3ecae1d733292401e2fce20fb19faf8a51d39aad90",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/board.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 10007,
+      "sha256": "efbbbb1dae33eb10204b5a68972314bf2150bac727a4586a5ac15053136589e8",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/box-plot.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 3970,
+      "sha256": "794054debd9006f2d315145e24ff06822ec7e6840f3b6d7c66aa866266304e1d",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/breadcrumb.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 10848,
+      "sha256": "e91ccc8fa79104c10421f4e47f455521a5cd12134852f674b220cb5debac8dfe",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/bullet-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4869,
+      "sha256": "504135ff0ef145b2183dcc8de7abd09df78eacc4c101f029133e4d5e5980b4c9",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/button-group.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 14975,
+      "sha256": "6323a8ebe1e7bacc0a648b0e253720e3abcabe5626f52cd03c9181a97e418006",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/button.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 29168,
+      "sha256": "6b584029b19c1424267c4220ceca7a05db7955eef40b1e0a15e341234485f509",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/calendar.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 15024,
+      "sha256": "c0db35220a04a809947b55b9a3455fd836d71e542150b0c56c837d073240b928",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/candlestick-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 8410,
+      "sha256": "6ce078ac14203e9113c68d48e6ee7bc93cb18af6be930b41c6fe6165da510bfd",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/card.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 34678,
+      "sha256": "7da3119b26ecb7b576a90b46cbfc4f070ce6bcca79be6989f1ba343eb6646355",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/carousel.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7210,
+      "sha256": "358d7523b0320c30e4ba8c55c3e4dee444eb6d01a3db69a730ae927f20a2b659",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7789,
+      "sha256": "3a2d7d70601d0ad727cbc1b37a0dac74d1977a6305b7c14e7c797e3739f0d36f",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/chat.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 23033,
+      "sha256": "65c79a28ae93a20ef6add4d558cca0405ee52c78decdd17aaeb1bc55f4f39715",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/checkbox.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 10407,
+      "sha256": "55c6c703164bf27531a08121f912a408c24bb3f9f576db8715465815bd00f838",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/chip.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 20693,
+      "sha256": "1f72700048dab50425aa2dce7bef7f73507dff1302f7040c3dde439b356cf23b",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/code-block.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 18496,
+      "sha256": "23066ffbdcf060ff948edb4a4a77503038e4cbcf0fd650e306a1935f5f01644e",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/collapsible.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6443,
+      "sha256": "d983868e0d44a031c9b9841a1553a331ac80a545b33d75ca8a2f8e1f02abd698",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/command.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 9407,
+      "sha256": "96c6608e6349af1da1df8cd76b64f546f3360ae611fbfade10ae566d652b8514",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/composed-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5528,
+      "sha256": "f3d5dcfd37e6c7d73ef1e9c661448662172b87987d21e3ca37339c5adc2e5085",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/container.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7348,
+      "sha256": "8344ba748e9bf851dadcf54b781dcbaa038b8aa145eeff9c0d2d33e001ab45b0",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/dashboard-grid.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 11568,
+      "sha256": "8a29d930e6501f76c17a48a969dfab9d92868a3acf81fa8290291004df2d2425",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/data-table.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 33257,
+      "sha256": "55620badd18792a75d0c6d66f3bca246de987d506dbc111c8a53794478e524e3",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/depth-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4721,
+      "sha256": "dbb6660110a13b767c0e75d25699a4579238fe5ddb9b7b45ec3a12dc2690c1e1",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/description-lists.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 11695,
+      "sha256": "9590c59c8882945fcf59357a9696c593683e694a7ccf8c6baf9748cc1211a554",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/dialog.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 17899,
+      "sha256": "ebe207cbeed605f48a96d75f275e20e5524b9c2715d8469477773ce79ea461af",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/divider.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6089,
+      "sha256": "c4394986784c45603bf98ec5c8d42b33761a2ee23f0d72004b29cb0fa6443b5d",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/drag-drop.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 9721,
+      "sha256": "686fb5c943de16ddf8f12a9a32de3e441605eea36b1cfa6af99b9e4b60e00c84",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/drawer.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7831,
+      "sha256": "c46a4e4432cfe27aa96f3ddb4f2c06fa7ddc6bb15de75b25a78fc7cfb7078841",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/dropdown.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 13521,
+      "sha256": "3b34c34ce73ed8dd27f66f152fb25b475dd8b3d7a6094cfd8eecf1e52c8074be",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/emblem.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5534,
+      "sha256": "158af3202d2849448a0e0e38561ddb640f442f2f737fe002a47d331c3679fece",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/empty-state.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7875,
+      "sha256": "798b491b1ec23ae2db84579f0bc33e924af2acd6b4f28bca43ecf815b485a69e",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/feeds.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 9683,
+      "sha256": "8400cf21361435be5357617b446cb3f7b4ad9ead2721cbd922bb9c8ce20ef02f",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/field.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 9778,
+      "sha256": "1f805b29fa59ffd7e3bc9d53f2d666d967b471efd24cc0f1ab66e4bf323cef4b",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/filter-panel.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5915,
+      "sha256": "60e159bd81bd859107ef2977e3e5c16154356b3b3214af885f9dc7bb2f154cf0",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/form.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 19242,
+      "sha256": "f3cddbb0eddf289879a21b7a50730c9eab7235ea7b547b22e65d4706ef63a88f",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/funnel-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4256,
+      "sha256": "3161feea3bf1a96efd1e54a230614fe7336c900853bf2175fd7a71a9becc6ebf",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/gauge.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 2739,
+      "sha256": "7e75cd4fc5afa3b6fef6011967b7caa9572365268d01d0f0b35f92de3ca9a185",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/geo-map.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 8596,
+      "sha256": "93c1df9f2bd7f9d3325dbac2265440eb3aaf6d97221ccc9d6ce00d067c26e7c4",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/grid-lists.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 9203,
+      "sha256": "c4ca302bf71cc661cffc443f6529f6dbcb9176b0a3df5b9d56f759c95c06befe",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/grid.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 8155,
+      "sha256": "610f09ab0911d6a63cf70b6c392d17ef38cebd9f52f412de21575d906478ebbf",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/heatmap.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5724,
+      "sha256": "1907079ea9ab1533768ec3c5bcdca439dc16bedefd205fdd501455950250f7c3",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/histogram.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 3893,
+      "sha256": "72ec78087342f61ef077b96877b8bc8b3f8f50f6b2ae91a5a1d59dc957ac8a5f",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/icon.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 32013,
+      "sha256": "f2be906cdb87c53a5dabc477542b2e479f386c4ceb6b223049db744cfbb62e20",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/image.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 16051,
+      "sha256": "32e2eb24f60f916d5ec7808888ab0d9cd4d7fbd576d53c4f0a6efa8a34c532b5",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/input-otp.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4565,
+      "sha256": "39786873f6fb69b2abc5f75a80f33627da96173641bb0084885f87cf60f2b9fc",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/input.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 26553,
+      "sha256": "2e1e5c3d27411539b5b623785d4310e0f76a497a553f2e3a761f03f177137093",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/kbd.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5421,
+      "sha256": "e2b2ed70509c6b46b3788bb7aae0a48f8a0afd0eff1ab8e444bb046e83fa8aec",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/line-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7507,
+      "sha256": "ac1dbd994c9c19f9a70794cba8ddc9bdaafa046f7678e82344d24820009816ff",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/listbox.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 10786,
+      "sha256": "b6c2883119a4fa74ac76a0ffb210e19ab5fb594cc354f3f56859335ab6dc4730",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/media-objects.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7594,
+      "sha256": "527888f7327db4cee7b1eb7acc2e7e57897f8996ce8f4cef80fae567163e03eb",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/metric-breakdown.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6278,
+      "sha256": "ea9e71d26b9f79e531d0a98e6277a7d2002c7f821a76f2437d3d850a3b93c595",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/navbars.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 15371,
+      "sha256": "901a6a9b4d19820d4edd5d814a1c25e86ed3402e2f197ee3e357baebf621d624",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/pagination.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 12097,
+      "sha256": "7b50a853676c9f5f635a33e6e4d99386641b86d02b390f82d203eedf8d85f93a",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/phone-input.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 14751,
+      "sha256": "fe566e1baadd4aceb547f5f3922006e931096936a5d3123e33304d1f4fad972c",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/pie-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 3916,
+      "sha256": "8f15fb109e93e853097d3099e23d1bb8c64b70b6b86af69a9816695c538c4f42",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/popover.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 11779,
+      "sha256": "bb2bc75b093d45b30a04ab26bdf5fec17542c9405aef1353f823d0de744df871",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/pressable.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6138,
+      "sha256": "4fbfe550e8baada8cb609d9cd9008172138f2c97851035310b1530b5467e3cdb",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/progress-ring.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 3733,
+      "sha256": "ab5334843d5f8dc46e4aca5d37f56d0a742f5af43d0498a62c57cd9f5bb8de92",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/progress.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 11103,
+      "sha256": "7323cef6643483d76bf9c97f03fbf78863205facca555ebb09bc8daa61296c83",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/qrcode.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 2485,
+      "sha256": "25811334c6f5b35f3e4c242e6087e7058991db050ed312b7597f8f46daa9d7d7",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/radar-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4260,
+      "sha256": "3dc236847d7ace36ce4d178fb3357a77c9c9cf2be12f30bb4a4c513da537879e",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/radial-bar-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 3986,
+      "sha256": "ab6ebecb428b662d14cfbabb8a9372b3c2f0bdbcbbefb095c8b3ed806969e901",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/radio.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 14181,
+      "sha256": "51256c7d1bca2a7df3fa3b5231f49678b682406efc0e9f3dc1119989542a219a",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/range-area-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4792,
+      "sha256": "0a29bdf56179a16b1a328d193ba979f2776450e4021a24f24f6847799ed33e61",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/reveal.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 9103,
+      "sha256": "84d8c1a0aa0f1f8626f637441414a8c702f478f55775bcb704370a304f1856fe",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/row-column.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 18839,
+      "sha256": "6cc31217abc149f2b6a971a464c9b4c54252b1fa956fc0d7e575c6722c976d69",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/row-menu.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6727,
+      "sha256": "3c764b38f5185cf055410ffb9246fe6375bdb672d21c5fdda56e0426889c3fae",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/scatter-plot.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4755,
+      "sha256": "b6978a93aa4585e19e9cd6e64ffcc0274ee440fe570c566ce74ceaba603d4bda",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/scroll-view.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 39538,
+      "sha256": "48e48d7195c386ebe7de0c7e35ba296f9e3a2bb0bb19b7af5dbae6a5ad2b730c",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/select.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 16536,
+      "sha256": "85e5b5679e45c27c36c477073c5f7adf691d2c420758c549a2c8aecfca25b945",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/service-health-list.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4331,
+      "sha256": "e4ff03f698e851cdd67a652a58b3edd4b6924283a35dce0943cee3a0f6a1562e",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/sidebar.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 15881,
+      "sha256": "105714a2f40f3f20b704a50cd05f12d8290a56221064d328ae7ddf2ccaadd151",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/skeleton.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5122,
+      "sha256": "20591f623227b12ae7989dbf82935da330111b6a91de6355787f2c11b96ab69f",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/slider.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 12284,
+      "sha256": "5d321d3323aaa232d8322114c74793d22fd35c5e91e0a0a078a72674211479d1",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/sparkline.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5139,
+      "sha256": "16a7cc19f8c27b73ff0b7db6dbd47b6169fd47e7c4e6a490ec0444ef2feaaeed",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/spinner.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4726,
+      "sha256": "399dc80b37e0b33fe3f1081d79fc43036847bdf52805673615041c77470b6547",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/stacked-bar.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5028,
+      "sha256": "e7629f99f32fcfdd047bb931af7d801542b5efce799c949b6e26e74ed838fb14",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/stacked-lists.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 12562,
+      "sha256": "b722ef4e2da7dffcd8e712ba17dc4b5af31f72a68face8d2eca0b47fdc5e6bfd",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/stats.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 11132,
+      "sha256": "cf796682820e667b652c22a3e4fd89a636ffbaa8b0abd112fb60416b8a6d3d10",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/stepper.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6294,
+      "sha256": "c7d594abc72166671fc4dfe45682077cc1a416216e2d70535e7da5c1ea0776ba",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/steps.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 9616,
+      "sha256": "3887afb0bbac4ebf415442c2fb3e5640befe6ea1237e3194895b1a7578e39ff7",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/swatch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 14189,
+      "sha256": "af083ebe3557c01a525bf5f7178e878e0f8ae0183dde61ce9e5af1961f7ff999",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/switch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 8648,
+      "sha256": "b578074b38cdcfb7e2cfee9df6a0ba0c7203459e3a4f2f8acc07259137de9f1e",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/tab-bar.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6026,
+      "sha256": "83446e57157c0c7620bda45d017b860e48b88dae6fd33ea31fd7d0f83d0b7788",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/tabs.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 11760,
+      "sha256": "bfc2d972d9663b04b4a26341d9b4e773970c018908d374b884e2a23fd0c64cb2",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/text-input.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 41239,
+      "sha256": "3dec44173e87eb85ad223d011d20d2259d351c66773bfe074938639301be8a64",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/text.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 14336,
+      "sha256": "22ecba289efea5cc71aa11de3d1e515748ad07c0bd4955d7fea463629f353fbd",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/textarea.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 23401,
+      "sha256": "077ec391ad0476b297292082ab6085763e091045515fdc38ea988d1f8d93b795",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/toast.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5322,
+      "sha256": "192899987812eb7240ead872321809c8408eff6d1a8db1a5b7c1cafc25083683",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/tooltip.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 8736,
+      "sha256": "b0e19acb117aa0a275f32380b90d209d23e7635015f00b76a570ac368e3ab691",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/treemap.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4419,
+      "sha256": "73d342e8f2603c14fdfdc9c0c18da085c4508084823cee1e60b3d54c5046ce3f",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/typography.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 39209,
+      "sha256": "a483753a58ad0766b3921bc8059e053e66859120dc9358912012b951fb02eda3",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/uptime-bar.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 4773,
+      "sha256": "8339d767809765612135856ccd936b27fa99ab8704dc9918d62dc68be1d8dfcb",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/video.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 5629,
+      "sha256": "18ef6b4b8994130d057abd523d4cf54c4e2c273d8c09b273220ceea18d479da1",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/view.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 22114,
+      "sha256": "a938a3283103a6e6a4c830452468f02271b6a6e771292c491d43c56846b08ccb",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/waterfall-chart.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 3905,
+      "sha256": "b3297f3cc26a8a1067bfed8401e86a3f4631c7fe72fe5605036fbcf05bc9301b",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/components/wizard.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7248,
+      "sha256": "b5becb3fb4c85a3a7006a97f9ac75f563530925d3877acafb0e27853f913e9b2",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/index.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 32887,
+      "sha256": "44f9f78c321571bf61ef9cd5c4b09b855fe92d25eb74126f1ebfe5d18a78ec3b",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/installation.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 7464,
+      "sha256": "673228a5cd44462c3954d0161eefdaf3287002fd18953756684484579672a855",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/layout.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 3830,
+      "sha256": "3a991d0b396348a33c69f210c03c3cdf849c0d81d3926fddceb7c05fff4420fd",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/manifest.json",
+      "status": 200,
+      "contentType": "application/json",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 96013,
+      "sha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/manifest.json",
+      "synthetic": true,
+      "userAgent": "Claude-SearchBot",
+      "status": 200,
+      "contentType": "application/json",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 96013,
+      "sha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/manifest.json",
+      "synthetic": true,
+      "userAgent": "Claude-User",
+      "status": 200,
+      "contentType": "application/json",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 96013,
+      "sha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/manifest.json",
+      "synthetic": true,
+      "userAgent": "ClaudeBot",
+      "status": 200,
+      "contentType": "application/json",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 96013,
+      "sha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/manifest.json",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36; compatible; OAI-SearchBot/1.4; +https://openai.com/searchbot",
+      "status": 200,
+      "contentType": "application/json",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 96013,
+      "sha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/manifest.json",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot",
+      "status": 200,
+      "contentType": "application/json",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 96013,
+      "sha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/manifest.json",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.4; +https://openai.com/gptbot",
+      "status": 200,
+      "contentType": "application/json",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 96013,
+      "sha256": "92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/overlays.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 3847,
+      "sha256": "1cd8f006f7dbbbf43935f81295945f755415dbd9fe44828a1c7b54238c78826e",
+      "errors": []
+    },
+    {
+      "path": "/ai/4.1.0/theming.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 6424,
+      "sha256": "bac967cd3d2c7d4aabda4c95529432dd2bff75ee0a36e2927c6e6ba36c73c482",
+      "errors": []
+    },
+    {
+      "path": "/components",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 611525,
+      "sha256": "32492c020b0faff2ab463dbba58bcfa3db82a3223c631cf404879ad6de5db207",
+      "errors": [],
+      "finalPath": "/components/"
+    },
+    {
+      "path": "/components/button",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 561742,
+      "sha256": "9be7bf25873169fb90f8b7da271ba7467373b56c3776a331ccf52ec67b9b14fa",
+      "errors": [],
+      "finalPath": "/components/button/"
+    },
+    {
+      "path": "/integration",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 303233,
+      "sha256": "5cdc2552da0e478ff9d316d50aeee54c1a301a4aef2fc744aaa9697a61d6bc1b",
+      "errors": []
+    },
+    {
+      "path": "/licenses",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 471939,
+      "sha256": "d7df85e5927ccd232bc16e5074556569b5546fb15d9645196a33213baeb5d64d",
+      "errors": []
+    },
+    {
+      "path": "/llms-full.txt",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 1291978,
+      "sha256": "8d009af3787b9ce1e2a2a9951f125d3859cf2d63aa8f1a8a623111888b74e7dc",
+      "errors": []
+    },
+    {
+      "path": "/llms.txt",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 1351,
+      "sha256": "d2bed4b9b31c7d649d32cd41916430fd8c595a9cddbb3b8c2c67086a12aae11d",
+      "errors": []
+    },
+    {
+      "path": "/robots.txt",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 633,
+      "sha256": "4f0559361df1064f92a1a2988bcc0b231104c4e30d826d5395e8ddf7579643bb",
+      "errors": []
+    },
+    {
+      "path": "/robots.txt",
+      "synthetic": true,
+      "userAgent": "Claude-SearchBot",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 633,
+      "sha256": "4f0559361df1064f92a1a2988bcc0b231104c4e30d826d5395e8ddf7579643bb",
+      "errors": []
+    },
+    {
+      "path": "/robots.txt",
+      "synthetic": true,
+      "userAgent": "Claude-User",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 633,
+      "sha256": "4f0559361df1064f92a1a2988bcc0b231104c4e30d826d5395e8ddf7579643bb",
+      "errors": []
+    },
+    {
+      "path": "/robots.txt",
+      "synthetic": true,
+      "userAgent": "ClaudeBot",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 633,
+      "sha256": "4f0559361df1064f92a1a2988bcc0b231104c4e30d826d5395e8ddf7579643bb",
+      "errors": []
+    },
+    {
+      "path": "/robots.txt",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36; compatible; OAI-SearchBot/1.4; +https://openai.com/searchbot",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 633,
+      "sha256": "4f0559361df1064f92a1a2988bcc0b231104c4e30d826d5395e8ddf7579643bb",
+      "errors": []
+    },
+    {
+      "path": "/robots.txt",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 633,
+      "sha256": "4f0559361df1064f92a1a2988bcc0b231104c4e30d826d5395e8ddf7579643bb",
+      "errors": []
+    },
+    {
+      "path": "/robots.txt",
+      "synthetic": true,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.4; +https://openai.com/gptbot",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 633,
+      "sha256": "4f0559361df1064f92a1a2988bcc0b231104c4e30d826d5395e8ddf7579643bb",
+      "errors": []
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "contentType": "application/xml; charset=utf-8",
+      "xRobotsTag": null,
+      "metaRobots": [],
+      "bytes": 89520,
+      "sha256": "9577e36a2da106646f428e6bde52d8d10e31f1e28e6dd6f6f48b9fa00fde3abd",
+      "errors": []
+    }
+  ],
+  "supplementalSearchObservation": {
+    "observedAt": "2026-11-02T05:38:12.502101+00:00",
+    "queries": [
+      "site:canvas.nannier.com \"@nannier/canvas\"",
+      "\"bnannier/canvas-plugins\""
+    ],
+    "observations": [
+      {
+        "queryIndex": 0,
+        "returnedUrl": "https://canvas.nannier.com/",
+        "displayedVersion": "3.4.4",
+        "displayedCrawlAge": "3 weeks ago",
+        "interpretation": "Search retrieval surfaced stale homepage copy; direct public versioned docs were separately verified at 4.1.0."
+      },
+      {
+        "queryIndex": 1,
+        "result": "No result surfaced in this bounded query.",
+        "interpretation": "Absence in one search probe does not establish absence from every search index or AI product."
+      }
+    ],
+    "scope": "One manual public web-search probe; not a complete indexing or model-awareness audit."
+  }
+}

@@ -60,6 +60,9 @@ blob-report/
 # is audit/ at the repository root: the per-component checklists and the README.
 .audit/
 
+# Generated plugin submission bundles and local package inputs.
+.artifacts/
+
 # Local Claude Code session state
 .claude/
 

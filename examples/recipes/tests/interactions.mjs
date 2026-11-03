@@ -2,7 +2,10 @@
 import { chromium, expect } from "@playwright/test";
 import { serveExport } from "./serve.mjs";
 
-const server = await serveExport();
+// Reuse the same flow checks against the combined docs artifact and its strict CSP.
+const server = process.env.CANVAS_RECIPES_TEST_URL
+  ? { url: process.env.CANVAS_RECIPES_TEST_URL, close: async () => {} }
+  : await serveExport();
 let browser;
 const results = [];
 try {
@@ -13,7 +16,17 @@ try {
     const failures = [];
     page.on("pageerror", (error) => failures.push(error.message));
     page.on("console", (message) => { if (message.type() === "error") failures.push(message.text()); });
-    await page.goto(server.url);
+    await page.addInitScript(() => {
+      globalThis.recipeCspViolations = [];
+      document.addEventListener("securitypolicyviolation", (event) => globalThis.recipeCspViolations.push(`${event.effectiveDirective}: ${event.blockedURI}`));
+    });
+    const response = await page.goto(server.url);
+    if (process.env.CANVAS_RECIPES_TEST_URL) {
+      const policy = response.headers()["content-security-policy"];
+      expect(policy).toContain("require-trusted-types-for 'script'");
+      expect(policy).not.toContain("'unsafe-eval'");
+      expect(policy.match(/script-src[^;]*/)[0]).not.toContain("'unsafe-inline'");
+    }
     const navigate = async (name) => {
       const link = page.getByRole("link", { name, exact: true });
       await link.focus(); await page.keyboard.press("Enter");
@@ -124,6 +137,7 @@ try {
     await noOverflow();
     await page.reload(); await expect(page.getByRole("textbox", { name: "Full name" })).toHaveValue("Alex Morgan");
     expect(failures).toEqual([]);
+    expect(await page.evaluate(() => globalThis.recipeCspViolations)).toEqual([]);
     results.push({ viewport: `${width}×900`, settings: "pass", dashboard: "pass", booking: "pass", keyboard: "pass", overflow: "pass", consoleErrors: failures.length });
     await page.close();
   }

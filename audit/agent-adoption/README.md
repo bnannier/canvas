@@ -14,6 +14,11 @@ will select Canvas without being asked.
 | 4 | Starter onboarding and three complete application recipes | Independent consumers can adapt settings, dashboard and booking examples | Recipes verified on web/iOS/Android; npm assets use existing package terms |
 | 5 | Tooling justified by measured failures | Setup or documentation retrieval tools improve recorded task outcomes | Offline CLI implemented; artifact verification recorded in [details](implementation.md) |
 | 6 | Public distribution and adoption | External developers build successfully and return to use Canvas | [4.1.0 and docs published and verified](release-4.1.0.md); external adoption pending |
+| 7 | Public discovery and crawler checks | Valid public references, robots policy and bounded retrieval checks | [144 responses verified](phase-7.md); real bot visits/indexing unmeasured, account-log inspection declined |
+| 8 | Reproducible OpenAI and Claude plugin packages | Actual CLI validation and fresh marketplace installations | [Verified packages](phase-8.md); approved plugin-only repository is public and installable |
+| 9 | OpenAI directory listing | Reviewed and published listing | ZIP and listing copy prepared; owner chose to continue without OpenAI account access |
+| 10 | Claude directory listing | Reviewed and published listing | Public plugin source and CLI installs verified; directory submission/review remains pending |
+| 11 | Public recipes, tutorials and adoption evidence | Hosted examples plus voluntary successful-build/repeat-use reports | [Showcase and tutorial prepared and locally verified](phase-11.md); deployment and external adoption remain pending |
 
 Phases 1–3 are the first release milestone. Publication remains a separate,
 manually dispatched release. Keep one npm package, the existing local checks and

@@ -98,7 +98,9 @@ printf '%s\\n' "$*" >> "$HOOK_TEST_LOG"
 if [ "\${HOOK_TEST_FAIL-}" = "$*" ]; then exit 23; fi
 exit 0
 `;
-  for (const name of ["bun", "bunx"]) {
+  // These fixtures exercise hook installation and exit propagation, not the
+  // individual checks. Packaging itself is tested against real Python separately.
+  for (const name of ["bun", "bunx", "python3"]) {
     writeFileSync(join(bin, name), script);
     chmodSync(join(bin, name), 0o755);
   }
@@ -134,6 +136,7 @@ describe("development hook installation", () => {
     expect(checks.indexOf("run verify-package")).toBeLessThan(checks.indexOf("run test"));
     expect(checks).toContain("run check:docs-components");
     expect(checks).toContain("run privacy:gen:check");
+    expect(checks).toContain("-m unittest discover -s tools/plugins -p test_*.py -v");
     expect(checks.indexOf("run docs:gen:check")).toBeLessThan(checks.indexOf("run check:docs-components"));
     expect(checks.at(-2)).toBe("tsc --noEmit -p docs/src/core/tsconfig.json");
     // The docs app's own tsconfig is the LAST gate, and the one CI fails on: it
@@ -176,6 +179,25 @@ describe("development hook installation", () => {
     const log = join(root, "linked.log");
     succeed(worktree, "git", ["push", "origin", "HEAD:linked"], { HOOK_TEST_LOG: log });
     expect(readFileSync(log, "utf8")).toContain("run verify-package\n");
+  });
+
+  test("a packaging-test failure blocks a real push before later checks", () => {
+    const { root, repo } = fixture();
+    install(repo);
+    const origin = remote(root, repo);
+    fakeChecks(repo);
+    const log = join(root, "packaging.log");
+    const packaging = "-m unittest discover -s tools/plugins -p test_*.py -v";
+    const rejected = run(repo, "git", ["push", "origin", "HEAD:main"], {
+      HOOK_TEST_LOG: log,
+      HOOK_TEST_FAIL: packaging,
+    });
+    expect(rejected.status).not.toBe(0);
+    const checks = readFileSync(log, "utf8").trim().split("\n");
+    expect(checks).toContain("run consumer:gen:check");
+    expect(checks.at(-1)).toBe(packaging);
+    expect(checks).not.toContain("run check:docs-components");
+    expect(run(origin, "git", ["rev-parse", "--verify", "main"]).status).not.toBe(0);
   });
 
   for (const [name, env] of [

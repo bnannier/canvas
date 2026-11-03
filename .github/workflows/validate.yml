@@ -134,6 +134,9 @@ jobs:
           bun run agent-docs:gen:check
           bun run consumer:gen:check
 
+      - name: Check offline plugin packaging
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools/plugins -p 'test_*.py' -v
+
       - name: Check handwritten docs use Canvas components
         run: bun run check:docs-components
 
@@ -236,6 +239,10 @@ jobs:
       # deploy that no longer exists: deploy.yml sets no base URL, since the site is
       # served from the root of canvas.nannier.com, so CI was validating a build nobody
       # ships. Node comes from the runner image.
+      - name: Install the pinned public recipe consumer
+        working-directory: examples/recipes
+        run: bun install --frozen-lockfile
+
       - name: Export web build
         working-directory: docs
         run: bun run build:web

@@ -1,0 +1,22 @@
+{
+  "name": "canvas",
+  "version": "4.1.0",
+  "description": "Build application UI with the Canvas universal React Native kit on web, iOS, and Android.",
+  "author": {
+    "name": "Bobby Nannier"
+  },
+  "homepage": "https://canvas.nannier.com/",
+  "keywords": [
+    "react-native",
+    "ui",
+    "web",
+    "ios",
+    "android",
+    "canvas"
+  ],
+  "displayName": "Canvas UI",
+  "icon": "./assets/canvas-icon.png",
+  "documentationUrl": "https://canvas.nannier.com/llms.txt",
+  "repository": "https://github.com/bnannier/canvas-plugins",
+  "supportUrl": "https://github.com/bnannier/canvas-plugins/issues"
+}
