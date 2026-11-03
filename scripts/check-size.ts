@@ -142,7 +142,15 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // externalized and no chart library added, the pinned Bun1.4.0 consumer build measures
 // 294,347 / 295,368 / 296,549B gzip (web/iOS/Android), about9.7KB over the preceding
 // v4 build. 292KiB leaves2.4KB above the largest build; per-import budgets stay fixed.
-export const JS_MAX_GZIP = 299_008; // 292 KiB
+// Every component's anatomy parts (2026-11-02): each kit component registers the parts
+// its docs page numbers with an enclosing AnatomyProvider (useAnatomyPart, AnatomyScope and
+// the AnatomyPart wrapper, src/style/anatomy.tsx), so the detail page's Anatomy figure
+// numbers every component as the hand-off does, not Button alone. Outside a provider each
+// registration is one context read and no node. Its base (8600e5dd) measured 292,894 /
+// 293,826 / 294,847B (web / iOS / Android); after, 306,788 / 307,727 / 308,626B, about
+// 13.8KB on every platform across some hundred components, with no new dependency. 316KiB
+// keeps 4.8% headroom over Android's figure; the per-import budgets below still hold.
+export const JS_MAX_GZIP = 323_584; // 316 KiB
 
 export interface JavaScriptBudget {
   label: string;

@@ -13,6 +13,9 @@ import { InteractionOverride, usePinnedFocus } from "../../style/interaction-ove
 import { useHover } from "../../style/hover.js";
 import { Icon } from "../icon/icon.js";
 import { Disclosure } from "../select/select.shared.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { useDelegatedParts } from "../input/delegated-parts.js";
 import { wrapper, wrapperLifted } from "./autocomplete.styles.js";
 import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
 
@@ -140,14 +143,14 @@ export function sizeOf(p: AutocompleteProps): Size {
   return "default";
 }
 
-/** An option's label with the letters that match the query set apart. */
-function Highlighted({ text, query, style, mark }: { text: string; query: string; style: StyleProp<TextStyle>; mark: TextStyle }) {
+/** An option's label with the letters that match the query set apart (`part` registers the match). */
+function Highlighted({ text, query, style, mark, part }: { text: string; query: string; style: StyleProp<TextStyle>; mark: TextStyle; part?: AnatomyTarget }) {
   const at = query === "" ? -1 : text.toLowerCase().indexOf(query.toLowerCase());
   if (at < 0) return <Text style={style}>{text}</Text>;
   return (
     <Text style={style}>
       {text.slice(0, at)}
-      <Text style={mark}>{text.slice(at, at + query.length)}</Text>
+      <Text ref={part?.ref} onLayout={part?.onLayout} style={mark}>{text.slice(at, at + query.length)}</Text>
       {text.slice(at + query.length)}
     </Text>
   );
@@ -249,6 +252,18 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const host = useOverlayHost();
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Label, Field, Query, Listbox, Match highlight (on the first row's
+    // match), taken before the tree's AnatomyScope. A Field that delegated its label hands
+    // down its Label, Control and Required mark (input/delegated-parts.ts).
+    const delegated = useDelegatedParts();
+    const labelPart = useAnatomyPart("Label") ?? delegated?.label;
+    const fieldPart = useAnatomyPart("Field") ?? delegated?.control;
+    const queryPart = useAnatomyPart("Query");
+    const listboxPart = useAnatomyPart("Listbox");
+    const matchPart = useAnatomyPart("Match highlight");
+    const fieldHostRef = useComposedRefs(fieldRef, fieldPart?.ref);
+
     // Escape closes the open option list via browser Escape or native accessibility escape. A disabled
     // control renders no list, so it never subscribes.
     const escapeScope = useEscapeLayer(open, () => {
@@ -282,6 +297,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
 
     const layoutKey = JSON.stringify(matches.map(({ id, key }) => [id, key]));
     const { listRef, listContentRef, rowRefs, onLayout: onListLayout, onScroll: onListScroll, onRowLayout, scrollActiveIntoView } = useActiveOptionScroll(activeId, layoutKey, open);
+    const listContentHostRef = useComposedRefs(listContentRef, listboxPart?.ref);
+    const queryHostRef = useComposedRefs(accessibilityReturn.inputRef, queryPart?.ref);
 
     const selectOption = (option: string, fromAccessibility = false) => {
       if (disabled) return;
@@ -325,15 +342,16 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const fieldSurface = entryMaterial.stateSurface(fieldShape, active);
 
     return (
+      <AnatomyScope>
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
         {above ? (
-          <Text nativeID={labelId} style={skin.label(tokens, size)} {...labelA11y(label!, true)}>
-            <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+          <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} nativeID={labelId} style={skin.label(tokens, size)} {...labelA11y(label!, true)}>
+            <LabelContent label={label!} required={required} starColor={tokens.destructive} starPart={delegated?.required} />
           </Text>
         ) : null}
         <View
-          ref={fieldRef}
-          onLayout={onTriggerLayout}
+          ref={fieldHostRef}
+          onLayout={withPartLayout(fieldPart, onTriggerLayout)}
           {...hover.target}
           style={[
             fieldSurface.style,
@@ -344,7 +362,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           <GlassPane {...entryMaterial.paneProps} stateBorder={fieldSurface.keepsBorder} shape={fieldShape} />
           {skin.searchIcon ? <Icon search color={skin.searchIcon.color(tokens)} size={skin.searchIcon.size} decorative /> : null}
           <TextInput
-            ref={accessibilityReturn.inputRef}
+            ref={queryHostRef}
+            onLayout={queryPart?.onLayout}
             // The field paints its own focus state (the skin's active border), so
             // the RNW default outline is suppressed; no-op on native.
             textAlignVertical="center"
@@ -494,6 +513,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               end={labelEnd}
               edges={fieldSurface.edges}
               onLine={room.onLine}
+              part={labelPart}
+              starPart={delegated?.required}
             />
           ) : null}
           {fieldSurface.border}
@@ -540,7 +561,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                 {/* The card's padding separates its clip from the rows. RippleClip
                     rounds bounded Android ripples without rounding each row. */}
                 <RippleClip shape={cornerRadii(skin.popover(tokens))}>
-                  <View ref={listContentRef} collapsable={false} nativeID={listboxId} role={LISTBOX}
+                  <View ref={listContentHostRef} onLayout={listboxPart?.onLayout} collapsable={false} nativeID={listboxId} role={LISTBOX}
                     accessibilityLabel={hasLabel ? label : undefined} aria-label={hasLabel ? label : undefined}>
                     {matches.length === 0 ? (
                       <View style={skin.emptyRow}>
@@ -576,7 +597,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                           accessibilityState={{ selected }}
                           aria-selected={selected}
                         >
-                          <Highlighted text={option} query={query} style={[skin.optionText(tokens, size), detail ? { flexGrow: 1, flexShrink: 1 } : null]} mark={skin.highlight(tokens)} />
+                          <Highlighted text={option} query={query} style={[skin.optionText(tokens, size), detail ? { flexGrow: 1, flexShrink: 1 } : null]} mark={skin.highlight(tokens)} part={index === 0 ? matchPart : undefined} />
                           {detail ? <Text style={skin.optionDetail(tokens)} numberOfLines={1}>{detail}</Text> : null}
                         </Pressable>
                       );
@@ -592,6 +613,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           <Text style={skin.helper(tokens)}>{helperText}</Text>
         ) : null}
       </View>
+      </AnatomyScope>
     );
   });
   Autocomplete.displayName = "Autocomplete";

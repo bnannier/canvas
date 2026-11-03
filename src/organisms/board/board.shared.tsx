@@ -15,6 +15,7 @@ import {
   GlassSurface,
   withInnerFill,
 } from "../../style/index.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { RowMenu as WebRowMenu } from "../row-menu/row-menu.js";
 import {
@@ -161,6 +162,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     emptyLabel: string;
     disabled: boolean;
     pageScroll: boolean;
+    anatomy: Record<"board" | "column" | "card" | "count", AnatomyTarget | undefined>;
   }
 
   // The lanes live in their own component INSIDE the provider so useDragActive can subscribe:
@@ -170,7 +172,9 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
   // the board (its horizontal scroller claims a sideways drag it cannot scroll, dropping a
   // card's press and the page's scroll), and always elsewhere, where a disabled scroller
   // sets `touch-action: none` on the web.
-  function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel, disabled, pageScroll }: LanesProps) {
+  function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel, disabled, pageScroll, anatomy }: LanesProps) {
+    // A part drawn many times registers on its first instance of this render only.
+    const taken = { column: false, card: false, count: false };
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const dragging = useDragActive();
@@ -222,8 +226,11 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
 
     const renderCard = (item: BoardItem): ReactNode => {
       const menu = item.menu != null && item.menu.length > 0 ? item.menu : null;
+      const cardPart = taken.card ? undefined : anatomy.card;
+      if (cardPart) taken.card = true;
       return (
         <Draggable key={item.id} id={item.id} data={item} label={item.title} disabled={disabled}>
+          <AnatomyPart part={cardPart}>
           <GlassSurface layer="content" style={skin.card(tokens, compact)}>
             <View style={skin.cardRow}>
               {renderBody(item)}
@@ -250,20 +257,25 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
               </View>
             </View>
           </GlassSurface>
+          </AnatomyPart>
         </Draggable>
       );
     };
 
     const lanes = columns.map((col) => {
       const colItems = list.filter((it) => it.columnId === col.id);
+      const columnPart = taken.column ? undefined : anatomy.column;
+      const countPart = taken.count ? undefined : anatomy.count;
+      taken.column = taken.count = true;
       return (
         <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} disabled={disabled} style={{ width: laneWidth }}>
           {/* The lane is a CONTENT-layer pane under glass (the plain column View in
               solid mode); the drop zone keeps the lane's width and drop target. */}
+          <AnatomyPart part={columnPart}>
           <GlassSurface layer="content" style={skin.column(tokens, compact)}>
             <View style={skin.columnHeader}>
               <Text style={skin.columnLabel(tokens)}>{col.label}</Text>
-              <Text style={skin.columnCount(tokens)}>{col.badge ?? String(colItems.length)}</Text>
+              <Text ref={countPart?.ref} onLayout={countPart?.onLayout} style={skin.columnCount(tokens)}>{col.badge ?? String(colItems.length)}</Text>
             </View>
             <View style={skin.cardList(compact)}>
               {colItems.map(renderCard)}
@@ -274,19 +286,22 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
               ) : null}
             </View>
           </GlassSurface>
+          </AnatomyPart>
         </DropZone>
       );
     });
 
     if (pageScroll) {
-      return <View onLayout={onBoardLayout} style={PAGE_OVERFLOW}><View style={skin.lanes(compact)}>{lanes}</View></View>;
+      return <View ref={anatomy.board?.ref} onLayout={withPartLayout(anatomy.board, onBoardLayout)} style={PAGE_OVERFLOW}><View style={skin.lanes(compact)}>{lanes}</View></View>;
     }
     return (
       <ScrollView
+        ref={anatomy.board?.ref}
         horizontal
         onLayout={(event) => {
           onBoardLayout(event);
           scrollport.onLayout(event);
+          anatomy.board?.onLayout();
         }}
         onContentSizeChange={scrollport.onContentSizeChange}
         scrollEnabled={!dragging && scrollport.scrollEnabled}
@@ -370,6 +385,10 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       testID,
       style,
     } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Board, Column, Card, Count, taken before the AnatomyScope so the
+    // drop zones, draggables, badges and row menus the lanes compose register nothing.
+    const anatomy = { board: useAnatomyPart("Board"), column: useAnatomyPart("Column"), card: useAnatomyPart("Card"), count: useAnatomyPart("Count") };
     const [list, setList] = useControllableState<BoardItem[]>(items, defaultItems ?? [], onItemsChange);
 
     const handleDrop = (e: DropEvent) => {
@@ -392,8 +411,10 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     }
 
     return (
+      <AnatomyScope>
       <DragDropProvider testID={testID} style={[ROOT, style]}>
         <BoardLanes
+          anatomy={anatomy}
           columns={columns}
           list={list}
           onDrop={handleDrop}
@@ -406,6 +427,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
           pageScroll={pageScroll}
         />
       </DragDropProvider>
+      </AnatomyScope>
     );
   };
 }

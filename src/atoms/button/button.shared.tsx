@@ -12,7 +12,7 @@ import { actionFill } from "../../style/action.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, type ViewStyle, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
-import { AnatomyPart, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { InkProvider } from "../../style/ink.js";
 import { CountBadge } from "../badge/badge.notification.js";
 import { ButtonAttention } from "./button-attention.js";
@@ -239,10 +239,13 @@ export { minTargetSlop } from "../../style/touch-target.js";
 export function createButton(skin: ButtonSkin) {
   const Button = forwardRef<View, ButtonProps>(function Button(props, ref) {
     // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
-    // hand-off's order: Container, Label, Leading icon, Trailing icon, Count badge.
-    // Outside a provider each is undefined and adds nothing.
+    // hand-off's order: Container, Label, Leading icon, Trailing icon, Count badge, taken
+    // before the tree's AnatomyScope so the count's Badge and the caller's icons register
+    // nothing of their own. Outside a provider each is undefined and adds nothing.
     const containerPart = useAnatomyPart("Container");
     const labelPart = useAnatomyPart("Label");
+    const leadingPart = useAnatomyPart("Leading icon");
+    const trailingPart = useAnatomyPart("Trailing icon");
     const countPart = useAnatomyPart("Count badge");
     const hostRef = useComposedRefs(ref, containerPart?.ref);
     const { children, iconLeft, iconRight, accessibilityLabel, onPress, href, hrefAttrs, onHoverIn, onHoverOut, onFocus, onBlur, loading, disabled, block, icon, testID, style } = props;
@@ -318,6 +321,7 @@ export function createButton(skin: ButtonSkin) {
     // the outermost node on every platform, so positioning is identical with or without the clip
     // and the Pressable stretches to fill a block button.
     return (
+      <AnatomyScope>
       <RippleClip shape={clipShape} hitSlop={target.hitSlop} style={[sizing, props.shrink ? shrinkButton : null, props.start ? { alignSelf: "flex-start" } : null, skin.surround?.(opts), style, glowOnClip ? glow : null]} {...hoverTarget}>
         <Pressable
           ref={hostRef}
@@ -379,9 +383,9 @@ export function createButton(skin: ButtonSkin) {
                   label ink, the hover label's where the skin names one; an Icon carrying its
                   own tone keeps it (src/style/ink.tsx). */}
               <InkProvider ink={live && typeof hoverLabel?.color === "string" ? hoverLabel.color : labelInk}>
-                {!loading && iconLeft != null ? <AnatomyPart name="Leading icon">{iconLeft}</AnatomyPart> : null}
+                {!loading && iconLeft != null ? <AnatomyPart part={leadingPart}>{iconLeft}</AnatomyPart> : null}
                 {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[label, live ? hoverLabel : null, props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
-                {!loading && iconRight != null ? <AnatomyPart name="Trailing icon">{iconRight}</AnatomyPart> : null}
+                {!loading && iconRight != null ? <AnatomyPart part={trailingPart}>{iconRight}</AnatomyPart> : null}
               </InkProvider>
             </View>
             {props.count !== undefined && props.count !== "" ? <View ref={countPart?.ref} onLayout={countPart?.onLayout} style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View>
@@ -389,6 +393,7 @@ export function createButton(skin: ButtonSkin) {
           </>}
         </Pressable>
       </RippleClip>
+      </AnatomyScope>
     );
   });
   Button.displayName = "Button";

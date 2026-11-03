@@ -2,6 +2,8 @@ import { type ReactNode } from "react";
 import { CELL_AXIS, LayoutAxisProvider, View, stepOf, widths, type MeasureProps, type StyleProp, type ViewStyle, type WidthKey } from "../../style/index.js";
 import { type FlexSkin } from "../layout/layout.styles.js";
 import { type Pad } from "../layout/layout.shared.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 
 // Container: the bounds provider (Bootstrap `.container-fluid` / `.container`).
 // A Canvas component never dictates its own width; it is FILL or HUG and the
@@ -82,18 +84,43 @@ export function containerStyle(measure: Measure, start: boolean): ViewStyle {
   };
 }
 
+/** The anatomy Track: the full width a Container is capped within (drawn inside a docs AnatomyProvider only). */
+const TRACK: ViewStyle = { width: "100%" };
+
 /** Build a Container component from a platform skin (the shared padding scale). */
 export function createContainer(skin: FlexSkin) {
   return function Container(props: ContainerProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Track, Capped column and Gutter, taken before the AnatomyScope so
+    // the content registers nothing. The hand-off nests a full-width track, a padded
+    // gutter and the capped column; a Container is one box, capped, with its gutters as
+    // its own padding, so the track is the full width it is capped within, measured by a
+    // full-width view drawn only inside a provider, and the Capped column and Gutter
+    // (the box whose padding the gutters are) are both the Container's own box.
+    const trackPart = useAnatomyPart("Track");
+    const columnPart = useAnatomyPart("Capped column");
+    const gutterPart = useAnatomyPart("Gutter");
+    const columnRef = useComposedRefs(columnPart?.ref, gutterPart?.ref);
     const { children, testID, style } = props;
     const pad = padOf(props);
     const gutters: ViewStyle | null = pad ? { paddingHorizontal: skin.pad[pad] } : null;
     // A Container is a definite-width column: hug components hug inside it and
     // fill components fill it (the layout-axis context from sizing.ts).
-    return (
-      <View style={[containerStyle(measureOf(props), !!props.start), gutters, style]} testID={testID}>
-        <LayoutAxisProvider value={CELL_AXIS}>{children}</LayoutAxisProvider>
+    const column = (
+      <View
+        ref={columnPart == null ? undefined : columnRef}
+        onLayout={columnPart == null ? undefined : () => {
+          columnPart.onLayout();
+          gutterPart?.onLayout();
+        }}
+        style={[containerStyle(measureOf(props), !!props.start), gutters, style]}
+        testID={testID}
+      >
+        <LayoutAxisProvider value={CELL_AXIS}>
+          <AnatomyScope>{children}</AnatomyScope>
+        </LayoutAxisProvider>
       </View>
     );
+    return trackPart == null ? column : <View ref={trackPart.ref} onLayout={trackPart.onLayout} style={TRACK}>{column}</View>;
   };
 }

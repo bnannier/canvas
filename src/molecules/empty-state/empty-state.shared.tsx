@@ -1,6 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { cloneElement, isValidElement, type ComponentType, type ReactElement } from "react";
+import { StyleSheet } from "react-native";
 import { View, Text, type StyleProp, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface } from "../../style/index.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 import * as s from "./empty-state.styles.js";
@@ -94,6 +96,14 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
     // FILL: the state spans the parent it is given.
     const fill = useFillStyle("EmptyState");
     const tone: Tone = toneOf(props);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Container, Icon, Title, Description, Action. Taken before the
+    // tree's AnatomyScope so the action Button registers nothing of its own.
+    const containerPart = useAnatomyPart("Container");
+    const iconPart = useAnatomyPart("Icon");
+    const titlePart = useAnatomyPart("Title");
+    const descriptionPart = useAnatomyPart("Description");
+    const actionPart = useAnatomyPart("Action");
 
     const density: Density = compact ? "compact" : "default";
     // A bordered or elevated state is a CONTENT-layer pane under glass (GlassSurface is
@@ -110,43 +120,49 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
     ];
 
     return (
-      <Root testID={testID} style={container} {...(surfaced ? { layer: "content" as const } : null)}>
-        {icon != null ? (
-          // The disc glyph is purely decorative; the title carries the meaning.
-          // Emoji announce their own accessible name, so hide the disc from
-          // assistive tech. react-native-web does not forward
-          // accessibilityElementsHidden to the DOM, so add the aria-hidden alias.
-          <View
-            // Both tile washes are translucent already, so they sit on a glass pane as they are.
-            style={[skin.discBase[density], s.discTone(tokens, tone)]}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            aria-hidden
-          >
-            {isValidElement(icon) ? (
-              // An element glyph (the kit Icon atom): own its tint + size by cloning,
-              // the same way Emblem paints its child. The injected `color` is the
-              // tone tint; a semantic color boolean set on the element takes
-              // precedence inside Icon, so a deliberate override still reads.
-              cloneElement(icon as ReactElement<Record<string, unknown>>, {
-                color: s.glyphTone(tokens, tone).color,
-                size: skin.glyphSize[density],
-              })
-            ) : (
-              <Text style={[skin.glyph, s.glyphTone(tokens, tone)]}>{icon}</Text>
-            )}
-          </View>
-        ) : null}
-        {title != null ? <Text style={skin.title(tokens, density)}>{title}</Text> : null}
-        {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
-        {actionLabel != null ? (
-          <View style={skin.actionSpacing}>
-            <Button secondary small={compact} onPress={onAction}>
-              {actionLabel}
-            </Button>
-          </View>
-        ) : null}
-      </Root>
+      <AnatomyScope>
+        <Root testID={testID} style={container} {...(surfaced ? { layer: "content" as const } : { ref: containerPart?.ref, onLayout: containerPart?.onLayout })}>
+          {/* The surfaced root's own box, for the anatomy Container part: GlassSurface has no ref, so a pass-through fill measures it. */}
+          {surfaced && containerPart ? <View ref={containerPart.ref} onLayout={containerPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
+          {icon != null ? (
+            // The disc glyph is purely decorative; the title carries the meaning.
+            // Emoji announce their own accessible name, so hide the disc from
+            // assistive tech. react-native-web does not forward
+            // accessibilityElementsHidden to the DOM, so add the aria-hidden alias.
+            <View
+              ref={iconPart?.ref}
+              onLayout={iconPart?.onLayout}
+              // Both tile washes are translucent already, so they sit on a glass pane as they are.
+              style={[skin.discBase[density], s.discTone(tokens, tone)]}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              aria-hidden
+            >
+              {isValidElement(icon) ? (
+                // An element glyph (the kit Icon atom): own its tint + size by cloning,
+                // the same way Emblem paints its child. The injected `color` is the
+                // tone tint; a semantic color boolean set on the element takes
+                // precedence inside Icon, so a deliberate override still reads.
+                cloneElement(icon as ReactElement<Record<string, unknown>>, {
+                  color: s.glyphTone(tokens, tone).color,
+                  size: skin.glyphSize[density],
+                })
+              ) : (
+                <Text style={[skin.glyph, s.glyphTone(tokens, tone)]}>{icon}</Text>
+              )}
+            </View>
+          ) : null}
+          {title != null ? <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} style={skin.title(tokens, density)}>{title}</Text> : null}
+          {description != null ? <Text ref={descriptionPart?.ref} onLayout={descriptionPart?.onLayout} style={skin.description(tokens)}>{description}</Text> : null}
+          {actionLabel != null ? (
+            <View ref={actionPart?.ref} onLayout={actionPart?.onLayout} style={skin.actionSpacing}>
+              <Button secondary small={compact} onPress={onAction}>
+                {actionLabel}
+              </Button>
+            </View>
+          ) : null}
+        </Root>
+      </AnatomyScope>
     );
   };
 }

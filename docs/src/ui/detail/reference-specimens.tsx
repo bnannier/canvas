@@ -1,14 +1,21 @@
 import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
-import type { ChatMessageData } from "@nannier/canvas";
+import { AnatomyPart, type ChatMessageData } from "@nannier/canvas";
 import type { ExampleScope } from "../../core/scope";
 import type { PropDescriptors } from "./knobs";
 import { usePinnedFocus } from "../../../../src/style/interaction-override";
 import { useTheme } from "../../../../src/style/theme";
+import { useAnatomyPart } from "../../../../src/style/anatomy";
 
 // K.def('chat') and K.def('scroll-view') are compositions, not a standalone message
 // or an empty primitive. Keep their authored specimen data here, and render the real
 // components from the active platform scope just as the other detail specimens do.
+//
+// The Anatomy section numbers a primitive's parts on these specimens (src/style/anatomy.tsx).
+// The kit ScrollView, TextInput and Text register their own (Viewport, Native input, Text
+// run); View is React Native's own, so its View and Child view parts, ScrollView's Content
+// (the first tile, as the hand-off marks its first item) and TextInput's Placeholder are
+// registered here. Outside a provider each renders its element bare.
 
 export function referenceSpecimen(scope: ExampleScope, name: string, props: PropDescriptors): ReactNode | undefined {
   if (name === "Chat") return <ChatSpecimen scope={scope} plain={props.plain === true} />;
@@ -51,6 +58,11 @@ function TextInputSpecimen({ scope, props }: { scope: ExampleScope; props: PropD
   const multiline = props.multiline === true;
   const editable = props.editable !== false;
   const pinnedFocus = usePinnedFocus(editable);
+  // The placeholder has no node of its own: the native input paints it inside its own box.
+  // While it shows (the field is empty), the Placeholder part is that box, measured by a
+  // view laid over the field that is drawn only inside an AnatomyProvider; the field's own
+  // ref stays the kit TextInput's Native input, untouched by the value.
+  const placeholderPart = useAnatomyPart("Placeholder");
   return (
     <View style={{ width: 280, maxWidth: "100%" }}>
       <TextInput
@@ -67,6 +79,9 @@ function TextInputSpecimen({ scope, props }: { scope: ExampleScope; props: PropD
         onBlur={() => setFocused(false)}
         style={{ width: "100%", height: multiline ? 88 : 36, paddingHorizontal: 2, paddingTop: multiline ? 8 : 0, paddingBottom: 0, backgroundColor: "transparent", borderBottomWidth: 1, borderBottomColor: focused || pinnedFocus ? tokens.primary : tokens["field-border"], color: tokens.foreground, fontSize: 15, fontWeight: "400", textAlignVertical: multiline ? "top" : "center", outlineWidth: 0, opacity: editable ? 1 : 0.45 }}
       />
+      {placeholderPart != null && value === "" ? (
+        <View ref={placeholderPart.ref} onLayout={placeholderPart.onLayout} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" }} />
+      ) : null}
     </View>
   );
 }
@@ -77,14 +92,20 @@ function ViewSpecimen({ scope, props }: { scope: ExampleScope; props: PropDescri
   const children = props.children;
   const label = typeof children === "string" ? children
     : typeof children === "object" && "children" in children ? children.children ?? "View" : "View";
+  // The hand-off numbers its first child view.
+  const childPart = useAnatomyPart("Child view");
   return (
-    <View testID="detail-reference-view" style={{ minWidth: 220, padding: 16, gap: 8, borderRadius: 12, backgroundColor: tokens.popover, borderWidth: 1, borderColor: tokens.border }}>
-      {[label, "View"].map((text, index) => (
-        <View key={index} testID={`detail-reference-view-child-${index + 1}`} style={{ minWidth: 44, minHeight: 36, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: tokens["primary-soft"], borderWidth: 1, borderStyle: "dashed", borderColor: tokens.ring, justifyContent: "center", alignItems: "center" }}>
-          <Typography caption medium mono primary>{text}</Typography>
-        </View>
-      ))}
-    </View>
+    <AnatomyPart name="View">
+      <View testID="detail-reference-view" style={{ minWidth: 220, padding: 16, gap: 8, borderRadius: 12, backgroundColor: tokens.popover, borderWidth: 1, borderColor: tokens.border }}>
+        {[label, "View"].map((text, index) => (
+          <AnatomyPart key={index} part={index === 0 ? childPart : undefined}>
+            <View testID={`detail-reference-view-child-${index + 1}`} style={{ minWidth: 44, minHeight: 36, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: tokens["primary-soft"], borderWidth: 1, borderStyle: "dashed", borderColor: tokens.ring, justifyContent: "center", alignItems: "center" }}>
+              <Typography caption medium mono primary>{text}</Typography>
+            </View>
+          </AnatomyPart>
+        ))}
+      </View>
+    </AnatomyPart>
   );
 }
 
@@ -120,6 +141,8 @@ function ChatSpecimen({ scope, plain }: { scope: ExampleScope; plain: boolean })
 /** The hand-off's ten numbered content tiles, inside an actual kit ScrollView. */
 function ScrollSpecimen({ scope, horizontal }: { scope: ExampleScope; horizontal: boolean }) {
   const { ScrollView, View, Typography, tokens } = scope;
+  // The hand-off marks its first item as the Content.
+  const contentPart = useAnatomyPart("Content");
   return (
     <View style={{ width: "100%", maxWidth: 520 }}>
       <ScrollView
@@ -131,13 +154,14 @@ function ScrollSpecimen({ scope, horizontal }: { scope: ExampleScope; horizontal
         contentContainerStyle={{ padding: 10, gap: horizontal ? 10 : 8 }}
       >
         {Array.from({ length: 10 }, (_, index) => (
-          <View
-            key={index}
-            testID={`detail-reference-scroll-tile-${index + 1}`}
-            style={{ flexShrink: 0, width: horizontal ? 120 : undefined, height: horizontal ? 80 : 40, borderRadius: 10, backgroundColor: tokens.secondary, justifyContent: "center", alignItems: "center" }}
-          >
-            <Typography caption medium mono subtle>{index + 1}</Typography>
-          </View>
+          <AnatomyPart key={index} part={index === 0 ? contentPart : undefined}>
+            <View
+              testID={`detail-reference-scroll-tile-${index + 1}`}
+              style={{ flexShrink: 0, width: horizontal ? 120 : undefined, height: horizontal ? 80 : 40, borderRadius: 10, backgroundColor: tokens.secondary, justifyContent: "center", alignItems: "center" }}
+            >
+              <Typography caption medium mono subtle>{index + 1}</Typography>
+            </View>
+          </AnatomyPart>
         ))}
       </ScrollView>
     </View>

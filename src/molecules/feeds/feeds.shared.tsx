@@ -15,6 +15,7 @@ import {
   type TextStyle,
   GlassSurface,
 } from "../../style/index.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, listProps, windowedListItem } from "../../style/list-semantics.js";
@@ -196,8 +197,20 @@ function initialsFrom(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) {
   return function Feed(props: FeedProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Feed, Lead, Connector, Event, Timestamp. The last four are the
+    // first event's, taken before the tree's AnatomyScope so the kit Avatar and Icon and
+    // the caller's content register nothing. The trace lead has no such nodes.
+    const feedPart = useAnatomyPart("Feed");
+    const leadPart = useAnatomyPart("Lead");
+    const connectorPart = useAnatomyPart("Connector");
+    const eventPart = useAnatomyPart("Event");
+    const timestampPart = useAnatomyPart("Timestamp");
     const { items = [], onItemPress, label, virtualized, testID, style } = props;
     const { tokens } = useTheme();
     // FILL: the feed spans the parent it is given; the parent picks the measure.
@@ -263,20 +276,28 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
       {item.target ? <Text style={skin.actionLabel(tokens)}> {item.target}</Text> : null}
     </>;
 
-    const renderLead = (item: FeedItem, index: number) => lead === "avatar" || (lead === "activity" && !!item.avatar) ? (
-      <Avatar small src={item.avatar} name={item.actor}>
-        {item.actor ? initialsFrom(item.actor) : ""}
-      </Avatar>
-    ) : item.icon ? (
-      <View style={skin.node(tokens)}><Icon {...{ [item.icon]: true }} muted size={NODE_ICON_SIZE} decorative /></View>
-    ) : <View style={skin.dot(tokens, index === 0)} />;
+    const renderLead = (item: FeedItem, index: number) => {
+      const target = index === 0 ? leadPart : undefined;
+      return lead === "avatar" || (lead === "activity" && !!item.avatar) ? (
+        <AnatomyPart part={target}>
+          <Avatar small src={item.avatar} name={item.actor}>
+            {item.actor ? initialsFrom(item.actor) : ""}
+          </Avatar>
+        </AnatomyPart>
+      ) : item.icon ? (
+        <View ref={target?.ref} onLayout={target?.onLayout} style={skin.node(tokens)}><Icon {...{ [item.icon]: true }} muted size={NODE_ICON_SIZE} decorative /></View>
+      ) : <View ref={target?.ref} onLayout={target?.onLayout} style={skin.dot(tokens, index === 0)} />;
+    };
 
-    const renderContent = (item: FeedItem) => (
-      <View style={s.contentColumn}>
-        <Text style={skin.lineText}>{renderSentence(item)}</Text>
-        <Text style={skin.timeLabel(tokens)}>{item.time}</Text>
-      </View>
-    );
+    const renderContent = (item: FeedItem, index: number) => {
+      const first = index === 0;
+      return (
+        <View style={s.contentColumn}>
+          <Text ref={first ? eventPart?.ref : undefined} onLayout={first ? eventPart?.onLayout : undefined} style={skin.lineText}>{renderSentence(item)}</Text>
+          <Text ref={first ? timestampPart?.ref : undefined} onLayout={first ? timestampPart?.onLayout : undefined} style={skin.timeLabel(tokens)}>{item.time}</Text>
+        </View>
+      );
+    };
 
     if (lead === "activity" || lead === "trace") {
       const renderRow = (item: FeedItem, index: number, listItem: ViewProps) => {
@@ -287,8 +308,8 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         const content = event ? <>
           {renderLead(item, index)}
           <View style={s.activityEventContent}>
-            <Text style={s.activityText(tokens)}>{item.content ?? renderSentence(item)}</Text>
-            <Text numberOfLines={1} style={s.activityEventTime(tokens)}>{item.time}</Text>
+            <Text ref={index === 0 ? eventPart?.ref : undefined} onLayout={index === 0 ? eventPart?.onLayout : undefined} style={s.activityText(tokens)}>{item.content ?? renderSentence(item)}</Text>
+            <Text ref={index === 0 ? timestampPart?.ref : undefined} onLayout={index === 0 ? timestampPart?.onLayout : undefined} numberOfLines={1} style={s.activityEventTime(tokens)}>{item.time}</Text>
           </View>
         </> : <>
           {lead === "activity" ? <Text style={s.activityTime(tokens)}>{item.time}</Text> : <>
@@ -304,7 +325,7 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         return <View {...listItem} style={rowStyle}>{content}</View>;
       };
       const body = windowed ? <FlatList {...bodyProps} data={items} renderItem={({ item, index }) => renderRow(item, index, windowedListItem(index, items.length))} keyExtractor={keyOf} showsVerticalScrollIndicator={false} /> : <View {...list}>{items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index, LIST_ITEM)}</Fragment>)}</View>;
-      return <View testID={testID} style={[fill, style, bodyFrame.ring()]}>{body}</View>;
+      return <AnatomyScope><View ref={feedPart?.ref} onLayout={feedPart?.onLayout} testID={testID} style={[fill, style, bodyFrame.ring()]}>{body}</View></AnatomyScope>;
     }
 
     // Connector and avatar leads (the v4 hand-off's feed): a node per row with a
@@ -324,13 +345,13 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
             // Vertical connector: a 1px border-colored line running from just below
             // the node down to the next row, absolutely placed under the node's
             // horizontal center; dropped on the final item.
-            <View style={skin.connectorLine(tokens)} />
+            <View ref={index === 0 ? connectorPart?.ref : undefined} onLayout={index === 0 ? connectorPart?.onLayout : undefined} style={skin.connectorLine(tokens)} />
           ) : null}
           {/* The node, first match wins: the actor's avatar on the avatar lead, the
               item's kit glyph on its disc, then the dot. The glyph is decorative
               because the actor/action line beside it already says what happened. */}
           {renderLead(item, index)}
-          <View style={s.connectorContentColumn}>{renderContent(item)}</View>
+          <View style={s.connectorContentColumn}>{renderContent(item, index)}</View>
         </>
       );
       if (onItemPress) {
@@ -369,6 +390,14 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
     );
 
     // The feed card is a CONTENT-layer pane under glass (GlassSurface is the plain View in solid mode).
-    return <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), fill, style, bodyFrame.ring()]}>{body}</GlassSurface>;
+    return (
+      <AnatomyScope>
+        <GlassSurface layer="content" testID={testID} style={[skin.cardSurface(tokens), skin.connectorPad(compact), fill, style, bodyFrame.ring()]}>
+          {/* The Feed part's box: GlassSurface has no ref, so a pass-through fill measures it. */}
+          {feedPart ? <View ref={feedPart.ref} onLayout={feedPart.onLayout} style={MEASURE_BOX} /> : null}
+          {body}
+        </GlassSurface>
+      </AnatomyScope>
+    );
   };
 }

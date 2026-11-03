@@ -6,6 +6,7 @@ import { fluidRoles, fluidType } from "../../style/type-scale.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
 import { type ReactNode } from "react";
 import { type AccessibilityRole, type GestureResponderEvent, type TextLayoutEventData, type NativeSyntheticEvent } from "react-native";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { View, Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill, tabularNums } from "../../style/index.js";
 import {
   type Role,
@@ -548,6 +549,10 @@ export function numeralsOf(p: TypographyProps): Numerals | null {
 /** Build a Typography component from a platform skin. */
 export function createTypography(skin: TypographySkin) {
   return function Typography(props: TypographyProps) {
+    // The anatomy part a docs AnatomyProvider numbers (src/style/anatomy.tsx): the label's
+    // run (the hand-off's Text run), taken before the AnatomyScope below so the kit Text
+    // it renders, and a section's count Badge, register nothing of their own.
+    const runPart = useAnatomyPart("Text run");
     const { children, testID, style } = props;
     const theme = useTheme();
     const { tokens, dark } = theme;
@@ -598,6 +603,8 @@ export function createTypography(skin: TypographySkin) {
     const label = (
       <Text
         {...(anchor ?? undefined)}
+        ref={runPart?.ref}
+        onLayout={runPart?.onLayout}
         testID={testID}
         onPress={props.onPress}
         numberOfLines={props.numberOfLines}
@@ -656,12 +663,12 @@ export function createTypography(skin: TypographySkin) {
         {children}
       </Text>
     );
-    if (props.section) return <View style={sectionRow}>
+    if (props.section) return <AnatomyScope><View style={sectionRow}>
       {label}
       {props.count === undefined ? null : <Badge count start>{String(props.count)}</Badge>}
       {props.description ? <Text style={sectionDescription(tokens, role === "subheading")}>{props.description}</Text> : null}
       {props.actions ? <View style={sectionActions}>{props.actions}</View> : null}
-    </View>;
-    return label;
+    </View></AnatomyScope>;
+    return <AnatomyScope>{label}</AnatomyScope>;
   };
 }

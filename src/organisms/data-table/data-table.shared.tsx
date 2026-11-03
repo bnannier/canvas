@@ -10,6 +10,7 @@ import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import {
   type Density,
   type DataTableSkin,
@@ -598,6 +599,9 @@ export interface DataTableParts {
   Skeleton: ComponentType<SkeletonProps>;
 }
 
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 /** Build a DataTable component from a platform skin plus its platform parts. */
 export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   const { Checkbox, Pagination, Skeleton } = parts;
@@ -616,6 +620,16 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
   }
 
   return function DataTable(props: DataTableProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Table, Header row, Sort indicator, Row, Cell, Selection. The last
+    // four are the first sortable header's and first row's, taken before the tree's
+    // AnatomyScope so the caller's cells and the kit Checkbox and Icon register nothing.
+    const tablePart = useAnatomyPart("Table");
+    const headerRowPart = useAnatomyPart("Header row");
+    const sortPart = useAnatomyPart("Sort indicator");
+    const rowPart = useAnatomyPart("Row");
+    const cellPart = useAnatomyPart("Cell");
+    const selectionPart = useAnatomyPart("Selection");
     const { columns, striped, bordered, attached, selectable, onRowPress, onRowEdit, onRowDelete, inlineEdit, rowKey, virtualized, loading, emptyMessage, paginated, footer, testID, style } = props;
     const density = densityOf(props);
     // The reference sheet is the skin's where the skin draws one (web, Android); iOS keeps
@@ -1031,6 +1045,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           // The reference sheet's header has no fill, so there is nothing for the inner
           // fill to tint; its row carries the padding and the sheet's column gap.
           <View
+            ref={headerRowPart?.ref}
+            onLayout={headerRowPart?.onLayout}
             style={[
               ref ? [ref.headerRow(tokens), ref.columns] : withInnerFill(theme, skin.headerRow(tokens), "soft"),
               bordered || attached ? skin.headerRowAttached : null,
@@ -1075,6 +1091,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     );
 
     return (
+      <AnatomyScope>
       <GlassSurface
         layer="content"
         testID={testID}
@@ -1082,6 +1099,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         role={canPan ? undefined : "table"}
         onLayout={onMeasureLayout}
       >
+        {/* The Table part's box: GlassSurface has no ref, so a pass-through fill measures it. */}
+        {tablePart ? <View ref={tablePart.ref} onLayout={tablePart.onLayout} style={MEASURE_BOX} /> : null}
         {canPan ? (
           // While the table fits, its content is exactly the scrollport's width,
           // so there is nothing to scroll and no tab stop. `scrollFocus` also
@@ -1145,6 +1164,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         ) : null}
         {attached ? panFrame.innerRing(wrap) ?? bodyFrame.innerRing(wrap) : null}
       </GlassSurface>
+      </AnatomyScope>
     );
 
     // A group's band, drawn above the first row of each group a page shows (`pos` is the
@@ -1228,6 +1248,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           ]}
         >
           {label}
+          <AnatomyPart part={col === visibleColumns.find(sortableAt) ? sortPart : undefined}>
           {active ? (
             skin.sortArrows ? (
               descending ? (
@@ -1243,6 +1264,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           ) : (
             <Icon chevronsUpDown muted size={skin.sortIconSize} decorative />
           )}
+          </AnatomyPart>
         </Pressable>
       );
     }
@@ -1267,6 +1289,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     function renderDataRow(row: ReactNode[], r: number) {
       const rowId = keyOf(row, r);
       const isSelected = selectable && selectedSet.has(rowId);
+      // The first row carries the Row part; its cells and checkbox carry theirs.
+      const rowTarget = r === 0 ? rowPart : undefined;
       const rowEditing = editingRow === r;
       // While ANY editor is open in this row it must not render as a pressable
       // row: a text input may not nest inside a button-roled node on web, and
@@ -1278,13 +1302,15 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
               selection while a tap elsewhere on the row still reaches the
               row's press behavior (the responder system grants the innermost
               pressable the touch). */}
-          <Checkbox
-            small
-            selection
-            checked={!!isSelected}
-            onChange={() => toggleRow(row, r)}
-            accessibilityLabel={rowLabel(row) || `Select row ${r + 1}`}
-          />
+          <AnatomyPart part={rowTarget ? selectionPart : undefined}>
+            <Checkbox
+              small
+              selection
+              checked={!!isSelected}
+              onChange={() => toggleRow(row, r)}
+              accessibilityLabel={rowLabel(row) || `Select row ${r + 1}`}
+            />
+          </AnatomyPart>
         </View>
       ) : null;
       // The row action's KEYBOARD and screen-reader path: a real button, in the
@@ -1355,6 +1381,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         return (
           <View
             role="row"
+            ref={rowTarget?.ref}
+            onLayout={rowTarget?.onLayout}
             style={[
               rowStyle,
               rowAlign,
@@ -1389,6 +1417,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           // pointer convenience only, so it stays out of the accessibility
           // tree; the activator in the first cell is the reachable action.
           role="row"
+          ref={rowTarget?.ref}
+          onLayout={rowTarget?.onLayout}
           accessible={false}
           focusable={false}
           style={({ pressed }) => [
@@ -1406,7 +1436,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           {cells}
         </Pressable>
       ) : (
-        <View style={[rowStyle, rowAlign, stripe, selectedTint, editWash]} role="row">
+        <View ref={rowTarget?.ref} onLayout={rowTarget?.onLayout} style={[rowStyle, rowAlign, stripe, selectedTint, editWash]} role="row">
           {cells}
         </View>
       );
@@ -1425,6 +1455,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     ) {
       const c = cols.indexOf(col);
       const cell = cellOf(row, c);
+      // The first row's first cell carries the Cell part.
+      const cellTarget = r === 0 && index === 0 ? cellPart : undefined;
       const rowEditing = editingRow === r;
       const cellOpen =
         typeof cell === "string" &&
@@ -1489,9 +1521,9 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       } else {
         const text =
           typeof cell === "string" || typeof cell === "number" ? (
-            <Text style={[skin.cellText(tokens), alignText]}>{cell}</Text>
+            <Text ref={cellTarget?.ref} onLayout={cellTarget?.onLayout} style={[skin.cellText(tokens), alignText]}>{cell}</Text>
           ) : (
-            cell
+            <AnatomyPart part={cellTarget}>{cell}</AnatomyPart>
           );
         // An inline-editable (string) cell is a press target opening its
         // editor. It stays out of the accessibility tree when the row carries

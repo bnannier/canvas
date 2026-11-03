@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: e09f8965dff7d0af07ba1dd1deaa62611de669dfcb059d93145325e8bdbb1cbc
+Source SHA-256: 4142cc0e5e2e3b6d409e4f7eb0338822b95078cff8102a18cf5c33a42834366a
 
 Source: `src/atoms/button/button.md`
 Human reference: https://canvas.nannier.com/components/button
@@ -11,7 +11,7 @@ Human reference: https://canvas.nannier.com/components/button
 ## Public imports
 
 ```tsx
-import { AnatomyProvider, Button } from "@nannier/canvas";
+import { AnatomyPart, AnatomyProvider, Button } from "@nannier/canvas";
 ```
 
 The following examples are source excerpts. Supply application data and handlers; snippets using `tokens` read `const { tokens } = useTheme()` inside a component. Import React hooks from React. Intentional “Don't” examples illustrate unsupported patterns.
@@ -410,7 +410,7 @@ A button that NAVIGATES should be a real link, not a press handler that sets `lo
 
 ## Anatomy
 
-A Button registers its parts with an enclosing `AnatomyProvider`, in the hand-off's order: `Container` (the pressable box), `Label`, `Leading icon`, `Trailing icon` and `Count badge`. The provider (`AnatomyProviderProps`) fills its stage and centres the specimen, and reports each rendered part's rectangle (an `AnatomyRect`, relative to its own box and in the space the specimen is seen in) to its `onMeasure` callback as `AnatomyRects` by part name, with its own box as its parent laid it out, so a docs Anatomy section can number the parts with markers drawn over the specimen. `zoomed` draws the specimen at the hand-off's anatomy zoom (1.6, for a component that hugs its content): the provider lays its inner box out at the stage width over the zoom and scales it back up about its centre, reserves the scaled height so the stage grows with the figure, and maps the rectangles before reporting them. Outside a provider the registration costs one context read and adds no node.
+A Button registers its parts with an enclosing `AnatomyProvider`, in the hand-off's order: `Container` (the pressable box), `Label`, `Leading icon`, `Trailing icon` and `Count badge`. The provider (`AnatomyProviderProps`) fills its stage and centres the specimen, and reports each rendered part's rectangle (an `AnatomyRect`, relative to its own box and in the space the specimen is seen in) to its `onMeasure` callback as `AnatomyRects` by part name, with its own box as its parent laid it out, so a docs Anatomy section can number the parts with markers drawn over the specimen. `zoomed` draws the specimen at the hand-off's anatomy zoom (1.6, for a component that hugs its content): the provider lays its inner box out at the stage width over the zoom and scales it back up about its centre, reserves the scaled height so the stage grows with the figure, and maps the rectangles before reporting them. Outside a provider the registration costs one context read and adds no node. Every kit component registers its own parts the same way, under the names its docs page lists, and a part belongs to the outermost component that names it: the Badge inside a Button's count, or the Buttons in a Dialog's footer, register nothing of theirs. `AnatomyPart` registers an element of your own as a named part (`<AnatomyPart name="Child view">...</AnatomyPart>`), measured in a wrapping view inside a provider and rendered bare outside one; its `AnatomyPartProps` take the part's `name`, or a `part` a component already took, which renders its children bare when undefined.
 
 ## Workflow actions
 

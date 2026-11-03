@@ -1,7 +1,7 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { type ReactNode, useId, useState } from "react";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import { GlassSurface, Portal, Pressable, Text, View, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
@@ -9,6 +9,7 @@ import { Emblem } from "../../atoms/emblem/emblem.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import * as s from "./alert-dialog.styles.js";
 import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { type Width, type AlertDialogSkin } from "./alert-dialog.styles.js";
 
 // Shared AlertDialog shell. The structure (optional trigger + dim backdrop +
@@ -191,6 +192,17 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
     // Escape and native accessibility escape through the same Cancel policy.
     // An embedded specimen takes none of this: focus, Tab, Escape and Back stay the page's.
     const panelRef = useDialogFocus(open && modal);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Scrim, Panel, Icon, Title, Description, Actions. Taken before the
+    // tree's AnatomyScope so the action Buttons and the Emblem register nothing of their
+    // own. The Scrim is the node the dim covers, the Panel a pass-through fill of the
+    // card (GlassSurface has no ref).
+    const scrimPart = useAnatomyPart("Scrim");
+    const panelPart = useAnatomyPart("Panel");
+    const iconPart = useAnatomyPart("Icon");
+    const titlePart = useAnatomyPart("Title");
+    const descriptionPart = useAnatomyPart("Description");
+    const actionsPart = useAnatomyPart("Actions");
     const escapeScope = useEscapeLayer(open && modal, handleCancel);
     // Inline catalogue panels do not own page navigation. A presented overlay
     // consumes native Back through the same cancellation policy as Escape.
@@ -202,7 +214,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
     const actionRow =
       skin.actionLayout === "capsule" ? (
-        <View style={[skin.capsuleRow!, skin.capsuleRowColor?.(tokens)]}>
+        <View ref={actionsPart?.ref} onLayout={actionsPart?.onLayout} style={[skin.capsuleRow!, skin.capsuleRowColor?.(tokens)]}>
           <Pressable
             onPress={handleCancel}
             accessibilityRole="button"
@@ -233,7 +245,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
           </Pressable>
         </View>
       ) : (
-        <View style={skin.actions}>
+        <View ref={actionsPart?.ref} onLayout={actionsPart?.onLayout} style={skin.actions}>
           <Button {...skin.cancelButton} small={skin.buttonSmall} block={skin.blockButtons} onPress={handleCancel}>
             {cancelLabel}
           </Button>
@@ -261,96 +273,102 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
     // Under glass on the web the dim moves onto the scrim's blur layer (useHeldScrim).
     const scrim = useHeldScrim(backdrop);
     return (
-      <View testID={testID} style={[s.root, !modal ? s.embeddedFill : null]}>
-        {trigger != null ? (
-          <View style={s.triggerWrap}>
-            <Button outline small onPress={() => setOpen(true)}>
-              {trigger}
-            </Button>
-          </View>
-        ) : null}
-        {open ? (
-          <Present overlay={overlay}>
-          <EscapeLayerProvider scope={escapeScope}>
-          <View
-            // The overlay carries the dialog semantics so assistive tech announces
-            // it. `role="alertdialog"` + `aria-modal` make web screen readers treat
-            // it as a modal alert dialog and the page behind it as inert; the title
-            // (and description, when present) are wired as the accessible name and
-            // description via aria-labelledby/aria-describedby. `accessibilityViewIsModal`
-            // keeps iOS VoiceOver honoring the inert backdrop. On the web the panel
-            // below also traps Tab focus and returns focus to the trigger on close
-            // (see useDialogFocus).
-            role="alertdialog"
-            accessibilityViewIsModal={modal}
-            onAccessibilityEscape={modal ? escapeScope.onAccessibilityEscape : undefined}
-            aria-modal={modal ? true : undefined}
-            aria-labelledby={title != null ? titleId : undefined}
-            aria-describedby={description != null ? descriptionId : undefined}
-            style={scrim.style}
-          >
-            {/* Under glass on the web the scrim also blurs what it dims (GS-6): the dim and
-                the blur are one layer of their own beneath the card (useHeldScrim), so the
-                blur never samples the dim, and this node, which holds the card, wears
-                neither (a blur here would cut the card's frost off from the page). */}
-            {scrim.layer}
-            <View style={[s.cardBase, s.panelWidth[width], skin.panelWidth, style]}>
-            {/* An alert dialog takes its platform's layer of the glass model (skin.glassLayer):
-                on the web the functional layer every floating surface takes (the hand-off's
-                `--gl`), on native the dense layer, where the system material reads the page
-                behind more strongly. In solid mode GlassSurface is the plain box wearing the
-                skin's own `popover` fill. The dimming scrim behind it is unaffected. */}
-            <GlassSurface layer={skin.glassLayer} floating style={[s.cardBase, skin.card(tokens)]}>
-              {/* The panel content region: a focusable (tabIndex -1) container the
-                  web focus manager pulls focus into and traps Tab within, wrapping
-                  the content in a KeyboardAvoidingView so the iOS keyboard never
-                  covers the confirmation field (padding behavior on iOS; a plain
-                  passthrough View on web/Android). Neither wrapper adds layout. */}
-              <View ref={panelRef} tabIndex={modal ? -1 : undefined}>
-                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
-                  <View style={skin.content}>
-                  {skin.emblem != null ? (
-                    // The hand-off's tone tile: a trash glyph on the destructive wash, else
-                    // info on the accent's.
-                    <View style={skin.emblem}>
-                      {destructive ? <Emblem destructive soft><Icon trash2 decorative /></Emblem> : <Emblem primary soft><Icon info decorative /></Emblem>}
-                    </View>
-                  ) : null}
-                  {title != null ? (
-                    <Text nativeID={titleId} role="heading" style={skin.title(tokens)}>
-                      {title}
-                    </Text>
-                  ) : null}
-                  {description != null ? (
-                    <Text nativeID={descriptionId} style={skin.description(tokens)}>
-                      {description}
-                    </Text>
-                  ) : null}
-                  {withInput ? (
-                    // The confirmation field's placeholder is its instruction ("type <confirmText> to
-                    // confirm"), and the same words are its accessible name,
-                    // so the field is announced by what it asks for once text replaces the
-                    // placeholder.
-                    <View style={skin.inputBlock}>
-                      <Input
-                        value={confirmInput}
-                        onChangeText={setConfirmInput}
-                        placeholder={`type ${confirmText} to confirm`}
-                        accessibilityLabel={`Type ${confirmText} to confirm`}
-                      />
-                    </View>
-                  ) : null}
-                  </View>
-                  {actionRow}
-                </KeyboardAvoidingView>
-              </View>
-            </GlassSurface>
+      <AnatomyScope>
+        <View testID={testID} style={[s.root, !modal ? s.embeddedFill : null]}>
+          {trigger != null ? (
+            <View style={s.triggerWrap}>
+              <Button outline small onPress={() => setOpen(true)}>
+                {trigger}
+              </Button>
             </View>
-          </View>
-          </EscapeLayerProvider>
-          </Present>
-        ) : null}
-      </View>
+          ) : null}
+          {open ? (
+            <Present overlay={overlay}>
+            <EscapeLayerProvider scope={escapeScope}>
+            <View
+              // The overlay carries the dialog semantics so assistive tech announces
+              // it. `role="alertdialog"` + `aria-modal` make web screen readers treat
+              // it as a modal alert dialog and the page behind it as inert; the title
+              // (and description, when present) are wired as the accessible name and
+              // description via aria-labelledby/aria-describedby. `accessibilityViewIsModal`
+              // keeps iOS VoiceOver honoring the inert backdrop. On the web the panel
+              // below also traps Tab focus and returns focus to the trigger on close
+              // (see useDialogFocus).
+              ref={scrimPart?.ref}
+              onLayout={scrimPart?.onLayout}
+              role="alertdialog"
+              accessibilityViewIsModal={modal}
+              onAccessibilityEscape={modal ? escapeScope.onAccessibilityEscape : undefined}
+              aria-modal={modal ? true : undefined}
+              aria-labelledby={title != null ? titleId : undefined}
+              aria-describedby={description != null ? descriptionId : undefined}
+              style={scrim.style}
+            >
+              {/* Under glass on the web the scrim also blurs what it dims (GS-6): the dim and
+                  the blur are one layer of their own beneath the card (useHeldScrim), so the
+                  blur never samples the dim, and this node, which holds the card, wears
+                  neither (a blur here would cut the card's frost off from the page). */}
+              {scrim.layer}
+              <View style={[s.cardBase, s.panelWidth[width], skin.panelWidth, style]}>
+              {/* An alert dialog takes its platform's layer of the glass model (skin.glassLayer):
+                  on the web the functional layer every floating surface takes (the hand-off's
+                  `--gl`), on native the dense layer, where the system material reads the page
+                  behind more strongly. In solid mode GlassSurface is the plain box wearing the
+                  skin's own `popover` fill. The dimming scrim behind it is unaffected. */}
+              <GlassSurface layer={skin.glassLayer} floating style={[s.cardBase, skin.card(tokens)]}>
+                {/* The card's own box, for the anatomy Panel part: GlassSurface has no ref, so a pass-through fill measures it. */}
+                {panelPart ? <View ref={panelPart.ref} onLayout={panelPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
+                {/* The panel content region: a focusable (tabIndex -1) container the
+                    web focus manager pulls focus into and traps Tab within, wrapping
+                    the content in a KeyboardAvoidingView so the iOS keyboard never
+                    covers the confirmation field (padding behavior on iOS; a plain
+                    passthrough View on web/Android). Neither wrapper adds layout. */}
+                <View ref={panelRef} tabIndex={modal ? -1 : undefined}>
+                  <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+                    <View style={skin.content}>
+                    {skin.emblem != null ? (
+                      // The hand-off's tone tile: a trash glyph on the destructive wash, else
+                      // info on the accent's.
+                      <View ref={iconPart?.ref} onLayout={iconPart?.onLayout} style={skin.emblem}>
+                        {destructive ? <Emblem destructive soft><Icon trash2 decorative /></Emblem> : <Emblem primary soft><Icon info decorative /></Emblem>}
+                      </View>
+                    ) : null}
+                    {title != null ? (
+                      <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} nativeID={titleId} role="heading" style={skin.title(tokens)}>
+                        {title}
+                      </Text>
+                    ) : null}
+                    {description != null ? (
+                      <Text ref={descriptionPart?.ref} onLayout={descriptionPart?.onLayout} nativeID={descriptionId} style={skin.description(tokens)}>
+                        {description}
+                      </Text>
+                    ) : null}
+                    {withInput ? (
+                      // The confirmation field's placeholder is its instruction ("type <confirmText> to
+                      // confirm"), and the same words are its accessible name,
+                      // so the field is announced by what it asks for once text replaces the
+                      // placeholder.
+                      <View style={skin.inputBlock}>
+                        <Input
+                          value={confirmInput}
+                          onChangeText={setConfirmInput}
+                          placeholder={`type ${confirmText} to confirm`}
+                          accessibilityLabel={`Type ${confirmText} to confirm`}
+                        />
+                      </View>
+                    ) : null}
+                    </View>
+                    {actionRow}
+                  </KeyboardAvoidingView>
+                </View>
+              </GlassSurface>
+              </View>
+            </View>
+            </EscapeLayerProvider>
+            </Present>
+          ) : null}
+        </View>
+      </AnatomyScope>
     );
   };
 }

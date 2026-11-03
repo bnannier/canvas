@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, RippleClip, cornerRadii, useTheme, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { Sparkline } from "../../charts/sparkline/sparkline.js";
 import { StackedBar } from "../../charts/stacked-bar/stacked-bar.js";
 import { type StackedSegment } from "../../charts/shared/types.js";
@@ -184,9 +185,20 @@ export function deltaOf(item: Pick<StatItem, "steady" | "down">): "steady" | "do
   return "up";
 }
 
+// The handlers of the parts a metric draws, handed to the first metric only.
+interface StatParts {
+  stat: AnatomyTarget | undefined;
+  label: AnatomyTarget | undefined;
+  value: AnatomyTarget | undefined;
+  delta: AnatomyTarget | undefined;
+}
+
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
-  function StatItemView({ item, surface, framed, onPress, dense, large, first }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void; dense?: boolean; large?: boolean; first: boolean }): ReactNode {
+  function StatItemView({ item, surface, framed, onPress, dense, large, first, parts }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void; dense?: boolean; large?: boolean; first: boolean; parts?: StatParts }): ReactNode {
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     // Under glass a card-surface metric is a CONTENT-layer pane (the material rides
@@ -209,22 +221,22 @@ export function createStats(skin: StatsSkin) {
     const hasHeader = item.icon != null || item.actions != null;
     const inner = (
       <>
-        {dense ? <Text style={[skin.denseValue(tokens, !!large), accentStyle]}>{item.value}</Text> : null}
+        {dense ? <Text ref={parts?.value?.ref} onLayout={parts?.value?.onLayout} style={[skin.denseValue(tokens, !!large), accentStyle]}>{item.value}</Text> : null}
         {hasHeader ? (
           <View style={headerRow}>
-            <Text style={skin.labelText(tokens)}>{item.label}</Text>
+            <Text ref={parts?.label?.ref} onLayout={parts?.label?.onLayout} style={skin.labelText(tokens)}>{item.label}</Text>
             <View style={headerTrailing}>
               {item.icon}
               {item.actions}
             </View>
           </View>
         ) : (
-          <Text style={dense ? skin.denseLabel(tokens, !!large) : skin.labelText(tokens)}>{item.label}</Text>
+          <Text ref={parts?.label?.ref} onLayout={parts?.label?.onLayout} style={dense ? skin.denseLabel(tokens, !!large) : skin.labelText(tokens)}>{item.label}</Text>
         )}
-        {dense ? null : <Text style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>}
+        {dense ? null : <Text ref={parts?.value?.ref} onLayout={parts?.value?.onLayout} style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>}
         {item.description ? <Text style={skin.denseDescription(tokens)}>{item.description}</Text> : null}
         {item.delta != null && item.delta !== "" ? (
-          <Text style={[skin.deltaBase, deltaKind === "steady" ? { color: tokens["muted-foreground"] } : deltaTone(tokens, deltaKind === "down")]}>{item.delta}</Text>
+          <Text ref={parts?.delta?.ref} onLayout={parts?.delta?.onLayout} style={[skin.deltaBase, deltaKind === "steady" ? { color: tokens["muted-foreground"] } : deltaTone(tokens, deltaKind === "down")]}>{item.delta}</Text>
         ) : null}
         {item.spark != null && item.spark.length > 0 ? (
           <Sparkline values={item.spark} track={framed} accessibilityLabel={item.sparkLabel ?? `${item.label} trend`} style={sparkStrip} />
@@ -249,6 +261,8 @@ export function createStats(skin: StatsSkin) {
         // padding, fill, and pressed-dim stay on the Pressable.
         <RippleClip shape={cornerRadii(cardShape)} style={metricLayout}>
           <Pressable
+            ref={parts?.stat?.ref}
+            onLayout={parts?.stat?.onLayout}
             accessibilityRole="button"
             onPress={onPress}
             android_ripple={android_ripple}
@@ -260,10 +274,17 @@ export function createStats(skin: StatsSkin) {
         </RippleClip>
       );
     }
-    return cardShape ? <GlassSurface layer="content" style={container}>{inner}</GlassSurface> : <View style={container}>{inner}</View>;
+    // GlassSurface has no ref, so under a docs AnatomyProvider the Stat part is a pass-through fill measuring its box.
+    const statBox = parts?.stat && cardShape ? <View ref={parts.stat.ref} onLayout={parts.stat.onLayout} style={MEASURE_BOX} /> : null;
+    return cardShape ? <GlassSurface layer="content" style={container}>{statBox}{inner}</GlassSurface> : <View ref={parts?.stat?.ref} onLayout={parts?.stat?.onLayout} style={container}>{inner}</View>;
   }
 
   return function Stats(props: StatsProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Group, Stat, Label, Value, Delta. The Stat and its text parts are
+    // the first metric's; the scope keeps the Sparkline and StackedBar inside from naming any.
+    const groupPart = useAnatomyPart("Group");
+    const firstParts: StatParts = { stat: useAnatomyPart("Stat"), label: useAnatomyPart("Label"), value: useAnatomyPart("Value"), delta: useAnatomyPart("Delta") };
     const { items, title, testID, style, onPressItem } = props;
     const { tokens } = useTheme();
     const surface = surfaceOf(props);
@@ -280,14 +301,16 @@ export function createStats(skin: StatsSkin) {
     const Root = isPlain ? GlassSurface : View;
 
     return (
+      <AnatomyScope>
       <Root testID={testID} style={[isPlain ? skin.plainContainer(tokens) : null, fill, style]} {...(isPlain ? { layer: "content" as const } : null)}>
         {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
-        <View style={[row, skin.rowGap[surface]]}>
+        <View ref={groupPart?.ref} onLayout={groupPart?.onLayout} style={[row, skin.rowGap[surface]]}>
           {items.map((item, i) => (
-            <StatItemView key={i} item={item} surface={surface} framed={props.framed} dense={props.compact || props.large} large={props.large && !props.compact} first={i === 0} onPress={onPressItem ? () => onPressItem(i) : undefined} />
+            <StatItemView key={i} item={item} surface={surface} framed={props.framed} dense={props.compact || props.large} large={props.large && !props.compact} first={i === 0} parts={i === 0 ? firstParts : undefined} onPress={onPressItem ? () => onPressItem(i) : undefined} />
           ))}
         </View>
       </Root>
+      </AnatomyScope>
     );
   };
 }

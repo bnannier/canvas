@@ -3,6 +3,8 @@ import { ScrollView, View, ThemeProvider, useTheme } from "../../style/index.js"
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Typography } from "../../atoms/typography/typography.js";
 import { Dialog as WebDialog } from "../dialog/dialog.js";
+import { DialogPanelPart } from "../dialog/dialog.shared.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { Steps as WebSteps, type Step } from "../steps/steps.js";
 import * as s from "./wizard.styles.js";
 import { webTypography, type WizardTypography } from "./wizard.typography.js";
@@ -52,6 +54,14 @@ export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = W
     const theme = useTheme();
     const { tokens } = theme;
     const bodyBounds = [s.bodyScroll, { minWidth: typography.bodyMinimum }];
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Panel, Steps, Body, Footer actions. Taken before the tree's
+    // AnatomyScope so the Dialog, Steps and Buttons register nothing of their own; the
+    // Panel is the Dialog's card, which the Dialog registers through DialogPanelPart.
+    const panelPart = useAnatomyPart("Panel");
+    const stepsPart = useAnatomyPart("Steps");
+    const bodyPart = useAnatomyPart("Body");
+    const footerPart = useAnatomyPart("Footer actions");
     const saveStatus = status ? <Typography caption mono subtle natural>{status}</Typography> : null;
     // A specimen is the Dialog's contained form, in the flow of the page that shows it,
     // hugging its stage; a live wizard teleports into the nearest OverlayProvider and fills it.
@@ -60,15 +70,16 @@ export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = W
     const panel = <Dialog form workspace banded overlay={!embedded} compact={embedded} embedded={embedded} open={open} title={title} description={description}
       panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID}
       headerAccessory={saveStatus}
-      workspaceSidebar={<View style={[skin.sidebar, { borderColor: tokens.border }]}>
+      workspaceSidebar={<View ref={stepsPart?.ref} onLayout={stepsPart?.onLayout} style={[skin.sidebar, { borderColor: tokens.border }]}>
         <Steps vertical compact steps={steps} current={current} testID={hook("steps")} />
       </View>}
-      footer={<View testID={hook("footer")} style={skin.footer}>
+      footer={<View ref={footerPart?.ref} onLayout={footerPart?.onLayout} testID={hook("footer")} style={skin.footer}>
           {previous ? <Button shrink ghost disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}
           <View testID={hook("footer-buttons")} style={s.actions}>{actions}</View>
       </View>}>
-      {scrollBody ? <ScrollView testID={hook("body-scroll")} style={bodyBounds} contentContainerStyle={skin.bodyContent} keyboardShouldPersistTaps="handled">{children}</ScrollView> : <View style={[bodyBounds, skin.bodyContent]}>{children}</View>}
+      {scrollBody ? <ScrollView ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} testID={hook("body-scroll")} style={bodyBounds} contentContainerStyle={skin.bodyContent} keyboardShouldPersistTaps="handled">{children}</ScrollView> : <View ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={[bodyBounds, skin.bodyContent]}>{children}</View>}
     </Dialog>;
-    return typography.fonts ? <ThemeProvider scheme={theme.scheme} surface={theme.surface} cyan={theme.palette === "cyan"} mint={theme.palette === "mint"} rose={theme.palette === "rose"} amber={theme.palette === "amber"} tokens={tokens} fonts={{ ...theme.fonts, ...typography.fonts }}>{panel}</ThemeProvider> : panel;
+    const scoped = <AnatomyScope><DialogPanelPart.Provider value={panelPart}>{panel}</DialogPanelPart.Provider></AnatomyScope>;
+    return typography.fonts ? <ThemeProvider scheme={theme.scheme} surface={theme.surface} cyan={theme.palette === "cyan"} mint={theme.palette === "mint"} rose={theme.palette === "rose"} amber={theme.palette === "amber"} tokens={tokens} fonts={{ ...theme.fonts, ...typography.fonts }}>{scoped}</ThemeProvider> : scoped;
   };
 }

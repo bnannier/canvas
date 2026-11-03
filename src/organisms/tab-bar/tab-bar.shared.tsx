@@ -4,6 +4,8 @@ import { StyleSheet } from "react-native";
 import { View, Text, Pressable, GlassPane, paneHost, GlassSurface, paneRipple, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { selectionTint } from "../../style/selection-tint.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared TabBar shell. TabBar is the bottom app-navigation bar: a row of equal-width
 // destinations, each an icon over a short label, with exactly one active. It is a
@@ -105,6 +107,14 @@ const ICON_OVER_PILL: ViewStyle = { position: "relative" };
 
 export function createTabBar(skin: TabBarSkin) {
   return function TabBar({ items, active, defaultActive, onSelect, bottomInset = 0, style, testID }: TabBarProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Bar, Item, Active indicator, Label. Each registers on the first
+    // destination that draws it (the active one for the indicator), taken before the
+    // tree's AnatomyScope so the caller's icons register nothing of their own.
+    const barPart = useAnatomyPart("Bar");
+    const itemPart = useAnatomyPart("Item");
+    const indicatorPart = useAnatomyPart("Active indicator");
+    const labelPart = useAnatomyPart("Label");
     const { tokens } = useTheme();
     const material = useMaterialTheme({ layer: "control" });
     const glass = material.surface === "glass";
@@ -115,6 +125,10 @@ export function createTabBar(skin: TabBarSkin) {
     const [activeKey, setActiveKey] = useControllableState<string>(active, defaultActive ?? items[0]?.key ?? "", onSelect);
     const pill = skin.pill?.(tokens, material.dark);
     const cellPill = skin.pillCovers === "cell";
+    // A capsule indicator is the active destination's whole cell, so its part rides that
+    // cell's Pressable, shared with the Item part when the active one is the first.
+    const activeIndex = items.findIndex((it) => it.key === activeKey);
+    const firstCellRef = useComposedRefs(itemPart?.ref, cellPill && activeIndex === 0 ? indicatorPart?.ref : undefined);
     // Under glass the active indicator is a CONTROL-layer material in the pill's own
     // shape: the cell capsule is a GlassPane filling the active destination's cell
     // (the Pressable keeps its tap, ripple and dim), the icon pill a GlassSurface of
@@ -138,12 +152,22 @@ export function createTabBar(skin: TabBarSkin) {
     ];
     const bar = (
       <GlassSurface floating style={floating ? barStyle : [barStyle, style]}>
+        {/* The Bar part's node inside a docs provider: a pass-through fill of the surface. */}
+        {barPart ? <View ref={barPart.ref} onLayout={barPart.onLayout} style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]} /> : null}
         <View accessibilityRole="tablist" testID={testID} style={{ flex: 1, flexDirection: "row", gap: skin.cellGap ?? 0 }}>
-          {items.map((it) => {
+          {items.map((it, index) => {
             const isActive = it.key === activeKey;
+            const first = index === 0;
+            const cellIndicator = cellPill && index === activeIndex ? indicatorPart : undefined;
+            const cellItem = first ? itemPart : undefined;
+            const cellRef = first ? firstCellRef : cellIndicator?.ref;
+            // An icon pill is drawn on the active destination only.
+            const iconIndicator = !cellPill && isActive ? indicatorPart : undefined;
             return (
               <Pressable
                 key={it.key}
+                ref={cellRef}
+                onLayout={cellItem || cellIndicator ? () => { cellItem?.onLayout(); cellIndicator?.onLayout(); } : undefined}
                 accessibilityRole="tab"
                 accessibilityState={{ selected: isActive }}
                 aria-selected={isActive}
@@ -169,8 +193,11 @@ export function createTabBar(skin: TabBarSkin) {
                     {!cellPill && isActive ? (
                       glass
                         ? <GlassSurface layer="control" tint={pillTint} pointerEvents="none" style={pill} />
-                        : <View style={[pill, { pointerEvents: "none" }]} />
+                        : <View ref={iconIndicator?.ref} onLayout={iconIndicator?.onLayout} style={[pill, { pointerEvents: "none" }]} />
                     ) : null}
+                    {/* Under glass the pill is a GlassSurface with no node to measure: a docs
+                        provider measures a transparent View of the pill's own box instead. */}
+                    {iconIndicator && glass ? <View ref={iconIndicator.ref} onLayout={iconIndicator.onLayout} style={[pill, { pointerEvents: "none", backgroundColor: "transparent" }]} /> : null}
                     {/* The absolute pill is positioned, so on the web it paints over an in-flow
                         glyph (its frost would blur the glyph away); a positioned glyph after it
                         paints on top, as later siblings do natively. */}
@@ -180,27 +207,29 @@ export function createTabBar(skin: TabBarSkin) {
                   it.icon(isActive)
                 )}
                 {it.unread ? <View style={[skin.unread(tokens), { pointerEvents: "none" }]} /> : null}
-                <Text numberOfLines={1} style={[skin.label(isActive), { color: skin.labelColor ? skin.labelColor(tokens, isActive) : isActive ? primaryText(tokens) : tokens["muted-foreground"] }]}>{it.label}</Text>
+                <Text ref={first ? labelPart?.ref : undefined} onLayout={first ? labelPart?.onLayout : undefined} numberOfLines={1} style={[skin.label(isActive), { color: skin.labelColor ? skin.labelColor(tokens, isActive) : isActive ? primaryText(tokens) : tokens["muted-foreground"] }]}>{it.label}</Text>
               </Pressable>
             );
           })}
         </View>
       </GlassSurface>
     );
-    if (!floating) return bar;
+    if (!floating) return <AnatomyScope>{bar}</AnatomyScope>;
     // The floating capsule's frame: full width like the docked bar (so it reads the
     // container's bounds the same way, `alignSelf: "stretch"` plus `width: "100%"`),
     // insetting the capsule from the sides and keeping the safe-area space under it.
     // Touches pass through the frame's margins to whatever scrolls beneath.
     return (
-      <View
-        style={[
-          { alignSelf: "stretch", width: "100%", pointerEvents: "box-none", paddingHorizontal: floating.horizontal, paddingBottom: Math.max(floating.bottom, bottomInset - floating.clearance) },
-          style,
-        ]}
-      >
-        {bar}
-      </View>
+      <AnatomyScope>
+        <View
+          style={[
+            { alignSelf: "stretch", width: "100%", pointerEvents: "box-none", paddingHorizontal: floating.horizontal, paddingBottom: Math.max(floating.bottom, bottomInset - floating.clearance) },
+            style,
+          ]}
+        >
+          {bar}
+        </View>
+      </AnatomyScope>
     );
   };
 }

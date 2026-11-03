@@ -5,6 +5,7 @@ import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { formatCompact } from "../shared/chart-math.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { BreakdownRows, hasSlot, type BreakdownRow } from "../shared/breakdown-rows.js";
 
 // Shared BarList shell. The ranked label/value list (top pages, referrers,
@@ -68,6 +69,12 @@ export function toneOf(p: BarListProps): Tone | null {
 export function createBarList(skin: ChartSkin) {
   return function BarList(props: BarListProps) {
     const { items, title, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Frame, Bar, Value, Label (the first row's, handed to BreakdownRows).
+    const framePart = useAnatomyPart("Frame");
+    const barPart = useAnatomyPart("Bar");
+    const valuePart = useAnatomyPart("Value");
+    const labelPart = useAnatomyPart("Label");
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
@@ -87,6 +94,7 @@ export function createBarList(skin: ChartSkin) {
     );
 
     return (
+      <AnatomyScope>
       <View
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
@@ -101,6 +109,7 @@ export function createBarList(skin: ChartSkin) {
         {title != null && title !== "" ? (
           <Text style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}>{title}</Text>
         ) : null}
+        <AnatomyPart part={framePart}>
         <BreakdownRows
           rows={items}
           share={!!props.share}
@@ -112,8 +121,11 @@ export function createBarList(skin: ChartSkin) {
           formatValue={formatValue}
           onPressRow={props.onPressItem}
           bars
+          anatomy={{ bar: barPart, value: valuePart, label: labelPart }}
         />
+        </AnatomyPart>
       </View>
+      </AnatomyScope>
     );
   };
 }

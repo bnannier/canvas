@@ -2,7 +2,16 @@ import { type ReactNode } from "react";
 import { View, Text, useTheme, type ColorTokens, type ViewStyle } from "../../../style/index.js";
 import { contrastStyle } from "../../../style/glass-surface/glass-surface.shared.js";
 import { Icon } from "../../icon/icon.js";
+import { AnatomyPart, type AnatomyTarget } from "../../../style/anatomy.js";
 import type { CheckboxSkin, Size } from "../checkbox.shared.js";
+
+/** The anatomy handlers a Checkbox takes (above its AnatomyScope) for the nodes drawn below it. */
+export interface CheckboxAnatomy {
+  box?: AnatomyTarget;
+  mark?: AnatomyTarget;
+  label?: AnatomyTarget;
+  description?: AnatomyTarget;
+}
 
 // Shared by the interactive Checkbox and its private decorative counterpart, so
 // removing a nested control does not change the indicator's layout or skin.
@@ -21,13 +30,14 @@ const GLYPH_LAYER: ViewStyle = {
 };
 
 /** Private visual anatomy, with no press handler, role, or focusable host. */
-export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminate, hovered }: {
+export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminate, hovered, anatomy }: {
   skin: CheckboxSkin;
   tokens: ColorTokens;
   size: Size;
   checked?: boolean;
   indeterminate?: boolean;
   hovered?: boolean;
+  anatomy?: CheckboxAnatomy;
 }) {
   const filled = !!(indeterminate || checked);
   // The box is a small mark inside content, not a surface: it draws the skin's own box and
@@ -40,10 +50,12 @@ export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminat
   // The owning control announces checked state; the decorative glyph must never
   // become part of its accessible name when selection changes.
   return (
-    <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={contrastStyle(theme, box)}>
+    <View ref={anatomy?.box?.ref} onLayout={anatomy?.box?.onLayout} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={contrastStyle(theme, box)}>
       {filled ? (
         <View style={GLYPH_LAYER}>
-          {indeterminate ? <Icon minus size={glyph.size} color={glyph.color} /> : <Icon check size={glyph.size} color={glyph.color} />}
+          <AnatomyPart part={anatomy?.mark}>
+            {indeterminate ? <Icon minus size={glyph.size} color={glyph.color} /> : <Icon check size={glyph.size} color={glyph.color} />}
+          </AnatomyPart>
         </View>
       ) : null}
     </View>
@@ -51,7 +63,7 @@ export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminat
 }
 
 /** Shared text and indicator anatomy, with no interaction or semantic role. */
-export function CheckboxContent({ skin, tokens, size, checked, indeterminate, children, description, hovered }: {
+export function CheckboxContent({ skin, tokens, size, checked, indeterminate, children, description, hovered, anatomy }: {
   skin: CheckboxSkin;
   tokens: ColorTokens;
   size: Size;
@@ -60,16 +72,17 @@ export function CheckboxContent({ skin, tokens, size, checked, indeterminate, ch
   children?: ReactNode;
   description?: ReactNode;
   hovered?: boolean;
+  anatomy?: CheckboxAnatomy;
 }) {
   const hasText = children != null || description != null;
   return (
     <>
       <CheckboxIndicatorBox skin={skin} tokens={tokens} size={size} checked={checked}
-        indeterminate={indeterminate} hovered={hovered} />
+        indeterminate={indeterminate} hovered={hovered} anatomy={anatomy} />
       {hasText ? (
         <View style={TEXT_COLUMN}>
-          {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
-          {description != null ? <Text style={skin.description(tokens, size)}>{description}</Text> : null}
+          {children != null ? <Text ref={anatomy?.label?.ref} onLayout={anatomy?.label?.onLayout} style={skin.label(tokens, size)}>{children}</Text> : null}
+          {description != null ? <Text ref={anatomy?.description?.ref} onLayout={anatomy?.description?.onLayout} style={skin.description(tokens, size)}>{description}</Text> : null}
         </View>
       ) : null}
     </>

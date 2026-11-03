@@ -17,6 +17,8 @@ import { useHover } from "../../style/hover.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { Kbd } from "../kbd/kbd.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
+import { useDelegatedParts } from "./delegated-parts.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
 // Shared Input shell. The structure (bare field vs. grouped addon layout, the
@@ -365,7 +367,20 @@ export function createInput(platformSkin: InputSkin) {
     const errorFrame = useFocusFrame();
     // A pointer over the box steps its resting edge (web only, where the skin declares it).
     const hover = useHover(!!skin.hover && !disabled);
-    const hostRef = useComposedRefs(fieldRef, ref, errorFrame.target.ref);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Label, Field, Leading icon, Value or placeholder, Trailing action,
+    // taken before the tree's AnatomyScope so the keycap and glyphs inside register
+    // nothing. A Field that delegated its label hands down its Label, Control and Required mark
+    // (delegated-parts.ts). Input draws no helper line: that part is Field's message.
+    const delegated = useDelegatedParts();
+    const labelPart = useAnatomyPart("Label") ?? delegated?.label;
+    const fieldPart = useAnatomyPart("Field") ?? delegated?.control;
+    const leadingPart = useAnatomyPart("Leading icon");
+    const valuePart = useAnatomyPart("Value or placeholder");
+    const trailingPart = useAnatomyPart("Trailing action");
+    const hostRef = useComposedRefs(fieldRef, ref, errorFrame.target.ref, valuePart?.ref);
+    // The floating-label field's editor is its box as well as its value.
+    const boxedHostRef = useComposedRefs(hostRef, fieldPart?.ref);
     // One collision-free id for the label so the field can name itself via
     // aria-labelledby (unconditional hook: the id is cheap and always available).
     const labelId = useId();
@@ -475,6 +490,7 @@ export function createInput(platformSkin: InputSkin) {
       onSubmitEditing: props.onSubmitEditing,
       onKeyPress,
       testID: props.testID,
+      onLayout: valuePart?.onLayout,
       // Internal focus styling chains with (never replaces) the consumer's handlers.
       ...frameHandlers(errorFrame.target, {
         onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
@@ -519,8 +535,8 @@ export function createInput(platformSkin: InputSkin) {
     // label is then hidden beside it (labelA11y).
     const labelNames = props.accessibilityLabel == null;
     const aboveLabel = above ? (
-      <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, labelNames)}>
-        <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+      <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, labelNames)}>
+        <LabelContent label={label!} required={required} starColor={tokens.destructive} starPart={delegated?.required} />
       </Text>
     ) : null;
 
@@ -531,18 +547,18 @@ export function createInput(platformSkin: InputSkin) {
     if (props.search && skin.search) {
       const searchBox = skin.search.container(tokens);
       const filled = searchBox.backgroundColor != null;
-      return <View style={[labelGap, widthCap, style, disabled ? { opacity: skin.disabledOpacity } : null]}>
+      return <AnatomyScope><View style={[labelGap, widthCap, style, disabled ? { opacity: skin.disabledOpacity } : null]}>
         {aboveLabel}
-        <View style={filled ? paneStyle(theme, searchBox) : searchBox}>
+        <View ref={fieldPart?.ref} onLayout={fieldPart?.onLayout} style={filled ? paneStyle(theme, searchBox) : searchBox}>
           {filled ? <GlassPane {...paneProps} shape={searchBox} /> : null}
-          <Icon search boldStroke={skin.search.icon.bold} color={skin.search.icon.color(tokens)} size={skin.search.icon.size} decorative />
+          <AnatomyPart part={leadingPart}><Icon search boldStroke={skin.search.icon.bold} color={skin.search.icon.color(tokens)} size={skin.search.icon.size} decorative /></AnatomyPart>
           <View style={{ flex: 1, justifyContent: "center" }}>
             {!populated ? <Text accessible={false} aria-hidden style={skin.search.placeholder(tokens)}>{placeholder}</Text> : null}
             <TextInput ref={hostRef} style={skin.search.field(tokens)} {...common} placeholder={undefined} />
           </View>
           {shortcutCap}
         </View>
-      </View>;
+      </View></AnatomyScope>;
     }
 
     // Bare field: no addons.
@@ -576,13 +592,15 @@ export function createInput(platformSkin: InputSkin) {
         // larger text size adds to the label's reserve and the value's line.
         const fieldHeight = asNum(skin.bareBox(size).height, 56) + room.growth;
         return (
+          <AnatomyScope>
           <View style={[{ position: "relative" }, disabledDim, widthCap, style, paneHost(theme)]}>
             {barePane}
             <TextInput
-              ref={hostRef}
+              ref={boxedHostRef}
               style={[...bareStyleWith(room.reserve), room.growth !== 0 ? { height: fieldHeight } : null]}
               textAlignVertical="center"
               {...common}
+              onLayout={withPartLayout(fieldPart, valuePart?.onLayout)}
               placeholder={focused ? placeholder : undefined}
             />
             {bareTrailing}
@@ -600,8 +618,11 @@ export function createInput(platformSkin: InputSkin) {
               height={fieldHeight}
               names={labelNames}
               onLine={room.onLine}
+              part={labelPart}
+              starPart={delegated?.required}
             />
           </View>
+          </AnatomyScope>
         );
       }
 
@@ -609,9 +630,10 @@ export function createInput(platformSkin: InputSkin) {
       // cap, style, and disabled dim; the field fills it (its skin sets width:100%).
       if (above) {
         return (
+          <AnatomyScope>
           <View style={[labelGap, disabledDim, widthCap, style]}>
             {aboveLabel}
-            <View style={paneHost(theme)} {...hover.target}>
+            <View ref={fieldPart?.ref} onLayout={fieldPart?.onLayout} style={paneHost(theme)} {...hover.target}>
               {barePane}
               <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
               {caretAfter(bareStyle)}
@@ -619,19 +641,22 @@ export function createInput(platformSkin: InputSkin) {
               {readOnlyFrame}
             </View>
           </View>
+          </AnatomyScope>
         );
       }
 
       // Keep the field host in place when the material changes, preserving focus,
       // native selection and uncontrolled text. The pane stays decoration only.
       return (
-        <View style={[disabledDim, widthCap, style, paneHost(theme)]} {...hover.target}>
+        <AnatomyScope>
+        <View ref={fieldPart?.ref} onLayout={fieldPart?.onLayout} style={[disabledDim, widthCap, style, paneHost(theme)]} {...hover.target}>
           {barePane}
           <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
           {caretAfter(bareStyle)}
           {bareTrailing}
           {readOnlyFrame}
         </View>
+        </AnatomyScope>
       );
     }
 
@@ -693,6 +718,8 @@ export function createInput(platformSkin: InputSkin) {
     const groupedField = (
       <View
         {...hover.target}
+        ref={fieldPart?.ref}
+        onLayout={fieldPart?.onLayout}
         hitSlop={hasClear || hasEye ? actionOverhang(hasClear ? clearBox : skin.iconSize, height) : undefined}
         style={[
           groupSurface.style,
@@ -713,7 +740,7 @@ export function createInput(platformSkin: InputSkin) {
 
         <View style={GROUP_FIELD_AREA}>
           {leadingIcon && iconName != null ? (
-            <View style={[skin.iconOverlay("left"), { pointerEvents: "none" }]}>
+            <View ref={leadingPart?.ref} onLayout={leadingPart?.onLayout} style={[skin.iconOverlay("left"), { pointerEvents: "none" }]}>
               <Icon {...{ [iconName]: true }} color={skin.iconColor(tokens, { ...state, action: false })} size={skin.iconSize} decorative />
             </View>
           ) : null}
@@ -750,6 +777,8 @@ export function createInput(platformSkin: InputSkin) {
             <View style={[skin.iconOverlay("right"), { flexDirection: "row", alignItems: "center", gap: ACTION_GAP }]} pointerEvents="box-none">
               {hasClear ? (
                 <Pressable
+                  ref={trailingPart?.ref}
+                  onLayout={trailingPart?.onLayout}
                   onPress={clearField}
                   hitSlop={clearSlop}
                   accessibilityRole="button"
@@ -771,6 +800,8 @@ export function createInput(platformSkin: InputSkin) {
               ) : null}
               {hasEye ? (
                 <Pressable
+                  ref={hasClear ? undefined : trailingPart?.ref}
+                  onLayout={hasClear ? undefined : trailingPart?.onLayout}
                   onPress={() => setRevealed((r) => !r)}
                   hitSlop={eyeSlop}
                   accessibilityRole="button"
@@ -822,13 +853,15 @@ export function createInput(platformSkin: InputSkin) {
     // fallback). The wrapper carries width/style/dim; the group drops them above.
     if (above) {
       return (
+        <AnatomyScope>
         <View style={[labelGap, disabled ? { opacity: skin.disabledOpacity } : null, widthCap, style]}>
           {aboveLabel}
           {groupedField}
         </View>
+        </AnatomyScope>
       );
     }
-    return groupedField;
+    return <AnatomyScope>{groupedField}</AnatomyScope>;
   });
   Input.displayName = "Input";
   return Input;

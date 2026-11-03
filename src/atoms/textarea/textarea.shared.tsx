@@ -11,6 +11,8 @@ import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps 
 import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneHost, paneStyle, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { useHover } from "../../style/hover.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
+import { useDelegatedParts } from "../input/delegated-parts.js";
 import { type TextareaSkin, type Size, denseField, denseText, denseMinHeight } from "./textarea.styles.js";
 
 // The character-count line's own layout: end-aligned under the field, at the skin's
@@ -160,7 +162,18 @@ export function createTextarea(skin: TextareaSkin) {
     const focusRing = useFocusRingStyle();
     // The ring an errored framed field wears on keyboard focus (see fieldStyle below).
     const errorFrame = useFocusFrame();
-    const hostRef = useComposedRefs(ref, errorFrame.target.ref);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Label, Field, Value or placeholder, Counter, taken before the
+    // tree's AnatomyScope. A Field that delegated its label hands down its Label,
+    // Control and Required mark (input/delegated-parts.ts).
+    const delegated = useDelegatedParts();
+    const labelPart = useAnatomyPart("Label") ?? delegated?.label;
+    const fieldPart = useAnatomyPart("Field") ?? delegated?.control;
+    const valuePart = useAnatomyPart("Value or placeholder");
+    const counterPart = useAnatomyPart("Counter");
+    const hostRef = useComposedRefs(ref, errorFrame.target.ref, valuePart?.ref);
+    // The floating-label field's editor is its box as well as its value.
+    const boxedHostRef = useComposedRefs(hostRef, fieldPart?.ref);
     const entryMaterial = useTextEntryMaterial(!!skin.liquid);
     const { theme } = entryMaterial;
     const { tokens } = theme;
@@ -318,7 +331,7 @@ export function createTextarea(skin: TextareaSkin) {
     const countNode = (stacked: boolean) =>
       showCount ? (
         <View style={[COUNT_ROW, { marginTop: stacked ? Math.max(0, skin.countRow.gap - skin.labelGap) : skin.countRow.gap, paddingHorizontal: skin.countRow.inset }]}>
-          <Text style={skin.count(tokens, over)} accessibilityLiveRegion="polite" aria-live="polite">
+          <Text ref={counterPart?.ref} onLayout={counterPart?.onLayout} style={skin.count(tokens, over)} accessibilityLiveRegion="polite" aria-live="polite">
             {softLimit != null ? `${count}${skin.countJoin}${softLimit}` : `${count}`}
           </Text>
         </View>
@@ -330,10 +343,12 @@ export function createTextarea(skin: TextareaSkin) {
     // carries width/style and the disabled dim so the label dims with the field.
     if (floating) {
       return (
+        <AnatomyScope>
         <View style={[{ position: "relative" }, disabledDim, widthCap, style, paneHost(theme)]}>
           {fieldPane}
           <TextInput
-            ref={hostRef}
+            ref={boxedHostRef}
+            onLayout={withPartLayout(fieldPart, valuePart?.onLayout)}
             multiline
             textAlignVertical="top"
             style={fieldStyleWith(room.reserve)}
@@ -354,9 +369,12 @@ export function createTextarea(skin: TextareaSkin) {
             inset={skin.labelInset ?? ANDROID_TEXTAREA_INSET}
             multiline
             onLine={room.onLine}
+            part={labelPart}
+            starPart={delegated?.required}
           />
           {countNode(false)}
         </View>
+        </AnatomyScope>
       );
     }
 
@@ -367,29 +385,33 @@ export function createTextarea(skin: TextareaSkin) {
     if (above) {
       const aboveLabelStyle: TextStyle = props.eyebrow && skin.referenceLabel ? fieldEyebrow(tokens) : skin.labelAbove(tokens, size);
       return (
+        <AnatomyScope>
         <View style={[labelGap, disabledDim, widthCap, style]}>
-          <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, props.accessibilityLabel == null)}>
-            <LabelContent label={label!} required={required} starColor={tokens.destructive} />
+          <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, props.accessibilityLabel == null)}>
+            <LabelContent label={label!} required={required} starColor={tokens.destructive} starPart={delegated?.required} />
           </Text>
-          <View style={paneHost(theme)} {...hover.target}>
+          <View ref={fieldPart?.ref} onLayout={fieldPart?.onLayout} style={paneHost(theme)} {...hover.target}>
             {fieldPane}
-            <TextInput ref={hostRef} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+            <TextInput ref={hostRef} onLayout={valuePart?.onLayout} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
           </View>
           {countNode(true)}
         </View>
+        </AnatomyScope>
       );
     }
 
     // The field stays in the same host across material changes, preserving native
     // selection, focus and uncontrolled text. The count remains outside its pane.
     return (
+      <AnatomyScope>
       <View style={[disabledDim, widthCap, style]}>
-        <View style={paneHost(theme)} {...hover.target}>
+        <View ref={fieldPart?.ref} onLayout={fieldPart?.onLayout} style={paneHost(theme)} {...hover.target}>
           {fieldPane}
-          <TextInput ref={hostRef} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+          <TextInput ref={hostRef} onLayout={valuePart?.onLayout} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
         </View>
         {countNode(false)}
       </View>
+      </AnatomyScope>
     );
   });
   Textarea.displayName = "Textarea";

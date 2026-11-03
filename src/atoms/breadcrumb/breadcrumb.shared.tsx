@@ -13,6 +13,7 @@ import {
   type LayoutStyle,
 } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Breadcrumb shell. A breadcrumb is a horizontal trail of links separated
 // by a divider glyph, with the last item current (non-link, emphasized).
@@ -222,6 +223,14 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
   }
 
   function Breadcrumb(props: BreadcrumbProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Trail, Crumb, Separator, Current page. Crumb and Separator
+    // register on the first one drawn; taken before the tree's AnatomyScope so the
+    // glyph Icons register nothing of their own.
+    const trailPart = useAnatomyPart("Trail");
+    const crumbPart = useAnatomyPart("Crumb");
+    const separatorPart = useAnatomyPart("Separator");
+    const currentPart = useAnatomyPart("Current page");
     const { items, homeIcon, subtle, maxItems, onItemPress, testID, style } = props;
     const { tokens } = useTheme();
     const trail = items ?? [];
@@ -231,7 +240,9 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
     // The divider between crumbs, hidden from assistive tech: the chevron glyph (mirrored
     // under RTL), or the slash or dot in the separator's type.
     const separatorInk = skin.separator(tokens).color as string;
-    const separatorMark = () =>
+    let separatorsDrawn = 0;
+    const separatorMark = () => <AnatomyPart part={separatorsDrawn++ === 0 ? separatorPart : undefined}>{separatorGlyph()}</AnatomyPart>;
+    const separatorGlyph = () =>
       separator === "chevron" ? (
         isRTL() ? (
           <Icon chevronLeft decorative size={skin.separatorIconSize} color={separatorInk} />
@@ -262,55 +273,62 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
       display = trail.map((label, i) => ({ label, origIndex: i }));
     }
 
+    const firstLink = display.findIndex((entry, index) => !entry.ellipsis && index < display.length - 1);
     return (
-      <View
-        style={[nav, style]}
-        testID={testID}
-        role="navigation"
-        aria-label="Breadcrumb"
-        accessibilityLabel="Breadcrumb"
-      >
-        {homeIcon ? (
-          <View style={crumb}>
-            <Pressable
-              onPress={() => onItemPress?.("Home", 0)}
-              accessibilityRole="link"
-              accessibilityLabel="Home"
-              android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
-              // The glyph is only homeIconSize (14px) square; pad all four sides
-              // out to the platform minimum touch target.
-              hitSlop={targetSlop(skin.minTarget, skin.homeIconSize)}
-              style={({ pressed }) =>
-                skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null
-              }
-            >
-              <Icon home size={skin.homeIconSize} color={skin.link(tokens, subtle).color as string} />
-            </Pressable>
-            {trail.length === 0 ? null : separatorMark()}
-          </View>
-        ) : null}
-        {display.map((entry, index) => {
-          const last = index === display.length - 1;
-          return (
-            <View key={`${index}-${entry.label}`} style={crumb}>
-              {entry.ellipsis ? (
-                <Text style={skin.link(tokens, subtle)} accessibilityLabel="More levels" aria-label="More levels">
-                  {entry.label}
-                </Text>
-              ) : (
-                <BreadcrumbItem
-                  current={last}
-                  subtle={subtle}
-                  onPress={last ? undefined : () => onItemPress?.(entry.label, entry.origIndex)}
-                >
-                  {entry.label}
-                </BreadcrumbItem>
-              )}
-              {last ? null : separatorMark()}
+      <AnatomyScope>
+        <View
+          ref={trailPart?.ref}
+          onLayout={trailPart?.onLayout}
+          style={[nav, style]}
+          testID={testID}
+          role="navigation"
+          aria-label="Breadcrumb"
+          accessibilityLabel="Breadcrumb"
+        >
+          {homeIcon ? (
+            <View style={crumb}>
+              <Pressable
+                onPress={() => onItemPress?.("Home", 0)}
+                accessibilityRole="link"
+                accessibilityLabel="Home"
+                android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+                // The glyph is only homeIconSize (14px) square; pad all four sides
+                // out to the platform minimum touch target.
+                hitSlop={targetSlop(skin.minTarget, skin.homeIconSize)}
+                style={({ pressed }) =>
+                  skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null
+                }
+              >
+                <Icon home size={skin.homeIconSize} color={skin.link(tokens, subtle).color as string} />
+              </Pressable>
+              {trail.length === 0 ? null : separatorMark()}
             </View>
-          );
-        })}
-      </View>
+          ) : null}
+          {display.map((entry, index) => {
+            const last = index === display.length - 1;
+            return (
+              <View key={`${index}-${entry.label}`} style={crumb}>
+                {entry.ellipsis ? (
+                  <Text style={skin.link(tokens, subtle)} accessibilityLabel="More levels" aria-label="More levels">
+                    {entry.label}
+                  </Text>
+                ) : (
+                  <AnatomyPart part={last ? currentPart : index === firstLink ? crumbPart : undefined}>
+                    <BreadcrumbItem
+                      current={last}
+                      subtle={subtle}
+                      onPress={last ? undefined : () => onItemPress?.(entry.label, entry.origIndex)}
+                    >
+                      {entry.label}
+                    </BreadcrumbItem>
+                  </AnatomyPart>
+                )}
+                {last ? null : separatorMark()}
+              </View>
+            );
+          })}
+        </View>
+      </AnatomyScope>
     );
   }
 

@@ -2,6 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { useEffect } from "react";
 import { Easing } from "react-native";
 import { View, LoopView, createLoopChannel, useReducedMotion, thereAndBack, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, innerFill } from "../../style/index.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { AVATAR_DIAMETER } from "../avatar/avatar.shared.js";
 
 // Shared Skeleton shell. The structure (a single muted shape — text line, avatar,
@@ -203,9 +204,9 @@ export function createSkeleton(skin: SkeletonSkin) {
   // A single muted line; the building block for text and the composite shapes.
   // The muted fill + the line base (`h-3.5 w-full`) + the skin's line radius, then
   // any width/margin overrides the caller layers on.
-  function Line({ animate, style }: { animate?: boolean; style?: StyleProp<ViewStyle> }) {
+  function Line({ animate, style, part }: { animate?: boolean; style?: StyleProp<ViewStyle>; part?: AnatomyTarget }) {
     const theme = useMaterialTheme({ layer: "content" });
-    return <Pulse animate={animate} style={[fill(theme), lineBase, { borderRadius: skin.lineRadius }, style]} />;
+    return <Pulse animate={animate} ref={part?.ref} onLayout={part?.onLayout} style={[fill(theme), lineBase, { borderRadius: skin.lineRadius }, style]} />;
   }
 
   return function Skeleton(props: SkeletonProps) {
@@ -214,28 +215,34 @@ export function createSkeleton(skin: SkeletonSkin) {
     const { tokens } = theme;
     const shape = shapeOf(props);
     const a11y = loadingA11y(accessibilityLabel);
+    // The anatomy part a docs AnatomyProvider numbers (src/style/anatomy.tsx): the
+    // hand-off's Placeholder block, the first muted block a shape draws.
+    const blockPart = useAnatomyPart("Placeholder block");
+    const block = { ref: blockPart?.ref, onLayout: blockPart?.onLayout };
 
     if (shape === "avatar") {
       const d = avatarDiameter(props);
-      return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(theme), { width: d, height: d, borderRadius: skin.avatarRadius }, style]} />;
+      return <AnatomyScope><Pulse animate={animate} {...a11y} {...block} testID={testID} style={[fill(theme), { width: d, height: d, borderRadius: skin.avatarRadius }, style]} /></AnatomyScope>;
     }
 
     if (shape === "button") {
       const { height, width } = buttonSize(props);
-      return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(theme), { height, width, borderRadius: skin.buttonRadius }, style]} />;
+      return <AnatomyScope><Pulse animate={animate} {...a11y} {...block} testID={testID} style={[fill(theme), { height, width, borderRadius: skin.buttonRadius }, style]} /></AnatomyScope>;
     }
 
     if (shape === "card") {
       const h = lineHeight(props).height as number;
       return (
-        <View {...a11y} testID={testID} style={[paneStyle(theme, cardSurface(tokens)), { borderRadius: skin.cardRadius }, style]}>
-          <GlassPane layer="content" shape={{ borderRadius: skin.cardRadius }} />
-          <View {...innerHidden} style={cardColumn}>
-            <Pulse animate={animate} style={[fill(theme), cardMedia, { borderRadius: skin.mediaRadius }]} />
-            <Line animate={animate} style={{ width: "70%", height: h + 4 }} />
-            <Line animate={animate} style={{ width: "90%", height: h }} />
+        <AnatomyScope>
+          <View {...a11y} testID={testID} style={[paneStyle(theme, cardSurface(tokens)), { borderRadius: skin.cardRadius }, style]}>
+            <GlassPane layer="content" shape={{ borderRadius: skin.cardRadius }} />
+            <View {...innerHidden} style={cardColumn}>
+              <Pulse animate={animate} {...block} style={[fill(theme), cardMedia, { borderRadius: skin.mediaRadius }]} />
+              <Line animate={animate} style={{ width: "70%", height: h + 4 }} />
+              <Line animate={animate} style={{ width: "90%", height: h }} />
+            </View>
           </View>
-        </View>
+        </AnatomyScope>
       );
     }
 
@@ -244,23 +251,26 @@ export function createSkeleton(skin: SkeletonSkin) {
       // A list row: an avatar, a 40% line and a 20% line; a table row: 25%, 20%, 15% and
       // 15% cells, four rows of either.
       const widths: Array<`${number}%`> = shape === "list" ? ["40%", "20%"] : ["25%", "20%", "15%", "15%"];
+      // The first row's first block is the numbered Placeholder block.
       return (
-        <View {...a11y} testID={testID} style={[rowsContainer, style]}>
-          <View {...innerHidden} style={rows}>
-            {[0, 1, 2, 3].map((i) => (
-              <View key={i} style={row}>
-                {shape === "list" ? <Pulse animate={animate} style={[fill(theme), listAvatar, { borderRadius: skin.avatarRadius }]} /> : null}
-                {widths.map((w, j) => <Line key={j} animate={animate} style={[h, { width: w }]} />)}
-              </View>
-            ))}
+        <AnatomyScope>
+          <View {...a11y} testID={testID} style={[rowsContainer, style]}>
+            <View {...innerHidden} style={rows}>
+              {[0, 1, 2, 3].map((i) => (
+                <View key={i} style={row}>
+                  {shape === "list" ? <Pulse animate={animate} {...(i === 0 ? block : null)} style={[fill(theme), listAvatar, { borderRadius: skin.avatarRadius }]} /> : null}
+                  {widths.map((w, j) => <Line key={j} animate={animate} part={i === 0 && j === 0 && shape === "table" ? blockPart : undefined} style={[h, { width: w }]} />)}
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
+        </AnatomyScope>
       );
     }
 
     // Default: a single text line spanning the parent; `long` / `short` shorten it
     // so a stack of lines reads like a wrapped paragraph.
     const length = lengthOf(props);
-    return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(theme), lineHeight(props), { width: length, borderRadius: skin.lineRadius }, style]} />;
+    return <AnatomyScope><Pulse animate={animate} {...a11y} {...block} testID={testID} style={[fill(theme), lineHeight(props), { width: length, borderRadius: skin.lineRadius }, style]} /></AnatomyScope>;
   };
 }

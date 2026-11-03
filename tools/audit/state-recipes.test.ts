@@ -383,24 +383,24 @@ describe("the states each component's source gives it", () => {
     // FilterPanel's focus on the header's Clear, a kit Button: its own option rows were never focused.
     expect(check("filter-panel", { ...table["filter-panel"], focus: [on("filter-panel", "focus-default", "button"), recipeFor("filter-panel", "focus-responsivedrawer")] })).toEqual([
       "filter-panel: its focus recipe on the default example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a checkbox in OptionRow); a control another kit component renders is that component's",
-      "filter-panel: its source gives it a focus state on its own surface (a tab stop: <Pressable> at src/organisms/filter-panel/filter-panel.shared.tsx:146 via OptionRow), where no focus recipe acts on a control of its own, with no exemption",
+      "filter-panel: its source gives it a focus state on its own surface (a tab stop: <Pressable> at src/organisms/filter-panel/filter-panel.shared.tsx:148 via OptionRow), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // Dropdown's focus and press on its default trigger, a kit Button (which Dropdown disables, so
     // it is Dropdown's disabled control and no more): neither its custom trigger nor its menu rows.
     expect(check("dropdown", { ...table.dropdown, focus: on("dropdown", "focus-customtrigger", "button", "default"), pressed: on("dropdown", "pressed-customtrigger", "button", "default") })).toEqual([
       "dropdown: its focus recipe on the default example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:192 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
-      "dropdown: its source gives it a focus state on its own surface (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:192 via MenuRow, and 1 more), where no focus recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:206 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a focus state on its own surface (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:206 via MenuRow, and 1 more), where no focus recipe acts on a control of its own, with no exemption",
       "dropdown: its pressed recipe on the default example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "dropdown: its source gives it a pressed state in the overlay in Dropdown (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:206 via MenuRow, and 1 more), where no pressed recipe acts on a control of its own, with no exemption",
-      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:206 via MenuRow, and 2 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a pressed state in the overlay in Dropdown (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:222 via MenuRow, and 1 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:222 via MenuRow, and 2 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // DescriptionList's focus and press on its Update link, a kit Button: its own inline-edit
     // field was never focused, and its source gives it no press at all.
     const update = on("description-lists", "focus", "button");
     expect(check("description-lists", { focus: update, pressed: { ...update, state: "pressed" } })).toEqual([
       "description-lists: its focus recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
-      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:451), where no focus recipe acts on a control of its own, with no exemption",
+      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:464), where no focus recipe acts on a control of its own, with no exemption",
       "description-lists: its pressed recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
     ]);
     // GeoMap's focus on its Zoom in, a kit Button it disables at the end of the zoom: the map itself is the tab stop.
@@ -422,15 +422,15 @@ describe("the states each component's source gives it", () => {
     const table = STATE_RECIPES as Record<string, Record<string, unknown>>;
     // Dropdown's custom trigger answers its own surface, not the rows of the menu it opens.
     expect(check("dropdown", { ...table.dropdown, focus: recipeFor("dropdown", "focus-customtrigger") })).toEqual([
-      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:192 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:206 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // FilterPanel's rows are on the panel and inside the drawer it becomes at a phone's width.
     expect(check("filter-panel", { ...table["filter-panel"], focus: recipeFor("filter-panel", "focus-default") })).toEqual([
-      "filter-panel: its source gives it a focus state in the overlay in FilterPanel (a tab stop: <Pressable> at src/organisms/filter-panel/filter-panel.shared.tsx:146 via OptionRow), where no focus recipe acts on a control of its own, with no exemption",
+      "filter-panel: its source gives it a focus state in the overlay in FilterPanel (a tab stop: <Pressable> at src/organisms/filter-panel/filter-panel.shared.tsx:148 via OptionRow), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // A recipe inside the overlay answers it alone.
     expect(check("dropdown", { ...table.dropdown, pressed: recipeFor("dropdown", "pressed-default") })).toEqual([
-      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:206 via MenuRow, and 2 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:222 via MenuRow, and 2 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // Where each place's own controls are, with the roles the page gives them.
     const places = (slug: string, state: string) =>
@@ -465,28 +465,28 @@ describe("the states each component's source gives it", () => {
     expect(check("action-sheet", without("action-sheet"))).toEqual([
       // The rows render in two places: the live sheet's overlay and the `embedded` sheet's own
       // surface (the same stack, drawn open in place), so the example asks for both.
-      "action-sheet: its Disabled action example asks for a disabled control on its own surface (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:227), with no disabled recipe there",
-      "action-sheet: its Disabled action example asks for a disabled control in the overlay in ActionSheet (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:227), with no disabled recipe there",
+      "action-sheet: its Disabled action example asks for a disabled control on its own surface (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:244), with no disabled recipe there",
+      "action-sheet: its Disabled action example asks for a disabled control in the overlay in ActionSheet (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:244), with no disabled recipe there",
     ]);
     expect(check("row-menu", without("row-menu"))).toEqual([
-      "row-menu: its Disabled item example asks for a disabled control in the overlay in RowMenu (disabled on <Pressable> at src/organisms/row-menu/row-menu.shared.tsx:106 via MenuRow), with no disabled recipe there",
+      "row-menu: its Disabled item example asks for a disabled control in the overlay in RowMenu (disabled on <Pressable> at src/organisms/row-menu/row-menu.shared.tsx:125 via MenuRow), with no disabled recipe there",
     ]);
     // AlertDialog's confirm stays disabled until the token is typed, only with `withInput`; Present portals the dialog.
     expect(check("alert-dialog", without("alert-dialog"))).toEqual([
-      "alert-dialog: its Body field example asks for a disabled control in the overlay in Present (disabled on <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:220), with no disabled recipe there",
+      "alert-dialog: its Body field example asks for a disabled control in the overlay in Present (disabled on <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:232), with no disabled recipe there",
     ]);
     // Dropdown's trigger recipe answers its own surface, not the menu it opens; the item recipe, the menu alone.
     const [trigger, item] = recipesIn(STATE_RECIPES.dropdown!, "disabled");
     expect(check("dropdown", { ...without("dropdown"), disabled: trigger! })).toEqual([
-      "dropdown: its Disabled item example asks for a disabled control in the overlay in Dropdown (disabled on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:207 via MenuRow), with no disabled recipe there",
+      "dropdown: its Disabled item example asks for a disabled control in the overlay in Dropdown (disabled on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:223 via MenuRow), with no disabled recipe there",
     ]);
     expect(check("dropdown", { ...without("dropdown"), disabled: item! })).toEqual([
       // The kit Button it hands `disabled` (its Pressable trigger is an element trigger's, given `children`).
-      "dropdown: its Disabled trigger example asks for a disabled control on its own surface (disabled on <Button> at src/atoms/dropdown/dropdown.shared.tsx:442), with no disabled recipe there",
+      "dropdown: its Disabled trigger example asks for a disabled control on its own surface (disabled on <Button> at src/atoms/dropdown/dropdown.shared.tsx:482), with no disabled recipe there",
     ]);
     // An own-surface recipe a disabled example asks for (Button's `disabled`, one of the two ways `disabled || loading` is true).
     expect(check("button", without("button"))).toEqual([
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:330), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:334), with no disabled recipe there",
     ]);
   });
 
@@ -495,7 +495,7 @@ describe("the states each component's source gives it", () => {
     const item = recipeFor("dropdown", "disabled-disableditem");
     expect(check("button", { ...(STATE_RECIPES.button as object), disabled: { ...item, variant: "disabled" } } as ComponentStates)).toEqual([
       "button: its disabled recipe on the disabled example is applied inside an overlay, and its source renders none",
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:330), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:334), with no disabled recipe there",
     ]);
     const dropdown = STATE_RECIPES.dropdown as Record<string, unknown>;
     expect(check("dropdown", { ...dropdown, disabled: [recipeFor("dropdown", "disabled-disabledtrigger"), { ...item, opens: "Popover" }] } as ComponentStates)[0]).toBe(
@@ -1221,16 +1221,16 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     ]);
     // AlertDialog's confirm (`skin.actionLayout`): the kit Button the web and Android builds hand `disabled`, its own on iOS.
     expect(builds("alert-dialog", "disabled")).toEqual([
-      "alert-dialog.shared.tsx:218 Pressable: ios",
-      "alert-dialog.shared.tsx:241 Button kit: web and android",
-      "alert-dialog.shared.tsx:245 Button kit: web and android",
+      "alert-dialog.shared.tsx:230 Pressable: ios",
+      "alert-dialog.shared.tsx:253 Button kit: web and android",
+      "alert-dialog.shared.tsx:257 Button kit: web and android",
     ]);
     // DataTable's cell editor: the web build's under its glass pane (`skin.liquidTextEntry`), the
     // others' bare; its scroller only where the skin does not collapse to the primary column.
     expect(builds("data-table", "focus").filter((line) => !line.endsWith("every build"))).toEqual([
-      "data-table.shared.tsx:1097 ScrollView: web and android",
-      "data-table.shared.tsx:609 TextInput: ios and android",
-      "data-table.shared.tsx:613 TextInput: web",
+      "data-table.shared.tsx:1116 ScrollView: web and android",
+      "data-table.shared.tsx:613 TextInput: ios and android",
+      "data-table.shared.tsx:617 TextInput: web",
     ]);
     // The rows each page shows, and the build each renders: Toast's iOS row is the web build,
     // the docs registry injecting no iOS Toast; Sidebar's page shows one preview, the web build.
@@ -1256,14 +1256,14 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // rows' is the kit Button it disables (its own for that state alone), the iOS row's its own.
     expect(check("alert-dialog", { ...table["alert-dialog"], focus: onWeb("alert-dialog", "focus"), pressed: onWeb("alert-dialog", "pressed"), disabled: onWeb("alert-dialog", "disabled") })).toEqual([
       "alert-dialog: its focus recipe on the default example answers nothing on the web row: it acts on a button in the overlay in Present, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "alert-dialog: its source gives it a focus state in the overlay in Present on the iOS row (a tab stop: <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:206, and 1 more), where no focus recipe acts on a control of its own, with no exemption",
+      "alert-dialog: its source gives it a focus state in the overlay in Present on the iOS row (a tab stop: <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:218, and 1 more), where no focus recipe acts on a control of its own, with no exemption",
       "alert-dialog: its pressed recipe on the default example answers nothing on the web row: it acts on a button in the overlay in Present, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "alert-dialog: its source gives it a pressed state in the overlay in Present on the iOS row (onPress on <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:207, and 3 more), where no pressed recipe acts on a control of its own, with no exemption",
-      "alert-dialog: its Body field example asks for a disabled control in the overlay in Present on the iOS row (disabled on <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:220), with no disabled recipe there",
+      "alert-dialog: its source gives it a pressed state in the overlay in Present on the iOS row (onPress on <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:219, and 3 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "alert-dialog: its Body field example asks for a disabled control in the overlay in Present on the iOS row (disabled on <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:232), with no disabled recipe there",
     ]);
     // DataTable's native cell editor is on the iOS and Android rows alone.
     expect(check("data-table", { ...table["data-table"], focus: onWeb("data-table", "focus") })).toEqual([
-      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:609 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
+      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:613 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // As the table has them, each on the rows its own controls are on: nothing is left, and the
     // answers say which rows they are.
@@ -1437,7 +1437,7 @@ describe("the states the web runner can never show", () => {
       return [...controls.values()].map((c) => `${c.at.replace(/^src\/[a-z]+\/[a-z-]+\//, "")}: ${ROW_KEYS.map((row) => deviceFeedback(c, "pressed", row, rowsOf(slug), signalsOf(slug)) ?? "-").join(" ")}`).sort();
     };
     expect(feedback("dialog")).toEqual([`dialog.shared.tsx:${DIALOG_LINES.capsule}: - - -`, `dialog.shared.tsx:${DIALOG_LINES.cancel}: - - android_ripple`, `dialog.shared.tsx:${DIALOG_LINES.confirm}: - - android_ripple`, `dialog.shared.tsx:${DIALOG_LINES.dismiss}: - - -`]);
-    expect(feedback("alert-dialog")).toEqual(["alert-dialog.shared.tsx:206: - - -", "alert-dialog.shared.tsx:218: - - -"]);
+    expect(feedback("alert-dialog")).toEqual(["alert-dialog.shared.tsx:218: - - -", "alert-dialog.shared.tsx:230: - - -"]);
     // The press on the iOS and Android rows, as the table had it: on the Android row it set up a
     // state the web runner could never see reached.
     const onNative = (slug: string): StateRecipe => ({ ...recipeFor(slug, "pressed"), rows: ["ios", "android"] });

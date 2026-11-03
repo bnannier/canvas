@@ -2,6 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { Fragment, useId, type ComponentType, type ReactNode } from "react";
 import { FlatList, StyleSheet, type GestureResponderEvent, type ViewProps } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, devWarn, FOCUS_RESET, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, listProps, windowedListItem } from "../../style/list-semantics.js";
@@ -225,6 +226,9 @@ const WEB_DND: StackedListDnd = {
 
 export type { StackedListMove };
 
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 // createStackedList threads the platform skin AND the platform-styled composed
 // atoms. The atom params default to the web base atoms so the web entry (and any
 // barrel import) composes web-styled rows; the .ios/.android entry files pass the
@@ -241,6 +245,15 @@ export function createStackedList(
 ) {
   const { DragDropProvider, DropZone, Draggable, DragHandle } = dnd;
   return function StackedList(props: StackedListProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: List, Header, Row, Leading avatar, Trailing. The last three are the
+    // first row's, taken before the tree's AnatomyScope so the kit Avatar and Badge inside
+    // and the caller's `trailing` content register nothing of their own.
+    const listPart = useAnatomyPart("List");
+    const headerPart = useAnatomyPart("Header");
+    const rowPart = useAnatomyPart("Row");
+    const avatarPart = useAnatomyPart("Leading avatar");
+    const trailingPart = useAnatomyPart("Trailing");
     const { items = [], title, label, action, addAction, rowMenu, onPressItem, onPressItemMenu, flush, virtualized, reorderable, onReorder, testID, style } = props;
     const variant = variantOf(props);
     const theme = useMaterialTheme({ static: true });
@@ -295,9 +308,10 @@ export function createStackedList(
       </View>
     );
 
-    const renderTrailing = (item: StackedListItem) => {
-      if (item.badge != null) return <Badge {...badgeToneOf(item)}>{item.badge}</Badge>;
-      if (item.meta != null) return <Text style={skin.metaLabel(tokens)}>{item.meta}</Text>;
+    const renderTrailing = (item: StackedListItem, index: number) => {
+      const part = index === 0 ? trailingPart : undefined;
+      if (item.badge != null) return <AnatomyPart part={part}><Badge {...badgeToneOf(item)}>{item.badge}</Badge></AnatomyPart>;
+      if (item.meta != null) return <Text ref={part?.ref} onLayout={part?.onLayout} style={skin.metaLabel(tokens)}>{item.meta}</Text>;
       return null;
     };
 
@@ -344,11 +358,13 @@ export function createStackedList(
         </Text>
       );
 
-    const renderAvatar = (item: StackedListItem) => (
+    const renderAvatar = (item: StackedListItem, index: number) => (
       // `name` flows the human name to Avatar for the accessible label/alt text;
       // an explicit `item.initials` wins verbatim through Avatar's dedicated
       // `initials` prop, otherwise Avatar reduces the name to its initials.
-      <Avatar src={item.avatar} name={item.name} initials={item.initials} />
+      <AnatomyPart part={index === 0 ? avatarPart : undefined}>
+        <Avatar src={item.avatar} name={item.name} initials={item.initials} />
+      </AnatomyPart>
     );
 
     // The content-region press target used when a clickable row must host OTHER
@@ -375,7 +391,10 @@ export function createStackedList(
       // shift the entire row's content, not just the separator.
       const divider = ruled && index < lastIndex ? <View style={[skin.rowDivider(tokens), dividerStyles.passthrough]} /> : null;
       const grip = reorderable ? <DragHandle label={`Reorder ${item.name}`} /> : null;
-      const trailingSlot = item.trailing != null ? <View style={s.trailingSlot}>{item.trailing}</View> : null;
+      // The first row carries the Row part; a row with a `trailing` node and no badge or meta draws Trailing there.
+      const rowTarget = index === 0 ? rowPart : undefined;
+      const slotTarget = index === 0 && item.badge == null && item.meta == null ? trailingPart : undefined;
+      const trailingSlot = item.trailing != null ? <View ref={slotTarget?.ref} onLayout={slotTarget?.onLayout} style={s.trailingSlot}>{item.trailing}</View> : null;
       if (variant === "clickable") {
         // A clickable row that also hosts a grip or a `trailing` control cannot stay
         // one whole-row pressable: react-native-web renders button-roled Pressables
@@ -386,7 +405,7 @@ export function createStackedList(
         // props) keeps the original whole-row pressable, byte-identical.
         if (reorderable || trailingSlot != null) {
           return (
-            <View {...listItem} style={skin.rowBase}>
+            <View {...listItem} ref={rowTarget?.ref} onLayout={rowTarget?.onLayout} style={skin.rowBase}>
               {grip}
               <Pressable
                 style={({ pressed }) => [rowFill, pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null, pressFeedback(pressed)]}
@@ -395,11 +414,11 @@ export function createStackedList(
                 accessibilityRole="button"
                 accessibilityLabel={item.name}
               >
-                {renderAvatar(item)}
+                {renderAvatar(item, index)}
                 {renderColumn(item)}
               </Pressable>
               {trailingSlot}
-              {renderTrailing(item)}
+              {renderTrailing(item, index)}
               {rowMenu ? renderMenu(index) : null}
               {renderChevron()}
               {divider}
@@ -410,14 +429,16 @@ export function createStackedList(
         // so the item wraps the button rather than replacing its role.
         const button = (
           <Pressable
+            ref={rowTarget?.ref}
+            onLayout={rowTarget?.onLayout}
             style={({ pressed }) => [skin.rowBase, pressed ? withInnerFill(theme, skin.pressedSurface(tokens), "firm") : null, pressFeedback(pressed)]}
             android_ripple={ripple}
             onPress={(event) => onPressItem?.(index, event)}
             accessibilityRole="button"
           >
-            {renderAvatar(item)}
+            {renderAvatar(item, index)}
             {renderColumn(item)}
-            {renderTrailing(item)}
+            {renderTrailing(item, index)}
             {rowMenu ? renderMenu(index) : null}
             {renderChevron()}
             {divider}
@@ -426,12 +447,12 @@ export function createStackedList(
         return listItem != null ? <View {...listItem}>{button}</View> : button;
       }
       return (
-        <View {...listItem} style={skin.rowBase}>
+        <View {...listItem} ref={rowTarget?.ref} onLayout={rowTarget?.onLayout} style={skin.rowBase}>
           {grip}
-          {renderAvatar(item)}
+          {renderAvatar(item, index)}
           {renderColumn(item)}
           {trailingSlot}
-          {renderTrailing(item)}
+          {renderTrailing(item, index)}
           {rowMenu ? renderMenu(index) : null}
           {divider}
         </View>
@@ -444,7 +465,7 @@ export function createStackedList(
 
     const header =
       title != null ? (
-        <View style={skin.header(tokens)}>
+        <View ref={headerPart?.ref} onLayout={headerPart?.onLayout} style={skin.header(tokens)}>
           <Text nativeID={titleId} style={skin.headerTitle(tokens)}>{title}</Text>
           {headerAction != null ? <View>{headerAction}</View> : null}
         </View>
@@ -539,17 +560,21 @@ export function createStackedList(
     return (
       // A framed list is a CONTENT-layer pane under glass (GlassSurface is the plain
       // View in solid mode); a bare list paints no surface of its own in either mode.
-      framed ? (
-        <GlassSurface layer="content" testID={testID} style={[s.outer, skin.cardSurface(tokens), style, bodyFrame.ring()]}>
-          {header}
-          {body}
-        </GlassSurface>
-      ) : (
-        <View testID={testID} style={[s.outer, style, bodyFrame.ring()]}>
-          {header}
-          {body}
-        </View>
-      )
+      <AnatomyScope>
+        {framed ? (
+          <GlassSurface layer="content" testID={testID} style={[s.outer, skin.cardSurface(tokens), style, bodyFrame.ring()]}>
+            {/* The List part's box: GlassSurface has no ref, so a pass-through fill measures it. */}
+            {listPart ? <View ref={listPart.ref} onLayout={listPart.onLayout} style={MEASURE_BOX} /> : null}
+            {header}
+            {body}
+          </GlassSurface>
+        ) : (
+          <View ref={listPart?.ref} onLayout={listPart?.onLayout} testID={testID} style={[s.outer, style, bodyFrame.ring()]}>
+            {header}
+            {body}
+          </View>
+        )}
+      </AnatomyScope>
     );
   };
 }

@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import type { LayoutChangeEvent, ViewStyle } from "react-native";
-import { View } from "./primitives.js";
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type Ref, type RefCallback } from "react";
+// React Native's View directly, not the primitives barrel: the kit Text and Pressable
+// import this module, and the barrel re-exports them, so importing it here would be a cycle.
+import { View, type LayoutChangeEvent, type ViewStyle } from "react-native";
 import { useFillStyle } from "./sizing.js";
 
 // The anatomy part registry: a docs specimen (a component page's Anatomy section) wraps a
@@ -10,6 +11,18 @@ import { useFillStyle } from "./sizing.js";
 // Pressable, its label Text), or by wrapping a caller's element it cannot ref (an icon) in
 // AnatomyPart. The part names are the hand-off's `an` lists (tools/v4/handoff/cv-kit*.js),
 // in its order, so a docs page numbers them the way the hand-off does.
+//
+// A part belongs to the outermost component that names it, as in the hand-off, whose
+// renderers number only the component on the stage and never the kit pieces inside it: a
+// component takes its parts' handlers first, then renders its tree inside AnatomyScope,
+// which closes the registry to everything below (a Dialog's footer Buttons, a Chip's
+// count Badge, the caller's children), so a nested `Label` or `Container` never takes the
+// outer component's number. A part on a node the component renders below its scope is
+// wrapped in `<AnatomyPart part={target}>` with the handlers it took above it.
+//
+// A part goes on a plain host node, never on an Animated.View: on the web an animated
+// view's ref is not a node `measureLayout` can measure, and its transforms are not part
+// of its layout box anyway. Wrap the animated view in `<AnatomyPart part>` instead.
 //
 // Outside a provider a part costs one context read: `useAnatomyPart` returns undefined,
 // AnatomyPart renders its child bare, and no node, ref or layout handler is added. Inside
@@ -79,12 +92,29 @@ export function useAnatomyPart(name: string): AnatomyTarget | undefined {
 }
 
 /**
- * Registers a caller's element as part `name` (an icon slot): inside an AnatomyProvider it
- * renders the element in a measuring view, outside one it renders the element bare.
+ * Closes the registry to everything inside it: a component renders its tree inside one
+ * after taking its own parts' handlers, so the kit components and caller content within
+ * it register nothing of theirs. Outside a provider it renders its children bare.
  */
-export function AnatomyPart({ name, children }: { name: string; children?: ReactNode }): ReactNode {
-  const part = useAnatomyPart(name);
-  return part ? <View ref={part.ref} onLayout={part.onLayout}>{children}</View> : children;
+export function AnatomyScope({ children }: { children?: ReactNode }): ReactNode {
+  const open = useContext(AnatomyContext) != null;
+  return open ? <AnatomyContext.Provider value={null}>{children}</AnatomyContext.Provider> : children;
+}
+
+/** AnatomyPart's props: the part by `name`, or the handlers a component took for it above its AnatomyScope. */
+export type AnatomyPartProps = { name: string; part?: never; children?: ReactNode } | { part: AnatomyTarget | undefined; name?: never; children?: ReactNode };
+
+/**
+ * Registers an element the component cannot ref (an icon slot, a caller's child, a kit
+ * component it renders) as a part: inside an AnatomyProvider it renders the element in a
+ * measuring view, outside one it renders the element bare. `name` registers the part
+ * itself; `part` takes the handlers the component took with `useAnatomyPart` before its
+ * AnatomyScope, so the element is measured below the scope.
+ */
+export function AnatomyPart(props: AnatomyPartProps): ReactNode {
+  const registry = useContext(AnatomyContext);
+  const part = props.name != null ? registry?.(props.name) : props.part;
+  return part ? <View ref={part.ref} onLayout={part.onLayout}>{props.children}</View> : props.children;
 }
 
 /** Compose a part's layout handler with a host node's own. */
@@ -94,6 +124,35 @@ export function withPartLayout<E>(part: AnatomyTarget | undefined, own: ((event:
     own?.(event);
     part.onLayout();
   };
+}
+
+// Each part's ref joined with each forwarded ref once, so the joined callback is stable
+// across renders (a new one would detach and re-attach the node, dropping its rectangle).
+const joined = new WeakMap<AnatomyTarget, WeakMap<object, RefCallback<unknown>>>();
+
+/**
+ * A host node's forwarded ref joined with an anatomy part's: the forwarded ref itself when
+ * there is no part (outside an AnatomyProvider, or inside a closing AnatomyScope), the
+ * part's ref when nothing was forwarded, and otherwise one stable callback feeding both.
+ * The hook-free counterpart of useComposedRefs for the kit primitives, which render on
+ * every screen and take no hook for a part outside a provider.
+ */
+export function withPartRef<T>(part: AnatomyTarget | undefined, ref: Ref<T> | undefined): Ref<T> | undefined {
+  if (part == null) return ref;
+  if (ref == null) return part.ref;
+  let byRef = joined.get(part);
+  if (byRef == null) joined.set(part, (byRef = new WeakMap()));
+  let both = byRef.get(ref);
+  if (both == null) {
+    const own = ref;
+    both = (node: unknown) => {
+      if (typeof own === "function") own(node as T);
+      else own.current = node as T;
+      part.ref(node);
+    };
+    byRef.set(ref, both);
+  }
+  return both as RefCallback<T>;
 }
 
 export interface AnatomyProviderProps {
@@ -166,6 +225,9 @@ export function AnatomyProvider({ onMeasure, zoomed, children }: AnatomyProvider
       publish();
     };
     const measure = (name: string) => {
+      // Before the root attaches there is nothing to measure against; the root's layout
+      // measures every part.
+      if (root == null) return;
       const node = nodes.get(name);
       node?.measureLayout(root, (x, y, width, height) => {
         if (nodes.get(name) === node) set(name, { x, y, width, height });
@@ -176,11 +238,21 @@ export function AnatomyProvider({ onMeasure, zoomed, children }: AnatomyProvider
         let target = targets.get(name);
         if (!target) {
           target = {
+            // A node measures as it attaches as well as on its layout, and a detached part
+            // leaves the report only once the render that detached it has settled without
+            // attaching it again: a host whose ref callback is replaced between renders
+            // (detached, then attached again with no layout change) keeps its rectangle,
+            // and its re-render never reports a removal that sets off another re-render.
             ref(node) {
-              if (node) nodes.set(name, node as Measurable);
-              else {
+              if (node) {
+                nodes.set(name, node as Measurable);
+                measure(name);
+              } else {
+                const gone = nodes.get(name);
                 nodes.delete(name);
-                set(name);
+                setTimeout(() => {
+                  if (!nodes.has(name) && gone !== undefined) set(name);
+                }, 0);
               }
             },
             onLayout: () => measure(name),

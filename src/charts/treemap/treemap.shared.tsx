@@ -10,6 +10,7 @@ import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../s
 import { estimateTextWidth, formatCompact, squarify } from "../shared/chart-math.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { mixOklab, oklchHex, oklchOf } from "../../style/color.js";
 
 // Shared Treemap shell. Squarified value tiles (Bruls layout through the
@@ -83,6 +84,12 @@ export function tileLook(card: string, series: string): { fill: string; ink: str
 export function createTreemap(skin: ChartSkin) {
   return function Treemap(props: TreemapProps) {
     const { data, title, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Tile, Label, Value (the first tile's).
+    const framePart = useAnatomyPart("Chart frame");
+    const tilePart = useAnatomyPart("Tile");
+    const labelPart = useAnatomyPart("Label");
+    const valuePart = useAnatomyPart("Value");
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
@@ -117,6 +124,7 @@ export function createTreemap(skin: ChartSkin) {
     const rects = width > 0 ? props.partitioned ? partitionTiles(clean, width, height) : squarify(clean, 0, 0, width, height) : [];
 
     return (
+      <AnatomyScope>
       <View
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
@@ -138,7 +146,8 @@ export function createTreemap(skin: ChartSkin) {
           role="img"
           accessibilityLabel={name}
           aria-label={name}
-          onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+          ref={framePart?.ref}
+          onLayout={withPartLayout(framePart, (e) => setWidth(e.nativeEvent.layout.width))}
           style={{ height, ...(props.partitioned ? { margin: -2 } : {}) }}
         >
           {rects.map((r, i) => {
@@ -154,6 +163,8 @@ export function createTreemap(skin: ChartSkin) {
             return (
               <View
                 key={data[i].id ?? i}
+                ref={i === 0 ? tilePart?.ref : undefined}
+                onLayout={i === 0 ? tilePart?.onLayout : undefined}
                 style={{
                   position: "absolute",
                   left: r.x + TILE_INSET,
@@ -168,12 +179,12 @@ export function createTreemap(skin: ChartSkin) {
                 }}
               >
                 {labelFits && (!props.outlined || i < 3) ? (
-                  <Text numberOfLines={1} style={{ fontSize: props.outlined ? 13 : 12, lineHeight: 16, fontWeight: props.outlined ? "500" : "600", color: look.ink }}>
+                  <Text ref={i === 0 ? labelPart?.ref : undefined} onLayout={i === 0 ? labelPart?.onLayout : undefined} numberOfLines={1} style={{ fontSize: props.outlined ? 13 : 12, lineHeight: 16, fontWeight: props.outlined ? "500" : "600", color: look.ink }}>
                     {data[i].label}
                   </Text>
                 ) : null}
                 {(props.outlined ? i < 4 : valueFits) ? (
-                  <Text numberOfLines={1} style={{ ...TILE_VALUE_TYPE, ...(props.outlined && i < 3 ? { fontFamily: DISPLAY_FONT, fontSize: i === 0 ? 18 : 15, lineHeight: i === 0 ? 18 : 15 } : {}), color: look.ink, opacity: props.outlined ? 1 : 0.75, ...tabularNums() }}>
+                  <Text ref={i === 0 ? valuePart?.ref : undefined} onLayout={i === 0 ? valuePart?.onLayout : undefined} numberOfLines={1} style={{ ...TILE_VALUE_TYPE, ...(props.outlined && i < 3 ? { fontFamily: DISPLAY_FONT, fontSize: i === 0 ? 18 : 15, lineHeight: i === 0 ? 18 : 15 } : {}), color: look.ink, opacity: props.outlined ? 1 : 0.75, ...tabularNums() }}>
                     {formatValue(clean[i])}
                   </Text>
                 ) : null}
@@ -206,6 +217,7 @@ export function createTreemap(skin: ChartSkin) {
           />
         </View>
       </View>
+      </AnatomyScope>
     );
   };
 }

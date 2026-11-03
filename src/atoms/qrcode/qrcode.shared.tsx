@@ -1,4 +1,5 @@
 import type RNQRCodeType from "react-native-qrcode-svg";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { View, useHugStyle, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 
 // react-native-qrcode-svg is an OPTIONAL peer (it drags a large text-encoding
@@ -91,6 +92,11 @@ export function sizeOf(p: QRCodeProps): number {
 
 export function createQRCode(skin: QRCodeSkin) {
   return function QRCode(props: QRCodeProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Code, Quiet zone. The code is the renderer's own box (not a host
+    // node we hold), so it is measured through AnatomyPart.
+    const codePart = useAnatomyPart("Code");
+    const quietPart = useAnatomyPart("Quiet zone");
     const { value, accessibilityLabel, testID, style } = props;
     // The QR draws as a bare SVG of rects (an <svg> of rects on web via RNW); without
     // a label assistive tech announces nothing, not even that a code is present. Expose
@@ -100,7 +106,10 @@ export function createQRCode(skin: QRCodeSkin) {
     // HUG: the card keeps the code's size inside a stretching Column.
     const hug = useHugStyle();
     return (
+      <AnatomyScope>
       <View
+        ref={quietPart?.ref}
+        onLayout={quietPart?.onLayout}
         style={[skin.frame, hug, style]}
         testID={testID}
         accessible
@@ -109,6 +118,7 @@ export function createQRCode(skin: QRCodeSkin) {
         accessibilityLabel={label}
         aria-label={label}
       >
+        <AnatomyPart part={codePart}>
         {RNQRCode ? (
           // react-native-qrcode-svg throws on an empty string, so fall back to a space.
           <RNQRCode value={value || " "} size={sizeOf(props)} color={skin.moduleColor} backgroundColor={skin.fieldColor} />
@@ -125,7 +135,9 @@ export function createQRCode(skin: QRCodeSkin) {
             return <View style={{ width: sizeOf(props), height: sizeOf(props) }} />;
           })()
         )}
+        </AnatomyPart>
       </View>
+      </AnatomyScope>
     );
   };
 }

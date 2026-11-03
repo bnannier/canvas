@@ -4,6 +4,7 @@ import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { hueToneColors } from "../../style/hue-tone.js";
 import { type EmblemSkin } from "./emblem.styles.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Emblem shell. The tinted rounded square (or circle) that holds a single
 // Icon or a short monogram, recurring across cards, media objects, empty states,
@@ -117,6 +118,12 @@ function labelColor(tokens: ColorTokens, tone: Tone, dark: boolean): string {
 /** Build an Emblem from a platform skin. */
 export function createEmblem(skin: EmblemSkin) {
   return function Emblem(props: EmblemProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Tile, then Monogram, the mark it centres (the label, or the
+    // caller's glyph in its place), taken before the AnatomyScope so that glyph's own
+    // Icon parts register nothing.
+    const tilePart = useAnatomyPart("Tile");
+    const monogramPart = useAnatomyPart("Monogram");
     const { children, label, circle, soft, testID, style } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
@@ -152,25 +159,31 @@ export function createEmblem(skin: EmblemSkin) {
     // size by cloning the Icon child, so the caller writes only the glyph.
     const inner =
       label != null ? (
-        <Text style={[skin.monogram, { color: labelColor(tokens, tone, theme.dark), fontSize: skin.monogramSize[size], lineHeight: skin.monogramSize[size] }]}>
+        <Text ref={monogramPart?.ref} onLayout={monogramPart?.onLayout} style={[skin.monogram, { color: labelColor(tokens, tone, theme.dark), fontSize: skin.monogramSize[size], lineHeight: skin.monogramSize[size] }]}>
           {label}
         </Text>
       ) : isValidElement(children) ? (
-        cloneElement(children as ReactElement<Record<string, unknown>>, { ...ICON_TINT[tone], ...(tone === "cyan" ? { color: hueToneColors(tokens, theme.dark, "cyan").ink } : null), size: glyph })
-      ) : (
-        children
-      );
+        <AnatomyPart part={monogramPart}>
+          {cloneElement(children as ReactElement<Record<string, unknown>>, { ...ICON_TINT[tone], ...(tone === "cyan" ? { color: hueToneColors(tokens, theme.dark, "cyan").ink } : null), size: glyph })}
+        </AnatomyPart>
+      ) : children != null ? (
+        <AnatomyPart part={monogramPart}>{children}</AnatomyPart>
+      ) : null;
 
     return (
-      <View
-        testID={testID}
-        // The tone's ring is part of the tile, not a resting hairline, so under glass it
-        // stays a border over the pane (the state-border form of paneStyle).
-        style={[paneStyle(theme, tileShape, !soft), style]}
-      >
-        <GlassPane static layer="control" shape={tileShape} tint={wash} stateBorder={!soft} />
-        {inner}
-      </View>
+      <AnatomyScope>
+        <View
+          ref={tilePart?.ref}
+          onLayout={tilePart?.onLayout}
+          testID={testID}
+          // The tone's ring is part of the tile, not a resting hairline, so under glass it
+          // stays a border over the pane (the state-border form of paneStyle).
+          style={[paneStyle(theme, tileShape, !soft), style]}
+        >
+          <GlassPane static layer="control" shape={tileShape} tint={wash} stateBorder={!soft} />
+          {inner}
+        </View>
+      </AnatomyScope>
     );
   };
 }

@@ -6,6 +6,7 @@ import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
 import { IconCell } from "./icon-cell.js";
 import { primaryText } from "../../style/primary-text.js";
 import { useInk } from "../../style/ink.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Icon shell. The whole glyph set, the boolean-prop axes (name + color),
 // the semantic color logic, and the SVG presentation live here once. Icon is a
@@ -225,22 +226,38 @@ export function strokeWidthOf(p: IconProps): number {
 
 /** An outline glyph from the kit's icon set, sized and colored by props. */
 export function Icon(props: IconProps) {
+  // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+  // hand-off's order: Glyph, the drawing, and Bounding box, the box it is laid out in.
+  // The hand-off pads its dashed box 6 px round the glyph; Canvas draws no such box, so a
+  // bare glyph's two parts share the glyph's own square, and a `cell` is its bounding box.
+  const glyphPart = useAnatomyPart("Glyph");
+  const boxPart = useAnatomyPart("Bounding box");
   if (props.cell) {
     // A hovered cell paints its glyph in the accent ink, over any tone the caller set.
     const glyph = (hovered: boolean) => (
-      <IconGlyph
-        {...props}
-        {...(hovered ? { primary: true, primaryForeground: false, destructive: false, success: false, warning: false, muted: false, subtle: false } : null)}
-        cell={false}
-        decorative={false}
-        accessibilityLabel={undefined}
-        testID={undefined}
-        style={undefined}
-      />
+      <AnatomyPart part={glyphPart}>
+        <IconGlyph
+          {...props}
+          {...(hovered ? { primary: true, primaryForeground: false, destructive: false, success: false, warning: false, muted: false, subtle: false } : null)}
+          cell={false}
+          decorative={false}
+          accessibilityLabel={undefined}
+          testID={undefined}
+          style={undefined}
+        />
+      </AnatomyPart>
     );
-    return <IconCell glyph={glyph} accessibilityLabel={props.accessibilityLabel} decorative={props.decorative} testID={props.testID} style={props.style} />;
+    return <AnatomyScope><IconCell glyph={glyph} accessibilityLabel={props.accessibilityLabel} decorative={props.decorative} testID={props.testID} style={props.style} part={boxPart} /></AnatomyScope>;
   }
-  return <IconGlyph {...props} />;
+  return (
+    <AnatomyScope>
+      <AnatomyPart part={boxPart}>
+        <AnatomyPart part={glyphPart}>
+          <IconGlyph {...props} />
+        </AnatomyPart>
+      </AnatomyPart>
+    </AnatomyScope>
+  );
 }
 
 function IconGlyph(props: IconProps) {

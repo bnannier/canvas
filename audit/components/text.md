@@ -23,8 +23,8 @@ Audit checklist for `/components/text`. The facts block and the variants table a
 | Interaction states | static: A text primitive: it renders no control of its own and its examples hold none. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 7: `test/data-table.test.tsx`, `test/dist-smoke.test.tsx`, `test/focus-ring.test.tsx`, `test/fonts.test.tsx`, `test/material-portal-context.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx` |
-| E2E naming it | 0: none |
+| Tests importing it | 8: `test/anatomy-parts-foundations-layout.test.tsx`, `test/data-table.test.tsx`, `test/dist-smoke.test.tsx`, `test/focus-ring.test.tsx`, `test/fonts.test.tsx`, `test/material-portal-context.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx` |
+| E2E naming it | 1: `e2e/behavior/anatomy-markers.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples, EXAMPLE_ROUTES), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/text.md`, written by `bun run audit:turn -- --slug=text --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->

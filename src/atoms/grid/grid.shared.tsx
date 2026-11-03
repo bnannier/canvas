@@ -2,6 +2,7 @@ import { Children, isValidElement, type ReactNode } from "react";
 import { GRID_CELL_AXIS, LayoutAxisProvider, View, useContainerWidth, useFillStyle, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { floorHundredth } from "../../style/sizing.js";
 import { RaiseCell } from "../../style/hover.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { type FlexSkin } from "../layout/layout.styles.js";
 import { gapOf, type Gap } from "../layout/layout.shared.js";
 
@@ -151,6 +152,13 @@ const MEASURE_ROUNDING = 0.5;
 /** Build a Grid component from a platform skin (the shared layout scale). */
 export function createGrid(skin: FlexSkin) {
   return function Grid(props: GridProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Grid (the root) and Tile (the first tile), taken before the
+    // AnatomyScope so the tiles' own components register nothing. The first tile is
+    // measured in a view that grows to its cell as GridItem's does, drawn only inside a
+    // provider.
+    const gridPart = useAnatomyPart("Grid");
+    const tilePart = useAnatomyPart("Tile");
     const { children, minTileWidth = 240, columns, testID, style } = props;
     const gapPx = skin.gap[gapOf(props as Pick<GridProps, Gap>)];
     // Container-measured auto-fit, with useContainerWidth's seed (the window
@@ -170,25 +178,28 @@ export function createGrid(skin: FlexSkin) {
     // and not the cells' own; `style` stays last so a `maxWidth` still bounds it.
     const fill = useFillStyle("Grid");
     return (
-      <View onLayout={onLayout} style={[GRID, { gap: gapPx, rowGap: gridRowGapOf(props) ?? gapPx }, fill, style]} testID={testID}>
-        {Children.toArray(children).map((child, i) => {
-          const wide =
-            cols > 1 && isValidElement(child) && child.type === GridItem && !!(child.props as GridItemProps).wide;
-          const hint = isValidElement(child) && child.type === GridItem ? child.props as GridItemProps : {};
-          const cell: ViewStyle = { minWidth: 0, ...(cellWidth == null ? props.flow ? { width: "100%" } : null : { width: wide ? floorHundredth(cellWidth * 2 + gapPx) : cellWidth }) };
-          if (hint.full) cell.width = "100%";
-          if (hint.raised) cell.zIndex = 1;
-          if (hint.front) cell.zIndex = 10;
-          // A cell is a definite-width column stretched to its row's height: hug
-          // components hug inside it, fill components fill it, and a Card grows
-          // to the row's height (the layout-axis context from sizing.ts). It stacks
-          // above the other cells while a card in it is lifted (src/style/hover.tsx).
-          return (
-            <RaiseCell key={isValidElement(child) ? child.key ?? i : i} style={cell}>
-              {props.flow ? child : <LayoutAxisProvider value={GRID_CELL_AXIS}>{child}</LayoutAxisProvider>}
-            </RaiseCell>
-          );
-        })}
+      <View ref={gridPart?.ref} onLayout={withPartLayout(gridPart, onLayout)} style={[GRID, { gap: gapPx, rowGap: gridRowGapOf(props) ?? gapPx }, fill, style]} testID={testID}>
+        <AnatomyScope>
+          {Children.toArray(children).map((child, i) => {
+            const wide =
+              cols > 1 && isValidElement(child) && child.type === GridItem && !!(child.props as GridItemProps).wide;
+            const hint = isValidElement(child) && child.type === GridItem ? child.props as GridItemProps : {};
+            const cell: ViewStyle = { minWidth: 0, ...(cellWidth == null ? props.flow ? { width: "100%" } : null : { width: wide ? floorHundredth(cellWidth * 2 + gapPx) : cellWidth }) };
+            if (hint.full) cell.width = "100%";
+            if (hint.raised) cell.zIndex = 1;
+            if (hint.front) cell.zIndex = 10;
+            // A cell is a definite-width column stretched to its row's height: hug
+            // components hug inside it, fill components fill it, and a Card grows
+            // to the row's height (the layout-axis context from sizing.ts). It stacks
+            // above the other cells while a card in it is lifted (src/style/hover.tsx).
+            const tile = i === 0 && tilePart != null ? <View ref={tilePart.ref} onLayout={tilePart.onLayout} style={ITEM}>{child}</View> : child;
+            return (
+              <RaiseCell key={isValidElement(child) ? child.key ?? i : i} style={cell}>
+                {props.flow ? tile : <LayoutAxisProvider value={GRID_CELL_AXIS}>{tile}</LayoutAxisProvider>}
+              </RaiseCell>
+            );
+          })}
+        </AnatomyScope>
       </View>
     );
   };

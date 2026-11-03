@@ -7,6 +7,7 @@ import { Pressable, View, Text, useControllableState, useTheme, type ColorTokens
 import { contrastStyle, PlainSurface } from "../../style/glass-surface/glass-surface.shared.js";
 import { useHover } from "../../style/hover.js";
 import { useReducedMotion } from "../../style/motion.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so colors follow light/dark.
@@ -110,6 +111,12 @@ const LISTED: ViewStyle = { paddingVertical: 10 };
  */
 export function createSwitch(skin: SwitchSkin) {
   const Switch = forwardRef<View, SwitchProps>(function Switch(props, ref) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Track, Thumb, Label, Description.
+    const trackPart = useAnatomyPart("Track");
+    const thumbPart = useAnatomyPart("Thumb");
+    const labelPart = useAnatomyPart("Label");
+    const descriptionPart = useAnatomyPart("Description");
     const hostRef = useComposedRefs(ref);
     const { onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
     const theme = useTheme();
@@ -150,12 +157,14 @@ export function createSwitch(skin: SwitchSkin) {
     const target = useSeededMinTargetSlop(skin.minTarget, styleBox(trackShape));
     const label = children != null || description != null ? (
       <View style={TEXT_COLUMN}>
-        {children != null ? <Text style={[LABEL_TYPE, { color: tokens.foreground }, chip?.label(tokens, checked)]}>{children}</Text> : null}
-        {description != null ? <Text style={{ ...DESCRIPTION_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>{description}</Text> : null}
+        {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[LABEL_TYPE, { color: tokens.foreground }, chip?.label(tokens, checked)]}>{children}</Text> : null}
+        {description != null ? <Text ref={descriptionPart?.ref} onLayout={descriptionPart?.onLayout} style={{ ...DESCRIPTION_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>{description}</Text> : null}
       </View>
     ) : null;
 
+    const thumbStyle = [contrastStyle(theme, thumbShape), reducedMotion ? { transitionDuration: "0ms" } as ViewStyle : null];
     return (
+      <AnatomyScope>
       <Pressable
         ref={hostRef}
         {...(keyboard as object)}
@@ -185,11 +194,15 @@ export function createSwitch(skin: SwitchSkin) {
         ]}
       >
         {!chip ? label : null}
-        <View style={contrastStyle(theme, trackHover ? { ...trackShape, ...trackHover } : trackShape)}>
-          <PlainSurface pointerEvents="none" style={[contrastStyle(theme, thumbShape), reducedMotion ? { transitionDuration: "0ms" } as ViewStyle : null]} />
+        <View ref={trackPart?.ref} onLayout={trackPart?.onLayout} style={contrastStyle(theme, trackHover ? { ...trackShape, ...trackHover } : trackShape)}>
+          {thumbPart ? (
+            // Inside a docs AnatomyProvider the thumb is a plain View, which takes the part's ref.
+            <View ref={thumbPart.ref} onLayout={thumbPart.onLayout} style={[thumbStyle, { pointerEvents: "none" }]} />
+          ) : <PlainSurface pointerEvents="none" style={thumbStyle} />}
         </View>
         {chip ? label : null}
       </Pressable>
+      </AnatomyScope>
     );
   });
   Switch.displayName = "Switch";

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { type ScrollView as RNScrollView, type ViewProps } from "react-native";
 import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, useControllableState, FOCUS_RESET, LoopView, createLoopChannel, useReducedMotion, type LayoutStyle } from "../../style/index.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
@@ -147,6 +148,23 @@ export interface ChatComposerProps {
 }
 
 export interface ChatProps extends ChatThreadProps, ChatComposerProps {}
+
+// The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx): Chat takes
+// their handlers and hands them down this context, below its AnatomyScope, to the thread,
+// message and composer that draw them. Standalone pieces see none.
+interface ChatAnatomy {
+  assistant?: AnatomyTarget;
+  user?: AnatomyTarget;
+  avatar?: AnatomyTarget;
+  composer?: AnatomyTarget;
+}
+const ChatAnatomyContext = createContext<ChatAnatomy | undefined>(undefined);
+
+/** The anatomy handlers one message takes, the first of its part in the thread. */
+interface MessageAnatomy {
+  body?: AnatomyTarget;
+  avatar?: AnatomyTarget;
+}
 
 interface ChatParts extends MarkdownParts {
   Button: ComponentType<ButtonProps>;
@@ -345,7 +363,11 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     </View></Card>;
   }
 
-  function ChatMessage({ message, plain, onOpenAttachment, onAction, testID, ...questionProps }: ChatMessageProps) {
+  function ChatMessage(props: ChatMessageProps) {
+    return <MessageRow {...props} />;
+  }
+
+  function MessageRow({ message, plain, onOpenAttachment, onAction, testID, anatomy, ...questionProps }: ChatMessageProps & { anatomy?: MessageAnatomy }) {
     const { tokens } = useTheme();
     const fill = useFillStyle("ChatMessage");
     const actionsDisabled = !!(questionProps.disabled || questionProps.pending || message.streaming || !onAction);
@@ -353,15 +375,16 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const author = message.author ?? (user ? "You" : message.role === "system" ? "System" : "Assistant");
     const body = skin.body(tokens);
     const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : <Markdown compact>{message.content}</Markdown>;
+    const bubble = user ? <GlassSurface layer="content" tint={tokens["primary-soft"]} style={skin.message(tokens, true)}>{content}</GlassSurface> : content;
     return (
       <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, user ? s.userRow : s.assistantRow]}>
         <View style={[s.messageContent, user ? s.userContent : null, message.questions?.length ? s.questionContent : null]}>
           <View style={s.identity}>
-            {message.providerIcon}
+            {message.providerIcon != null ? <AnatomyPart part={anatomy?.avatar}>{message.providerIcon}</AnatomyPart> : null}
             <Text style={skin.label(tokens)}>{author}</Text>
             {message.provider ? <Text style={skin.muted(tokens)}>{message.provider}</Text> : null}
           </View>
-          {message.content ? user ? <GlassSurface layer="content" tint={tokens["primary-soft"]} style={skin.message(tokens, true)}>{content}</GlassSurface> : content : null}
+          {message.content ? <AnatomyPart part={anatomy?.body}>{bubble}</AnatomyPart> : null}
           {message.role === "assistant" && message.questions?.length ? <Questions key={message.id} message={message} {...questionProps} /> : null}
           {message.actions?.length ? <View style={s.questionButtons}>
             {message.actions.map((action) => <Button key={action.id} small primary={action.primary} outline={!action.primary} disabled={actionsDisabled} onPress={() => {
@@ -395,6 +418,13 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const { ref: frameRef, ...frameTarget } = frame.target;
     const streaming = messages.some((message) => message.streaming);
     const Frame = framed ? GlassSurface : View;
+    const parts = useContext(ChatAnatomyContext);
+    // A part drawn by many messages goes to the first one that draws it.
+    const firstUser = parts ? messages.findIndex((message) => message.role === "user" && message.content) : -1;
+    const firstAssistant = parts ? messages.findIndex((message) => message.role !== "user" && message.content) : -1;
+    const firstAvatar = parts ? messages.findIndex((message) => message.providerIcon != null) : -1;
+    const anatomyOf = (message: ChatMessageData, index: number): MessageAnatomy | undefined =>
+      parts ? { body: index === (message.role === "user" ? firstUser : firstAssistant) ? (message.role === "user" ? parts.user : parts.assistant) : undefined, avatar: index === firstAvatar ? parts.avatar : undefined } : undefined;
     return (
       <Frame layer="content" style={[fill, s.thread, framed ? s.frame(tokens) : null, style]} testID={testID}>
         <ScrollView
@@ -422,7 +452,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         >
           {!messages.length && !pending ? <View style={s.empty}>{emptyState}</View> : null}
           <View {...listProps({ label })} style={s.blocks}>
-            {messages.map((message) => <ChatMessage key={message.id} message={message} plain={plain} onOpenAttachment={onOpenAttachment} onAction={onAction} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />)}
+            {messages.map((message, index) => <MessageRow key={message.id} anatomy={anatomyOf(message, index)} message={message} plain={plain} onOpenAttachment={onOpenAttachment} onAction={onAction} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />)}
           </View>
           {pending && !streaming ? <View style={s.pending}><Thinking label={pendingLabel} icon={pendingIcon} /></View> : null}
         </ScrollView>
@@ -443,8 +473,9 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const fill = useFillStyle("ChatComposer");
     const filesPending = attaching || attachments?.some((attachment) => attachment.uploading || attachment.error);
     const canSend = !disabled && !sendDisabled && !pending && !filesPending && (value.trim().length > 0 || !!attachments?.length);
+    const part = useContext(ChatAnatomyContext)?.composer;
     const body = (
-      <View style={[framed ? null : fill, s.composer(tokens)]} testID={framed ? undefined : testID}>
+      <View ref={part?.ref} onLayout={part?.onLayout} style={[framed ? null : fill, s.composer(tokens)]} testID={framed ? undefined : testID}>
         <GlassSurface static layer="control" stateBorder={focused} style={s.composerSurface(tokens, focused)}>
           {attachments?.length ? <View style={s.composerAttachments}><Attachments attachments={attachments} onRemove={onRemoveAttachment} disabled={disabled || pending} /></View> : null}
           <View style={s.composerRow}>
@@ -464,10 +495,21 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
   function Chat(props: ChatProps) {
     const { tokens } = useTheme();
     const fill = useFillStyle("Chat");
-    return <GlassSurface layer="content" style={[fill, s.root, s.frame(tokens), props.style]} testID={props.testID}>
-      <Thread {...props} framed={false} style={undefined} testID={props.testID ? `${props.testID}-thread` : undefined} />
-      <Composer {...props} framed={false} testID={props.testID ? `${props.testID}-composer` : undefined} />
-    </GlassSurface>;
+    // The hand-off's parts in its order: Thread, Assistant message, User message, Avatar,
+    // Composer, taken before the AnatomyScope so the messages' markdown, Buttons and
+    // Textarea register nothing; the last four reach their nodes through the context.
+    const threadPart = useAnatomyPart("Thread");
+    const assistantPart = useAnatomyPart("Assistant message");
+    const userPart = useAnatomyPart("User message");
+    const avatarPart = useAnatomyPart("Avatar");
+    const composerPart = useAnatomyPart("Composer");
+    const anatomy = useMemo<ChatAnatomy>(() => ({ assistant: assistantPart, user: userPart, avatar: avatarPart, composer: composerPart }), [assistantPart, userPart, avatarPart, composerPart]);
+    return <AnatomyScope><ChatAnatomyContext.Provider value={anatomy}><AnatomyPart part={threadPart}>
+      <GlassSurface layer="content" style={[fill, s.root, s.frame(tokens), props.style]} testID={props.testID}>
+        <Thread {...props} framed={false} style={undefined} testID={props.testID ? `${props.testID}-thread` : undefined} />
+        <Composer {...props} framed={false} testID={props.testID ? `${props.testID}-composer` : undefined} />
+      </GlassSurface>
+    </AnatomyPart></ChatAnatomyContext.Provider></AnatomyScope>;
   }
   return { Chat, ChatThread, ChatMessage, ChatComposer };
 }

@@ -14,6 +14,8 @@ import {
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
+import { ChartAnatomyScope } from "../shared/chart-anatomy.js";
+import { useAnatomyPart } from "../../style/anatomy.js";
 import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import {
   ChartValueFlag,
@@ -86,6 +88,14 @@ export function toneOf(p: HistogramProps): Tone {
 /** Build a Histogram from a platform skin. */
 export function createHistogram(skin: ChartSkin) {
   return function Histogram(props: HistogramProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Bins, Axis labels, Baseline, Gridlines, taken before the
+    // tree's AnatomyScope and handed to the shared frame (chart-anatomy.tsx).
+    const framePart = useAnatomyPart("Chart frame");
+    const binsPart = useAnatomyPart("Bins");
+    const axisPart = useAnatomyPart("Axis labels");
+    const baselinePart = useAnatomyPart("Baseline");
+    const gridPart = useAnatomyPart("Gridlines");
     const { title, testID, style } = props;
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
@@ -138,144 +148,146 @@ export function createHistogram(skin: ChartSkin) {
     };
 
     return (
-      <View
-        {...(title != null && title !== ""
-          ? {
-              role: "group" as const,
-              accessibilityLabel: `${title} chart`,
-              "aria-label": `${title} chart`,
-            }
-          : {})}
-        testID={testID}
-        style={[
-          props.plain
-            ? null
-            : paneStyle(theme, [
-                surfaceShape,
-                compact ? s.surfacePadCompact : s.surfacePadDefault,
-              ]),
-          CHART_ROOT,
-          style,
-        ]}
-      >
-        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? (
-          <GlassPane layer="content" shape={surfaceShape} />
-        ) : null}
-        {title != null && title !== "" ? (
-          <Text
-            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
-          >
-            {title}
-          </Text>
-        ) : null}
+      <ChartAnatomyScope parts={{ frame: framePart, marks: [counts.some((c) => c > 0) ? binsPart : undefined], axisLabels: axisPart, baseline: baselinePart, gridlines: gridPart }}>
         <View
-          accessible
-          accessibilityRole="image"
-          role="img"
-          accessibilityLabel={name}
-          aria-label={name}
+          {...(title != null && title !== ""
+            ? {
+                role: "group" as const,
+                accessibilityLabel: `${title} chart`,
+                "aria-label": `${title} chart`,
+              }
+            : {})}
+          testID={testID}
+          style={[
+            props.plain
+              ? null
+              : paneStyle(theme, [
+                  surfaceShape,
+                  compact ? s.surfacePadCompact : s.surfacePadDefault,
+                ]),
+            CHART_ROOT,
+            style,
+          ]}
         >
-          <CartesianFrame
-            yExtent={[0, Math.max(1, ...counts)]}
-            xDomain={
-              counts.length > 0 ? [edges[0], edges[edges.length - 1]] : [0, 1]
-            }
-            plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
-            compact={compact}
-            hideGrid={props.hideGrid}
-            hideAxes={props.hideAxes}
-            formatValue={formatValue}
-            overlay={(layout) => {
-              // The bin hit-test finds the containing edge pair through the
-              // frame's x scale (the niced domain shifts the bins off pixel
-              // 0), clamped to the range; the empty absolute Pressable idiom
-              // does not apply here because bins want drag-scrub too.
-              const indexAt = (x: number): number | null => {
-                if (counts.length === 0) return null;
-                for (let i = 0; i < counts.length; i++) {
-                  if (x < layout.x(edges[i + 1])) return i;
-                }
-                return counts.length - 1;
-              };
-              return (
-                <>
-                  <ScrubSurface
-                    indexAt={indexAt}
-                    selected={selected}
-                    onScrub={setSelected}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  {selected != null && counts[selected] != null ? (
-                    specimen ? (
-                      <PresentationFlag
-                        lines={[
-                          `${formatValue(edges[selected])}–${formatValue(
-                            edges[selected + 1]
-                          )} ms`,
-                          `${counts[selected]} requests`,
-                        ]}
-                        x={layout.plotW * 0.534}
-                        y={0}
-                        gap={4}
-                      />
-                    ) : (
-                      <ChartValueFlag
-                        title={`${formatValue(edges[selected])}–${formatValue(
-                          edges[selected + 1]
-                        )}`}
-                        rows={[{ value: String(counts[selected]) }]}
-                        x={
-                          (layout.x(edges[selected]) +
-                            layout.x(edges[selected + 1])) /
-                          2
-                        }
-                        plotW={layout.plotW}
-                      />
-                    )
-                  ) : null}
-                </>
-              );
-            }}
+          {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+          {glass && !props.plain ? (
+            <GlassPane layer="content" shape={surfaceShape} />
+          ) : null}
+          {title != null && title !== "" ? (
+            <Text
+              style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+            >
+              {title}
+            </Text>
+          ) : null}
+          <View
+            accessible
+            accessibilityRole="image"
+            role="img"
+            accessibilityLabel={name}
+            aria-label={name}
           >
-            {(layout) => (
-              <>
-                {counts.map((c, i) => {
-                  if (c <= 0) return null;
-                  const x0 = layout.x(edges[i]);
-                  const x1 = layout.x(edges[i + 1]);
-                  const y = layout.y(c);
-                  const h = Math.max(0, layout.plotH - y);
-                  return (
-                    // The hand-off's bins: a 1-unit gutter each side, the data-cell corner.
-                    <Rect
-                      key={i}
-                      x={specimen ? x0 : x0 + 1}
-                      y={y}
-                      width={Math.max(
-                        1,
-                        x1 - x0 - (specimen ? layout.plotW / 300 : 2)
-                      )}
-                      height={h}
-                      rx={
-                        specimen ? 0 : Math.min(platformShape.web.cell, h / 2)
-                      }
-                      fill={fill}
-                      opacity={
-                        selected != null && selected !== i
-                          ? specimen
-                            ? 0.55
-                            : DIM_OPACITY
-                          : 1
-                      }
+            <CartesianFrame
+              yExtent={[0, Math.max(1, ...counts)]}
+              xDomain={
+                counts.length > 0 ? [edges[0], edges[edges.length - 1]] : [0, 1]
+              }
+              plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
+              compact={compact}
+              hideGrid={props.hideGrid}
+              hideAxes={props.hideAxes}
+              formatValue={formatValue}
+              overlay={(layout) => {
+                // The bin hit-test finds the containing edge pair through the
+                // frame's x scale (the niced domain shifts the bins off pixel
+                // 0), clamped to the range; the empty absolute Pressable idiom
+                // does not apply here because bins want drag-scrub too.
+                const indexAt = (x: number): number | null => {
+                  if (counts.length === 0) return null;
+                  for (let i = 0; i < counts.length; i++) {
+                    if (x < layout.x(edges[i + 1])) return i;
+                  }
+                  return counts.length - 1;
+                };
+                return (
+                  <>
+                    <ScrubSurface
+                      indexAt={indexAt}
+                      selected={selected}
+                      onScrub={setSelected}
+                      style={StyleSheet.absoluteFill}
                     />
-                  );
-                })}
-              </>
-            )}
-          </CartesianFrame>
+                    {selected != null && counts[selected] != null ? (
+                      specimen ? (
+                        <PresentationFlag
+                          lines={[
+                            `${formatValue(edges[selected])}–${formatValue(
+                              edges[selected + 1]
+                            )} ms`,
+                            `${counts[selected]} requests`,
+                          ]}
+                          x={layout.plotW * 0.534}
+                          y={0}
+                          gap={4}
+                        />
+                      ) : (
+                        <ChartValueFlag
+                          title={`${formatValue(edges[selected])}–${formatValue(
+                            edges[selected + 1]
+                          )}`}
+                          rows={[{ value: String(counts[selected]) }]}
+                          x={
+                            (layout.x(edges[selected]) +
+                              layout.x(edges[selected + 1])) /
+                            2
+                          }
+                          plotW={layout.plotW}
+                        />
+                      )
+                    ) : null}
+                  </>
+                );
+              }}
+            >
+              {(layout) => (
+                <>
+                  {counts.map((c, i) => {
+                    if (c <= 0) return null;
+                    const x0 = layout.x(edges[i]);
+                    const x1 = layout.x(edges[i + 1]);
+                    const y = layout.y(c);
+                    const h = Math.max(0, layout.plotH - y);
+                    return (
+                      // The hand-off's bins: a 1-unit gutter each side, the data-cell corner.
+                      <Rect
+                        key={i}
+                        x={specimen ? x0 : x0 + 1}
+                        y={y}
+                        width={Math.max(
+                          1,
+                          x1 - x0 - (specimen ? layout.plotW / 300 : 2)
+                        )}
+                        height={h}
+                        rx={
+                          specimen ? 0 : Math.min(platformShape.web.cell, h / 2)
+                        }
+                        fill={fill}
+                        opacity={
+                          selected != null && selected !== i
+                            ? specimen
+                              ? 0.55
+                              : DIM_OPACITY
+                            : 1
+                        }
+                      />
+                    );
+                  })}
+                </>
+              )}
+            </CartesianFrame>
+          </View>
         </View>
-      </View>
+      </ChartAnatomyScope>
     );
   };
 }

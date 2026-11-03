@@ -6,6 +6,7 @@ import { Icon } from "../../atoms/icon/icon.js";
 import { CheckboxIndicator as WebCheckbox } from "../../atoms/checkbox/indicator/index.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { Drawer as WebDrawer } from "../drawer/drawer.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import {
   type Density,
   type FilterPanelSkin,
@@ -138,13 +139,16 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
   const Button = parts.Button ?? WebButton;
   const Drawer = parts.Drawer ?? WebDrawer;
   const { optionMark } = skin;
-  function OptionRow({ option, checked, onToggle }: { option: FilterOption; checked: boolean; onToggle: () => void }) {
+  // `parts` carries the panel's Option and Count on the first row (Count on the first with one).
+  function OptionRow({ option, checked, onToggle, parts }: { option: FilterOption; checked: boolean; onToggle: () => void; parts?: { option?: AnatomyTarget; count?: AnatomyTarget } }) {
     const { tokens } = useTheme();
     const keyboard = useSpaceActivation(false, onToggle);
     const ripple = skin.rowRipple ? skin.rowRipple(tokens) : undefined;
     return (
       <Pressable
         {...keyboard}
+        ref={parts?.option?.ref}
+        onLayout={parts?.option?.onLayout}
         style={({ pressed }) => [
           skin.optionRow,
           skin.rowPressedOpacity != null && pressed ? { opacity: skin.rowPressedOpacity } : null,
@@ -174,7 +178,7 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
         ) : (
           <Text style={[optionMark.label(tokens), TRAILING_LABEL]}>{option.label}</Text>
         )}
-        {option.count != null ? <Text style={skin.countText(tokens)}>{option.count}</Text> : null}
+        {option.count != null ? <Text ref={parts?.count?.ref} onLayout={parts?.count?.onLayout} style={skin.countText(tokens)}>{option.count}</Text> : null}
         {optionMark.kind === "trailing" ? (
           // Decorative: the row's own checked state names the choice.
           <Text aria-hidden style={[optionMark.check(tokens), checked ? null : CHECK_HIDDEN]}>✓</Text>
@@ -186,6 +190,15 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
   return function FilterPanel(props: FilterPanelProps) {
     const { groups, activeCount, onClear, onChange, onSelectionChange, bordered, testID, style } = props;
     const density = densityOf(props);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Panel, Group heading, Option, Count, Clear all, each on its first
+    // instance, taken before the tree's AnatomyScope so the Clear Button's and the
+    // checkboxes' own parts register nothing.
+    const panelPart = useAnatomyPart("Panel");
+    const headingPart = useAnatomyPart("Group heading");
+    const optionPart = useAnatomyPart("Option");
+    const countPart = useAnatomyPart("Count");
+    const clearPart = useAnatomyPart("Clear all");
 
     // Each option's stable key: its explicit `value`, else its group/option index.
     const keyOf = (gi: number, oi: number) => groups[gi].options[oi].value ?? `${gi}:${oi}`;
@@ -238,8 +251,19 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
     // Inside the Drawer the drawer's own material is the surface, so the chrome only
     // drops there and no second pane is painted.
     const chrome = bordered ? skin.borderedSurface(tokens) : null;
+    // The first option in the panel, and the first that carries a count.
+    const firstGroup = groups.findIndex((group) => group.options.length > 0);
+    const countAt = (() => {
+      for (let gi = 0; gi < groups.length; gi++) {
+        const oi = groups[gi].options.findIndex((option) => option.count != null);
+        if (oi >= 0) return [gi, oi];
+      }
+      return [-1, -1];
+    })();
     const panel = (
       <View
+        ref={panelPart?.ref}
+        onLayout={panelPart?.onLayout}
         testID={asDrawer ? undefined : testID}
         style={[
           skin.panelBase,
@@ -256,15 +280,17 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
         <View style={skin.headerRow}>
           <Text style={skin.titleText(tokens)}>Filters</Text>
           {shownCount > 0 ? (
-            <Button plainLink onPress={clearAll}>
-              {`Clear ${shownCount}`}
-            </Button>
+            <AnatomyPart part={clearPart}>
+              <Button plainLink onPress={clearAll}>
+                {`Clear ${shownCount}`}
+              </Button>
+            </AnatomyPart>
           ) : null}
         </View>
 
         {groups.map((group, gi) => (
           <View key={gi} style={[skin.groupColumn, skin.groupGap[density]]}>
-            <Text style={skin.groupTitle(tokens)}>{group.title}</Text>
+            <Text ref={gi === 0 ? headingPart?.ref : undefined} onLayout={gi === 0 ? headingPart?.onLayout : undefined} style={skin.groupTitle(tokens)}>{group.title}</Text>
             {/* RippleClip clips the Android bounded-ripple option rows to the bordered
                 card's rounded corners (a no-op on iOS/web, and only clips when
                 `bordered` so the bare panel keeps rectangular ripples). */}
@@ -274,7 +300,13 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
             >
             <View style={[skin.groupColumn, skin.optionGap[density]]}>
               {group.options.map((option, oi) => (
-                <OptionRow key={keyOf(gi, oi)} option={option} checked={isChecked(gi, oi)} onToggle={() => toggle(gi, oi)} />
+                <OptionRow
+                  key={keyOf(gi, oi)}
+                  option={option}
+                  checked={isChecked(gi, oi)}
+                  onToggle={() => toggle(gi, oi)}
+                  parts={{ option: gi === firstGroup && oi === 0 ? optionPart : undefined, count: gi === countAt[0] && oi === countAt[1] ? countPart : undefined }}
+                />
               ))}
             </View>
             </RippleClip>
@@ -289,6 +321,7 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
       // start-edge Drawer. Controlled use goes through `open`/`onOpenChange`; a bare
       // responsive panel self-manages.
       return (
+        <AnatomyScope>
         <View testID={testID}>
           <Button
             secondary
@@ -303,9 +336,10 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
             {panel}
           </Drawer>
         </View>
+        </AnatomyScope>
       );
     }
 
-    return panel;
+    return <AnatomyScope>{panel}</AnatomyScope>;
   };
 }

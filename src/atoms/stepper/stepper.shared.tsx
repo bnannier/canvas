@@ -1,4 +1,6 @@
 import { forwardRef, useId, useState, type ReactNode } from "react";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import {
   StyleSheet,
   type TextInput as RNTextInput,
@@ -195,6 +197,13 @@ const SUFFIX: ViewStyle = { marginStart: 16 };
 
 export function createStepper(skin: StepperSkin) {
   const Stepper = forwardRef<RNTextInput, StepperProps>(function Stepper(props, ref) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Decrement, Value, Increment, Label.
+    const decrementPart = useAnatomyPart("Decrement");
+    const valuePart = useAnatomyPart("Value");
+    const incrementPart = useAnatomyPart("Increment");
+    const labelPart = useAnatomyPart("Label");
+    const fieldRef = useComposedRefs<RNTextInput>(ref, valuePart?.ref);
     const {
       onChange,
       min = 0,
@@ -388,6 +397,8 @@ export function createStepper(skin: StepperSkin) {
     const MinusButton = (
       <RippleClip shape={cornerRadii(skin.button(tokens, size, "left", atMin, false))} hitSlop={minusSlop}>
         <Pressable
+          ref={decrementPart?.ref}
+          onLayout={decrementPart?.onLayout}
           {...minusHover.target}
           onPress={decrement}
           disabled={atMin}
@@ -416,6 +427,8 @@ export function createStepper(skin: StepperSkin) {
     const PlusButton = (
       <RippleClip shape={cornerRadii(skin.button(tokens, size, "right", atMax, false))} hitSlop={plusSlop}>
         <Pressable
+          ref={incrementPart?.ref}
+          onLayout={incrementPart?.onLayout}
           {...plusHover.target}
           onPress={increment}
           disabled={atMax}
@@ -444,7 +457,8 @@ export function createStepper(skin: StepperSkin) {
     const Field = (
       <TextInput
         {...accessibility.field}
-        ref={ref}
+        ref={fieldRef}
+        onLayout={valuePart?.onLayout}
         value={shown}
         onChangeText={onChangeText}
         onKeyPress={onKeyPress}
@@ -531,15 +545,16 @@ export function createStepper(skin: StepperSkin) {
     );
 
     // No label: return the bare control without an extra layout wrapper.
-    if (label == null) return control;
+    if (label == null) return <AnatomyScope>{control}</AnatomyScope>;
 
     // With a label: a component-owned title ABOVE the control, mirroring Input's
     // above-field placement, and the optional description UNDER it (the hand-off's
     // stepper). The wrapper owns the outer layout and the disabled dim so the label dims
     // with the control.
     return (
+      <AnatomyScope>
       <View style={[{ gap: 6 }, hug, disabled && !liquidActions ? { opacity: skin.disabledOpacity } : null, style]}>
-        <Text nativeID={labelId} style={[skin.labelAbove(tokens, size), disabledInk]} {...labelA11y(label, true)}>
+        <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} nativeID={labelId} style={[skin.labelAbove(tokens, size), disabledInk]} {...labelA11y(label, true)}>
           <LabelContent label={label} required={required} starColor={tokens.destructive} />
         </Text>
         {control}
@@ -549,6 +564,7 @@ export function createStepper(skin: StepperSkin) {
           </Text>
         ) : null}
       </View>
+      </AnatomyScope>
     );
   });
   Stepper.displayName = "Stepper";

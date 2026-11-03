@@ -23,8 +23,8 @@ Audit checklist for `/components/breadcrumb`. The facts block and the variants t
 | Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `breadcrumb.shared.tsx`: hitSlop, minTarget; `breadcrumb.styles.ts`: minTarget |
-| Tests importing it | 6: `test/breadcrumb.test.tsx`, `test/design-rules-skins.test.ts`, `test/glass-pane-ripple.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
-| E2E naming it | 0: none |
+| Tests importing it | 7: `test/anatomy-parts-navigation.test.tsx`, `test/breadcrumb.test.tsx`, `test/design-rules-skins.test.ts`, `test/glass-pane-ripple.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
+| E2E naming it | 1: `e2e/behavior/anatomy-markers.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples, EXAMPLE_ROUTES), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/breadcrumb.md`, written by `bun run audit:turn -- --slug=breadcrumb --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->

@@ -23,6 +23,8 @@ export interface RadioGroupContextValue {
   /** The options are the rows of one inset-grouped list (iOS), so each plain option
    *  takes the list's cell insets and row highlight. */
   list?: boolean;
+  /** The first option's value, the one a docs anatomy specimen numbers (a part drawn many times registers once). */
+  first?: string | number;
 }
 
 export const RadioGroupContext = createContext<RadioGroupContextValue | null>(null);

@@ -2,7 +2,8 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { MENU_CHOICE } from "../../style/menu-choice-role.js";
 import { useHover } from "../../style/hover.js";
-import { useRef, useState, type ReactNode, type RefObject } from "react";
+import { useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { StyleSheet } from "react-native";
 import { GlassSurface } from "../../style/glass-surface/glass-surface.js";
 import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
@@ -10,6 +11,8 @@ import { useRowFocus, type RowFocusProps } from "../../style/use-row-focus.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 
 // Shared Dropdown shell. The structure (the trigger plus a floating menu of
 // action rows, each with an optional leading icon glyph, a label, and an
@@ -174,12 +177,16 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     ripple: { color: string; borderless: boolean } | undefined;
     /** The menu holds a selected choice, so a glyphless row keeps the check's column. */
     choiceColumn: boolean;
+    /** The anatomy part this row draws (the first Item or Destructive item), if any. */
+    part?: AnatomyTarget;
+    /** The anatomy Shortcut part, on the first row that shows one. */
+    shortcutPart?: AnatomyTarget;
   }
 
   // One menu row, its own component so the web's hover wash has a hook per row. A
   // disabled row is inert and takes the skin's disabled look: the web's muted ink, or
   // the platform's dim.
-  function MenuRow({ item, compact, steadyPress, focusProps, onSelect, ripple, choiceColumn }: MenuRowProps) {
+  function MenuRow({ item, compact, steadyPress, focusProps, onSelect, ripple, choiceColumn, part, shortcutPart }: MenuRowProps) {
     const theme = useMaterialTheme({ layer: "dense" });
     const { tokens, dark } = theme;
     const disabled = !!item.disabled;
@@ -188,9 +195,18 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     const { hovered, target } = useHover(skin.itemHover != null && !disabled);
     const mark = skin.selectedMark;
     const checked = mark != null && !!item.selected && !muted;
+    // The roving focus hands the row a fresh ref each render, so the composed ref detaches
+    // and re-attaches the row; the part measures again on each attach to stay registered.
+    const partRef = useMemo(() => part && ((node: View | null) => {
+      part.ref(node);
+      if (node) part.onLayout();
+    }), [part]);
+    const rowRef = useComposedRefs<View>(focusProps.ref, partRef);
     return (
       <Pressable
         {...(focusProps as object)}
+        ref={rowRef}
+        onLayout={part?.onLayout}
         {...target}
         style={({ pressed }) => [
           skin.itemRow,
@@ -229,7 +245,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
           {item.description ? <Text style={compact ? skin.reference!.description(tokens) : skin.menuHeaderDescription(tokens)}>{item.description}</Text> : null}
         </View>
         {item.shortcut ? (
-          <Text style={skin.shortcut(tokens)}>
+          <Text ref={shortcutPart?.ref} onLayout={shortcutPart?.onLayout} style={skin.shortcut(tokens)}>
             {item.shortcut}
           </Text>
         ) : null}
@@ -303,6 +319,25 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     // The trigger control itself, where focus returns on close.
     const controlRef = useRef<View>(null);
     const host = useOverlayHost();
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Trigger, Menu, Section label, Item, Shortcut, Destructive item.
+    // Taken before the tree's AnatomyScope so the trigger Button and the rows' Icons
+    // register nothing of their own. The Menu is a pass-through fill of the card
+    // (GlassSurface has no ref; the floating card's is a non-scrolling decoration of it);
+    // Item, Shortcut and Destructive item go on the first row of each kind.
+    const triggerPart = useAnatomyPart("Trigger");
+    const menuPart = useAnatomyPart("Menu");
+    const sectionPart = useAnatomyPart("Section label");
+    const itemPart = useAnatomyPart("Item");
+    const shortcutPart = useAnatomyPart("Shortcut");
+    const destructivePart = useAnatomyPart("Destructive item");
+    const firstItem = items.findIndex((item) => !item.destructive);
+    const firstDestructive = items.findIndex((item) => item.destructive);
+    const firstShortcut = items.findIndex((item) => item.shortcut);
+    const firstSection = items.findIndex((item) => item.sectionBefore);
+    const sectionAnatomy = { ref: sectionPart?.ref, onLayout: sectionPart?.onLayout };
+    const menuFill = menuPart ? <View ref={menuPart.ref} onLayout={menuPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null;
+    const customTriggerRef = useComposedRefs<View>(controlRef, triggerPart?.ref);
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
@@ -327,7 +362,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
                 header's padding does the separating). */}
             {hasHeader && skin.separator ? <View style={skin.separator(tokens)} /> : null}
             {label ? (
-              <Text style={labelStyle}>
+              <Text {...sectionAnatomy} style={labelStyle}>
                 {label}
               </Text>
             ) : null}
@@ -335,11 +370,11 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
               const selectItem = () => { onSelect?.(item, index); if (!item.keepOpen) setOpen(false); };
               return (
               <View key={item.value ?? `${item.label}-${index}`} style={item.sectionBefore ? { gap: skin.rowGap } : undefined}>
-                {item.sectionBefore ? <Text style={labelStyle}>{item.sectionBefore}</Text> : null}
+                {item.sectionBefore ? <Text {...(!label && index === firstSection ? sectionAnatomy : null)} style={labelStyle}>{item.sectionBefore}</Text> : null}
                 {item.separatorBefore && skin.separator ? (
                   <View style={skin.separator(tokens)} />
                 ) : null}
-                <MenuRow item={item} compact={compact} steadyPress={props.steadyPress} focusProps={rows.rowProps(index, () => { if (!item.disabled) selectItem(); })} onSelect={selectItem} ripple={ripple} choiceColumn={choiceColumn} />
+                <MenuRow item={item} compact={compact} steadyPress={props.steadyPress} focusProps={rows.rowProps(index, () => { if (!item.disabled) selectItem(); })} onSelect={selectItem} ripple={ripple} choiceColumn={choiceColumn} part={index === firstItem ? itemPart : index === firstDestructive ? destructivePart : undefined} shortcutPart={index === firstShortcut ? shortcutPart : undefined} />
               </View>
               );
             })}
@@ -377,6 +412,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
           onCardMount={focusFirstItem}
           dismissOnTab
           returnFocusRef={external ? undefined : controlRef}
+          decoration={menuFill}
         >
           <EscapeLayerProvider scope={escapeScope}>
             {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
@@ -387,13 +423,14 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
         </EscapeLayerProvider>
         </AnchoredOverlay>
     );
-    if (external) return floatingMenu;
+    if (external) return <AnatomyScope>{floatingMenu}</AnatomyScope>;
 
     // The inline specimen: the card in flow, the skin's own standoff under the trigger, on
     // the same dense layer and in the same shape as the floating card. The trigger's press
     // goes through `setOpen`, which the specimen ignores.
     const inlineMenu = (
       <GlassSurface layer="dense" style={[panelShape, props.menuWidth == null ? { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) } : { width: props.menuWidth }]}>
+        {menuFill}
         {compact ? <OverlayScrollView style={props.maxHeight != null ? { maxHeight: props.maxHeight } : undefined} bounces={false}>{menuBody}</OverlayScrollView> : menuBody}
       </GlassSurface>
     );
@@ -401,53 +438,58 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     return (
       // self-start keeps the trigger from stretching; relative anchors the inline
       // fallback menu. The specimen stacks the trigger over its card instead.
-      <View
-        ref={triggerRef}
-        testID={testID}
-        style={inline ? [{ gap: skin.menuGap, alignItems: alignEnd ? "flex-end" : "flex-start" }, hug, style] : [wrapper, open && !host ? wrapperLifted : null, hug, style]}
-        onLayout={onTriggerLayout}
-      >
-        {children != null ? (
-          <Pressable
-            ref={controlRef}
-            // Custom content can contain its own native material. Its owner
-            // handles disabled ink in glass mode; never fade that whole subtree.
-            style={[customTrigger, disabled && theme.surface !== "glass" ? { opacity: skin.disabledOpacity } : null]}
-            onPress={disabled ? undefined : () => setOpen(!open)}
-            disabled={disabled}
-            accessibilityRole="button"
-            // The name belongs on the button itself: a name computed from contents
-            // reads the trigger's own text nodes back to back and picks up the
-            // labels of anything nested inside it.
-            accessibilityLabel={triggerLabel}
-            aria-label={triggerLabel}
-            accessibilityState={{ expanded: open, disabled: !!disabled }}
-            // RNW forwards neither accessibilityState nor aria-haspopup; alias both.
-            aria-expanded={open}
-            aria-disabled={disabled ? true : undefined}
-            {...{ "aria-haspopup": "menu" }}
-          >
-            {children}
-          </Pressable>
-        ) : (
-          <Button
-            ref={controlRef}
-            outline={skin.trigger.outline}
-            secondary={skin.trigger.secondary}
-            small
-            selected={skin.trigger.chevron ? open : undefined}
-            iconRight={skin.trigger.chevron ? <Icon chevronDown decorative size={14} /> : undefined}
-            expanded={open}
-            haspopup="menu"
-            disabled={disabled}
-            onPress={() => setOpen(!open)}
-          >
-            {trigger}
-          </Button>
-        )}
+      <AnatomyScope>
+        <View
+          ref={triggerRef}
+          testID={testID}
+          style={inline ? [{ gap: skin.menuGap, alignItems: alignEnd ? "flex-end" : "flex-start" }, hug, style] : [wrapper, open && !host ? wrapperLifted : null, hug, style]}
+          onLayout={onTriggerLayout}
+        >
+          {children != null ? (
+            <Pressable
+              ref={customTriggerRef}
+              onLayout={triggerPart?.onLayout}
+              // Custom content can contain its own native material. Its owner
+              // handles disabled ink in glass mode; never fade that whole subtree.
+              style={[customTrigger, disabled && theme.surface !== "glass" ? { opacity: skin.disabledOpacity } : null]}
+              onPress={disabled ? undefined : () => setOpen(!open)}
+              disabled={disabled}
+              accessibilityRole="button"
+              // The name belongs on the button itself: a name computed from contents
+              // reads the trigger's own text nodes back to back and picks up the
+              // labels of anything nested inside it.
+              accessibilityLabel={triggerLabel}
+              aria-label={triggerLabel}
+              accessibilityState={{ expanded: open, disabled: !!disabled }}
+              // RNW forwards neither accessibilityState nor aria-haspopup; alias both.
+              aria-expanded={open}
+              aria-disabled={disabled ? true : undefined}
+              {...{ "aria-haspopup": "menu" }}
+            >
+              {children}
+            </Pressable>
+          ) : (
+            <AnatomyPart part={triggerPart}>
+              <Button
+                ref={controlRef}
+                outline={skin.trigger.outline}
+                secondary={skin.trigger.secondary}
+                small
+                selected={skin.trigger.chevron ? open : undefined}
+                iconRight={skin.trigger.chevron ? <Icon chevronDown decorative size={14} /> : undefined}
+                expanded={open}
+                haspopup="menu"
+                disabled={disabled}
+                onPress={() => setOpen(!open)}
+              >
+                {trigger}
+              </Button>
+            </AnatomyPart>
+          )}
 
-        {inline ? inlineMenu : floatingMenu}
-      </View>
+          {inline ? inlineMenu : floatingMenu}
+        </View>
+      </AnatomyScope>
     );
   };
 }

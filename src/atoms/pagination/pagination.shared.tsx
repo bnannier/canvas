@@ -5,6 +5,7 @@ import { useHover } from "../../style/hover.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, useHugStyle, useMeasuredWidth, containerProbe, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass, withInnerFill } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
 
@@ -163,10 +164,12 @@ export function createPagination(skin: PaginationSkin) {
     /** Reports the arrow's frame in its row (the next arrow ends the numbered row). */
     onLayout?: (event: LayoutChangeEvent) => void;
     onPress: () => void;
+    /** The anatomy part this arrow carries (Previous or Next). */
+    part?: AnatomyTarget;
   }
 
   // A Previous/Next arrow: a chevron, and beside the numbers its label, in a hairline cell.
-  function Arrow({ direction, size, disabled, dim, abutting, labelled, onLayout, onPress }: ArrowProps) {
+  function Arrow({ direction, size, disabled, dim, abutting, labelled, onLayout, onPress, part }: ArrowProps) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const box = skin.controlBox(tokens);
@@ -184,6 +187,8 @@ export function createPagination(skin: PaginationSkin) {
       // overflow:"hidden" cannot clip a node's own ripple. See src/style/ripple-clip.
       <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} onLayout={onLayout} {...hoverTarget}>
         <Pressable
+          ref={part?.ref}
+          onLayout={part?.onLayout}
           style={({ pressed }) => [
             box,
             s.arrowSize[size],
@@ -212,11 +217,13 @@ export function createPagination(skin: PaginationSkin) {
     size: Size;
     disabled: boolean;
     onPress: () => void;
+    /** The anatomy part this page carries (the first resting page, or the current one). */
+    part?: AnatomyTarget;
   }
 
   // A numbered page. The current page is the accent fill (a brand puck under glass); a
   // resting page is a hairline cell and takes the hover wash.
-  function Page({ page, selected, size, disabled, onPress }: PageProps) {
+  function Page({ page, selected, size, disabled, onPress, part }: PageProps) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const box = skin.pageBox(tokens, selected);
@@ -228,6 +235,8 @@ export function createPagination(skin: PaginationSkin) {
     return (
       <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>
         <Pressable
+          ref={part?.ref}
+          onLayout={part?.onLayout}
           style={({ pressed }) => [
             filled(box) ? paneStyle(theme, [box, ...cell]) : [box, ...cell],
             hovered && !disabled && hoverLook ? withInnerFill(theme, hoverLook(tokens)) : null,
@@ -293,6 +302,15 @@ export function createPagination(skin: PaginationSkin) {
   }
 
   return function Pagination(props: PaginationProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Previous, Page, Current page, Ellipsis, Next. Page registers on
+    // the first resting page; taken before the tree's AnatomyScope so the arrows' and
+    // pages' Icons register nothing of their own.
+    const previousPart = useAnatomyPart("Previous");
+    const pagePart = useAnatomyPart("Page");
+    const currentPart = useAnatomyPart("Current page");
+    const ellipsisPart = useAnatomyPart("Ellipsis");
+    const nextPart = useAnatomyPart("Next");
     const { onChange, testID, style } = props;
     const disabled = !!props.disabled;
     const size = sizeOf(props);
@@ -361,11 +379,11 @@ export function createPagination(skin: PaginationSkin) {
       });
     };
     const hug = useHugStyle();
-    const withProbe = (root: ReactNode) => wantsLabels || variant === "numbered" ? <><View style={containerProbe} onLayout={container.onLayout} />{root}</> : root;
+    const withProbe = (root: ReactNode) => <AnatomyScope>{wantsLabels || variant === "numbered" ? <><View style={containerProbe} onLayout={container.onLayout} />{root}</> : root}</AnatomyScope>;
     // A disabled pager dims as one; in an enabled one an arrow at either end dims on its own.
     const dimmed = disabled ? { opacity: skin.disabledOpacity } : null;
-    const prev = <Arrow direction="previous" size={size} disabled={disabled || atStart} dim={!disabled && atStart} abutting={abutting} labelled={labelled} onPress={() => go(current - 1)} />;
-    const nextArrow = (onLayout?: (event: LayoutChangeEvent) => void) => <Arrow direction="next" size={size} disabled={disabled || atEnd} dim={!disabled && atEnd} abutting={abutting} labelled={labelled} onLayout={onLayout} onPress={() => go(current + 1)} />;
+    const prev = <Arrow direction="previous" size={size} disabled={disabled || atStart} dim={!disabled && atStart} abutting={abutting} labelled={labelled} onPress={() => go(current - 1)} part={previousPart} />;
+    const nextArrow = (onLayout?: (event: LayoutChangeEvent) => void) => <Arrow direction="next" size={size} disabled={disabled || atEnd} dim={!disabled && atEnd} abutting={abutting} labelled={labelled} onLayout={onLayout} onPress={() => go(current + 1)} part={nextPart} />;
 
     // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
     if (variant === "compact" || narrowNumbered) {
@@ -410,16 +428,18 @@ export function createPagination(skin: PaginationSkin) {
     }
 
     // Numbered (default): a windowed row of page buttons with ellipsis gaps.
+    const firstResting = window.find((p) => p !== GAP && p !== current);
+    const firstGap = window.findIndex((p) => p === GAP);
     return withProbe(
       <View testID={testID} style={[s.numberedRow, hug, dimmed, style]}>
         {prev}
         {window.map((p, i) =>
           p === GAP ? (
-            <View key={`gap-${i}`} style={s.gapBox[size]}>
+            <View key={`gap-${i}`} ref={i === firstGap ? ellipsisPart?.ref : undefined} onLayout={i === firstGap ? ellipsisPart?.onLayout : undefined} style={s.gapBox[size]}>
               <Text style={[s.gapGlyph, skin.gapLabel(tokens)]} accessibilityElementsHidden importantForAccessibility="no" aria-hidden>…</Text>
             </View>
           ) : (
-            <Page key={`page-${p}`} page={p} selected={p === current} size={size} disabled={disabled} onPress={() => go(p)} />
+            <Page key={`page-${p}`} page={p} selected={p === current} size={size} disabled={disabled} onPress={() => go(p)} part={p === current ? currentPart : p === firstResting ? pagePart : undefined} />
           ),
         )}
         {nextArrow(measureEnd)}

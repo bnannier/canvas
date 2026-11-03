@@ -17,6 +17,8 @@ import {
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
+import { ChartAnatomyScope } from "../shared/chart-anatomy.js";
+import { useAnatomyPart } from "../../style/anatomy.js";
 import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection } from "../shared/chart-inspect.js";
 import {
@@ -108,6 +110,14 @@ const MARK = { edge: 5, edgeStroke: 1.5, mid: 5, ring: 3, glow: 12 } as const;
 /** Build a RangeAreaChart from a platform skin. */
 export function createRangeAreaChart(skin: ChartSkin) {
   return function RangeAreaChart(props: RangeAreaChartProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Chart frame, Series, Axis labels, Legend, Gridlines, taken before the
+    // tree's AnatomyScope and handed to the shared frame (chart-anatomy.tsx). The chart draws
+    // no legend (one envelope, named by `label`), so Legend registers nothing.
+    const framePart = useAnatomyPart("Chart frame");
+    const seriesPart = useAnatomyPart("Series");
+    const axisPart = useAnatomyPart("Axis labels");
+    const gridPart = useAnatomyPart("Gridlines");
     const { labels, data, title, testID, style } = props;
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
@@ -194,186 +204,188 @@ export function createRangeAreaChart(skin: ChartSkin) {
     };
 
     return (
-      <View
-        {...(title != null && title !== ""
-          ? {
-              role: "group" as const,
-              accessibilityLabel: `${title} chart`,
-              "aria-label": `${title} chart`,
-            }
-          : {})}
-        testID={testID}
-        style={[
-          props.plain
-            ? null
-            : paneStyle(theme, [
-                surfaceShape,
-                compact ? s.surfacePadCompact : s.surfacePadDefault,
-              ]),
-          CHART_ROOT,
-          style,
-        ]}
-      >
-        {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
-        {glass && !props.plain ? (
-          <GlassPane layer="content" shape={surfaceShape} />
-        ) : null}
-        {title != null && title !== "" ? (
-          <Text
-            style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
-          >
-            {title}
-          </Text>
-        ) : null}
+      <ChartAnatomyScope parts={{ frame: framePart, marks: [seriesPart], axisLabels: axisPart, gridlines: gridPart }}>
         <View
-          accessible
-          accessibilityRole="image"
-          role="img"
-          accessibilityLabel={name}
-          aria-label={name}
+          {...(title != null && title !== ""
+            ? {
+                role: "group" as const,
+                accessibilityLabel: `${title} chart`,
+                "aria-label": `${title} chart`,
+              }
+            : {})}
+          testID={testID}
+          style={[
+            props.plain
+              ? null
+              : paneStyle(theme, [
+                  surfaceShape,
+                  compact ? s.surfacePadCompact : s.surfacePadDefault,
+                ]),
+            CHART_ROOT,
+            style,
+          ]}
         >
-          <CartesianFrame
-            yExtent={yExtent}
-            xLabels={labels}
-            // The renderer's band runs point to point, the first label on the plot's left
-            // edge and the last on its right, with no half-step inset.
-            xPoints
-            plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
-            compact={compact}
-            hideGrid={props.hideGrid}
-            hideAxes={props.hideAxes}
-            formatValue={formatValue}
-            selectedBand={selected}
-            onBandScrub={setSelected}
-            overlay={(layout) =>
-              selected != null && layout.band && labels[selected] != null ? (
-                specimen ? (
-                  <PresentationFlag
-                    lines={
-                      !inspected && presentation?.annotation?.index === selected
-                        ? presentation.annotation.lines
-                        : [
-                            `High ${formatValue(ranges[selected].high)}`,
-                            `Mid ${formatValue(ranges[selected].mid ?? 0)}`,
-                            `Low ${formatValue(ranges[selected].low)}`,
-                          ]
-                    }
-                    x={layout.band.center(selected)}
-                    before
-                  />
-                ) : (
-                  <ChartValueFlag
-                    title={props.hideAxes ? labels[selected] : undefined}
-                    rows={[
-                      {
-                        label: "High",
-                        value: formatValue(ranges[selected].high),
-                      },
-                      ...(ranges[selected].mid != null
-                        ? [
-                            {
-                              label: "Mid",
-                              value: formatValue(
-                                ranges[selected].mid as number
-                              ),
-                            },
-                          ]
-                        : []),
-                      {
-                        label: "Low",
-                        value: formatValue(ranges[selected].low),
-                      },
-                    ]}
-                    x={layout.band.center(selected)}
-                    plotW={layout.plotW}
-                  />
-                )
-              ) : null
-            }
+          {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
+          {glass && !props.plain ? (
+            <GlassPane layer="content" shape={surfaceShape} />
+          ) : null}
+          {title != null && title !== "" ? (
+            <Text
+              style={[s.title(tokens), compact ? s.titleCompact : s.titleDefault]}
+            >
+              {title}
+            </Text>
+          ) : null}
+          <View
+            accessible
+            accessibilityRole="image"
+            role="img"
+            accessibilityLabel={name}
+            aria-label={name}
           >
-            {(layout) => {
-              const band = layout.band;
-              if (!band) return null;
-              const top: Pt[] = labels.map((_, i) => ({
-                x: band.center(i),
-                y: layout.y(ranges[i].high),
-              }));
-              const bottom: Pt[] = labels.map((_, i) => ({
-                x: band.center(i),
-                y: layout.y(ranges[i].low),
-              }));
-              const mids: Pt[] = ranges.every((r) => r.mid != null)
-                ? labels.map((_, i) => ({
-                    x: band.center(i),
-                    y: layout.y(ranges[i].mid as number),
-                  }))
-                : [];
-              return (
-                <>
-                  {/* The hand-off's band: a .22 wash with no edge, the middle line over it. */}
-                  <Path
-                    d={areaBandPath(top, bottom, curved)}
-                    fill={alpha(fill, 0.22)}
-                  />
-                  {mids.length > 0 ? (
-                    <Path
-                      d={curved ? monotonePath(mids) : linePath(mids)}
-                      stroke={fill}
-                      strokeWidth={specimen ? 2.2 : 2}
-                      fill="none"
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
+            <CartesianFrame
+              yExtent={yExtent}
+              xLabels={labels}
+              // The renderer's band runs point to point, the first label on the plot's left
+              // edge and the last on its right, with no half-step inset.
+              xPoints
+              plotHeight={compact ? PLOT_HEIGHT.compact : PLOT_HEIGHT.default}
+              compact={compact}
+              hideGrid={props.hideGrid}
+              hideAxes={props.hideAxes}
+              formatValue={formatValue}
+              selectedBand={selected}
+              onBandScrub={setSelected}
+              overlay={(layout) =>
+                selected != null && layout.band && labels[selected] != null ? (
+                  specimen ? (
+                    <PresentationFlag
+                      lines={
+                        !inspected && presentation?.annotation?.index === selected
+                          ? presentation.annotation.lines
+                          : [
+                              `High ${formatValue(ranges[selected].high)}`,
+                              `Mid ${formatValue(ranges[selected].mid ?? 0)}`,
+                              `Low ${formatValue(ranges[selected].low)}`,
+                            ]
+                      }
+                      x={layout.band.center(selected)}
+                      before
                     />
-                  ) : null}
-                  {/* The inspected range (the section card's pinned markers): hollow high
-                      and low marks, the mid mark solid in a card ring over its glow. */}
-                  {selected != null && ranges[selected] ? (
-                    <>
-                      {ranges[selected].mid != null ? (
-                        <>
-                          <Defs>
-                            <GlowFilter id={glowId} length={MARK.glow} />
-                          </Defs>
-                          <Circle
-                            cx={band.center(selected)}
-                            cy={layout.y(ranges[selected].mid as number)}
-                            r={MARK.mid}
-                            fill={tokens.glow ?? tokens.ring}
-                            filter={`url(#${glowId})`}
-                          />
-                          <Circle
-                            cx={band.center(selected)}
-                            cy={layout.y(ranges[selected].mid as number)}
-                            r={MARK.mid + MARK.ring / 2}
-                            fill={fill}
-                            stroke={tokens.card}
-                            strokeWidth={MARK.ring}
-                          />
-                        </>
-                      ) : null}
-                      {[ranges[selected].high, ranges[selected].low].map(
-                        (v, k) => (
-                          <Circle
-                            key={k}
-                            cx={band.center(selected)}
-                            cy={layout.y(v)}
-                            r={
-                              specimen ? 2.75 : MARK.edge - MARK.edgeStroke / 2
-                            }
-                            fill={tokens.card}
-                            stroke={fill}
-                            strokeWidth={MARK.edgeStroke}
-                          />
-                        )
-                      )}
-                    </>
-                  ) : null}
-                </>
-              );
-            }}
-          </CartesianFrame>
+                  ) : (
+                    <ChartValueFlag
+                      title={props.hideAxes ? labels[selected] : undefined}
+                      rows={[
+                        {
+                          label: "High",
+                          value: formatValue(ranges[selected].high),
+                        },
+                        ...(ranges[selected].mid != null
+                          ? [
+                              {
+                                label: "Mid",
+                                value: formatValue(
+                                  ranges[selected].mid as number
+                                ),
+                              },
+                            ]
+                          : []),
+                        {
+                          label: "Low",
+                          value: formatValue(ranges[selected].low),
+                        },
+                      ]}
+                      x={layout.band.center(selected)}
+                      plotW={layout.plotW}
+                    />
+                  )
+                ) : null
+              }
+            >
+              {(layout) => {
+                const band = layout.band;
+                if (!band) return null;
+                const top: Pt[] = labels.map((_, i) => ({
+                  x: band.center(i),
+                  y: layout.y(ranges[i].high),
+                }));
+                const bottom: Pt[] = labels.map((_, i) => ({
+                  x: band.center(i),
+                  y: layout.y(ranges[i].low),
+                }));
+                const mids: Pt[] = ranges.every((r) => r.mid != null)
+                  ? labels.map((_, i) => ({
+                      x: band.center(i),
+                      y: layout.y(ranges[i].mid as number),
+                    }))
+                  : [];
+                return (
+                  <>
+                    {/* The hand-off's band: a .22 wash with no edge, the middle line over it. */}
+                    <Path
+                      d={areaBandPath(top, bottom, curved)}
+                      fill={alpha(fill, 0.22)}
+                    />
+                    {mids.length > 0 ? (
+                      <Path
+                        d={curved ? monotonePath(mids) : linePath(mids)}
+                        stroke={fill}
+                        strokeWidth={specimen ? 2.2 : 2}
+                        fill="none"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                      />
+                    ) : null}
+                    {/* The inspected range (the section card's pinned markers): hollow high
+                        and low marks, the mid mark solid in a card ring over its glow. */}
+                    {selected != null && ranges[selected] ? (
+                      <>
+                        {ranges[selected].mid != null ? (
+                          <>
+                            <Defs>
+                              <GlowFilter id={glowId} length={MARK.glow} />
+                            </Defs>
+                            <Circle
+                              cx={band.center(selected)}
+                              cy={layout.y(ranges[selected].mid as number)}
+                              r={MARK.mid}
+                              fill={tokens.glow ?? tokens.ring}
+                              filter={`url(#${glowId})`}
+                            />
+                            <Circle
+                              cx={band.center(selected)}
+                              cy={layout.y(ranges[selected].mid as number)}
+                              r={MARK.mid + MARK.ring / 2}
+                              fill={fill}
+                              stroke={tokens.card}
+                              strokeWidth={MARK.ring}
+                            />
+                          </>
+                        ) : null}
+                        {[ranges[selected].high, ranges[selected].low].map(
+                          (v, k) => (
+                            <Circle
+                              key={k}
+                              cx={band.center(selected)}
+                              cy={layout.y(v)}
+                              r={
+                                specimen ? 2.75 : MARK.edge - MARK.edgeStroke / 2
+                              }
+                              fill={tokens.card}
+                              stroke={fill}
+                              strokeWidth={MARK.edgeStroke}
+                            />
+                          )
+                        )}
+                      </>
+                    ) : null}
+                  </>
+                );
+              }}
+            </CartesianFrame>
+          </View>
         </View>
-      </View>
+      </ChartAnatomyScope>
     );
   };
 }

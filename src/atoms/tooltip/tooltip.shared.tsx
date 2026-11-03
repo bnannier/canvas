@@ -1,9 +1,12 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { StyleSheet } from "react-native";
 import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type ViewProps, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint, AnchoredOverlay, isGlass, useOverlayAnchor } from "../../style/index.js";
 import { useEscapeLayer } from "../../style/escape-layer.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import {
   BUBBLE_GAP,
   HOVER_GRACE_MS,
@@ -123,10 +126,10 @@ export function triggerOf(p: Pick<TooltipProps, "children" | "iconTrigger" | "te
 // The arrow aims at the side the bubble actually took (a bubble that lacks room on its
 // preferred side flips), drawn in solid mode only: under glass the bubble is a material
 // pane a flat token-filled arrow could not match, as the Popover's beak is omitted there.
-function TooltipArrow({ size, fill, placement }: { size: number; fill: string; placement: Placement }) {
+function TooltipArrow({ size, fill, placement, part }: { size: number; fill: string; placement: Placement; part?: AnatomyTarget }) {
   const { side } = useOverlayAnchor();
   const took: Placement = side === "above" ? "top" : side === "below" ? "bottom" : side === "start" ? "left" : side === "end" ? "right" : placement;
-  return <View pointerEvents="none" style={arrowStyle(size, fill, took)} />;
+  return <View ref={part?.ref} onLayout={part?.onLayout} pointerEvents="none" style={arrowStyle(size, fill, took)} />;
 }
 
 /** Build a Tooltip component from a platform skin. */
@@ -151,6 +154,15 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     const hug = useHugStyle();
     // The box the bubble is placed against: the root, which hugs the trigger.
     const rootRef = useRef<View>(null);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Trigger, Bubble, Arrow. Taken before the tree's AnatomyScope so a
+    // trigger Button or the caller's element registers nothing of its own. The Trigger is
+    // the root, which hugs the trigger (the bubble floats and takes no room in it); the
+    // Bubble is a pass-through fill of the card, a non-scrolling decoration of it.
+    const triggerPart = useAnatomyPart("Trigger");
+    const bubblePart = useAnatomyPart("Bubble");
+    const arrowPart = useAnatomyPart("Arrow");
+    const hostRef = useComposedRefs<View>(rootRef, triggerPart?.ref);
     // Uncontrolled by default: hovering or focusing the trigger shows the
     // bubble, leaving/blurring hides it, and tapping toggles it (the touch
     // analogue of hover); a controlled `open` prop overrides this.
@@ -254,7 +266,8 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
         decoration={
           <>
             <GlassPane static layer="dense" shape={surface} tint={inverseDenseTint(theme)} />
-            {skin.arrow != null && !isGlass(theme) ? <TooltipArrow size={skin.arrow} fill={surface.backgroundColor as string} placement={placement} /> : null}
+            {bubblePart ? <View ref={bubblePart.ref} onLayout={bubblePart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
+            {skin.arrow != null && !isGlass(theme) ? <TooltipArrow size={skin.arrow} fill={surface.backgroundColor as string} placement={placement} part={arrowPart} /> : null}
           </>
         }
         inlineStyle={inlineAnchor[placement]}
@@ -337,16 +350,19 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     return (
       // The escape handler hangs only while the tip is open: a closed tip must leave the
       // accessibility escape to the overlay it sits in.
-      <View
-        ref={rootRef}
-        style={[hug, style]}
-        testID={testID}
-        onAccessibilityEscape={open ? escapeScope.onAccessibilityEscape : undefined}
-        {...(isElementTrigger ? elementDisclosure : undefined)}
-      >
-        {triggerEl}
-        {tip}
-      </View>
+      <AnatomyScope>
+        <View
+          ref={hostRef}
+          onLayout={triggerPart?.onLayout}
+          style={[hug, style]}
+          testID={testID}
+          onAccessibilityEscape={open ? escapeScope.onAccessibilityEscape : undefined}
+          {...(isElementTrigger ? elementDisclosure : undefined)}
+        >
+          {triggerEl}
+          {tip}
+        </View>
+      </AnatomyScope>
     );
   };
 }

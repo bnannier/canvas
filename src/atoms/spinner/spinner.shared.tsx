@@ -1,6 +1,7 @@
 import { type ReactElement, type ReactNode, useEffect, useRef } from "react";
 import { Animated, Easing } from "react-native";
 import { View, Text, useTheme, supportsNativeDriver, type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { type Tone, TONE_TOKEN } from "./spinner.styles.js";
 
 // Shared Spinner shell. Uses React Native's primitives DIRECTLY (no engine
@@ -125,6 +126,10 @@ export function createSpinner(skin: SpinnerSkin) {
     const color = tokens[TONE_TOKEN[tone]] ?? tokens["muted-foreground"];
     // Whether the control carries any label text at all (label and/or description).
     const hasText = children != null || description != null;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Ring, Label.
+    const ringPart = useAnatomyPart("Ring");
+    const labelPart = useAnatomyPart("Label");
 
     // One continuous rotation per ~900ms, looping forever. The skins that spin a
     // drawn shape (iOS spokes, Android arc) interpolate this 0..1 value to
@@ -170,37 +175,41 @@ export function createSpinner(skin: SpinnerSkin) {
       >
         {/* The shell owns the loading announcement. Some visual renderers, such
             as RNW's ActivityIndicator, add a progressbar role of their own. */}
-        <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {/* The anatomy Ring is this plain host around the drawn ring, not the Animated
+            view, which never reported as a part on the live web page. */}
+        <View ref={ringPart?.ref} onLayout={ringPart?.onLayout} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           {skin.render({ size, color, rotate, tokens })}
         </View>
       </Animated.View>
     );
 
     // No label: a bare <Spinner /> is unchanged.
-    if (!hasText) return indicator;
+    if (!hasText) return <AnatomyScope>{indicator}</AnatomyScope>;
 
     // Labeled: a Pressable-free group owning the row/column, gap, alignment, and
     // the label type. The group carries the progressbar role + name.
     return (
-      <View
-        testID={testID}
-        accessible
-        accessibilityRole="progressbar"
-        accessibilityLabel={a11yLabel}
-        style={stacked ? STACKED_COLUMN : INLINE_ROW}
-      >
-        {indicator}
-        <View style={stacked ? STACKED_TEXT : INLINE_TEXT}>
-          {children != null ? (
-            <Text style={stacked ? [skin.label(tokens), CENTER_TEXT] : skin.label(tokens)}>{children}</Text>
-          ) : null}
-          {description != null ? (
-            <Text style={stacked ? [skin.description(tokens), CENTER_TEXT] : skin.description(tokens)}>
-              {description}
-            </Text>
-          ) : null}
+      <AnatomyScope>
+        <View
+          testID={testID}
+          accessible
+          accessibilityRole="progressbar"
+          accessibilityLabel={a11yLabel}
+          style={stacked ? STACKED_COLUMN : INLINE_ROW}
+        >
+          {indicator}
+          <View style={stacked ? STACKED_TEXT : INLINE_TEXT}>
+            {children != null ? (
+              <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={stacked ? [skin.label(tokens), CENTER_TEXT] : skin.label(tokens)}>{children}</Text>
+            ) : null}
+            {description != null ? (
+              <Text style={stacked ? [skin.description(tokens), CENTER_TEXT] : skin.description(tokens)}>
+                {description}
+              </Text>
+            ) : null}
+          </View>
         </View>
-      </View>
+      </AnatomyScope>
     );
   };
 }

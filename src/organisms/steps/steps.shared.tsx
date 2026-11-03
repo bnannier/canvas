@@ -6,6 +6,7 @@ import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, u
 import { leastLine, useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { inlineSide, slopSides, splitSeam } from "../../style/touch-seam.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -165,7 +166,7 @@ function StepProgress({ value, skin }: { value: number; skin: StepsSkin }) {
 export function createSteps(skin: StepsSkin) {
   // The numbered/check disc. Pressable (and so opacity-dim / ripple) only when an
   // onStepPress handler is supplied; otherwise a plain View.
-  function Circle({ index, state, onPress, seams, compact, label }: { index: number; state: State; onPress?: () => void; seams: CircleSeams; compact?: boolean; label?: string }) {
+  function Circle({ index, state, onPress, seams, compact, label, part }: { index: number; state: State; onPress?: () => void; seams: CircleSeams; compact?: boolean; label?: string; part?: AnatomyTarget }) {
     // A step circle is 32pt of visible dot on every platform, which is right for the
     // rail's rhythm and short of both platforms' minimum, so the touch area grows
     // around it rather than the dot growing. The slop is seeded from that fixed size, so it
@@ -203,7 +204,8 @@ export function createSteps(skin: StepsSkin) {
       return (
         <RippleClip shape={cornerRadii(s.circleBase)} hitSlop={hitSlop}>
           <Pressable
-            onLayout={target.onLayout}
+            ref={part?.ref}
+            onLayout={withPartLayout(part, target.onLayout)}
             hitSlop={hitSlop}
             style={({ pressed }) => [
               circleStyle,
@@ -221,7 +223,7 @@ export function createSteps(skin: StepsSkin) {
       );
     }
     return (
-      <View style={circleStyle}>
+      <View ref={part?.ref} onLayout={part?.onLayout} style={circleStyle}>
         {pane}
         {glyph}
       </View>
@@ -229,6 +231,14 @@ export function createSteps(skin: StepsSkin) {
   }
 
   return function Steps(props: StepsProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Step, Marker, Connector, Label. Each registers on the first step
+    // that draws it, taken before the tree's AnatomyScope so the markers' check Icons and
+    // the caller's content register nothing of their own.
+    const stepPart = useAnatomyPart("Step");
+    const markerPart = useAnatomyPart("Marker");
+    const connectorPart = useAnatomyPart("Connector");
+    const labelPart = useAnatomyPart("Label");
     const { steps, value, label, onStepPress, testID, style } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
@@ -250,15 +260,18 @@ export function createSteps(skin: StepsSkin) {
     const requested = layoutOf(props);
     const layout = requested === "horizontal" && props.stacks && narrow ? "vertical" : requested;
     const measureStacks = props.stacks && requested === "horizontal" ? onStacksLayout : undefined;
-    const withStacksProbe = (root: ReactNode) =>
-      measureStacks ? (
-        <>
-          <View style={containerProbe} onLayout={measureStacks} />
-          {root}
-        </>
-      ) : (
-        root
-      );
+    const withStacksProbe = (root: ReactNode) => (
+      <AnatomyScope>
+        {measureStacks ? (
+          <>
+            <View style={containerProbe} onLayout={measureStacks} />
+            {root}
+          </>
+        ) : (
+          root
+        )}
+      </AnatomyScope>
+    );
     // Controlled when `current` is provided, self-managed otherwise, so a bare
     // Steps with pressable steps moves the active step instead of ignoring it.
     const [current, setCurrent] = useControllableState<number>(props.current, props.defaultCurrent ?? 0);
@@ -273,16 +286,18 @@ export function createSteps(skin: StepsSkin) {
     if (layout === "progress") {
       const pct = Math.max(0, Math.min(100, Math.round(value ?? 0)));
       return (
-        <View testID={testID} style={[s.fullWidth, style]}>
-          <View style={s.progressHeader}>
-            <Text style={skin.progressCaption(tokens)}>{label ?? "Setup progress"}</Text>
-            <Text style={skin.progressPercent(tokens)}>{pct}%</Text>
+        <AnatomyScope>
+          <View testID={testID} style={[s.fullWidth, style]}>
+            <View style={s.progressHeader}>
+              <Text style={skin.progressCaption(tokens)}>{label ?? "Setup progress"}</Text>
+              <Text style={skin.progressPercent(tokens)}>{pct}%</Text>
+            </View>
+            <View style={paneStyle(theme, skin.progressTrack(tokens))}>
+              <GlassPane static layer="control" shape={skin.progressTrack(tokens)} />
+              <View style={[skin.progressFill(tokens), { width: `${pct}%` as DimensionValue }]} />
+            </View>
           </View>
-          <View style={paneStyle(theme, skin.progressTrack(tokens))}>
-            <GlassPane static layer="control" shape={skin.progressTrack(tokens)} />
-            <View style={[skin.progressFill(tokens), { width: `${pct}%` as DimensionValue }]} />
-          </View>
-        </View>
+        </AnatomyScope>
       );
     }
 
@@ -300,11 +315,11 @@ export function createSteps(skin: StepsSkin) {
         <View testID={testID} style={[s.fullWidth, s.compactList, style]}>
           {steps.map((step, i) => {
             const state = stateOf(i, current);
-            return <View key={i} style={s.compactRow} aria-current={state === "current" ? "step" : undefined}>
-              <Circle compact index={i} state={state} label={`${step.label}, step ${i + 1} of ${steps.length}`} onPress={pressStep ? () => pressStep(i) : undefined}
+            return <View key={i} ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} style={s.compactRow} aria-current={state === "current" ? "step" : undefined}>
+              <Circle part={i === 0 ? markerPart : undefined} compact index={i} state={state} label={`${step.label}, step ${i + 1} of ${steps.length}`} onPress={pressStep ? () => pressStep(i) : undefined}
                 seams={{ top: i > 0 ? 6 : undefined, bottom: i < steps.length - 1 ? 6 : undefined }} />
               <View style={s.flex1}>
-                <Text style={[s.compactLabel, skin.labelState(tokens, state)]}>{step.label}</Text>
+                <Text ref={i === 0 ? labelPart?.ref : undefined} onLayout={i === 0 ? labelPart?.onLayout : undefined} style={[s.compactLabel, skin.labelState(tokens, state)]}>{step.label}</Text>
                 {step.description != null ? <Text style={skin.verticalDescription(tokens, state)}>{step.description}</Text> : null}
               </View>
             </View>;
@@ -317,21 +332,22 @@ export function createSteps(skin: StepsSkin) {
             const state = stateOf(i, current);
             const isLast = i === steps.length - 1;
             return (
-              <View key={i} style={s.verticalRow}>
+              <View key={i} ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} style={s.verticalRow}>
                 <View style={s.verticalRail}>
                   <Circle
+                    part={i === 0 ? markerPart : undefined}
                     index={i}
                     state={state}
                     onPress={pressStep ? () => pressStep(i) : undefined}
                     seams={{ top: i > 0 ? railGap(steps[i - 1]!) : undefined, bottom: !isLast ? railGap(step) : undefined }}
                   />
                   {!isLast ? (
-                    <View style={[s.verticalConnector, skin.connector(tokens, state === "completed"), PASS_THROUGH]} />
+                    <View ref={i === 0 ? connectorPart?.ref : undefined} onLayout={i === 0 ? connectorPart?.onLayout : undefined} style={[s.verticalConnector, skin.connector(tokens, state === "completed"), PASS_THROUGH]} />
                   ) : null}
                 </View>
                 <View style={[s.flex1, s.verticalContent, !isLast ? s.verticalContentSpacing : null, step.progress != null ? s.verticalStack : null]}>
                   <View>
-                    <Text style={[s.labelBase, skin.labelState(tokens, state)]}>{step.label}</Text>
+                    <Text ref={i === 0 ? labelPart?.ref : undefined} onLayout={i === 0 ? labelPart?.onLayout : undefined} style={[s.labelBase, skin.labelState(tokens, state)]}>{step.label}</Text>
                     {step.description != null ? (
                       <Text style={skin.verticalDescription(tokens, state)}>{step.description}</Text>
                     ) : null}
@@ -348,18 +364,20 @@ export function createSteps(skin: StepsSkin) {
     if (layout === "segmented") {
       // Equal segments: each step's bar over its label and its status line.
       return (
-        <View testID={testID} style={[s.fullWidth, s.segmentedRow, style]}>
-          {steps.map((step, i) => {
-            const state = stateOf(i, current);
-            return (
-              <View key={i} style={s.segmentColumn} aria-current={state === "current" ? "step" : undefined}>
-                <View style={[s.segmentBar, skin.segmentBar(tokens, state)]} />
-                <Text numberOfLines={1} style={[s.segmentTitle, skin.labelState(tokens, state)]}>{step.label}</Text>
-                {step.description != null ? <Text numberOfLines={1} style={[s.segmentStatus, skin.segmentStatus(tokens, state)]}>{step.description}</Text> : null}
-              </View>
-            );
-          })}
-        </View>
+        <AnatomyScope>
+          <View testID={testID} style={[s.fullWidth, s.segmentedRow, style]}>
+            {steps.map((step, i) => {
+              const state = stateOf(i, current);
+              return (
+                <View key={i} ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} style={s.segmentColumn} aria-current={state === "current" ? "step" : undefined}>
+                  <View ref={i === 0 ? markerPart?.ref : undefined} onLayout={i === 0 ? markerPart?.onLayout : undefined} style={[s.segmentBar, skin.segmentBar(tokens, state)]} />
+                  <Text ref={i === 0 ? labelPart?.ref : undefined} onLayout={i === 0 ? labelPart?.onLayout : undefined} numberOfLines={1} style={[s.segmentTitle, skin.labelState(tokens, state)]}>{step.label}</Text>
+                  {step.description != null ? <Text numberOfLines={1} style={[s.segmentStatus, skin.segmentStatus(tokens, state)]}>{step.description}</Text> : null}
+                </View>
+              );
+            })}
+          </View>
+        </AnatomyScope>
       );
     }
 
@@ -370,22 +388,23 @@ export function createSteps(skin: StepsSkin) {
           const state = stateOf(i, current);
           const isLast = i === steps.length - 1;
           return (
-            <View key={i} style={[s.horizontalRow, !isLast ? s.flex1 : null]}>
+            <View key={i} ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} style={[s.horizontalRow, !isLast ? s.flex1 : null]}>
               <View style={s.horizontalColumn}>
                 <Circle
+                  part={i === 0 ? markerPart : undefined}
                   index={i}
                   state={state}
                   onPress={onStepPress ? () => onStepPress(i) : undefined}
                   seams={{ start: i > 0 ? ACROSS : undefined, end: !isLast ? ACROSS : undefined }}
                 />
                 <View style={PASS_THROUGH}>
-                  <Text numberOfLines={1} style={[s.labelBaseXs, skin.labelState(tokens, state)]}>{step.label}</Text>
+                  <Text ref={i === 0 ? labelPart?.ref : undefined} onLayout={i === 0 ? labelPart?.onLayout : undefined} numberOfLines={1} style={[s.labelBaseXs, skin.labelState(tokens, state)]}>{step.label}</Text>
                 </View>
               </View>
               {!isLast ? (
                 // The connector after a step is "filled" once that step is
                 // completed (i.e. the next step has been reached).
-                <View style={[s.horizontalConnector, skin.connector(tokens, i < current), PASS_THROUGH]} />
+                <View ref={i === 0 ? connectorPart?.ref : undefined} onLayout={i === 0 ? connectorPart?.onLayout : undefined} style={[s.horizontalConnector, skin.connector(tokens, i < current), PASS_THROUGH]} />
               ) : null}
             </View>
           );

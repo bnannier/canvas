@@ -20,6 +20,7 @@ import { platformShape } from "../../style/platform-shape.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import {
   periodStatus,
   statusColor,
@@ -103,6 +104,12 @@ export function itemStatus(item: ServiceHealthItem): PeriodStatus {
 export function createServiceHealthList(skin: ChartSkin) {
   return function ServiceHealthList(props: ServiceHealthListProps) {
     const { items, title, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: List, Status dot, Service, Uptime (the first row's).
+    const listPart = useAnatomyPart("List");
+    const dotPart = useAnatomyPart("Status dot");
+    const servicePart = useAnatomyPart("Service");
+    const uptimePart = useAnatomyPart("Uptime");
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens, dark } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
@@ -115,6 +122,7 @@ export function createServiceHealthList(skin: ChartSkin) {
     );
 
     return (
+      <AnatomyScope>
       <View
         {...(title != null && title !== ""
           ? {
@@ -147,6 +155,8 @@ export function createServiceHealthList(skin: ChartSkin) {
           </Text>
         ) : null}
         <View
+          ref={listPart?.ref}
+          onLayout={listPart?.onLayout}
           style={
             props.detailed
               ? {
@@ -184,6 +194,8 @@ export function createServiceHealthList(skin: ChartSkin) {
             };
             const dot = (
               <View
+                ref={i === 0 ? dotPart?.ref : undefined}
+                onLayout={i === 0 ? dotPart?.onLayout : undefined}
                 style={{
                   width: 8,
                   height: 8,
@@ -194,6 +206,8 @@ export function createServiceHealthList(skin: ChartSkin) {
             );
             const labelText = (
               <Text
+                ref={i === 0 ? servicePart?.ref : undefined}
+                onLayout={i === 0 ? servicePart?.onLayout : undefined}
                 numberOfLines={1}
                 style={{
                   flexGrow: 1,
@@ -232,6 +246,8 @@ export function createServiceHealthList(skin: ChartSkin) {
             const detail =
               item.detail != null && item.detail !== "" ? (
                 <Text
+                  ref={i === 0 ? uptimePart?.ref : undefined}
+                  onLayout={i === 0 ? uptimePart?.onLayout : undefined}
                   style={{
                     minWidth: DETAIL_WIDTH,
                     textAlign: "right",
@@ -259,6 +275,8 @@ export function createServiceHealthList(skin: ChartSkin) {
                     }}
                   >
                     <View
+                      ref={i === 0 ? dotPart?.ref : undefined}
+                      onLayout={i === 0 ? dotPart?.onLayout : undefined}
                       style={{
                         width: 8,
                         height: 8,
@@ -268,6 +286,8 @@ export function createServiceHealthList(skin: ChartSkin) {
                       }}
                     />
                     <Text
+                      ref={i === 0 ? servicePart?.ref : undefined}
+                      onLayout={i === 0 ? servicePart?.onLayout : undefined}
                       numberOfLines={1}
                       style={{
                         flex: 1,
@@ -292,6 +312,8 @@ export function createServiceHealthList(skin: ChartSkin) {
                     </Text>
                     {item.detail ? (
                       <Text
+                        ref={i === 0 ? uptimePart?.ref : undefined}
+                        onLayout={i === 0 ? uptimePart?.onLayout : undefined}
                         style={{
                           width: 52,
                           textAlign: "right",
@@ -428,6 +450,7 @@ export function createServiceHealthList(skin: ChartSkin) {
           })}
         </View>
       </View>
+      </AnatomyScope>
     );
   };
 }

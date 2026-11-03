@@ -1,4 +1,5 @@
 import { type ReactNode, useId } from "react";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import {
   View,
   Text,
@@ -104,6 +105,11 @@ function labelColor(tokens: ColorTokens): TextStyle {
 
 export function createDivider(skin: DividerSkin) {
   return function Divider(props: DividerProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Rule (the leading hairline when a label splits it) and Label,
+    // taken before the AnatomyScope so a control in the label's place registers nothing.
+    const rulePart = useAnatomyPart("Rule");
+    const labelPart = useAnatomyPart("Label");
     const { children, testID, style } = props;
     const orientation = orientationOf(props);
     const emphasis = emphasisOf(props);
@@ -125,6 +131,8 @@ export function createDivider(skin: DividerSkin) {
         : { alignSelf: "stretch" };
       return (
         <View
+          ref={rulePart?.ref}
+          onLayout={rulePart?.onLayout}
           // `separator` announces the structural break to screen readers. We use
           // the ARIA-aligned `role` prop (not `accessibilityRole`) because RN's
           // AccessibilityRole union has no "separator" member; `role` carries it
@@ -149,37 +157,39 @@ export function createDivider(skin: DividerSkin) {
         flexBasis: "0%",
       };
       return (
-        <View
-          // For a text label the whole flank-line + label row reads as one structural
-          // separator. For the action pattern the child is an interactive control (e.g. a
-          // Button), and a `separator` is a structural ARIA role that does not expect
-          // focusable/interactive descendants, so we drop the container role there: the
-          // wrapper is a plain group and the child's own role (button/link/...) is what
-          // assistive tech exposes. The two flanking hairlines still carry the visual break.
-          role={isText ? "separator" : undefined}
-          // A separator's children are presentational, so the web never read the label
-          // inside it: the separator takes its name from the label instead. A reference
-          // rather than a copied aria-label, meant to leave the native tree reading the
-          // label text once: iOS has no labelled-by relation and reaches the label Text
-          // itself, and Android only links the two (setLabeledBy).
-          aria-labelledby={isText ? labelId : undefined}
-          testID={testID}
-          style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}
-        >
-          <View style={[flankRule, fill]} />
-          {isText ? (
-            <Text nativeID={labelId} style={[skin.labelType, labelColor(tokens)]}>{children}</Text>
-          ) : (
-            children
-          )}
-          <View style={[flankRule, fill]} />
-        </View>
+        <AnatomyScope>
+          <View
+            // For a text label the whole flank-line + label row reads as one structural
+            // separator. For the action pattern the child is an interactive control (e.g. a
+            // Button), and a `separator` is a structural ARIA role that does not expect
+            // focusable/interactive descendants, so we drop the container role there: the
+            // wrapper is a plain group and the child's own role (button/link/...) is what
+            // assistive tech exposes. The two flanking hairlines still carry the visual break.
+            role={isText ? "separator" : undefined}
+            // A separator's children are presentational, so the web never read the label
+            // inside it: the separator takes its name from the label instead. A reference
+            // rather than a copied aria-label, meant to leave the native tree reading the
+            // label text once: iOS has no labelled-by relation and reaches the label Text
+            // itself, and Android only links the two (setLabeledBy).
+            aria-labelledby={isText ? labelId : undefined}
+            testID={testID}
+            style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}
+          >
+            <View ref={rulePart?.ref} onLayout={rulePart?.onLayout} style={[flankRule, fill]} />
+            {isText ? (
+              <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} nativeID={labelId} style={[skin.labelType, labelColor(tokens)]}>{children}</Text>
+            ) : (
+              <AnatomyPart part={labelPart}>{children}</AnatomyPart>
+            )}
+            <View style={[flankRule, fill]} />
+          </View>
+        </AnatomyScope>
       );
     }
 
     // Plain horizontal hairline spanning the full width.
     return (
-      <View role="separator" testID={testID} style={[{ height: skin.ruleThickness, width: "100%" }, fill, style]} />
+      <View ref={rulePart?.ref} onLayout={rulePart?.onLayout} role="separator" testID={testID} style={[{ height: skin.ruleThickness, width: "100%" }, fill, style]} />
     );
   };
 }

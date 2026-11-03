@@ -13,22 +13,30 @@
 // It is also a scroller the kit hears: an anchored card whose trigger sits inside it
 // follows the trigger on its scroll events instead of re-reading layout every frame
 // (src/style/scroll-ancestry.tsx).
+//
+// Inside a docs AnatomyProvider (src/style/anatomy.tsx) a bare ScrollView numbers its
+// scroller as the hand-off's Viewport, without closing the registry: its content is the
+// caller's, which marks the hand-off's Content itself. Outside a provider that costs one
+// context read and adds no node, ref or handler.
 
 import { forwardRef, useMemo } from "react";
 import { ScrollView as RNScrollView, type ScrollViewProps } from "react-native";
 import { useFocusRingStyle } from "./pressable.js";
+import { useAnatomyPart, withPartLayout, withPartRef } from "./anatomy.js";
 import { useScrollAncestor } from "./scroll-ancestry.js";
 
 /** The instance a ScrollView ref receives: React Native's own, with its scroll methods. */
 export type ScrollView = RNScrollView;
 
-export const ScrollView = forwardRef<RNScrollView, ScrollViewProps>(function ScrollView({ style, children, onScroll, scrollEventThrottle, ...rest }, ref) {
+export const ScrollView = forwardRef<RNScrollView, ScrollViewProps>(function ScrollView({ style, children, onScroll, scrollEventThrottle, onLayout, ...rest }, ref) {
+  // The anatomy part: the scroller (the hand-off's Viewport).
+  const viewportPart = useAnatomyPart("Viewport");
   const ring = useFocusRingStyle();
   // The ring goes first in the list so a scroller's own outline style wins.
   const themed = useMemo(() => [ring, style], [ring, style]);
   const ancestor = useScrollAncestor({ horizontal: rest.horizontal, onScroll, scrollEventThrottle });
   return (
-    <RNScrollView ref={ref} {...rest} style={themed} onScroll={ancestor.onScroll} scrollEventThrottle={ancestor.scrollEventThrottle}>
+    <RNScrollView ref={withPartRef(viewportPart, ref)} {...rest} onLayout={withPartLayout(viewportPart, onLayout)} style={themed} onScroll={ancestor.onScroll} scrollEventThrottle={ancestor.scrollEventThrottle}>
       {ancestor.children(children)}
     </RNScrollView>
   );

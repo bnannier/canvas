@@ -1,7 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { type ComponentType, type ReactNode } from "react";
-import { View, Pressable, Text, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
@@ -181,6 +182,9 @@ function borderedColors(tokens: ColorTokens, skin: MediaObjectSkin): ViewStyle {
 /** A bare lead keeps its own size beside the content column. */
 const BARE_LEAD: ViewStyle = { flexShrink: 0 };
 
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 /**
  * Build a MediaObject from a platform skin and the platform-correct leading Avatar
  * atom. The Avatar is passed in by each platform's thin `.tsx`/`.ios`/`.android`
@@ -193,6 +197,17 @@ const BARE_LEAD: ViewStyle = { flexShrink: 0 };
  */
 export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent = WebAvatar) {
   return function MediaObject(props: MediaObjectProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order, each on the node the hand-off's renderer marks with that number
+    // (its `an` list is one name behind its elements): Media is the row itself, Title the
+    // leading avatar or icon, Description the title line, Meta the description line,
+    // Action the trailing action. Taken before the tree's AnatomyScope so the kit Avatar
+    // and the caller's action register nothing of their own.
+    const rowPart = useAnatomyPart("Media");
+    const leadPart = useAnatomyPart("Title");
+    const titlePart = useAnatomyPart("Description");
+    const descriptionPart = useAnatomyPart("Meta");
+    const actionPart = useAnatomyPart("Action");
     const { title, description, body, meta, avatar, src, icon, action, truncate, testID, style } = props;
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
@@ -225,14 +240,14 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
     const subtle = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
     let media: ReactNode = null;
     if (src) {
-      media = <Avatar small={isCompact} src={src} name={avatar ?? title} accessibilityLabel={title} />;
+      media = <AnatomyPart part={leadPart}><Avatar small={isCompact} src={src} name={avatar ?? title} accessibilityLabel={title} /></AnatomyPart>;
     } else if (avatar) {
-      media = <Avatar small={isCompact} name={avatar}>{avatar}</Avatar>;
+      media = <AnatomyPart part={leadPart}><Avatar small={isCompact} name={avatar}>{avatar}</Avatar></AnatomyPart>;
     } else if (icon != null && props.bareIcon) {
-      media = <View style={BARE_LEAD}>{icon}</View>;
+      media = <View ref={leadPart?.ref} onLayout={leadPart?.onLayout} style={BARE_LEAD}>{icon}</View>;
     } else if (icon != null) {
       media = (
-        <View style={[skin.iconBox, density?.iconBox, { backgroundColor: tokens["primary-soft"] }]}>
+        <View ref={leadPart?.ref} onLayout={leadPart?.onLayout} style={[skin.iconBox, density?.iconBox, { backgroundColor: tokens["primary-soft"] }]}>
           {typeof icon === "string" ? <Text style={[skin.iconGlyph, density?.iconGlyph, { color: primaryText(tokens) }]}>{icon}</Text> : icon}
         </View>
       );
@@ -245,12 +260,12 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
         {media}
         <View style={skin.content}>
           {title != null ? (
-            <Text style={[skin.title, density?.title, { color: tokens.foreground }]} numberOfLines={truncate ? 1 : undefined}>
+            <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} style={[skin.title, density?.title, { color: tokens.foreground }]} numberOfLines={truncate ? 1 : undefined}>
               {title}
             </Text>
           ) : null}
           {description != null ? (
-            <Text style={[skin.description, density?.description, { color: subtle }]} numberOfLines={truncate ? 1 : undefined}>
+            <Text ref={descriptionPart?.ref} onLayout={descriptionPart?.onLayout} style={[skin.description, density?.description, { color: subtle }]} numberOfLines={truncate ? 1 : undefined}>
               {description}
             </Text>
           ) : null}
@@ -263,7 +278,7 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
           )}
         </View>
         {meta != null ? <Text style={[skin.meta, { color: subtle }]}>{meta}</Text> : null}
-        {action != null ? <View style={skin.actionBox}>{action}</View> : null}
+        {action != null ? <View ref={actionPart?.ref} onLayout={actionPart?.onLayout} style={skin.actionBox}>{action}</View> : null}
       </>
     );
 
@@ -287,8 +302,11 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       const borderedElevation = bordered ? { elevation: bordered.elevation } : null;
       const { parent: elevParent, child: elevZero } = splitElevation(borderedElevation);
       return (
+        <AnatomyScope>
         <RippleClip shape={bordered ? cornerRadii(bordered) : undefined} style={[elevParent, fill, style]}>
           <Pressable
+            ref={rowPart?.ref}
+            onLayout={rowPart?.onLayout}
             accessibilityRole="button"
             accessibilityLabel={a11yLabel}
             onPress={props.onPress}
@@ -302,14 +320,23 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
             <MaterialBehind rendered={!!props.bordered && isGlass(theme)}>{inner}</MaterialBehind>
           </Pressable>
         </RippleClip>
+        </AnatomyScope>
       );
     }
 
     // A bordered row is a CONTENT-layer pane under glass (GlassSurface is the plain View in solid mode).
-    return props.bordered ? (
-      <GlassSurface layer="content" testID={testID} style={[surface, fill, style]}>{inner}</GlassSurface>
-    ) : (
-      <View testID={testID} style={[surface, fill, style]}>{inner}</View>
+    return (
+      <AnatomyScope>
+        {props.bordered ? (
+          <GlassSurface layer="content" testID={testID} style={[surface, fill, style]}>
+            {/* The row's box: GlassSurface has no ref, so a pass-through fill measures it. */}
+            {rowPart ? <View ref={rowPart.ref} onLayout={rowPart.onLayout} style={MEASURE_BOX} /> : null}
+            {inner}
+          </GlassSurface>
+        ) : (
+          <View ref={rowPart?.ref} onLayout={rowPart?.onLayout} testID={testID} style={[surface, fill, style]}>{inner}</View>
+        )}
+      </AnatomyScope>
     );
   };
 }

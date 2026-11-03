@@ -9,6 +9,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { identityDisc, identityHue, type IdentityDisc } from "../../style/identity-hue.js";
 import { alpha, composite, contrastRatio, oklchHex } from "../../style/color.js";
 import { Image } from "../image/image.js";
+import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 
 // Shared Avatar shell. The structure (a photo when the account has one, falling
 // back to one or two initials on a deterministic per-name colour), the
@@ -254,6 +255,11 @@ const DISC_FILL: ViewStyle = { position: "absolute", top: 0, left: 0, right: 0, 
 /** Build an Avatar component from a platform skin. */
 export function createAvatar(skin: AvatarSkin) {
   return function Avatar(props: AvatarProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Frame, Image or initials, Ring.
+    const framePart = useAnatomyPart("Frame");
+    const contentPart = useAnatomyPart("Image or initials");
+    const ringPart = useAnatomyPart("Ring");
     const { src, uri, name, initials, children, ring, accessibilityLabel, onPress, testID, style } = props;
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens, dark } = theme;
@@ -312,7 +318,12 @@ export function createAvatar(skin: AvatarSkin) {
     // The presence dot sits past the disc's clipped edge, so it rides a wrapper the size
     // of the disc, which takes the call site's layout style in place of the disc.
     const presence = props.online ? <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[PRESENCE, skin.presence(tokens, diameter)]} /> : null;
-    const wrap = (node: ReactNode) => presence ? <View style={[{ width: diameter, height: diameter, flexShrink: 0 }, style]}>{wrapSheen(node)}{presence}</View> : wrapSheen(node);
+    const wrap = (node: ReactNode) => <AnatomyScope>{presence ? <View style={[{ width: diameter, height: diameter, flexShrink: 0 }, style]}>{wrapSheen(node)}{presence}</View> : wrapSheen(node)}</AnatomyScope>;
+    // The photo and the separator ring have no node of their own to ref (the Image atom takes
+    // none, the ring is the disc's border): inside a docs AnatomyProvider each is a
+    // transparent node over the disc's padding box, the area the photo fills and the ring encloses.
+    const photoPart = showPhoto ? <View ref={contentPart?.ref} onLayout={contentPart?.onLayout} style={DISC_FILL} /> : null;
+    const ringNode = ring && ringPart ? <View ref={ringPart.ref} onLayout={ringPart.onLayout} style={DISC_FILL} /> : null;
     const wrapSheen = (node: ReactNode) => sheen ? <View style={{ width: diameter + sheen * 2, height: diameter + sheen * 2, alignItems: "center", justifyContent: "center" }}><ConicRing size={diameter + sheen * 2} width={sheen} hue={discHue} />{node}</View> : node;
 
     // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
@@ -335,7 +346,7 @@ export function createAvatar(skin: AvatarSkin) {
         />
       );
     } else {
-      inner = glyph ? <Text style={[labelStyle(skin, size, foreground), reference ? REFERENCE_TYPE[reference] : null, props.bold ? { fontWeight: "700" } : null]}>{glyph}</Text> : null;
+      inner = glyph ? <Text ref={contentPart?.ref} onLayout={contentPart?.onLayout} style={[labelStyle(skin, size, foreground), reference ? REFERENCE_TYPE[reference] : null, props.bold ? { fontWeight: "700" } : null]}>{glyph}</Text> : null;
     }
 
     if (onPress) {
@@ -346,6 +357,8 @@ export function createAvatar(skin: AvatarSkin) {
           // the ripple draws in the foreground (`paneRipple`).
           android_ripple={paneRipple(pane != null ? theme : false, skin.ripple ? skin.ripple(tokens) : undefined)}
           style={({ pressed }) => [container, pressDim(pressed, skin.pressedOpacity)]}
+          ref={framePart?.ref}
+          onLayout={framePart?.onLayout}
           onPress={onPress}
           hitSlop={hitSlop}
           testID={testID}
@@ -357,10 +370,12 @@ export function createAvatar(skin: AvatarSkin) {
           {fill}
           {innerRing}
           {inner}
+          {photoPart}
+          {ringNode}
         </Pressable>
       );
     }
-    return wrap(<View style={container} testID={testID}>{pane}{fill}{innerRing}{inner}</View>);
+    return wrap(<View ref={framePart?.ref} onLayout={framePart?.onLayout} style={container} testID={testID}>{pane}{fill}{innerRing}{inner}{photoPart}{ringNode}</View>);
   };
 }
 

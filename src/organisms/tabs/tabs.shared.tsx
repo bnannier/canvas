@@ -4,6 +4,8 @@ import { StyleSheet } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { useHover } from "../../style/hover.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
@@ -254,10 +256,10 @@ export function createTabs(skin: TabsSkin) {
 
   // A small secondary count pill shown after a trigger label; `ink` is the label's colour,
   // which the numerals take where the skin says so.
-  function CountBadge({ children, muted, ink }: { children: string; muted: boolean; ink?: string }) {
+  function CountBadge({ children, muted, ink, part }: { children: string; muted: boolean; ink?: string; part?: AnatomyTarget }) {
     const { tokens } = useTheme();
     return (
-      <View style={skin.countBadgeBox(tokens)}>
+      <View ref={part?.ref} onLayout={part?.onLayout} style={skin.countBadgeBox(tokens)}>
         <Text style={[skin.countBadgeLabel(tokens, muted), skin.badgeTakesLabelInk && ink != null ? { color: ink } : null]}>{children}</Text>
       </View>
     );
@@ -282,9 +284,11 @@ export function createTabs(skin: TabsSkin) {
     /** Frame observation on the trigger's outermost node (the RippleClip wrapper),
      *  so the overflow scroller knows where each trigger sits in the row. */
     onLayout?: (event: LayoutChangeEvent) => void;
+    /** The anatomy parts this trigger carries (the first of each in the row). */
+    parts?: { tab?: AnatomyTarget; indicator?: AnatomyTarget; badge?: AnatomyTarget };
   }
 
-  function Trigger({ label, badge, icon, selected, variant, block, disabled, onPress, itemProps, onLayout }: TriggerProps) {
+  function Trigger({ label, badge, icon, selected, variant, block, disabled, onPress, itemProps, onLayout, parts }: TriggerProps) {
     const theme = useMaterialTheme({ layer: "control" });
     // Only a resting underline tab answers the pointer (the skin's hover label, web only).
     const hoverLabel = variant === "underline" && !selected ? skin.hoverLabel : null;
@@ -313,6 +317,11 @@ export function createTabs(skin: TabsSkin) {
     // pair goes through a cast (RN's Pressable types omit onKeyDown), the same idiom
     // the Slider uses for its own keyboard handler.
     const itemRef = itemProps?.ref;
+    // The tab is the Pressable; a look with no indicator bar (pills, the rail) draws its
+    // active indicator as the selected trigger's own fill, so that part rides the same node.
+    const tabRef = useComposedRefs(itemRef, parts?.tab?.ref);
+    const fillRef = useComposedRefs(itemRef, parts?.tab?.ref, parts?.indicator?.ref);
+    const fillLayout = parts?.tab || parts?.indicator ? () => { parts.tab?.onLayout(); parts.indicator?.onLayout(); } : undefined;
     // A trigger without roving wiring is a disabled one (per-item or whole-group):
     // pin it OUT of the tab order (focusable=false, tabIndex=-1) so keyboard focus
     // can only ever land on an operable tab.
@@ -337,7 +346,8 @@ export function createTabs(skin: TabsSkin) {
         // trigger fills the wrapper; there is no flex/width on the container to move.
         <RippleClip shape={cornerRadii(container)}>
           <Pressable
-            ref={itemRef}
+            ref={fillRef}
+            onLayout={fillLayout}
             {...(rovingProps as object)}
             onPress={onPress}
             disabled={disabled}
@@ -353,7 +363,7 @@ export function createTabs(skin: TabsSkin) {
             {/* One line: when the rail flexes down in a narrow container the label
                 truncates instead of wrapping the rail taller. */}
             <Text numberOfLines={1} style={verticalLabel}>{label}</Text>
-            {badge != null ? <CountBadge muted={!selected} ink={inkOfLabel(verticalLabel)}>{badge}</CountBadge> : null}
+            {badge != null ? <CountBadge part={parts?.badge} muted={!selected} ink={inkOfLabel(verticalLabel)}>{badge}</CountBadge> : null}
           </Pressable>
         </RippleClip>
       );
@@ -376,7 +386,8 @@ export function createTabs(skin: TabsSkin) {
         // the row width.
         <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null} onLayout={onLayout}>
           <Pressable
-            ref={itemRef}
+            ref={fillRef}
+            onLayout={fillLayout}
             {...(rovingProps as object)}
             onPress={onPress}
             disabled={disabled}
@@ -390,7 +401,7 @@ export function createTabs(skin: TabsSkin) {
             {puckOf(container)}
             <TabIcon name={icon} ink={inkOfLabel(pillsLabel)} />
             <Text style={pillsLabel}>{label}</Text>
-            {badge != null ? <CountBadge muted={!selected} ink={inkOfLabel(pillsLabel)}>{badge}</CountBadge> : null}
+            {badge != null ? <CountBadge part={parts?.badge} muted={!selected} ink={inkOfLabel(pillsLabel)}>{badge}</CountBadge> : null}
           </Pressable>
         </RippleClip>
       );
@@ -416,7 +427,8 @@ export function createTabs(skin: TabsSkin) {
       // inside the Pressable, which fills this wrapper.
       <RippleClip shape={cornerRadii(container)} style={block ? s.flex1 : null} onLayout={onLayout} {...hoverTarget}>
         <Pressable
-          ref={itemRef}
+          ref={tabRef}
+          onLayout={parts?.tab?.onLayout}
           {...(rovingProps as object)}
           onPress={onPress}
           disabled={disabled}
@@ -430,14 +442,22 @@ export function createTabs(skin: TabsSkin) {
           {puck}
           <TabIcon name={icon} ink={inkOfLabel(underlineLabel)} />
           <Text style={underlineLabel}>{label}</Text>
-          {badge != null ? <CountBadge muted={!selected} ink={inkOfLabel(underlineLabel)}>{badge}</CountBadge> : null}
-          <View style={skin.underlineIndicator(tokens, selected)} />
+          {badge != null ? <CountBadge part={parts?.badge} muted={!selected} ink={inkOfLabel(underlineLabel)}>{badge}</CountBadge> : null}
+          <View ref={parts?.indicator?.ref} onLayout={parts?.indicator?.onLayout} style={skin.underlineIndicator(tokens, selected)} />
         </Pressable>
       </RippleClip>
     );
   }
 
-  return function Tabs(props: TabsProps) {
+  interface TabsBodyProps {
+    props: TabsProps;
+    list: AnatomyTarget | undefined;
+    tab: AnatomyTarget | undefined;
+    indicator: AnatomyTarget | undefined;
+    badge: AnatomyTarget | undefined;
+  }
+
+  function TabsBody({ props, list, tab, indicator, badge }: TabsBodyProps) {
     const { tabs = DEFAULT_TABS, onSelect, disabled, style, testID } = props;
     // `responsive` (vertical look only): render the EXISTING horizontal
     // underline look when the CONTAINER is at/below sm, where a side rail
@@ -482,6 +502,10 @@ export function createTabs(skin: TabsSkin) {
     // Per-item disabled flags (the `{ label, disabled }` item shape).
     const itemDisabled = tabs.map((item) => disabledOf(item));
     const count = tabs.length;
+    // Each part registers on the first trigger that draws it: the first tab, the active
+    // tab's indicator, the first tab with a count.
+    const firstBadge = tabs.findIndex((item) => badgeOf(item) != null);
+    const partsFor = (i: number) => ({ tab: i === 0 ? tab : undefined, indicator: i === active ? indicator : undefined, badge: i === firstBadge ? badge : undefined });
 
     // Roving-focus keyboard navigation (the WAI-ARIA tablist pattern): the row is one
     // tab stop and the arrows move + activate. Horizontal for the underline/pills
@@ -594,6 +618,7 @@ export function createTabs(skin: TabsSkin) {
           disabled={disabled || itemDisabled[i]}
           onPress={() => setActive(i)}
           itemProps={rovingFor(i)}
+          parts={partsFor(i)}
           onLayout={props.block ? undefined : trackTriggerLayout(i)}
         />
       ));
@@ -602,7 +627,7 @@ export function createTabs(skin: TabsSkin) {
       // A left-aligned column rail of stacked triggers; width hugs its content
       // unless `block` stretches it to fill the available column.
       return withResponsiveProbe(
-        <View accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block, skin.railWidth, skin.railGap), style]}>
+        <View ref={list?.ref} onLayout={list?.onLayout} accessibilityRole="tablist" testID={testID} style={[verticalRail(!!props.block, skin.railWidth, skin.railGap), style]}>
           {tabs.map((item, i) => (
             <Trigger
               key={`${labelOf(item)}-${i}`}
@@ -615,6 +640,7 @@ export function createTabs(skin: TabsSkin) {
               disabled={disabled || itemDisabled[i]}
               onPress={() => setActive(i)}
               itemProps={rovingFor(i)}
+          parts={partsFor(i)}
             />
           ))}
         </View>
@@ -626,7 +652,7 @@ export function createTabs(skin: TabsSkin) {
     // rides the overflow scroller, the outermost node then.
     const overflowRow = (track: ViewStyle, triggers: ReactNode) => {
       const row = (
-        <View accessibilityRole="tablist" testID={testID} style={[trackStyle(track), wrapping ? [s.wrapRow, style] : null]}>
+        <View ref={list?.ref} onLayout={list?.onLayout} accessibilityRole="tablist" testID={testID} style={[trackStyle(track), wrapping ? [s.wrapRow, style] : null]}>
           {trackOf(track)}
           {triggers}
         </View>
@@ -640,7 +666,7 @@ export function createTabs(skin: TabsSkin) {
       const pillsTrack = skin.pillsRow(tokens, wrapping);
       if (props.block) {
         return (
-          <View accessibilityRole="tablist" testID={testID} style={[trackStyle(pillsTrack), s.blockWidth(true), style]}>
+          <View ref={list?.ref} onLayout={list?.onLayout} accessibilityRole="tablist" testID={testID} style={[trackStyle(pillsTrack), s.blockWidth(true), style]}>
             {trackOf(pillsTrack)}
             {horizontalTriggers("pills")}
           </View>
@@ -655,12 +681,27 @@ export function createTabs(skin: TabsSkin) {
     const underlineTrack = skin.underlineRow(tokens, wrapping, !!props.block);
     if (props.block) {
       return withResponsiveProbe(
-        <View accessibilityRole="tablist" testID={testID} style={[trackStyle(underlineTrack), s.blockWidth(true), style]}>
+        <View ref={list?.ref} onLayout={list?.onLayout} accessibilityRole="tablist" testID={testID} style={[trackStyle(underlineTrack), s.blockWidth(true), style]}>
           {trackOf(underlineTrack)}
           {horizontalTriggers("underline")}
         </View>,
       );
     }
     return withResponsiveProbe(overflowRow(underlineTrack, horizontalTriggers("underline")));
+  }
+
+  return function Tabs(props: TabsProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Tab list, Tab, Active indicator, Badge, taken before the tree's
+    // AnatomyScope so the caller's content registers nothing of its own.
+    const list = useAnatomyPart("Tab list");
+    const tab = useAnatomyPart("Tab");
+    const indicator = useAnatomyPart("Active indicator");
+    const badge = useAnatomyPart("Badge");
+    return (
+      <AnatomyScope>
+        <TabsBody props={props} list={list} tab={tab} indicator={indicator} badge={badge} />
+      </AnatomyScope>
+    );
   };
 }

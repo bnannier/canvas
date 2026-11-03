@@ -1,7 +1,9 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Animated, type GestureResponderEvent } from "react-native";
+import { Animated, StyleSheet, type GestureResponderEvent } from "react-native";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { selectionTint } from "../../style/selection-tint.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import {
   View,
   Pressable,
@@ -409,6 +411,18 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
 
   return function Sidebar(props: SidebarProps) {
     const { sections, items, onSelect, header, footer, account, collapsible, onToggleCollapse, accessibilityLabel, testID, style } = props;
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Rail, Section label, Item, Active item, Footer. Each registers
+    // on the first node that draws it (the first titled section, the first row drawn),
+    // taken before the tree's AnatomyScope so the rows' Badges, Icons, Avatar and the
+    // caller's slots register nothing of their own.
+    const railPart = useAnatomyPart("Rail");
+    const sectionLabelPart = useAnatomyPart("Section label");
+    const itemPart = useAnatomyPart("Item");
+    const activeItemPart = useAnatomyPart("Active item");
+    const footerPart = useAnatomyPart("Footer");
+    // The first row can also be the active one: its Pressable then carries both parts.
+    const firstActiveRef = useComposedRefs(itemPart?.ref, activeItemPart?.ref);
     const density = densityOf(props);
     const frame = frameOf(props);
     const { tokens, dark } = useTheme();
@@ -529,16 +543,25 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
     const activePane = glass ? <GlassPane layer="control" shape={activeShape} tint={selectionTint(activeShape, dark)} /> : null;
 
     const shell = header != null || footer != null;
+    // The first titled section and the first row drawn (a closed section or the collapsed
+    // rail's section button draws none), where the Section label and Item parts register.
+    const firstTitledKey = indexed.find((g) => g.section.title != null)?.key;
+    const firstRowIndex = indexed.find((g) => g.rows.length > 0 && (collapsed ? !g.section.collapsible : !g.section.collapsible || openSet.has(g.key)))?.rows[0]?.index;
+    const railNode = (
+      railPart ? <View ref={railPart.ref} onLayout={railPart.onLayout} style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]} /> : null
+    );
 
     const select = (item: SidebarItem, index: number, event: GestureResponderEvent) => {
       setActive(index);
       onSelect?.(item, index, event);
     };
 
+    // The Footer part is the footer slot when one is drawn, the account card otherwise.
+    const footerSlot = footer != null;
     // The account card: the avatar beside the name over its detail; the rail keeps the avatar.
     const accountCard = (railed: boolean) =>
       account == null ? null : (
-        <View style={skin.account(tokens, railed)} accessibilityLabel={railed ? account.name : undefined}>
+        <View ref={footerSlot ? undefined : footerPart?.ref} onLayout={footerSlot ? undefined : footerPart?.onLayout} style={skin.account(tokens, railed)} accessibilityLabel={railed ? account.name : undefined}>
           <Avatar small src={account.src} name={account.name} />
           {railed ? null : (
             <View style={ACCOUNT_TEXT}>
@@ -561,33 +584,37 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       const drawerEdge = drawerEdgeOf(props);
       const fullHeight = drawerEdge === "left" || drawerEdge === "right";
       return (
-        <Drawer
-          right={drawerEdge === "right"}
-          top={drawerEdge === "top"}
-          bottom={drawerEdge === "bottom"}
-          open={drawerOpen}
-          onOpenChange={setDrawerOpen}
-          width={props.drawerWidth}
-          accessibilityLabel={accessibilityLabel}
-          testID={testID}
-        >
-          {drawerHeader != null ? <View style={skin.header(tokens, false)}>{drawerHeader}</View> : null}
-          <SidebarDrillDown
-            groups={indexed}
-            activeIndex={activeIndex}
-            activeSectionKey={activeSectionKey}
-            density={density}
+        <AnatomyScope>
+          <Drawer
+            right={drawerEdge === "right"}
+            top={drawerEdge === "top"}
+            bottom={drawerEdge === "bottom"}
             open={drawerOpen}
-            onSelect={select}
-            onRequestClose={() => setDrawerOpen(false)}
-            contentInsetBottom={props.drawerContentInsetBottom}
-            fill={fullHeight}
-          />
-          {accountCard(false)}
-          {drawerFooter != null ? <View style={skin.footer(tokens, false)}>{drawerFooter}</View> : null}
-        </Drawer>
+            onOpenChange={setDrawerOpen}
+            width={props.drawerWidth}
+            accessibilityLabel={accessibilityLabel}
+            testID={testID}
+          >
+            {drawerHeader != null ? <View style={skin.header(tokens, false)}>{drawerHeader}</View> : null}
+            <SidebarDrillDown
+              groups={indexed}
+              activeIndex={activeIndex}
+              activeSectionKey={activeSectionKey}
+              density={density}
+              open={drawerOpen}
+              onSelect={select}
+              onRequestClose={() => setDrawerOpen(false)}
+              contentInsetBottom={props.drawerContentInsetBottom}
+              fill={fullHeight}
+            />
+            {accountCard(false)}
+            {drawerFooter != null ? <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} style={skin.footer(tokens, false)}>{drawerFooter}</View> : null}
+          </Drawer>
+        </AnatomyScope>
       );
     }
+
+    const rowPartLayout = (a: AnatomyTarget | undefined, b: AnatomyTarget | undefined) => (a || b ? () => { a?.onLayout(); b?.onLayout(); } : undefined);
 
     // One nav row: leading icon + label + badge; icon-only and centered in the rail.
     const renderRow = (item: SidebarItem, index: number, inCurrent: boolean) => {
@@ -603,6 +630,8 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
         // paints the skin's hover wash beneath the row.
         <SidebarRowFrame key={item.id ?? item.label} shape={skin.row(tokens, density, collapsed)} wash={wash} testOnly_hovered={item.testOnly_hovered}>
           <Pressable
+            ref={index === firstRowIndex ? (activeRow ? firstActiveRef : itemPart?.ref) : activeRow ? activeItemPart?.ref : undefined}
+            onLayout={rowPartLayout(index === firstRowIndex ? itemPart : undefined, activeRow ? activeItemPart : undefined)}
             // The active row's pane is a child of this Pressable: where it renders, the
             // ripple draws in the foreground, over it (`paneRipple`).
             android_ripple={paneRipple(glass && activeRow, skin.ripple ? skin.ripple(tokens) : undefined)}
@@ -695,6 +724,8 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
         <View key={key} style={skin.group(density)}>
           {isCollapsible ? (
             <Pressable
+              ref={key === firstTitledKey ? sectionLabelPart?.ref : undefined}
+              onLayout={key === firstTitledKey ? sectionLabelPart?.onLayout : undefined}
               onPress={() => toggleSection(key)}
               style={({ pressed }) => [
                 skin.sectionHeaderRow(tokens, density),
@@ -715,7 +746,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
             </Pressable>
           ) : section.title != null ? (
             // The heading line: the title, and its count at the far end.
-            <View style={skin.sectionHeading(tokens, density)}>
+            <View ref={key === firstTitledKey ? sectionLabelPart?.ref : undefined} onLayout={key === firstTitledKey ? sectionLabelPart?.onLayout : undefined} style={skin.sectionHeading(tokens, density)}>
               <Text style={skin.sectionTitle(tokens, density, current)} numberOfLines={1}>
                 {section.title}
               </Text>
@@ -739,12 +770,14 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       const headerNode = typeof header === "function" ? header(collapsed) : header;
       const footerNode = typeof footer === "function" ? footer(collapsed) : footer;
       return (
-        <View testID={testID} role="navigation" {...landmarkName(accessibilityLabel)} style={[EMBEDDED_COLUMN, style]}>
-          {headerNode != null ? <View style={EMBEDDED_SLOT}>{headerNode}</View> : null}
-          {sectionsEl}
-          {accountCard(collapsed)}
-          {footerNode != null ? <View style={EMBEDDED_SLOT}>{footerNode}</View> : null}
-        </View>
+        <AnatomyScope>
+          <View ref={railPart?.ref} onLayout={railPart?.onLayout} testID={testID} role="navigation" {...landmarkName(accessibilityLabel)} style={[EMBEDDED_COLUMN, style]}>
+            {headerNode != null ? <View style={EMBEDDED_SLOT}>{headerNode}</View> : null}
+            {sectionsEl}
+            {accountCard(collapsed)}
+            {footerNode != null ? <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} style={EMBEDDED_SLOT}>{footerNode}</View> : null}
+          </View>
+        </AnatomyScope>
       );
     }
     const column: StyleProp<ViewStyle> = [skin.column(tokens, frame, collapsed, shell), style];
@@ -757,10 +790,13 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       // users get no way to jump to (or skip) the nav. Additive and backward
       // compatible: consumers using Sidebar for non-nav content can ignore it.
       return (
-        <GlassSurface testID={testID} role="navigation" accessibilityLabel={accessibilityLabel} style={column}>
-          {sectionsEl}
-          {accountCard(collapsed)}
-        </GlassSurface>
+        <AnatomyScope>
+          <GlassSurface testID={testID} role="navigation" accessibilityLabel={accessibilityLabel} style={column}>
+            {railNode}
+            {sectionsEl}
+            {accountCard(collapsed)}
+          </GlassSurface>
+        </AnatomyScope>
       );
     }
 
@@ -773,45 +809,48 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       onToggleCollapse?.();
     };
     return (
-      <GlassSurface testID={testID} role="navigation" accessibilityLabel={accessibilityLabel} style={column}>
-        {header != null ? (
-          collapsed ? (
-            <Pressable
-              onPress={collapsible ? toggleCollapse : undefined}
-              disabled={!collapsible}
-              style={skin.header(tokens, true)}
-              accessibilityRole={collapsible ? "button" : undefined}
-              accessibilityLabel={collapsible ? "Expand sidebar" : undefined}
-            >
-              {headerNode}
-            </Pressable>
-          ) : (
-            <View style={skin.header(tokens, false)}>
-              {headerNode}
-              {collapsible ? (
-                <>
-                  <View style={{ flex: 1 }} />
-                  <Pressable
-                    onPress={toggleCollapse}
-                    hitSlop={8}
-                    style={skin.collapseToggle(tokens)}
-                    accessibilityRole="button"
-                    accessibilityLabel="Collapse sidebar"
-                    aria-expanded
-                  >
-                    <Icon chevronLeft muted size={skin.collapseIconSize} />
-                  </Pressable>
-                </>
-              ) : null}
-            </View>
-          )
-        ) : null}
-        <ScrollView style={skin.scroll} contentContainerStyle={skin.scrollContent(tokens, collapsed)}>
-          {sectionsEl}
-        </ScrollView>
-        {account != null ? <View style={skin.scrollContent(tokens, collapsed)}>{accountCard(collapsed)}</View> : null}
-        {footer != null ? <View style={skin.footer(tokens, collapsed)}>{footerNode}</View> : null}
-      </GlassSurface>
+      <AnatomyScope>
+        <GlassSurface testID={testID} role="navigation" accessibilityLabel={accessibilityLabel} style={column}>
+          {railNode}
+          {header != null ? (
+            collapsed ? (
+              <Pressable
+                onPress={collapsible ? toggleCollapse : undefined}
+                disabled={!collapsible}
+                style={skin.header(tokens, true)}
+                accessibilityRole={collapsible ? "button" : undefined}
+                accessibilityLabel={collapsible ? "Expand sidebar" : undefined}
+              >
+                {headerNode}
+              </Pressable>
+            ) : (
+              <View style={skin.header(tokens, false)}>
+                {headerNode}
+                {collapsible ? (
+                  <>
+                    <View style={{ flex: 1 }} />
+                    <Pressable
+                      onPress={toggleCollapse}
+                      hitSlop={8}
+                      style={skin.collapseToggle(tokens)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Collapse sidebar"
+                      aria-expanded
+                    >
+                      <Icon chevronLeft muted size={skin.collapseIconSize} />
+                    </Pressable>
+                  </>
+                ) : null}
+              </View>
+            )
+          ) : null}
+          <ScrollView style={skin.scroll} contentContainerStyle={skin.scrollContent(tokens, collapsed)}>
+            {sectionsEl}
+          </ScrollView>
+          {account != null ? <View style={skin.scrollContent(tokens, collapsed)}>{accountCard(collapsed)}</View> : null}
+          {footer != null ? <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} style={skin.footer(tokens, collapsed)}>{footerNode}</View> : null}
+        </GlassSurface>
+      </AnatomyScope>
     );
   };
 }

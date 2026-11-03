@@ -23,8 +23,8 @@ Audit checklist for `/components/sparkline`. The facts block and the variants ta
 | Interaction states | static: A chart that takes no input: no press, scrub or hover handler in its source or the shared chart modules it renders; it displays data. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 9: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/design-rules-skins.test.ts`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/sparkline.test.tsx`, `test/stats-stackedlist-slots.test.tsx` |
-| E2E naming it | 1: `e2e/behavior/component-docs.e2e.ts` |
+| Tests importing it | 10: `test/anatomy-parts-charts-other.test.tsx`, `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/design-rules-skins.test.ts`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/sparkline.test.tsx`, `test/stats-stackedlist-slots.test.tsx` |
+| E2E naming it | 2: `e2e/behavior/anatomy-markers.e2e.ts`, `e2e/behavior/component-docs.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples, EXAMPLE_ROUTES), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/sparkline.md`, written by `bun run audit:turn -- --slug=sparkline --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->

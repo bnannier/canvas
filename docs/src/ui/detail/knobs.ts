@@ -40,6 +40,10 @@ export function kitProps(component: string, props: PropDescriptors): PropDescrip
     if (next.segments === 0) delete next.segments;
     return next;
   }
+  if (component === "Input" && typeof props.icon === "object" && "icon" in props.icon) {
+    // The reference's icon slot; Input draws a glyph by name inside the field's leading edge.
+    return { ...props, icon: props.icon.icon, leadingIcon: true };
+  }
   if (component === "InputOTP" && typeof props.groups === "number") {
     const next = { ...props };
     // The reference counts groups; InputOTP specifies cells per group.

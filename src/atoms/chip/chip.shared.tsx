@@ -1,7 +1,8 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import type { GestureResponderEvent } from "react-native";
+import type { GestureResponderEvent, LayoutChangeEvent } from "react-native";
 import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, alpha, isGlass } from "../../style/index.js";
 import { composite, contrastRatio, oklchHex, oklchOf } from "../../style/color.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { useChipGroup } from "./chip-context.js";
 import { reachSlop, useClipSlop } from "../../style/clip-slop.js";
@@ -11,6 +12,7 @@ import { useHover } from "../../style/hover.js";
 import { primaryText } from "../../style/primary-text.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Icon } from "../icon/icon.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 
 // Shared Chip shell. The interactive/removable pill, so no call site hand-composes
 // a `borderRadius + backgroundColor + padding` Pressable to build a filter chip,
@@ -393,6 +395,13 @@ function selectedTint(tokens: ColorTokens, edge: boolean): Appearance {
 /** Build a Chip from a platform skin. */
 export function createChip(platformSkin: ChipSkin) {
   return function Chip(props: ChipProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Container, Leading icon, Label, Count, Trailing control.
+    const containerPart = useAnatomyPart("Container");
+    const leadingPart = useAnatomyPart("Leading icon");
+    const labelPart = useAnatomyPart("Label");
+    const countPart = useAnatomyPart("Count");
+    const trailingPart = useAnatomyPart("Trailing control");
     const { children, icon, trailing, onPress, onRemove, href, hrefAttrs, accessibilityLabel, testID, style } = props;
     // An option of a ChipGroup: the group owns its selection, its disabled flag and its
     // roving tab stop.
@@ -522,6 +531,7 @@ export function createChip(platformSkin: ChipSkin) {
     // own stays a toggle button (aria-pressed).
     const roving = option?.itemProps?.(props.value as string | number);
     const keyboard = useSpaceActivation(disabled || option == null, () => handlePress());
+    const pillRef = useComposedRefs<View>(roving?.ref, containerPart?.ref);
     const semantics = option
       ? {
           ...(roving ? { ref: roving.ref, focusable: roving.focusable, tabIndex: roving.tabIndex } : null),
@@ -613,15 +623,15 @@ export function createChip(platformSkin: ChipSkin) {
           // (accessibilityState.selected / aria-pressed).
           <Icon check decorative size={selectedCheck} color={appearance.text} />
         ) : (
-          tint(icon, leadInk)
+          icon != null ? <AnatomyPart part={leadingPart}>{tint(icon, leadInk)}</AnatomyPart> : null
         )}
         {children != null ? (
-          <Text style={[skin.labelType, { color: appearance.text }]}>
+          <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[skin.labelType, { color: appearance.text }]}>
             {children}
           </Text>
         ) : null}
-        {props.count == null ? null : <Text style={[skin.countType, { color: appearance.text }]}>{String(props.count)}</Text>}
-        {tint(trailing)}
+        {props.count == null ? null : <Text ref={countPart?.ref} onLayout={countPart?.onLayout} style={[skin.countType, { color: appearance.text }]}>{String(props.count)}</Text>}
+        {trailing != null ? <AnatomyPart part={trailingPart}>{tint(trailing)}</AnatomyPart> : null}
       </>
     );
 
@@ -662,6 +672,7 @@ export function createChip(platformSkin: ChipSkin) {
     // The trailing "×" remove control, a button in its own right.
     const removeButton = onRemove ? (
       <Pressable
+        ref={trailing == null ? trailingPart?.ref : undefined}
         onPress={onRemove}
         disabled={disabled}
         style={[
@@ -677,6 +688,7 @@ export function createChip(platformSkin: ChipSkin) {
         // biased away from the label, and split with a pressable body beside it.
         hitSlop={removeSlop}
         {...pillClip.measure("remove")}
+        onLayout={withPartLayout(trailing == null ? trailingPart : undefined, pillClip.measure("remove").onLayout)}
       >
         {/* The "×" rides the chip's label color so it matches every hue. */}
         <Icon x size={skin.removeGlyph} color={appearance.text} />
@@ -692,15 +704,18 @@ export function createChip(platformSkin: ChipSkin) {
     if (tappable && onRemove) {
       const bodyGap = (skin.base as { gap?: number }).gap;
       const measurePill = pillClip.measure().onLayout;
+      const ownLayout = measurePill == null && pillTarget.onLayout == null ? undefined : (event: LayoutChangeEvent) => {
+        measurePill?.(event);
+        pillTarget.onLayout?.(event);
+      };
       return (
+        <AnatomyScope>
         <View
+          ref={containerPart?.ref}
           style={container}
           testID={testID}
           hitSlop={pillClips ? pillClip.slop({ body: bodySlop, remove: removeSlop }) : undefined}
-          onLayout={measurePill == null && pillTarget.onLayout == null ? undefined : (event) => {
-            measurePill?.(event);
-            pillTarget.onLayout?.(event);
-          }}
+          onLayout={withPartLayout(containerPart, ownLayout)}
         >
           {pane}
           <Pressable
@@ -719,6 +734,7 @@ export function createChip(platformSkin: ChipSkin) {
           </Pressable>
           {removeButton}
         </View>
+        </AnatomyScope>
       );
     }
 
@@ -729,9 +745,10 @@ export function createChip(platformSkin: ChipSkin) {
         // The whole-pill ripple is clipped to the rounded chip by this RippleClip parent
         // (Android only). A bounded android_ripple is the pressable's own rectangular-masked
         // background, which its own overflow:"hidden" cannot clip. See src/style/ripple-clip.
+        <AnatomyScope>
         <RippleClip shape={cornerRadii(container)} hitSlop={bodySlop} style={hug}>
           <Pressable
-            onLayout={pillTarget.onLayout}
+            onLayout={withPartLayout(containerPart, pillTarget.onLayout)}
             {...hoverTarget}
             {...(anchor ?? undefined)}
             onPress={handlePress}
@@ -742,6 +759,7 @@ export function createChip(platformSkin: ChipSkin) {
             // aria-pressed (RNW drops accessibilityState at the DOM), the dual alias
             // the Switch uses; a ChipGroup option reads as a checked radio instead.
             {...(semantics as object)}
+            ref={pillRef}
             accessibilityLabel={accessibilityLabel}
             // The compact chip is short: its touch area grows to the minimum (Android) or by
             // the skin's fixed slop (iOS), the same area its RippleClip admits.
@@ -763,17 +781,20 @@ export function createChip(platformSkin: ChipSkin) {
             </>}
           </Pressable>
         </RippleClip>
+        </AnatomyScope>
       );
     }
 
     // Static chip (not tappable): a View; a remove "×" here is a lone button in a
     // non-interactive container, so there is no nesting to resolve.
     return (
-      <View style={container} testID={testID} accessibilityLabel={accessibilityLabel} hitSlop={pillClip.slop({ remove: removeSlop })} {...pillClip.measure()}>
-        {pane}
-        {bodyContent}
-        {removeButton}
-      </View>
+      <AnatomyScope>
+        <View ref={containerPart?.ref} style={container} testID={testID} accessibilityLabel={accessibilityLabel} hitSlop={pillClip.slop({ remove: removeSlop })} {...pillClip.measure()} onLayout={withPartLayout(containerPart, pillClip.measure().onLayout)}>
+          {pane}
+          {bodyContent}
+          {removeButton}
+        </View>
+      </AnatomyScope>
     );
   };
 }

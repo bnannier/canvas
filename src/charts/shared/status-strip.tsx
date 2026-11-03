@@ -1,5 +1,6 @@
 import { View, alpha, statusColors, type ColorTokens } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
+import type { AnatomyTarget } from "../../style/anatomy.js";
 
 // The period-pill strip shared by UptimeBar and ServiceHealthList: a single
 // row of flex-grown pills, one per period, colored by the period's status.
@@ -62,12 +63,18 @@ export function statusSummary(periods: UptimePeriod[], label?: string): string {
  * The raw pill row. Decorative on its own: the consumer wraps it in (or
  * beside) a node carrying the `statusSummary` as an accessible name.
  */
-export function StatusStrip({ periods, height, tokens }: { periods: UptimePeriod[]; height: number; tokens: ColorTokens }) {
+export function StatusStrip({ periods, height, tokens, anatomy }: { periods: UptimePeriod[]; height: number; tokens: ColorTokens; anatomy?: { degraded?: AnatomyTarget; healthy?: AnatomyTarget } }) {
+  // The anatomy handlers a docs specimen numbers (kit-internal): the first degraded and
+  // the first operational pill.
+  const firstDegraded = anatomy?.degraded ? periods.findIndex((p) => periodStatus(p) === "degraded") : -1;
+  const firstHealthy = anatomy?.healthy ? periods.findIndex((p) => periodStatus(p) === "operational") : -1;
   return (
     <View style={{ flexDirection: "row", gap: 2, direction: "ltr" }}>
       {periods.map((p, i) => (
         <View
           key={p.id ?? i}
+          ref={i === firstDegraded ? anatomy?.degraded?.ref : i === firstHealthy ? anatomy?.healthy?.ref : undefined}
+          onLayout={i === firstDegraded ? anatomy?.degraded?.onLayout : i === firstHealthy ? anatomy?.healthy?.onLayout : undefined}
           style={{
             flexGrow: 1,
             flexShrink: 1,

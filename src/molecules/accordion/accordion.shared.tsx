@@ -1,4 +1,5 @@
 import { Card as WebCard } from "../card/card.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { ActivityAccordionRow } from "./accordion.activity.js";
 import { type ReactNode, useEffect, useRef, useState, useCallback } from "react";
 import { Animated, LayoutAnimation, StyleSheet } from "react-native";
@@ -196,6 +197,16 @@ function fromSet(open: Set<string>, multiple: boolean): string | string[] {
 }
 
 /** Build an Accordion component from a platform skin. */
+// The handlers of the parts a row draws, handed to the rows that carry them.
+interface RowParts {
+  header?: AnatomyTarget;
+  chevron?: AnatomyTarget;
+  panel?: AnatomyTarget;
+}
+
+// A pass-through box over a GlassSurface (which has no ref), measured as a docs AnatomyProvider part.
+const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" } }).box;
+
 export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebCard } = {}) {
   const Card = parts.Card ?? WebCard;
   // One disclosure row: the header (title + rotating chevron) over its panel.
@@ -207,6 +218,7 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
     card,
     surfaced,
     onToggle,
+    parts,
   }: {
     item: AccordionItem;
     open: boolean;
@@ -216,6 +228,7 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
     /** The group sits in a surfaced, clipping container (the card, the iOS inset group). */
     surfaced: boolean;
     onToggle: () => void;
+    parts?: RowParts;
   }) {
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
@@ -251,6 +264,8 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
       <View style={disabled ? DISABLED_DIM : null}>
         <Pressable
           {...target}
+          ref={parts?.header?.ref}
+          onLayout={parts?.header?.onLayout}
           onPress={disabled ? undefined : onToggle}
           disabled={disabled}
           android_ripple={skin.ripple && !disabled ? skin.ripple(tokens) : undefined}
@@ -282,13 +297,16 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
               {item.title}
             </Text>
           )}
-          <Animated.View style={{ transform: [{ rotate }] }}>
-            {/* Skin picks the disclosure glyph: chevronRight (iOS) or chevronDown (web/M3). */}
-            <Icon {...{ [skin.chevronGlyph]: true }} color={tokens["subtle-foreground"]} size={skin.chevronSize} />
-          </Animated.View>
+          {/* An Animated.View does not hand its host node to a part ref, so the Chevron part measures a plain view around it. */}
+          <AnatomyPart part={parts?.chevron}>
+            <Animated.View style={{ transform: [{ rotate }] }}>
+              {/* Skin picks the disclosure glyph: chevronRight (iOS) or chevronDown (web/M3). */}
+              <Icon {...{ [skin.chevronGlyph]: true }} color={tokens["subtle-foreground"]} size={skin.chevronSize} />
+            </Animated.View>
+          </AnatomyPart>
         </Pressable>
         {open ? (
-          <View style={[skin.content(tokens), card ? skin.cardContentInset : null]}>
+          <View ref={parts?.panel?.ref} onLayout={parts?.panel?.onLayout} style={[skin.content(tokens), card ? skin.cardContentInset : null]}>
             {typeof item.content === "string" ? (
               <Text style={skin.contentText(tokens)}>{item.content}</Text>
             ) : (
@@ -304,6 +322,14 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
   }
 
   return function Accordion(props: AccordionProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Item (the group's box), Header, Chevron, Panel. Header and Chevron
+    // are the first row's, Panel the first open row's, taken before the tree's
+    // AnatomyScope so the caller's panel content and the activity rows' Card register nothing.
+    const itemPart = useAnatomyPart("Item");
+    const headerPart = useAnatomyPart("Header");
+    const chevronPart = useAnatomyPart("Chevron");
+    const panelPart = useAnatomyPart("Panel");
     const { items = DEFAULT_ITEMS, value, defaultValue, onValueChange, multiple = false, disabled, card, testID, style } = props;
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
@@ -331,14 +357,18 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
       [open, multiple, controlled, onValueChange, reduced, props.activity],
     );
 
-    if (props.activity) return <View testID={testID} style={[FILL, style]}>{items.map((item) => <ActivityAccordionRow Card={Card} key={item.key} item={item} expanded={open.has(item.key)} disabled={!!disabled || !!item.disabled} compact={!!props.compact} renderHeader={props.renderHeader} onToggle={() => toggle(item.key)} />)}</View>;
+    if (props.activity) return <AnatomyScope><View testID={testID} style={[FILL, style]}>{items.map((item) => <ActivityAccordionRow Card={Card} key={item.key} item={item} expanded={open.has(item.key)} disabled={!!disabled || !!item.disabled} compact={!!props.compact} renderHeader={props.renderHeader} onToggle={() => toggle(item.key)} />)}</View></AnatomyScope>;
 
     // The container is a CONTENT-layer pane under glass when it paints a surface of its
     // own (the card variant, the iOS inset group); a borderless list stays bare.
     const surfaced = (StyleSheet.flatten([skin.container(tokens), card ? skin.cardContainer(tokens) : null]) as ViewStyle | undefined)?.backgroundColor != null;
     const Root = surfaced ? GlassSurface : View;
+    const firstOpen = items.findIndex((item) => open.has(item.key));
     return (
-      <Root testID={testID} style={[FILL, skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]} {...(surfaced ? { layer: "content" as const } : null)}>
+      <AnatomyScope>
+      <Root testID={testID} style={[FILL, skin.container(tokens), card ? skin.cardContainer(tokens) : null, style]} {...(surfaced ? { layer: "content" as const } : { ref: itemPart?.ref, onLayout: itemPart?.onLayout })}>
+        {/* The Item part's box on a surfaced group: GlassSurface has no ref, so a pass-through fill measures it. */}
+        {surfaced && itemPart ? <View ref={itemPart.ref} onLayout={itemPart.onLayout} style={MEASURE_BOX} /> : null}
         {items.map((item, i) => (
           <Row
             key={item.key}
@@ -349,9 +379,11 @@ export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebC
             card={card}
             surfaced={surfaced}
             onToggle={() => toggle(item.key)}
+            parts={i === 0 || i === firstOpen ? { header: i === 0 ? headerPart : undefined, chevron: i === 0 ? chevronPart : undefined, panel: i === firstOpen ? panelPart : undefined } : undefined}
           />
         ))}
       </Root>
+      </AnatomyScope>
     );
   };
 }

@@ -15,6 +15,7 @@ import {
   type ViewStyle,
 } from "../../style/index.js";
 import { RaiseCell } from "../../style/hover.js";
+import { AnatomyPart, AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
 import { type FlexSkin } from "./layout.styles.js";
 
 // Shared layout primitives: Row (horizontal) and Column (vertical). The kit had
@@ -351,6 +352,23 @@ function spanCells(children: ReactNode, width: number, gap: number, stacked: boo
   });
 }
 
+/** The first element child measured as the `Child` anatomy part; the children as given outside a provider. */
+function markFirstChild(children: ReactNode, part: AnatomyTarget | undefined): ReactNode {
+  if (part == null) return children;
+  let marked = false;
+  return Children.map(children, (child) => {
+    if (marked || !isValidElement(child)) return child;
+    marked = true;
+    return <AnatomyPart part={part}>{child}</AnatomyPart>;
+  });
+}
+
+/** The anatomy parts a Row or Column takes before its AnatomyScope. */
+interface FlexParts {
+  containerPart?: AnatomyTarget;
+  childPart?: AnatomyTarget;
+}
+
 /** Build a Row or Column component from a platform skin and a fixed direction. */
 export function createFlex(skin: FlexSkin, direction: Direction) {
   // Resolve every axis to one ViewStyle for a concrete direction. While stacked
@@ -403,8 +421,8 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
   // clamped into the viewport bucket, so it follows a BreakpointOverride) until
   // the first layout (the Grid and Form precedent), so a phone's first frame
   // already stacks.
-  function MeasuredRow(props: FlexProps & { parent: LayoutAxis | null; spanning: boolean }) {
-    const { parent, spanning, children, style, testID } = props;
+  function MeasuredRow(props: FlexProps & FlexParts & { parent: LayoutAxis | null; spanning: boolean }) {
+    const { parent, spanning, children, style, testID, containerPart, childPart } = props;
     const bp = props.stackBreakpoint ?? "sm";
     const { width, onLayout } = useContainerWidth();
     const stacked = !!props.stacks && width > 0 && width <= breakpoints[bp];
@@ -415,15 +433,20 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     const gap = skin.gap[gapOf(props)];
     const axis = axisOf(props, dir, parent);
     return (
-      <View onLayout={onLayout} style={[layout, style]} testID={testID}>
+      <View ref={containerPart?.ref} onLayout={withPartLayout(containerPart, onLayout)} style={[layout, style]} testID={testID}>
         <LayoutAxisProvider value={stacked ? { ...axis, stacked: true } : axis}>
-          {spanning ? spanCells(children, width, gap, stacked) : children}
+          <AnatomyScope>{markFirstChild(spanning ? spanCells(children, width, gap, stacked) : children, childPart)}</AnatomyScope>
         </LayoutAxisProvider>
       </View>
     );
   }
 
   return function Flex(props: FlexProps) {
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Container (the box) and Child (its first child), taken before the
+    // AnatomyScope so the children, nested Rows and Columns included, register nothing.
+    const containerPart = useAnatomyPart("Container");
+    const childPart = useAnatomyPart("Child");
     const { children, testID, style } = props;
     const parent = useLayoutAxis();
     devWarn(
@@ -455,11 +478,13 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
       `[canvas] <${direction === "row" ? "Row" : "Column"} weight>: \`weight\` replaces \`fill\` and \`grow\`, and a box takes a \`span\` or a \`weight\`, not both.`,
     );
     if (direction === "row" && (props.stacks || hasSpans(children))) {
-      return <MeasuredRow {...props} parent={parent} spanning={hasSpans(children)} />;
+      return <MeasuredRow {...props} parent={parent} spanning={hasSpans(children)} containerPart={containerPart} childPart={childPart} />;
     }
     return (
-      <View style={[flexStyle(props, direction, false, parent), style]} testID={testID}>
-        <LayoutAxisProvider value={axisOf(props, direction, parent)}>{children}</LayoutAxisProvider>
+      <View ref={containerPart?.ref} onLayout={containerPart?.onLayout} style={[flexStyle(props, direction, false, parent), style]} testID={testID}>
+        <LayoutAxisProvider value={axisOf(props, direction, parent)}>
+          <AnatomyScope>{markFirstChild(children, childPart)}</AnatomyScope>
+        </LayoutAxisProvider>
       </View>
     );
   };

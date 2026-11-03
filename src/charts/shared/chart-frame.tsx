@@ -16,6 +16,9 @@ import {
 import { MONO_FONT } from "../../style/mono.js";
 import { CHART_LOOK, axisLabel } from "./charts.styles.js";
 import { ScrubSurface } from "./chart-inspect.js";
+import { useChartAnatomy } from "./chart-anatomy.js";
+import { withPartLayout } from "../../style/anatomy.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import {
   bandScale,
   estimateTextWidth,
@@ -156,6 +159,18 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
   } = props;
   const { tokens } = useTheme();
   const [width, setWidth] = useState(0);
+  // The anatomy parts the chart handed down (chart-anatomy.tsx): the root is the chart
+  // frame; the plot area carries the gridlines while drawn, the baseline while the axes
+  // are, and the SVG marks; the axis labels go on the first label drawn.
+  const anatomy = useChartAnatomy();
+  const gridPart = hideGrid ? undefined : anatomy?.gridlines;
+  const baselinePart = hideAxes ? undefined : anatomy?.baseline;
+  const plotParts = [gridPart, baselinePart, anatomy?.marks?.[0], anatomy?.marks?.[1]];
+  const plotRef = useComposedRefs(...plotParts.map((part) => part?.ref));
+  const plotLayout = plotParts.some((part) => part != null)
+    ? () => plotParts.forEach((part) => part?.onLayout())
+    : undefined;
+  const axisPart = hideAxes ? undefined : anatomy?.axisLabels;
 
   const formatValue = props.formatValue ?? formatAxis;
   const { ticks, niceMin, niceMax } = quarterTicks(
@@ -284,10 +299,18 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
   };
 
   const ready = width > 0 && plotW > 0;
+  // The first x label drawn, which takes the axis labels' number when the chart asks for it.
+  const firstX =
+    xLabels && band ? xLabels.findIndex((_, i) => xLabelShown(i)) : -1;
+  const xAxisPart = anatomy?.xLabels && firstX >= 0 ? axisPart : undefined;
+  const yAxisPart = xAxisPart ? undefined : axisPart;
 
   return (
     <View
-      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      ref={anatomy?.frame?.ref}
+      onLayout={withPartLayout(anatomy?.frame, (e) =>
+        setWidth(e.nativeEvent.layout.width)
+      )}
       style={{ width: "100%" }}
     >
       <View style={{ height: TOP_PAD + plotH + (hideAxes ? 0 : X_BAND) }}>
@@ -299,6 +322,8 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
                   labelled(i) ? (
                     <Text
                       key={`yl${i}`}
+                      ref={i === 0 ? yAxisPart?.ref : undefined}
+                      onLayout={i === 0 ? yAxisPart?.onLayout : undefined}
                       style={{
                         position: "absolute",
                         left: 0,
@@ -317,6 +342,8 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
 
             {/* The plot: gridlines, baseline, then the mark layer. */}
             <View
+              ref={plotRef}
+              onLayout={plotLayout}
               style={{
                 position: "absolute",
                 left: gutter,
@@ -416,6 +443,8 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
                   return (
                     <Text
                       key={`xl${i}`}
+                      ref={i === firstX ? xAxisPart?.ref : undefined}
+                      onLayout={i === firstX ? xAxisPart?.onLayout : undefined}
                       style={{
                         position: "absolute",
                         left: gutter + band.center(i) - slot / 2,

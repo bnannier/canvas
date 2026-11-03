@@ -4,6 +4,7 @@ import { MONO_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { useChartPresentation } from "./chart-presentation.js";
 import { CHART_LOOK } from "./charts.styles.js";
+import { useChartAnatomy } from "./chart-anatomy.js";
 
 // The shared series legend for the Chart family (the v4 hand-off's `leg`): an 8 px
 // square at the data-cell corner identifying each series/segment plus its 12 px label in
@@ -47,11 +48,15 @@ export function ChartLegend({
 }: ChartLegendProps) {
   const { tokens } = useTheme();
   const presentation = useChartPresentation();
+  // The legend part the enclosing cartesian chart handed down (chart-anatomy.tsx), on the root.
+  const part = useChartAnatomy()?.legend;
   const marginTop = flush ? 0 : presentation ? presentation.kind === "line" ? 16 : 14 : CHART_LOOK.gap.default;
 
   if (horizontal) {
     return (
       <View
+        ref={part?.ref}
+        onLayout={part?.onLayout}
         style={{
           marginTop,
           flexDirection: "row",
@@ -100,6 +105,8 @@ export function ChartLegend({
 
   return (
     <View
+      ref={part?.ref}
+      onLayout={part?.onLayout}
       style={{
         marginTop,
         flexDirection: "column",

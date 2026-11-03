@@ -9,6 +9,7 @@ import { primaryText } from "./primary-text.js";
 import { destructiveText } from "./destructive-text.js";
 import { isRTL } from "./rtl.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
+import type { AnatomyTarget } from "./anatomy.js";
 
 // A field's label, shared by every field family. FloatingLabel is the Material 3
 // in-container FLOATING label the Android skins of Input, Textarea, Select and Autocomplete
@@ -196,12 +197,18 @@ export function requiredName<N extends string | undefined>(name: N, required: bo
  * names itself with the bare label (`labelA11y`), since the star is part of its paragraph
  * there.
  */
-export function LabelContent({ label, required, starColor }: { label: string; required?: boolean; starColor: string }): ReactNode {
+export function LabelContent({ label, required, starColor, starPart }: {
+  label: string;
+  required?: boolean;
+  starColor: string;
+  /** The docs anatomy "Required mark" on the star (src/style/anatomy.tsx), inside an AnatomyProvider only. */
+  starPart?: AnatomyTarget;
+}): ReactNode {
   return (
     <>
       {label}
       {required ? (
-        <Text aria-hidden style={{ color: starColor }}>
+        <Text ref={starPart?.ref} onLayout={starPart?.onLayout} aria-hidden style={{ color: starColor }}>
           {" *"}
         </Text>
       ) : null}
@@ -275,6 +282,8 @@ export function FloatingLabel<S extends string>({
   names = true,
   edges,
   onLine,
+  part,
+  starPart,
 }: {
   styles: FloatingLabelStyles<S>;
   size: S;
@@ -315,6 +324,14 @@ export function FloatingLabel<S extends string>({
    * into padding under glass (the text-entry material's `edges`). None by default.
    */
   edges?: { top: number; bottom: number; start: number; end: number };
+  /**
+   * The docs anatomy "Label" on the label text (src/style/anatomy.tsx), inside an
+   * AnatomyProvider only. Its rectangle is the label's resting box: a part is measured in
+   * layout space, which the float's transform does not move.
+   */
+  part?: AnatomyTarget;
+  /** The docs anatomy "Required mark" on the label's star, as LabelContent's `starPart`. */
+  starPart?: AnatomyTarget;
 }) {
   const reduced = useReducedMotion();
   const posTarget = focused || populated ? 1 : 0;
@@ -435,12 +452,17 @@ export function FloatingLabel<S extends string>({
     ? { position: "absolute", top: reserve + edge.top, start: inset + edge.start, end: end + edge.end, alignItems: "flex-start", pointerEvents: "none" }
     : { position: "absolute", top: edge.top, bottom: edge.bottom, start: inset + edge.start, end: end + edge.end, alignItems: "flex-start", justifyContent: "center", pointerEvents: "none" };
 
+  const text = (
+    <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]} onLayout={onTextLayout} {...labelA11y(label, names)}>
+      <LabelContent label={label} required={required} starColor={tokens.destructive} starPart={starPart} />
+    </Animated.Text>
+  );
+  // An Animated host's ref is replaced on every render (react-native's useAnimatedProps
+  // keys it on the props), so the anatomy "Label" is measured on a steady View around it.
   return (
     <View style={bounds} onLayout={multiline ? undefined : onBoundsLayout}>
       <Animated.View style={{ maxWidth: "100%", transformOrigin, transform: [{ translateY }, { scale }] }}>
-        <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]} onLayout={onTextLayout} {...labelA11y(label, names)}>
-          <LabelContent label={label} required={required} starColor={tokens.destructive} />
-        </Animated.Text>
+        {part ? <View ref={part.ref} onLayout={part.onLayout}>{text}</View> : text}
       </Animated.View>
     </View>
   );
