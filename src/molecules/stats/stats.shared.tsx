@@ -350,15 +350,31 @@ export function createStats(skin: StatsSkin) {
     const cols = Math.min(items.length, gridColumns(rowWidth, tileFloor(items.length), gapPx));
     const cellWidth = !dense && measured && rowWidth > 0 ? gridCellWidth(rowWidth - (cols > 1 ? MEASURE_ROUNDING : 0), cols, gapPx) : undefined;
 
+    const heading = title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null;
+    const metrics = (
+      <View ref={groupPart?.ref} onLayout={withPartLayout(groupPart, onRowLayout)} style={[row, skin.rowGap[surface]]}>
+        {items.map((item, i) => (
+          <StatItemView key={i} item={item} surface={surface} dense={dense} large={props.large && !props.compact} first={i === 0} cellWidth={cellWidth} count={items.length} parts={i === 0 ? firstParts : undefined} onPress={onPressItem ? () => onPressItem(i) : undefined} />
+        ))}
+      </View>
+    );
+    // A title sits above the tiles, so a titled group stands its one box under the title
+    // rather than drawing the title inside the box.
+    if (isPlain && heading) {
+      return (
+        <AnatomyScope>
+        <View testID={testID} style={[fill, style]}>
+          {heading}
+          <Root style={[skin.plainContainer(tokens), fill]} layer="content">{metrics}</Root>
+        </View>
+        </AnatomyScope>
+      );
+    }
     return (
       <AnatomyScope>
       <Root testID={testID} style={[isPlain ? skin.plainContainer(tokens) : null, fill, style]} {...(isPlain ? { layer: "content" as const } : null)}>
-        {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
-        <View ref={groupPart?.ref} onLayout={withPartLayout(groupPart, onRowLayout)} style={[row, skin.rowGap[surface]]}>
-          {items.map((item, i) => (
-            <StatItemView key={i} item={item} surface={surface} dense={dense} large={props.large && !props.compact} first={i === 0} cellWidth={cellWidth} count={items.length} parts={i === 0 ? firstParts : undefined} onPress={onPressItem ? () => onPressItem(i) : undefined} />
-          ))}
-        </View>
+        {heading}
+        {metrics}
       </Root>
       </AnatomyScope>
     );
