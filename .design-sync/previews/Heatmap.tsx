@@ -23,6 +23,6 @@ export const Calendar = () => (
 
 export const InsideCard = () => (
   <Card padded>
-    <Heatmap values={week} />
+    <Heatmap plain values={week} />
   </Card>
 );

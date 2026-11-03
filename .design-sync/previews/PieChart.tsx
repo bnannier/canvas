@@ -26,6 +26,6 @@ export const DonutDetailed = () => (
 
 export const InsideCard = () => (
   <Card padded>
-    <PieChart label="Traffic" slices={slices} />
+    <PieChart plain label="Traffic" slices={slices} />
   </Card>
 );

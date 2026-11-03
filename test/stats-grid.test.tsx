@@ -54,3 +54,24 @@ describe("Stats grid", () => {
     });
   }
 });
+
+// A title sits 10px above the tiles (the skin's title line), so a titled group draws its
+// one bordered box under the title instead of around it.
+describe("Stats title", () => {
+  it("stands above a group's box, not inside it", () => {
+    render(<ThemeProvider dark solid><Stats title="This quarter" testID="stats" items={three} /></ThemeProvider>);
+    const root = screen.getByTestId("stats");
+    const title = screen.getByText("This quarter") as HTMLElement;
+    expect(title.parentElement).toBe(root);
+    expect(root.style.borderWidth).toBe("");
+    const box = root.lastElementChild as HTMLElement;
+    expect(box.style.borderWidth).toBe("1px");
+    expect(box.contains(title)).toBe(false);
+  });
+
+  it("leads the row of framed tiles", () => {
+    render(<ThemeProvider dark solid><Stats framed title="This quarter" testID="stats" items={three} /></ThemeProvider>);
+    const root = screen.getByTestId("stats");
+    expect(root.firstElementChild).toBe(screen.getByText("This quarter"));
+  });
+});
