@@ -1,0 +1,7 @@
+/* The Canvas v4 faces for Claude Design: the variable woff2 files the docs site self-hosts
+   (docs/public/fonts, cut by docs/scripts/subset-fonts.mjs; families and weight ranges from
+   docs/src/ui/web-fonts.json), declared with their weight ranges so the browser draws every
+   weight from the variable file instead of synthesizing bold. */
+@font-face{font-family:"Instrument Sans";src:url("../docs/public/fonts/InstrumentSans.72ea38a499d4.woff2") format("woff2");font-weight:400 700;font-display:swap}
+@font-face{font-family:"Bricolage Grotesque";src:url("../docs/public/fonts/BricolageGrotesque.59416ea982b9.woff2") format("woff2");font-weight:300 800;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url("../docs/public/fonts/JetBrainsMono.cf635e93c6e7.woff2") format("woff2");font-weight:400 600;font-display:swap}
