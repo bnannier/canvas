@@ -2,7 +2,8 @@
  * Icon glyph generator. Reads the curated source list (tools/icongen/icons.ts)
  * and lucide-static's icon-nodes.json, maps each glyph to the kit's Shape union,
  * and writes src/atoms/icon/icon.glyphs.ts (the ICONS map, the NAMES gallery
- * list, the IconGlyphProps name-boolean interface, and the IconName union).
+ * list with each glyph's category, the CATEGORIES list, the IconGlyphProps
+ * name-boolean interface, and the IconName and IconCategory unions).
  *
  * Run: bun run icons:gen
  *
@@ -14,7 +15,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { SOURCES, ALIASES, REQUIRED_NAMES, REFERENCE_PATHS } from "./icons.ts";
+import { CATEGORIES, SOURCES, ALIASES, REQUIRED_NAMES, REFERENCE_PATHS } from "./icons.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, "../..");
@@ -82,7 +83,11 @@ function serialize(s: Shape): string {
   }
 }
 
-interface Entry { name: string; label: string; shapes: Shape[]; source: string }
+interface Entry { name: string; label: string; category: string; shapes: Shape[]; source: string }
+
+// Each source's category: the first one that files it (a source is filed once).
+const categoryOf = new Map<string, string>();
+for (const category of CATEGORIES) for (const source of category.sources) if (!categoryOf.has(source)) categoryOf.set(source, category.label);
 
 const entries: Entry[] = [];
 const seen = new Map<string, string>(); // canvasName -> source (dupe guard)
@@ -106,7 +111,7 @@ for (const source of [...new Set(SOURCES)]) {
   }
   if (bad) { skipped.push(source); continue; }
   seen.set(name, source);
-  entries.push({ name, label: kebab(name), shapes: REFERENCE_PATHS[name] ? [{ t: "path", d: REFERENCE_PATHS[name]! }] : shapes, source });
+  entries.push({ name, label: kebab(name), category: categoryOf.get(source)!, shapes: REFERENCE_PATHS[name] ? [{ t: "path", d: REFERENCE_PATHS[name]! }] : shapes, source });
 }
 
 entries.sort((a, b) => a.name.localeCompare(b.name));
@@ -133,7 +138,9 @@ const iconsBlock = entries
   )
   .join("\n");
 
-const namesBlock = entries.map((e) => `  { key: ${JSON.stringify(e.name)}, label: ${JSON.stringify(e.label)} },`).join("\n");
+const namesBlock = entries.map((e) => `  { key: ${JSON.stringify(e.name)}, label: ${JSON.stringify(e.label)}, category: ${JSON.stringify(e.category)} },`).join("\n");
+
+const categoriesBlock = CATEGORIES.map((c) => `  ${JSON.stringify(c.label)},`).join("\n");
 
 const propsBlock = entries.map((e) => `  /** \`${e.source}\` */\n  ${e.name}?: boolean;`).join("\n");
 
@@ -159,8 +166,16 @@ export const ICONS: Record<string, Shape[]> = {
 ${iconsBlock}
 };
 
-/** Gallery order (alphabetical): the prop name (\`key\`) and its typed label. */
-export const NAMES: { key: string; label: string }[] = [
+/** The glyph categories, in gallery menu order. */
+export const CATEGORIES = [
+${categoriesBlock}
+] as const;
+
+/** One glyph category. */
+export type IconCategory = (typeof CATEGORIES)[number];
+
+/** Gallery order (alphabetical): the prop name (\`key\`), its typed label and its category. */
+export const NAMES: { key: string; label: string; category: IconCategory }[] = [
 ${namesBlock}
 ];
 

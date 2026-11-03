@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AccessibilityInfo } from "react-native";
-import { View, Grid, Container, Navbar, Icon, OverlayProvider, Row, Column, Button, Typography, Card, Avatar, Skeleton, ICON_NAMES, useResponsive, type IconProps, type ToastHandle } from "@nannier/canvas";
+import { View, Grid, Container, Navbar, Icon, OverlayProvider, Row, Column, Button, Typography, Card, Avatar, Skeleton, Input, Chip, ChipGroup, EmptyState, ICON_NAMES, ICON_CATEGORIES, useResponsive, type IconProps, type ToastHandle } from "@nannier/canvas";
 // Public API only: the smoke app (smoke/) renders these same examples against the
 // sealed package, which has no kit source to import from.
 
@@ -230,30 +230,47 @@ function glyphByName(name: string): IconProps {
   return { [name]: true } as unknown as IconProps;
 }
 
-// The live search query for the Icon catalog. The Playground owns the ONE search field above
-// the 3-up stage and publishes its text here; every platform column's IconGallery reads it, so a
-// single control filters all three previews at once. Defaults to "" (unfiltered) when an
-// IconGallery is rendered outside the Playground.
-export const IconSearchContext = createContext("");
+// Docs-only Icon catalog (not a Canvas component, not shipped): every kit glyph in a labeled
+// grid, browsed through a search field and a category menu. The search matches a glyph's prop
+// name or label; the menu is a single-choice ChipGroup of the kit's ICON_CATEGORIES, each chip
+// counting the glyphs that match the search in that category, so the counts follow the query.
+// Rendered as the Icon page's "Gallery" example. The kit Icon draws a single glyph; browsing the
+// whole set is a docs concern, so the catalog lives here rather than as an Icon prop. Keep its
+// type in sync with the `IconGalleryHelper` alias in ./scope.ts.
+const ALL_ICONS = "All";
 
-// Docs-only Icon catalog grid (not a Canvas component, not shipped): the wrapping, labeled grid
-// of every kit glyph, filtered by the shared search query from IconSearchContext. Rendered as
-// the Icon page's "Gallery" example — once per platform column, so all three columns filter
-// together from the single search field the Playground draws above the stage. The kit Icon draws
-// a single glyph; browsing the whole set is a docs concern, so the catalog lives here rather than
-// as an Icon prop. The kit Grid handles the responsive layout. Keep its type in sync with the
-// `IconGalleryHelper` alias in ./scope.ts.
 export function IconGallery(): ReactNode {
-  const query = useContext(IconSearchContext);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<string>(ALL_ICONS);
   const q = query.trim().toLowerCase();
-  const matches = q
-    ? ICON_NAMES.filter(({ key, label }) => key.toLowerCase().includes(q) || label.toLowerCase().includes(q))
+  const searched = q
+    ? ICON_NAMES.filter(({ key, label }) => key.toLowerCase().includes(q) || label.includes(q))
     : ICON_NAMES;
-  if (matches.length === 0) return <Typography subtle>No icons match "{query}".</Typography>;
-  return <Grid minTileWidth={80} columns={12} snug>
-    {matches.map(({ key, label }) => <Column key={key} snug alignCenter padTight>
-      <Icon {...glyphByName(key)} size={20} />
-      <Typography tiny subtle>{label}</Typography>
-    </Column>)}
-  </Grid>;
+  const matches = category === ALL_ICONS ? searched : searched.filter((icon) => icon.category === category);
+  const countIn = (name: string) => searched.filter((icon) => icon.category === name).length;
+  return <Column cozy>
+    <Input
+      leadingIcon
+      icon="search"
+      clearable
+      placeholder="Search icons"
+      accessibilityLabel="Search icons"
+      value={query}
+      onChangeText={setQuery}
+      autoCapitalize="none"
+      autoCorrect={false}
+    />
+    <ChipGroup accessibilityLabel="Icon category" value={category} onChange={(value) => setCategory(String(value))}>
+      <Chip value={ALL_ICONS} count={searched.length}>{ALL_ICONS}</Chip>
+      {ICON_CATEGORIES.map((name) => <Chip key={name} value={name} count={countIn(name)}>{name}</Chip>)}
+    </ChipGroup>
+    {matches.length === 0
+      ? <EmptyState compact icon={<Icon search />} title="No icons found" description="Try another name, or pick All." />
+      : <Grid minTileWidth={80} columns={12} snug>
+        {matches.map(({ key, label }) => <Column key={key} snug alignCenter padTight>
+          <Icon {...glyphByName(key)} size={20} />
+          <Typography tiny subtle>{label}</Typography>
+        </Column>)}
+      </Grid>}
+  </Column>;
 }

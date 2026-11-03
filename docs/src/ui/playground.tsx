@@ -1,8 +1,7 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Card, Container, Row, Column, Tabs, Input, useMeasuredWidth, useTheme, useContainerBreakpoint } from "@nannier/canvas";
+import { ScrollView, View, Card, Container, Row, Column, Tabs, useMeasuredWidth, useTheme, useContainerBreakpoint } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
-import { IconSearchContext } from "../core/live-state";
 import type { DocExample, DocProse } from "../core/scope";
 import { CodeBlock } from "./code-block";
 import { Prose } from "./prose";
@@ -12,12 +11,6 @@ import { FULL_WIDTH, FormFactorSwitcher, PlatformRow, StageHost, formFactorAt, u
 // skins section uses them too; the Do & Don't and guidance cards import the boundary from
 // here.
 export { ExampleErrorBoundary } from "./stage";
-
-// Docs-only: example helpers whose fence renders a searchable catalog. When the selected
-// example's code uses one, the Playground draws a SINGLE search field above the 3-up stage and
-// publishes its text through IconSearchContext, so that one control filters every platform column
-// at once (see IconGallery) instead of a separate box per column. The value is the placeholder.
-const SEARCHABLE_EXAMPLES: Record<string, string> = { IconGallery: "Search icons" };
 
 // The component playground: the stacked iOS/Android/Web stage (one device row on
 // native), a gap, then the source, with the example rail to the right on wide viewports.
@@ -42,11 +35,6 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
   const [selectedState, setSelectedState] = useState(0);
   const selected = selectedProp ?? selectedState;
   const setSelected = onSelectProp ?? setSelectedState;
-  // One search field above the stage for catalog examples (see SEARCHABLE_EXAMPLES): its query
-  // flows to every platform column through IconSearchContext, so a single control filters all
-  // three previews. Reset when the selected example changes so a stale query never carries over.
-  const [query, setQuery] = useState("");
-  useEffect(() => { setQuery(""); }, [selected]);
   // The simulated form factor (see FORM_FACTORS). Full width (the last entry) is
   // the resting state; the choice survives example switches on purpose, so a
   // breakpoint sweep can walk every variant at one tier.
@@ -73,8 +61,6 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
   // The web build returns the iOS/Android/Web 3-up (labels help tell them apart); the native
   // build returns a single device preview, where the platform label is redundant.
   const showLabels = previews.length > 1;
-  // The single-search placeholder for this example, if its fence renders a searchable catalog.
-  const searchPlaceholder = Object.entries(SEARCHABLE_EXAMPLES).find(([tag]) => ex.code.includes(tag))?.[1];
 
   const stage = (
     // The form-factor override around the stage's one overlay outlet (see StageHost):
@@ -90,7 +76,6 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
         demo pinned open paints here. Because overlays no longer render inside the stage
         card, the card never has to contain them (and it does not clip at all; see the
         card below). */}
-      <IconSearchContext.Provider value={query}>
       <View
         // Marks the preview stage so web-scrollbar.tsx can hide the browser scrollbar that
         // react-native-web draws for a scrollable demo (a ScrollView/list/table) inside a
@@ -99,26 +84,10 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
         {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
         style={{ flex: 1, minWidth: 0 }}
       >
-        {/* The stage stacks its pieces (the search field, the switcher, the card, the
-            code block) with one kit gap, so the card reads as a detached frame with the
-            same breathing room above and below it, in every example and at every
-            simulated tier. */}
+        {/* The stage stacks its pieces (the switcher, the card, the code block) with
+            one kit gap, so the card reads as a detached frame with the same breathing
+            room above and below it, in every example and at every simulated tier. */}
         <Column cozy>
-          {/* A single search field above the stage for catalog examples (SEARCHABLE_EXAMPLES): its
-              query flows to every platform column via IconSearchContext, so one control filters all
-              three previews at once. Absent for every other example. */}
-          {searchPlaceholder ? (
-            <Input
-              leadingIcon
-              icon="search"
-              placeholder={searchPlaceholder}
-              accessibilityLabel={searchPlaceholder}
-              value={query}
-              onChangeText={setQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          ) : null}
           {/* The form-factor switcher (web only; see FORM_FACTORS): icon segments
               depicting each tier, the simulated width read out beside them. */}
           <FormFactorSwitcher index={factorIndex} onSelect={setFactorIndex} measuredWidth={cardWidth} />
@@ -157,7 +126,6 @@ export function Playground({ examples, variantsNote, stageAlign, singlePreview, 
           <CodeBlock code={ex.code} />
         </Column>
       </View>
-      </IconSearchContext.Provider>
     </StageHost>
   );
 
