@@ -1,0 +1,44 @@
+{
+  "name": "canvas",
+  "version": "4.1.0",
+  "description": "Build application UI with the Canvas universal React Native kit on web, iOS, and Android.",
+  "author": {
+    "name": "Bobby Nannier"
+  },
+  "homepage": "https://canvas.nannier.com/",
+  "keywords": [
+    "react-native",
+    "ui",
+    "web",
+    "ios",
+    "android",
+    "canvas"
+  ],
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Canvas UI",
+        "shortDescription": "Build universal app UI",
+        "longDescription": "Build or fix application screens with @nannier/canvas. Resolve the installed package API, compose semantic controls and responsive layouts, and check state, accessibility, and runtime behavior across available platforms. Requires an accessible application workspace and development tools. Native runtime checks require an available simulator or device. Does not replace another chosen UI library or publish your app.",
+        "developerName": "Bobby Nannier",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Build Canvas application UI",
+          "Resolve installed Canvas APIs",
+          "Check responsive layouts and accessibility"
+        ],
+        "websiteURL": "https://canvas.nannier.com/",
+        "defaultPrompt": [
+          "Build a settings screen with Canvas for web, iOS, and Android.",
+          "Fix the Canvas dialog in this app and verify keyboard focus.",
+          "Check this Canvas layout at desktop and phone widths."
+        ],
+        "composerIcon": "./assets/canvas-mark.svg",
+        "logo": "./assets/canvas-icon.png",
+        "supportURL": "https://github.com/bnannier/canvas-plugins/issues"
+      }
+    }
+  },
+  "repository": "https://github.com/bnannier/canvas-plugins"
+}

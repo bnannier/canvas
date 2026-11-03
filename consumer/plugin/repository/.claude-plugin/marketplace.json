@@ -1,0 +1,13 @@
+{
+  "name": "canvas-plugins",
+  "owner": {
+    "name": "Bobby Nannier"
+  },
+  "plugins": [
+    {
+      "name": "canvas",
+      "source": "./plugins/canvas",
+      "description": "Build application UI with the Canvas universal React Native kit."
+    }
+  ]
+}

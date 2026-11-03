@@ -31,12 +31,14 @@ const SOURCES = [
   "tools/**/*.{ts,tsx}",
   "tools/native/*.mjs",
   "tools/consumer/*.mjs",
+  "tools/discovery/*.mjs",
   "tools/agent-evals/*.mjs",
   "tools/package/consumer-support/*.{tsx,jsx}",
   "scripts/**/*.{ts,mjs}",
   "test/**/*.{ts,tsx}",
   "docs/src/**/*.{ts,tsx}",
   "docs/scripts/**/*.ts",
+  "docs/scripts/prepare-recipes.mjs",
   "examples/starter/src/**/*.{ts,tsx}",
   "examples/recipes/**/*.{ts,tsx}",
   "consumer/**/*.{ts,tsx,mjs}",
@@ -75,6 +77,7 @@ export default tseslint.config(
       // Local Claude Code session state. It is gitignored, and it holds nested git
       // worktrees whose checkouts would otherwise be linted as if they were this one.
       ".claude/**",
+      ".artifacts/**",
       // The vendored v4 design hand-off: a prototype snapshot kept verbatim as the design
       // reference (tools/v4/README.md), never Canvas source.
       "tools/v4/handoff/**",

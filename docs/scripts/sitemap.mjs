@@ -12,7 +12,7 @@ export function sitemapPaths(files) {
     if (relative.endsWith(".html")) {
       const route = relative.replace(/(?:^|\/)index\.html$/, "").replace(/\.html$/, "").replace(/\/$/, "");
       paths.add(`/${route}`);
-    } else if (/^ai\/[^/]+\/.+\.md$/.test(relative) || relative === "agents.md") paths.add(`/${relative}`);
+    } else if (/^ai\/[^/]+\/.+\.md$/.test(relative) || relative === "agents.md" || relative === "recipes.md") paths.add(`/${relative}`);
   }
   return [...paths].sort();
 }

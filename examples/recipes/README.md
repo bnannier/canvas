@@ -1,6 +1,6 @@
 # Canvas application recipes
 
-Three complete frontend flows share one small Expo app: profile settings, an operations dashboard, and studio booking. Every control, surface, and content layout uses the published `@nannier/canvas` **4.0.0** package. There are no workspace aliases, source overlays, or private kit changes.
+Three complete frontend flows share one small Expo app: profile settings, an operations dashboard, and studio booking. Every control, surface, and content layout uses the published `@nannier/canvas` **4.1.0** package. There are no workspace aliases, source overlays, or private kit changes.
 
 The source in this repository remains all rights reserved. `private: true` and `UNLICENSED` prevent accidental publication; they do not grant a source license.
 
@@ -55,6 +55,10 @@ node tests/interactions.mjs
 ```
 
 The harness serves only this app's static export on a temporary localhost port, drives real Chromium at 1280×900 and 390×900, and closes both resources when done. It verifies all three flows, keyboard activation, validation, cancellation, preserved state on navigation, dark mode, filtered metrics/progress, empty results, slot invalidation, reload reset, viewport bounds, and browser errors. It writes text results only; screenshots and traces are not retained.
+
+The public docs build stages the same app at `/recipes/` after its own postprocessors, using `node docs/scripts/prepare-recipes.mjs docs/dist` from the repository root. This runs a production export with the `/recipes` base path in a temporary directory, copies only compiled web files into ignored `docs/dist/recipes/`, and includes the installed npm package's `LICENSE.canvas.txt` plus `provenance.json`. Source maps and source archives fail the staging check. The recipe source stays private and unlicensed; the Canvas MIT grant remains scoped to the published package.
+
+To check that combined artifact under the docs' existing strict CSP, serve `docs/dist` with `bun e2e/support/serve-dist.ts --root docs/dist --port 4173 --headers --no-spa` from the root, then run `CANVAS_RECIPES_TEST_URL=http://127.0.0.1:4173/recipes/ node examples/recipes/tests/interactions.mjs`. This also asserts that the response requires Trusted Types, has no unsafe script allowances, and reports zero CSP violations.
 
 `tests/native-flow.yaml` also drives the three flows on an installed native release app through Maestro. Pass `APPOINTMENT_DATE` as the first displayed date label (the device locale determines its formatting). The flow includes a horizontal navbar swipe for the audit phones:
 
