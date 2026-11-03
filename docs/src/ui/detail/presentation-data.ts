@@ -186,8 +186,8 @@ export const DETAIL_PRESENTATION = {
       "Success",
       "Warning",
       "Muted",
-      "Gallery",
-      "Disclosure indicator"
+      "Disclosure indicator",
+      "Gallery"
     ],
     "variantNotes": [
       "Gallery",

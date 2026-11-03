@@ -26,6 +26,11 @@ describe("the reference's detail presentation", () => {
     expect(current).toHaveLength(22);
   });
 
+  it("applies the owner's Icon reorder: Disclosure indicator before Gallery", () => {
+    const variants = presentationFromSource(source).icon!.variants;
+    expect(variants.slice(-2)).toEqual(["Disclosure indicator", "Gallery"]);
+  });
+
   it("does not invent a Variants section when the reference contains no variants", () => {
     const reference = presentationFromSource('window.CV_DOCS={"c":{"primitive":{"intro":[],"variants":[],"sections":[],"a11y":[]}}};').primitive!;
     const current: DocExample[] = [{ label: "Default", code: "", render: () => null }, { label: "New example", code: "", render: () => null }];

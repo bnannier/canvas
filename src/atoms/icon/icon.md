@@ -63,15 +63,6 @@ accent's soft wash and its glyph the accent ink.
 </Grid>
 ```
 
-### Gallery
-
-`ICON_NAMES` lists every glyph in gallery order, each with its prop `key` and its
-typed `label`, for an icon picker or a catalog like this one.
-
-```tsx
-<IconGallery />
-```
-
 ### Disclosure indicator
 
 `disclosure` turns the glyph 180 degrees over the original Argus 180ms ease when
@@ -80,6 +71,15 @@ and stroke props keep their usual meaning.
 
 ```tsx
 <Icon disclosure expanded decorative chevronDown muted heavyStroke size={14} />
+```
+
+### Gallery
+
+`ICON_NAMES` lists every glyph in gallery order, each with its prop `key` and its
+typed `label`, for an icon picker or a catalog like this one.
+
+```tsx
+<IconGallery />
 ```
 
 

@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { IconGallery } = scope;
+  const { Icon } = scope;
   return (
-<IconGallery />
+<Icon disclosure expanded decorative chevronDown muted heavyStroke size={14} />
   );
 }

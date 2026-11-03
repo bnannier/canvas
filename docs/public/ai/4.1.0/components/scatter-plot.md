@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
+Source SHA-256: a6fbeb5731557d7d9a75c1ea15f26483ae43566809fb12c2a9add0ca4d3ff9e3
 
 Source: `src/charts/scatter-plot/scatter-plot.md`
 Human reference: https://canvas.nannier.com/components/scatter-plot

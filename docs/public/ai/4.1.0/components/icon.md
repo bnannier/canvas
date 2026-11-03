@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 4e9a344e7cf8e99f7847528281f6c8f82eec5f1dd2864f552950f6404318c1a5
+Source SHA-256: a6fbeb5731557d7d9a75c1ea15f26483ae43566809fb12c2a9add0ca4d3ff9e3
 
 Source: `src/atoms/icon/icon.md`
 Human reference: https://canvas.nannier.com/components/icon
@@ -79,15 +79,6 @@ accent's soft wash and its glyph the accent ink.
 </Grid>
 ```
 
-### Gallery
-
-`ICON_NAMES` lists every glyph in gallery order, each with its prop `key` and its
-typed `label`, for an icon picker or a catalog like this one.
-
-```tsx
-<IconGallery />
-```
-
 ### Disclosure indicator
 
 `disclosure` turns the glyph 180 degrees over the original Argus 180ms ease when
@@ -96,6 +87,15 @@ and stroke props keep their usual meaning.
 
 ```tsx
 <Icon disclosure expanded decorative chevronDown muted heavyStroke size={14} />
+```
+
+### Gallery
+
+`ICON_NAMES` lists every glyph in gallery order, each with its prop `key` and its
+typed `label`, for an icon picker or a catalog like this one.
+
+```tsx
+<IconGallery />
 ```
 
 
