@@ -2,7 +2,7 @@
 // reads this list plus lucide-static's `icon-nodes.json` and regenerates the
 // ICONS map, the NAMES gallery list, and the name-boolean props in
 // `src/atoms/icon/icon.shared.tsx` (between the ICONGEN markers). To add glyphs,
-// add their Lucide (kebab-case) name to SOURCES and run `bun run icons:gen`.
+// add their Lucide (kebab-case) name to a category in CATEGORIES and run `bun run icons:gen`.
 //
 // The Canvas prop name is camelCase(source) by default. ALIASES override that for
 // icons Lucide renamed in 1.x (so the kit keeps its stable `<Icon alertTriangle/>`
@@ -40,101 +40,155 @@ export const REQUIRED_NAMES = [
   "textCursorInput", "toggleLeft", "trash", "type", "upload", "user", "users", "x", "zap",
 ];
 
-/** The curated Lucide source names to ship (kebab-case). Grouped for readability.
- *  Add here to enrich the set. */
-export const SOURCES: string[] = [
-  // --- the required-existing set, by Lucide source name (aliases resolve names) ---
-  "activity", "triangle-alert", "text-align-start", "app-window", "archive", "arrow-right",
-  "award", "chart-no-axes-column", "bell", "book-open", "box", "calendar", "chart-line",
-  "check", "square-check", "chevron-down", "chevron-left", "chevron-right", "chevrons-left",
-  "circle-check", "circle-dot", "circle-x", "code", "columns-2", "copy", "database",
-  "download", "eye", "file", "file-input", "file-text", "funnel", "folder", "footprints",
-  "gauge", "git-compare", "globe", "group", "house", "image", "inbox", "info", "key-round",
-  "keyboard", "layers", "panels-top-left", "layout-grid", "list", "list-checks", "loader",
-  "lock", "log-out", "mail", "menu", "message-circle", "message-square-warning", "minus",
-  "moon", "ellipsis", "mouse-pointer-click", "move-vertical", "navigation", "palette",
-  "panel-right", "pencil", "plug", "plus", "pointer", "rocket", "save", "search", "settings",
-  "shield", "smartphone", "square", "star", "sun", "table", "terminal", "text-cursor-input",
-  "toggle-left", "trash", "type", "upload", "user", "users", "x", "zap",
-
-  // --- navigation / direction ---
-  "arrow-up", "arrow-down", "arrow-left", "arrow-up-right", "arrow-down-right", "arrow-up-left",
-  "arrow-down-left", "chevron-up", "chevrons-up-down", "chevrons-left-right", "chevrons-right",
-  "corner-down-right", "move", "move-horizontal", "move-3d", "maximize", "minimize",
-  "maximize-2", "minimize-2", "expand", "shrink", "refresh-cw", "refresh-ccw", "rotate-cw",
-  "rotate-ccw", "repeat", "undo", "redo", "undo-2", "redo-2", "compass", "locate", "route",
-  "milestone", "map", "map-pin", "flag-triangle-right",
-
-  // --- status / symbols ---
-  "equal", "divide", "percent", "hash", "asterisk", "circle-plus", "circle-minus", "circle",
-  "circle-question-mark", "circle-alert", "circle-check-big", "square-x", "square-plus",
-  "square-pen", "square-arrow-out-up-right", "triangle", "diamond", "hexagon", "octagon",
-  "heart", "bookmark", "flag", "pentagon", "badge", "badge-check", "sparkles", "gem", "crown",
-
-  // --- files / documents ---
-  "file-plus", "file-check", "file-x", "files", "file-code", "file-output", "file-image",
-  "file-pen", "file-search", "folder-open", "folder-plus", "folder-check", "clipboard",
-  "clipboard-list", "clipboard-check", "clipboard-copy", "scissors", "trash-2", "pen",
-  "eraser", "book", "book-open-text", "library", "newspaper", "scroll-text", "sticky-note",
-  "notebook", "pencil-ruler", "printer", "paperclip",
-
-  // --- people / communication ---
-  "user-plus", "user-check", "user-x", "user-round", "users-round", "user-cog", "contact",
-  "id-card", "mail-open", "mail-plus", "send", "message-square", "message-square-text",
-  "messages-square", "phone", "phone-call", "phone-off", "bell-off", "bell-ring", "at-sign",
-  "reply", "forward", "share", "share-2", "rss", "megaphone", "smile", "frown", "meh",
-  "thumbs-up", "thumbs-down", "heart-handshake", "handshake",
-
-  // --- ui / editing ---
-  "zoom-in", "zoom-out", "list-ordered", "list-tree", "layout-list", "layout-dashboard",
-  "ellipsis-vertical", "grip", "grip-vertical", "grip-horizontal", "text-align-center",
-  "text-align-justify", "sliders-horizontal", "sliders-vertical", "cog", "wand-sparkles",
-  "loader-circle", "circle-user", "life-buoy", "medal", "trophy", "wand", "blend",
-
-  // --- security ---
-  "eye-off", "lock-open", "shield-check", "shield-alert", "scan", "scan-line", "qr-code",
-
-  // --- places / commerce ---
-  "building", "building-2", "store", "landmark", "warehouse", "credit-card", "wallet",
-  "coins", "dollar-sign", "euro", "banknote", "receipt", "shopping-cart", "shopping-bag",
-  "gift", "tag", "tags", "ticket", "piggy-bank", "briefcase", "factory",
-
-  // --- transport / objects ---
-  "truck", "ship", "plane", "car", "bike", "train-front", "anchor", "fuel", "wrench",
-  "hammer", "drill", "ruler", "paintbrush", "brush", "pipette", "graduation-cap", "pen-tool",
-  "feather",
-
-  // --- time ---
-  "calendar-days", "calendar-check", "calendar-clock", "clock", "clock-3", "timer",
-  "alarm-clock", "hourglass", "watch", "history",
-
-  // --- media ---
-  "images", "camera", "video", "film", "clapperboard", "music", "play", "pause", "square-play",
-  "circle-play", "skip-forward", "skip-back", "rewind", "fast-forward", "volume", "volume-1",
-  "volume-2", "volume-x", "mic", "mic-off", "headphones", "speaker", "radio", "disc", "podcast",
-
-  // --- weather / nature ---
-  "cloud", "cloud-rain", "cloud-snow", "cloud-sun", "cloud-lightning", "wind", "snowflake",
-  "droplet", "droplets", "umbrella", "thermometer", "flame", "rainbow", "sunrise", "sunset",
-  "star-half", "leaf", "trees", "flower", "sprout", "tree-pine", "bird", "dog", "cat", "fish",
-
-  // --- devices / tech ---
-  "wifi", "wifi-off", "bluetooth", "battery", "battery-full", "battery-low", "battery-charging",
-  "power", "cpu", "server", "hard-drive", "memory-stick", "monitor", "tablet", "laptop", "mouse",
-  "usb", "cast", "plug-zap",
-
-  // --- dev / data ---
-  "git-branch", "git-commit-horizontal", "git-merge", "git-pull-request", "code-xml",
-  "square-terminal", "braces", "brackets", "bug", "binary", "command", "bot", "variable",
-  "trending-up", "trending-down", "chart-area", "chart-pie", "chart-column", "chart-bar",
-  "target", "crosshair", "scale", "calculator", "sigma",
-
-  // --- misc / health / actions ---
-  "heart-pulse", "stethoscope", "pill", "syringe", "cross", "accessibility", "baby",
-  "lightbulb", "flashlight", "coffee", "utensils", "apple", "carrot", "settings-2", "toggle-right",
-  "link", "link-2", "unlink", "external-link", "cloud-download", "cloud-upload", "log-in",
-  "hand", "hand-grab", "circle-dashed", "earth",
+/** The curated Lucide source names to ship (kebab-case), filed by category. The
+ *  categories, in this order, are the kit's `ICON_CATEGORIES`, and each glyph's
+ *  category is its `ICON_NAMES` entry's `category`. Add here to enrich the set. */
+export const CATEGORIES: readonly { label: string; sources: readonly string[] }[] = [
+  {
+    label: "Arrows & navigation",
+    sources: [
+      "arrow-right", "arrow-up", "arrow-down", "arrow-left", "arrow-up-right", "arrow-down-right",
+      "arrow-up-left", "arrow-down-left", "chevron-down", "chevron-left", "chevron-right",
+      "chevron-up", "chevrons-left", "chevrons-right", "chevrons-up-down", "chevrons-left-right",
+      "corner-down-right", "move", "move-horizontal", "move-vertical", "move-3d", "navigation",
+      "compass", "locate", "route", "milestone", "map", "map-pin", "flag-triangle-right",
+    ],
+  },
+  {
+    label: "Actions",
+    sources: [
+      "plus", "minus", "x", "search", "pencil", "pen", "eraser", "scissors", "copy", "save",
+      "trash", "trash-2", "download", "upload", "cloud-download", "cloud-upload", "share",
+      "share-2", "reply", "forward", "link", "link-2", "unlink", "external-link", "log-in",
+      "log-out", "refresh-cw", "refresh-ccw", "rotate-cw", "rotate-ccw", "repeat", "undo", "redo",
+      "undo-2", "redo-2",
+    ],
+  },
+  {
+    label: "Interface",
+    sources: [
+      "menu", "ellipsis", "ellipsis-vertical", "settings", "settings-2", "cog", "funnel",
+      "sliders-horizontal", "sliders-vertical", "toggle-left", "toggle-right",
+      "text-cursor-input", "type", "text-align-start", "text-align-center", "text-align-justify",
+      "list", "list-checks", "list-ordered", "list-tree", "layout-list", "layout-dashboard",
+      "layout-grid", "panels-top-left", "panel-right", "columns-2", "app-window", "layers",
+      "grip", "grip-vertical", "grip-horizontal", "zoom-in", "zoom-out", "maximize", "minimize",
+      "maximize-2", "minimize-2", "expand", "shrink", "hand", "hand-grab",
+    ],
+  },
+  {
+    label: "Status & shapes",
+    sources: [
+      "check", "square-check", "circle-check", "circle-check-big", "circle-x", "circle-dot",
+      "circle-alert", "triangle-alert", "info", "circle-question-mark", "circle-plus",
+      "circle-minus", "circle-dashed", "loader", "loader-circle", "star", "star-half", "heart",
+      "bookmark", "flag", "award", "medal", "trophy", "badge", "badge-check", "sparkles", "gem",
+      "crown", "square-x", "square-plus", "square-pen", "square-arrow-out-up-right", "equal",
+      "divide", "percent", "hash", "asterisk", "circle", "square", "triangle", "diamond",
+      "hexagon", "octagon", "pentagon",
+    ],
+  },
+  {
+    label: "Files & documents",
+    sources: [
+      "file", "file-text", "file-input", "file-output", "file-plus", "file-check", "file-x",
+      "files", "file-code", "file-image", "file-pen", "file-search", "folder", "folder-open",
+      "folder-plus", "folder-check", "archive", "clipboard", "clipboard-list", "clipboard-check",
+      "clipboard-copy", "book", "book-open", "book-open-text", "library", "newspaper",
+      "scroll-text", "sticky-note", "notebook", "printer", "paperclip",
+    ],
+  },
+  {
+    label: "People & communication",
+    sources: [
+      "user", "users", "user-plus", "user-check", "user-x", "user-round", "users-round",
+      "user-cog", "circle-user", "group", "contact", "id-card", "mail", "mail-open", "mail-plus",
+      "inbox", "send", "message-circle", "message-square", "message-square-text",
+      "message-square-warning", "messages-square", "phone", "phone-call", "phone-off", "bell",
+      "bell-off", "bell-ring", "at-sign", "rss", "megaphone", "smile", "frown", "meh",
+      "thumbs-up", "thumbs-down", "heart-handshake", "handshake",
+    ],
+  },
+  {
+    label: "Security",
+    sources: [
+      "lock", "lock-open", "key-round", "shield", "shield-check", "shield-alert", "eye",
+      "eye-off", "scan", "scan-line", "qr-code",
+    ],
+  },
+  {
+    label: "Commerce & places",
+    sources: [
+      "house", "building", "building-2", "store", "landmark", "warehouse", "factory", "globe",
+      "earth", "box", "credit-card", "wallet", "coins", "dollar-sign", "euro", "banknote",
+      "receipt", "shopping-cart", "shopping-bag", "gift", "tag", "tags", "ticket", "piggy-bank",
+      "briefcase",
+    ],
+  },
+  {
+    label: "Objects & tools",
+    sources: [
+      "wrench", "hammer", "drill", "ruler", "pencil-ruler", "paintbrush", "brush", "palette",
+      "pipette", "pen-tool", "feather", "wand", "wand-sparkles", "blend", "rocket", "anchor",
+      "life-buoy", "graduation-cap", "truck", "ship", "plane", "car", "bike", "train-front",
+      "fuel",
+    ],
+  },
+  {
+    label: "Time",
+    sources: [
+      "calendar", "calendar-days", "calendar-check", "calendar-clock", "clock", "clock-3",
+      "timer", "alarm-clock", "hourglass", "watch", "history",
+    ],
+  },
+  {
+    label: "Media",
+    sources: [
+      "image", "images", "camera", "video", "film", "clapperboard", "music", "play", "pause",
+      "square-play", "circle-play", "skip-forward", "skip-back", "rewind", "fast-forward",
+      "volume", "volume-1", "volume-2", "volume-x", "mic", "mic-off", "headphones", "speaker",
+      "radio", "disc", "podcast",
+    ],
+  },
+  {
+    label: "Nature & weather",
+    sources: [
+      "sun", "moon", "cloud", "cloud-rain", "cloud-snow", "cloud-sun", "cloud-lightning", "wind",
+      "snowflake", "droplet", "droplets", "umbrella", "thermometer", "flame", "rainbow",
+      "sunrise", "sunset", "leaf", "trees", "flower", "sprout", "tree-pine", "bird", "dog", "cat",
+      "fish",
+    ],
+  },
+  {
+    label: "Devices",
+    sources: [
+      "smartphone", "tablet", "laptop", "monitor", "keyboard", "mouse", "mouse-pointer-click",
+      "pointer", "wifi", "wifi-off", "bluetooth", "battery", "battery-full", "battery-low",
+      "battery-charging", "power", "plug", "plug-zap", "zap", "cpu", "server", "hard-drive",
+      "memory-stick", "usb", "cast",
+    ],
+  },
+  {
+    label: "Development & data",
+    sources: [
+      "code", "code-xml", "terminal", "square-terminal", "braces", "brackets", "bug", "binary",
+      "command", "bot", "variable", "git-branch", "git-commit-horizontal", "git-merge",
+      "git-pull-request", "git-compare", "database", "table", "activity", "gauge", "chart-line",
+      "chart-no-axes-column", "chart-area", "chart-pie", "chart-column", "chart-bar",
+      "trending-up", "trending-down", "target", "crosshair", "scale", "calculator", "sigma",
+    ],
+  },
+  {
+    label: "Health & everyday",
+    sources: [
+      "heart-pulse", "stethoscope", "pill", "syringe", "cross", "accessibility", "baby",
+      "footprints", "lightbulb", "flashlight", "coffee", "utensils", "apple", "carrot",
+    ],
+  },
 ];
+
+/** Every source name, across the categories. */
+export const SOURCES: string[] = CATEGORIES.flatMap((category) => category.sources);
 
 /** Argus reference paths replace upstream outlines in the existing glyph set. */
 export const REFERENCE_PATHS: Record<string, string> = {

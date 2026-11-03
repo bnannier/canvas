@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: a6fbeb5731557d7d9a75c1ea15f26483ae43566809fb12c2a9add0ca4d3ff9e3
+Source SHA-256: 65a274e5daeaf87f9df07daf7e7604143f2e07a133bcae9c9c1bfed57b45e53e
 
 Source: `src/atoms/icon/icon.md`
 Human reference: https://canvas.nannier.com/components/icon
@@ -11,7 +11,7 @@ Human reference: https://canvas.nannier.com/components/icon
 ## Public imports
 
 ```tsx
-import { ICON_NAMES, Icon } from "@nannier/canvas";
+import { ICON_CATEGORIES, ICON_NAMES, Icon } from "@nannier/canvas";
 ```
 
 The following examples are source excerpts. Supply application data and handlers; snippets using `tokens` read `const { tokens } = useTheme()` inside a component. Import React hooks from React. Intentional “Don't” examples illustrate unsupported patterns.
@@ -91,8 +91,10 @@ and stroke props keep their usual meaning.
 
 ### Gallery
 
-`ICON_NAMES` lists every glyph in gallery order, each with its prop `key` and its
-typed `label`, for an icon picker or a catalog like this one.
+`ICON_NAMES` lists every glyph in gallery order, each with its prop `key`, its
+typed `label` and its `category`, for an icon picker or a catalog like this one.
+`ICON_CATEGORIES` lists the categories in menu order, typed `IconCategory`. This
+gallery filters by both: search a name, or pick a category.
 
 ```tsx
 <IconGallery />

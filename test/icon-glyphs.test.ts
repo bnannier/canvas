@@ -1,8 +1,8 @@
 import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { ICONS, NAMES } from "../src/atoms/icon/icon.glyphs.ts";
-import { SOURCES, ALIASES, REQUIRED_NAMES, REFERENCE_PATHS } from "../tools/icongen/icons.ts";
+import { CATEGORIES as GENERATED_CATEGORIES, ICONS, NAMES } from "../src/atoms/icon/icon.glyphs.ts";
+import { CATEGORIES, SOURCES, ALIASES, REQUIRED_NAMES, REFERENCE_PATHS } from "../tools/icongen/icons.ts";
 
 // The glyph set is GENERATED (tools/icongen -> src/atoms/icon/icon.glyphs.ts), so the
 // failure mode it has that a hand-written module does not is DRIFT: a name added to the
@@ -30,7 +30,7 @@ describe("Icon glyph set", () => {
       { t: "circle", cx: 9, cy: 9, r: 7 },
       { t: "circle", cx: 15, cy: 15, r: 7 },
     ]);
-    expect(NAMES).toContainEqual({ key: "blend", label: "blend" });
+    expect(NAMES).toContainEqual({ key: "blend", label: "blend", category: "Objects & tools" });
   });
 
   it("generates exactly the curated source list, with no drift in either direction", () => {
@@ -41,6 +41,16 @@ describe("Icon glyph set", () => {
     expect(produced).toEqual(expected);
     // ICONS and NAMES are two views of one entry list and must never diverge.
     expect(Object.keys(ICONS).sort((a, b) => a.localeCompare(b))).toEqual(expected);
+  });
+
+  it("files every glyph in exactly one category, and every category has glyphs", () => {
+    expect(GENERATED_CATEGORIES).toEqual(CATEGORIES.map((category) => category.label));
+    const filed = CATEGORIES.flatMap((category) => category.sources);
+    expect(filed).toHaveLength(new Set(filed).size);
+    for (const category of GENERATED_CATEGORIES) expect(NAMES.some((icon) => icon.category === category)).toBe(true);
+    for (const category of CATEGORIES) {
+      for (const source of category.sources) expect(NAMES.find((icon) => icon.key === canvasName(source))?.category).toBe(category.label);
+    }
   });
 
   it("keeps every previously-shipped glyph name available", () => {

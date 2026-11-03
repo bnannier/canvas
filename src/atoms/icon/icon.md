@@ -75,8 +75,10 @@ and stroke props keep their usual meaning.
 
 ### Gallery
 
-`ICON_NAMES` lists every glyph in gallery order, each with its prop `key` and its
-typed `label`, for an icon picker or a catalog like this one.
+`ICON_NAMES` lists every glyph in gallery order, each with its prop `key`, its
+typed `label` and its `category`, for an icon picker or a catalog like this one.
+`ICON_CATEGORIES` lists the categories in menu order, typed `IconCategory`. This
+gallery filters by both: search a name, or pick a category.
 
 ```tsx
 <IconGallery />
