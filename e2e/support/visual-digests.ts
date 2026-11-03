@@ -73,6 +73,40 @@ export function assertVisualDimensions(name: string, actual: PixelDigest, expect
   }
 }
 
+type CaptureBox = { x: number; y: number; width: number; height: number };
+
+/**
+ * Playwright encloses an element's fractional origin and far edge independently.
+ * A position-only change can therefore add a raster row without growing the box.
+ * Allow an integer-origin capture only when that rounding explains the entire
+ * mismatch and the live box's own rounded-up extent still matches its approval.
+ */
+export function fractionalOriginClip(box: CaptureBox, actual: PixelDigest, expected: PixelDigest | undefined): CaptureBox | undefined {
+  if (!expected || (actual.width === expected.width && actual.height === expected.height)) return;
+  const width = Math.ceil(box.width);
+  const height = Math.ceil(box.height);
+  if (width !== expected.width || height !== expected.height) return;
+  // Match the pinned Playwright enclosingIntRect epsilon, rather than accepting
+  // an arbitrary one-pixel difference or forcing the clip to approved dimensions.
+  const enclosingWidth = Math.ceil(box.x + box.width - 1e-3) - Math.floor(box.x + 1e-3);
+  const enclosingHeight = Math.ceil(box.y + box.height - 1e-3) - Math.floor(box.y + 1e-3);
+  if (actual.width !== enclosingWidth || actual.height !== enclosingHeight) return;
+  return { x: Math.round(box.x), y: Math.round(box.y), width, height };
+}
+
+/** Recheck the live bounds on every frame, so a growing box cannot be cropped away. */
+export async function alignedVisualDimensions(target: Locator, actual: PixelDigest, expected: PixelDigest | undefined, timeout?: number): Promise<PixelDigest> {
+  if (!expected || (actual.width === expected.width && actual.height === expected.height)) return actual;
+  const box = await target.boundingBox();
+  if (!box || !fractionalOriginClip(box, actual, expected)) return actual;
+  return stablePixelDigest(async (remainingMs) => {
+    const current = await target.boundingBox();
+    const clip = current ? fractionalOriginClip(current, actual, expected) : undefined;
+    const options = { type: "png" as const, animations: "disabled" as const, caret: "hide" as const, timeout: remainingMs };
+    return clip ? target.page().screenshot({ ...options, clip }) : target.screenshot(options);
+  }, timeout);
+}
+
 /** Only the explicit, local reviewed-update command may write text metadata. */
 export function digestUpdateRequested(env: NodeJS.ProcessEnv = process.env): boolean {
   const requested = env.E2E_UPDATE_DIGESTS;
@@ -93,11 +127,14 @@ export async function expectVisualDimensions(target: Page | Locator, name: strin
   const file = JSON.parse(readFileSync(DIGESTS_PATH, "utf8")) as DigestFile;
   if (file.format !== "sha256-srgb-rgba8-v1") throw new Error("Unsupported pixel digest format.");
   const expected = file.digests[name];
-  const actual = await stablePixelDigest((remainingMs) => target.screenshot({
+  let actual = await stablePixelDigest((remainingMs) => target.screenshot({
     type: "png", animations: "disabled", caret: "hide", timeout: remainingMs,
     ...(options.fullPage === undefined ? {} : { fullPage: options.fullPage }),
   }), options.timeout, strict && !update && expected ? { name, digest: expected } : undefined);
   if (!update) {
+    // Preserve historical captures, strict pixel diagnostics, and reviewed updates.
+    // Only a default element-frame mismatch may retry with live integer bounds.
+    if (!strict && "boundingBox" in target) actual = await alignedVisualDimensions(target, actual, expected, options.timeout);
     assertVisualDimensions(name, actual, expected);
     if (strict) assertPixelDigest(name, actual, expected);
     return;

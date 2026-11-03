@@ -35,6 +35,12 @@ geometry fails; there are no automatic approvals or raster-variant whitelists.
 Known unchanged-render raster differences can fail this diagnostic, so a failure
 requires investigation and is not by itself proof of a design regression.
 
+Default element-frame checks retry a dimension mismatch at an integer origin only
+when the live box's rounded-up extent matches its approval and Playwright's outward
+rounding explains the entire mismatch. Each retry frame remeasures the box, so real
+growth still fails. Matching historical captures, strict pixel diagnostics, and
+reviewed metadata updates retain the original element-capture path.
+
 Comparisons remain Linux-only. Other operating systems execute the flows without
 comparing the Linux dimensions or hashes. Use Linux with the pinned Playwright
 version and matching fonts to compare or update. CI currently uses ubuntu-latest,
