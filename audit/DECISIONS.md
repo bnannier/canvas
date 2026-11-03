@@ -184,3 +184,16 @@ don't ask" instruction.
 |---|---|---|
 | R-5 | Restore `GlassSurface` to the public entry, or move Argus's frame onto a kit component | Restore it, with `GlassSurfaceProps` and `GlassLayer`, documented on `integration` (App frames), not deprecated. Its `frosted` material was added for Argus's frame (d3103f1d), no kit component draws an app frame (design-language item 7 keeps shells out of the kit), and glass is never hand-painted, so a consumer's frame has no other correct source. A minor, justified in `.changeset/glass-surface-public.md`. The docs' own frame imports it from the package rather than from `src/`. The other 130 names stay removed. |
 
+
+## Stats follows the hand-off's code-driven renderer (2026-11-03)
+
+The v4 hand-off draws Stats with two renderers: the base one (`K.def('stats')` in
+`tools/v4/handoff/cv-kit-data.js`), used when a snippet passes no data, and the code-driven one
+(`O('stats')` in `cv-kit-code3.js`), which draws every snippet that passes `items`. Every docs
+example and every real use passes `items`, so the code-driven renderer is what the hand-off shows
+for them, and the kit had followed the base one. Decided by the agent under the owner's
+2026-10-24 "decide, don't ask" instruction and the 2026-10-28 pixel-exact rule.
+
+| ID | Question | Decision |
+|---|---|---|
+| R-6 | Which renderer is Stats' visual authority | The code-driven one for the default, `plain` and `framed` surfaces: the metrics in one bordered box (radius 16, a hairline between each), `framed` as separate tiles (radius 14, no shadow, 12 apart), a 16 inset with lines 8 apart, a 500 13 secondary label led by the accent's swatch and the icon, an 84 by 28 trend line beside the figure, an arrowed 12 px delta and a 6 px share bar over its legend, laid out on the auto-fit grid (180 px floor for three or more metrics, 220 px for one or two). The dense surfaces (`compact`, `large`) keep the base renderer, the only one that draws them. The docs copy that describes `framed` as a strip track is the hand-off's own and stays. |

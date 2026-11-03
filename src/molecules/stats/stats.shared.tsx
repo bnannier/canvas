@@ -1,11 +1,13 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, RippleClip, cornerRadii, useTheme, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
-import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
-import { Sparkline } from "../../charts/sparkline/sparkline.js";
-import { StackedBar } from "../../charts/stacked-bar/stacked-bar.js";
+import Svg, { Polyline } from "react-native-svg";
+import { View, Pressable, Text, StyleSheet, RippleClip, cornerRadii, useTheme, useMeasuredWidth, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple, innerFill, isGlass, innerFillAlpha, alpha } from "../../style/index.js";
+import { AnatomyScope, useAnatomyPart, withPartLayout, type AnatomyTarget } from "../../style/anatomy.js";
+import { useHover } from "../../style/hover.js";
+import { Icon } from "../../atoms/icon/icon.js";
 import { type StackedSegment } from "../../charts/shared/types.js";
-import { deltaTone, headerRow, headerTrailing, item as itemLayout, row, shareStrip, sparkStrip, type Surface } from "./stats.styles.js";
+import { SPARK, deltaTone, headerRow, headerTrailing, item as itemLayout, labelCluster, row, shareBar, shareColumn, shareDot, shareLegend, shareLegendItem, shareLegendText, sparkPoints, swatch, tileFloor, valueRow, type Surface } from "./stats.styles.js";
+import { MEASURE_ROUNDING, gridCellWidth, gridColumns } from "../../atoms/grid/grid.shared.js";
 
 // Shared Stats shell. The structure (a wrapping row/grid of metric stacks, each a
 // small label, a large headline value, and an optional delta), the boolean-prop
@@ -14,29 +16,26 @@ import { deltaTone, headerRow, headerTrailing, item as itemLayout, row, shareStr
 // row density, title/label/value/delta type, and press feedback) and calls
 // createStats.
 //
-// Two surfaces, one axis (`plain` vs the default card):
+// Two surfaces, after the v4 hand-off's code-driven renderer (cv-kit-code3.js `stats`):
 //
-// 1. Card (default): each metric sits in its own bordered card. Good for a
-//    standalone metric or a free-standing group on a bare page.
-// 2. Plain (`plain`): the metric stacks sit borderless on a shared parent surface,
-//    so you don't draw boxes inside a box. Pair with a parent card.
+// 1. Group (the default, and `plain`): the metrics sit edge to edge in one bordered
+//    surface, a hairline between each, so a row of metrics reads as one panel.
+// 2. Framed (`framed`): each metric is its own bordered tile, 12 apart.
 //
-// Layout is responsive by default: items lay out in a wrapping row, each holding a
-// sensible minimum width, so a group reflows from a single row on desktop down to a
-// stack on a phone without any per-breakpoint props.
+// The dense surfaces (`compact`, `large`) are the base renderer's (cv-kit-data.js
+// `K.def('stats')`): value-first tiles under the small shadow.
+//
+// Layout is the hand-off's auto-fit grid: as many equal columns of at least the floor
+// as the row's own width holds, so a group reflows from a single row on desktop down to
+// a stack on a phone without any per-breakpoint props.
 //
 // Boolean-prop API: one boolean per option, first-match precedence within an axis
 // (mirrors Button's intentOf). `items` carries the plain data; each item's `down`
 // flag colors its delta red instead of the default green.
 //
-// One strip slot, two ways to fill it. Under the value/delta an item draws either
-// its trend (`spark`, a Sparkline) or its composition (`share`, a StackedBar over
-// a muted rail), and both reserve the same height. That is what lets a row mix
-// them: cards stretch to the tallest sibling, so a metric row where only one tile
-// carries a strip leaves every other tile with a band of blank space under its
-// text and reads as an unfinished component. A metric with no trend to plot
-// usually still decomposes, and drawing the decomposition fills the card with
-// something true instead of padding it.
+// A metric's trend (`spark`) draws as a small line beside its value, a decline in the
+// error color and anything else in the accent; its composition (`share`) draws under the
+// delta as a thin proportional bar over a legend.
 //
 // Stats draws the hand-off's tile on every platform: one structure and one set of
 // (semantic) colors, with per-OS touches limited to the face and the press feedback, so
@@ -151,20 +150,26 @@ export interface StatsSkin {
   valueText: (tokens: ColorTokens) => TextStyle;
   /** The delta type base (the tone color is layered on top by the shell). */
   deltaBase: TextStyle;
+  /** The dense surfaces' delta type base (compact and large). */
+  denseDeltaBase: TextStyle;
   /** iOS/web dim on a pressed tappable item; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   /** Android ripple over a tappable item; null on iOS/web. */
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean }) | null;
+  /** Whether a tappable metric under the pointer takes the secondary wash (the web only); null elsewhere. */
+  hoverWash: true | null;
 }
 
-// Surface precedence when more than one is passed: first match wins.
+// Surface precedence when more than one is passed, first match wins. The dense surfaces
+// keep a tile per metric unless `plain`; otherwise `framed` separates the tiles and the
+// default (and `plain`) is the one bordered group.
 export function surfaceOf(p: StatsProps): Surface {
-  if (p.plain) return "plain";
-  return "card";
+  if (p.compact || p.large) return p.plain ? "plain" : "card";
+  return p.framed ? "card" : "plain";
 }
 
-// Accent precedence, first match wins. Returns the chart token name, or null for
-// the default foreground so an untoned metric's style is unchanged.
+// Accent precedence, first match wins. Returns the chart token name its swatch paints,
+// or null for no swatch.
 export function accentOf(item: StatItem): string | null {
   if (item.chart1) return "chart-1";
   if (item.chart2) return "chart-2";
@@ -198,67 +203,74 @@ const MEASURE_BOX = StyleSheet.create({ box: { position: "absolute", top: 0, rig
 
 export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
-  function StatItemView({ item, surface, framed, onPress, dense, large, first, parts }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void; dense?: boolean; large?: boolean; first: boolean; parts?: StatParts }): ReactNode {
+  function StatItemView({ item, surface, onPress, dense, large, first, parts, cellWidth, count }: { item: StatItem; surface: Surface; onPress?: () => void; dense?: boolean; large?: boolean; first: boolean; parts?: StatParts; cellWidth?: number; count: number }): ReactNode {
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
-    // Under glass a card-surface metric is a CONTENT-layer pane (the material rides
-    // inside the pressable so the tap, ripple and dim stay on the Pressable).
-    // Split the surface shape (radius/border/fill/padding) from the outer flex sizing:
-    // the shape stays on the tappable node, the sizing rides the RippleClip wrapper.
+    const { hovered, target: hoverTarget } = useHover(skin.hoverWash != null && onPress != null);
+    // Under glass a tile is a CONTENT-layer pane (the material rides inside the pressable
+    // so the tap, ripple and dim stay on the Pressable). Split the surface shape
+    // (radius/border/fill/padding) from the outer flex sizing: the shape stays on the
+    // tappable node, the sizing rides the RippleClip wrapper.
     const cardShape = surface === "card" ? dense ? skin.denseCard(tokens, !!large) : skin.cardSurface(tokens) : null;
-    const metricLayout = dense ? { flexGrow: 1, flexShrink: 1, flexBasis: "0%" as const, minWidth: 0 } : itemLayout[surface];
-    // A plain metric carries its own inset and the rule that separates it from the one before.
+    const metricLayout = dense ? { flexGrow: 1, flexShrink: 1, flexBasis: "0%" as const, minWidth: 0 } : cellWidth != null ? { width: cellWidth, minWidth: 0 } : itemLayout(count);
+    // A metric in the group carries its own inset and the rule that separates it from the one before.
     const plainShape = surface === "plain" ? skin.plainItem(tokens, first) : null;
     const container = [cardShape ?? plainShape, metricLayout];
-    // The accent recolors ONLY the headline value, never the label or the delta:
-    // the delta keeps its own rise/decline semantics, which an accent must not
-    // overwrite.
+    // The accent is a swatch before the label, never a recolor of the value or the delta:
+    // the delta keeps its own rise/decline semantics.
     const accent = accentOf(item);
-    const accentStyle = accent ? { color: tokens[accent as keyof typeof tokens] } : null;
     const deltaKind = deltaOf(item);
-    // The header row exists only when the metric has an icon or a control, so a
-    // plain metric's tree is unchanged.
-    const hasHeader = item.icon != null || item.actions != null;
+    // The header row exists only when the metric has something beside its label, so a
+    // bare metric's tree is a label Text.
+    const trailing = item.actions ?? (onPress && !dense ? <Icon chevronRight subtle decorative size={14} /> : null);
+    const leading = accent != null || item.icon != null;
+    const labelText = <Text ref={parts?.label?.ref} onLayout={parts?.label?.onLayout} style={dense ? skin.denseLabel(tokens, !!large) : skin.labelText(tokens)}>{item.label}</Text>;
+    const label = leading ? (
+      <View style={labelCluster}>
+        {accent != null ? <View style={[swatch, { backgroundColor: tokens[accent as keyof typeof tokens] }]} /> : null}
+        {item.icon}
+        {labelText}
+      </View>
+    ) : labelText;
+    const valueText = <Text ref={parts?.value?.ref} onLayout={parts?.value?.onLayout} style={dense ? skin.denseValue(tokens, !!large) : skin.valueText(tokens)}>{item.value}</Text>;
+    const spark = item.spark != null && item.spark.length > 1 ? (
+      <View accessibilityRole="image" aria-label={item.sparkLabel ?? `${item.label} trend`} accessibilityLabel={item.sparkLabel ?? `${item.label} trend`}>
+        <Svg width={SPARK.width} height={SPARK.height} viewBox={`0 0 ${SPARK.width} ${SPARK.height}`} style={{ overflow: "visible" }}>
+          <Polyline points={sparkPoints(item.spark.map(Number))} fill="none" stroke={item.down ? tokens.destructive : tokens.primary} strokeWidth={SPARK.stroke} strokeLinecap="round" strokeLinejoin="round" />
+        </Svg>
+      </View>
+    ) : null;
     const inner = (
       <>
-        {dense ? <Text ref={parts?.value?.ref} onLayout={parts?.value?.onLayout} style={[skin.denseValue(tokens, !!large), accentStyle]}>{item.value}</Text> : null}
-        {hasHeader ? (
+        {dense ? valueText : null}
+        {trailing != null ? (
           <View style={headerRow}>
-            <Text ref={parts?.label?.ref} onLayout={parts?.label?.onLayout} style={skin.labelText(tokens)}>{item.label}</Text>
-            <View style={headerTrailing}>
-              {item.icon}
-              {item.actions}
-            </View>
+            {label}
+            <View style={headerTrailing}>{trailing}</View>
           </View>
-        ) : (
-          <Text ref={parts?.label?.ref} onLayout={parts?.label?.onLayout} style={dense ? skin.denseLabel(tokens, !!large) : skin.labelText(tokens)}>{item.label}</Text>
-        )}
-        {dense ? null : <Text ref={parts?.value?.ref} onLayout={parts?.value?.onLayout} style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>}
+        ) : label}
+        {dense ? spark : spark != null ? <View style={valueRow}>{valueText}{spark}</View> : valueText}
         {item.description ? <Text style={skin.denseDescription(tokens)}>{item.description}</Text> : null}
         {item.delta != null && item.delta !== "" ? (
-          <Text ref={parts?.delta?.ref} onLayout={parts?.delta?.onLayout} style={[skin.deltaBase, deltaKind === "steady" ? { color: tokens["muted-foreground"] } : deltaTone(tokens, deltaKind === "down")]}>{item.delta}</Text>
+          <Text ref={parts?.delta?.ref} onLayout={parts?.delta?.onLayout} style={[dense ? skin.denseDeltaBase : skin.deltaBase, deltaKind === "steady" ? { color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] } : deltaTone(tokens, deltaKind === "down")]}>
+            {/* The hand-off's direction arrow leads a rise or a decline; the signed figure already says it, so the arrow is hidden from assistive tech. */}
+            {!dense && deltaKind !== "steady" ? <Text aria-hidden accessibilityElementsHidden importantForAccessibility="no">{deltaKind === "down" ? "↓ " : "↑ "}</Text> : null}
+            {item.delta}
+          </Text>
         ) : null}
-        {item.spark != null && item.spark.length > 0 ? (
-          <Sparkline values={item.spark} track={framed} accessibilityLabel={item.sparkLabel ?? `${item.label} trend`} style={sparkStrip} />
-        ) : item.share != null && item.share.length > 0 ? (
-          <View style={shareStrip}>
-            {/* Subtle whether or not the row is framed: inside a tile the strip
-                supports the value rather than being it, which is the same reason
-                a Sparkline washes its own marks. */}
-            <StackedBar segments={item.share} label={item.label} hideLegend track subtle tall={framed} />
-          </View>
-        ) : null}
+        {spark == null && item.share != null && item.share.length > 0 ? <ShareStrip label={item.label} segments={item.share} /> : null}
       </>
     );
     if (onPress) {
       // The card's pane is a child of this Pressable: where it renders, the ripple draws in
       // the foreground, over it (`paneRipple`).
       const android_ripple = paneRipple(cardShape ? theme : false, skin.ripple ? skin.ripple(tokens) : undefined);
+      const hoverFill = hovered ? { backgroundColor: innerFill(theme, "secondary", "faint") } : null;
       return (
-        // Android: the bounded card ripple is clipped to the br12 outline by this
+        // Android: the bounded card ripple is clipped to the tile's outline by this
         // RippleClip parent (a node can't clip its own ripple). The outer flex sizing
-        // rides the wrapper so the card keeps its grid/full-width footprint; the shape,
-        // padding, fill, and pressed-dim stay on the Pressable.
+        // rides the wrapper so the tile keeps its grid footprint; the shape, padding,
+        // fill, and pressed-dim stay on the Pressable.
         <RippleClip shape={cornerRadii(cardShape)} style={metricLayout}>
           <Pressable
             ref={parts?.stat?.ref}
@@ -266,7 +278,8 @@ export function createStats(skin: StatsSkin) {
             accessibilityRole="button"
             onPress={onPress}
             android_ripple={android_ripple}
-            style={({ pressed }) => [cardShape ? paneStyle(theme, cardShape) : plainShape, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
+            {...hoverTarget}
+            style={({ pressed }) => [cardShape ? paneStyle(theme, cardShape) : plainShape, hoverFill, pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null]}
           >
             {cardShape ? <GlassPane layer="content" shape={cardShape} /> : null}
             {inner}
@@ -279,6 +292,34 @@ export function createStats(skin: StatsSkin) {
     return cardShape ? <GlassSurface layer="content" style={container}>{statBox}{inner}</GlassSurface> : <View ref={parts?.stat?.ref} onLayout={parts?.stat?.onLayout} style={container}>{inner}</View>;
   }
 
+  // A metric's composition: the proportional bar (named for the screen reader with each
+  // segment's share) over its legend, which repeats the names and so is hidden from it.
+  function ShareStrip({ label, segments }: { label: string; segments: StackedSegment[] }): ReactNode {
+    const theme = useMaterialTheme({ static: true });
+    const { tokens } = theme;
+    const total = segments.reduce((sum, seg) => sum + (Number(seg.value) || 0), 0) || 1;
+    const share = (seg: StackedSegment) => (Number(seg.value) || 0) / total;
+    const name = `${label}: ${segments.map((seg) => `${seg.label} ${Math.round(share(seg) * 100)}%`).join(", ")}`;
+    // The first segment in the accent, the rest in the raised surface (an ink tint under glass).
+    const rest = isGlass(theme) ? alpha(tokens.foreground, innerFillAlpha(theme, "firm")) : tokens["surface-raised"];
+    const fill = (k: number) => (k === 0 ? tokens.primary : rest);
+    return (
+      <View style={shareColumn}>
+        <View accessibilityRole="image" aria-label={name} accessibilityLabel={name} style={shareBar}>
+          {segments.map((seg, k) => <View key={k} style={{ flexGrow: share(seg), flexShrink: 1, flexBasis: 0, backgroundColor: fill(k) }} />)}
+        </View>
+        <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={shareLegend}>
+          {segments.map((seg, k) => (
+            <View key={k} style={shareLegendItem}>
+              <View style={[shareDot, { backgroundColor: fill(k) }]} />
+              <Text style={shareLegendText(tokens)}>{seg.label}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
   return function Stats(props: StatsProps) {
     // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
     // hand-off's order: Group, Stat, Label, Value, Delta. The Stat and its text parts are
@@ -289,24 +330,33 @@ export function createStats(skin: StatsSkin) {
     const { tokens } = useTheme();
     const surface = surfaceOf(props);
 
-    // The card surface lays cards directly in a wrapping, gapped row. The plain
-    // surface wraps the stacks in a shared parent card so the borderless metrics
-    // have something to sit on.
+    // The framed (and dense) surface lays its tiles directly in a wrapping, gapped row. The
+    // group wraps the metrics in one shared bordered surface.
     const isPlain = surface === "plain";
     // FILL: the group spans the parent it is given; the items flex-wrap inside it.
     const fill = useFillStyle("Stats");
-    // The plain surface's shared parent card is a CONTENT-layer pane under glass
-    // (GlassSurface is the plain View in solid mode); the card surface lays its own
-    // panes per metric and the group itself paints nothing.
+    // The group's shared surface is a CONTENT-layer pane under glass (GlassSurface is the
+    // plain View in solid mode); the framed surface lays its own panes per tile and the
+    // row itself paints nothing.
     const Root = isPlain ? GlassSurface : View;
+    // The hand-off's auto-fit grid, measured on the row itself (its OWN width, never the
+    // window): as many columns of at least the floor as fit, never more than there are
+    // metrics (auto-fit collapses the empty tracks), each the same cell width so a wrapped
+    // last row keeps its column. The dense surfaces share one row and need no cells.
+    const { width: rowWidth, measured, onLayout: onRowLayout } = useMeasuredWidth();
+    const dense = !!(props.compact || props.large);
+    const gap = (StyleSheet.flatten(skin.rowGap[surface]) as ViewStyle).gap;
+    const gapPx = typeof gap === "number" ? gap : 0;
+    const cols = Math.min(items.length, gridColumns(rowWidth, tileFloor(items.length), gapPx));
+    const cellWidth = !dense && measured && rowWidth > 0 ? gridCellWidth(rowWidth - (cols > 1 ? MEASURE_ROUNDING : 0), cols, gapPx) : undefined;
 
     return (
       <AnatomyScope>
       <Root testID={testID} style={[isPlain ? skin.plainContainer(tokens) : null, fill, style]} {...(isPlain ? { layer: "content" as const } : null)}>
         {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
-        <View ref={groupPart?.ref} onLayout={groupPart?.onLayout} style={[row, skin.rowGap[surface]]}>
+        <View ref={groupPart?.ref} onLayout={withPartLayout(groupPart, onRowLayout)} style={[row, skin.rowGap[surface]]}>
           {items.map((item, i) => (
-            <StatItemView key={i} item={item} surface={surface} framed={props.framed} dense={props.compact || props.large} large={props.large && !props.compact} first={i === 0} parts={i === 0 ? firstParts : undefined} onPress={onPressItem ? () => onPressItem(i) : undefined} />
+            <StatItemView key={i} item={item} surface={surface} dense={dense} large={props.large && !props.compact} first={i === 0} cellWidth={cellWidth} count={items.length} parts={i === 0 ? firstParts : undefined} onPress={onPressItem ? () => onPressItem(i) : undefined} />
           ))}
         </View>
       </Root>

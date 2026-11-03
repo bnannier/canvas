@@ -147,7 +147,7 @@ export function gridRowGapOf(props: Pick<GridProps, "rowsSection" | "rowsCozy">)
 }
 
 /** The most a whole-px measure can overstate the box it measured. */
-const MEASURE_ROUNDING = 0.5;
+export const MEASURE_ROUNDING = 0.5;
 
 /** Build a Grid component from a platform skin (the shared layout scale). */
 export function createGrid(skin: FlexSkin) {

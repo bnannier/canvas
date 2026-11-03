@@ -15,24 +15,43 @@ import * as dl from "../src/molecules/description-lists/description-lists.styles
 const subtle = t["subtle-foreground"];
 
 describe("the v4 stats", () => {
-  it("draws a card tile at 16, 18 in (12 compact), lines 6 apart, tiles 12 apart", () => {
-    expect(stats.webSkin.cardSurface(t)).toMatchObject({ borderRadius: 16, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, padding: 18, gap: 6, boxShadow: shadow("sm", t).boxShadow });
-    expect(stats.webSkin.denseCard(t, false).padding).toBe(12);
+  // Snippets that pass `items` render through the code-driven renderer (cv-kit-code3.js
+  // `stats`); only the dense surfaces come from the base one (cv-kit-data.js `K.def`).
+  it("draws a framed tile at 14, 16 in, lines 8 apart, tiles 12 apart, with no shadow", () => {
+    const tile = stats.webSkin.cardSurface(t);
+    expect(tile).toMatchObject({ borderRadius: 14, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, padding: 16, gap: 8 });
+    expect(tile.boxShadow).toBeUndefined();
     expect(stats.webSkin.rowGap.card).toEqual({ gap: 12 });
+  });
+
+  it("keeps the dense tiles on the base renderer's raised card", () => {
+    expect(stats.webSkin.denseCard(t, false)).toMatchObject({ borderRadius: 16, padding: 12, gap: 6, boxShadow: shadow("sm", t).boxShadow });
+    expect(stats.webSkin.denseCard(t, true).padding).toBe(18);
+    expect(stats.webSkin.denseLabel(t, false)).toMatchObject({ fontSize: 12, fontWeight: "500", color: subtle });
+    expect(stats.webSkin.denseDeltaBase).toMatchObject({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "500" });
   });
 
   it("sets the figure 600 28 (20 compact, 36 large) in the display face, tracked -0.02em", () => {
     expect(stats.webSkin.valueText(t)).toMatchObject({ fontFamily: DISPLAY_FONT, fontSize: 28, lineHeight: 28, fontWeight: "600", letterSpacing: -0.56 });
     expect(stats.webSkin.denseValue(t, false).fontSize).toBe(20);
     expect(stats.webSkin.denseValue(t, true).fontSize).toBe(36);
-    expect(stats.webSkin.labelText(t)).toMatchObject({ fontSize: 12, fontWeight: "500", color: subtle });
-    expect(stats.webSkin.deltaBase).toMatchObject({ fontFamily: MONO_FONT, fontSize: 12, fontWeight: "500" });
+    expect(stats.webSkin.labelText(t)).toMatchObject({ fontSize: 13, fontWeight: "500", color: t["muted-foreground"] });
+    expect(stats.webSkin.deltaBase).toMatchObject({ fontSize: 12, fontWeight: "500" });
+    expect(stats.webSkin.deltaBase.fontFamily).toBeUndefined();
   });
 
-  it("rules the plain surface's tiles with hairlines inside one card", () => {
-    expect(stats.webSkin.plainContainer(t)).toMatchObject({ borderRadius: 16, borderWidth: 1, backgroundColor: t.card });
-    expect(stats.webSkin.plainItem(t, false)).toMatchObject({ padding: 18, borderLeftWidth: 1, borderLeftColor: t.border });
+  it("rules the group's metrics with hairlines inside one card", () => {
+    expect(stats.webSkin.plainContainer(t)).toMatchObject({ borderRadius: 16, borderWidth: 1, backgroundColor: t.card, overflow: "hidden" });
+    expect(stats.webSkin.plainItem(t, false)).toMatchObject({ padding: 16, gap: 8, borderLeftWidth: 1, borderLeftColor: t.border });
     expect(stats.webSkin.plainItem(t, true).borderLeftWidth).toBeUndefined();
+    expect(stats.webSkin.rowGap.plain).toEqual({ gap: 0 });
+  });
+
+  it("plots the trend line as the hand-off's spark helper does", () => {
+    expect(stats.SPARK).toEqual({ width: 84, height: 28, stroke: 1.75 });
+    expect(stats.sparkPoints([0, 10, 5])).toBe("0.0,26.0 42.0,2.0 84.0,14.0");
+    // A flat series sits on the floor rather than dividing by zero.
+    expect(stats.sparkPoints([3, 3])).toBe("0.0,26.0 84.0,26.0");
   });
 
   it("shares the tile on iOS and Android in the platform face", () => {
