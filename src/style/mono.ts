@@ -20,6 +20,13 @@ export const MONO_FONT = Platform.select({
   default: "monospace",
 }) as string;
 
+/** System terminal face, independent of the document/code monospace alias. */
+export const TERMINAL_FONT = Platform.select({
+  ios: "Menlo",
+  android: "monospace",
+  default: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+}) as string;
+
 // The display face's sentinel, the same mechanism as MONO_FONT: a skin that sets its
 // headings in the display face asks for this family, and the themed Text swaps in the
 // app's registered `display` face (ThemeProvider `fonts.display`, Bricolage Grotesque in

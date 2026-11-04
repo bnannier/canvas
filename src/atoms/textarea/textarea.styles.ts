@@ -2,7 +2,7 @@ import { destructiveText } from "../../style/destructive-text.js";
 import { fieldBorder, fieldErrorFill } from "../../style/field-colors.js";
 import { typeRoles } from "../../style/type-scale.js";
 import { type TextStyle, type ViewStyle } from "react-native";
-import { type ColorTokens, MONO_FONT, activeIndicator, shape, tabularNums, type FloatingLabelStyles } from "../../style/index.js";
+import { type ColorTokens, MONO_FONT, TERMINAL_FONT, activeIndicator, shape, tabularNums, type FloatingLabelStyles } from "../../style/index.js";
 import { webSkin as inputWeb } from "../input/input.styles.js";
 
 // Co-located Textarea skins, one per platform, drawn to the Canvas v4 hand-off
@@ -236,3 +236,8 @@ export const androidSkin: TextareaSkin = {
 export const denseText: TextStyle = { fontSize: 13, lineHeight: 19.5, fontWeight: "600" };
 export const denseField = (tokens: ColorTokens): TextStyle => ({ paddingVertical: 10, paddingHorizontal: 12, backgroundColor: tokens["field-fill"] ?? tokens.card });
 export const denseMinHeight = (rows?: number): TextStyle => ({ minHeight: 20 + Math.max(1, Math.floor(rows ?? 2)) * 19.5 });
+
+/** Terminal prompts share transcript metrics without borrowing a platform field inset. */
+export const terminalText: TextStyle = { fontFamily: TERMINAL_FONT, fontSize: 13, lineHeight: 20, fontWeight: "400" };
+export const terminalField: TextStyle = { paddingHorizontal: 0, paddingVertical: 0, paddingTop: 0, paddingBottom: 0, paddingStart: 0, paddingEnd: 0 };
+export const terminalMinHeight = (rows?: number): TextStyle => ({ minHeight: Math.max(1, Math.floor(rows ?? 1)) * 20 });

@@ -13,7 +13,7 @@ import { type TextEntryProps } from "../input/input.shared.js";
 import { useHover } from "../../style/hover.js";
 import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { useDelegatedParts } from "../input/delegated-parts.js";
-import { type TextareaSkin, type Size, denseField, denseText, denseMinHeight } from "./textarea.styles.js";
+import { type TextareaSkin, type Size, denseField, denseText, denseMinHeight, terminalText, terminalField, terminalMinHeight } from "./textarea.styles.js";
 
 // The character-count line's own layout: end-aligned under the field, at the skin's
 // gap and side inset. The count line is part of the component's own anatomy (the
@@ -86,6 +86,8 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
   systemFocus?: boolean;
   /** Dense paragraph-entry metrics matching the application field family. */
   dense?: boolean;
+  /** Bare monospace prompt metrics for a terminal transcript composer. Implies embedded. */
+  terminal?: boolean;
   accessibilityLabel?: string;
   /** Prevent edits while retaining focus and the resting appearance. */
   readOnly?: boolean;
@@ -152,7 +154,8 @@ export function sizeOf(p: TextareaProps): Size {
 /** Build a Textarea component from a platform skin. */
 export function createTextarea(skin: TextareaSkin) {
   const Textarea = forwardRef<RNTextInput, TextareaProps>(function Textarea(props, ref) {
-    const { value, onChangeText, placeholder, label, required, rows, disabled, embedded, showCount, style } = props;
+    const { value, onChangeText, placeholder, label, required, rows, disabled, showCount, style } = props;
+    const embedded = props.embedded || props.terminal;
     const flush = props.flush || embedded;
     const size = sizeOf(props);
     const [focusedState, setFocused] = useState(false);
@@ -251,7 +254,7 @@ export function createTextarea(skin: TextareaSkin) {
     const common = {
       value,
       systemFocus: props.systemFocus,
-      numberOfLines: props.dense ? Math.max(1, Math.floor(rows ?? 2)) : undefined,
+      numberOfLines: props.dense || props.terminal ? Math.max(1, Math.floor(rows ?? 2)) : undefined,
       onChangeText: handleChangeText,
       placeholderTextColor: skin.placeholder(tokens),
       selectionColor: tokens.primary, // brand cursor / selection on every platform
@@ -307,8 +310,9 @@ export function createTextarea(skin: TextareaSkin) {
     const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [
       embedded ? [fieldShape, reserve] : paneStyle(theme, [fieldShape, reserve], focused || isError),
       glass && !embedded ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
-      props.dense ? denseText : skin.text(size),
-      props.dense ? denseMinHeight(rows) : skin.minHeight(rows, size),
+      props.terminal ? terminalText : props.dense ? denseText : skin.text(size),
+      props.terminal ? terminalMinHeight(rows) : props.dense ? denseMinHeight(rows) : skin.minHeight(rows, size),
+      props.terminal ? terminalField : null,
       // A focused framed field wears the skin's halo (web), errored or not.
       focused && !flush && !embedded && skin.focusHalo ? skin.focusHalo(tokens) : null,
       // A framed field paints its own focus state (its border turns `ring`), so the

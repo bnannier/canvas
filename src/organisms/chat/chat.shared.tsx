@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { type ScrollView as RNScrollView, type ViewProps } from "react-native";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode, type RefAttributes } from "react";
+import { type ScrollView as RNScrollView, type TextInput as RNTextInput, type ViewProps } from "react-native";
 import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, useControllableState, FOCUS_RESET, LoopView, createLoopChannel, useReducedMotion, type LayoutStyle } from "../../style/index.js";
 import { AnatomyPart, AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
@@ -17,6 +17,7 @@ import { FormSection as WebFormSection, type FormSectionProps } from "../../mole
 import { Switch as WebSwitch, type SwitchProps } from "../../atoms/switch/switch.js";
 import { Card as WebCard, type CardProps } from "../../molecules/card/card.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { chatSubmitsOnEnter } from "./chat.logic.js";
 import { useChatTailFollow } from "./chat-scroll.js";
 import { createMarkdown, type MarkdownParts } from "./markdown.shared.js";
 import { webSkin as markdownSkin } from "./markdown.styles.js";
@@ -102,6 +103,8 @@ export interface ChatMessageProps extends QuestionCallbacks, MessageActionCallba
   onOpenAttachment?: (attachment: ChatAttachmentData) => void;
   /** Render assistant markdown punctuation literally. User messages are always plain text. */
   plain?: boolean;
+  /** Flat, compact monospace terminal transcript. */
+  terminal?: boolean;
   testID?: string;
 }
 
@@ -116,12 +119,18 @@ export interface ChatThreadProps extends QuestionCallbacks, MessageActionCallbac
   label?: string;
   emptyState?: ReactNode;
   plain?: boolean;
+  /** Flat, compact monospace terminal transcript. */
+  terminal?: boolean;
   testID?: string;
   /** Parent composition only. Supply a bounded height, or a bounded flex parent. */
   style?: LayoutStyle;
 }
 
 export interface ChatComposerProps {
+  /** Bare terminal prompt; hardware Enter sends and Shift+Enter inserts a newline. */
+  terminal?: boolean;
+  /** Focus the message input on mount. */
+  autoFocus?: boolean;
   value: string;
   onChangeText: (value: string) => void;
   /** Receives the trimmed draft. The app owns clearing the draft and starting transport. */
@@ -168,7 +177,7 @@ interface MessageAnatomy {
 
 interface ChatParts extends MarkdownParts {
   Button: ComponentType<ButtonProps>;
-  Textarea: ComponentType<TextareaProps>;
+  Textarea: ComponentType<TextareaProps & RefAttributes<RNTextInput>>;
   Spinner: ComponentType<SpinnerProps>;
   Chip: ComponentType<ChipProps>;
   Radio: ComponentType<RadioProps>;
@@ -182,7 +191,7 @@ interface ChatParts extends MarkdownParts {
 export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch, Card = WebCard, DataTable, Divider }: Partial<ChatParts> = {}) {
   const Markdown = createMarkdown(markdownSkin, { Checkbox, DataTable, Divider }, false);
 
-  function Thinking({ label, icon }: { label: string; icon?: ReactNode }) {
+  function Thinking({ label, icon, terminal }: { label: string; icon?: ReactNode; terminal?: boolean }) {
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
     const channel = useRef<ReturnType<typeof createLoopChannel> | null>(null);
@@ -198,7 +207,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
       <View style={s.dots} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {[0, 1, 2].map((index) => <LoopView key={index} style={s.dot(tokens)} opacity={{ channel: pulse, inputRange: [0, 0.25, 0.5, 1], outputRange: [0.35, 1, 0.35, 0.35], offset: index / 6 }} />)}
       </View>
-      <Text style={s.thinkingLabel(tokens)}>{label}</Text>
+      <Text style={terminal ? s.terminalMuted(tokens) : s.thinkingLabel(tokens)}>{label}</Text>
     </View>;
   }
 
@@ -222,7 +231,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     ))}</View>;
   }
 
-  function Questions({ message, disabled, pending, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange }: ChatMessageProps) {
+  function Questions({ message, disabled, pending, terminal, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange }: ChatMessageProps) {
     const { tokens } = useTheme();
     const [position, setPosition] = useControllableState(message.questionIndex, 0, (next) => onQuestionIndexChange?.(message.id, next));
     const questions = message.questions ?? [];
@@ -343,7 +352,8 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const answer = answers.find((entry) => entry.questionId === question.id);
     const showSubmit = multipleFor(question, answer) || index === questions.length - 1;
     const showNext = !showSubmit && (answer?.optionId === "__custom" || valid(question, answer));
-    return <Card flat selected compact testID="chat-active-question"><View style={s.questions}>
+    const QuestionFrame = terminal ? View : Card;
+    return <QuestionFrame flat selected compact testID="chat-active-question"><View style={s.questions}>
       <View ref={progress} accessible accessibilityRole="text" tabIndex={-1} accessibilityLabel={`Question ${index + 1} of ${questions.length}`} aria-label={`Question ${index + 1} of ${questions.length}`} accessibilityLiveRegion="polite" aria-live="polite" style={FOCUS_RESET}>
         <Text style={skin.muted(tokens)}>{index + 1} of {questions.length}</Text>
       </View>
@@ -360,41 +370,41 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         </View>
         {!question.multiple ? <View style={s.questionMode}>{renderModeSwitch(question)}</View> : null}
       </View>
-    </View></Card>;
+    </View></QuestionFrame>;
   }
 
   function ChatMessage(props: ChatMessageProps) {
     return <MessageRow {...props} />;
   }
 
-  function MessageRow({ message, plain, onOpenAttachment, onAction, testID, anatomy, ...questionProps }: ChatMessageProps & { anatomy?: MessageAnatomy }) {
+  function MessageRow({ message, plain, terminal, onOpenAttachment, onAction, testID, anatomy, ...questionProps }: ChatMessageProps & { anatomy?: MessageAnatomy }) {
     const { tokens } = useTheme();
     const fill = useFillStyle("ChatMessage");
     const actionsDisabled = !!(questionProps.disabled || questionProps.pending || message.streaming || !onAction);
     const user = message.role === "user";
     const author = message.author ?? (user ? "You" : message.role === "system" ? "System" : "Assistant");
-    const body = skin.body(tokens);
-    const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : <Markdown compact>{message.content}</Markdown>;
-    const bubble = user ? <GlassSurface layer="content" tint={tokens["primary-soft"]} style={skin.message(tokens, true)}>{content}</GlassSurface> : content;
+    const body = terminal ? s.terminalBody(tokens) : skin.body(tokens);
+    const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : <Markdown compact terminal={terminal}>{message.content}</Markdown>;
+    const bubble = user && !terminal ? <GlassSurface layer="content" tint={tokens["primary-soft"]} style={skin.message(tokens, true)}>{content}</GlassSurface> : content;
     return (
-      <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, user ? s.userRow : s.assistantRow]}>
-        <View style={[s.messageContent, user ? s.userContent : null, message.questions?.length ? s.questionContent : null]}>
+      <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, terminal ? null : user ? s.userRow : s.assistantRow]}>
+        <View style={[s.messageContent, terminal ? s.terminalMessage : user ? s.userContent : null, message.questions?.length ? s.questionContent : null]}>
           <View style={s.identity}>
-            {message.providerIcon != null ? <AnatomyPart part={anatomy?.avatar}>{message.providerIcon}</AnatomyPart> : null}
-            <Text style={skin.label(tokens)}>{author}</Text>
-            {message.provider ? <Text style={skin.muted(tokens)}>{message.provider}</Text> : null}
+            {message.providerIcon != null && !terminal ? <AnatomyPart part={anatomy?.avatar}>{message.providerIcon}</AnatomyPart> : null}
+            <Text style={terminal ? s.terminalLabel(tokens) : skin.label(tokens)}>{terminal ? `${user ? "❯" : message.role === "system" ? "·" : "●"} ${author}` : author}</Text>
+            {message.provider ? <Text style={terminal ? s.terminalMuted(tokens) : skin.muted(tokens)}>{message.provider}</Text> : null}
           </View>
           {message.content ? <AnatomyPart part={anatomy?.body}>{bubble}</AnatomyPart> : null}
-          {message.role === "assistant" && message.questions?.length ? <Questions key={message.id} message={message} {...questionProps} /> : null}
+          {message.role === "assistant" && message.questions?.length ? <Questions key={message.id} message={message} terminal={terminal} {...questionProps} /> : null}
           {message.actions?.length ? <View style={s.questionButtons}>
             {message.actions.map((action) => <Button key={action.id} small primary={action.primary} outline={!action.primary} disabled={actionsDisabled} onPress={() => {
               if (!actionsDisabled) onAction?.(message.id, action.id);
             }}>{action.label}</Button>)}
           </View> : null}
           <Attachments attachments={message.attachments} onOpen={onOpenAttachment} />
-          {message.streaming ? <Thinking label="Responding…" /> : null}
-          {message.error ? <Text accessibilityLiveRegion="polite" style={skin.muted(tokens, true)}>Reply failed</Text> : null}
-          {message.notice ? <Text style={skin.muted(tokens, message.error)}>{message.notice}</Text> : null}
+          {message.streaming ? <Thinking label="Responding…" terminal={terminal} /> : null}
+          {message.error ? <Text accessibilityLiveRegion="polite" style={terminal ? s.terminalMuted(tokens, true) : skin.muted(tokens, true)}>Reply failed</Text> : null}
+          {message.notice ? <Text style={terminal ? s.terminalMuted(tokens, message.error) : skin.muted(tokens, message.error)}>{message.notice}</Text> : null}
         </View>
       </View>
     );
@@ -406,7 +416,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     return <Thread {...props} framed />;
   }
 
-  function Thread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style, disabled, onAction, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange, framed }: ChatThreadProps & { framed: boolean }) {
+  function Thread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, terminal, onOpenAttachment, testID, style, disabled, onAction, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange, framed }: ChatThreadProps & { framed: boolean }) {
     const { tokens } = useTheme();
     const fill = useFillStyle("ChatThread");
     const scroll = useRef<RNScrollView>(null);
@@ -417,7 +427,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const frame = useFocusFrame();
     const { ref: frameRef, ...frameTarget } = frame.target;
     const streaming = messages.some((message) => message.streaming);
-    const Frame = framed ? GlassSurface : View;
+    const Frame = framed && !terminal ? GlassSurface : View;
     const parts = useContext(ChatAnatomyContext);
     // A part drawn by many messages goes to the first one that draws it.
     const firstUser = parts ? messages.findIndex((message) => message.role === "user" && message.content) : -1;
@@ -426,12 +436,12 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const anatomyOf = (message: ChatMessageData, index: number): MessageAnatomy | undefined =>
       parts ? { body: index === (message.role === "user" ? firstUser : firstAssistant) ? (message.role === "user" ? parts.user : parts.assistant) : undefined, avatar: index === firstAvatar ? parts.avatar : undefined } : undefined;
     return (
-      <Frame layer="content" style={[fill, s.thread, framed ? s.frame(tokens) : null, style]} testID={testID}>
+      <Frame layer="content" style={[fill, s.thread, framed && !terminal ? s.frame(tokens) : null, style]} testID={testID}>
         <ScrollView
           {...frameTarget}
           ref={(node) => { scroll.current = node; frameRef(node); }}
           style={[s.thread, FOCUS_RESET]}
-          contentContainerStyle={s.content}
+          contentContainerStyle={terminal ? s.terminalContent : s.content}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
           accessibilityLabel={label}
@@ -451,10 +461,10 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           scrollEventThrottle={32}
         >
           {!messages.length && !pending ? <View style={s.empty}>{emptyState}</View> : null}
-          <View {...listProps({ label })} style={s.blocks}>
-            {messages.map((message, index) => <MessageRow key={message.id} anatomy={anatomyOf(message, index)} message={message} plain={plain} onOpenAttachment={onOpenAttachment} onAction={onAction} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />)}
+          <View {...listProps({ label })} style={terminal ? s.terminalBlocks : s.blocks}>
+            {messages.map((message, index) => <MessageRow key={message.id} anatomy={anatomyOf(message, index)} message={message} plain={plain} terminal={terminal} onOpenAttachment={onOpenAttachment} onAction={onAction} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />)}
           </View>
-          {pending && !streaming ? <View style={s.pending}><Thinking label={pendingLabel} icon={pendingIcon} /></View> : null}
+          {pending && !streaming ? <View style={s.pending}><Thinking label={pendingLabel} icon={pendingIcon} terminal={terminal} /></View> : null}
         </ScrollView>
         {frame.innerRing()}
       </Frame>
@@ -465,8 +475,9 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     return <Composer {...props} framed />;
   }
 
-  function Composer({ value, onChangeText, onSend, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, sendDisabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID, framed }: ChatComposerProps & { framed: boolean }) {
+  function Composer({ value, onChangeText, onSend, terminal, autoFocus, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, sendDisabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID, framed }: ChatComposerProps & { framed: boolean }) {
     const { tokens } = useTheme();
+    const editor = useRef<RNTextInput>(null);
     const [focusedState, setFocused] = useState(false);
     // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
     const focused = usePinnedFocus(!disabled) || focusedState;
@@ -474,22 +485,35 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const filesPending = attaching || attachments?.some((attachment) => attachment.uploading || attachment.error);
     const canSend = !disabled && !sendDisabled && !pending && !filesPending && (value.trim().length > 0 || !!attachments?.length);
     const part = useContext(ChatAnatomyContext)?.composer;
+    const send = () => {
+      if (!canSend) return;
+      onSend(value.trim());
+      if (terminal) editor.current?.focus();
+    };
+    const onKeyPress: TextareaProps["onKeyPress"] = (event) => {
+      if (!terminal || !chatSubmitsOnEnter(event)) return;
+      // RNW keyboard events are cancelable; soft-keyboard native events keep newline.
+      event.preventDefault();
+      send();
+    };
+    const Surface = terminal ? View : GlassSurface;
     const body = (
-      <View ref={part?.ref} onLayout={part?.onLayout} style={[framed ? null : fill, s.composer(tokens)]} testID={framed ? undefined : testID}>
-        <GlassSurface static layer="control" stateBorder={focused} style={s.composerSurface(tokens, focused)}>
+      <View ref={part?.ref} onLayout={part?.onLayout} style={[framed && !terminal ? null : fill, terminal ? s.terminalComposer(tokens, focused) : s.composer(tokens)]} testID={framed && !terminal ? undefined : testID}>
+        <Surface static layer="control" stateBorder={focused} style={terminal ? s.terminalComposerSurface(tokens, focused) : s.composerSurface(tokens, focused)}>
           {attachments?.length ? <View style={s.composerAttachments}><Attachments attachments={attachments} onRemove={onRemoveAttachment} disabled={disabled || pending} /></View> : null}
-          <View style={s.composerRow}>
-            {onAttach ? <Button ghost mediumIcon circle disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon paperclip color={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} size={16} />} onPress={onAttach} /> : null}
+          <View style={terminal ? s.terminalComposerRow : s.composerRow}>
+            {terminal ? <Text aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.terminalPrompt(tokens, disabled)}>❯</Text> : null}
+            {onAttach ? <Button ghost mediumIcon circle={!terminal} disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon paperclip color={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} size={16} />} onPress={onAttach} /> : null}
             <View style={s.editor}>
-              <Textarea value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={1} dense embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+              <Textarea ref={editor} autoFocus={autoFocus} terminal={terminal} onKeyPress={onKeyPress} value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={1} dense embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
             </View>
-            <Button primary mediumIcon circle disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["muted-foreground"]} size={15} />} onPress={() => { if (canSend) onSend(value.trim()); }} />
+            {terminal ? <Button ghost small disabled={!canSend} accessibilityLabel={sendLabel} onPress={send}><Text style={s.terminalFace}>Send</Text></Button> : <Button primary mediumIcon circle disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["muted-foreground"]} size={15} />} onPress={send} />}
           </View>
-        </GlassSurface>
-        {footer ? <View style={s.footer}>{footer}</View> : null}
+        </Surface>
+        {footer ? <View style={[s.footer, terminal ? s.terminalFooter : null]}>{footer}</View> : null}
       </View>
     );
-    return framed ? <GlassSurface layer="content" style={[fill, s.frame(tokens)]} testID={testID}>{body}</GlassSurface> : body;
+    return framed && !terminal ? <GlassSurface layer="content" style={[fill, s.frame(tokens)]} testID={testID}>{body}</GlassSurface> : body;
   }
 
   function Chat(props: ChatProps) {
@@ -504,11 +528,12 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const avatarPart = useAnatomyPart("Avatar");
     const composerPart = useAnatomyPart("Composer");
     const anatomy = useMemo<ChatAnatomy>(() => ({ assistant: assistantPart, user: userPart, avatar: avatarPart, composer: composerPart }), [assistantPart, userPart, avatarPart, composerPart]);
+    const ChatFrame = props.terminal ? View : GlassSurface;
     return <AnatomyScope><ChatAnatomyContext.Provider value={anatomy}><AnatomyPart part={threadPart}>
-      <GlassSurface layer="content" style={[fill, s.root, s.frame(tokens), props.style]} testID={props.testID}>
+      <ChatFrame layer="content" style={[fill, s.root, props.terminal ? null : s.frame(tokens), props.style]} testID={props.testID}>
         <Thread {...props} framed={false} style={undefined} testID={props.testID ? `${props.testID}-thread` : undefined} />
         <Composer {...props} framed={false} testID={props.testID ? `${props.testID}-composer` : undefined} />
-      </GlassSurface>
+      </ChatFrame>
     </AnatomyPart></ChatAnatomyContext.Provider></AnatomyScope>;
   }
   return { Chat, ChatThread, ChatMessage, ChatComposer };
