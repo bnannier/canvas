@@ -12,6 +12,10 @@ Assistant content supports paragraphs, headings, lists, quotes, fenced code, bol
 
 `ChatComposer` keeps Enter available for newlines. Its explicit Send control receives the trimmed draft through `onSend`; empty, disabled, pending, or uploading sends are blocked. An attached file permits an empty text draft. `sendDisabled` blocks only Send while leaving drafts, attachment controls, and message choices interactive; use it when a saved choice must be made before another freeform message. Pending replies leave the draft editable. The app owns draft clearing, transport, cancellation, persistence, and retry behavior.
 
+Pass `terminal` to Chat or its standalone pieces for a flat, left-aligned monospace transcript. Messages use `❯` for the user and `●` for the assistant beside their author, preserving provider text and current delivery state. No user bubble or conversation card is added. The bare composer places `❯` and its multiline editor between two full-width hairlines, with an explicit rectangular Send action. Hardware Enter sends; Shift+Enter inserts a newline. IME composition and native soft-keyboard Enter retain their normal text-entry behavior. Sending returns focus to the editor; `autoFocus` optionally focuses it on mount. The app still owns clearing the draft, delivery, and preventing duplicate requests. Pending replies keep the draft editable and block sending.
+
+`Markdown terminal` preserves the same safe document grammar with 13px monospace text, compact spacing, and semantic headings. Tables remain aligned table rows in a horizontal scrollport instead of becoming stacked cards. Fenced code and tabs remain literal whitespace. `Textarea terminal` supplies the prompt's bare monospace metrics and implies `embedded`; existing Textarea defaults remain unchanged.
+
 Set `onAttach` to show the accessible paperclip action. The app owns file picking and uploading, passes composer `attachments`, and removes a staged file through `onRemoveAttachment(id)`. A `ChatAttachmentData` has an `id`, `name`, optional `uploading` or `error` flags, and optional `notice` text. Uploading and failed files block sending; remove a failed file or replace it after retrying. `attaching` also blocks attaching and sending while the app opens a picker or uploads. Saved message attachments use the same metadata; `onOpenAttachment(attachment)` on Chat, ChatThread, or ChatMessage delegates opening or downloading to the app. Canvas never requests, uploads, or opens file URLs itself.
 
 An assistant message can include `questions`: each `ChatQuestionData` has a stable `id`, `title`, optional `multiple`, and `options` with an `id`, `label`, and optional `description`. Supply controlled `ChatQuestionAnswerData` entries in `questionAnswers` containing `questionId`, `optionId` for a single choice or `optionIds` for multiple choices, and optional `customText`. Set `multiple` on the question for checkboxes; a custom answer can be combined with regular choices. A single-choice question also offers Select multiple at the bottom-right of its action row: switching it on records `multiple: true` in its answer and uses `optionIds`, preserving the original question metadata. The switch retains existing selections and custom text. Switching it off returns to the first selected choice, or clears an empty draft. Every question offers Write my own answer under the reserved `__custom` option id, limited to 1000 characters.
@@ -53,6 +57,12 @@ Checklists are read-only Canvas selection controls; reading a document never cha
 ```
 
 ## Variants
+
+### Terminal transcript
+
+```tsx
+<Chat terminal autoFocus style={{ height: 320 }} messages={[{ id: "request", role: "user", content: "Inspect the current change." }, { id: "reply", role: "assistant", author: "Claude", content: "I will read the **implementation** and its checks." }]} value="" onChangeText={() => {}} onSend={() => {}} footer={<Typography tiny muted>Enter to send · Shift+Enter for newline</Typography>} />
+```
 
 ### Long conversation
 

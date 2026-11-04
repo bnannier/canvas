@@ -2,6 +2,8 @@
 
 Type scale classes for headings, body text, and helper styles.
 
+`terminal` selects the system terminal face while retaining the reading role, size, weight, and ink: pair it with `tiny`, `caption`, `small`, or a heading. The web uses the system monospace stack beginning with `ui-monospace`, SFMono-Regular, and Menlo; native platforms use Menlo or their monospace alias. Existing `mono` and code typography keep their current behavior.
+
 Argus reading roles include `subheading`, `label`, `micro`, `tag`, `eyebrow`,
 `eyebrowLg`, `stageLabel`, `statValue`, `metricValue`, and `formValue`. These extend
 Typography itself. Semantic leading and tracking props preserve the reference's

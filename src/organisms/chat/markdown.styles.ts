@@ -1,5 +1,5 @@
 import { type ColorTokens, type TextStyle, type ViewStyle } from "../../style/index.js";
-import { DISPLAY_FONT, MONO_FONT } from "../../style/mono.js";
+import { DISPLAY_FONT, MONO_FONT, TERMINAL_FONT } from "../../style/mono.js";
 
 // Document Markdown, drawn to the Canvas v4 hand-off's `K.md` (tools/v4/handoff/cv-kit-code3.js):
 // 14 / 1.55 paragraphs in the foreground ink, blocks 10 apart (6 compact), 600 headings at a
@@ -35,3 +35,12 @@ export const webSkin: MarkdownSkin = {
 // Document ink has no OS-specific shape; injected table and checklist parts retain theirs.
 export const iosSkin = webSkin;
 export const androidSkin = webSkin;
+
+/** Transcript typography keeps semantic structure at one terminal reading size. */
+export const terminalBody = (tokens: ColorTokens): TextStyle => ({ fontFamily: TERMINAL_FONT, fontSize: 13, lineHeight: 20, color: tokens.foreground });
+export const terminalHeading: TextStyle = { fontWeight: "700" };
+export const terminalCode: TextStyle = { fontFamily: TERMINAL_FONT, fontSize: 13, lineHeight: 20 };
+export const terminalTable: ViewStyle = { minWidth: "100%", flexGrow: 1 };
+export const terminalTableRow: ViewStyle = { flexDirection: "row" };
+export const terminalTableCell = (width: number): ViewStyle => ({ width, paddingEnd: 16, paddingVertical: 2 });
+export const terminalTableHeader = (tokens: ColorTokens): ViewStyle => ({ borderBottomWidth: 1, borderBottomColor: tokens.border });

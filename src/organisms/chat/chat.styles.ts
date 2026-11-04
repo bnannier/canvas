@@ -1,6 +1,7 @@
 import { type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { destructiveText } from "../../style/destructive-text.js";
+import { TERMINAL_FONT } from "../../style/mono.js";
 import { shape } from "../../style/tokens.js";
 
 // The Chat skin, drawn to the Canvas v4 hand-off (`K.def('chat')` in
@@ -73,3 +74,17 @@ export const webSkin: ChatSkin = {
 // Conversation content has no OS-specific control shape; injected controls keep theirs.
 export const iosSkin = webSkin;
 export const androidSkin = webSkin;
+
+/** Flat terminal transcript; the owning layout supplies its surface and bounds. */
+export const terminalContent: ViewStyle = { flexGrow: 1, paddingHorizontal: 12, paddingVertical: 10, gap: 10 };
+export const terminalMessage: ViewStyle = { flexGrow: 1, minWidth: 0, gap: 4 };
+export const terminalBlocks: ViewStyle = { gap: 12, minWidth: 0 };
+export const terminalFace: TextStyle = { fontFamily: TERMINAL_FONT };
+export const terminalBody = (tokens: ColorTokens): TextStyle => ({ fontFamily: TERMINAL_FONT, fontSize: 13, lineHeight: 20, color: tokens.foreground });
+export const terminalLabel = (tokens: ColorTokens): TextStyle => ({ ...terminalBody(tokens), fontWeight: "600" });
+export const terminalMuted = (tokens: ColorTokens, error?: boolean): TextStyle => ({ ...terminalBody(tokens), color: error ? destructiveText(tokens) : tokens["muted-foreground"] });
+export const terminalComposer = (tokens: ColorTokens, focused: boolean): ViewStyle => ({ flexShrink: 0, gap: 8, borderTopWidth: 1, borderTopColor: focused ? tokens.ring : tokens.border });
+export const terminalComposerSurface = (tokens: ColorTokens, focused: boolean): ViewStyle => ({ gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: focused ? tokens.ring : tokens.border });
+export const terminalFooter: ViewStyle = { paddingHorizontal: 12, paddingBottom: 10 };
+export const terminalComposerRow: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
+export const terminalPrompt = (tokens: ColorTokens, disabled?: boolean): TextStyle => ({ ...terminalBody(tokens), color: disabled ? tokens["muted-foreground"] : tokens.foreground, fontWeight: "600" });

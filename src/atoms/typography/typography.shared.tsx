@@ -3,7 +3,7 @@ import { sectionDescription, sectionRow, sectionActions } from "./typography.sty
 import { identityTextInk } from "../../style/identity-text.js";
 import { useViewportWidth } from "../../style/responsive.js";
 import { fluidRoles, fluidType } from "../../style/type-scale.js";
-import { DISPLAY_FONT } from "../../style/mono.js";
+import { DISPLAY_FONT, TERMINAL_FONT } from "../../style/mono.js";
 import { type ReactNode } from "react";
 import { type AccessibilityRole, type GestureResponderEvent, type TextLayoutEventData, type NativeSyntheticEvent } from "react-native";
 import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
@@ -62,6 +62,8 @@ import {
 // nearest one (text-sm), as Kbd does for its 11px label.
 
 export interface TypographyProps {
+  /** Use the system terminal face while retaining the selected reading role and size. */
+  terminal?: boolean;
   /** A section heading owning its count, metadata and trailing actions. */
   section?: boolean;
   count?: number | string;
@@ -582,7 +584,7 @@ export function createTypography(skin: TypographySkin) {
 
     // The mono/code roles ask for a monospace face; there is no font-family
     // utility, so request the cross-platform monospace alias via inline style.
-    const monoStyle = MONO_ROLES.has(role) || props.mono ? { fontFamily: MONO_FONT } : null;
+    const monoStyle = props.terminal ? { fontFamily: TERMINAL_FONT } : MONO_ROLES.has(role) || props.mono ? { fontFamily: MONO_FONT } : null;
     // The code pill is HUG (a boxed inline token); every other role is a text run that
     // spans its parent and wraps.
     const hug = useHugStyle();
