@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { MONO_FONT, platformMinTarget, shape, statusColors, darkColors, lightColors, type ColorTokens } from "../../style/index.js";
+import { MONO_FONT, TERMINAL_FONT, platformMinTarget, shape, statusColors, darkColors, lightColors, type ColorTokens } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type CodeBlockSkin, type Density } from "./code-block.shared.js";
 
@@ -48,11 +48,12 @@ import { type CodeBlockSkin, type Density } from "./code-block.shared.js";
 // reference the SAME object as `webSkin` (no fabricated per-OS difference); the skin
 // contract exists only so the file pattern matches the rest of the kit.
 
-export type Variant = "terminal" | "numbered" | "inline" | "plain";
+export type Variant = "transcript" | "terminal" | "numbered" | "inline" | "plain";
 
 // Monospace face: requested inline since RN has no font-family utility (the same
 // approach Badge's `mono` modifier uses).
 export const MONO = { fontFamily: MONO_FONT } as const;
+export const TRANSCRIPT_MONO = { fontFamily: TERMINAL_FONT } as const;
 
 // --- type ramp ---------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useContext, useState, type ReactNode, type RefObject } from "react";
-import { Text, View } from "react-native";
+import { Animated, Text, View } from "react-native";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { webSkin as dropdownSkin } from "../src/atoms/dropdown/dropdown.styles.ts";
 import { Select } from "../src/atoms/select/select.tsx";
@@ -218,4 +218,61 @@ it("pins application chrome outside its independently scrolling body", () => {
   expect(scroller!.contains(screen.getByText("Actions"))).toBe(false);
   expect(getComputedStyle(scroller!).flexGrow).toBe("1");
   expect(screen.getByRole("dialog", { name: "Agent details" })).toBeDefined();
+});
+
+
+describe("Drawer terminal", () => {
+  for (const dark of [false, true]) {
+    it(`keeps its inset rounded screen opaque in ${dark ? "dark" : "light"} glass themes`, () => {
+      render(<ThemeProvider dark={dark} glass><Drawer terminal instant open width={820} accessibilityLabel="Execution"><Text>Execution content</Text></Drawer></ThemeProvider>);
+      const content = screen.getByText("Execution content");
+      const screenBox = content.parentElement!.parentElement!;
+      const screenStyle = getComputedStyle(screenBox);
+      expect(screenStyle.borderTopLeftRadius).toBe("12px");
+      expect(screenStyle.overflowX).toBe("hidden");
+      expect(screenStyle.overflowY).toBe("hidden");
+      expect(screenStyle.backgroundColor).not.toMatch(/rgba\(0, 0, 0, 0(?:\.0+)?\)/);
+      expect(screenBox.querySelector('[data-testid="glass-material"]')).toBeNull();
+      expect(getComputedStyle(screenBox.parentElement!.parentElement!.parentElement!).paddingTop).toMatch(/(?:8|12)px/);
+    });
+  }
+
+  it("animates an initially open terminal and waits for its exit callback", () => {
+    let closes = 0;
+    let complete: ((result: { finished: boolean }) => void) | undefined;
+    const timings: number[] = [];
+    const initialValues: number[] = [];
+    const timing = spyOn(Animated, "timing").mockImplementation((_value, config) => {
+      timings.push(config.toValue as number);
+      initialValues.push((_value as Animated.Value).__getValue());
+      return { start: (callback) => { complete = callback; }, stop() {}, reset() {} };
+    });
+    try {
+      const closed = () => { closes++; };
+      const { rerender } = ui(<Drawer terminal open onClosed={closed} accessibilityLabel="Execution"><Text>Still exiting</Text></Drawer>);
+      expect(timings.at(-1)).toBe(1);
+      expect(initialValues[0]).toBe(0);
+      act(() => complete?.({ finished: true }));
+      rerender(<ThemeProvider><Drawer terminal open={false} onClosed={closed} accessibilityLabel="Execution"><Text>Still exiting</Text></Drawer></ThemeProvider>);
+      expect(timings.at(-1)).toBe(0);
+      expect(closes).toBe(0);
+      expect(screen.getByText("Still exiting")).not.toBeNull();
+      act(() => complete?.({ finished: true }));
+      expect(closes).toBe(1);
+      expect(screen.queryByText("Still exiting")).toBeNull();
+    } finally { timing.mockRestore(); }
+  });
+
+  it("reports only completed dismissals, including an immediate close", async () => {
+    let closes = 0;
+    const closed = () => { closes++; };
+    const { rerender } = ui(<Drawer terminal instant open={false} onClosed={closed} accessibilityLabel="Execution" />);
+    expect(closes).toBe(0);
+    rerender(<ThemeProvider><Drawer terminal instant open onClosed={closed} accessibilityLabel="Execution" /></ThemeProvider>);
+    expect(closes).toBe(0);
+    rerender(<ThemeProvider><Drawer terminal instant open={false} onClosed={closed} accessibilityLabel="Execution" /></ThemeProvider>);
+    await waitFor(() => expect(closes).toBe(1));
+    rerender(<ThemeProvider><Drawer terminal instant open={false} onClosed={closed} accessibilityLabel="Execution" /></ThemeProvider>);
+    expect(closes).toBe(1);
+  });
 });

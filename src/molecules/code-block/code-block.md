@@ -3,7 +3,7 @@
 Syntax-highlighted code display with clipboard copy, horizontal scrolling, line
 emphasis, diff rendering, collapsible folding, and tabbed alternatives.
 
-The variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
+The variant axis picks the surface (`transcript` > `terminal` > `numbered` > `inline` > plain,
 first match wins); the density axis is `compact` (the tightened ramp), `playground`
 (the hand-off component page's JSX card: the block at the card corner, its header a 40
 px bar on the card fill, 16 in and 8 out, its Copy a 28 px hairline button, and the code
@@ -59,6 +59,18 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 ```
 
 ## Variants
+
+### Execution transcript
+
+`transcript` renders raw execution output as selectable, soft-wrapped monospace text
+in the active theme's foreground. Tabs, newlines and prompt markers remain verbatim.
+It has no window chrome, card fill, border, syntax highlighting or expander.
+It takes precedence over the other variants and ignores the display modifiers,
+including `copy`, `diff` and `collapsible`; density still controls the type size.
+
+```tsx
+<CodeBlock transcript code={output} />
+```
 
 ### Syntax highlighting
 

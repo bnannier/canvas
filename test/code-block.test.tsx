@@ -340,3 +340,26 @@ describe("CodeBlock type face", () => {
     });
   }
 });
+
+
+describe("CodeBlock transcript", () => {
+  it("preserves the raw execution stream without chrome, syntax spans or collapse", () => {
+    const output = "$ printf result\n\t+ added\n- removed\n\n" + "unbroken".repeat(200);
+    ui(<CodeBlock transcript terminal numbered inline copy diff collapsible collapsedLines={1} language="bash" filename="execution.log" code={output} testID="transcript" />);
+    const root = screen.getByTestId("transcript");
+    expect(root.textContent).toBe(output);
+    expect(root.querySelectorAll("span").length).toBe(0);
+    expect(root.children.length).toBe(1);
+    expect(getComputedStyle(root).backgroundColor).toMatch(/^rgba\(0, 0, 0, 0(?:\.0+)?\)$/);
+    expect(getComputedStyle(root).borderTopWidth).toBe("0px");
+    const text = root.firstElementChild!;
+    expect(getComputedStyle(text).whiteSpace).toBe("pre-wrap");
+    expect(getComputedStyle(text).fontFamily).toContain("ui-monospace, SFMono-Regular, Menlo");
+    expect(screen.queryByRole("button")).toBeNull();
+  });
+
+  it("renders an empty stream without example code", () => {
+    ui(<CodeBlock transcript testID="empty-transcript" />);
+    expect(screen.getByTestId("empty-transcript").textContent).toBe("");
+  });
+});
