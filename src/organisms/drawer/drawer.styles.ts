@@ -318,3 +318,12 @@ export const androidSkin: DrawerSkin = {
     return { ...base, width: Math.min(width, ANDROID_SIDE_MAX), height: "100%", ...inner, ...shadow("sm", t) };
   },
 };
+
+/** Terminal sidebars float inside the window with a complete solid screen surface. */
+export function terminalLayer(inset: number): ViewStyle {
+  return { padding: inset };
+}
+
+export function terminalPanel(width: number, t: ColorTokens): ViewStyle {
+  return { width, maxWidth: "100%", height: "100%", minWidth: 0, minHeight: 0, overflow: "hidden", borderRadius: 12, backgroundColor: t.background, borderWidth: 1, borderColor: t.border };
+}

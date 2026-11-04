@@ -133,6 +133,8 @@ describe("viewport reads", () => {
   // AnchoredOverlay's phone sheet (CLAUDE.md, "Highly responsive"); a component that
   // switches layout measures its own container (src/style/container.ts).
   const WINDOW_READERS: Record<string, string> = {
+    "src/organisms/drawer/drawer.shared.tsx": "the terminal sidebar sizes its inset window-level shell to the viewport",
+
     "src/style/responsive.tsx": "the one shared window subscription behind useBreakpoint, useResponsive and useFormFactor",
     "src/style/container.ts": "the seed a container reading uses until its first layout lands: the viewport bucket (a BreakpointOverride's included), and for useContainerWidth's px fallback the window width clamped into it, withheld until hydration (CLAUDE.md, mechanism 2)",
     "src/style/anchored-overlay.tsx": "an open anchored card that offers a sheet becomes one at the phone form factor (design-language item 5, overlays become sheets on phones; the owner's AO-6 decision, 2026-10-10)",

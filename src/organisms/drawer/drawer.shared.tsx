@@ -1,3 +1,4 @@
+import { useViewportWidth } from "../../style/responsive.js";
 import { scrimFill } from "../../style/scrim.js";
 import { useScrimFrost } from "../../style/glass-surface/scrim-frost.js";
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
@@ -59,6 +60,8 @@ export interface DrawerProps {
   footer?: ReactNode;
   /** Navigation body: no content inset or inter-item gap; fills the available height. */
   navigation?: boolean;
+  /** Solid, rounded execution sidebar inset from the viewport. Overrides edge and plain; width remains configurable. */
+  terminal?: boolean;
   /** Square web side panel and the original lightly frosted application dim. */
   plain?: boolean;
   /** Present and dismiss immediately, preserving the original application interaction. */
@@ -77,6 +80,8 @@ export interface DrawerProps {
   open?: boolean;
   /** Fired when the open state changes (trigger press, scrim tap, back/escape). */
   onOpenChange?: (open: boolean) => void;
+  /** Called once after an opened drawer finishes dismissal; never called for its initial closed state. */
+  onClosed?: () => void;
   /**
    * Label for an optional outline trigger button. When set, the drawer renders the button
    * and opens itself on press (uncontrolled). Omit when you drive `open` yourself.
@@ -103,7 +108,7 @@ export interface DrawerProps {
 
 // First-match edge precedence; defaults to the left side drawer.
 export function edgeOf(p: DrawerProps): Edge {
-  if (p.right) return "right";
+  if (p.terminal || p.right) return "right";
   if (p.bottom) return "bottom";
   if (p.top) return "top";
   return "left";
@@ -128,6 +133,10 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // Under glass on the web the scrim also blurs what it dims (GS-6); null everywhere else.
     const scrimFrost = useScrimFrost();
     const edge = edgeOf(props);
+    const viewportWidth = useViewportWidth(!!props.terminal);
+    const terminalInset = viewportWidth > 640 ? 12 : 8;
+    const panelWidth = props.terminal && viewportWidth > 0 ? Math.min(width, Math.max(0, viewportWidth - terminalInset * 2)) : width;
+    const terminalLayer = props.terminal ? s.terminalLayer(terminalInset) : null;
     const insets = useSafeAreaInsetsOrNull();
     const structured = props.header != null || props.footer != null || !!props.navigation;
     // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
@@ -176,11 +185,23 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // Both sheets slide on Y, so they need the panel's measured height for the off-screen
     // origin: the top starts above (-height), the bottom below (+height).
     const [panelH, setPanelH] = useState(0);
-    const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
+    const progress = useRef(new Animated.Value(open && (!props.terminal || props.instant || reduced) ? 1 : 0)).current;
+    const hadOpened = useRef(open);
+    const onClosed = useRef(props.onClosed);
+    onClosed.current = props.onClosed;
+    const finishClose = useCallback(() => {
+      setMounted(false);
+      if (hadOpened.current) {
+        hadOpened.current = false;
+        onClosed.current?.();
+      }
+    }, []);
     useEffect(() => {
+      if (open) hadOpened.current = true;
       if (props.instant) {
         progress.setValue(open ? 1 : 0);
-        setMounted(open);
+        if (open) setMounted(true);
+        else finishClose();
         return;
       }
       if (open) {
@@ -188,10 +209,10 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
         Animated.timing(progress, { toValue: 1, duration: reduced ? 0 : 220, useNativeDriver: supportsNativeDriver }).start();
       } else if (mounted) {
         Animated.timing(progress, { toValue: 0, duration: reduced ? 0 : 180, useNativeDriver: supportsNativeDriver }).start(({ finished }) => {
-          if (finished) setMounted(false);
+          if (finished) finishClose();
         });
       }
-    }, [open, mounted, progress, reduced, props.instant]);
+    }, [open, mounted, progress, reduced, props.instant, finishClose]);
 
     // Side panels land on the logical start (left) / end (right) edge via flexbox, which mirrors
     // under RTL, so the horizontal slide origin follows the PHYSICAL side the panel ends up on.
@@ -203,8 +224,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
         ? panelH || 600
         : -(panelH || 600)
       : physicalRight
-        ? width
-        : -width;
+        ? panelWidth + (props.terminal ? terminalInset : 0)
+        : -(panelWidth + (props.terminal ? terminalInset : 0));
     const slide = progress.interpolate({ inputRange: [0, 1], outputRange: [fromOffset, 0] });
     // The scrim is the theme's `scrim` role; a legacy token map dims with black at the
     // skin's per-scheme alpha (iOS dims lighter in light, darker in dark). The resting
@@ -240,9 +261,9 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // itself still reaches the screen edge, and insets resolve to 0 elsewhere. The
     // SafeAreaView fills a sized panel (a side drawer's full height) and wraps its content in
     // a sheet, the same auto-basis recipe the surface's own clip box uses.
-    const plain = !!props.plain && !isVertical && skin.plainPanel != null;
+    const plain = !props.terminal && !!props.plain && !isVertical && skin.plainPanel != null;
     const sideInset = physicalRight ? insets?.right ?? 0 : insets?.left ?? 0;
-    const panelShape = plain ? skin.plainPanel!(edge, width + sideInset, tokens) : skin.panelShape(edge, width, tokens);
+    const panelShape = props.terminal ? s.terminalPanel(panelWidth, tokens) : plain ? skin.plainPanel!(edge, width + sideInset, tokens) : skin.panelShape(edge, width, tokens);
     const panelBody = structured ? <>
       {props.header != null ? <View ref={headerPart?.ref} onLayout={headerPart?.onLayout} style={[skin.band, { borderBottomWidth: 1, borderBottomColor: tokens.border }]}>{props.header}</View> : null}
       <OverlayScrollView ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }} contentContainerStyle={props.navigation ? { flexGrow: 1 } : { padding: 18, gap: 14, ...(props.footer ? null : { paddingBottom: 0 }) }} keyboardShouldPersistTaps="handled">
@@ -250,10 +271,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
       </OverlayScrollView>
       {props.footer ? <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} style={[skin.band, { borderTopWidth: 1, borderTopColor: tokens.border }]}>{props.footer}</View> : null}
     </> : children != null ? <AnatomyPart part={bodyPart}>{children}</AnatomyPart> : null;
-    const panel = (
-      <View style={[s.panelPos[edge], sheetCap]} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
-        <GlassSurface floating style={[panelShape, style]}>
-          {/* The panel's own box, for the anatomy Panel part: GlassSurface has no ref, so a pass-through fill measures it. */}
+    const panelContents = <>
+          {/* Panel content is shared by the solid terminal host and material surface. */}
           {panelPart ? <View ref={panelPart.ref} onLayout={panelPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
           <SafeAreaView
             edges={isVertical ? [edge as "top" | "bottom", "left", "right"] : ["top", "bottom", physicalRight ? "right" : "left"]}
@@ -263,7 +282,10 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
             {panelBody}
             {edge === "top" ? handleNode : null}
           </SafeAreaView>
-        </GlassSurface>
+    </>;
+    const panel = (
+      <View style={[s.panelPos[edge], sheetCap]} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
+        {props.terminal ? <View style={[panelShape, style]}>{panelContents}</View> : <GlassSurface floating style={[panelShape, style]}>{panelContents}</GlassSurface>}
       </View>
     );
 
@@ -274,8 +296,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
         <AnatomyScope>
           <View testID={testID} role="region" aria-label={accessibilityLabel} accessibilityLabel={accessibilityLabel} style={s.embeddedRoot}>
             <View ref={scrimPart?.ref} onLayout={scrimPart?.onLayout} pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} />
-            <View style={[s.panelLayer[edge], s.embeddedLayer]}>
-              <View style={[s.slideLayer, !isVertical ? skin.sideMaxWidth : null]}>{panel}</View>
+            <View style={[s.panelLayer[edge], s.embeddedLayer, terminalLayer]}>
+              <View style={[s.slideLayer, !isVertical && !props.terminal ? skin.sideMaxWidth : null]}>{panel}</View>
             </View>
           </View>
         </AnatomyScope>
@@ -343,8 +365,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                     <View ref={scrimPart?.ref} onLayout={scrimPart?.onLayout} style={{ flex: 1 }} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
                       {plain ? <GlassSurface veil tint={dimFill} pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} /> : <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />}
                       <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
-                      <View style={s.panelLayer[edge]}>
-                        <Animated.View style={[s.slideLayer, plain ? { maxWidth: "100%" } : !isVertical ? skin.sideMaxWidth : null, { transform: slideTransform }]}>{panel}</Animated.View>
+                      <View style={[s.panelLayer[edge], terminalLayer]}>
+                        <Animated.View style={[s.slideLayer, props.terminal || plain ? { maxWidth: "100%" } : !isVertical ? skin.sideMaxWidth : null, { transform: slideTransform }]}>{panel}</Animated.View>
                       </View>
                     </View>
                   </KeyboardAvoidingView>

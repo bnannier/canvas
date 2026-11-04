@@ -8,7 +8,7 @@ import { useHover, webHover } from "../../style/hover.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { MONO, type Variant } from "./code-block.styles.js";
+import { MONO, TRANSCRIPT_MONO, type Variant } from "./code-block.styles.js";
 import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 
 // Shared CodeBlock shell. The structure (the muted code surface and its terminal /
@@ -28,7 +28,7 @@ import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 // within an axis (mirrors Badge's toneOf). Axes:
 //
 // - Variant (pick one; default is the plain block):
-//     `terminal` > `numbered` > `inline` > plain.
+//     `transcript` > `terminal` > `numbered` > `inline` > plain.
 //   - plain: the sunken code card, padded, monospace, syntax-highlighted.
 //   - terminal: a fixed dark window with a header row (status dots + a label)
 //     over a dark body, for shell transcripts. Lines starting with the prompt
@@ -183,6 +183,8 @@ export interface CodeBlockProps {
   language?: string;
 
   // Variant (pick one; default is the plain block).
+  /** Bare execution output: selectable, wrapped monochrome text with no card, header or expander. Takes precedence over terminal, numbered and inline; other display modifiers are ignored. */
+  transcript?: boolean;
   terminal?: boolean;
   numbered?: boolean;
   inline?: boolean;
@@ -297,6 +299,7 @@ export interface CodeBlockProps {
 
 // Variant precedence when more than one is passed: first match wins.
 export function variantOf(p: CodeBlockProps): Variant {
+  if (p.transcript) return "transcript";
   if (p.terminal) return "terminal";
   if (p.numbered) return "numbered";
   if (p.inline) return "inline";
@@ -673,12 +676,13 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     // Tokenized body for the plain/numbered variants (diff strips markers first
     // so highlighting sees clean code).
     const parsed = useMemo(() => {
+      if (variant === "transcript") return { diffLines: undefined, contentLines: [], tokenLines: [] };
       const rawLines = code.split("\n");
       const diffLines = diff ? rawLines.map(parseDiffLine) : undefined;
       const contentLines = diffLines ? diffLines.map((d) => d.text) : rawLines;
       const tokenLines = tokenize(contentLines.join("\n"), language);
       return { diffLines, contentLines, tokenLines };
-    }, [code, language, diff]);
+    }, [code, language, diff, variant]);
 
     // Terminal rows: transcript mode (any line carrying the prompt marker) marks
     // the rest as dimmed output; otherwise every line is a command.
@@ -729,6 +733,12 @@ export function createCodeBlock(skin: CodeBlockSkin) {
     const type = density === "compact" ? skin.codeTypeCompact : density === "guide" ? skin.codeTypeGuide : skin.codeType;
     // Empty lines render an empty Text; the row keeps its height via minHeight.
     const rowMin: ViewStyle = { minHeight: type.lineHeight };
+
+    // Preserve the execution stream as one selectable text node: no prompt parsing,
+    // syntax highlighting, line-number gutter or collapse machinery.
+    if (variant === "transcript") {
+      return <View testID={testID} style={[{ width: "100%", minWidth: 0 }, style]}><Text selectable style={[type, TRANSCRIPT_MONO, skin.codeText(tokens), WRAP_TEXT]}>{tab?.code ?? props.code ?? ""}</Text></View>;
+    }
 
     // Inline: a short token rendered as an inline pill. No header or wrap; `copy` turns
     // the pill into the copy button itself.

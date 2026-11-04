@@ -53,6 +53,24 @@ without a slide or fade. Existing drawers retain their animated default.
 
 ## Variants
 
+### Terminal sidebar
+
+`terminal` opens a solid execution screen at the right edge, using the active
+light or dark theme even under glass. All four corners round to 12 pixels; the
+screen sits 12 pixels inside wider windows and 8 pixels inside windows up to
+640 pixels wide. Its width is capped to the available viewport. Header and footer
+remain pinned around the scrolling body; `navigation` removes the body inset.
+`terminal` wins over edge flags and `plain`. The existing slide, Escape, focus and
+Reduced Motion behavior remain in effect (`instant` still skips animation).
+`onClosed` fires once after a completed dismissal, allowing a parent to retain the
+drawer through its exit animation; an initially closed drawer does not fire it.
+
+```tsx
+<Drawer terminal navigation width={820} trigger="Execution" header={<Typography h5>Execution</Typography>}>
+  <CodeBlock transcript code={output} />
+</Drawer>
+```
+
 ### Application panel
 
 ```tsx
