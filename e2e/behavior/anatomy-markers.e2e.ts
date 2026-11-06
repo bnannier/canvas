@@ -26,7 +26,6 @@ const UNDRAWN: Record<string, Record<string, string>> = {
   "drag-drop": { "Lifted item": "drawn only during a drag", "Drop indicator": "drawn only during a drag" },
   dropdown: { "Section label": "the first example's items have no label", Shortcut: "the first example's items have no shortcut", "Destructive item": "the first example has no destructive item" },
   feeds: { Connector: "the default `activity` lead draws no connector line" },
-  heatmap: { Title: "drawn only with the calendar layout's `caption`" },
   input: { "Helper or error": "Input has no message line; it is Field's" },
   "phone-input": { Error: "`error` is a state; the message line is Field's" },
   listbox: { "Detail line": "the first example has no `detail` items" },
