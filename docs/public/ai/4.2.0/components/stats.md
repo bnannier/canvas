@@ -1,0 +1,278 @@
+# Stats
+
+Package: @nannier/canvas
+Version: 4.2.0
+Status: source-snapshot (not proof of an npm release)
+Source SHA-256: 85d17357eddcab1909bcb59630a0c4a1f1513f08d3a6dcf5378eb84c847dee94
+
+Source: `src/molecules/stats/stats.md`
+Human reference: https://canvas.nannier.com/components/stats
+
+## Public imports
+
+```tsx
+import { Stats } from "@nannier/canvas";
+```
+
+The following examples are source excerpts. Supply application data and handlers; snippets using `tokens` read `const { tokens } = useTheme()` inside a component. Import React hooks from React. Intentional “Don't” examples illustrate unsupported patterns.
+
+Single value, grouped row, with sparkline, with comparison. Used for dashboards and overview pages.
+
+Under the value each tile can draw one strip: its trend (`spark`) or its composition (`share`). Both reserve the same height, so a row that mixes them keeps one card height and no tile is left half empty. `framed` puts every strip on a muted track, which is what makes a ROW of them scan evenly.
+
+The metrics sit edge to edge inside one bordered surface, a hairline between each: a 16px
+inset, a 13px label, a 28px figure and a 12px delta led by its direction arrow. `framed`
+separates them into tiles 12px apart. A trend draws as a small line beside the figure and
+a composition as a thin bar over its legend. `compact` renders value-first rail tiles with
+a 12px inset and 20px figures; `large` renders 36px dashboard headlines; compact wins if
+both are set. Each item may include a muted `description`.
+
+## Usage
+
+```tsx
+<Stats
+  items={[
+    { label: "Active users", value: "71,897", delta: "+12.3% vs. last 30 days" }
+  ]}
+/>
+```
+
+## Variants
+
+### Group
+
+```tsx
+<Stats
+  items={[
+    { label: "Total users", value: "12,847", delta: "+12.5%" },
+    { label: "Error rate", value: "0.12%", delta: "+0.03%", down: true },
+    { label: "Avg. session", value: "4m 32s", delta: "last 30 days", steady: true }
+  ]}
+/>
+```
+
+### Plain
+
+```tsx
+<Stats
+  plain
+  items={[
+    { label: "Revenue", value: "$48.2k" },
+    { label: "Orders", value: "842" },
+    { label: "Conversion", value: "3.6%" }
+  ]}
+/>
+```
+
+### Per-tile icon, control and accent
+
+```tsx
+<Stats
+  items={[
+    { label: "Active users", value: "12,348", icon: <Icon users muted size={16} />, chart1: true },
+    { label: "Sessions", value: "489", actions: <Button ghost small>7d</Button>, chart2: true }
+  ]}
+/>
+```
+
+### Sparkline
+
+```tsx
+<Stats
+  items={[
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18] }
+  ]}
+/>
+```
+
+### Composition strip
+
+A metric that has no trend to plot usually still decomposes. `share` draws that
+composition over a muted rail, in the same slot and at the same height as the
+sparkline, so it fills the tile with something true rather than with padding.
+
+```tsx
+<Stats
+  items={[
+    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] }
+  ]}
+/>
+```
+
+### Framed strips
+
+Without a frame each strip draws only its marks, so a quiet series shows a
+near-empty band beside a full bar and the row's densities range from blank to
+solid. `framed` gives every strip the same track whatever its data: a flat
+series then reads as a chart sitting at zero, and the fill is the only thing
+that varies.
+
+```tsx
+<Stats
+  framed
+  items={[
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18] },
+    { label: "Errors", value: "0", delta: "None in the last hour", steady: true, spark: [0, 0, 0, 0, 0, 0, 0, 0] }
+  ]}
+/>
+```
+
+### Mixed strips in one row
+
+```tsx
+<Stats
+  framed
+  items={[
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18] },
+    { label: "Verified identities", value: "81.3%", delta: "1,502 of 1,847 verified", steady: true, share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] }
+  ]}
+/>
+```
+
+### Tappable
+
+```tsx
+<Stats
+  onPressItem={() => {}}
+  items={[
+    { label: "Active users", value: "71,897" },
+    { label: "Revenue", value: "$48.2k" }
+  ]}
+/>
+```
+
+## Do & Don't
+
+### Single
+
+**Do** — Name the comparison and the period so the delta is unambiguous.
+
+```tsx
+<Stats items={[
+  { label: "Active users", value: "71,897", delta: "+12.3% vs. last 30 days" }
+]} />
+```
+
+**Don't** — A bare delta with no baseline leaves the reader asking: up against what, and over what window?
+
+```tsx
+<Stats items={[
+  { label: "Active users", value: "71,897", delta: "+12.3%" }
+]} />
+```
+
+### Group
+
+**Do** — Use the auto-fit grid and round headline numbers so cards wrap and stay scannable.
+
+```tsx
+<Stats items={[
+    { label: "Revenue", value: "$48.2k", delta: "+12.5%" },
+    { label: "Orders", value: "842", delta: "+3.2%" },
+    { label: "Conversion", value: "3.6%", delta: "+0.4%" }
+  ]} />
+```
+
+**Don't** — A fixed flex row of full-precision numbers overflows on narrow viewports and crowds the cards.
+
+```tsx
+<Stats items={[
+    { label: "Revenue", value: "$48,250.00", delta: "+12.5%" },
+    { label: "Orders", value: "842", delta: "+3.2%" },
+    { label: "Conversion", value: "3.6%", delta: "+0.4%" }
+  ]} />
+```
+
+### Plain (no border)
+
+**Do** — On a parent surface drop the border and radius; let the number stacks stand on their own.
+
+```tsx
+<Stats plain items={[
+    { label: "Revenue", value: "$48.2k" },
+    { label: "Orders", value: "842" }
+  ]} />
+```
+
+**Don't** — Bordered cards inside a card surface double the chrome: a box drawn around boxes.
+
+```tsx
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)", padding: 24 }}>
+  <Stats items={[
+    { label: "Revenue", value: "$48.2k" },
+    { label: "Orders", value: "842" }
+  ]} />
+</View>
+```
+
+### With sparkline
+
+**Do** — Pair the sparkline with an explicit delta so the headline reads without decoding the curve.
+
+```tsx
+<Stats
+  items={[
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] }
+  ]}
+/>
+```
+
+**Don't** — A trend line with no current delta makes you eyeball the slope to guess the direction.
+
+```tsx
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)", maxWidth: 220, padding: 20 }}>
+  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Requests</Text>
+  <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "600", letterSpacing: -0.4, color: tokens.foreground }}>24.5k</Text>
+  <View style={{ marginTop: 12, flexDirection: "row", alignItems: "flex-end", gap: 2, height: 24 }}>
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 4 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 8 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 6 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 12 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 10 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 16 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 14 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 18 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 16 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 20 }} />
+    <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%", borderRadius: 2, backgroundColor: alpha(tokens.primary, 0.7), height: 24 }} />
+  </View>
+</View>
+```
+
+### A strip on every tile in a row
+
+**Do** — Give every tile in a row a strip: the trend where one exists, the composition where it does not, and frame them so the row reads as one finished set.
+
+```tsx
+<Stats framed items={[
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] },
+    { label: "Cache hit rate", value: "94.1%", delta: "23.5k of 25k served warm", steady: true, share: [{ label: "Hit", value: 23525 }, { label: "Miss", value: 1475 }] }
+  ]} />
+```
+
+**Don't** — Give one tile a strip and leave its neighbour without: cards stretch to the tallest sibling, so the bare tile ends up with a band of blank space that reads as unfinished.
+
+```tsx
+<Stats items={[
+    { label: "Requests", value: "24.5k", delta: "+8.2%", spark: [4, 8, 6, 12, 10, 16, 14, 18, 16, 20, 24] },
+    { label: "Cache hit rate", value: "94.1%", delta: "23.5k of 25k served warm", steady: true }
+  ]} />
+```
+
+## Supported props
+
+### StatsProps
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| items | StatItem[] | yes |  | The metrics to render, in order. |
+| plain | boolean \| undefined | no | false | Borderless metric stacks on a shared surface, for nesting inside a card. |
+| compact | boolean \| undefined | no | false | Dense value-first tile for a navigation rail: a 12px inset and a 20px headline. |
+| large | boolean \| undefined | no | false | Value-first dashboard tile with a 36px headline. |
+| title | string \| undefined | no |  | Optional heading shown above the metrics (mainly for the plain surface). |
+| framed | boolean \| undefined | no | false | Draw every metric's strip on a muted track, in one bounded band. For a ROW of metrics, where the strips are read against each other. Without it each strip draws only its marks, so a metric with a quiet series shows a near-empty band beside one with a full bar and the row's densities range from blank to solid with nothing tying them together; the eye lands on the fullest tile rather than scanning the row. The track gives every strip the same frame whatever its data, so a flat series reads as a chart sitting at zero and the fill is the only thing that varies. |
+| onPressItem | ((index: number) => void) \| undefined | no |  | Make each metric a tappable target (drill into the underlying detail). When set, every metric renders as a Pressable with a button role and a pressed affordance, so a tappable stat needs no hand-rolled Pressable. |
+| testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
+| style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
+
+See [installation](https://canvas.nannier.com/ai/4.2.0/installation.md) for required peers and feature fallbacks.
