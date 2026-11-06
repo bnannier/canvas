@@ -69,7 +69,7 @@ It takes precedence over the other variants and ignores the display modifiers,
 including `copy`, `diff` and `collapsible`; density still controls the type size.
 
 ```tsx
-<CodeBlock transcript code={output} />
+<CodeBlock transcript code={"$ bun test\nRan 42 tests across 6 files.\n42 pass, 0 fail"} />
 ```
 
 ### Syntax highlighting
