@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/charts/pie-chart/pie-chart.md`
 Human reference: https://canvas.nannier.com/components/pie-chart
@@ -113,6 +113,7 @@ Proportional composition as arc slices in the `chart-1`..`chart-8` token colors,
 | hideLegend | boolean \| undefined | no | false | Hide the legend (the labelled dots beside percentages). |
 | detailed | boolean \| undefined | no | false | Spread names and shares into a value column beside a compact composition disc. |
 | compact | boolean \| undefined | no | false | Smaller diameter. |
+| plain | boolean \| undefined | no | false | Strip the card surface for nesting inside an existing card (mirrors Stats). |
 | selected | number \| null \| undefined | no |  | Press-to-inspect: the selected slice index (controlled). Pass null for none. |
 | defaultSelected | number \| undefined | no |  | Press-to-inspect: the initially selected slice (uncontrolled). |
 | onSelect | ((index: number \| null) => void) \| undefined | no |  | Fired when a press selects a slice (or clears it with null). |

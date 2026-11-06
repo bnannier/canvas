@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
-<CodeBlock inline copy code={`import { Button } from "@nannier/canvas"`} />
+<CodeBlock inline language="bash" code="npm install" />
   );
 }

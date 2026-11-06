@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/charts/heatmap/heatmap.md`
 Human reference: https://canvas.nannier.com/components/heatmap
@@ -16,9 +16,9 @@ import { Heatmap } from "@nannier/canvas";
 
 The following examples are source excerpts. Supply application data and handlers; snippets using `tokens` read `const { tokens } = useTheme()` inside a component. Import React hooks from React. Intentional “Don't” examples illustrate unsupported patterns.
 
-Density cells whose fill encodes each value. Pass `calendar` for a GitHub-style contribution graph: seven-day week columns with weekday and month labels, discrete less-to-more levels, and press or hover to inspect a day's count and date. The calendar layout IS the kit's activity calendar, so a contribution graph needs no separate component.
+Density cells whose fill encodes each value, in seven-row columns inside the chart frame, titled by `label` (or `caption`) and closed by a less-to-more legend; `plain` strips the frame for nesting inside a card. Pass `calendar` for a GitHub-style contribution graph: each cell is a day, and a press or hover inspects its count and date. The calendar layout IS the kit's activity calendar, so a contribution graph needs no separate component.
 
-`detailed` keeps contribution-calendar cells at their authored size, with compact month and weekday labels and the contribution-count color levels. A narrow parent scrolls the same calendar.
+`detailed` keeps contribution-calendar cells at their authored size, unframed, with compact month and weekday labels and the contribution-count color levels. A narrow parent scrolls the same calendar.
 
 ## Usage
 
@@ -49,11 +49,11 @@ Density cells whose fill encodes each value. Pass `calendar` for a GitHub-style 
 
 ### Heatmap
 
-**Do** — Pair the grid with a discrete less-to-more legend so the density scale is legible.
+**Do** — Pair the grid with its less-to-more legend so the density scale is legible.
 
 ```tsx
 <Card padded>
-  <Heatmap values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />
+  <Heatmap plain values={[0.15, 0.4, 0.7, 1, 0.55, 0.25, 0.85, 0.35, 0.6, 0.9, 0.2, 0.5, 0.75, 0.3, 0.95, 0.45, 0.65, 0.1, 0.8, 0.4, 0.7]} />
 </Card>
 
 ```
@@ -97,9 +97,10 @@ Density cells whose fill encodes each value. Pass `calendar` for a GitHub-style 
 | --- | --- | --- | --- | --- |
 | values | HeatmapValue[] | yes |  | The cells: intensities 0–1, or `{ value, count?, date?, label? }` for inspectable data. |
 | label | string \| undefined | no |  | What the grid measures (e.g. "Contribution activity"); leads the accessible name. |
-| calendar | boolean \| undefined | no | false | GitHub-style: lay the cells into seven-row week columns with weekday + month labels. |
-| detailed | boolean \| undefined | no | false | Fixed-size contribution calendar with the authored month, weekday and level styling. |
-| caption | string \| undefined | no |  | A summary line above the grid (e.g. "248 contributions in the last year"). |
+| calendar | boolean \| undefined | no | false | GitHub-style: the cells are days, each inspectable for its count and date. |
+| detailed | boolean \| undefined | no | false | Unframed contribution calendar with the authored month, weekday and level styling. |
+| caption | string \| undefined | no |  | A summary line above the grid (e.g. "248 contributions in the last year"); shown in place of `label`. |
+| plain | boolean \| undefined | no | false | Strip the card surface for nesting inside an existing card (mirrors Stats). |
 | hideLegend | boolean \| undefined | no | false | Hide the less-to-more legend row. |
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | LayoutStyle | no |  | For sizing/composition only. |

@@ -3,16 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Markdown } = scope;
+  const { ChatComposer, Typography } = scope;
   return (
-<Markdown compact>{`# Release scope
-
-## Acceptance criteria
-- [ ] Behavior verified
-- [x] Requirement recorded
-
-| Story | Priority | Status |
-| --- | --- | --- |
-| Saved scope | Must | Backlog |`}</Markdown>
+<ChatComposer value="Review the release plan" onChangeText={() => {}} onSend={() => {}} footer={<Typography tiny muted>Only reviewed requirements continue to execution.</Typography>} />
   );
 }

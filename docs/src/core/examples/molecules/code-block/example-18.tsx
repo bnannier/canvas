@@ -5,6 +5,13 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
-<CodeBlock snippet headerless language="tsx" code={`<Button>Save changes</Button>`} />
+<CodeBlock
+  playground
+  unbadged
+  copy
+  filename="JSX · ButtonProps"
+  language="tsx"
+  code={`<Button>Save changes</Button>`}
+/>
   );
 }

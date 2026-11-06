@@ -6,10 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  copy
-  language="ts"
-  code={`const theme = getTheme();
-setTheme(theme === "dark" ? "light" : "dark");`}
+  compact
+  language="json"
+  code={`{
+  "theme": "system",
+  "surface": "glass",
+  "primary": "#6366f1"
+}`}
 />
   );
 }

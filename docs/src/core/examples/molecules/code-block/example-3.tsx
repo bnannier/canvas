@@ -6,10 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  numbered
-  language="ts"
-  code={`const theme = getTheme();
-setTheme(theme === "dark" ? "light" : "dark");`}
+  terminal
+  code={`$ npm install @nannier/canvas
+added 42 packages in 3s`}
 />
   );
 }

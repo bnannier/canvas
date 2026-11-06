@@ -63,11 +63,11 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `empty-state` | directly | `shape`, `widths` |
 | `feeds` | directly | `shape` |
 | `form` | directly | `useContainerWidth`, `widths` |
-| `grid-lists` | directly | `alpha`, `palette`, `shape`, `useContainerBreakpoint` |
+| `grid-lists` | directly | `alpha`, `palette`, `shape`, `useContainerWidth` |
 | `media-objects` | directly | `shape` |
 | `phone-input` | directly | `useMeasuredWidth` |
 | `stacked-lists` | directly | `shape` |
-| `stats` | directly | `alpha`, `shape`, `statusColors` |
+| `stats` | directly | `alpha`, `shape`, `statusColors`, `useMeasuredWidth` |
 | `action-sheet` | directly | `alpha`, `shape` |
 | `app-frame` | directly | `spacing` |
 | `board` | directly | `useMeasuredWidth` |
@@ -124,7 +124,7 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `bar-list` | through shared modules | `BreakdownRows` (src/charts/shared/breakdown-rows.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx) and 5 more |
 | `composed-chart` | through shared modules | `androidSkin` (src/charts/shared/charts.styles.ts), `chartShell` (src/charts/shared/cartesian-series.tsx), `iosSkin` (src/charts/shared/charts.styles.ts) and 2 more |
 | `histogram` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 8 more |
-| `radial-bar-chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `radial-bar-chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 4 more |
 | `funnel-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 5 more |
 <!-- audit:facts:end -->
 

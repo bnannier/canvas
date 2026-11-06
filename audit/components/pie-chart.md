@@ -14,7 +14,7 @@ Audit checklist for `/components/pie-chart`. The facts block and the variants ta
 | Platform entries | iOS: re-exports the shared build: PieChart (nothing built per platform). Android: re-exports the shared build: PieChart (nothing built per platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `charts` (Shared, Built). iOS: link [charts (iOS)](https://developer.apple.com/design/human-interface-guidelines/charts) (HIG Charts component page; built with the Swift Charts framework; no iOS 27 kit symbol group). Android: none (Material 3 has no charts component; data visualization guidance exists only in the Material 2 archive and an M3 accessibility blog post). Web: link [charts (Web)](https://ui.shadcn.com/docs/components/chart) |
-| Materials manifest | PieChart: charts, inherited; verification inherited-composition, semantic-state, inspection |
+| Materials manifest | PieChart: charts, static; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state, inspection |
 | Hand-off open gaps | PieChart.subtitle (unscheduled), PieChart.centerLabel (unscheduled), PieChart.centerValue (unscheduled), PieChart.sliceLabels (unscheduled), PieChart.unit (unscheduled) |
 | Hand-off settled | PieChart.data (Renamed: `slices`), PieChart.size (Boolean axis: `compact`), PieChart.thickness (Renamed: `donut`), PieChart.title (Renamed: `label`), PieChart.legend (Renamed: `hideLegend`) |
 | Hand-off metric gaps | none |
@@ -23,7 +23,7 @@ Audit checklist for `/components/pie-chart`. The facts block and the variants ta
 | Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the pressable is the slice, sized by its share |
-| Tests importing it | 7: `test/anatomy-parts-charts-other.test.tsx`, `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/charts-composition-parity.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 12: `test/anatomy-parts-charts-other.test.tsx`, `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/charts-composition-parity.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/skins-smoke.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/anatomy-markers.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples, EXAMPLE_ROUTES), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/pie-chart.md`, written by `bun run audit:turn -- --slug=pie-chart --phase=before\|after` (the before and after capture runs) |

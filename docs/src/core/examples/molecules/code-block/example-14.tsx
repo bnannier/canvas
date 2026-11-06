@@ -6,11 +6,15 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  tabs={[
-    { label: "npm", code: "npm install @nannier/canvas" },
-    { label: "yarn", code: "yarn add @nannier/canvas" },
-    { label: "bun", code: "bun add @nannier/canvas" },
-  ]}
+  collapsible
+  collapsedLines={3}
+  language="ts"
+  code={`export const tokens = {
+  primary: "#6366f1",
+  radius: 8,
+  border: "#e4e4e7",
+  muted: "#f4f4f5",
+};`}
 />
   );
 }

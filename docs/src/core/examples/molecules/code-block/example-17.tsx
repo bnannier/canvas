@@ -6,12 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  playground
   unbadged
   copy
   filename="JSX · ButtonProps"
   language="tsx"
-  code={`<Button>Save changes</Button>`}
+  code={`<Button outline small iconLeft={<Icon plus />}>Add item</Button>`}
 />
   );
 }

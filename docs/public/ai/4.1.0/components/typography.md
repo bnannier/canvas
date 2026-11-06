@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/atoms/typography/typography.md`
 Human reference: https://canvas.nannier.com/components/typography
@@ -17,6 +17,8 @@ import { Typography } from "@nannier/canvas";
 The following examples are source excerpts. Supply application data and handlers; snippets using `tokens` read `const { tokens } = useTheme()` inside a component. Import React hooks from React. Intentional “Don't” examples illustrate unsupported patterns.
 
 Type scale classes for headings, body text, and helper styles.
+
+`terminal` selects the system terminal face while retaining the reading role, size, weight, and ink: pair it with `tiny`, `caption`, `small`, or a heading. The web uses the system monospace stack beginning with `ui-monospace`, SFMono-Regular, and Menlo; native platforms use Menlo or their monospace alias. Existing `mono` and code typography keep their current behavior.
 
 Argus reading roles include `subheading`, `label`, `micro`, `tag`, `eyebrow`,
 `eyebrowLg`, `stageLabel`, `statValue`, `metricValue`, and `formValue`. These extend
@@ -776,6 +778,7 @@ Inline text that NAVIGATES should be a real link, not pressable text that sets `
 
 | Prop | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
+| terminal | boolean \| undefined | no | false | Use the system terminal face while retaining the selected reading role and size. |
 | section | boolean \| undefined | no | false | A section heading owning its count, metadata and trailing actions. |
 | count | string \| number \| undefined | no |  |  |
 | description | string \| undefined | no |  |  |

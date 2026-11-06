@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/charts/radial-bar-chart/radial-bar-chart.md`
 Human reference: https://canvas.nannier.com/components/radial-bar-chart
@@ -109,6 +109,7 @@ Concentric arc rings, one per category, outermost first: each pairs a muted full
 | label | string \| undefined | no |  | What the rings measure (e.g. "Platform activation"); leads the accessible name. |
 | max | number \| undefined | no |  | The value of a full sweep. Defaults to the largest entry. |
 | compact | boolean \| undefined | no | false | Density (omit for the default 160 disc; compact is 120). |
+| plain | boolean \| undefined | no | false | Strip the card surface for nesting inside an existing card (mirrors Stats). |
 | hideLegend | boolean \| undefined | no | false | Hide the value legend (the accessible name still carries every value). |
 | detailed | boolean \| undefined | no | false | A compact disc with a separate value column and shared maximum caption. |
 | formatValue | ((v: number) => string) \| undefined | no |  | Formats legend values (data formatting, not styling). |

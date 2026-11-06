@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/organisms/drawer/drawer.md`
 Human reference: https://canvas.nannier.com/components/drawer
@@ -56,6 +56,24 @@ without a slide or fade. Existing drawers retain their animated default.
 ```
 
 ## Variants
+
+### Terminal sidebar
+
+`terminal` opens a solid execution screen at the right edge, using the active
+light or dark theme even under glass. All four corners round to 12 pixels; the
+screen sits 12 pixels inside wider windows and 8 pixels inside windows up to
+640 pixels wide. Its width is capped to the available viewport. Header and footer
+remain pinned around the scrolling body; `navigation` removes the body inset.
+`terminal` wins over edge flags and `plain`. The existing slide, Escape, focus and
+Reduced Motion behavior remain in effect (`instant` still skips animation).
+`onClosed` fires once after a completed dismissal, allowing a parent to retain the
+drawer through its exit animation; an initially closed drawer does not fire it.
+
+```tsx
+<Drawer terminal navigation width={820} trigger="Execution" header={<Typography h5>Execution</Typography>}>
+  <CodeBlock transcript code={output} />
+</Drawer>
+```
 
 ### Application panel
 
@@ -148,12 +166,14 @@ trigger and fills the parent it is given.
 | header | ReactNode | no |  | Pinned header above the independently scrolling body. |
 | footer | ReactNode | no |  | Pinned actions below the independently scrolling body. |
 | navigation | boolean \| undefined | no | false | Navigation body: no content inset or inter-item gap; fills the available height. |
+| terminal | boolean \| undefined | no | false | Solid, rounded execution sidebar inset from the viewport. Overrides edge and plain; width remains configurable. |
 | plain | boolean \| undefined | no | false | Square web side panel and the original lightly frosted application dim. |
 | instant | boolean \| undefined | no | false | Present and dismiss immediately, preserving the original application interaction. |
 | embedded | boolean \| undefined | no | false | Show the open drawer as a non-modal specimen inside its parent, for a catalogue or a showcase: the panel docks against its edge of the parent (which gives it its height) over the dim, with no Modal, no slide, no focus trap, and no close on Escape, native back or a tap on the dim. It keeps its labelling as a named region. Ignored with `trigger`, which always opens a live drawer. |
 | children | ReactNode | no |  | Panel content. |
 | open | boolean \| undefined | no | false | Controlled open state. Omit for uncontrolled (a `trigger` opens it). |
 | onOpenChange | ((open: boolean) => void) \| undefined | no |  | Fired when the open state changes (trigger press, scrim tap, back/escape). |
+| onClosed | (() => void) \| undefined | no |  | Called once after an opened drawer finishes dismissal; never called for its initial closed state. |
 | trigger | string \| undefined | no |  | Label for an optional outline trigger button. When set, the drawer renders the button and opens itself on press (uncontrolled). Omit when you drive `open` yourself. |
 | left | boolean \| undefined | no | false | A full-height panel on the left edge (default). |
 | right | boolean \| undefined | no | false | A full-height panel on the right edge. |

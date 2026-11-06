@@ -3,8 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ChatMessage } = scope;
+  const { Stateful, ChatThread } = scope;
   return (
-<ChatMessage message={{ id: "failed", role: "assistant", author: "Planner", provider: "OpenAI", content: "The reply could not be completed.", error: true, notice: "Your draft is preserved. Try again when the provider is available." }} />
+<Stateful initial="">
+  {(choice, setChoice) => (
+    <ChatThread
+      style={{ height: 240 }}
+      messages={[{ id: "checkpoint", role: "assistant", content: choice ? `Selected: ${choice}` : "Your answers are saved. What would you like to do next?", actions: choice ? [] : [{ id: "draft", label: "Draft plan", primary: true }, { id: "continue", label: "Continue with questions" }] }]}
+      onAction={(_messageId, actionId) => setChoice(actionId)}
+    />
+  )}
+</Stateful>
   );
 }

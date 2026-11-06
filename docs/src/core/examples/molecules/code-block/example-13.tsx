@@ -6,15 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  collapsible
-  collapsedLines={3}
+  diff
   language="ts"
-  code={`export const tokens = {
-  primary: "#6366f1",
-  radius: 8,
-  border: "#e4e4e7",
-  muted: "#f4f4f5",
-};`}
+  code={`-const theme = "light";
++const theme = getTheme();
+ setTheme(theme);`}
 />
   );
 }

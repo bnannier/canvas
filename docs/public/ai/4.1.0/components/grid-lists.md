@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/molecules/grid-lists/grid-lists.md`
 Human reference: https://canvas.nannier.com/components/grid-lists
@@ -157,8 +157,8 @@ Each tile action carries its own `onPress`, so every button on a card fires your
 | Prop | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
 | items | GridListItem[] | yes |  | The tiles to render, one card per entry. |
-| cols3 | boolean \| undefined | no | false | Columns (pick one; default is two-up). |
-| cols2 | boolean \| undefined | no | false | Columns (pick one; default is two-up). |
+| cols3 | boolean \| undefined | no | false | Columns (pick one; default is three-up). |
+| cols2 | boolean \| undefined | no | false | Columns (pick one; default is three-up). |
 | gallery | boolean \| undefined | no | false | Gallery mode: render each tile as a borderless thumbnail (a square color block from `item.color`, with a left-aligned filename and size below). Avatars, badges, and actions are not shown in this mode. Omit for the default people/card tile. |
 | compact | boolean \| undefined | no | false | Density modifier: tighter gap and tile padding. |
 | onPressItem | ((index: number) => void) \| undefined | no |  | Make each tile a tappable target (open a detail, select a tile). When set, every tile renders as a Pressable with a button role and a pressed affordance, so a tappable grid needs no hand-rolled Pressable. |

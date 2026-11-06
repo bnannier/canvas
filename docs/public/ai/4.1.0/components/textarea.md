@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/atoms/textarea/textarea.md`
 Human reference: https://canvas.nannier.com/components/textarea
@@ -218,6 +218,7 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | eyebrow | boolean \| undefined | no | false |  |
 | systemFocus | boolean \| undefined | no | false | Preserve the platform system focus outline. |
 | dense | boolean \| undefined | no | false | Dense paragraph-entry metrics matching the application field family. |
+| terminal | boolean \| undefined | no | false | Bare monospace prompt metrics for a terminal transcript composer. Implies embedded. |
 | accessibilityLabel | string \| undefined | no |  |  |
 | readOnly | boolean \| undefined | no | false | Prevent edits while retaining focus and the resting appearance. |
 | required | boolean \| undefined | no | false | Marks the field as required: appends a destructive "*" to the label (decorative, never in the accessible name) and announces the field as required, through aria-required on the web and with the word in its name ("Bio, required") on iOS and Android. The star and the spoken word take effect only alongside `label`. |
