@@ -63,6 +63,9 @@ export default tseslint.config(
       "docs/android/**",
       "docs/ios/**",
       "examples/starter/dist/**",
+      // The Claude Design sync's generated bundle and cache (gitignored build output).
+      "ds-bundle/**",
+      ".design-sync/.cache/**",
       "examples/starter/.expo/**",
       "examples/starter/android/**",
       "examples/starter/ios/**",
