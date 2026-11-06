@@ -1,0 +1,74 @@
+name: Install the Playwright browsers
+description: >
+  Restores the lockfile-pinned Playwright browsers and the system packages they
+  need, then installs whatever is missing with `playwright install --with-deps`.
+  The package list stays Playwright's own; apt only reads and writes its downloaded
+  .deb files through a cached directory, so a slow Ubuntu mirror costs one run, not
+  every run. In release run 42252885193 two consecutive attempts of one e2e shard
+  spent 46 and 55 minutes downloading these packages from azure.archive.ubuntu.com
+  (single fetches timed out and were retried), leaving the suite too little of its
+  60-minute limit. apt still verifies every cached file against the signed index
+  that `apt-get update` fetches, so a stale or foreign file is downloaded again,
+  never installed.
+
+inputs:
+  browsers:
+    description: Space-separated engines to install (chromium, firefox, webkit).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Cache the Playwright browsers
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+    # Outside the home directory: apt's unprivileged download user (_apt) must be
+    # able to reach the directory, and the runner's home is not traversable to it.
+    - name: Prepare the system package cache
+      shell: bash
+      run: |
+        sudo=$([ "$(id -u)" = 0 ] || echo sudo)
+        $sudo mkdir -p /var/cache/playwright-apt
+        $sudo chown "$(id -u):$(id -g)" /var/cache/playwright-apt
+
+    # Keyed on the engines, the Playwright build and the runner image, whose package
+    # versions apt resolves. An older entry still serves every unchanged package.
+    - name: Cache the browsers' system packages
+      uses: actions/cache@v6
+      with:
+        path: /var/cache/playwright-apt
+        key: playwright-apt-${{ runner.os }}-${{ runner.arch }}-${{ env.ImageOS }}-${{ env.ImageVersion }}-${{ inputs.browsers }}-${{ hashFiles('bun.lock') }}
+        restore-keys: |
+          playwright-apt-${{ runner.os }}-${{ runner.arch }}-${{ env.ImageOS }}-
+
+    - name: Point apt's downloads at the cache
+      shell: bash
+      run: |
+        sudo=$([ "$(id -u)" = 0 ] || echo sudo)
+        $sudo mkdir -p /var/cache/playwright-apt/partial
+        if id _apt >/dev/null 2>&1; then $sudo chown _apt /var/cache/playwright-apt/partial; fi
+        printf '%s\n' \
+          'Dir::Cache::Archives "/var/cache/playwright-apt/";' \
+          'APT::Keep-Downloaded-Packages "true";' \
+          'Binary::apt::APT::Keep-Downloaded-Packages "true";' \
+          | $sudo tee /etc/apt/apt.conf.d/99-playwright-cache >/dev/null
+
+    - name: Install the browsers and their system packages
+      shell: bash
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+      # Word splitting is intended: one argument per engine.
+      run: bunx playwright install --with-deps $BROWSERS
+
+    # Hand the cache back to the runner user so the post-job save can read it, and
+    # leave only complete .deb files in it.
+    - name: Release the system package cache
+      shell: bash
+      run: |
+        sudo=$([ "$(id -u)" = 0 ] || echo sudo)
+        $sudo rm -rf /var/cache/playwright-apt/partial /var/cache/playwright-apt/lock
+        $sudo chown -R "$(id -u):$(id -g)" /var/cache/playwright-apt
+        echo "Cached system packages: $(find /var/cache/playwright-apt -name '*.deb' | wc -l)"
