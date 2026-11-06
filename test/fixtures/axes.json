@@ -2911,6 +2911,28 @@
       "large + small": "large"
     }
   },
+  "Textarea.metrics": {
+    "kind": "axis",
+    "components": [
+      "Textarea"
+    ],
+    "pages": [
+      "textarea"
+    ],
+    "resolver": "src/atoms/textarea/textarea.shared.tsx#metricsOf",
+    "order": [
+      "terminal",
+      "dense"
+    ],
+    "none": "default",
+    "single": {
+      "terminal": "terminal",
+      "dense": "dense"
+    },
+    "pairs": {
+      "dense + terminal": "terminal"
+    }
+  },
   "Tooltip.placement": {
     "kind": "axis",
     "components": [
@@ -6817,12 +6839,14 @@
     ],
     "resolver": "src/molecules/code-block/code-block.shared.tsx#variantOf",
     "order": [
+      "transcript",
       "terminal",
       "numbered",
       "inline"
     ],
     "none": "plain",
     "single": {
+      "transcript": "transcript",
       "terminal": "terminal",
       "numbered": "numbered",
       "inline": "inline"
@@ -6830,7 +6854,10 @@
     "pairs": {
       "inline + numbered": "numbered",
       "inline + terminal": "terminal",
-      "numbered + terminal": "terminal"
+      "inline + transcript": "transcript",
+      "numbered + terminal": "terminal",
+      "numbered + transcript": "transcript",
+      "terminal + transcript": "transcript"
     }
   },
   "CodeBlock.density": {
@@ -7457,13 +7484,14 @@
     ],
     "resolver": "src/organisms/drawer/drawer.shared.tsx#edgeOf",
     "order": [
-      "right",
+      "terminal|right",
       "bottom",
       "top",
       "left"
     ],
     "none": "left",
     "single": {
+      "terminal": "right",
       "right": "right",
       "bottom": "bottom",
       "top": "top",
@@ -7472,10 +7500,14 @@
     "pairs": {
       "bottom + left": "bottom",
       "bottom + right": "right",
+      "bottom + terminal": "terminal",
       "bottom + top": "bottom",
       "left + right": "right",
+      "left + terminal": "terminal",
       "left + top": "top",
-      "right + top": "right"
+      "right + terminal": "right|terminal",
+      "right + top": "right",
+      "terminal + top": "terminal"
     }
   },
   "FilterPanel.density": {
