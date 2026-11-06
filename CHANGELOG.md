@@ -1,5 +1,41 @@
 # @nannier/canvas
 
+## 4.2.0
+
+### Minor Changes
+
+- d33952f: Every component now reports its named anatomy parts to an enclosing `AnatomyProvider`, so an Anatomy figure numbers the parts of any component, not only Button. `AnatomyPart` is exported to register an element as a named part, and a component's parts belong to it alone: kit components and content nested inside it register nothing of theirs. Outside a provider nothing changes.
+
+  Minor justification: new public API (`AnatomyPart`, `AnatomyPartProps`) and a new capability across the kit (anatomy part reporting for every component).
+
+- 68dcdf4: Icon glyphs gain categories. Each `ICON_NAMES` entry now carries a `category`, and
+  the new `ICON_CATEGORIES` export (typed `IconCategory`) lists the fifteen categories
+  in menu order, so an icon picker can group and filter the set. Minor: this adds a
+  public export and a field, a new capability for consumers building icon pickers.
+- 693ad6c: Add opt-in terminal transcripts and bare multiline prompts to Chat, ChatMessage, ChatThread, ChatComposer, and Markdown. Preserve semantic Markdown in monospace with flat scrolling tables, and support IME-safe hardware Enter sending, Shift+Enter newlines, and composer autofocus. Add terminal Textarea metrics and a Typography terminal face modifier that preserves reading sizes. Terminal transcripts, prompts, and CodeBlock transcript output use a modern system monospace stack independently of existing mono typography. Preserve all existing defaults.
+
+  Minor justification: new public options (`terminal` on Chat, ChatMessage, ChatThread, ChatComposer, Markdown, Textarea and Typography) that consumers such as Argus use for terminal transcripts and prompts.
+
+- 0c67056: Add a solid inset terminal Drawer and a bare selectable CodeBlock transcript variant for execution sidebars.
+
+  Minor justification: new public variants (`terminal` on Drawer, `transcript` on CodeBlock) for execution sidebars.
+
+### Patch Changes
+
+- e5f2831: AvatarGroup stacks avatars the way the v4 hand-off does: each avatar after the first overlaps its neighbour by 10px at every size (it was 16px at the default size and 13px on small avatars, which crowded the initials); `snug` and `loose` stay looser. A stock initials disc now takes the hue the hand-off draws for the same name (its eight identity hues and hash), so a name's disc colour matches the design; Argus's reference discs keep their gradient hues.
+- 22f8af8: Prepare consumer plugin metadata for OpenAI and Claude distribution, and update
+  the recipe scaffold to Canvas 4.1.0 with a package-derived version label and
+  optional hosted subpath configuration.
+- 6437937: PieChart and RadialBarChart sit in the v4 hand-off's chart frame like every other chart (the card fill on a hairline at the card corner under the small shadow, a 16px inset, 12px compact), and take `plain` to drop it when nested in a card. RadialBarChart draws the hand-off's rings: 16 units apart from the outermost, a 10 unit stroke, scaled to its 160px disc (120px compact).
+- 3fe1a49: Make the README a concise introduction with a single-package npm install command and a first component up front. Preserve detailed setup, optional dependencies, overlays, and theming in a linked usage guide that also supplies the generated API documentation.
+- a55f54a: GridList lays its tiles out on the v4 hand-off's grid: three columns by default (`cols2` for two), each at least 140px wide, so a phone keeps two columns and only a very narrow grid drops to one, and a short last row keeps its columns instead of stretching. Gallery thumbnails take the hand-off's diagonal wash of the item's colour (a `blue-500` or `emerald-500` reads by its colour family, as the hand-off draws it), the gallery title sits on a 16px line, and a tappable gallery tile lifts to the medium shadow under the pointer on the web. A tappable people tile is now pressable across its whole card; it used to take presses only on its centred content.
+- b8e2dec: Heatmap draws the v4 hand-off's heatmap: the chart frame (the card fill on a hairline at the chart corner under the small shadow, a 16px inset, its rows 12px apart; `plain` drops it inside a card), `label` (or `caption`) as its 500 13px title, 11px cells on a 13px pitch in seven-row columns that scroll sideways where they overflow, an empty cell in the secondary surface and a valued one in the chart-1 wash from .18 to .98, and the hand-off's less-to-more legend. A plain `calendar` takes the same cells with day inspection and no axis labels, as the hand-off draws it; `detailed` keeps its unframed calendar with month and weekday labels.
+- dd363c6: Keep InputOTP's active cell and caret synchronized with an already focused input when hydrating prerendered autofocus markup.
+- 491f18d: Stats takes the v4 hand-off's layout and tile: by default the metrics sit in one bordered box with a hairline between each, and `framed` separates them into tiles 12px apart. The group lays out on the hand-off's auto-fit grid (a 180px floor for three or more metrics, 220px for one or two), so a narrow card stacks its metrics. Each tile has a 16px inset, a 13px label led by the accent's swatch and the icon, a small trend line beside the figure, a delta led by its direction arrow and, for `share`, a thin bar over a legend. Tappable metrics show a chevron and a hover wash on the web. The `compact` and `large` tiles are unchanged.
+- e56cdef: A titled Stats group draws its title above its bordered box, 10px over the metrics, instead of inside the box against its edge.
+- 50560bc: Characterize the terminal variants the kit's design rules check: Textarea's prompt metrics now resolve through `metricsOf` (terminal, then dense), CodeBlock's `transcript` and Drawer's `terminal` are members of their recorded axes, and the Drawer terminal screen's 12 corner is a declared kit corner (`terminalScreen`) instead of a bare number. No rendered value changes.
+- 4929ff8: Keep the native role scan's message-author exceptions in step with the regenerated Chat examples, and cite a commit in the audit reference test by a prefix that always holds a letter, so the test no longer fails on the 2% of SHAs that open with eight digits.
+
 ## 4.1.0
 
 ### Minor Changes
