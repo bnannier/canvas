@@ -67,7 +67,7 @@ drawer through its exit animation; an initially closed drawer does not fire it.
 
 ```tsx
 <Drawer terminal navigation width={820} trigger="Execution" header={<Typography h5>Execution</Typography>}>
-  <CodeBlock transcript code={output} />
+  <CodeBlock transcript code={"$ bun test\nRan 42 tests across 6 files.\n42 pass, 0 fail"} />
 </Drawer>
 ```
 

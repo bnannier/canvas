@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
-<CodeBlock transcript code={output} />
+<CodeBlock transcript code={"$ bun test\nRan 42 tests across 6 files.\n42 pass, 0 fail"} />
   );
 }
