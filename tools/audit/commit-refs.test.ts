@@ -17,6 +17,16 @@ function git(repo: string, ...args: string[]): string {
   return result.stdout.trim();
 }
 
+/**
+ * How a record cites a commit: at least 8 hex digits, extended until one is a letter. The
+ * check reads only tokens with a letter (an all-digit run is a number, not a citation), and
+ * about 2% of SHAs open with 8 digits, which made a fixed 8-digit cite a flaky test.
+ */
+function cite(sha: string): string {
+  const letter = sha.search(/[a-f]/);
+  return sha.slice(0, Math.max(8, letter + 1));
+}
+
 /** A repo with one commit on main and one on a side branch main never merged. */
 function repo(): { dir: string; onMain: string; offMain: string } {
   const dir = mkdtempSync(join(tmpdir(), "canvas-commit-refs-"));
@@ -39,16 +49,16 @@ function repo(): { dir: string; onMain: string; offMain: string } {
 describe("commits the audit's records cite", () => {
   it("names a cited commit HEAD's history does not contain, with its subject", () => {
     const { dir, onMain, offMain } = repo();
-    writeFileSync(join(dir, "audit", "x.md"), `| X-1 | low | source | fixed in ${onMain.slice(0, 8)} and (${offMain.slice(0, 8)}) | fixed | ${offMain.slice(0, 8)} |\n`);
+    writeFileSync(join(dir, "audit", "x.md"), `| X-1 | low | source | fixed in ${cite(onMain)} and (${cite(offMain)}) | fixed | ${cite(offMain)} |\n`);
     const errors = unreachableCommitRefs(dir, join(dir, "audit"));
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toContain(`audit/x.md cites commit ${offMain.slice(0, 8)} ("Only on the turn branch")`);
+    expect(errors[0]).toContain(`audit/x.md cites commit ${cite(offMain)} ("Only on the turn branch")`);
   });
 
   it("passes commits on HEAD, run ids, colours, UUIDs and hex that names no commit", () => {
     const { dir, onMain, offMain } = repo();
     writeFileSync(join(dir, "audit", "x.md"), [
-      `fixed in ${onMain.slice(0, 8)}`,
+      `fixed in ${cite(onMain)}`,
       `run 20261012-145840-web-${offMain.slice(0, 7)}`,
       "the fill #f8f7fe",
       `a link ${offMain.slice(0, 8)}-38fb-4afb-8836-36617e022f02`,
