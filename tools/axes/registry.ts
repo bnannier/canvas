@@ -62,7 +62,7 @@ import { toneOf as spinnerTone, sizeKeyOf as spinnerSize } from "../../src/atoms
 import { sizeOf as stepperSize } from "../../src/atoms/stepper/stepper.shared.tsx";
 import { sizeOf as swatchSize, stretchesOf, paletteOf, formOf as swatchForm } from "../../src/atoms/swatch/swatch.shared.tsx";
 import { sizeOf as switchSize } from "../../src/atoms/switch/switch.shared.tsx";
-import { sizeOf as textareaSize } from "../../src/atoms/textarea/textarea.shared.tsx";
+import { sizeOf as textareaSize, metricsOf as textareaMetrics } from "../../src/atoms/textarea/textarea.shared.tsx";
 import { placementOf as tooltipPlacement, triggerOf } from "../../src/atoms/tooltip/tooltip.shared.tsx";
 import { roleOf, textAlignOf, toneOf as typographyTone, weightOf, leadingOf, decorationOf, numeralsOf, slantOf } from "../../src/atoms/typography/typography.shared.tsx";
 import { fitOf as videoFit } from "../../src/atoms/video/video.shared.tsx";
@@ -388,6 +388,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Swatch.stretch", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#stretchesOf", rule: true, members: ["block", "circle", "inline"], resolve: stretchesOf }),
   subject({ id: "Switch.size", components: ["Switch"], pages: ["switch"], resolver: "src/atoms/switch/switch.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: switchSize }),
   subject({ id: "Textarea.size", components: ["Textarea"], pages: ["textarea"], resolver: "src/atoms/textarea/textarea.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: textareaSize }),
+  subject({ id: "Textarea.metrics", components: ["Textarea"], pages: ["textarea"], resolver: "src/atoms/textarea/textarea.shared.tsx#metricsOf", members: ["terminal", "dense"], resolve: textareaMetrics }),
   subject({ id: "Tooltip.placement", components: ["Tooltip"], pages: ["tooltip"], resolver: "src/atoms/tooltip/tooltip.shared.tsx#placementOf", members: ["top", "bottom", "left", "right"], resolve: tooltipPlacement }),
   subject({
     id: "Tooltip.trigger",
@@ -457,7 +458,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     resolve: cardDensity,
     notes: ["A density pads the surface on its own and wins over `padded` and `flush`; on a sectioned card it reshapes the sections' inset and rhythm."],
   }),
-  subject({ id: "CodeBlock.variant", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#variantOf", members: ["terminal", "numbered", "inline"], resolve: codeBlockVariant }),
+  subject({ id: "CodeBlock.variant", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#variantOf", members: ["transcript", "terminal", "numbered", "inline"], resolve: codeBlockVariant }),
   subject({ id: "CodeBlock.density", components: ["CodeBlock"], pages: ["code-block"], resolver: "src/molecules/code-block/code-block.shared.tsx#densityOf", members: ["compact", "playground", "snippet", "guide"], resolve: codeBlockDensity }),
   subject({ id: "DescriptionList.layout", components: ["DescriptionList"], pages: ["description-lists"], resolver: "src/molecules/description-lists/description-lists.shared.tsx#layoutOf", members: ["inline", "twoColumn", "stacked"], resolve: descriptionLayout }),
   subject({ id: "DescriptionList.value ink", components: ["DescriptionList"], pages: ["description-lists"], resolver: "src/molecules/description-lists/description-lists.shared.tsx#valueInkOf", members: ["muted"], resolve: valueInkOf }),
@@ -515,7 +516,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "DataTable.look", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#lookOf", members: ["reference", "bare", "matrix"], resolve: dataTableLook, notes: ["Where the platform skin draws no reference sheet (iOS), the table keeps its own look."] }),
   subject({ id: "DataTable.row align", components: ["DataTable"], pages: ["data-table"], resolver: "src/organisms/data-table/data-table.shared.tsx#rowAlignOf", members: ["alignTop"], resolve: rowAlignOf, notes: ["A `stacks` table holds its cells at the top once stacked, whatever this says."] }),
   subject({ id: "Dialog.size", components: ["Dialog"], pages: ["dialog"], resolver: "src/organisms/dialog/dialog.shared.tsx#sizeOf", members: ["xs", "small", "medium", "large", "wide"], resolve: dialogSize }),
-  subject({ id: "Drawer.edge", components: ["Drawer"], pages: ["drawer"], resolver: "src/organisms/drawer/drawer.shared.tsx#edgeOf", members: ["right", "bottom", "top", "left"], resolve: edgeOf }),
+  subject({ id: "Drawer.edge", components: ["Drawer"], pages: ["drawer"], resolver: "src/organisms/drawer/drawer.shared.tsx#edgeOf", members: ["terminal", "right", "bottom", "top", "left"], resolve: edgeOf }),
   subject({ id: "FilterPanel.density", components: ["FilterPanel"], pages: ["filter-panel"], resolver: "src/organisms/filter-panel/filter-panel.shared.tsx#densityOf", members: ["compact"], resolve: filterPanelDensity }),
   subject({ id: "Navbar.surface", components: ["Navbar"], pages: ["navbars"], resolver: "src/organisms/navbars/navbars.shared.tsx#surfaceOf", members: ["bordered", "floating", "bare"], resolve: navbarSurface }),
   subject({ id: "Navbar.density", components: ["Navbar"], pages: ["navbars"], resolver: "src/organisms/navbars/navbars.shared.tsx#densityOf", members: ["compact"], resolve: navbarDensity }),

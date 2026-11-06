@@ -325,5 +325,5 @@ export function terminalLayer(inset: number): ViewStyle {
 }
 
 export function terminalPanel(width: number, t: ColorTokens): ViewStyle {
-  return { width, maxWidth: "100%", height: "100%", minWidth: 0, minHeight: 0, overflow: "hidden", borderRadius: 12, backgroundColor: t.background, borderWidth: 1, borderColor: t.border };
+  return { width, maxWidth: "100%", height: "100%", minWidth: 0, minHeight: 0, overflow: "hidden", borderRadius: platformShape.web.terminalScreen, backgroundColor: t.background, borderWidth: 1, borderColor: t.border };
 }

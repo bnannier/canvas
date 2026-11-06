@@ -151,6 +151,16 @@ export function sizeOf(p: TextareaProps): Size {
   return "base";
 }
 
+/** The entry's metrics (pick one): bare terminal prompt, dense paragraph entry, or the skin's own. */
+export type Metrics = "terminal" | "dense" | "default";
+
+// Metrics precedence when more than one is passed: first match wins.
+export function metricsOf(p: TextareaProps): Metrics {
+  if (p.terminal) return "terminal";
+  if (p.dense) return "dense";
+  return "default";
+}
+
 /** Build a Textarea component from a platform skin. */
 export function createTextarea(skin: TextareaSkin) {
   const Textarea = forwardRef<RNTextInput, TextareaProps>(function Textarea(props, ref) {
@@ -158,6 +168,7 @@ export function createTextarea(skin: TextareaSkin) {
     const embedded = props.embedded || props.terminal;
     const flush = props.flush || embedded;
     const size = sizeOf(props);
+    const metrics = metricsOf(props);
     const [focusedState, setFocused] = useState(false);
     // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
     const pinnedFocus = usePinnedFocus(!disabled);
@@ -310,9 +321,9 @@ export function createTextarea(skin: TextareaSkin) {
     const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [
       embedded ? [fieldShape, reserve] : paneStyle(theme, [fieldShape, reserve], focused || isError),
       glass && !embedded ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
-      props.terminal ? terminalText : props.dense ? denseText : skin.text(size),
-      props.terminal ? terminalMinHeight(rows) : props.dense ? denseMinHeight(rows) : skin.minHeight(rows, size),
-      props.terminal ? terminalField : null,
+      metrics === "terminal" ? terminalText : metrics === "dense" ? denseText : skin.text(size),
+      metrics === "terminal" ? terminalMinHeight(rows) : metrics === "dense" ? denseMinHeight(rows) : skin.minHeight(rows, size),
+      metrics === "terminal" ? terminalField : null,
       // A focused framed field wears the skin's halo (web), errored or not.
       focused && !flush && !embedded && skin.focusHalo ? skin.focusHalo(tokens) : null,
       // A framed field paints its own focus state (its border turns `ring`), so the

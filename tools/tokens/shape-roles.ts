@@ -428,7 +428,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "organisms/data-table": ["control", "field", "card", "tableFrame", "panel"],
   "organisms/dialog": ["control", "dialog"],
   "organisms/drag-drop": ["control", "lane", "dragGhost"],
-  "organisms/drawer": ["sheet", "navigationDrawer"],
+  "organisms/drawer": ["sheet", "navigationDrawer", "terminalScreen"],
   "organisms/filter-panel": ["floatingRail"],
   "organisms/navbars": ["control", "card", "pill", "navBar"],
   "organisms/row-menu": ["control", "card", "menu", "menuRow", "listFrame", "groupedList"],
