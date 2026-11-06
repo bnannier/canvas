@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/molecules/code-block/code-block.md`
 Human reference: https://canvas.nannier.com/components/code-block
@@ -19,7 +19,7 @@ The following examples are source excerpts. Supply application data and handlers
 Syntax-highlighted code display with clipboard copy, horizontal scrolling, line
 emphasis, diff rendering, collapsible folding, and tabbed alternatives.
 
-The variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
+The variant axis picks the surface (`transcript` > `terminal` > `numbered` > `inline` > plain,
 first match wins); the density axis is `compact` (the tightened ramp), `playground`
 (the hand-off component page's JSX card: the block at the card corner, its header a 40
 px bar on the card fill, 16 in and 8 out, its Copy a 28 px hairline button, and the code
@@ -75,6 +75,18 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 ```
 
 ## Variants
+
+### Execution transcript
+
+`transcript` renders raw execution output as selectable, soft-wrapped monospace text
+in the active theme's foreground. Tabs, newlines and prompt markers remain verbatim.
+It has no window chrome, card fill, border, syntax highlighting or expander.
+It takes precedence over the other variants and ignores the display modifiers,
+including `copy`, `diff` and `collapsible`; density still controls the type size.
+
+```tsx
+<CodeBlock transcript code={output} />
+```
 
 ### Syntax highlighting
 
@@ -420,9 +432,10 @@ npm run build`} />
 | code | string \| undefined | no |  | The code to render. Newlines are preserved (RN Text honors "\n"). |
 | filename | string \| undefined | no |  | Optional filename label shown in a header bar above the surface. Honored by the plain and numbered variants (and the terminal chrome label); the inline pill has no header. When both are set, `filename` takes the header label and `language` renders as a trailing badge. |
 | language | string \| undefined | no |  | The snippet's language. Drives syntax highlighting (ts/tsx/js/jsx, json, bash/sh, css, html, python — anything else renders monochrome) and the header/terminal label when no `filename` is given. |
-| terminal | boolean \| undefined | no | false | Variant (pick one; default is the plain block). |
-| numbered | boolean \| undefined | no | false | Variant (pick one; default is the plain block). |
-| inline | boolean \| undefined | no | false | Variant (pick one; default is the plain block). |
+| transcript | boolean \| undefined | no | false | Bare execution output: selectable, wrapped monochrome text with no card, header or expander. Takes precedence over terminal, numbered and inline; other display modifiers are ignored. |
+| terminal | boolean \| undefined | no | false |  |
+| numbered | boolean \| undefined | no | false |  |
+| inline | boolean \| undefined | no | false |  |
 | compact | boolean \| undefined | no | false | Density (pick one; default is the comfortable ramp). |
 | playground | boolean \| undefined | no | false | The hand-off component page's JSX card (Component.dc.html lines 171 to 174, the playground's output): the block at the card corner, its header a 40 px bar on the card fill, 16 in and 8 out, with its Copy a 28 px hairline button, and the code 16 above and below, 18 in, at the default 13 / 1.7 ramp. `compact` wins when both are passed. |
 | snippet | boolean \| undefined | no | false | The hand-off component page's own snippet (Component.dc.html line 283, the Usage section's block under its paragraph): the code-card corner, with the code 16 above and below and 18 in at the default 13 / 1.7 ramp. `compact` and `playground` win over it. |

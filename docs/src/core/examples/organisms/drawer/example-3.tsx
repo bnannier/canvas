@@ -3,10 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Drawer, Input, Typography } = scope;
+  const { Drawer, Typography, Column } = scope;
   return (
-<Drawer embedded open right accessibilityLabel="Invite people" header={<Typography h5>Invite people</Typography>}>
-  <Input label="Email" placeholder="name@company.com" />
+<Drawer trigger="Right drawer" right>
+  <Column padLoose snug>
+    <Typography lead semibold>Details</Typography>
+    <Typography small muted>A full-height panel on the right.</Typography>
+  </Column>
 </Drawer>
   );
 }

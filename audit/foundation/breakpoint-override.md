@@ -35,7 +35,7 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | `alert-dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
 | `description-lists` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `form` | through shared modules | `useContainerWidth` (src/style/container.ts) |
-| `grid-lists` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
+| `grid-lists` | through shared modules | `useContainerWidth` (src/style/container.ts) |
 | `phone-input` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `calendar` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `command` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |

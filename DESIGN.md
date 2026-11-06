@@ -298,10 +298,10 @@ fontWeights:
   black: "900"
 components:
   stats:
-    stat-radius: "16px"
-    stat-pad: "18px"
+    stat-radius: "14px"
+    stat-pad: "16px"
     stat-gap: "12px"
-    stat-shadow: "var(--shadow-sm)"
+    stat-shadow: none
     stat-value-lh: "28px"
     stat-value-tracking: "-0.56px"
     stat-label-tracking: "0px"
@@ -964,6 +964,8 @@ kit's own Android parts at a step of the same scale.
 | web | `tableFrame` | 14px |
 | web | `listFrame` | 14px |
 | web | `gridTile` | 14px |
+| web | `statTile` | 14px |
+| web | `statSwatch` | 2px |
 | web | `dragGhost` | 12px |
 | web | `composer` | 16px |
 | web | `bubble` | 16px |
@@ -986,6 +988,7 @@ kit's own Android parts at a step of the same scale.
 | web | `rampBar` | 10px |
 | web | `iconCell` | 10px |
 | web | `stepMark` | 10px |
+| web | `terminalScreen` | 12px |
 | ios | `actionSheet` | 34px |
 | ios | `groupedList` | 26px |
 | ios | `event` | 6px |
@@ -1095,6 +1098,8 @@ drawn by those entries' platforms.
 | `tableFrame` | `organisms/data-table` |
 | `listFrame` | `molecules/stacked-lists`, `organisms/row-menu` |
 | `gridTile` | `molecules/grid-lists` |
+| `statTile` | `molecules/stats` |
+| `statSwatch` | `molecules/stats` |
 | `dragGhost` | `organisms/drag-drop` |
 | `composer` | `organisms/chat` |
 | `bubble` | `organisms/chat` |
@@ -1117,6 +1122,7 @@ drawn by those entries' platforms.
 | `rampBar` | `atoms/swatch` |
 | `iconCell` | `atoms/icon` |
 | `stepMark` | `atoms/badge` |
+| `terminalScreen` | `organisms/drawer` |
 | `actionSheet` | `organisms/action-sheet` |
 | `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists`, `organisms/row-menu` |
 | `searchField` | `atoms/input` |

@@ -5,13 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
-<CodeBlock
-  guide
-  headerless
-  language="tsx"
-  code={`<Row alignCenter cozy>
-  <Button link href="/pricing">Pricing</Button>
-</Row>`}
-/>
+<CodeBlock snippet headerless language="tsx" code={`<Button>Save changes</Button>`} />
   );
 }

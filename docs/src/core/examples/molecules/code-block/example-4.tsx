@@ -5,6 +5,11 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
-<CodeBlock inline language="bash" code="npm install" />
+<CodeBlock
+  numbered
+  language="ts"
+  code={`const theme = getTheme();
+setTheme(theme === "dark" ? "light" : "dark");`}
+/>
   );
 }

@@ -6,10 +6,11 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  headerless
-  copy
-  language="tsx"
-  code={`<Button primary>Save changes</Button>`}
+  tabs={[
+    { label: "npm", code: "npm install @nannier/canvas" },
+    { label: "yarn", code: "yarn add @nannier/canvas" },
+    { label: "bun", code: "bun add @nannier/canvas" },
+  ]}
 />
   );
 }

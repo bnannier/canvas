@@ -3,10 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Drawer, Typography } = scope;
+  const { CodeBlock, Drawer, Typography } = scope;
   return (
-<Drawer plain instant right width={440} trigger="Agent details" header={<Typography h3 bold>Scout</Typography>} footer={<Button secondary>Pause</Button>}>
-  <Typography>Recent work and trace details.</Typography>
+<Drawer terminal navigation width={820} trigger="Execution" header={<Typography h5>Execution</Typography>}>
+  <CodeBlock transcript code={output} />
 </Drawer>
   );
 }

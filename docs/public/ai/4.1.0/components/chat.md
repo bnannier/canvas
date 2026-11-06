@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.1.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 56e9acdcc5d59c74fa11ff4461bc2b20c5a6dee1cb6818caafd94ea390815be0
+Source SHA-256: d27c9b7debc9f8fea1016a51d1f700b1572754ac7d4f68c83b30055d3798cc5a
 
 Source: `src/organisms/chat/chat.md`
 Human reference: https://canvas.nannier.com/components/chat
@@ -27,6 +27,10 @@ Assistant content supports paragraphs, headings, lists, quotes, fenced code, bol
 `ChatThread` follows new content while the reader is within 48 points of the bottom. Scrolling up to read older messages pauses following; returning to the bottom resumes it. Message updates, streaming text, question-height changes, and viewport resizing coalesce into a tail adjustment after layout settles. Scrolling is immediate and never animated, so it does not add motion when text streams or Reduce Motion is enabled. The overflowing thread is keyboard focusable with a visible focus frame. The native app or owning Dialog handles safe areas and keyboard avoidance.
 
 `ChatComposer` keeps Enter available for newlines. Its explicit Send control receives the trimmed draft through `onSend`; empty, disabled, pending, or uploading sends are blocked. An attached file permits an empty text draft. `sendDisabled` blocks only Send while leaving drafts, attachment controls, and message choices interactive; use it when a saved choice must be made before another freeform message. Pending replies leave the draft editable. The app owns draft clearing, transport, cancellation, persistence, and retry behavior.
+
+Pass `terminal` to Chat or its standalone pieces for a flat, left-aligned monospace transcript. Messages use `❯` for the user and `●` for the assistant beside their author, preserving provider text and current delivery state. No user bubble or conversation card is added. The bare composer places `❯` and its multiline editor between two full-width hairlines, with an explicit rectangular Send action. Hardware Enter sends; Shift+Enter inserts a newline. IME composition and native soft-keyboard Enter retain their normal text-entry behavior. Sending returns focus to the editor; `autoFocus` optionally focuses it on mount. The app still owns clearing the draft, delivery, and preventing duplicate requests. Pending replies keep the draft editable and block sending.
+
+`Markdown terminal` preserves the same safe document grammar with 13px monospace text, compact spacing, and semantic headings. Tables remain aligned table rows in a horizontal scrollport instead of becoming stacked cards. Fenced code and tabs remain literal whitespace. `Textarea terminal` supplies the prompt's bare monospace metrics and implies `embedded`; existing Textarea defaults remain unchanged.
 
 Set `onAttach` to show the accessible paperclip action. The app owns file picking and uploading, passes composer `attachments`, and removes a staged file through `onRemoveAttachment(id)`. A `ChatAttachmentData` has an `id`, `name`, optional `uploading` or `error` flags, and optional `notice` text. Uploading and failed files block sending; remove a failed file or replace it after retrying. `attaching` also blocks attaching and sending while the app opens a picker or uploads. Saved message attachments use the same metadata; `onOpenAttachment(attachment)` on Chat, ChatThread, or ChatMessage delegates opening or downloading to the app. Canvas never requests, uploads, or opens file URLs itself.
 
@@ -61,6 +65,12 @@ Checklists are read-only Canvas selection controls; reading a document never cha
 ```
 
 ## Variants
+
+### Terminal transcript
+
+```tsx
+<Chat terminal autoFocus style={{ height: 320 }} messages={[{ id: "request", role: "user", content: "Inspect the current change." }, { id: "reply", role: "assistant", author: "Claude", content: "I will read the **implementation** and its checks." }]} value="" onChangeText={() => {}} onSend={() => {}} footer={<Typography tiny muted>Enter to send · Shift+Enter for newline</Typography>} />
+```
 
 ### Long conversation
 
@@ -199,6 +209,7 @@ Move through one question at a time. This example controls the saved position an
 | message | ChatMessageData | yes |  |  |
 | onOpenAttachment | ((attachment: ChatAttachmentData) => void) \| undefined | no |  |  |
 | plain | boolean \| undefined | no | false | Render assistant markdown punctuation literally. User messages are always plain text. |
+| terminal | boolean \| undefined | no | false | Flat, compact monospace terminal transcript. |
 | testID | string \| undefined | no |  |  |
 
 ### ChatThreadProps
@@ -218,6 +229,7 @@ Move through one question at a time. This example controls the saved position an
 | label | string \| undefined | no | "Conversation" |  |
 | emptyState | ReactNode | no |  |  |
 | plain | boolean \| undefined | no | false |  |
+| terminal | boolean \| undefined | no | false | Flat, compact monospace terminal transcript. |
 | testID | string \| undefined | no |  |  |
 | style | LayoutStyle | no |  | Parent composition only. Supply a bounded height, or a bounded flex parent. |
 
@@ -225,6 +237,8 @@ Move through one question at a time. This example controls the saved position an
 
 | Prop | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
+| terminal | boolean \| undefined | no | false | Bare terminal prompt; hardware Enter sends and Shift+Enter inserts a newline. |
+| autoFocus | boolean \| undefined | no | false | Focus the message input on mount. |
 | value | string | yes |  |  |
 | onChangeText | (value: string) => void | yes |  |  |
 | onSend | (value: string) => void | yes |  | Receives the trimmed draft. The app owns clearing the draft and starting transport. |
@@ -259,8 +273,10 @@ Move through one question at a time. This example controls the saved position an
 | label | string \| undefined | no |  |  |
 | emptyState | ReactNode | no |  |  |
 | plain | boolean \| undefined | no | false |  |
+| terminal | boolean \| undefined | no | false | Flat, compact monospace terminal transcript. |
 | testID | string \| undefined | no |  |  |
 | style | LayoutStyle | no |  | Parent composition only. Supply a bounded height, or a bounded flex parent. |
+| autoFocus | boolean \| undefined | no | false | Focus the message input on mount. |
 | value | string | yes |  |  |
 | onChangeText | (value: string) => void | yes |  |  |
 | onSend | (value: string) => void | yes |  | Receives the trimmed draft. The app owns clearing the draft and starting transport. |
@@ -281,6 +297,7 @@ Move through one question at a time. This example controls the saved position an
 | --- | --- | --- | --- | --- |
 | children | string | yes |  | Untrusted Markdown source. HTML, URLs and images remain inert text. |
 | compact | boolean \| undefined | no | false | Denser document typography using Canvas's body reading scale. |
+| terminal | boolean \| undefined | no | false | Compact monospace transcript, with flat horizontally scrolling tables. |
 | accessibilityLabel | string \| undefined | no |  |  |
 | testID | string \| undefined | no |  |  |
 
