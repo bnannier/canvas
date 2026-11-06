@@ -271,16 +271,12 @@ jobs:
       # The consumer-support check renders the web floor in headless Chromium
       # (scripts/verify-consumer-support.mjs). It used to ride on the browser the
       # rendered-colour check installed above; that check left with the Riskora
-      # restyle, so the browser is installed here in its own right. Same cache key
-      # as the e2e job: the lockfile pins the Playwright build.
-      - name: Cache the Playwright browsers
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-
+      # restyle, so the browser is installed here in its own right. The shared action
+      # caches the lockfile-pinned build and its system packages for every job.
       - name: Install Chromium for the consumer-support check
-        run: bunx playwright install --with-deps chromium
+        uses: ./.github/actions/playwright-browsers
+        with:
+          browsers: chromium
 
       - name: Verify declared React and React Native support with the sealed package
         run: bun run verify-consumer-support --artifacts "$RUNNER_TEMP/artifacts"
@@ -318,8 +314,10 @@ jobs:
     # Playwright shards by file, not duration. In release run 41259230060, shards
     # 1/2 passed 856 tests each in 22 minutes; shards 3/4 were still passing tests
     # when the 35-minute job limit stopped them. System-package installation alone
-    # took up to 14 minutes, even with cached browsers. Allow setup and the full
-    # suite to finish without removing checks or retrying failed assertions.
+    # took up to 14 minutes, even with cached browsers, and 46 and 55 minutes in
+    # release run 42252885193, so the browser action now caches those packages.
+    # Allow setup and the full suite to finish without removing checks or retrying
+    # failed assertions.
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -359,14 +357,10 @@ jobs:
 
       # The lockfile selects all three engine builds. Focused keyboard and touch
       # journeys complement the full Chromium suite without duplicating baselines.
-      - name: Cache the Playwright browsers
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-
       - name: Install Chromium, Firefox and WebKit
-        run: bunx playwright install --with-deps chromium firefox webkit
+        uses: ./.github/actions/playwright-browsers
+        with:
+          browsers: chromium firefox webkit
 
       - name: Download sealed artifacts
         uses: actions/download-artifact@v8
@@ -421,14 +415,10 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - name: Cache the Playwright browsers
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-
       - name: Install Chromium and WebKit
-        run: bunx playwright install --with-deps chromium webkit
+        uses: ./.github/actions/playwright-browsers
+        with:
+          browsers: chromium webkit
 
       - name: Download sealed artifacts
         uses: actions/download-artifact@v8
@@ -469,14 +459,10 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - name: Cache the Playwright browsers
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-
       - name: Install Chromium, Firefox and WebKit
-        run: bunx playwright install --with-deps chromium firefox webkit
+        uses: ./.github/actions/playwright-browsers
+        with:
+          browsers: chromium firefox webkit
 
       - name: Install the ordinary starter's pinned registry dependencies
         working-directory: examples/starter

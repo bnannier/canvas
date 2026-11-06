@@ -262,15 +262,10 @@ jobs:
           echo "$installed"
           [ "$installed" = "Version $PLAYWRIGHT_VERSION" ] || { printf '::error::bunx playwright reports %q, not %q\n' "$installed" "$PLAYWRIGHT_VERSION"; exit 1; }
 
-      - name: Cache the Playwright browsers
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-
       # Only the engine the project runs: the journeys and the touch projects run on
       # Firefox and WebKit too (playwright.config.ts), everything else on Chromium.
-      - name: Install the project's browser
+      - name: Choose the project's browser
+        id: browser
         env:
           PROJECT: ${{ inputs.project }}
         run: |
@@ -280,8 +275,13 @@ jobs:
             journeys-webkit | touch-webkit) browser=webkit ;;
             *) printf '::error::no browser is known for project %q\n' "$PROJECT"; exit 1 ;;
           esac
-          bunx playwright install --with-deps "$browser"
+          echo "name=$browser" >> "$GITHUB_OUTPUT"
           echo "SOAK_BROWSER=$browser" >> "$GITHUB_ENV"
+
+      - name: Install the project's browser
+        uses: ./.github/actions/playwright-browsers
+        with:
+          browsers: ${{ steps.browser.outputs.name }}
 
       - name: Take the export
         uses: actions/download-artifact@v8
