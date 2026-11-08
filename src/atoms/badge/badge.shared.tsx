@@ -167,6 +167,9 @@ export interface BadgeProps {
   signal?: boolean;
   /** Pin to the start when embedded in an unmeasured host layout. */
   start?: boolean;
+  /** Keep the label on one line and let the pill shrink in a tight row, ending the label with
+   * an ellipsis instead of overflowing its host. */
+  truncate?: boolean;
   uppercase?: boolean;
   /** A reference can open its source in the system browser. */
   href?: string;
@@ -493,11 +496,11 @@ export function createBadge(skin: BadgeSkin) {
     const content = <>
       {surfaced ? <GlassPane static layer="control" shape={base} brand={look.brand} tint={look.tint} /> : null}
       {props.dot || toned ? <View ref={dotPart?.ref} onLayout={dotPart?.onLayout} style={{ width: skin.dotSize, height: skin.dotSize, borderRadius: 9999, backgroundColor: ink }} /> : null}
-      {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[label, monoStyle]}>{children}</Text> : null}
+      {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[label, monoStyle, props.truncate ? { flexShrink: 1, minWidth: 0 } : null]} {...(props.truncate ? { numberOfLines: 1, ellipsizeMode: "tail" as const } : null)}>{children}</Text> : null}
       {reference && props.href ? <Icon decorative arrowUpRight size={11} primary /> : null}
     </>;
     // Under glass a reference key's resting hairline drops: the material's rim is its edge.
-    const rootStyle = [surfaced || theme.increasedContrast ? paneStyle(theme, [base, fill]) : [base, fill], markerShadow, hug, props.start ? { alignSelf: "flex-start" as const } : null, style];
+    const rootStyle = [surfaced || theme.increasedContrast ? paneStyle(theme, [base, fill]) : [base, fill], markerShadow, hug, props.start ? { alignSelf: "flex-start" as const } : null, props.truncate ? { flexShrink: 1, minWidth: 0, maxWidth: "100%" as const } : null, style];
     const minTarget = platformMinTarget();
     const linkSlop = minTarget == null ? undefined : Math.max(0, (minTarget - size.height) / 2);
     if (props.href) return <AnatomyScope><Pressable ref={containerPart?.ref} onLayout={containerPart?.onLayout} hitSlop={linkSlop} accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? `Open ${children}`} onPress={() => Linking.openURL(props.href!)} style={[rootStyle, hovered ? { opacity: 0.85 } : null]} {...target} testID={testID}>{content}</Pressable></AnatomyScope>;

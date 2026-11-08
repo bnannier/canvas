@@ -111,7 +111,8 @@ other priorities use a quiet secondary pill. Types use the soft primary treatmen
 Type comes first, then priority, in one 18 px metadata row below the status on
 every platform. `noticeLabel` adds a quiet outline pill after them for a short
 notice, such as "Workflow v1" on a ticket that follows an older workflow; its
-text is its accessible name. Omitted labels render no pill; the shared row
+text is its accessible name. It is the only pill that gives way in a narrow
+card, ending in an ellipsis while type and priority keep their size. Omitted labels render no pill; the shared row
 retains its height.
 The header contains only the ticket number and move handle. Pass the Board render callback's
 `moveHandle` unchanged; Card places it at the top right beside the ticket number.

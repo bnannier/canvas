@@ -11,6 +11,8 @@ export const move: ViewStyle = { flexShrink: 0, height: 24, justifyContent: "cen
 export const single: ViewStyle = { height: 18, minWidth: 0, overflow: "hidden" };
 // Badge small is 18 px on web and both native skins. Keep its complete pill visible.
 export const badgeSlot: ViewStyle = { height: 18, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 6, overflow: "hidden" };
+// The notice is the last pill and the only one that gives way when the row is full.
+export const notice: ViewStyle = { flexShrink: 1, minWidth: 0 };
 export const titleSlot: ViewStyle = { height: 40, minWidth: 0, overflow: "hidden" };
 export const descriptionSlot: ViewStyle = { height: 36, minWidth: 0, overflow: "hidden" };
 export const imageHeader: ViewStyle = { height: 176, overflow: "hidden" };
