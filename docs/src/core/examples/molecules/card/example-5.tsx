@@ -8,6 +8,6 @@ export default function Example(scope: ExampleScope) {
 <Card board compact smallCorners tileShadow borderless
   ticketNumber="ARGUS-123" priorityLabel="High" title="Preserve saved work"
   description="Keep the current project state when returning to the board."
-  statusLabel="In Progress" typeLabel="Task" aiActive />
+  statusLabel="In Progress" typeLabel="Task" noticeLabel="Workflow v1" aiActive />
   );
 }
