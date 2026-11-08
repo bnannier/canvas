@@ -81,6 +81,7 @@ export const COMPONENT_DOC_KEYS: Record<string, string> = {
   "drag-drop": "./organisms/drag-drop/drag-drop-docs.android.tsx",
   "drawer": "./organisms/drawer/drawer-docs.android.tsx",
   "filter-panel": "./organisms/filter-panel/filter-panel-docs.android.tsx",
+  "flow-editor": "./organisms/flow-editor/flow-editor-docs.tsx",
   "navbars": "./organisms/navbars/navbars-docs.android.tsx",
   "row-menu": "./organisms/row-menu/row-menu-docs.android.tsx",
   "sidebar": "./organisms/sidebar/sidebar-docs.android.tsx",

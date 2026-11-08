@@ -44,6 +44,7 @@ import { docs as d_molecules_empty_state } from "./examples/molecules/empty-stat
 import { docs as d_molecules_feeds } from "./examples/molecules/feeds/feeds-docs";
 import { docs as d_molecules_field } from "./examples/molecules/field/field-docs";
 import { docs as d_organisms_filter_panel } from "./examples/organisms/filter-panel/filter-panel-docs";
+import { docs as d_organisms_flow_editor } from "./examples/organisms/flow-editor/flow-editor-docs";
 import { docs as d_molecules_form } from "./examples/molecules/form/form-docs";
 import { docs as d_charts_funnel_chart } from "./examples/charts/funnel-chart/funnel-chart-docs";
 import { docs as d_charts_gauge } from "./examples/charts/gauge/gauge-docs";
@@ -154,6 +155,7 @@ export const ALL_COMPONENT_DOCS: readonly ComponentDocs[] = [
   d_molecules_feeds,
   d_molecules_field,
   d_organisms_filter_panel,
+  d_organisms_flow_editor,
   d_molecules_form,
   d_charts_funnel_chart,
   d_charts_gauge,

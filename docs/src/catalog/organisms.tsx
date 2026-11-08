@@ -1,6 +1,6 @@
 import { ViewportOverlay } from "../ui/viewport-overlay";
 import { useState } from "react";
-import { Button, Column, Typography, Wizard, Calendar, Command, DataTable, Dialog, FilterPanel, Navbar, Steps, Tabs, useToast } from "@nannier/canvas";
+import { Button, Column, Typography, Wizard, FlowEditor, Calendar, Command, DataTable, Dialog, FilterPanel, Navbar, Steps, Tabs, useToast } from "@nannier/canvas";
 import type { CatTile } from "./tile";
 
 function CalendarsPreview() {
@@ -105,6 +105,12 @@ function WizardPreview() {
   </Column>;
 }
 
+function FlowEditorPreview() {
+  return <FlowEditor readOnly label="Delivery workflow"
+    nodes={[{ id: "product", label: "Product", x: 0, y: 0 }, { id: "design", label: "Design", x: 216, y: 0 }, { id: "build", label: "Engineering", x: 432, y: 0 }]}
+    edges={[{ id: "a", from: "product", to: "design", label: "Ready" }, { id: "b", from: "design", to: "build", label: "Ready" }, { id: "c", from: "build", to: "design", label: "Rework", rework: true }]} />;
+}
+
 function StepsPreview() {
   return (
     <Steps
@@ -122,6 +128,7 @@ function TabsPreview() {
 
 export const ORGANISMS_TILES: CatTile[] = [
   { title: "Wizard", href: "/components/wizard", Preview: WizardPreview },
+  { title: "FlowEditor", href: "/components/flow-editor", span: true, Preview: FlowEditorPreview },
   { title: "Calendar", href: "/components/calendar", Preview: CalendarsPreview },
   { title: "Command", href: "/components/command", Preview: CommandPalettePreview },
   { title: "DataTable", href: "/components/data-table", span: true, Preview: DataTablesPreview },

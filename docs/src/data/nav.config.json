@@ -557,6 +557,11 @@
             "icon": "app-window"
           },
           {
+            "slug": "flow-editor",
+            "label": "FlowEditor",
+            "icon": "route"
+          },
+          {
             "slug": "tab-bar",
             "label": "TabBar",
             "icon": "navigation"

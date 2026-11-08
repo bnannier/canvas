@@ -77,6 +77,7 @@ export const COMPONENT_DOC_KEYS: Record<string, string> = {
   "drag-drop": "./organisms/drag-drop/drag-drop-docs.tsx",
   "drawer": "./organisms/drawer/drawer-docs.tsx",
   "filter-panel": "./organisms/filter-panel/filter-panel-docs.tsx",
+  "flow-editor": "./organisms/flow-editor/flow-editor-docs.tsx",
   "navbars": "./organisms/navbars/navbars-docs.tsx",
   "row-menu": "./organisms/row-menu/row-menu-docs.tsx",
   "sidebar": "./organisms/sidebar/sidebar-docs.tsx",

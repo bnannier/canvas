@@ -22,3 +22,4 @@ export * from "./toast/toast.js";
 export * from "./chat/chat.js";
 
 export * from "./wizard/wizard.js";
+export * from "./flow-editor/flow-editor.js";
