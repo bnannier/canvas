@@ -1063,12 +1063,12 @@
     },
     "components/wizard--dark": {
       "width": 1004,
-      "height": 465,
+      "height": 513,
       "sha256": "d6470e735cdefd1f2e3ac5cffd7ba4abdcb312a5d106ead470de96fedc785244"
     },
     "components/wizard--light": {
       "width": 1004,
-      "height": 465,
+      "height": 513,
       "sha256": "9f759d8067aed3e64c26767f01120c0d896cab27485095347de1fe703c535658"
     },
     "overlays/action-sheet--dark": {
