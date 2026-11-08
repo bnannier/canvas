@@ -1,7 +1,7 @@
 <!-- Generated from tools/agent-docs/agents.md; edit the template, then regenerate. -->
 # Build with Canvas
 
-Repository package version: 4.3.0. This is source documentation, not proof
+Repository package version: 4.3.1. This is source documentation, not proof
 that npm has published this version.
 
 Canvas (`@nannier/canvas`) is a React Native UI kit for native iOS and Android
@@ -16,12 +16,12 @@ This page describes the source package's onboarding workflow. As of 2026-11-01,
 the published `4.0.0` package does **not** include the CLI shown below. These
 commands require a package containing the CLI. Check the installed package's
 `package.json` for the `canvas` executable before using them; otherwise follow
-the [installation guide](/ai/4.3.0/installation.md) and installed declarations.
+the [installation guide](/ai/4.3.1/installation.md) and installed declarations.
 Repository previews and generated source snapshots do not prove publication.
 
 In an existing project, read the resolved version in your lockfile or run
 `npm ls @nannier/canvas`. Use documentation and declarations matching that
-installed version. The currently generated [documentation index](/ai/4.3.0/index.md)
+installed version. The currently generated [documentation index](/ai/4.3.1/index.md)
 identifies its package version, source snapshot status and source digest.
 
 ## Start a project with an available CLI
@@ -68,11 +68,11 @@ or a working application without verification.
 ## Read the API
 
 - [Discovery index](/llms.txt) and [combined documentation](/llms-full.txt)
-- [Installation](/ai/4.3.0/installation.md)
-- [Theming](/ai/4.3.0/theming.md)
-- [Layout](/ai/4.3.0/layout.md)
-- [Overlays](/ai/4.3.0/overlays.md)
-- [Component catalog](/ai/4.3.0/catalog.json) and [source/content manifest](/ai/4.3.0/manifest.json)
+- [Installation](/ai/4.3.1/installation.md)
+- [Theming](/ai/4.3.1/theming.md)
+- [Layout](/ai/4.3.1/layout.md)
+- [Overlays](/ai/4.3.1/overlays.md)
+- [Component catalog](/ai/4.3.1/catalog.json) and [source/content manifest](/ai/4.3.1/manifest.json)
 
 Compose existing Canvas components. Use boolean styling such as
 `<Button primary large>` and layout components such as `Container`, `Row`,
