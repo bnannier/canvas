@@ -18,6 +18,9 @@ export interface BoardCardProps {
   blocked?: boolean;
   blockedReason?: string;
   typeLabel?: string;
+  /** A short notice shown as a quiet outline pill after the type and priority, such as
+   * "Workflow v1" for a ticket on an older workflow. */
+  noticeLabel?: string;
   /** Display functional text shimmer and cycling dots while work is active. */
   aiActive?: boolean;
   /** Open the active AI work from its progress label, independently of the card. */
@@ -104,6 +107,7 @@ export function BoardCardContent(props: CardProps & { imageHeaderCorners: ViewSt
       <View testID={id("metadata")} style={s.badgeSlot}>
         {props.typeLabel ? <View testID={id("type")} accessible accessibilityRole="text" accessibilityLabel={`Type: ${props.typeLabel}`}><Badge small soft primary start>{props.typeLabel}</Badge></View> : null}
         {props.priorityLabel ? <View testID={id("priority")} accessible accessibilityRole="text" accessibilityLabel={`Priority: ${props.priorityLabel}`}><Badge small soft start error={priority === "high" || priority === "critical"} warning={priority === "medium"} secondary={priority !== "high" && priority !== "critical" && priority !== "medium"}>{props.priorityLabel}</Badge></View> : null}
+        {props.noticeLabel ? <View testID={id("notice")} accessible accessibilityRole="text" accessibilityLabel={props.noticeLabel}><Badge small outline start>{props.noticeLabel}</Badge></View> : null}
       </View>
       <View testID={id("progress")} style={s.single}>{props.aiActive ? <ProgressText onPress={props.onAIProgressPress} /> : null}</View>
     </View>

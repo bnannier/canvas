@@ -109,7 +109,10 @@ visible field-name prefixes; accessible names retain their field context. High
 and Critical priorities use the soft error treatment, Medium uses warning, and
 other priorities use a quiet secondary pill. Types use the soft primary treatment.
 Type comes first, then priority, in one 18 px metadata row below the status on
-every platform. Omitted labels render no pill; the shared row retains its height.
+every platform. `noticeLabel` adds a quiet outline pill after them for a short
+notice, such as "Workflow v1" on a ticket that follows an older workflow; its
+text is its accessible name. Omitted labels render no pill; the shared row
+retains its height.
 The header contains only the ticket number and move handle. Pass the Board render callback's
 `moveHandle` unchanged; Card places it at the top right beside the ticket number.
 `blocked` displays “Blocked by Discovery” when `blockedReason` is “Discovery”,
@@ -130,7 +133,7 @@ height. Board anatomy takes precedence over raw children and section props.
 <Card board compact smallCorners tileShadow borderless
   ticketNumber="ARGUS-123" priorityLabel="High" title="Preserve saved work"
   description="Keep the current project state when returning to the board."
-  statusLabel="In Progress" typeLabel="Task" aiActive />
+  statusLabel="In Progress" typeLabel="Task" noticeLabel="Workflow v1" aiActive />
 ```
 
 ### Generic
