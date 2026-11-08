@@ -1,0 +1,393 @@
+# Dropdown
+
+Package: @nannier/canvas
+Version: 4.3.0
+Status: source-snapshot (not proof of an npm release)
+Source SHA-256: f07b9941fca03566f384a012745e4b377b2202f6f02f07a32a89796fc27a7ec3
+
+Source: `src/atoms/dropdown/dropdown.md`
+Human reference: https://canvas.nannier.com/components/dropdown
+
+## Public imports
+
+```tsx
+import { Dropdown } from "@nannier/canvas";
+```
+
+The following examples are source excerpts. Supply application data and handlers; snippets using `tokens` read `const { tokens } = useTheme()` inside a component. Import React hooks from React. Intentional “Don't” examples illustrate unsupported patterns.
+
+Floating menus triggered by a button: actions, options, navigation.
+
+On the web the menu is the v4 panel: a card with a hairline and a soft shadow, 36-pixel
+rows with quiet icons that take a raised wash under the pointer at once, a mono uppercase
+eyebrow over a section, mono shortcuts in their own column, destructive rows in the
+destructive ink, and a disabled row in the muted ink rather than faded.
+iOS and Android keep their platform
+menus (the iOS pull-down menu, the Material 3 menu) in the theme's colours.
+
+In glass mode the menu is a dense-layer glass card under its trigger (or above it
+when it fits there); the trigger keeps its place, its press and its accessible
+name and state, and a selection commits and closes the menu the moment a row is
+pressed. AvatarMenu and the collapsed Navbar menu are built on Dropdown. Solid
+mode paints the skin's own menu.
+
+`compact` tightens the web rows to 30 pixels and lets the menu scroll inside
+`maxHeight`; with `steadyPress` a press does not tint the row. Selected rows take the
+action ink.
+Items can carry a stored `value`, `detail`, `description`, `selected` state, and a
+`sectionBefore` heading. `keepOpen` leaves refresh-style commands open. A `note`
+adds a muted footer. `menuWidth` and `maxHeight` bound the scrolling menu.
+Pass `anchorRef` to use an existing trigger without adding another control or
+layout wrapper; `accessibilityLabel` names the menu independently of its heading.
+Checked choices use browser menu-radio semantics and the native radio trait.
+
+## Usage
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Settings" }
+  ]}
+/>
+```
+
+## Variants
+
+### Project menu
+
+```tsx
+<Dropdown compact steadyPress menuWidth={250} trigger="Projects" label="Your projects" note="Only projects you can access appear."
+  items={[
+    { label: "All my projects", value: "all", detail: "11", selected: true },
+    { label: "Platform Core", value: "core", detail: "6", selected: false },
+    { label: "Add project", value: "add", sectionBefore: "Manage projects", description: "Open project setup" },
+  ]} />
+```
+
+
+### Disabled trigger
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  disabled
+  items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Settings" }
+  ]}
+/>
+```
+
+### Disabled item
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Archive", disabled: true }
+  ]}
+/>
+```
+
+### Destructive item
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Delete…", destructive: true, separatorBefore: true }
+  ]}
+/>
+```
+
+### Section label
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  label="Actions"
+  items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Settings" }
+  ]}
+/>
+```
+
+### Identity header
+
+```tsx
+<Dropdown
+  trigger="Account"
+  title="Rachel Chen"
+  description="rachel@nannier.com"
+  items={[
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
+  ]}
+/>
+```
+
+### Keyboard shortcuts
+
+```tsx
+<Dropdown
+  trigger="Actions"
+  items={[
+    { label: "Edit profile", shortcut: "⌘E" },
+    { label: "Duplicate", shortcut: "⌘D" },
+    { label: "Settings", shortcut: "⌘," }
+  ]}
+/>
+```
+
+### Choices and submenus
+
+A `selected` item is the menu's current choice: on the web it takes the accent's soft wash
+and a leading check, and the menu keeps the check's column on its other rows. A `submenu`
+item draws a trailing chevron, the hint that its `onSelect` opens another menu.
+
+```tsx
+<Dropdown
+  trigger="View"
+  items={[
+    { label: "Grid", selected: true },
+    { label: "List" },
+    { label: "Sort by", submenu: true }
+  ]}
+/>
+```
+
+### Custom trigger
+
+```tsx
+<Dropdown
+  items={[
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
+  ]}
+>
+  <Avatar name="Rachel Chen" />
+</Dropdown>
+```
+
+### End alignment
+
+```tsx
+<Dropdown
+  trigger="Account"
+  alignEnd
+  items={[
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
+  ]}
+/>
+```
+
+### Inline specimen
+
+`inline` draws the menu open and in flow under the trigger instead of floating it over the page: a specimen for a docs page or an empty state. The trigger reads as expanded and its press is inert, a row still fires `onSelect`, and nothing dismisses the card.
+
+```tsx
+<Dropdown
+  inline
+  trigger="Account"
+  items={[
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
+  ]}
+/>
+```
+
+## Do & Don't
+
+### Trigger
+
+**Do** — Click Actions to open; click outside to dismiss.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "Edit profile" },
+    { label: "Duplicate" },
+    { label: "Settings" }
+  ]} />
+```
+
+**Don't** — Always open: it clutters the page and there's no way to dismiss it.
+
+```tsx
+<Column style={{ minHeight: 190 }}>
+  <Dropdown trigger="Actions" open items={[
+      { label: "Edit profile" },
+      { label: "Duplicate" },
+      { label: "Settings" }
+    ]} />
+</Column>
+```
+
+### Sectioning
+
+**Do** — Click an item: group related actions under labels with a separator.
+
+```tsx
+<Dropdown trigger="Actions" label="Create" items={[
+    { label: "New file" },
+    { label: "New folder" },
+    { label: "Upload" },
+    { label: "Rename", separatorBefore: true },
+    { label: "Move to…" },
+    { label: "Download" }
+  ]} />
+```
+
+**Don't** — Click an item: a long, flat menu of eight actions is hard to scan.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "New file" },
+    { label: "New folder" },
+    { label: "Upload" },
+    { label: "Rename" },
+    { label: "Duplicate" },
+    { label: "Move to…" },
+    { label: "Download" },
+    { label: "Delete" }
+  ]} />
+```
+
+### Leading icons
+
+**Do** — Click an item: give every row a leading icon so labels share one start column.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "Edit", icon: "pencil" },
+    { label: "Duplicate", icon: "copy" },
+    { label: "Settings", icon: "settings" }
+  ]} />
+```
+
+**Don't** — Click an item: icons on some rows but not others leave labels misaligned and the column ragged.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "Edit", icon: "pencil" },
+    { label: "Duplicate" },
+    { label: "Settings", icon: "settings" }
+  ]} />
+```
+
+### Keyboard shortcuts
+
+**Do** — Click an item: push shortcuts to a muted, right-aligned column so the eye can scan them.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "Edit profile", shortcut: "⌘E" },
+    { label: "Duplicate", shortcut: "⌘D" },
+    { label: "Settings", shortcut: "⌘," }
+  ]} />
+```
+
+**Don't** — Click an item: hints inline after the label crowd the text and never line up into a readable column.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "Edit profile ⌘E" },
+    { label: "Duplicate ⌘D" },
+    { label: "Settings ⌘," }
+  ]} />
+```
+
+### Disabled item
+
+**Do** — Click Archive: nothing happens; a real disabled item doesn't respond.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "Edit" },
+    { label: "Archive", disabled: true },
+    { label: "Duplicate" }
+  ]} />
+```
+
+**Don't** — Click Archive: it looks disabled but still fires, a greyed item that works is a trap.
+
+```tsx
+<View style={{ alignSelf: "flex-start", gap: 2, borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 8, boxShadow: "0px 26px 50px -20px rgba(121, 100, 214, 0.22)", minWidth: 200 }}>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: tokens["popover-foreground"] }}>Edit</Text>
+  </Pressable>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: tokens["muted-foreground"] }}>Archive</Text>
+  </Pressable>
+  <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }, pressed ? { backgroundColor: tokens.accent } : null]}>
+    <Text style={{ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: tokens["popover-foreground"] }}>Duplicate</Text>
+  </Pressable>
+</View>
+```
+
+### Destructive item
+
+**Do** — Click an item: separate destructive actions with a divider, color them, and place them last.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "Edit" },
+    { label: "Duplicate" },
+    { label: "Delete", destructive: true, separatorBefore: true }
+  ]} />
+```
+
+**Don't** — Click an item: a destructive action wedged between routine ones invites a costly misclick.
+
+```tsx
+<Dropdown trigger="Actions" items={[
+    { label: "Edit" },
+    { label: "Delete" },
+    { label: "Duplicate" }
+  ]} />
+```
+
+## Supported props
+
+### DropdownProps
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| anchorRef | RefObject<View \| null> \| undefined | no |  | Use an existing trigger without adding a trigger or layout wrapper. |
+| accessibilityLabel | string \| undefined | no |  | Explicit accessible name for the menu. |
+| compact | boolean \| undefined | no | false | Exact compact web application menu frame and row metrics. |
+| steadyPress | boolean \| undefined | no | false | Preserve resting row fill and opacity during a press. |
+| menuWidth | number \| undefined | no |  | Width of the floating menu, clamped inside the overlay outlet. |
+| maxHeight | number \| undefined | no |  | Height cap for the compact menu's scrolling contents. |
+| note | ReactNode | no |  | Muted footnote separated from menu commands by a hairline. |
+| trigger | string \| undefined | no |  | Label for the default outline trigger button. Omit when supplying a custom trigger via `children`. |
+| children | ReactNode | no |  | A custom trigger rendered in place of the default outline button, e.g. an avatar account chip. It is wrapped in a Pressable that toggles the menu; the menu itself still comes from `items`. |
+| triggerLabel | string \| undefined | no |  | The accessible name for a CUSTOM trigger (`children`). Without it the button is named from its own contents, which runs the trigger's text together into one unpunctuated string ("Rachel Chenrachel@example.com") and repeats any label a nested control already carries. Ignored by the default `trigger` button, which is named by its own text. |
+| label | string \| undefined | no |  | Optional muted section heading rendered above the rows (e.g. "Actions"). |
+| title | string \| undefined | no |  | Identity header title, rendered in the popover foreground ABOVE everything else in the menu (an account name over its email, say). Pair it with `description`; passing neither omits the header block entirely. |
+| description | string \| undefined | no |  | Identity header second line, muted, under `title`. |
+| items | DropdownItem[] | yes |  | The menu rows, top to bottom. |
+| alignEnd | boolean \| undefined | no | false | Align the menu's TRAILING edge with the trigger's trailing edge instead of the leading edge (the default). For a trigger parked at the end of a bar, where a leading-aligned menu would run off the surface. Logical, so a right-to-left locale mirrors it. |
+| disabled | boolean \| undefined | no | false | Dimmed, inert trigger: the menu never opens and the press is a no-op. |
+| inline | boolean \| undefined | no | false | Draw the menu open and in flow under the trigger instead of floating it over the page: a specimen of the menu for a docs page or an empty state. The trigger reads as expanded and the press is inert, a row still fires `onSelect`, and nothing dismisses the card, so `open` and `onOpenChange` have no effect. `alignEnd` lines the card up with the trigger's trailing edge, as it does for the floating card. |
+| open | boolean \| undefined | no | false | Controlled open state. Omit for uncontrolled (the trigger opens/closes it). |
+| onOpenChange | ((open: boolean) => void) \| undefined | no |  | Fired when the open state changes (trigger press, select, etc.). |
+| onSelect | ((item: DropdownItem, index: number) => void) \| undefined | no |  | Fired with the selected item and its index when a row is pressed. |
+| testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
+| style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
+
+See [installation](https://canvas.nannier.com/ai/4.3.0/installation.md) for required peers and feature fallbacks.
