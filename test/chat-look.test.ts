@@ -10,7 +10,6 @@ describe("the v4 chat", () => {
     expect(chat.frame(t)).toMatchObject({ backgroundColor: t.card, borderWidth: 1, borderColor: t.border, borderRadius: 16, overflow: "hidden" });
     expect(chat.content).toMatchObject({ width: "100%", maxWidth: 768, alignSelf: "center", paddingHorizontal: 24, paddingVertical: 24, gap: 28 });
     expect(chat.blocks).toMatchObject({ gap: 28 });
-    expect(chat.blocks.gap).toBe(14);
     expect(chat.messageContent.gap).toBe(6);
   });
 
