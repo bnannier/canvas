@@ -2,17 +2,17 @@
 
 > Universal React Native UI kit for iOS, Android, and web. Import from @nannier/canvas.
 
-Repository source snapshot: 4.2.0; not proof of an npm release. Match the installed dependency version before using these APIs.
+Repository source snapshot: 4.3.0; not proof of an npm release. Match the installed dependency version before using these APIs.
 
 ## Start here
 
 - [Agent onboarding](https://canvas.nannier.com/agents.md): recipes, local skills and installed-version checks.
-- [Versioned source reference](https://canvas.nannier.com/ai/4.2.0/index.md): installation, guides and all component pages.
-- [Installation](https://canvas.nannier.com/ai/4.2.0/installation.md): required and optional peers, fallbacks and runtime support.
-- [Theme](https://canvas.nannier.com/ai/4.2.0/theming.md): boolean props, palettes, surface and ThemeProvider API.
-- [Layout](https://canvas.nannier.com/ai/4.2.0/layout.md): parent bounds and responsive composition.
-- [Overlays](https://canvas.nannier.com/ai/4.2.0/overlays.md): provider hosting, windows and focus behavior.
-- [Catalog](https://canvas.nannier.com/ai/4.2.0/catalog.json): public exports, supported props and source platform notes.
-- [Manifest](https://canvas.nannier.com/ai/4.2.0/manifest.json): source hashes and snapshot content hashes.
+- [Versioned source reference](https://canvas.nannier.com/ai/4.3.0/index.md): installation, guides and all component pages.
+- [Installation](https://canvas.nannier.com/ai/4.3.0/installation.md): required and optional peers, fallbacks and runtime support.
+- [Theme](https://canvas.nannier.com/ai/4.3.0/theming.md): boolean props, palettes, surface and ThemeProvider API.
+- [Layout](https://canvas.nannier.com/ai/4.3.0/layout.md): parent bounds and responsive composition.
+- [Overlays](https://canvas.nannier.com/ai/4.3.0/overlays.md): provider hosting, windows and focus behavior.
+- [Catalog](https://canvas.nannier.com/ai/4.3.0/catalog.json): public exports, supported props and source platform notes.
+- [Manifest](https://canvas.nannier.com/ai/4.3.0/manifest.json): source hashes and snapshot content hashes.
 - [Full source reference](https://canvas.nannier.com/llms-full.txt): concatenated Markdown for this source version.
 - [Human docs](https://canvas.nannier.com/components): live examples.

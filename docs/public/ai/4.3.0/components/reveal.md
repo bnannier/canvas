@@ -1,0 +1,328 @@
+# Reveal
+
+Package: @nannier/canvas
+Version: 4.3.0
+Status: source-snapshot (not proof of an npm release)
+Source SHA-256: f07b9941fca03566f384a012745e4b377b2202f6f02f07a32a89796fc27a7ec3
+
+Source: `src/atoms/reveal/reveal.md`
+Human reference: https://canvas.nannier.com/components/reveal
+
+## Public imports
+
+```tsx
+import { Reveal, RevealGroup } from "@nannier/canvas";
+```
+
+The following examples are source excerpts. Supply application data and handlers; snippets using `tokens` read `const { tokens } = useTheme()` inside a component. Import React hooks from React. Intentional “Don't” examples illustrate unsupported patterns.
+
+An entrance for page content: what it wraps starts slightly offset and transparent, then travels into place and fades in when it reaches the viewport. It fires once and stays, so content that has arrived never leaves again.
+
+Direction chooses the axis it travels from, with `fromBelow` the default and `fromAbove`, `fromLeft`, `fromRight` the alternatives (that is also the precedence order if more than one is passed). `pronounced` travels further, `brisk` arrives faster, and `deepInView` holds the entrance until the element is properly inside the viewport instead of firing as it enters.
+
+Stagger is structural rather than numeric: wrap a set in `RevealGroup` and each child arrives after the one before it, so no call site ever computes a delay. `RevealGroup` renders no box of its own, so it can sit between a grid and the items the grid lays out.
+
+The trigger is measured against the window rather than the nearest scrolling parent, so content sitting inside a short inner scroller can arrive before that scroller has been scrolled to it; reveal on the page scroll, which is what this is for. Under Reduce Motion the content renders its final frame immediately, with no measuring and no timers, and the stagger is skipped along with the motion.
+
+## Usage
+
+```tsx
+<Reveal>
+  <Card>
+    <Typography>Rises into place</Typography>
+  </Card>
+</Reveal>
+```
+
+## Variants
+
+### From above
+
+```tsx
+<Reveal fromAbove>
+  <Card>
+    <Typography>Descends into place</Typography>
+  </Card>
+</Reveal>
+```
+
+### From the left
+
+```tsx
+<Reveal fromLeft>
+  <Card>
+    <Typography>Slides in from the left</Typography>
+  </Card>
+</Reveal>
+```
+
+### From the right
+
+```tsx
+<Reveal fromRight>
+  <Card>
+    <Typography>Slides in from the right</Typography>
+  </Card>
+</Reveal>
+```
+
+### Pronounced
+
+```tsx
+<Reveal pronounced>
+  <Card>
+    <Typography>Travels further before settling</Typography>
+  </Card>
+</Reveal>
+```
+
+### Brisk
+
+```tsx
+<Reveal brisk>
+  <Card>
+    <Typography>Arrives faster</Typography>
+  </Card>
+</Reveal>
+```
+
+### Deep in view
+
+```tsx
+<Reveal deepInView>
+  <Card>
+    <Typography>Waits until it is properly in view</Typography>
+  </Card>
+</Reveal>
+```
+
+### Staggered group
+
+```tsx
+<Row wrap>
+  <RevealGroup>
+    <Reveal>
+      <Container xxxs>
+        <Card>
+          <Typography>Measure</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+    <Reveal>
+      <Container xxxs>
+        <Card>
+          <Typography>Reveal</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+    <Reveal>
+      <Container xxxs>
+        <Card>
+          <Typography>Settle</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+  </RevealGroup>
+</Row>
+```
+
+### Replay
+
+```tsx
+<Ticker values={[1, 2]} interval={2800}>
+  {(pass) => (
+    <Reveal key={pass}>
+      <Card>
+        <Typography>Arriving again</Typography>
+      </Card>
+    </Reveal>
+  )}
+</Ticker>
+```
+
+## Do & Don't
+
+### stagger
+
+**Do** - Wrap the set in a `RevealGroup` and let each item's position set its own rhythm.
+
+```tsx
+<Row cozy wrap>
+  <RevealGroup>
+    <Reveal>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>First</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+    <Reveal>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Second</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+    <Reveal>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Third</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+  </RevealGroup>
+</Row>
+```
+
+**Don't** - Leave a set ungrouped: every card fires at the same instant, so the row lands as one slab instead of a cascade.
+
+```tsx
+<Row cozy wrap>
+  <Reveal>
+    <Container xxxs>
+      <Card padded>
+        <Typography small semibold>First</Typography>
+      </Card>
+    </Container>
+  </Reveal>
+  <Reveal>
+    <Container xxxs>
+      <Card padded>
+        <Typography small semibold>Second</Typography>
+      </Card>
+    </Container>
+  </Reveal>
+  <Reveal>
+    <Container xxxs>
+      <Card padded>
+        <Typography small semibold>Third</Typography>
+      </Card>
+    </Container>
+  </Reveal>
+</Row>
+```
+
+### direction
+
+**Do** - Give a set one direction, so it arrives as a single gesture.
+
+```tsx
+<Row cozy wrap>
+  <RevealGroup>
+    <Reveal fromBelow>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Rises</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+    <Reveal fromBelow>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Rises</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+  </RevealGroup>
+</Row>
+```
+
+**Don't** - Mix a direction per item; the set reads as scattered rather than as one movement.
+
+```tsx
+<Row cozy wrap>
+  <RevealGroup>
+    <Reveal fromLeft>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Left</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+    <Reveal fromRight>
+      <Container xxxs>
+        <Card padded>
+          <Typography small semibold>Right</Typography>
+        </Card>
+      </Container>
+    </Reveal>
+  </RevealGroup>
+</Row>
+```
+
+### scope
+
+**Do** - Reveal the block, so its contents arrive together as one piece of content.
+
+```tsx
+<Reveal>
+  <Card padded>
+    <Column tight>
+      <Typography h4 semibold>One entrance</Typography>
+      <Typography small muted>The card and its lines arrive as a single object.</Typography>
+    </Column>
+  </Card>
+</Reveal>
+```
+
+**Don't** - Reveal each leaf inside one card; the card assembles itself in pieces in front of the reader.
+
+```tsx
+<Card padded>
+  <Column tight>
+    <Reveal>
+      <Typography h4 semibold>Three entrances</Typography>
+    </Reveal>
+    <Reveal>
+      <Typography small muted>Every line arrives on its own schedule.</Typography>
+    </Reveal>
+  </Column>
+</Card>
+```
+
+### the real thing
+
+**Do** - Use the atom, so the entrance is one prop, plays on scroll, and honors Reduce Motion.
+
+```tsx
+<Reveal pronounced>
+  <Card padded>
+    <Typography small semibold>Reveals itself</Typography>
+  </Card>
+</Reveal>
+```
+
+**Don't** - Hand-roll it with a wrapper and a hard-coded opacity: it never arrives, never watches the scroll position, and ignores Reduce Motion.
+
+```tsx
+<View style={{ opacity: 0.35, width: 300, maxWidth: "100%" }}>
+  <Card padded>
+    <Typography small semibold>Stuck half-arrived</Typography>
+  </Card>
+</View>
+```
+
+## Supported props
+
+### RevealGroupProps
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | ReactNode | no |  | The Reveals to stagger. Each direct child receives the next ordinal in document order, so a mapped list arrives one item after another with no per-item props. |
+
+### RevealProps
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| fromBelow | boolean \| undefined | no | false | Rise into place from below. The default. |
+| fromAbove | boolean \| undefined | no | false | Descend into place from above. |
+| fromLeft | boolean \| undefined | no | false | Slide in from the left. Physical, and does not mirror under RTL (see above). |
+| fromRight | boolean \| undefined | no | false | Slide in from the right. Physical, and does not mirror under RTL (see above). |
+| pronounced | boolean \| undefined | no | false | Travel further before settling, for a hero or a section header. Omit for the default, shorter travel. |
+| brisk | boolean \| undefined | no | false | Arrive faster, for dense sets where the eye should not wait. Omit for the default duration. |
+| deepInView | boolean \| undefined | no | false | Wait until the element is properly inside the viewport before starting, instead of firing as it enters. |
+| children | ReactNode | no |  | The content to reveal. |
+| style | LayoutStyle | no |  | Outer layout composition ONLY: how this wrapper sits in its parent (a `minWidth` of 0 so a grid child may shrink below its content, a `height` of 100% so cards in a row stay even, a flex share). It is NOT a restyle hook: the entrance itself is chosen entirely with the boolean props above, and the revealed content styles itself. A wrapper that cannot be told how to sit in its parent forces callers to add a second wrapper around it, which is worse. |
+| testID | string \| undefined | no |  | E2E hook forwarded to the wrapper. |
+
+See [installation](https://canvas.nannier.com/ai/4.3.0/installation.md) for required peers and feature fallbacks.
