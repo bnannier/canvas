@@ -422,7 +422,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "organisms/board": ["lane", "laneCard"],
   "organisms/calendar": ["control", "card", "menu", "event"],
   "organisms/carousel": ["card", "carouselItem"],
-  "organisms/chat": ["card", "composer", "bubble", "bubbleTail"],
+  "organisms/chat": ["card", "composer", "bubble"],
   "organisms/command": ["field", "commandPanel", "commandRow"],
   "organisms/dashboard-grid": ["tile"],
   "organisms/data-table": ["control", "field", "card", "tableFrame", "panel"],

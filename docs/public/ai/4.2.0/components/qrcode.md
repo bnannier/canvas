@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.2.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 86ef0dd5d9d38fae6d7bc8bc3fe6497bee4796a18ec156364a14f4fae6008b14
+Source SHA-256: 1b984bdfad247d053ab7f82ef582b919717b61d8c09c675992bf5d3da2781cec
 
 Source: `src/atoms/qrcode/qrcode.md`
 Human reference: https://canvas.nannier.com/components/qrcode
