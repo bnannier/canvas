@@ -44,8 +44,8 @@ export interface WizardProps {
   /**
    * Lay the wizard out like a desktop assistant's window (the Claude desktop window,
    * reference claude-desktop-chat): the steps as sidebar rows down the panel's full height,
-   * a 44 px top bar with the title, the status, `previous` and `actions`, and no footer
-   * band. The body is unpadded so a `flush` Chat fills it; a scrolled body centers its
+   * a 44 px top bar with the title and the status, and `previous` and `actions` in a bar
+   * under the conversation. The body is unpadded so a `flush` Chat fills it; a scrolled body centers its
    * content in the conversation's column. The description is not drawn.
    */
   assistant?: boolean;
@@ -88,15 +88,17 @@ export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = W
       const rail = assistantNarrow ? undefined : <View ref={stepsPart?.ref} onLayout={stepsPart?.onLayout} style={[s.assistantRail, { backgroundColor: tokens.muted, borderColor: tokens.border }]}>
         <Steps vertical rows steps={steps} current={current} testID={hook("steps")} />
       </View>;
-      const topActions = <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} testID={hook("footer")} style={s.assistantActions}>
-        {previous ? <Button shrink ghost small disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}
+      // The stage actions sit in a bar under the conversation, Back at its start and the
+      // application's actions at its end; the top bar keeps only the title and the status.
+      const bottomActions = previous || actions != null ? <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} testID={hook("footer")} style={skin.footer}>
+        {previous ? <Button shrink ghost small disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : <View />}
         <View testID={hook("footer-buttons")} style={s.assistantActions}>{actions}</View>
-      </View>;
+      </View> : undefined;
       const body = scrollBody
         ? <ScrollView ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} testID={hook("body-scroll")} style={s.bodyScroll} contentContainerStyle={assistantNarrow ? s.assistantColumnNarrow : s.assistantColumn} keyboardShouldPersistTaps="handled">{children}</ScrollView>
         : <View ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={s.bodyScroll}>{children}</View>;
       const windowed = <Dialog form workspace banded toolbar overlay={!embedded} compact={embedded} embedded={embedded} open={open} title={title} description={description}
-        panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID} headerAccessory={saveStatus} headerActions={topActions}
+        panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID} headerAccessory={saveStatus} footer={bottomActions}
         workspaceHeader={assistantNarrow ? <View style={s.headerSteps}><Steps segmented steps={steps} current={current} testID={hook("steps")} /></View> : undefined}
         workspaceSidebar={rail}>
         <View style={s.bodyScroll} onLayout={(event) => {

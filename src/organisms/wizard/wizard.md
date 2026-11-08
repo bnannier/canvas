@@ -54,8 +54,8 @@ application actions at its end. Compact steps occupy the fixed sidebar. When the
 ### Assistant workspace
 
 `assistant` lays the wizard out like a desktop assistant window: the steps as a full-height
-sidebar of rows, a 44 point top bar with the title, the status, `previous` and `actions`,
-and no footer band. The body is unpadded so a `flush` Chat fills it; a scrolled body
+sidebar of rows, a 44 point top bar with the title and the status, and `previous` and
+`actions` in a bar under the conversation. The body is unpadded so a `flush` Chat fills it; a scrolled body
 centers its content in the conversation's column. Below 720 points of panel the sidebar
 gives way to segmented steps under the title.
 
