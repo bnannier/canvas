@@ -12,8 +12,22 @@
  * are placed by geoMapPlace and drawn outside the scaled group, so their radii are
  * never multiplied by k: the area encoding survives every zoom for free, bubbles
  * stay a constant size on screen, and bubbleAt keeps working in pixels.
+ *
+ * The math itself is the shared view camera (src/style/view-camera.ts), held to the world:
+ * zoom from 1 to MAX_ZOOM, and the land always covering the viewport.
  */
 import { WORLD_VIEW_BOX } from "./geo-map.world.js";
+import {
+  clampViewCamera,
+  panViewCameraBy,
+  viewCameraGestureEvent,
+  viewCameraMatrix,
+  viewCameraPinchFactor,
+  viewCameraWheelFactor,
+  zoomViewCameraAt,
+  zoomViewCameraBy,
+  type ViewCameraLimits,
+} from "../../style/view-camera.js";
 import type { GeoMapBubble } from "./geo-map.bubbles.js";
 
 /** The map camera in viewBox units: a content point `u` draws at `k * u + t`. */
@@ -37,12 +51,13 @@ export const MAX_ZOOM = 2 ** MAX_ZOOM_LEVEL;
 export const ZOOM_STEP = 2;
 /** Wheel travel that doubles the zoom. Tuned so one notch is a nudge, not a jump. */
 export const WHEEL_PX_PER_DOUBLING = 320;
-/** How far a finger must travel before a one-finger drag counts as a pan, in px. */
-export const PAN_SLOP = 8;
+export { PAN_SLOP } from "../../style/view-camera.js";
 /** How far one arrow key pans, as a fraction of the visible span. */
 export const NUDGE_FRACTION = 0.15;
 
 const { width: W, height: H } = WORLD_VIEW_BOX;
+/** The world's camera limits: whole world to MAX_ZOOM, the land always covering the view. */
+const WORLD_LIMITS: ViewCameraLimits = { minZoom: 1, maxZoom: MAX_ZOOM, cover: { width: W, height: H } };
 
 function clamp(value: number, low: number, high: number): number {
   return value < low ? low : value > high ? high : value;
@@ -75,11 +90,7 @@ export function geoZoomFactor(level: number): number {
  * how geoMapBubbles already treats malformed coordinates.
  */
 export function geoMapClampCamera(camera: GeoMapCamera): GeoMapCamera {
-  if (!Number.isFinite(camera.k) || !Number.isFinite(camera.tx) || !Number.isFinite(camera.ty)) {
-    return WORLD_CAMERA;
-  }
-  const k = clamp(camera.k, 1, MAX_ZOOM);
-  return { k, tx: clamp(camera.tx, W * (1 - k), 0), ty: clamp(camera.ty, H * (1 - k), 0) };
+  return clampViewCamera(camera, WORLD_LIMITS);
 }
 
 /**
@@ -91,12 +102,7 @@ export function geoMapClampCamera(camera: GeoMapCamera): GeoMapCamera {
  * and tx' = ax - k' * u.
  */
 export function geoMapZoomAt(camera: GeoMapCamera, k: number, ax: number, ay: number): GeoMapCamera {
-  const from = geoMapClampCamera(camera);
-  if (!Number.isFinite(k) || !Number.isFinite(ax) || !Number.isFinite(ay)) return from;
-  const next = clamp(k, 1, MAX_ZOOM);
-  const u = (ax - from.tx) / from.k;
-  const v = (ay - from.ty) / from.k;
-  return geoMapClampCamera({ k: next, tx: ax - next * u, ty: ay - next * v });
+  return zoomViewCameraAt(camera, k, ax, ay, WORLD_LIMITS);
 }
 
 /**
@@ -105,16 +111,12 @@ export function geoMapZoomAt(camera: GeoMapCamera, k: number, ax: number, ay: nu
  * notion of where a pointer is.
  */
 export function geoMapZoomBy(camera: GeoMapCamera, factor: number): GeoMapCamera {
-  const from = geoMapClampCamera(camera);
-  if (!Number.isFinite(factor) || factor <= 0) return from;
-  return geoMapZoomAt(from, from.k * factor, W / 2, H / 2);
+  return zoomViewCameraBy(camera, factor, W / 2, H / 2, WORLD_LIMITS);
 }
 
 /** Slide the drawn content by (dx, dy) viewBox units, held inside the world. */
 export function geoMapPanBy(camera: GeoMapCamera, dx: number, dy: number): GeoMapCamera {
-  const from = geoMapClampCamera(camera);
-  if (!Number.isFinite(dx) || !Number.isFinite(dy)) return from;
-  return geoMapClampCamera({ k: from.k, tx: from.tx + dx, ty: from.ty + dy });
+  return panViewCameraBy(camera, dx, dy, WORLD_LIMITS);
 }
 
 /**
@@ -152,14 +154,12 @@ export function geoMapKeyCamera(camera: GeoMapCamera, key: string): GeoMapCamera
  * back the same distance lands exactly where it started.
  */
 export function geoMapWheelFactor(deltaPx: number): number {
-  if (!Number.isFinite(deltaPx)) return 1;
-  return 2 ** (-deltaPx / WHEEL_PX_PER_DOUBLING);
+  return viewCameraWheelFactor(deltaPx, WHEEL_PX_PER_DOUBLING);
 }
 
 /** The zoom factor a pinch asks for: how much the fingers have spread. */
 export function geoMapPinchFactor(startSpan: number, span: number): number {
-  if (!Number.isFinite(startSpan) || !Number.isFinite(span) || startSpan <= 0 || span <= 0) return 1;
-  return span / startSpan;
+  return viewCameraPinchFactor(startSpan, span);
 }
 
 /**
@@ -187,8 +187,7 @@ export function geoMapInView(placed: GeoMapBubble): boolean {
  * STRING is PEG-parsed on every native update, while the array is read straight.
  */
 export function geoMapMatrix(camera: GeoMapCamera): [number, number, number, number, number, number] {
-  const { k, tx, ty } = geoMapClampCamera(camera);
-  return [k, 0, 0, k, tx, ty];
+  return viewCameraMatrix(geoMapClampCamera(camera));
 }
 
 /* ---------------------------------------------------------------- gestures -- */
@@ -212,20 +211,6 @@ export interface GeoMapGesture {
 }
 
 export const GEO_MAP_GESTURE_IDLE: GeoMapGesture = { camera: WORLD_CAMERA, span: 0, cx: 0, cy: 0, touches: 0 };
-
-function centroid(touches: readonly GeoMapTouch[]): { cx: number; cy: number } {
-  let cx = 0;
-  let cy = 0;
-  for (const t of touches) {
-    cx += t.x;
-    cy += t.y;
-  }
-  return { cx: cx / touches.length, cy: cy / touches.length };
-}
-
-function spanOf(touches: readonly GeoMapTouch[]): number {
-  return touches.length < 2 ? 0 : Math.hypot(touches[1].x - touches[0].x, touches[1].y - touches[0].y);
-}
 
 /**
  * Advance a gesture. On "grant", and whenever the finger COUNT changes mid-gesture,
@@ -252,23 +237,5 @@ export function geoMapGestureEvent(
   gesture: GeoMapGesture,
   camera: GeoMapCamera,
 ): { gesture: GeoMapGesture; camera: GeoMapCamera } {
-  const held = geoMapClampCamera(camera);
-  if (touches.length === 0) return { gesture: GEO_MAP_GESTURE_IDLE, camera: held };
-
-  const { cx, cy } = centroid(touches);
-  const span = spanOf(touches);
-  if (!Number.isFinite(cx) || !Number.isFinite(cy)) return { gesture, camera: held };
-
-  // Latch on grant, and re-latch the instant a finger joins or leaves, so the
-  // second finger arriving mid-drag does not read as an enormous sudden pinch.
-  if (phase === "grant" || touches.length !== gesture.touches) {
-    return { gesture: { camera: held, span, cx, cy, touches: touches.length }, camera: held };
-  }
-
-  const from = gesture.camera;
-  const factor = touches.length >= 2 ? geoMapPinchFactor(gesture.span, span) : 1;
-  const k = clamp(from.k * factor, 1, MAX_ZOOM);
-  const u = (gesture.cx - from.tx) / from.k;
-  const v = (gesture.cy - from.ty) / from.k;
-  return { gesture, camera: geoMapClampCamera({ k, tx: cx - k * u, ty: cy - k * v }) };
+  return viewCameraGestureEvent(phase, touches, gesture, camera, WORLD_LIMITS);
 }
