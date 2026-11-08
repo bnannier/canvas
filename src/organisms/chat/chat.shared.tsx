@@ -96,6 +96,12 @@ export interface ChatMessageData {
   error?: boolean;
   /** Persisted delivery, fallback, or other supplementary information. */
   notice?: string;
+  /**
+   * Work the assistant did rather than said (a command, a tool call, a process log): one muted
+   * line, `author` then `notice`, that expands to its markdown `content`, the way a desktop
+   * assistant folds its tool use between replies.
+   */
+  activity?: boolean;
 }
 
 export interface ChatMessageProps extends QuestionCallbacks, MessageActionCallbacks {
@@ -377,7 +383,28 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     return <MessageRow {...props} />;
   }
 
+  function ActivityRow({ message, terminal, testID }: Pick<ChatMessageProps, "message" | "terminal" | "testID">) {
+    const { tokens } = useTheme();
+    const [open, setOpen] = useState(false);
+    const summary = [message.author ?? "Activity", message.notice].filter(Boolean).join(" · ");
+    const ink = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
+    return (
+      <View {...LIST_ITEM} testID={testID} style={s.activity}>
+        <Button ghost small start accessibilityLabel={`${summary}, ${open ? "hide" : "show"} details`} {...({ "aria-expanded": open } as object)} disabled={!message.content}
+          iconRight={message.content ? <Icon {...(open ? { chevronDown: true } : { chevronRight: true })} color={ink} size={12} /> : undefined} onPress={() => setOpen((value) => !value)}>
+          <Text style={terminal ? s.terminalMuted(tokens) : s.activityLabel(tokens)}>{summary}</Text>
+        </Button>
+        {open && message.content ? <View style={s.activityBody(tokens)}><Markdown compact terminal={terminal}>{message.content}</Markdown></View> : null}
+      </View>
+    );
+  }
+
   function MessageRow({ message, plain, terminal, onOpenAttachment, onAction, testID, anatomy, ...questionProps }: ChatMessageProps & { anatomy?: MessageAnatomy }) {
+    if (message.activity) return <ActivityRow message={message} terminal={terminal} testID={testID} />;
+    return <SpokenRow message={message} plain={plain} terminal={terminal} onOpenAttachment={onOpenAttachment} onAction={onAction} testID={testID} anatomy={anatomy} {...questionProps} />;
+  }
+
+  function SpokenRow({ message, plain, terminal, onOpenAttachment, onAction, testID, anatomy, ...questionProps }: ChatMessageProps & { anatomy?: MessageAnatomy }) {
     const { tokens } = useTheme();
     const fill = useFillStyle("ChatMessage");
     const actionsDisabled = !!(questionProps.disabled || questionProps.pending || message.streaming || !onAction);
@@ -385,15 +412,17 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const author = message.author ?? (user ? "You" : message.role === "system" ? "System" : "Assistant");
     const body = terminal ? s.terminalBody(tokens) : skin.body(tokens);
     const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : <Markdown compact terminal={terminal}>{message.content}</Markdown>;
-    const bubble = user && !terminal ? <GlassSurface layer="content" tint={tokens["primary-soft"]} style={skin.message(tokens, true)}>{content}</GlassSurface> : content;
+    const bubble = user && !terminal ? <GlassSurface layer="content" tint={tokens.muted} style={skin.message(tokens, true)}>{content}</GlassSurface> : content;
+    // Like a desktop assistant, the person's own turns carry no author line; AI and system turns keep theirs.
+    const identified = terminal || !user || !!message.author || !!message.provider || message.providerIcon != null;
     return (
       <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, terminal ? null : user ? s.userRow : s.assistantRow]}>
         <View style={[s.messageContent, terminal ? s.terminalMessage : user ? s.userContent : null, message.questions?.length ? s.questionContent : null]}>
-          <View style={s.identity}>
+          {identified ? <View style={s.identity}>
             {message.providerIcon != null && !terminal ? <AnatomyPart part={anatomy?.avatar}>{message.providerIcon}</AnatomyPart> : null}
             <Text style={terminal ? s.terminalLabel(tokens) : skin.label(tokens)}>{terminal ? `${user ? "❯" : message.role === "system" ? "·" : "●"} ${author}` : author}</Text>
             {message.provider ? <Text style={terminal ? s.terminalMuted(tokens) : skin.muted(tokens)}>{message.provider}</Text> : null}
-          </View>
+          </View> : null}
           {message.content ? <AnatomyPart part={anatomy?.body}>{bubble}</AnatomyPart> : null}
           {message.role === "assistant" && message.questions?.length ? <Questions key={message.id} message={message} terminal={terminal} {...questionProps} /> : null}
           {message.actions?.length ? <View style={s.questionButtons}>
@@ -503,7 +532,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           {attachments?.length ? <View style={s.composerAttachments}><Attachments attachments={attachments} onRemove={onRemoveAttachment} disabled={disabled || pending} /></View> : null}
           <View style={terminal ? s.terminalComposerRow : s.composerRow}>
             {terminal ? <Text aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.terminalPrompt(tokens, disabled)}>❯</Text> : null}
-            {onAttach ? <Button ghost mediumIcon circle={!terminal} disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon paperclip color={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} size={16} />} onPress={onAttach} /> : null}
+            {onAttach ? <Button ghost mediumIcon circle={!terminal} disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon {...(terminal ? { paperclip: true } : { plus: true })} color={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} size={16} />} onPress={onAttach} /> : null}
             <View style={s.editor}>
               <Textarea ref={editor} autoFocus={autoFocus} terminal={terminal} onKeyPress={onKeyPress} value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={1} dense embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
             </View>
