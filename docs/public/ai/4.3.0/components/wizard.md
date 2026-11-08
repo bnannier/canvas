@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: f07b9941fca03566f384a012745e4b377b2202f6f02f07a32a89796fc27a7ec3
+Source SHA-256: 10e4f5218789eb98502e14bf201af786b4dfc5252b2e04bd9a8ba05818c58bc8
 
 Source: `src/organisms/wizard/wizard.md`
 Human reference: https://canvas.nannier.com/components/wizard
@@ -54,7 +54,7 @@ native back, and it renders in place in the page's flow instead of presenting in
 ### Team invitation
 
 The status sits beside the title, with the previous action at the footer's start and the
-application actions at its end. Compact steps occupy the fixed sidebar.
+application actions at its end. Compact steps occupy the fixed sidebar. When the panel is narrower than 520 points (a phone), the steps move under the title as segmented bars and the body takes the full width, so content such as a Chat is never squeezed beside the rail.
 
 ```tsx
 <Wizard open embedded onOpenChange={() => {}} title="Create workspace"

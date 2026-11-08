@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode, type RefAttributes } from "react";
 import { type ScrollView as RNScrollView, type TextInput as RNTextInput, type ViewProps } from "react-native";
-import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, useControllableState, FOCUS_RESET, LoopView, createLoopChannel, useReducedMotion, type LayoutStyle } from "../../style/index.js";
+import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, useControllableState, FOCUS_RESET, LoopView, createLoopChannel, useReducedMotion, useContainerWidth, type LayoutStyle } from "../../style/index.js";
 import { AnatomyPart, AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
@@ -456,6 +456,8 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const frame = useFocusFrame();
     const { ref: frameRef, ...frameTarget } = frame.target;
     const streaming = messages.some((message) => message.streaming);
+    const width = useContainerWidth();
+    const narrow = width.width > 0 && width.width < s.NARROW_WIDTH;
     const Frame = framed && !terminal ? GlassSurface : View;
     const parts = useContext(ChatAnatomyContext);
     // A part drawn by many messages goes to the first one that draws it.
@@ -470,7 +472,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           {...frameTarget}
           ref={(node) => { scroll.current = node; frameRef(node); }}
           style={[s.thread, FOCUS_RESET]}
-          contentContainerStyle={terminal ? s.terminalContent : s.content}
+          contentContainerStyle={terminal ? s.terminalContent : [s.content, narrow ? s.narrowGutter : null]}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
           accessibilityLabel={label}
@@ -478,6 +480,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           tabIndex={scrollFocus.tabIndex}
           onLayout={(event) => {
             scrollFocus.onLayout(event);
+            width.onLayout(event);
             tail.onLayout(event.nativeEvent.layout.height);
           }}
           onContentSizeChange={(width, height) => {
@@ -514,6 +517,8 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const filesPending = attaching || attachments?.some((attachment) => attachment.uploading || attachment.error);
     const canSend = !disabled && !sendDisabled && !pending && !filesPending && (value.trim().length > 0 || !!attachments?.length);
     const part = useContext(ChatAnatomyContext)?.composer;
+    const width = useContainerWidth();
+    const narrow = width.width > 0 && width.width < s.NARROW_WIDTH;
     const send = () => {
       if (!canSend) return;
       onSend(value.trim());
@@ -527,7 +532,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     };
     const Surface = terminal ? View : GlassSurface;
     const body = (
-      <View ref={part?.ref} onLayout={part?.onLayout} style={[framed && !terminal ? null : fill, terminal ? s.terminalComposer(tokens, focused) : s.composer(tokens)]} testID={framed && !terminal ? undefined : testID}>
+      <View ref={part?.ref} onLayout={(event) => { part?.onLayout?.(); width.onLayout(event); }} style={[framed && !terminal ? null : fill, terminal ? s.terminalComposer(tokens, focused) : [s.composer(tokens), narrow ? s.narrowGutter : null]]} testID={framed && !terminal ? undefined : testID}>
         <Surface static layer="control" stateBorder={focused} style={terminal ? s.terminalComposerSurface(tokens, focused) : s.composerSurface(tokens, focused)}>
           {attachments?.length ? <View style={s.composerAttachments}><Attachments attachments={attachments} onRemove={onRemoveAttachment} disabled={disabled || pending} /></View> : null}
           <View style={terminal ? s.terminalComposerRow : s.composerRow}>

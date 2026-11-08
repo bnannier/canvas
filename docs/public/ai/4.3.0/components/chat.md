@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: f07b9941fca03566f384a012745e4b377b2202f6f02f07a32a89796fc27a7ec3
+Source SHA-256: 10e4f5218789eb98502e14bf201af786b4dfc5252b2e04bd9a8ba05818c58bc8
 
 Source: `src/organisms/chat/chat.md`
 Human reference: https://canvas.nannier.com/components/chat
@@ -20,7 +20,7 @@ A controlled assistant conversation with independently scrolling messages, clear
 
 Messages remain application-owned `ChatMessageData`: keep each `id` stable while updating `content` during streaming. `pending` shows a three-dot thinking indicator until an explicitly `streaming` message arrives; pass `pendingIcon` to identify its provider. Streaming replies retain their own Responding indicator. Both animations stop when their state ends and stay still under Reduce Motion. `providerIcon` accepts an application-supplied provider logo beside the author; label the image or icon with the provider name for assistive technology. `provider` remains an optional supplementary text label such as the transport name. `error` adds a visible failure label; `notice` preserves delivery or fallback information. `footer` anchors connection, review, or other actions below the composer and outside the scrollport.
 
-The conversation reads like a desktop assistant: one centered column at most 768 points wide, assistant replies as plain text across it, the person's own turns as a neutral bubble on the trailing side without an author line (an explicit `author` or provider still shows), and the composer as one raised, rounded box below with a round add button and a round send button.
+The conversation reads like a desktop assistant: one centered column at most 768 points wide, assistant replies as plain text across it, the person's own turns as a neutral bubble on the trailing side without an author line (an explicit `author` or provider still shows), and the composer as one raised, rounded box below with a round add button and a round send button. The thread and the composer keep 24 point gutters; when either is narrower than 480 points (a phone, a side panel, a wizard body) the gutters shrink to 12 so the composer's text keeps its room.
 
 Set `activity` on a message for work the assistant did rather than said, such as a command, a tool call or a process log. It shows as one muted line, its `author` then its `notice`, and expands to its markdown `content` when pressed.
 

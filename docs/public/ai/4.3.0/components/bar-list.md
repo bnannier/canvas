@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: f07b9941fca03566f384a012745e4b377b2202f6f02f07a32a89796fc27a7ec3
+Source SHA-256: 10e4f5218789eb98502e14bf201af786b4dfc5252b2e04bd9a8ba05818c58bc8
 
 Source: `src/charts/bar-list/bar-list.md`
 Human reference: https://canvas.nannier.com/components/bar-list

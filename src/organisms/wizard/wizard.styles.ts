@@ -17,6 +17,9 @@ export interface WizardSkin {
 // Layout-only and identical across platforms: the body fills the workspace Dialog bounds.
 export const bodyScroll: ViewStyle = { flex: 1, minHeight: 0, minWidth: 0 };
 export const actions: ViewStyle = { flexDirection: "row", gap: 8, marginStart: "auto" };
+/** Below this panel width the step rail moves into the header as segmented bars, so the
+ * body is never squeezed to its minimum beside a 170 px rail (a phone-width panel). */
+export const RAIL_MINIMUM_PANEL = 520;
 
 export const webSkin: WizardSkin = {
   bodyContent: { padding: 20, gap: 10 },
@@ -25,3 +28,7 @@ export const webSkin: WizardSkin = {
 };
 export const iosSkin: WizardSkin = webSkin;
 export const androidSkin: WizardSkin = webSkin;
+/** The segmented steps under the title on a narrow panel. */
+export const headerSteps: ViewStyle = { marginTop: 14 };
+/** Without a rail the Dialog pads the body itself, so the content adds none of its own. */
+export const dialogPadsBody: ViewStyle = { padding: 0 };
