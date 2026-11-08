@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.2.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 85d17357eddcab1909bcb59630a0c4a1f1513f08d3a6dcf5378eb84c847dee94
+Source SHA-256: ffd42edcc8828d3edcdcfd4bb3a9835f8b54674438055997f10ebf5989e7e006
 
 Source: `src/organisms/chat/chat.md`
 Human reference: https://canvas.nannier.com/components/chat
@@ -19,6 +19,10 @@ The following examples are source excerpts. Supply application data and handlers
 A controlled assistant conversation with independently scrolling messages, clear author and provider identities, and an anchored multiline composer. The parent supplies the bounds; Chat fills the available height without choosing a fixed height of its own.
 
 Messages remain application-owned `ChatMessageData`: keep each `id` stable while updating `content` during streaming. `pending` shows a three-dot thinking indicator until an explicitly `streaming` message arrives; pass `pendingIcon` to identify its provider. Streaming replies retain their own Responding indicator. Both animations stop when their state ends and stay still under Reduce Motion. `providerIcon` accepts an application-supplied provider logo beside the author; label the image or icon with the provider name for assistive technology. `provider` remains an optional supplementary text label such as the transport name. `error` adds a visible failure label; `notice` preserves delivery or fallback information. `footer` anchors connection, review, or other actions below the composer and outside the scrollport.
+
+The conversation reads like a desktop assistant: one centered column at most 768 points wide, assistant replies as plain text across it, the person's own turns as a neutral bubble on the trailing side without an author line (an explicit `author` or provider still shows), and the composer as one raised, rounded box below with a round add button and a round send button.
+
+Set `activity` on a message for work the assistant did rather than said, such as a command, a tool call or a process log. It shows as one muted line, its `author` then its `notice`, and expands to its markdown `content` when pressed.
 
 Pass `actions` on any message for app-owned choices beneath its content: each has a stable `id`, a literal `label`, and optional `primary`. Chat, ChatThread, and ChatMessage call `onAction(messageId, actionId)` when chosen. Choices wrap at narrow widths and use each platform’s Button. `disabled`, `pending`, any streaming message in the thread, or an absent callback prevents activation. The app owns saving the choice, setting busy state while it is accepted, duplicate prevention, and removing resolved or historical actions. Actions do not send a composer draft or submit question answers.
 
