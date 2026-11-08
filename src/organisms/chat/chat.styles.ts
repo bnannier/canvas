@@ -35,6 +35,10 @@ export const thread: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto"
 /** The centered reading column shared by the thread and the composer. */
 const column: ViewStyle = { width: "100%", maxWidth: 768, alignSelf: "center" };
 export const content: ViewStyle = { ...column, flexGrow: 1, paddingHorizontal: 24, paddingVertical: 24, gap: 28 };
+/** Below this width (a phone, a side panel, a wizard body) the thread and the composer
+ * trade their 24 px gutters for `narrowGutter`, so the composer's text keeps its room. */
+export const NARROW_WIDTH = 480;
+export const narrowGutter: ViewStyle = { paddingHorizontal: 12 };
 /** The conversation's frame: Chat, and a standalone ChatThread or ChatComposer. */
 export const frame = (tokens: ColorTokens): ViewStyle => ({ backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border, borderRadius: shape.web.card, overflow: "hidden" });
 export const messageRow: ViewStyle = { flexDirection: "row", minWidth: 0 };
