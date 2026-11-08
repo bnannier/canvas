@@ -5,14 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Steps } = scope;
   return (
-<Steps
-  vertical
-  steps={[
-    { label: "Account", description: "Email verified and password set." },
-    { label: "Profile", description: "Add your name and avatar." },
-    { label: "Review", description: "Invite collaborators." }
-  ]}
-  defaultCurrent={1}
-/>
+<Steps vertical rows defaultCurrent={1}
+  steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }, { label: "Review team" }]} />
   );
 }

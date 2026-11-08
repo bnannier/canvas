@@ -44,6 +44,11 @@ export interface StepsProps {
   /** A short vertical list with 22px markers and no connector lines, for a workflow sidebar. */
   compact?: boolean;
   /**
+   * Vertical only: each step a 32 px row like a desktop app's sidebar list (the Claude
+   * desktop window's), the current step's row filled, done steps marked with a check.
+   */
+  rows?: boolean;
+  /**
    * Equal segments in a row: each step a 4 px bar (the accent once reached, glowing on the
    * current step) over its label and, from its `description`, a status line inked by the
    * step's state (the success ink once done, the accent's text ink on the current step).
@@ -311,6 +316,22 @@ export function createSteps(skin: StepsSkin) {
     };
 
     if (layout === "vertical") {
+      if (props.rows) return withStacksProbe(
+        <View testID={testID} style={[s.fullWidth, s.rowList, style]}>
+          {steps.map((step, i) => {
+            const state = stateOf(i, current);
+            const name = `${step.label}, step ${i + 1} of ${steps.length}${state === "completed" ? ", done" : state === "current" ? ", current" : ""}`;
+            const content = <>
+              <Text ref={i === 0 ? labelPart?.ref : undefined} onLayout={i === 0 ? labelPart?.onLayout : undefined} numberOfLines={1} style={[s.rowLabel, skin.rowLabel(tokens, state)]}>{step.label}</Text>
+              {state === "completed" ? <Icon check decorative size={13} color={tokens["muted-foreground"]} /> : null}
+            </>;
+            const rowStyle = [s.row, state === "current" ? skin.rowCurrent(tokens) : null];
+            return pressStep
+              ? <Pressable key={i} ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} accessibilityRole="button" accessibilityLabel={name} aria-current={state === "current" ? "step" : undefined} onPress={() => pressStep(i)} style={rowStyle}>{content}</Pressable>
+              : <View key={i} ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} accessible accessibilityRole="text" accessibilityLabel={name} aria-current={state === "current" ? "step" : undefined} style={rowStyle}>{content}</View>;
+          })}
+        </View>,
+      );
       if (props.compact) return withStacksProbe(
         <View testID={testID} style={[s.fullWidth, s.compactList, style]}>
           {steps.map((step, i) => {

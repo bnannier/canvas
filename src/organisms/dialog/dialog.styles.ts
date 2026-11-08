@@ -200,6 +200,19 @@ export const bandedHeader: ViewStyle = { flexShrink: 0, paddingVertical: 18, pad
 export const bandedBody: ViewStyle = { flex: 1, minHeight: 0, padding: 20 };
 export const bandedSplitBody: ViewStyle = { flexDirection: "row", flex: 1, minHeight: 0 };
 export const bandedFooter: ViewStyle = { flexShrink: 0, paddingVertical: 14, paddingHorizontal: 22, borderTopWidth: 1 };
+/** `toolbar`: the banded header as a desktop window's 44 px top bar (reference
+ * claude-desktop-chat): on the panel's fill over a hairline, the title in the 14 medium
+ * face at the start, actions at the end; a workspace sidebar runs the full height beside
+ * the top bar and the body. */
+export const toolbarHeader = (_t: ColorTokens): ViewStyle => ({ minHeight: 44, paddingVertical: 6, paddingStart: 16, paddingEnd: 8, justifyContent: "center" });
+export const toolbarSplit: ViewStyle = { flexDirection: "row", flex: 1, minHeight: 0 };
+export const toolbarMain: ViewStyle = { flex: 1, minWidth: 0, minHeight: 0 };
+export const toolbarBody: ViewStyle = { flex: 1, minHeight: 0 };
+export const toolbarRow: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: 12, rowGap: 4 };
+// The title keeps its width; when the row is too narrow the actions wrap below it.
+export const toolbarTitleGroup: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10, flexShrink: 1, minWidth: 0, maxWidth: "100%" };
+export const toolbarTitle = (t: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t.foreground, flexShrink: 0, maxWidth: "100%" });
+export const toolbarActions: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 6, marginStart: "auto", flexShrink: 0 };
 export const dismissBackdrop: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
 
 // Per-size panel width: a dialog is a floating container (a bounds provider for

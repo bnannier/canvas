@@ -24,6 +24,17 @@ retain their normal controlled and uncontrolled behavior.
   steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]} />
 ```
 
+### Sidebar rows
+
+`rows` with `vertical` draws each step as a 32 point row like a desktop app's sidebar
+list: the current step's row is filled, done steps carry a check, and the row reads
+", done" or ", current" to assistive technology. With `onStepPress` each row is a button.
+
+```tsx
+<Steps vertical rows defaultCurrent={1}
+  steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }, { label: "Review team" }]} />
+```
+
 ### Vertical
 
 ```tsx

@@ -127,6 +127,8 @@ export interface ChatThreadProps extends QuestionCallbacks, MessageActionCallbac
   plain?: boolean;
   /** Flat, compact monospace terminal transcript. */
   terminal?: boolean;
+  /** Draw no frame: the conversation sits on its host's fill, as a desktop assistant's window does. */
+  flush?: boolean;
   testID?: string;
   /** Parent composition only. Supply a bounded height, or a bounded flex parent. */
   style?: LayoutStyle;
@@ -159,6 +161,8 @@ export interface ChatComposerProps {
   attaching?: boolean;
   /** Anchored actions or help below the composer, outside the scrolling thread. */
   footer?: ReactNode;
+  /** A short muted line at the composer's end below it, naming the model or mode that will answer. */
+  meta?: string;
   testID?: string;
 }
 
@@ -194,8 +198,18 @@ interface ChatParts extends MarkdownParts {
   Card: ComponentType<CardProps>;
 }
 
+/** The run of consecutive activity messages around `index`. */
+function activityRun(messages: readonly ChatMessageData[], index: number) {
+  let start = index;
+  while (start > 0 && messages[start - 1]!.activity) start -= 1;
+  let end = index;
+  while (end + 1 < messages.length && messages[end + 1]!.activity) end += 1;
+  return { start, items: messages.slice(start, end + 1) };
+}
+
 export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch, Card = WebCard, DataTable, Divider }: Partial<ChatParts> = {}) {
-  const Markdown = createMarkdown(markdownSkin, { Checkbox, DataTable, Divider }, false);
+  // A reply reads at the conversation's body size (the skin's 15 / 21), not the document's 14.
+  const Markdown = createMarkdown({ ...markdownSkin, body: (tokens) => skin.body(tokens), spacing: s.REPLY_SPACING }, { Checkbox, DataTable, Divider }, false);
 
   function Thinking({ label, icon, terminal }: { label: string; icon?: ReactNode; terminal?: boolean }) {
     const { tokens } = useTheme();
@@ -306,7 +320,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
       {questions.map((item) => {
         const answer = answers.find((entry) => entry.questionId === item.id);
         const selected = multipleFor(item, answer) ? answer?.optionIds ?? [] : answer?.optionId ? [answer.optionId] : [];
-        return <View key={item.id} style={s.blocks}>
+        return <View key={item.id} style={s.questionStack}>
           <Text style={skin.label(tokens)}>{item.title}</Text>
           {!item.multiple && answer?.multiple ? <Text style={skin.muted(tokens)}>Multiple answers selected by you</Text> : null}
           {selected.map((id) => <Text key={id} selectable style={skin.body(tokens)}>{id === "__custom" ? answer?.customText : item.options.find((option) => option.id === id)?.label ?? "No answer"}</Text>)}
@@ -337,7 +351,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         const optionIds = checked ? [...new Set([...selected, id])] : selected.filter((value) => value !== id);
         change({ questionId: question.id, ...override, optionIds, ...(optionIds.includes("__custom") ? { customText: answer?.customText ?? "" } : {}) });
       };
-      return <View key={question.id} style={s.blocks}>
+      return <View key={question.id} style={s.questionStack}>
         {multiple ? <FormSection title={question.title} description="Select all that apply">
           {question.options.filter((option) => option.id !== "__custom").map((option) => <Checkbox selection accessibilityLabel={option.label} key={option.id} checked={selected.includes(option.id)} disabled={!editable} description={option.description} onChange={(checked) => selectMany(option.id, checked)}>{option.label}</Checkbox>)}
           <Checkbox selection accessibilityLabel="Write my own answer" checked={custom} disabled={!editable} onChange={(checked) => selectMany("__custom", checked)}>Write my own answer</Checkbox>
@@ -383,18 +397,36 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     return <MessageRow {...props} />;
   }
 
-  function ActivityRow({ message, terminal, testID }: Pick<ChatMessageProps, "message" | "terminal" | "testID">) {
+  function ActivityRow({ message, terminal, testID, nested }: Pick<ChatMessageProps, "message" | "terminal" | "testID"> & { nested?: boolean }) {
     const { tokens } = useTheme();
     const [open, setOpen] = useState(false);
     const summary = [message.author ?? "Activity", message.notice].filter(Boolean).join(" · ");
     const ink = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
     return (
-      <View {...LIST_ITEM} testID={testID} style={s.activity}>
-        <Button ghost small start accessibilityLabel={`${summary}, ${open ? "hide" : "show"} details`} {...({ "aria-expanded": open } as object)} disabled={!message.content}
+      <View {...(nested ? null : LIST_ITEM)} testID={testID} style={nested ? s.activityNested : s.activity}>
+        <Button plainLink start accessibilityLabel={`${summary}, ${open ? "hide" : "show"} details`} {...({ "aria-expanded": open } as object)} disabled={!message.content}
           iconRight={message.content ? <Icon {...(open ? { chevronDown: true } : { chevronRight: true })} color={ink} size={12} /> : undefined} onPress={() => setOpen((value) => !value)}>
           <Text style={terminal ? s.terminalMuted(tokens) : s.activityLabel(tokens)}>{summary}</Text>
         </Button>
         {open && message.content ? <View style={s.activityBody(tokens)}><Markdown compact terminal={terminal}>{message.content}</Markdown></View> : null}
+      </View>
+    );
+  }
+
+  /** Several activity lines folded into one: their summaries on one line, each line's own
+   * row (and details) behind it. */
+  function ActivityGroup({ items }: { items: readonly ChatMessageData[] }) {
+    const { tokens } = useTheme();
+    const [open, setOpen] = useState(false);
+    const summary = items.map((item) => item.author ?? "Activity").join(", ");
+    const ink = tokens["subtle-foreground"] ?? tokens["muted-foreground"];
+    return (
+      <View {...LIST_ITEM} style={s.activity}>
+        <Button plainLink start accessibilityLabel={`${items.length} steps: ${summary}, ${open ? "hide" : "show"} details`} {...({ "aria-expanded": open } as object)}
+          iconRight={<Icon {...(open ? { chevronDown: true } : { chevronRight: true })} color={ink} size={12} />} onPress={() => setOpen((value) => !value)}>
+          <Text numberOfLines={1} style={s.activityLabel(tokens)}>{summary}</Text>
+        </Button>
+        {open ? <View style={[s.activityBody(tokens), s.activityGroupBody]}>{items.map((item) => <ActivityRow key={item.id} message={item} nested />)}</View> : null}
       </View>
     );
   }
@@ -413,8 +445,9 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const body = terminal ? s.terminalBody(tokens) : skin.body(tokens);
     const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : <Markdown compact terminal={terminal}>{message.content}</Markdown>;
     const bubble = user && !terminal ? <GlassSurface layer="content" tint={tokens.muted} style={skin.message(tokens, true)}>{content}</GlassSurface> : content;
-    // Like a desktop assistant, the person's own turns carry no author line; AI and system turns keep theirs.
-    const identified = terminal || !user || !!message.author || !!message.provider || message.providerIcon != null;
+    // Like a desktop assistant, a turn carries an author line only when the app names its
+    // author or provider (several AIs in one conversation); the terminal always labels turns.
+    const identified = terminal || !!message.author || !!message.provider || message.providerIcon != null;
     return (
       <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, terminal ? null : user ? s.userRow : s.assistantRow]}>
         <View style={[s.messageContent, terminal ? s.terminalMessage : user ? s.userContent : null, message.questions?.length ? s.questionContent : null]}>
@@ -445,7 +478,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     return <Thread {...props} framed />;
   }
 
-  function Thread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, terminal, onOpenAttachment, testID, style, disabled, onAction, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange, framed }: ChatThreadProps & { framed: boolean }) {
+  function Thread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, terminal, flush, onOpenAttachment, testID, style, disabled, onAction, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange, framed }: ChatThreadProps & { framed: boolean }) {
     const { tokens } = useTheme();
     const fill = useFillStyle("ChatThread");
     const scroll = useRef<RNScrollView>(null);
@@ -467,12 +500,12 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const anatomyOf = (message: ChatMessageData, index: number): MessageAnatomy | undefined =>
       parts ? { body: index === (message.role === "user" ? firstUser : firstAssistant) ? (message.role === "user" ? parts.user : parts.assistant) : undefined, avatar: index === firstAvatar ? parts.avatar : undefined } : undefined;
     return (
-      <Frame layer="content" style={[fill, s.thread, framed && !terminal ? s.frame(tokens) : null, style]} testID={testID}>
+      <Frame layer="content" style={[fill, s.thread, framed && !terminal ? s.frame(tokens) : null, framed && flush ? s.flush : null, style]} testID={testID}>
         <ScrollView
           {...frameTarget}
           ref={(node) => { scroll.current = node; frameRef(node); }}
           style={[s.thread, FOCUS_RESET]}
-          contentContainerStyle={terminal ? s.terminalContent : [s.content, narrow ? s.narrowGutter : null]}
+          contentContainerStyle={terminal ? s.terminalContent : [s.content, narrow ? s.narrowContentGutter : null]}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
           accessibilityLabel={label}
@@ -494,20 +527,31 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         >
           {!messages.length && !pending ? <View style={s.empty}>{emptyState}</View> : null}
           <View {...listProps({ label })} style={terminal ? s.terminalBlocks : s.blocks}>
-            {messages.map((message, index) => <MessageRow key={message.id} anatomy={anatomyOf(message, index)} message={message} plain={plain} terminal={terminal} onOpenAttachment={onOpenAttachment} onAction={onAction} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />)}
+            {messages.map((message, index) => {
+              // Consecutive activity folds into one line, as a desktop assistant folds its tool use;
+              // the run is drawn once, at its first message.
+              const run = !terminal && message.activity ? activityRun(messages, index) : null;
+              if (run && run.start !== index) return null;
+              const row = run && run.items.length > 1 ? <ActivityGroup key={message.id} items={run.items} />
+                : <MessageRow key={message.id} anatomy={anatomyOf(message, index)} message={message} plain={plain} terminal={terminal} onOpenAttachment={onOpenAttachment} onAction={onAction} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />;
+              if (terminal || index === 0) return row;
+              // A turn that changes speaker opens wider than the next block of the same turn.
+              const turn = (message.role === "user") !== (messages[index - 1].role === "user");
+              return <View key={message.id} style={{ marginTop: turn ? s.TURN_GAP : s.BLOCK_GAP }}>{row}</View>;
+            })}
           </View>
-          {pending && !streaming ? <View style={s.pending}><Thinking label={pendingLabel} icon={pendingIcon} terminal={terminal} /></View> : null}
+          {pending && !streaming ? <View style={[s.pending, messages.length ? { marginTop: s.TURN_GAP } : null]}><Thinking label={pendingLabel} icon={pendingIcon} terminal={terminal} /></View> : null}
         </ScrollView>
         {frame.innerRing()}
       </Frame>
     );
   }
 
-  function ChatComposer(props: ChatComposerProps) {
+  function ChatComposer(props: ChatComposerProps & { flush?: boolean }) {
     return <Composer {...props} framed />;
   }
 
-  function Composer({ value, onChangeText, onSend, terminal, autoFocus, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, sendDisabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID, framed }: ChatComposerProps & { framed: boolean }) {
+  function Composer({ value, onChangeText, onSend, terminal, autoFocus, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, sendDisabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, meta, testID, framed, flush }: ChatComposerProps & { framed: boolean; flush?: boolean }) {
     const { tokens } = useTheme();
     const editor = useRef<RNTextInput>(null);
     const [focusedState, setFocused] = useState(false);
@@ -539,15 +583,19 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
             {terminal ? <Text aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.terminalPrompt(tokens, disabled)}>❯</Text> : null}
             {onAttach ? <Button ghost mediumIcon circle={!terminal} disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon {...(terminal ? { paperclip: true } : { plus: true })} color={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} size={16} />} onPress={onAttach} /> : null}
             <View style={s.editor}>
-              <Textarea ref={editor} autoFocus={autoFocus} terminal={terminal} onKeyPress={onKeyPress} value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={1} dense embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+              <Textarea ref={editor} autoFocus={autoFocus} terminal={terminal} onKeyPress={onKeyPress} value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={1} {...(terminal ? { dense: true } : { composer: true })} embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
             </View>
-            {terminal ? <Button ghost small disabled={!canSend} accessibilityLabel={sendLabel} onPress={send}><Text style={s.terminalFace}>Send</Text></Button> : <Button primary mediumIcon circle disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["muted-foreground"]} size={15} />} onPress={send} />}
+            {terminal ? <Button ghost small disabled={!canSend} accessibilityLabel={sendLabel} onPress={send}><Text style={s.terminalFace}>Send</Text></Button>
+              // Quiet at rest like the reference's end controls; the call to action once there is a draft to send.
+              : canSend ? <Button primary mediumIcon circle accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={tokens["action-foreground"] ?? tokens["primary-foreground"]} size={15} />} onPress={send} />
+                : <Button ghost mediumIcon circle disabled accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={tokens["muted-foreground"]} size={15} />} onPress={send} />}
           </View>
         </Surface>
+        {meta && !terminal ? <Text style={s.meta(tokens)}>{meta}</Text> : null}
         {footer ? <View style={[s.footer, terminal ? s.terminalFooter : null]}>{footer}</View> : null}
       </View>
     );
-    return framed && !terminal ? <GlassSurface layer="content" style={[fill, s.frame(tokens)]} testID={testID}>{body}</GlassSurface> : body;
+    return framed && !terminal ? <GlassSurface layer="content" style={[fill, s.frame(tokens), flush ? s.flush : null]} testID={testID}>{body}</GlassSurface> : body;
   }
 
   function Chat(props: ChatProps) {
@@ -564,7 +612,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const anatomy = useMemo<ChatAnatomy>(() => ({ assistant: assistantPart, user: userPart, avatar: avatarPart, composer: composerPart }), [assistantPart, userPart, avatarPart, composerPart]);
     const ChatFrame = props.terminal ? View : GlassSurface;
     return <AnatomyScope><ChatAnatomyContext.Provider value={anatomy}><AnatomyPart part={threadPart}>
-      <ChatFrame layer="content" style={[fill, s.root, props.terminal ? null : s.frame(tokens), props.style]} testID={props.testID}>
+      <ChatFrame layer="content" style={[fill, s.root, props.terminal ? null : s.frame(tokens), props.flush && !props.terminal ? s.flush : null, props.style]} testID={props.testID}>
         <Thread {...props} framed={false} style={undefined} testID={props.testID ? `${props.testID}-thread` : undefined} />
         <Composer {...props} framed={false} testID={props.testID ? `${props.testID}-composer` : undefined} />
       </ChatFrame>

@@ -1245,6 +1245,40 @@ judge before any completion claim.
   lightness for 4.5:1; that difference goes to the owner at the avatar phase unless
   accepted before.
 
+### claude-desktop-chat
+
+- **What:** the Claude desktop app's conversation window (macOS, dark appearance) at
+  rest, mid-conversation, recorded 2026-11-08 with `screencapture -l` of its window on a
+  1x display (3440 x 1410, so pixels are points). Local captures only (the window shows
+  a private conversation): `claude-window-1.png` and `claude-convo.png` in the session
+  scratchpad; re-record the open Claude window with `screencapture -x -o -l <id>` when absent.
+- **Window:** a left sidebar 287 wide plus a 1 px hairline, its fill one step lighter
+  than the conversation pane (38 on 25 grey, hairline 60). Sidebar rows are 32 tall,
+  inset 8 from the sidebar edges, with labels 13 in from the row; the current row is
+  filled (70 grey) at about a 8 corner; captions ("Recents") are small and muted.
+- **Top bar:** 44 tall over the conversation pane, one step off its fill (27 on 25),
+  a 1 px bottom hairline (55); the conversation title at the start in a 14 medium
+  face, icon actions at the end. No footer band anywhere.
+- **Column:** the composer box is 768 wide at most and centered in the pane; assistant
+  text starts about 20 in from the composer's left edge and the user bubble ends 16 in
+  from its right edge. No card, frame or border around the conversation: it sits on
+  the pane fill.
+- **Assistant turn:** plain text, no author line and no avatar; about 15 px on a 21 px
+  line in the near-white ink (239). Tool use folds into one line in the muted ink (156),
+  about 14 px, "Ran 2 commands ▸", expandable.
+- **User turn:** right-aligned bubble, fill one step over the pane (37 on 25), no
+  border, about a 10 corner, 12 by 16 padding, at most about 80 percent of the column,
+  no author line.
+- **Rhythm:** about 40 between turns that change speaker; about 20 between the
+  blocks of one assistant turn (paragraphs, folded activity lines).
+- **Composer:** 44 tall for one line; fill 48 with a 1 px 64 edge and a soft shadow, a
+  12 corner; a bare + icon at the start, the muted placeholder, icon-only controls at
+  the end (no filled circle at rest). Under it, right-aligned muted text names the
+  model and mode ("Opus 5.5 Medium  Auto").
+- **Not recorded (no reference):** the empty new-conversation state, the streaming
+  motion, the light appearance and phone widths. Work on those is checked against
+  this card's rules, not against a recording, and says so.
+
 ### solid-state-washes
 
 - **What:** the reference the glass state washes are judged against under the owner's
@@ -1704,3 +1738,12 @@ No reference: FlowEditor is a new organism with no platform counterpart (PLATFOR
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2026-11-08 | FlowEditor card drag, background pan, port link | Playwright Chromium headed, 1280x800, DPR 1; docs dev server | 6f6e2fe2 plus working tree (FlowEditor uncommitted) | harness `/testing/flow-editor`; web, dark, glass, violet | Grid 24, slop 8, zoom limits 0.25 to 2 | not traced (video cadence 8 fps) | Frames 15 to 21: Product tracks the pointer each frame, Feature and Ready edges re-route live, release reads "move product 312,-48" (snapped); pan and port link then complete; readouts confirm each event | no reference | /private/tmp/claude-501/-Users-bnannier--claude-spares-spare-OWpE91/7441e1fa-672a-4d06-8e82-34fd7fb70b6d/scratchpad/w4rec/harness-01 (strip-014-021.png) |
 | 2026-11-08 | FlowEditor card drag and background pan | Playwright Chromium headed, 1280x800, DPR 1; docs dev server | 6f6e2fe2 plus working tree (FlowEditor uncommitted) | shipped `/components/flow-editor` Playground; web, dark, glass, violet | as above | not traced (video cadence 8 fps) | Card tracks the pointer and returns to its prop position on release (the playground passes no onMoveNode: the controlled contract); background drag pans the graph; no console errors | no reference | /private/tmp/claude-501/-Users-bnannier--claude-spares-spare-OWpE91/7441e1fa-672a-4d06-8e82-34fd7fb70b6d/scratchpad/w4rec/docs-01 (strip-012-023.png) |
+
+## Claude desktop conversation, 2026-11-08
+
+Static layout against the `claude-desktop-chat` card; no motion was tuned, so the frame columns are not traced. Measurements are DOM rectangles and computed styles read in the built-in browser at a 1440 x 900 viewport (dark), on the Argus dev web build (127.0.0.1:8090) with this checkout's Canvas build synced in.
+
+| Date | Effect | Runtime and device | Revision | Surface | Values tried | Frame p95 / max | Comparison | Versus reference | Artifacts |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-11-08 | Chat conversation layout (ticket drawer conversation) | Built-in browser (Chromium), 1440 x 900, dark; Argus dev web | 8442fcce plus working tree (uncommitted) | harness Argus `/testing/chat` (the drawer's Chat with `liveWorkChatMessages`); web, dark | Reply 14/21.7 then 15/21; activity ghost Button (13 px indent) then `plainLink`; message inset 16 then assistant 20 / bubble 16; Markdown gap 6 uniform then list 0 / paragraph 12; activity runs folded | not traced (static) | Turn gaps 40 and 20, bubble radius 10 and padding 12 / 16, composer 44 x 768 radius 12 with a soft shadow, reply text 20 in and bubble 16 in from the composer, list items 21 apart, paragraphs 12 apart, two activity lines folded into one | differs: author lines on agent turns ("Engineer · Claude", the drawer names several agents); activity notices carry timestamps; Argus navy palette and Manrope typeface; no model line (the drawer passes no `meta`) | local screenshots only (private reference) |
+| 2026-11-08 | Planning modal (Wizard `assistant`, Dialog `toolbar`, Steps `rows`, Chat `flush` / `meta`) | Built-in browser (Chromium), 1440 x 900 and 375 wide, dark; Argus dev web | 8442fcce plus working tree (uncommitted) | shipped Argus planning modal (auto-opened over `/board?project=pac`); web, dark | Rail 240 then 287; top bar 44; composer 44 x 768; model line under the composer | not traced (static) | Blind judge (fresh context, card plus reference plus shipped screenshots) before the last fixes: differs on sidebar width, text inset, leading, activity folding (fixed since, re-measured: rail 288 with hairline, text 20 in, list 21, paragraph 12, folded activity) and on the items in the next cell (open) | differs: floating modal over the app rather than a full window; text actions ("Choose AIs", "Reset") and an "Autosaved" tag in the top bar where the reference has icon actions; "Argus" author line and a bold title plus a button on the app's opening message; model line names providers, not model and mode; Argus navy palette and Manrope typeface; not recorded: empty state, streaming, light, phone | local screenshots only (private reference) |

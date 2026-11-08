@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Textarea } = scope;
   return (
-<Textarea disabled placeholder="A few words about this project" />
+<Textarea embedded composer placeholder="What would you like to build?" accessibilityLabel="Message" />
   );
 }
