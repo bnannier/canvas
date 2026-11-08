@@ -269,13 +269,15 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(consumer("BreakpointOverride", "dropdown")?.through).toEqual(["`AnchoredOverlay` (src/style/anchored-overlay.tsx)"]);
     expect(consumer("BreakpointOverride", "dialog")?.through).toEqual(["`Portal` (src/style/portal.tsx)"]);
     for (const slug of ["avatar", "field", "board"]) expect(consumer("BreakpointOverride", slug)?.tier).toBe("component");
-    // Chat reaches it through DataTable (its Markdown tables), Wizard through the
-    // ThemeProvider that supplies its display faces, and AppFrame through its overlay hosts. GeoMap left the list when its zoom control
+    // Chat and Wizard measure their own width with useContainerWidth, whose viewport seed
+    // resolves the override; Wizard also reaches it through the ThemeProvider that supplies
+    // its display faces, and AppFrame through its overlay hosts. GeoMap left the list when its zoom control
     // became a stacked column of its own (it renders no Row, whose `stacks` reads the override).
     expect(override.captureThrough.components).toHaveLength(32);
-    expect(consumer("BreakpointOverride", "chat")?.tier).toBe("component");
+    expect(consumer("BreakpointOverride", "chat")?.tier).toBe("shared");
+    expect(consumer("BreakpointOverride", "chat")?.through).toEqual(["`useContainerWidth` (src/style/container.ts)"]);
     expect(consumer("BreakpointOverride", "wizard")?.tier).toBe("shared");
-    expect(consumer("BreakpointOverride", "wizard")?.through).toEqual(["`ThemeProvider` (src/style/theme.tsx)"]);
+    expect(consumer("BreakpointOverride", "wizard")?.through).toEqual(["`ThemeProvider` (src/style/theme.tsx)", "`useContainerWidth` (src/style/container.ts)"]);
     // Every kit overlay publishes through the layer, so it is no foundation's seam, and a seam
     // never leaks one foundation's consumers into another's.
     const seams = [...foundationCode(sources).values()].flatMap((c) => c.seams.map((s) => `${s.file}#${s.name}`));
