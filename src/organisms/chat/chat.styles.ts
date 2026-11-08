@@ -19,7 +19,7 @@ import { shape } from "../../style/tokens.js";
 //     the column at most.
 //   Pending: three 5 px subtle dots 3 apart, then the 13 px label in the muted ink.
 //   Composer: no divider; one raised box in the same column, the `surface-raised` fill at
-//     the 20 composer corner on a `border` edge (the ring when focused) with a soft shadow,
+//     the composer corner on a `border` edge (the ring when focused) with a soft shadow,
 //     8 in: a round add button, the draft, and the 32 px round send button on one row.
 export interface ChatSkin {
   message: (tokens: ColorTokens, user: boolean) => ViewStyle;
@@ -54,7 +54,7 @@ export const blocks: ViewStyle = { gap: 28, minWidth: 0 };
 export const composer = (_tokens: ColorTokens): ViewStyle => ({ ...column, flexShrink: 0, paddingHorizontal: 24, paddingTop: 4, paddingBottom: 16, gap: 8 });
 // Conversation parts draw the web look on every platform, so they read the web row's own roles.
 export const composerSurface = (tokens: ColorTokens, focused: boolean): ViewStyle => ({
-  borderRadius: 20, borderWidth: 1, borderColor: focused ? tokens.ring : tokens.border, backgroundColor: tokens["surface-raised"] ?? tokens.card,
+  borderRadius: platformShape.web.composer, borderWidth: 1, borderColor: focused ? tokens.ring : tokens.border, backgroundColor: tokens["surface-raised"] ?? tokens.card,
   padding: 8, gap: 8, overflow: "hidden", shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 2 },
 });
 export const composerRow: ViewStyle = { flexDirection: "row", gap: 8, alignItems: "flex-end" };
