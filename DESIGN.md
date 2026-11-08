@@ -969,7 +969,6 @@ kit's own Android parts at a step of the same scale.
 | web | `dragGhost` | 12px |
 | web | `composer` | 16px |
 | web | `bubble` | 16px |
-| web | `bubbleTail` | 4px |
 | web | `navRow` | 9px |
 | web | `navRowCompact` | 8px |
 | web | `rail` | 12px |
@@ -1103,7 +1102,6 @@ drawn by those entries' platforms.
 | `dragGhost` | `organisms/drag-drop` |
 | `composer` | `organisms/chat` |
 | `bubble` | `organisms/chat` |
-| `bubbleTail` | `organisms/chat` |
 | `navRow` | `organisms/sidebar`, `organisms/tabs` |
 | `navRowCompact` | `organisms/sidebar` |
 | `rail` | `organisms/sidebar` |
