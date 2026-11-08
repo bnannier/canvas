@@ -13,7 +13,7 @@ import { type TextEntryProps } from "../input/input.shared.js";
 import { useHover } from "../../style/hover.js";
 import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { useDelegatedParts } from "../input/delegated-parts.js";
-import { type TextareaSkin, type Size, denseField, denseText, denseMinHeight, terminalText, terminalField, terminalMinHeight } from "./textarea.styles.js";
+import { type TextareaSkin, type Size, denseField, denseText, denseMinHeight, composerText, composerField, composerMinHeight, terminalText, terminalField, terminalMinHeight } from "./textarea.styles.js";
 
 // The character-count line's own layout: end-aligned under the field, at the skin's
 // gap and side inset. The count line is part of the component's own anatomy (the
@@ -88,6 +88,11 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
   dense?: boolean;
   /** Bare monospace prompt metrics for a terminal transcript composer. Implies embedded. */
   terminal?: boolean;
+  /**
+   * A chat composer's entry: 15 / 20 text at 6 by 8 in, so one line sits in a 44 px
+   * composer box beside 32 px controls (the Claude desktop composer). Pair with `embedded`.
+   */
+  composer?: boolean;
   accessibilityLabel?: string;
   /** Prevent edits while retaining focus and the resting appearance. */
   readOnly?: boolean;
@@ -152,11 +157,12 @@ export function sizeOf(p: TextareaProps): Size {
 }
 
 /** The entry's metrics (pick one): bare terminal prompt, dense paragraph entry, or the skin's own. */
-export type Metrics = "terminal" | "dense" | "default";
+export type Metrics = "terminal" | "composer" | "dense" | "default";
 
 // Metrics precedence when more than one is passed: first match wins.
 export function metricsOf(p: TextareaProps): Metrics {
   if (p.terminal) return "terminal";
+  if (p.composer) return "composer";
   if (p.dense) return "dense";
   return "default";
 }
@@ -265,7 +271,7 @@ export function createTextarea(skin: TextareaSkin) {
     const common = {
       value,
       systemFocus: props.systemFocus,
-      numberOfLines: props.dense || props.terminal ? Math.max(1, Math.floor(rows ?? 2)) : undefined,
+      numberOfLines: props.dense || props.terminal || props.composer ? Math.max(1, Math.floor(rows ?? (props.composer ? 1 : 2))) : undefined,
       onChangeText: handleChangeText,
       placeholderTextColor: skin.placeholder(tokens),
       selectionColor: tokens.primary, // brand cursor / selection on every platform
@@ -321,9 +327,9 @@ export function createTextarea(skin: TextareaSkin) {
     const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [
       embedded ? [fieldShape, reserve] : paneStyle(theme, [fieldShape, reserve], focused || isError),
       glass && !embedded ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
-      metrics === "terminal" ? terminalText : metrics === "dense" ? denseText : skin.text(size),
-      metrics === "terminal" ? terminalMinHeight(rows) : metrics === "dense" ? denseMinHeight(rows) : skin.minHeight(rows, size),
-      metrics === "terminal" ? terminalField : null,
+      metrics === "terminal" ? terminalText : metrics === "composer" ? composerText : metrics === "dense" ? denseText : skin.text(size),
+      metrics === "terminal" ? terminalMinHeight(rows) : metrics === "composer" ? composerMinHeight(rows) : metrics === "dense" ? denseMinHeight(rows) : skin.minHeight(rows, size),
+      metrics === "terminal" ? terminalField : metrics === "composer" ? composerField : null,
       // A focused framed field wears the skin's halo (web), errored or not.
       focused && !flush && !embedded && skin.focusHalo ? skin.focusHalo(tokens) : null,
       // A framed field paints its own focus state (its border turns `ring`), so the

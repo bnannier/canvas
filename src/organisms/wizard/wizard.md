@@ -51,6 +51,22 @@ application actions at its end. Compact steps occupy the fixed sidebar. When the
 </Wizard>
 ```
 
+### Assistant workspace
+
+`assistant` lays the wizard out like a desktop assistant window: the steps as a full-height
+sidebar of rows, a 44 point top bar with the title, the status, `previous` and `actions`,
+and no footer band. The body is unpadded so a `flush` Chat fills it; a scrolled body
+centers its content in the conversation's column. Below 720 points of panel the sidebar
+gives way to segmented steps under the title.
+
+```tsx
+<Wizard open embedded assistant onOpenChange={() => {}} title="Plan a project" scrollBody={false}
+  steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }]}
+  current={0} status="Autosaved" actions={<Button small ghost>Reset</Button>}>
+  <Chat flush meta="Claude CLI" messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+</Wizard>
+```
+
 ### Child owns scrolling
 
 Set `scrollBody={false}` for a bounded child such as Chat that already manages its own thread scroll. The header and footer retain their positions.

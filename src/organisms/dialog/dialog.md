@@ -88,6 +88,22 @@ the close and any `workspaceHeader`) over a rule, the body, and the footer under
 </Dialog>
 ```
 
+### Toolbar header
+
+`toolbar` with `banded` turns the header into a 44 point top bar like a desktop app
+window's: the title in the 14 medium face on one line, `headerAccessory` after it, and
+`headerActions` before the close action. The description is not drawn, so name the
+dialog's purpose in its title. With `workspace` the sidebar runs the full height beside
+the bar and the body.
+
+```tsx
+<Dialog open embedded banded toolbar onOpenChange={() => {}} title="Plan pacman"
+  headerAccessory={<Typography small muted>Autosaved</Typography>}
+  headerActions={<Button small ghost>Reset</Button>}>
+  <Typography body>The conversation fills the body.</Typography>
+</Dialog>
+```
+
 ### Dismissible
 
 ```tsx

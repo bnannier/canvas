@@ -4,9 +4,11 @@ A controlled assistant conversation with independently scrolling messages, clear
 
 Messages remain application-owned `ChatMessageData`: keep each `id` stable while updating `content` during streaming. `pending` shows a three-dot thinking indicator until an explicitly `streaming` message arrives; pass `pendingIcon` to identify its provider. Streaming replies retain their own Responding indicator. Both animations stop when their state ends and stay still under Reduce Motion. `providerIcon` accepts an application-supplied provider logo beside the author; label the image or icon with the provider name for assistive technology. `provider` remains an optional supplementary text label such as the transport name. `error` adds a visible failure label; `notice` preserves delivery or fallback information. `footer` anchors connection, review, or other actions below the composer and outside the scrollport.
 
-The conversation reads like a desktop assistant: one centered column at most 768 points wide, assistant replies as plain text across it, the person's own turns as a neutral bubble on the trailing side without an author line (an explicit `author` or provider still shows), and the composer as one raised, rounded box below with a round add button and a round send button. The thread and the composer keep 24 point gutters; when either is narrower than 480 points (a phone, a side panel, a wizard body) the gutters shrink to 12 so the composer's text keeps its room.
+The conversation reads like a desktop assistant: one centered column whose composer box is 768 points wide at most, with the user's bubble 16 points in from its edge. Assistant replies are plain 15 / 21 text across the column, 20 points in from the composer's edge, with list items on the line rhythm and paragraphs 12 apart, with no author line unless the app names an `author` or a provider (several AIs in one conversation). The person's own turns are a neutral bubble on the trailing side, 12 by 16 points in, without an author line. Turns that change speaker sit 40 points apart and the blocks of one turn 20 apart. The composer is one raised, rounded 44 point box below: a bare add icon, the draft, and a send control that stays quiet until there is something to send. The thread and the composer keep 24 point gutters; when either is narrower than 480 points (a phone, a side panel, a wizard body) the gutters shrink to 12 so the composer's text keeps its room.
 
-Set `activity` on a message for work the assistant did rather than said, such as a command, a tool call or a process log. It shows as one muted line, its `author` then its `notice`, and expands to its markdown `content` when pressed.
+Set `flush` to drop the conversation's card frame so it sits directly on its host's fill, the way a desktop assistant's window does, for example inside a Drawer or a Wizard body. Set `meta` to name what will answer (a model, a provider) in one muted line at the end of the column under the composer.
+
+Set `activity` on a message for work the assistant did rather than said, such as a command, a tool call or a process log. It shows as one muted line, its `author` then its `notice`, flush with the reply text, and expands to its markdown `content` when pressed. Consecutive activity messages fold into a single line naming each step ("Ran the tests, Process finished"), the way a desktop assistant folds its tool use; pressing it shows each step's own line.
 
 Pass `actions` on any message for app-owned choices beneath its content: each has a stable `id`, a literal `label`, and optional `primary`. Chat, ChatThread, and ChatMessage call `onAction(messageId, actionId)` when chosen. Choices wrap at narrow widths and use each platform’s Button. `disabled`, `pending`, any streaming message in the thread, or an absent callback prevents activation. The app owns saving the choice, setting busy state while it is accepted, duplicate prevention, and removing resolved or historical actions. Actions do not send a composer draft or submit question answers.
 
@@ -61,6 +63,12 @@ Checklists are read-only Canvas selection controls; reading a document never cha
 ```
 
 ## Variants
+
+### Flush with a model line
+
+```tsx
+<Chat flush meta="Claude CLI" style={{ height: 320 }} messages={[{ id: "ask", role: "user", content: "Add a ghost that chases the player." }, { id: "plan", role: "assistant", content: "I'll add a **Chaser** ghost.\n\n1. Track the player tile\n2. Halve speed in tunnels" }, { id: "ran", role: "system", activity: true, author: "Ran bun test src/ghosts", content: "5 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+```
 
 ### Terminal transcript
 

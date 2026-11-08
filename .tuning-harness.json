@@ -157,6 +157,13 @@
         "tools/native/reference/v4-library-hero/hero-light-solid-390.png"
       ],
       "card": "tools/native/liquid-motion.md#v4-library-hero"
+    },
+    {
+      "name": "claude-desktop-chat",
+      "what": "the Claude desktop app's conversation window at rest, mid-conversation, dark appearance: sidebar rows, top bar, centered column, unframed assistant text, the user bubble, folded activity lines, the composer and its model line",
+      "run": "recorded 2026-11-08 with screencapture -l of the open Claude window on a 1x display; local only because the window shows a private conversation",
+      "strips": [],
+      "card": "tools/native/liquid-motion.md#claude-desktop-chat"
     }
   ],
   "harness": {

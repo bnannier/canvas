@@ -27,8 +27,16 @@ export function createMarkdown(skin: s.MarkdownSkin, { Checkbox = WebCheckbox, D
     const { tokens } = useTheme();
     const blocks = useMemo(() => markdownBlocks(children), [children]);
     const body = terminal ? s.terminalBody(tokens) : skin.body(tokens, compact);
-    return <View testID={testID} accessibilityLabel={accessibilityLabel} style={[fillRoot ? FILL : null, s.root(terminal || compact)]}>
+    const spaced = !terminal ? skin.spacing : undefined;
+    return <View testID={testID} accessibilityLabel={accessibilityLabel} style={[fillRoot ? FILL : null, s.root(terminal || compact), spaced ? s.spacedRoot : null]}>
       {blocks.map((block, index) => {
+        const rendered = renderBlock(block, index);
+        if (!spaced || index === 0) return rendered;
+        const top = block.kind === "list" && blocks[index - 1]!.kind === "list" ? spaced.list : spaced.block;
+        return <View key={index} style={{ marginTop: top }}>{rendered}</View>;
+      })}
+    </View>;
+    function renderBlock(block: (typeof blocks)[number], index: number) {
         if (block.kind === "rule") return <Divider key={index} />;
         if (block.kind === "table") {
           const count = Math.max(block.columns?.length ?? 0, ...block.rows!.map(row => row.length));
@@ -51,7 +59,6 @@ export function createMarkdown(skin: s.MarkdownSkin, { Checkbox = WebCheckbox, D
           style={[body, block.kind === "heading" ? terminal ? s.terminalHeading : skin.heading(tokens, block.level ?? 1, compact) : null, block.kind === "code" ? terminal ? s.terminalCode : s.code(tokens) : null, block.kind === "list" ? s.listText : null]}>{block.kind === "code" ? block.text : <Inline terminal={terminal} value={block.text} />}</Text>;
         if (block.kind === "list") return <View key={index} style={[s.list, s.indent(block.indent)]}><Text style={[body, s.marker(tokens)]}>{block.marker}</Text>{text}</View>;
         return <View key={index} style={block.kind === "quote" ? s.quote(tokens) : undefined}>{text}</View>;
-      })}
-    </View>;
+    }
   };
 }

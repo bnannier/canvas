@@ -1,4 +1,5 @@
 import { primaryText } from "../../style/primary-text.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { alpha, MONO_FONT, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
 import { pageRoles } from "../../style/type-scale.js";
@@ -175,6 +176,9 @@ export interface StepsSkin extends TouchTargetSkin {
   segmentBar: (t: ColorTokens, state: State) => ViewStyle;
   /** The segmented layout's status line ink, per state (the title takes `labelState`). */
   segmentStatus: (t: ColorTokens, state: State) => TextStyle;
+  /** The `rows` layout: a row label's ink and weight, and the current row's fill. */
+  rowLabel: (t: ColorTokens, state: State) => TextStyle;
+  rowCurrent: (t: ColorTokens) => ViewStyle;
   /** iOS/web dim the marker on press; Android uses a ripple (null here). */
   pressedOpacity: number | null;
   /** Android ripple over a pressable marker; null on iOS/web. */
@@ -206,6 +210,14 @@ const look: Omit<StepsSkin, "minTarget" | "pressedOpacity" | "ripple"> = {
   },
   connector(t, done) {
     return { backgroundColor: done ? t.primary : line(t) };
+  },
+  // The Claude desktop sidebar (reference claude-desktop-chat): the current row filled a
+  // step above the list, labels in the foreground ink, steps not yet reached muted.
+  rowLabel(t, state) {
+    return { color: state === "upcoming" ? t["muted-foreground"] : t.foreground, fontWeight: state === "current" ? "500" : "400" };
+  },
+  rowCurrent(t) {
+    return { backgroundColor: t["surface-raised"] ?? t.muted };
   },
   progressCaption(t) {
     return { fontSize: 13, lineHeight: 18, fontWeight: "500", color: t.foreground };
@@ -264,3 +276,8 @@ export const androidSkin: StepsSkin = {
   pressedOpacity: null,
   ripple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
 };
+
+/** The `rows` layout: 32 px rows 2 apart, labels 13 in from the row at the nav-row corner. */
+export const rowList: ViewStyle = { gap: 2 };
+export const row: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 32, paddingHorizontal: 13, borderRadius: platformShape.web.navRowCompact };
+export const rowLabel: TextStyle = { flexShrink: 1, minWidth: 0, fontSize: 14, lineHeight: 20 };

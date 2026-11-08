@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Textarea, Column, Container } = scope;
+  const { Textarea } = scope;
   return (
-<Column>
-  <Textarea xs start rows={2} placeholder="xs step, pinned to the start (320)" />
-  <Textarea lg start rows={2} placeholder="lg step, pinned to the start (512)" />
-  <Container lg start><Textarea rows={2} placeholder="Bare, in an lg Container: fills it (512)" /></Container>
-</Column>
+<Textarea disabled placeholder="A few words about this project" />
   );
 }

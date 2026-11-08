@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Chat, Typography } = scope;
   return (
-<Chat testID="chat-long" style={{ height: 320 }} messages={Array.from({ length: 28 }, (_, index) => ({ id: index, role: index % 2 === 0 ? "user" : "assistant", content: index % 2 === 0 ? `Review requirement ${index / 2 + 1}.` : "Confirm the expected behavior, check mobile layouts, and record the evidence before continuing." }))} value="A follow-up question" onChangeText={() => {}} onSend={() => {}} footer={<Typography tiny muted>The composer stays here while earlier messages scroll.</Typography>} />
+<Chat terminal autoFocus style={{ height: 320 }} messages={[{ id: "request", role: "user", content: "Inspect the current change." }, { id: "reply", role: "assistant", author: "Claude", content: "I will read the **implementation** and its checks." }]} value="" onChangeText={() => {}} onSend={() => {}} footer={<Typography tiny muted>Enter to send · Shift+Enter for newline</Typography>} />
   );
 }

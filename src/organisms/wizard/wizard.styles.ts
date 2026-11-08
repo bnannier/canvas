@@ -32,3 +32,16 @@ export const androidSkin: WizardSkin = webSkin;
 export const headerSteps: ViewStyle = { marginTop: 14 };
 /** Without a rail the Dialog pads the body itself, so the content adds none of its own. */
 export const dialogPadsBody: ViewStyle = { padding: 0 };
+
+/** `assistant`: the step rail as a desktop window's sidebar, 240 wide, its rows 8 in, one
+ * step off the panel's fill behind a hairline (reference claude-desktop-chat). */
+/** The assistant rail's width, and the panel width below which it gives way to segmented
+ * steps in the top bar so the conversation keeps a usable column. */
+/** The reference sidebar: 287 wide plus its hairline. */
+export const ASSISTANT_RAIL = 287;
+export const ASSISTANT_MINIMUM_PANEL = 720;
+export const assistantRail: ViewStyle = { width: ASSISTANT_RAIL, flexShrink: 0, paddingHorizontal: 8, paddingTop: 12, borderEndWidth: 1 };
+export const assistantActions: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1, minWidth: 0 };
+/** A scrolled body's content in the conversation's column: 768 at most, centered. */
+export const assistantColumn: ViewStyle = { width: "100%", maxWidth: 816, alignSelf: "center", paddingHorizontal: 24, paddingVertical: 24, gap: 12 };
+export const assistantColumnNarrow: ViewStyle = { ...assistantColumn, paddingHorizontal: 12, paddingVertical: 16 };

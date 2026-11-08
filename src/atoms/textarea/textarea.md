@@ -110,6 +110,16 @@ web label. `accessibilityLabel` overrides the visible label’s accessible name;
 </Card>
 ```
 
+### Composer
+
+`composer` sets a chat composer's metrics: 15 / 20 text 6 by 8 points in, one line by default (`rows` raises it), so one line sits
+in a 44 point composer box beside 32 point controls. Pair it with `embedded`; Chat's
+composer uses it.
+
+```tsx
+<Textarea embedded composer placeholder="What would you like to build?" accessibilityLabel="Message" />
+```
+
 ### Disabled
 
 ```tsx

@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { ScrollView, View, ThemeProvider, useTheme, useContainerWidth } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Typography } from "../../atoms/typography/typography.js";
@@ -41,6 +41,14 @@ export interface WizardProps {
    * OverlayProvider.
    */
   embedded?: boolean;
+  /**
+   * Lay the wizard out like a desktop assistant's window (the Claude desktop window,
+   * reference claude-desktop-chat): the steps as sidebar rows down the panel's full height,
+   * a 44 px top bar with the title, the status, `previous` and `actions`, and no footer
+   * band. The body is unpadded so a `flush` Chat fills it; a scrolled body centers its
+   * content in the conversation's column. The description is not drawn.
+   */
+  assistant?: boolean;
   /** Prefix for modal, steps, body-scroll and footer test hooks. */
   testID?: string;
 }
@@ -49,7 +57,7 @@ type WizardParts = { Dialog: typeof WebDialog; Steps: typeof WebSteps; Button: t
 
 /** A wizard delegates modal behavior and platform controls to their existing components. */
 export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = WebSteps, Button = WebButton }: Partial<WizardParts> = {}, typography: WizardTypography = webTypography) {
-  return function Wizard({ open, title, description, steps, current, onOpenChange, panelWidth = 620, previous, actions, status, children, scrollBody = true, embedded, testID }: WizardProps) {
+  return function Wizard({ open, title, description, steps, current, onOpenChange, panelWidth = 620, previous, actions, status, children, scrollBody = true, embedded, assistant, testID }: WizardProps) {
     const hook = (part: string) => testID ? `${testID}-${part}` : undefined;
     const theme = useTheme();
     const { tokens } = theme;
@@ -59,6 +67,10 @@ export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = W
     const panelWidthNow = useContainerWidth();
     const narrow = panelWidthNow.width > 0 && panelWidthNow.width < s.RAIL_MINIMUM_PANEL;
     const bodyBounds = [s.bodyScroll, { minWidth: narrow ? 0 : typography.bodyMinimum }];
+    // The assistant layout measures its body, which the rail narrows while it shows, so the
+    // panel's width is the body's plus the rail's; that keeps the switch from flapping.
+    const [assistantPanel, setAssistantPanel] = useState(0);
+    const assistantNarrow = assistantPanel > 0 && assistantPanel < s.ASSISTANT_MINIMUM_PANEL;
     // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
     // hand-off's order: Panel, Steps, Body, Footer actions. Taken before the tree's
     // AnatomyScope so the Dialog, Steps and Buttons register nothing of their own; the
@@ -67,11 +79,34 @@ export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = W
     const stepsPart = useAnatomyPart("Steps");
     const bodyPart = useAnatomyPart("Body");
     const footerPart = useAnatomyPart("Footer actions");
-    const saveStatus = status ? <Typography caption mono subtle natural>{status}</Typography> : null;
+    const saveStatus = status ? assistant ? <Typography caption subtle natural>{status}</Typography> : <Typography caption mono subtle natural>{status}</Typography> : null;
     // A specimen is the Dialog's contained form, in the flow of the page that shows it,
     // hugging its stage; a live wizard teleports into the nearest OverlayProvider and fills it.
     // The panel follows K.def('wizard'): title/status, a fixed short step rail beside
     // the scrolling content, and opposite ends of the footer for Back and the actions.
+    if (assistant) {
+      const rail = assistantNarrow ? undefined : <View ref={stepsPart?.ref} onLayout={stepsPart?.onLayout} style={[s.assistantRail, { backgroundColor: tokens.muted, borderColor: tokens.border }]}>
+        <Steps vertical rows steps={steps} current={current} testID={hook("steps")} />
+      </View>;
+      const topActions = <View ref={footerPart?.ref} onLayout={footerPart?.onLayout} testID={hook("footer")} style={s.assistantActions}>
+        {previous ? <Button shrink ghost small disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}
+        <View testID={hook("footer-buttons")} style={s.assistantActions}>{actions}</View>
+      </View>;
+      const body = scrollBody
+        ? <ScrollView ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} testID={hook("body-scroll")} style={s.bodyScroll} contentContainerStyle={assistantNarrow ? s.assistantColumnNarrow : s.assistantColumn} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+        : <View ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={s.bodyScroll}>{children}</View>;
+      const windowed = <Dialog form workspace banded toolbar overlay={!embedded} compact={embedded} embedded={embedded} open={open} title={title} description={description}
+        panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID} headerAccessory={saveStatus} headerActions={topActions}
+        workspaceHeader={assistantNarrow ? <View style={s.headerSteps}><Steps segmented steps={steps} current={current} testID={hook("steps")} /></View> : undefined}
+        workspaceSidebar={rail}>
+        <View style={s.bodyScroll} onLayout={(event) => {
+          const next = Math.round(event.nativeEvent.layout.width + (rail ? s.ASSISTANT_RAIL + 1 : 0));
+          if (next !== assistantPanel) setAssistantPanel(next);
+        }}>{body}</View>
+      </Dialog>;
+      const scopedWindow = <AnatomyScope><DialogPanelPart.Provider value={panelPart}>{windowed}</DialogPanelPart.Provider></AnatomyScope>;
+      return typography.fonts ? <ThemeProvider scheme={theme.scheme} surface={theme.surface} cyan={theme.palette === "cyan"} mint={theme.palette === "mint"} rose={theme.palette === "rose"} amber={theme.palette === "amber"} tokens={tokens} fonts={{ ...theme.fonts, ...typography.fonts }}>{scopedWindow}</ThemeProvider> : scopedWindow;
+    }
     const panel = <Dialog form workspace banded overlay={!embedded} compact={embedded} embedded={embedded} open={open} title={title} description={description}
       panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID}
       headerAccessory={saveStatus}

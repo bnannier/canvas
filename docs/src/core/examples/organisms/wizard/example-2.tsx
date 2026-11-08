@@ -3,17 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ViewportOverlay, Stateful, Button, Chat, Wizard, Column } = scope;
+  const { Button, Chat, Wizard } = scope;
   return (
-<Stateful initial={false}>
-  {(open, setOpen) => <Column>
-    <Button outline onPress={() => setOpen(true)}>Open planning conversation</Button>
-    <ViewportOverlay><Wizard open={open} onOpenChange={setOpen} title="Plan a project"
-      steps={[{ label: "Details" }, { label: "Conversation" }, { label: "Review" }]} current={1}
-      scrollBody={false} status="Saved" actions={<Button primary onPress={() => setOpen(false)}>Done</Button>}>
-      <Chat messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
-    </Wizard></ViewportOverlay>
-  </Column>}
-</Stateful>
+<Wizard open embedded assistant onOpenChange={() => {}} title="Plan a project" scrollBody={false}
+  steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }]}
+  current={0} status="Autosaved" actions={<Button small ghost>Reset</Button>}>
+  <Chat flush meta="Claude CLI" messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+</Wizard>
   );
 }

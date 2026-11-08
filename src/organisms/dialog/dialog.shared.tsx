@@ -64,6 +64,14 @@ export interface DialogProps {
    */
   banded?: boolean;
   /**
+   * Banded only: the header is a 44 px top bar like a desktop app window's (the Claude
+   * desktop window's): the title in the 14 medium face, `headerAccessory` after it,
+   * `headerActions` before the close action. The description is not drawn.
+   */
+  toolbar?: boolean;
+  /** Actions at the end of a `toolbar` header, before the close action. */
+  headerActions?: ReactNode;
+  /**
    * A leading glyph for the panel, drawn as the accent's soft tone tile (`Emblem primary
    * soft`) above the title. Pass an `<Icon />`; the tile tints and sizes it.
    */
@@ -233,6 +241,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     const modal = !(props.embedded === true && trigger == null);
 
     const banded = form && props.banded === true;
+    const toolbar = banded && props.toolbar === true;
     // The embedded Wizard is the hand-off's bare, in-page panel. A live Wizard
     // keeps the modal veil and floating material, like every other form dialog.
     const embeddedBanded = banded && !modal;
@@ -398,7 +407,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
             aria-modal={modal ? true : undefined}
             aria-label={accessibilityLabel}
             aria-labelledby={accessibilityLabel == null && (form || children == null) && title != null ? titleId : undefined}
-            aria-describedby={(form || children == null) && description != null ? descriptionId : undefined}
+            aria-describedby={(form || children == null) && description != null && !toolbar ? descriptionId : undefined}
             style={scrim.style}
           >
             {/* Under glass on the web the scrim also blurs what it dims (GS-6): the dim and
@@ -422,15 +431,44 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
               <View style={workspace ? workspaceContent : s.contentSizing}>
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={workspace ? workspaceContent : s.contentSizing}>
                   {form ? (
-                    <>
-                      <View style={banded ? [s.bandedHeader, ruleColor] : null}>
-                      {iconTile}
-                      <View style={{ flexDirection: "row", gap: banded ? 0 : 12, alignItems: banded ? "center" : "flex-start", justifyContent: banded ? "space-between" : undefined }}>
-                        <View style={banded ? { flexShrink: 1, minWidth: 0, gap: 4 } : { flex: 1, gap: 4 }}>
-                          {title != null ? <Text {...titleAnatomy} nativeID={titleId} role="heading" style={banded ? skin.bandedTitle(tokens) : skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
-                          {description ? <Text {...descriptionAnatomy} nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
+                      toolbar && workspace ? (
+                        // The desktop window: the step rail runs the panel's full height, and the top bar
+                        // and the body share the column beside it.
+                        <View style={s.toolbarSplit}>
+                          {props.workspaceSidebar}
+                          <View style={s.toolbarMain}>
+                            <View style={banded ? [s.bandedHeader, toolbar ? s.toolbarHeader(tokens) : null, ruleColor] : null}>
+                      {toolbar ? null : iconTile}
+                      <View style={toolbar ? s.toolbarRow : { flexDirection: "row", gap: banded ? 0 : 12, alignItems: banded ? "center" : "flex-start", justifyContent: banded ? "space-between" : undefined }}>
+                        <View style={toolbar ? s.toolbarTitleGroup : banded ? { flexShrink: 1, minWidth: 0, gap: 4 } : { flex: 1, gap: 4 }}>
+                          {title != null ? <Text {...titleAnatomy} nativeID={titleId} role="heading" numberOfLines={toolbar ? 1 : undefined} style={toolbar ? s.toolbarTitle(tokens) : banded ? skin.bandedTitle(tokens) : skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
+                          {description && !toolbar ? <Text {...descriptionAnatomy} nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
+                          {toolbar && props.headerAccessory != null ? props.headerAccessory : null}
                         </View>
-                        {props.headerAccessory == null ? null : <View style={banded ? { flexShrink: 1, minWidth: 0 } : null}>{props.headerAccessory}</View>}
+                        {toolbar ? <View style={s.toolbarActions}>{props.headerActions}</View> : props.headerAccessory == null ? null : <View style={banded ? { flexShrink: 1, minWidth: 0 } : null}>{props.headerAccessory}</View>}
+                        {embeddedBanded ? null : skin.close != null ? (
+                          <AnatomyPart part={closePart}><Button icon compactIcon ghost steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x color={skin.close.color(tokens)} size={skin.close.iconSize} decorative />} /></AnatomyPart>
+                        ) : (
+                          <AnatomyPart part={closePart}><Button icon mediumIcon circle ghost inset steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x muted heavyStroke size={15} />} /></AnatomyPart>
+                        )}
+                      </View>
+                      {banded && props.workspaceHeader != null ? props.workspaceHeader : null}
+                      </View>
+                            <View ref={bodyPart?.ref} onLayout={bodyPart?.onLayout} style={s.toolbarBody}>{children}</View>
+                            {props.footer ? <View {...actionsAnatomy} style={[s.bandedFooter, ruleColor]}>{props.footer}</View> : null}
+                          </View>
+                        </View>
+                      ) : (
+                      <>
+                      <View style={banded ? [s.bandedHeader, toolbar ? s.toolbarHeader(tokens) : null, ruleColor] : null}>
+                      {toolbar ? null : iconTile}
+                      <View style={toolbar ? s.toolbarRow : { flexDirection: "row", gap: banded ? 0 : 12, alignItems: banded ? "center" : "flex-start", justifyContent: banded ? "space-between" : undefined }}>
+                        <View style={toolbar ? s.toolbarTitleGroup : banded ? { flexShrink: 1, minWidth: 0, gap: 4 } : { flex: 1, gap: 4 }}>
+                          {title != null ? <Text {...titleAnatomy} nativeID={titleId} role="heading" numberOfLines={toolbar ? 1 : undefined} style={toolbar ? s.toolbarTitle(tokens) : banded ? skin.bandedTitle(tokens) : skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
+                          {description && !toolbar ? <Text {...descriptionAnatomy} nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
+                          {toolbar && props.headerAccessory != null ? props.headerAccessory : null}
+                        </View>
+                        {toolbar ? <View style={s.toolbarActions}>{props.headerActions}</View> : props.headerAccessory == null ? null : <View style={banded ? { flexShrink: 1, minWidth: 0 } : null}>{props.headerAccessory}</View>}
                         {embeddedBanded ? null : skin.close != null ? (
                           <AnatomyPart part={closePart}><Button icon compactIcon ghost steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x color={skin.close.color(tokens)} size={skin.close.iconSize} decorative />} /></AnatomyPart>
                         ) : (
@@ -451,7 +489,8 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                           {banded ? (props.footer ? <View {...actionsAnatomy} style={[s.bandedFooter, ruleColor]}>{props.footer}</View> : null) : props.footer ? <AnatomyPart part={actionsPart}>{props.footer}</AnatomyPart> : null}
                         </OverlayScrollView>
                       )}
-                    </>
+                      </>
+                      )
                   ) : children != null ? (
                     <AnatomyPart part={bodyPart}>{children}</AnatomyPart>
                   ) : (

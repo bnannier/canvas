@@ -11,8 +11,13 @@ import { DISPLAY_FONT, MONO_FONT, TERMINAL_FONT } from "../../style/mono.js";
 export interface MarkdownSkin {
   body: (tokens: ColorTokens, compact?: boolean) => TextStyle;
   heading: (tokens: ColorTokens, level: number, compact?: boolean) => TextStyle;
+  /** Space above a block instead of the uniform root gap: `list` between consecutive list
+   * items, `block` everywhere else. A conversation sets it (the Claude desktop reply: list
+   * items on the line rhythm, paragraphs 12 apart); documents keep the uniform gap. */
+  spacing?: { block: number; list: number };
 }
 export const root = (compact?: boolean): ViewStyle => ({ gap: compact ? 6 : 10, minWidth: 0, flexShrink: 1 });
+export const spacedRoot: ViewStyle = { gap: 0 };
 export const list: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8, minWidth: 0 };
 export const listText: TextStyle = { flex: 1, minWidth: 0 };
 export const marker = (tokens: ColorTokens): TextStyle => ({ color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] });

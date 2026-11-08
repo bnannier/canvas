@@ -3,8 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Dialog } = scope;
+  const { Button, Dialog, Typography } = scope;
   return (
-<Dialog trigger="Open details" title="Workspace details" dismissible />
+<Dialog open embedded banded toolbar onOpenChange={() => {}} title="Plan pacman"
+  headerAccessory={<Typography small muted>Autosaved</Typography>}
+  headerActions={<Button small ghost>Reset</Button>}>
+  <Typography body>The conversation fills the body.</Typography>
+</Dialog>
   );
 }

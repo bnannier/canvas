@@ -8,9 +8,9 @@ export default function Example(scope: ExampleScope) {
 <Steps
   vertical
   steps={[
-    { label: "Create workspace", description: "Northwind · EU Frankfurt" },
-    { label: "Import components", description: "Restyling 72 of 107", progress: 67 },
-    { label: "Invite your team", description: "Optional" }
+    { label: "Account", description: "Email verified and password set." },
+    { label: "Profile", description: "Add your name and avatar." },
+    { label: "Review", description: "Invite collaborators." }
   ]}
   defaultCurrent={1}
 />
