@@ -12,7 +12,7 @@ export const SECTIONS: readonly { title: Section; slugs: readonly string[] }[] =
   { title: "Controls", slugs: ["button","button-group","switch","checkbox","radio","slider","stepper","chip","avatar","badge","kbd"] },
   { title: "Inputs", slugs: ["input","text-input","textarea","select","input-otp","autocomplete","listbox","phone-input","field","form","filter-panel"] },
   { title: "Navigation", slugs: ["tabs","tab-bar","navbars","sidebar","breadcrumb","pagination","steps","row-menu"] },
-  { title: "Surfaces & data", slugs: ["card","stats","data-table","stacked-lists","grid-lists","media-objects","feeds","description-lists","action-panels","accordion","collapsible","code-block","carousel","image","video","qrcode","calendar","chat","board","drag-drop"] },
+  { title: "Surfaces & data", slugs: ["card","stats","data-table","stacked-lists","grid-lists","media-objects","feeds","description-lists","action-panels","accordion","collapsible","code-block","carousel","image","video","qrcode","calendar","chat","board","flow-editor","drag-drop"] },
   { title: "Charts", slugs: ["chart","line-chart","area-chart","range-area-chart","composed-chart","sparkline","histogram","box-plot","scatter-plot","waterfall-chart","pie-chart","treemap","stacked-bar","funnel-chart","gauge","progress-ring","radial-bar-chart","bullet-chart","radar-chart","metric-breakdown","bar-list","depth-chart","heatmap","candlestick-chart","uptime-bar","service-health-list","geo-map"] },
   { title: "Overlays & feedback", slugs: ["dialog","alert-dialog","drawer","action-sheet","popover","tooltip","dropdown","command","wizard","toast","alert","empty-state","progress","spinner","skeleton"] },
 ];
@@ -83,6 +83,7 @@ export const SECTION_OF: Readonly<Record<string, Section>> = {
   "calendar": "Surfaces & data",
   "chat": "Surfaces & data",
   "board": "Surfaces & data",
+  "flow-editor": "Surfaces & data",
   "drag-drop": "Surfaces & data",
   "chart": "Charts",
   "line-chart": "Charts",

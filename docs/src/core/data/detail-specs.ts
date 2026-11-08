@@ -26,7 +26,7 @@ export type Knob =
 
 export type AnatomyValue = string | number | boolean | { icon: string } | { element: string; children?: string };
 
-export type KeyboardPatternKey = "button" | "toggle" | "radio" | "slider" | "spin" | "tabs" | "menu" | "listbox" | "combobox" | "dialog" | "disclosure" | "grid" | "text" | "otp" | "link" | "carousel" | "board" | "chart" | "none" | "tooltip" | "toast";
+export type KeyboardPatternKey = "button" | "toggle" | "radio" | "slider" | "spin" | "tabs" | "menu" | "listbox" | "combobox" | "dialog" | "disclosure" | "grid" | "text" | "otp" | "link" | "carousel" | "board" | "chart" | "none" | "tooltip" | "toast" | "flow-editor";
 
 export interface DetailSpec {
   /** The hand-off section (room) the component belongs to. */
@@ -72,6 +72,7 @@ export const KEYBOARD_PATTERNS: Record<KeyboardPatternKey, readonly (readonly [s
   "none": [],
   "tooltip": [["Tab","Focus on the trigger shows the tip"], ["Escape","Hides the tip without moving focus"]],
   "toast": [["Tab","Reaches the toast action"], ["Escape","Dismisses the focused toast"]],
+  "flow-editor": [["Tab · Shift+Tab","Moves between the toolbar, the canvas and each card"], ["Arrow keys","Move the focused card one grid step"], ["Delete · Backspace","Removes the selected card or edge"], ["+ · -","Zooms the canvas in or out"], ["0","Fits the whole graph in view"]],
 };
 
 /** Every component's detail spec, by URL slug, in the hand-off's section order. */
@@ -992,6 +993,18 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
     anatomy: {"parts":["Board","Column","Card","Count"],"props":{}},
     fill: true,
     keyboard: "board",
+  },
+  "flow-editor": {
+    knobs: [
+      {"kind":"text","prop":"label","value":"Delivery workflow"},
+      {"kind":"boolean","prop":"readOnly","value":false},
+      {"kind":"boolean","prop":"freePlacement","value":false},
+    ],
+    section: "Surfaces & data",
+    propsInterface: "FlowEditorProps",
+    anatomy: {"parts":["Toolbar","Canvas","Node","Port","Edge","Edge label"],"props":{}},
+    fill: true,
+    keyboard: "flow-editor",
   },
   "drag-drop": {
     knobs: [],

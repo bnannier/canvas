@@ -1,5 +1,7 @@
 import { Wizard as WizardIOS } from "../../../src/organisms/wizard/wizard.ios.js";
 import { Wizard as WizardAndroid } from "../../../src/organisms/wizard/wizard.android.js";
+import { FlowEditor as FlowEditorIOS } from "../../../src/organisms/flow-editor/flow-editor.ios.js";
+import { FlowEditor as FlowEditorAndroid } from "../../../src/organisms/flow-editor/flow-editor.android.js";
 import { Chat as ChatIOS, ChatThread as ChatThreadIOS, ChatMessage as ChatMessageIOS, ChatComposer as ChatComposerIOS, Markdown as MarkdownIOS } from "../../../src/organisms/chat/chat.ios.js";
 import { Chat as ChatAndroid, ChatThread as ChatThreadAndroid, ChatMessage as ChatMessageAndroid, ChatComposer as ChatComposerAndroid, Markdown as MarkdownAndroid } from "../../../src/organisms/chat/chat.android.js";
 // The registry of components that ship platform skins, ported from the web docs'
@@ -131,7 +133,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Video: VideoIOS, Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Radio: RadioIOS, RadioGroup: RadioGroupIOS,
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
-    RowMenu: RowMenuIOS, Dialog: DialogIOS, Wizard: WizardIOS, AlertDialog: AlertDialogIOS, Alert: AlertIOS,
+    RowMenu: RowMenuIOS, Dialog: DialogIOS, Wizard: WizardIOS, FlowEditor: FlowEditorIOS, AlertDialog: AlertDialogIOS, Alert: AlertIOS,
     Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS,
     AvatarMenu: AvatarMenuIOS,
@@ -151,7 +153,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Video: VideoAndroid, Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid, RadioGroup: RadioGroupAndroid,
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
-    RowMenu: RowMenuAndroid, Dialog: DialogAndroid, Wizard: WizardAndroid, AlertDialog: AlertDialogAndroid, Alert: AlertAndroid,
+    RowMenu: RowMenuAndroid, Dialog: DialogAndroid, Wizard: WizardAndroid, FlowEditor: FlowEditorAndroid, AlertDialog: AlertDialogAndroid, Alert: AlertAndroid,
     Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Steps: StepsAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid,
     AvatarMenu: AvatarMenuAndroid,

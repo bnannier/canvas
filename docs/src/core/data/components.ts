@@ -8,6 +8,7 @@ import { SECTION_OF } from "./detail-sections";
 // by tools/v4/derive-detail-specs.ts and joined on below.
 const ENTRIES: Omit<ComponentDoc, "section">[] = [
   { slug: "wizard", name: "Wizard", category: "Organisms", stageAlign: "start" },
+  { slug: "flow-editor", name: "FlowEditor", category: "Organisms", stageAlign: "start" },
   // AppFrame fills its parent, so its examples take the stage's full width as that parent.
   { slug: "app-frame", name: "AppFrame", category: "Organisms", stageAlign: "start" },
   { slug: "chat", name: "Chat", category: "Organisms", stageAlign: "start" },

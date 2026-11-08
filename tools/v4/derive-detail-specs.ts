@@ -107,6 +107,26 @@ const SPECIMEN_PROPS: Record<string, { props: Record<string, boolean>; omit?: st
   popover: { props: { inline: true }, omit: ["trigger"] },
 };
 
+// Components the repository ships that the vendored hand-off predates. The hand-off stays
+// verbatim (tools/v4/README.md), so each one's section, place in it and detail spec are the
+// repository's own, written in the hand-off's spec form (the `CVK.def` fields: `k` knobs in
+// the knob DSL, `st` states, `an` anatomy parts, `kb` keyboard pattern, `w` width) and
+// derived through the same code as a hand-off spec. A keyboard pattern the hand-off lacks is
+// added under REPOSITORY_KEYBOARD.
+const REPOSITORY_COMPONENTS: Record<string, { section: string; after: string; props: string; spec: { k?: string; st?: string; an?: string[]; kb?: string; w?: string } }> = {
+  "flow-editor": {
+    section: "Surfaces & data",
+    after: "board",
+    props: "FlowEditorProps",
+    spec: { k: "label=Delivery workflow;readOnly?;freePlacement?", an: ["Toolbar", "Canvas", "Node", "Port", "Edge", "Edge label"], kb: "flow-editor", w: "fill" },
+  },
+};
+
+// Keyboard patterns for REPOSITORY_COMPONENTS, as [keys, effect] rows.
+const REPOSITORY_KEYBOARD: Record<string, [string, string][]> = {
+  "flow-editor": [["Tab · Shift+Tab", "Moves between the toolbar, the canvas and each card"], ["Arrow keys", "Move the focused card one grid step"], ["Delete · Backspace", "Removes the selected card or edge"], ["+ · -", "Zooms the canvas in or out"], ["0", "Fits the whole graph in view"]],
+};
+
 // Knobs the repository spells as something other than a prop of the same name.
 // Icon's `name` knob picks a glyph, which the repository names with one boolean per glyph
 // (`<Icon sparkles />`, IconGlyphProps), so it is a `glyph` knob.
@@ -219,12 +239,20 @@ function states(slug: string, st: string, dropped: { knob: string; reason: strin
 function build() {
   const { kit, docs } = loadHandoff();
   const sections = docs.rooms.map((r) => ({ title: r.room, slugs: [...r.slugs] }));
+  for (const [slug, own] of Object.entries(REPOSITORY_COMPONENTS)) {
+    if (docs.rooms.some((r) => r.slugs.includes(slug))) throw new Error(`${slug}: the hand-off lists it now; drop it from REPOSITORY_COMPONENTS`);
+    const section = sections.find((x) => x.title === own.section);
+    const at = section?.slugs.indexOf(own.after) ?? -1;
+    if (!section || at < 0) throw new Error(`${slug}: no "${own.after}" in a hand-off section "${own.section}"`);
+    section.slugs.splice(at + 1, 0, slug);
+  }
   const specs: Record<string, unknown> = {};
   const kbKeys = new Set<string>();
   for (const { title, slugs } of sections) {
     for (const slug of slugs) {
-      const s = kit.spec(slug);
-      const propsInterface = COMPONENT_PROPS[slug] ?? docs.c[slug]?.main?.n ?? PRIMITIVE_PROPS[slug];
+      const own = REPOSITORY_COMPONENTS[slug];
+      const s = own ? own.spec : kit.spec(slug);
+      const propsInterface = own?.props ?? COMPONENT_PROPS[slug] ?? docs.c[slug]?.main?.n ?? PRIMITIVE_PROPS[slug];
       if (!propsInterface) throw new Error(`${slug}: the hand-off names no props interface and none is mapped`);
       const dropped: { knob: string; reason: string }[] = [];
       const knobs: Knob[] = [];
@@ -278,6 +306,10 @@ function build() {
   // added by cv-kit-overlays.js), as written.
   const patterns: Record<string, [string, string][]> = {};
   for (const [key, rows] of Object.entries(kit.KB)) patterns[key] = rows.map(([a, b]) => [a, b]);
+  for (const [key, rows] of Object.entries(REPOSITORY_KEYBOARD)) {
+    if (patterns[key]) throw new Error(`REPOSITORY_KEYBOARD's "${key}" is a hand-off pattern now`);
+    patterns[key] = rows;
+  }
   for (const key of kbKeys) if (!patterns[key]) throw new Error(`no keyboard table for the hand-off's "${key}" pattern`);
   return { sections, specs, patterns };
 }
