@@ -1,5 +1,50 @@
 # @nannier/canvas
 
+## 4.4.0
+
+### Minor Changes
+
+- 8442fcc: Badge: add `truncate`, which keeps the label on one line and lets the pill shrink in a tight row, ending the label with an ellipsis instead of overflowing its host. The board card's `noticeLabel` pill uses it, so a long notice no longer runs past the card's metadata row.
+
+  Minor justification: a new public option on an existing component (`Badge truncate`). Badges without it render unchanged.
+
+- e8f0a59: Card: add `noticeLabel` to board tickets, a quiet outline pill after the type and priority for a short notice such as an outdated workflow version.
+
+  Minor justification: a new public option on an existing component (`Card board noticeLabel`). Existing cards render unchanged.
+
+- 6f6409f: Chat: the default Chat returns to the v4 hand-off's look, and the Claude desktop window layout moves behind a new `assistant` prop.
+
+  - Default (no `assistant`): the conversation card with its thread 16 in and messages 14 apart, 14 / 1.55 replies, the user bubble in the accent's soft wash at the 16 corner with its trailing bottom corner tucked to 4, 9 by 13 in, and the composer's sunken field under a hairline (the 16 corner on the field border, 6 in and 12 at the start, the draft and a 32 px round send button 8 apart, a paperclip attach action).
+  - `assistant` (on Chat, ChatThread, ChatMessage and ChatComposer): the layout measured on the Claude desktop window: one centered column whose composer box is 768 wide at most, replies at 15 / 21 inset 20 from the composer and the user bubble 16, a neutral `muted` user bubble at its own 10 corner, turns that change speaker 40 apart and a turn's blocks 20 apart, a raised 44 px composer at its own 12 corner with a bare add icon and a send control that stays quiet until there is a draft, the `meta` model line, and 12 px gutters below 480 wide. Its corners are the new web shape roles `assistantBubble` (10) and `assistantComposer` (12); the hand-off's `composer` and `bubble` stay 16 and `bubbleTail` (4) returns.
+  - `flush` keeps meaning only "drop the card frame"; combine it with `assistant` for a conversation that sits on its host's fill, as the Wizard `assistant` example does.
+
+  Consumers that relied on the desktop layout Chat drew by default since 4.3 pass `assistant` to keep it. Minor justification: a new public option on an existing component (`Chat assistant`).
+
+- e7a942a: Chat, Wizard, Dialog, Steps and Textarea can now lay out a conversation like the Claude desktop window, and the same pieces serve a planning modal and a ticket drawer.
+
+  - Chat: `flush` drops the card frame so the conversation sits on its host's fill; consecutive activity folds into one expandable line; author lines appear only when the app names an author or provider. The Claude desktop layout itself (the 768 column, 15 / 21 replies, the 40 / 20 turn rhythm, the 44 px composer with its quiet send control and the `meta` model line) is Chat `assistant`, described in its own changeset.
+  - Wizard: `assistant` gives a full-height 287 px sidebar of step rows, a 44 px top bar with the title and status, `previous` and the actions in a bar under the conversation, and an unpadded body for an `assistant flush` Chat.
+  - Dialog: `toolbar` (with `banded`) makes the header a 44 px top bar; `headerActions` places actions before the close action.
+  - Steps: `rows` (with `vertical`) draws each step as a 32 px sidebar row, the current one filled and done ones checked.
+  - Textarea: `composer` sets a chat composer's 15 / 20 metrics.
+
+  Minor justification: new public options on existing components (`Chat flush` and `meta`, `Wizard assistant`, `Dialog toolbar` and `headerActions`, `Steps rows`, `Textarea composer`). Without them, components keep their layout.
+
+- 2c347bc: Add FlowEditor, a new public organism: a node-graph editor with cards on a pannable, zoomable canvas joined by directed, labelled edges. Cards move by drag or arrow keys and snap to a grid, edges are drawn from a card's port or with the toolbar's From and To selects, palette entries add nodes by press or drag, and a read-only mode shows a graph without editing it. Minor justification: a new public component (FlowEditor) with its types (FlowNode, FlowEdge, FlowPaletteItem, FlowSelection, FlowPoint, FlowEditorProps), which Argus's Workflow section builds on. The docs derivation script also learns to carry components the v4 hand-off predates.
+
+### Patch Changes
+
+- 0be26c1: Chat docs: the "Assistant layout" example's first activity line now carries the `content` every `ChatMessageData` requires, so the generated example typechecks against the real props and expands to what was read.
+- 5e3596f: Chat: two Claude desktop metrics that still applied to the default Chat now apply only under `assistant`, so the default follows the v4 hand-off's message renderer.
+
+  - The person's own turns carry no author line in the default Chat, even when the app names an `author`, `provider` or `providerIcon`; a reply keeps its author line when named, as before. With `assistant`, a named turn of either speaker keeps its author line, as the desktop layout drew it.
+  - A folded activity line's label is 13 / 18 in the subtle ink in the default Chat (the hand-off draws no activity line, so it keeps the label activity lines were introduced with); `assistant` keeps the desktop window's 14 / 21 in the muted ink.
+
+- 57ca3bd: Docs: FlowEditor, which the v4 hand-off predates, now has its own card on the Data page (after the Board, under Workspace) and is tagged Organism in the Library index. Components added after the hand-off are declared once in a shared registry that the docs generators and checks read.
+- a79755f: FlowEditor: the iOS and Android builds now draw the web look (neither platform ships a node-graph editor, so no native shape is owed; the toolbar still uses each platform's Button and Select), and an edge's label is a true capsule drawn over the canvas instead of an SVG rectangle, in the same place, size and inks.
+- 6f6e2fe: Move GeoMap's pan-and-zoom math into a shared view camera so other zoomable surfaces reuse it. GeoMap behaves exactly as before.
+- 5d8cb30: Steps: a pressable `rows` step now gives the platform's press feedback, as the numbered marker does: iOS and the web dim it while pressed, and Android ripples inside the row's corner.
+
 ## 4.3.1
 
 ### Patch Changes
