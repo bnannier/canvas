@@ -65,7 +65,7 @@ const DATA_ROLES: Record<string, string> = {
   // The examples are generated from chat.md and wizard.md (docs:gen), so a new example that
   // writes a message takes a line here.
   ...Object.fromEntries(
-    ["chat/example-0", "chat/example-1", "chat/example-2", "chat/example-3", "chat/example-4", "chat/example-6", "chat/example-7", "chat/example-8", "chat/example-9", "chat/dont-0-do", "chat/dont-0-dont", "wizard/example-2"]
+    ["chat/example-0", "chat/example-1", "chat/example-2", "chat/example-3", "chat/example-4", "chat/example-5", "chat/example-6", "chat/example-8", "chat/example-9", "chat/example-10", "chat/example-11", "chat/dont-0-do", "chat/dont-0-dont", "wizard/example-2", "wizard/example-3"]
       .map((example) => [`docs/src/core/examples/organisms/${example}.tsx`, MESSAGE_AUTHOR]),
   ),
 };

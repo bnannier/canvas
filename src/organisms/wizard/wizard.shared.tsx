@@ -45,7 +45,7 @@ export interface WizardProps {
    * Lay the wizard out like a desktop assistant's window (the Claude desktop window,
    * reference claude-desktop-chat): the steps as sidebar rows down the panel's full height,
    * a 44 px top bar with the title and the status, and `previous` and `actions` in a bar
-   * under the conversation. The body is unpadded so a `flush` Chat fills it; a scrolled body centers its
+   * under the conversation. The body is unpadded so an `assistant flush` Chat fills it; a scrolled body centers its
    * content in the conversation's column. The description is not drawn.
    */
   assistant?: boolean;

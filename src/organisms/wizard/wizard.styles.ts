@@ -1,4 +1,5 @@
 import type { ViewStyle } from "react-native";
+import { ASSISTANT_COLUMN_MAX, ASSISTANT_GUTTER } from "../chat/chat.styles.js";
 
 // Co-located Wizard skins, one per platform. Wizard draws no surface of its own: Dialog
 // owns the fixed header/footer and the platform modal treatment, Steps and Button carry
@@ -42,6 +43,7 @@ export const ASSISTANT_RAIL = 287;
 export const ASSISTANT_MINIMUM_PANEL = 720;
 export const assistantRail: ViewStyle = { width: ASSISTANT_RAIL, flexShrink: 0, paddingHorizontal: 8, paddingTop: 12, borderEndWidth: 1 };
 export const assistantActions: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1, minWidth: 0 };
-/** A scrolled body's content in the conversation's column: 768 at most, centered. */
-export const assistantColumn: ViewStyle = { width: "100%", maxWidth: 816, alignSelf: "center", paddingHorizontal: 24, paddingVertical: 24, gap: 12 };
+/** A scrolled body's content in the conversation's column: Chat's `assistant` column (the
+ * 768 composer box plus its gutters), centered, so a form lines up with a conversation. */
+export const assistantColumn: ViewStyle = { width: "100%", maxWidth: ASSISTANT_COLUMN_MAX, alignSelf: "center", paddingHorizontal: ASSISTANT_GUTTER, paddingVertical: 24, gap: 12 };
 export const assistantColumnNarrow: ViewStyle = { ...assistantColumn, paddingHorizontal: 12, paddingVertical: 16 };

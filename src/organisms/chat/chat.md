@@ -4,9 +4,9 @@ A controlled assistant conversation with independently scrolling messages, clear
 
 Messages remain application-owned `ChatMessageData`: keep each `id` stable while updating `content` during streaming. `pending` shows a three-dot thinking indicator until an explicitly `streaming` message arrives; pass `pendingIcon` to identify its provider. Streaming replies retain their own Responding indicator. Both animations stop when their state ends and stay still under Reduce Motion. `providerIcon` accepts an application-supplied provider logo beside the author; label the image or icon with the provider name for assistive technology. `provider` remains an optional supplementary text label such as the transport name. `error` adds a visible failure label; `notice` preserves delivery or fallback information. `footer` anchors connection, review, or other actions below the composer and outside the scrollport.
 
-The conversation reads like a desktop assistant: one centered column whose composer box is 768 points wide at most, with the user's bubble 16 points in from its edge. Assistant replies are plain 15 / 21 text across the column, 20 points in from the composer's edge, with list items on the line rhythm and paragraphs 12 apart, with no author line unless the app names an `author` or a provider (several AIs in one conversation). The person's own turns are a neutral bubble on the trailing side, 12 by 16 points in, without an author line. Turns that change speaker sit 40 points apart and the blocks of one turn 20 apart. The composer is one raised, rounded 44 point box below: a bare add icon, the draft, and a send control that stays quiet until there is something to send. The thread and the composer keep 24 point gutters; when either is narrower than 480 points (a phone, a side panel, a wizard body) the gutters shrink to 12 so the composer's text keeps its room.
+Chat draws the conversation as a card: messages 14 points apart inside a 16 point inset, assistant replies as plain 14 point text with no author line unless the app names an `author` or a provider (several AIs in one conversation), the person's own turns as a bubble in the accent's soft wash on the trailing side, and the composer under a hairline, its sunken field holding the draft and a round send button. Set `flush` to drop the card frame so the conversation sits directly on its host's fill, for example inside a Drawer or a Wizard body.
 
-Set `flush` to drop the conversation's card frame so it sits directly on its host's fill, the way a desktop assistant's window does, for example inside a Drawer or a Wizard body. Set `meta` to name what will answer (a model, a provider) in one muted line at the end of the column under the composer.
+Set `assistant` to lay the conversation out like a desktop assistant's window instead. The thread and the composer share one centered column whose composer box is 768 points wide at most, with the user's bubble 16 points in from its edge. Assistant replies are plain 15 / 21 text across the column, 20 points in from the composer's edge, with list items on the line rhythm and paragraphs 12 apart. The person's own turns are a neutral bubble, 12 by 16 points in. Turns that change speaker sit 40 points apart and the blocks of one turn 20 apart. The composer is one raised, rounded 44 point box with no divider: a bare add icon, the draft, and a send control that stays quiet until there is something to send. The thread and the composer keep 24 point gutters; when either is narrower than 480 points (a phone, a side panel, a wizard body) the gutters shrink to 12 so the composer's text keeps its room. With `assistant`, `meta` names what will answer (a model, a provider) in one muted line at the end of the column under the composer. `assistant` and `flush` combine: a Wizard `assistant` body or a Drawer usually wants both.
 
 Set `activity` on a message for work the assistant did rather than said, such as a command, a tool call or a process log. It shows as one muted line, its `author` then its `notice`, flush with the reply text, and expands to its markdown `content` when pressed. Consecutive activity messages fold into a single line naming each step ("Ran the tests, Process finished"), the way a desktop assistant folds its tool use; pressing it shows each step's own line.
 
@@ -64,10 +64,20 @@ Checklists are read-only Canvas selection controls; reading a document never cha
 
 ## Variants
 
-### Flush with a model line
+### Assistant layout
+
+`assistant` lays the conversation out like a desktop assistant's window: a centered reading column, plain replies, a neutral user bubble, folded activity, and a raised composer with the model line under it.
 
 ```tsx
-<Chat flush meta="Claude CLI" style={{ height: 320 }} messages={[{ id: "ask", role: "user", content: "Add a ghost that chases the player." }, { id: "plan", role: "assistant", content: "I'll add a **Chaser** ghost.\n\n1. Track the player tile\n2. Halve speed in tunnels" }, { id: "ran", role: "system", activity: true, author: "Ran bun test src/ghosts", content: "5 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+<Chat assistant meta="Claude CLI" style={{ height: 360 }} messages={[{ id: "ask", role: "user", content: "Help me plan the release." }, { id: "plan", role: "assistant", content: "Start with **scope** and a release checklist.\n\n1. Confirm acceptance criteria\n2. Run the affected checks\n3. Review the rollout" }, { id: "read", role: "system", activity: true, author: "Read the release notes" }, { id: "ran", role: "system", activity: true, author: "Ran bun test", content: "42 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+```
+
+### Flush with a model line
+
+`flush` drops the card frame, so an `assistant` conversation sits on its host's fill as a desktop window's does.
+
+```tsx
+<Chat assistant flush meta="Claude CLI" style={{ height: 320 }} messages={[{ id: "ask", role: "user", content: "Add a ghost that chases the player." }, { id: "plan", role: "assistant", content: "I'll add a **Chaser** ghost.\n\n1. Track the player tile\n2. Halve speed in tunnels" }, { id: "ran", role: "system", activity: true, author: "Ran bun test src/ghosts", content: "5 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
 ```
 
 ### Terminal transcript

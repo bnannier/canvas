@@ -73,7 +73,7 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `board` | directly | `useMeasuredWidth` |
 | `calendar` | directly | `alpha`, `shape`, `useMeasuredWidth` |
 | `carousel` | directly | `alpha`, `shape` |
-| `chat` | directly | `shape`, `useContainerWidth` |
+| `chat` | directly | `shape`, `useContainerWidth`, `widths` |
 | `command` | directly | `shape` |
 | `dashboard-grid` | directly | `alpha`, `shape`, `spacing`, `useContainerBreakpoint` |
 | `data-table` | directly | `alpha`, `breakpoints`, `shape`, `useContainerWidth` |

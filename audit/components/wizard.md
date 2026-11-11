@@ -38,6 +38,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `teaminvitation` | Team invitation | [ ] | [ ] | [ ] |  |
+| `assistantworkspace` | Assistant workspace | [ ] | [ ] | [ ] |  |
 | `childownsscrolling` | Child owns scrolling | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 

@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Chat } = scope;
   return (
-<Chat flush meta="Claude CLI" style={{ height: 320 }} messages={[{ id: "ask", role: "user", content: "Add a ghost that chases the player." }, { id: "plan", role: "assistant", content: "I'll add a **Chaser** ghost.\n\n1. Track the player tile\n2. Halve speed in tunnels" }, { id: "ran", role: "system", activity: true, author: "Ran bun test src/ghosts", content: "5 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+<Chat assistant meta="Claude CLI" style={{ height: 360 }} messages={[{ id: "ask", role: "user", content: "Help me plan the release." }, { id: "plan", role: "assistant", content: "Start with **scope** and a release checklist.\n\n1. Confirm acceptance criteria\n2. Run the affected checks\n3. Review the rollout" }, { id: "read", role: "system", activity: true, author: "Read the release notes" }, { id: "ran", role: "system", activity: true, author: "Ran bun test", content: "42 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
   );
 }

@@ -55,7 +55,7 @@ application actions at its end. Compact steps occupy the fixed sidebar. When the
 
 `assistant` lays the wizard out like a desktop assistant window: the steps as a full-height
 sidebar of rows, a 44 point top bar with the title and the status, and `previous` and
-`actions` in a bar under the conversation. The body is unpadded so a `flush` Chat fills it; a scrolled body
+`actions` in a bar under the conversation. The body is unpadded so an `assistant flush` Chat fills it; a scrolled body
 centers its content in the conversation's column. Below 720 points of panel the sidebar
 gives way to segmented steps under the title.
 
@@ -63,7 +63,7 @@ gives way to segmented steps under the title.
 <Wizard open embedded assistant onOpenChange={() => {}} title="Plan a project" scrollBody={false}
   steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }]}
   current={0} status="Autosaved" actions={<Button small ghost>Reset</Button>}>
-  <Chat flush meta="Claude CLI" messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+  <Chat assistant flush meta="Claude CLI" messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
 </Wizard>
 ```
 
