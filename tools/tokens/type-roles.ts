@@ -35,6 +35,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/slider/slider.styles.ts": { scaleType: "caption" },
   // A lane's count (the hand-off's 11px mono numerals).
   "src/organisms/board/board.styles.ts": { "webSkin.columnCount": "tiny" },
+  // An edge's label in FlowEditor (11 px mono on its capsule), a tag label.
+  "src/organisms/flow-editor/flow-editor.styles.ts": { "webSkin.edgeLabelText": "tiny" },
   // A drop zone's mono eyebrow (the hand-off's 11px uppercase zone label).
   "src/organisms/drag-drop/drag-drop.styles.ts": { zoneLabel: "caption" },
   "src/molecules/feeds/feeds.styles.ts": { traceKind: "caption" },
