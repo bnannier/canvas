@@ -69,7 +69,7 @@ Checklists are read-only Canvas selection controls; reading a document never cha
 `assistant` lays the conversation out like a desktop assistant's window: a centered reading column, plain replies, a neutral user bubble, folded activity, and a raised composer with the model line under it.
 
 ```tsx
-<Chat assistant meta="Claude CLI" style={{ height: 360 }} messages={[{ id: "ask", role: "user", content: "Help me plan the release." }, { id: "plan", role: "assistant", content: "Start with **scope** and a release checklist.\n\n1. Confirm acceptance criteria\n2. Run the affected checks\n3. Review the rollout" }, { id: "read", role: "system", activity: true, author: "Read the release notes" }, { id: "ran", role: "system", activity: true, author: "Ran bun test", content: "42 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+<Chat assistant meta="Claude CLI" style={{ height: 360 }} messages={[{ id: "ask", role: "user", content: "Help me plan the release." }, { id: "plan", role: "assistant", content: "Start with **scope** and a release checklist.\n\n1. Confirm acceptance criteria\n2. Run the affected checks\n3. Review the rollout" }, { id: "read", role: "system", activity: true, author: "Read the release notes", content: "CHANGELOG.md" }, { id: "ran", role: "system", activity: true, author: "Ran bun test", content: "42 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
 ```
 
 ### Flush with a model line
