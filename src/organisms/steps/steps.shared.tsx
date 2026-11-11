@@ -326,8 +326,14 @@ export function createSteps(skin: StepsSkin) {
               {state === "completed" ? <Icon check decorative size={13} color={tokens["muted-foreground"]} /> : null}
             </>;
             const rowStyle = [s.row, state === "current" ? skin.rowCurrent(tokens) : null];
+            // A pressable row takes the platform's press feedback, as the Circle does: iOS
+            // and the web dim it, Android ripples inside its corner (RippleClip clips it).
             return pressStep
-              ? <Pressable key={i} ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} accessibilityRole="button" accessibilityLabel={name} aria-current={state === "current" ? "step" : undefined} onPress={() => pressStep(i)} style={rowStyle}>{content}</Pressable>
+              ? <RippleClip key={i} shape={cornerRadii(s.row)}>
+                <Pressable ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} accessibilityRole="button" accessibilityLabel={name} aria-current={state === "current" ? "step" : undefined} onPress={() => pressStep(i)}
+                  style={({ pressed }) => [rowStyle, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+                  android_ripple={skin.ripple ? skin.ripple(tokens, state) : undefined}>{content}</Pressable>
+              </RippleClip>
               : <View key={i} ref={i === 0 ? stepPart?.ref : undefined} onLayout={i === 0 ? stepPart?.onLayout : undefined} accessible accessibilityRole="text" accessibilityLabel={name} aria-current={state === "current" ? "step" : undefined} style={rowStyle}>{content}</View>;
           })}
         </View>,

@@ -666,10 +666,14 @@ describe("the states each component's source gives it", () => {
       "hover hover-in: onHoverOut on <Pressable> [calendar] via CalendarHeatmap>HeatCell",
       "pressed press: onPress on <Pressable> [calendar] via CalendarHeatmap>HeatCell",
     ]);
-    // A local component's gate, mapped through the prop its use passes.
+    // A local component's gate, mapped through the prop its use passes; the `rows` layout's
+    // own pressable rows are gated by both props, with the Circle's press feedback.
     expect(states("steps")).toEqual([
+      "focus tab-stop: a tab stop: <Pressable> [onStepPress&rows]",
       "focus tab-stop: a tab stop: <Pressable> [onStepPress] via Circle",
+      "pressed look: a function taking `pressed` [onStepPress&rows]",
       "pressed look: a function taking `pressed` [onStepPress] via Circle",
+      "pressed press: onPress on <Pressable> [onStepPress&rows]",
       "pressed press: onPress on <Pressable> [onStepPress] via Circle",
     ]);
     // The connector and avatar leads share one row (the v4 hand-off's feed), so their states are gated by the press and the window alone.
