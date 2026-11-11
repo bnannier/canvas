@@ -55,8 +55,12 @@ it("flow editor geometry snaps, hit tests, fits and routes edges", () => {
   const cam = fitFlowCamera(nodes, [], 1000, 600);
   expect(cam.k).toBe(1);
   expect(cam.tx + (240 + FLOW_NODE_WIDTH) / 2).toBeCloseTo(500);
-  // The bounds take in a backward edge's loop below the cards.
-  expect(flowBounds(nodes, [{ id: "dp", from: "design", to: "product" }])!.height).toBeGreaterThan(FLOW_NODE_HEIGHT * 1.5);
+  // The bounds take in a backward edge's loop below the cards: the cubic's lowest point (t =
+  // 0.5) lies a quarter of the way from its ends at the port height to its control points 1.6
+  // card heights down, which clears the cards.
+  const loop = flowBounds(nodes, [{ id: "dp", from: "design", to: "product" }])!.height;
+  expect(loop).toBeCloseTo(0.25 * (FLOW_NODE_HEIGHT / 2) + 0.75 * FLOW_NODE_HEIGHT * 1.6, 5);
+  expect(loop).toBeGreaterThan(FLOW_NODE_HEIGHT);
   expect(flowBounds(nodes)!.height).toBe(FLOW_NODE_HEIGHT);
   // A backward edge loops below both cards.
   const back = flowEdgeGeometry(nodes[1], nodes[0]);
