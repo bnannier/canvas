@@ -273,7 +273,9 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     // resolves the override; Wizard also reaches it through the ThemeProvider that supplies
     // its display faces, and AppFrame through its overlay hosts. GeoMap left the list when its zoom control
     // became a stacked column of its own (it renders no Row, whose `stacks` reads the override).
-    expect(override.captureThrough.components).toHaveLength(32);
+    // FlowEditor reaches the override through the Select it composes in its toolbar.
+    expect(override.captureThrough.components).toHaveLength(33);
+    expect(consumer("BreakpointOverride", "flow-editor")?.tier).toBe("component");
     expect(consumer("BreakpointOverride", "chat")?.tier).toBe("shared");
     expect(consumer("BreakpointOverride", "chat")?.through).toEqual(["`useContainerWidth` (src/style/container.ts)"]);
     expect(consumer("BreakpointOverride", "wizard")?.tier).toBe("shared");
@@ -284,8 +286,10 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(seams).not.toContain("src/style/overlay-layer.tsx#usePortalMount");
     expect(consumer("OverlayProvider", "card")).toBeUndefined();
     // Wizard portals through the Dialog it composes; AppFrame and Page host overlays; Tooltip's
-    // bubble floats through AnchoredOverlay.
-    expect(facts("OverlayProvider").consumers).toHaveLength(22);
+    // bubble floats through AnchoredOverlay; FlowEditor's toolbar Select opens its list through
+    // the overlay host.
+    expect(facts("OverlayProvider").consumers).toHaveLength(23);
+    expect(consumer("OverlayProvider", "flow-editor")?.tier).toBe("component");
     expect(consumer("OverlayProvider", "tooltip")).toBeDefined();
     expect(consumer("OverlayProvider", "wizard")?.tier).toBe("component");
   });

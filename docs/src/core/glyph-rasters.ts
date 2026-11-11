@@ -72,6 +72,7 @@ export const GLYPH_RASTERS: Record<string, number> = {
   plus: require("../../assets/images/menu-glyphs/plus.png"),
   pointer: require("../../assets/images/menu-glyphs/pointer.png"),
   rocket: require("../../assets/images/menu-glyphs/rocket.png"),
+  route: require("../../assets/images/menu-glyphs/route.png"),
   scale: require("../../assets/images/menu-glyphs/scale.png"),
   search: require("../../assets/images/menu-glyphs/search.png"),
   settings: require("../../assets/images/menu-glyphs/settings.png"),
