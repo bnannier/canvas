@@ -6,7 +6,7 @@ import { DISPLAY_FONT, MONO_FONT } from "../src/style/mono.ts";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import * as chat from "../src/organisms/chat/chat.styles.ts";
 import * as md from "../src/organisms/chat/markdown.styles.ts";
-import { ChatMessage, ChatThread, type ChatMessageData } from "../src/organisms/chat/chat.tsx";
+import { ChatMessage, ChatThread, ChatComposer, type ChatMessageData } from "../src/organisms/chat/chat.tsx";
 import { composerMinHeight } from "../src/atoms/textarea/textarea.styles.ts";
 
 afterEach(cleanup);
@@ -44,6 +44,43 @@ describe("the v4 chat", () => {
     expect(chat.composerSurface(t, false)).toMatchObject({ borderRadius: 16, borderWidth: 1, borderColor: t["field-border"], backgroundColor: t["surface-sunken"], padding: 6, paddingStart: 12 });
     expect(chat.composerSurface(t, true).borderColor).toBe(t.ring);
     expect(chat.composerRow).toMatchObject({ flexDirection: "row", alignItems: "flex-end", gap: 8 });
+  });
+
+  it("renders a 32px normal-weight entry in the default 46px well and keeps the assistant entry", () => {
+    for (const assistant of [false, true]) {
+      inLight(createElement(ChatComposer, { value: "Release notes", onChangeText: () => {}, onSend: () => {}, assistant }));
+      const entry = screen.getByRole("textbox", { name: "Message" });
+      const style = getComputedStyle(entry);
+      expect(style.minHeight).toBe("32px");
+      expect(style.fontSize).toBe(assistant ? "15px" : "14px");
+      expect(style.lineHeight).toBe(assistant ? "20px" : "22px");
+      expect(style.fontWeight).toBe("400");
+      expect(style.paddingTop).toBe(assistant ? "6px" : "5px");
+      const surface = assistant ? chat.assistantComposerSurface(t, false) : chat.composerSurface(t, false);
+      expect(32 + Number(surface.paddingVertical ?? surface.padding) * 2 + Number(surface.borderWidth) * 2).toBe(assistant ? 44 : 46);
+      cleanup();
+    }
+  });
+
+  it("places the warning notice before attachments and secondary actions, with 6px gaps", () => {
+    const message: ChatMessageData = { id: "choice", role: "assistant", content: "Review the plan.", notice: "Check the saved draft.", attachments: [{ id: "file", name: "plan.txt" }, { id: "notes", name: "notes.txt" }], actions: [{ id: "review", label: "Review" }, { id: "save", label: "Save", primary: true }] };
+    inLight(createElement(ChatMessage, { message, onAction: () => {} }));
+    const notice = screen.getByText(message.notice!);
+    const file = screen.getByText("plan.txt");
+    const action = screen.getByRole("button", { name: "Review" });
+    expect(notice.compareDocumentPosition(file) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(file.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(getComputedStyle(notice).fontSize).toBe("12px");
+    const rgba = (value: string) => value.match(/[\d.]+/g)?.map(Number);
+    expect(rgba(getComputedStyle(notice.parentElement!).backgroundColor)).toEqual(rgba(t["warning-soft"]));
+    expect(getComputedStyle(notice.parentElement!).gap).toBe("8px");
+    expect(notice.parentElement!.querySelector('[aria-hidden="true"]')).toBeTruthy();
+    expect(getComputedStyle(action.parentElement!.parentElement!).gap).toBe("6px");
+    expect(rgba(getComputedStyle(action).backgroundColor)).toEqual([241, 241, 246, 1]);
+    cleanup();
+    inLight(createElement(ChatMessage, { message, assistant: true, onAction: () => {} }));
+    expect(getComputedStyle(screen.getByText(message.notice!)).fontSize).toBe("11px");
+    expect(screen.getByText("Review").compareDocumentPosition(screen.getByText(message.notice!)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("shows pending as three 5px subtle dots 3 apart before a 13px muted label", () => {

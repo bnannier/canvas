@@ -145,3 +145,19 @@ describe("the rendered Textarea", () => {
     expect(field.style.padding).toBe("12px 14px");
   });
 });
+
+// Both composer appearances share behavior while keeping their own line rhythm.
+describe("composer row sizing", () => {
+  for (const [platform, Textarea] of [["web", TextareaWeb], ["ios", TextareaIOS], ["android", TextareaAndroid]] as const) {
+    it(`keeps three complete small composer lines on ${platform}`, () => {
+      ui(<Textarea embedded composer small rows={3} accessibilityLabel="Draft" value={"First line\nSecond line\nThird line"} />);
+      const field = screen.getByRole("textbox", { name: "Draft" }) as HTMLTextAreaElement;
+      expect(field.value).toBe("First line\nSecond line\nThird line");
+      expect(field.getAttribute("rows")).toBe("3");
+      expect(field.style.minHeight).toBe("76px");
+      expect(field.style.lineHeight).toBe("22px");
+      expect(field.style.paddingTop).toBe("5px");
+      expect(field.style.paddingBottom).toBe("5px");
+    });
+  }
+});

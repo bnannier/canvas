@@ -90,7 +90,8 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
   terminal?: boolean;
   /**
    * A chat composer's entry: 15 / 20 text at 6 by 8 in, so one line sits in a 44 px
-   * composer box beside 32 px controls (the Claude desktop composer). Pair with `embedded`.
+   * composer box beside 32 px controls (the Claude desktop composer). `small` uses the
+   * v4 entry's 14 / 22 text at 5 by 0 in. Pair with `embedded`.
    */
   composer?: boolean;
   accessibilityLabel?: string;
@@ -327,9 +328,9 @@ export function createTextarea(skin: TextareaSkin) {
     const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [
       embedded ? [fieldShape, reserve] : paneStyle(theme, [fieldShape, reserve], focused || isError),
       glass && !embedded ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
-      metrics === "terminal" ? terminalText : metrics === "composer" ? composerText : metrics === "dense" ? denseText : skin.text(size),
-      metrics === "terminal" ? terminalMinHeight(rows) : metrics === "composer" ? composerMinHeight(rows) : metrics === "dense" ? denseMinHeight(rows) : skin.minHeight(rows, size),
-      metrics === "terminal" ? terminalField : metrics === "composer" ? composerField : null,
+      metrics === "terminal" ? terminalText : metrics === "composer" ? composerText(size) : metrics === "dense" ? denseText : skin.text(size),
+      metrics === "terminal" ? terminalMinHeight(rows) : metrics === "composer" ? composerMinHeight(rows, size) : metrics === "dense" ? denseMinHeight(rows) : skin.minHeight(rows, size),
+      metrics === "terminal" ? terminalField : metrics === "composer" ? composerField(size) : null,
       // A focused framed field wears the skin's halo (web), errored or not.
       focused && !flush && !embedded && skin.focusHalo ? skin.focusHalo(tokens) : null,
       // A framed field paints its own focus state (its border turns `ring`), so the

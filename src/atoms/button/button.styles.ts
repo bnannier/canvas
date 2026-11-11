@@ -43,6 +43,7 @@ export interface ButtonSkinOpts {
   foreground?: boolean;
   extraBold?: boolean;
   utility?: boolean;
+  composerSend?: boolean;
   iconBox?: "compact" | "medium" | "large" | null;
   wideIcon?: boolean;
   circle?: boolean;
@@ -196,7 +197,10 @@ export type HoverTheme = Parameters<typeof withInnerFill>[0];
 
 export interface Look { fill: string; border: string; label: string; edge: string | null }
 
+function restingSend(o?: ButtonSkinOpts): boolean { return !!(o?.composerSend && o.utility && o.disabled); }
+
 export function lookOf(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): Look {
+  if (restingSend(o)) return { fill: t.secondary, border: "transparent", label: t["subtle-foreground"] ?? t["muted-foreground"], edge: null };
   const emphasis = webEmphasisOf(o ?? {});
   if (emphasis === "inlineLink") return { fill: "transparent", border: "transparent", label: linkInk(t, o), edge: null };
   if (emphasis === "inverse") return { fill: "transparent", border: alpha(INVERSE_INK, 0.5), label: INVERSE_INK, edge: null };
@@ -339,7 +343,7 @@ const INLINE_ICON = 22;
  */
 function bodyContainer(t: ColorTokens, intent: Intent, o: ButtonSkinOpts, corner: number, pill: number): ViewStyle | null {
   const body = webBodyOf(o);
-  const fade = o.disabled ? { opacity: 0.4 } : null;
+  const fade = o.disabled && !restingSend(o) ? { opacity: 0.4 } : null;
   if (body === "themeChoice") {
     // The hand-off's theme choice (cv-kit-code.js line 69): `height:32px;padding:0 12px 0 6px;
     // border-radius:999px;...gap:8px` around a 20 px disc (`width:20px;height:20px;
@@ -529,7 +533,7 @@ function nativeLabel(t: ColorTokens, intent: Intent, size: Size, o: ButtonSkinOp
 export const iosSkin: ButtonSkin = {
   container: (t, intent, size, o) => ({
     ...(bodyContainer(t, intent, o, shape.ios.control, shape.ios.pill) ?? controlContainer(t, intent, size, o, IOS_CONTROL, shape.ios.control, shape.ios.pill)),
-    ...(o.dim ? { opacity: 0.4 } : null), // iOS disabled control alpha (the hand-off's 0.4)
+    ...(o.dim && !restingSend(o) ? { opacity: 0.4 } : null), // iOS disabled control alpha (the hand-off's 0.4)
   }),
   // The hand-off's iOS row: 600 weight, -0.2 tracking.
   label: (t, intent, size, o) => nativeLabel(t, intent, size, o, IOS_CONTROL, "600", -0.2),
@@ -558,7 +562,7 @@ export const androidSkin: ButtonSkin = {
     // a bounded android_ripple is the pressable's own rectangular-masked background, which a
     // same-node overflow:"hidden" cannot clip (RN only path-clips CHILDREN). See ripple-clip.tsx.
     ...(bodyContainer(t, intent, o, shape.android.control, shape.android.pill) ?? controlContainer(t, intent, size, o, CONTROL, shape.android.control, shape.android.pill)),
-    ...(o.dim ? { opacity: 0.38 } : null), // M3 disabled opacity
+    ...(o.dim && !restingSend(o) ? { opacity: 0.38 } : null), // M3 disabled opacity
   }),
   // The hand-off's Android row: 500 weight, 0.1 tracking.
   label: (t, intent, size, o) => nativeLabel(t, intent, size, o, CONTROL, "500", 0.1),

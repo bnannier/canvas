@@ -208,3 +208,25 @@ it("keeps Argus inverse and reference-link hover treatments", () => {
   fireEvent.pointerEnter(link, { pointerType: "mouse" });
   expect(link.style.opacity).toBe("0.85");
 });
+
+describe("composer send actions", () => {
+  for (const [platform, Send] of [["web", Button], ["ios", IOSButton], ["android", AndroidButton]] as const) {
+    it(`keeps the unavailable send neutral and inert, then enables the primary action on ${platform}`, () => {
+      let sends = 0;
+      const props = { composerSend: true, mediumIcon: true, circle: true, primary: true, accessibilityLabel: "Send", onPress: () => { sends++; } };
+      const { rerender } = render(<ThemeProvider light solid><Send {...props} disabled>↑</Send></ThemeProvider>);
+      const send = screen.getByRole("button", { name: "Send" });
+      const background = getComputedStyle(send).backgroundColor;
+      expect(background.match(/[\d.]+/g)?.map(Number)).toEqual([241, 241, 246, 1]);
+      expect(send.style.opacity).toBe("");
+      expect(send.getAttribute("aria-disabled")).toBe("true");
+      fireEvent.click(send);
+      expect(sends).toBe(0);
+      rerender(<ThemeProvider light solid><Send {...props}>↑</Send></ThemeProvider>);
+      expect(getComputedStyle(send).backgroundColor).not.toBe(background);
+      expect(send.getAttribute("aria-disabled")).toBeNull();
+      fireEvent.click(send);
+      expect(sends).toBe(1);
+    });
+  }
+});

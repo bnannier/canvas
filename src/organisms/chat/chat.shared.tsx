@@ -254,10 +254,10 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     </View>;
   }
 
-  function Attachments({ attachments, onOpen, onRemove, disabled }: { attachments?: readonly ChatAttachmentData[]; onOpen?: (attachment: ChatAttachmentData) => void; onRemove?: (id: string) => void; disabled?: boolean }) {
+  function Attachments({ attachments, onOpen, onRemove, disabled, compact }: { compact?: boolean; attachments?: readonly ChatAttachmentData[]; onOpen?: (attachment: ChatAttachmentData) => void; onRemove?: (id: string) => void; disabled?: boolean }) {
     const { tokens } = useTheme();
     if (!attachments?.length) return null;
-    return <View style={s.attachments}>{attachments.map((attachment) => (
+    return <View style={[s.attachments, compact ? s.messageAttachments : null]}>{attachments.map((attachment) => (
       <View key={attachment.id} style={s.attachment}>
         <Chip
           icon={<Icon paperclip decorative size={14} />}
@@ -491,15 +491,17 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           </View> : null}
           {message.content ? <AnatomyPart part={anatomy?.body}>{bubble}</AnatomyPart> : null}
           {message.role === "assistant" && message.questions?.length ? <Questions key={message.id} message={message} terminal={terminal} assistant={desk} {...questionProps} /> : null}
-          {message.actions?.length ? <View style={s.questionButtons}>
-            {message.actions.map((action) => <Button key={action.id} small primary={action.primary} outline={!action.primary} disabled={actionsDisabled} onPress={() => {
+          {!terminal && !desk && message.notice ? <GlassSurface static layer="content" tint={tokens["warning-soft"]} style={s.notice(tokens)}><Icon circleAlert decorative size={14} color={tokens.warning} /><Text style={s.noticeText(tokens)}>{message.notice}</Text></GlassSurface> : null}
+          {!terminal && !desk ? <Attachments attachments={message.attachments} onOpen={onOpenAttachment} compact /> : null}
+          {message.actions?.length ? <View style={!terminal && !desk ? s.messageActions : s.questionButtons}>
+            {message.actions.map((action) => <Button key={action.id} small primary={action.primary} outline={(terminal || desk) && !action.primary} secondary={!terminal && !desk && !action.primary} disabled={actionsDisabled} onPress={() => {
               if (!actionsDisabled) onAction?.(message.id, action.id);
             }}>{action.label}</Button>)}
           </View> : null}
-          <Attachments attachments={message.attachments} onOpen={onOpenAttachment} />
+          {terminal || desk ? <Attachments attachments={message.attachments} onOpen={onOpenAttachment} /> : null}
           {message.streaming ? <Thinking label="Responding…" terminal={terminal} /> : null}
           {message.error ? <Text accessibilityLiveRegion="polite" style={terminal ? s.terminalMuted(tokens, true) : skin.muted(tokens, true)}>Reply failed</Text> : null}
-          {message.notice ? <Text style={terminal ? s.terminalMuted(tokens, message.error) : skin.muted(tokens, message.error)}>{message.notice}</Text> : null}
+          {(terminal || desk) && message.notice ? <Text style={terminal ? s.terminalMuted(tokens, message.error) : skin.muted(tokens, message.error)}>{message.notice}</Text> : null}
         </View>
       </View>
     );
@@ -613,17 +615,17 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const body = (
       <View ref={part?.ref} onLayout={(event) => { part?.onLayout?.(); width.onLayout(event); }} style={[framed && !terminal ? null : fill, terminal ? s.terminalComposer(tokens, focused) : desk ? [s.assistantComposer, narrow ? s.assistantNarrowGutter : null] : s.composer(tokens)]} testID={framed && !terminal ? undefined : testID}>
         <Surface static layer="control" stateBorder={focused} style={terminal ? s.terminalComposerSurface(tokens, focused) : desk ? s.assistantComposerSurface(tokens, focused) : s.composerSurface(tokens, focused)}>
-          {attachments?.length ? <View style={s.composerAttachments}><Attachments attachments={attachments} onRemove={onRemoveAttachment} disabled={disabled || pending} /></View> : null}
+          {attachments?.length ? <View style={s.composerAttachments}><Attachments attachments={attachments} onRemove={onRemoveAttachment} disabled={disabled || pending} compact={!terminal && !desk} /></View> : null}
           <View style={terminal ? s.terminalComposerRow : desk ? s.assistantComposerRow : s.composerRow}>
             {terminal ? <Text aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.terminalPrompt(tokens, disabled)}>❯</Text> : null}
             {onAttach ? <Button ghost mediumIcon circle={!terminal} disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon {...(desk ? { plus: true } : { paperclip: true })} color={tokens["subtle-foreground"] ?? tokens["muted-foreground"]} size={16} />} onPress={onAttach} /> : null}
             <View style={s.editor}>
-              <Textarea ref={editor} autoFocus={autoFocus} terminal={terminal} onKeyPress={onKeyPress} value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={1} {...(desk ? { composer: true } : { dense: true })} embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+              <Textarea ref={editor} autoFocus={autoFocus} terminal={terminal} onKeyPress={onKeyPress} value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={1} {...(terminal ? { dense: true } : { composer: true, small: !desk })} embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
             </View>
             {terminal ? <Button ghost small disabled={!canSend} accessibilityLabel={sendLabel} onPress={send}><Text style={s.terminalFace}>Send</Text></Button>
               // `assistant`: quiet at rest like the reference's end controls; the call to action once there is a draft to send.
               : desk && !canSend ? <Button ghost mediumIcon circle disabled accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={tokens["muted-foreground"]} size={15} />} onPress={send} />
-                : <Button primary mediumIcon circle disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["muted-foreground"]} size={15} />} onPress={send} />}
+                : <Button primary composerSend={!desk} mediumIcon circle disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["subtle-foreground"] ?? tokens["muted-foreground"]} size={15} />} onPress={send} />}
           </View>
         </Surface>
         {meta && desk ? <Text style={s.meta(tokens)}>{meta}</Text> : null}

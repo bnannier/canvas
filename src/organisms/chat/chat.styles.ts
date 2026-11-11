@@ -65,6 +65,10 @@ export const identity: ViewStyle = { flexDirection: "row", flexWrap: "wrap", gap
 export const attachments: ViewStyle = { flexDirection: "row", flexWrap: "wrap", gap: 8, minWidth: 0 };
 export const attachment: ViewStyle = { flexShrink: 1, minWidth: 0, maxWidth: "100%", gap: 4 };
 export const questionActions: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 };
+export const messageActions: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 };
+export const messageAttachments: ViewStyle = { gap: 6 };
+export const notice = (tokens: ColorTokens): ViewStyle => ({ flexDirection: "row", alignItems: "flex-start", gap: 8, paddingVertical: 8, paddingHorizontal: 10, borderRadius: platformShape.web.chatNotice, backgroundColor: tokens["warning-soft"] });
+export const noticeText = (tokens: ColorTokens): TextStyle => ({ flexShrink: 1, fontSize: 12, lineHeight: 17.4, color: tokens["muted-foreground"] });
 export const questionButtons: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 };
 export const questionMode: ViewStyle = { marginStart: "auto", maxWidth: "100%" };
 export const questions: ViewStyle = { gap: 20, minWidth: 0 };

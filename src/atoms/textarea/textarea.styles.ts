@@ -237,10 +237,10 @@ export const denseText: TextStyle = { fontSize: 13, lineHeight: 19.5, fontWeight
 export const denseField = (tokens: ColorTokens): TextStyle => ({ paddingVertical: 10, paddingHorizontal: 12, backgroundColor: tokens["field-fill"] ?? tokens.card });
 export const denseMinHeight = (rows?: number): TextStyle => ({ minHeight: 20 + Math.max(1, Math.floor(rows ?? 2)) * 19.5 });
 
-/** A chat composer's entry (reference claude-desktop-chat): one 20 px line at 6 by 8 in. */
-export const composerText: TextStyle = { fontSize: 15, lineHeight: 20, fontWeight: "400" };
-export const composerField: TextStyle = { paddingVertical: 6, paddingTop: 6, paddingBottom: 6, paddingHorizontal: 8, paddingStart: 8, paddingEnd: 8 };
-export const composerMinHeight = (rows?: number): TextStyle => ({ minHeight: 12 + Math.max(1, Math.floor(rows ?? 1)) * 20 });
+/** Chat entries: the small v4 entry is 14 / 22 at 5 by 0 in; the desktop assistant is 15 / 20 at 6 by 8 in. Both start at 32 px. */
+export const composerText = (size: Size = "base"): TextStyle => size === "small" ? { fontSize: 14, lineHeight: 22, fontWeight: "400" } : { fontSize: 15, lineHeight: 20, fontWeight: "400" };
+export const composerField = (size: Size = "base"): TextStyle => ({ paddingVertical: size === "small" ? 5 : 6, paddingTop: size === "small" ? 5 : 6, paddingBottom: size === "small" ? 5 : 6, paddingHorizontal: size === "small" ? 0 : 8, paddingStart: size === "small" ? 0 : 8, paddingEnd: size === "small" ? 0 : 8 });
+export const composerMinHeight = (rows?: number, size: Size = "base"): TextStyle => ({ minHeight: (size === "small" ? 10 : 12) + Math.max(1, Math.floor(rows ?? 1)) * (size === "small" ? 22 : 20) });
 
 /** Terminal prompts share transcript metrics without borrowing a platform field inset. */
 export const terminalText: TextStyle = { fontFamily: TERMINAL_FONT, fontSize: 13, lineHeight: 20, fontWeight: "400" };

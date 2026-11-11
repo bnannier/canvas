@@ -114,7 +114,8 @@ web label. `accessibilityLabel` overrides the visible label’s accessible name;
 
 `composer` sets a chat composer's metrics: 15 / 20 text 6 by 8 points in, one line by default (`rows` raises it), so one line sits
 in a 44 point composer box beside 32 point controls. Pair it with `embedded`; Chat's
-composer uses it.
+assistant composer uses it. `small composer` uses the default Chat hand-off's 14 / 22 text
+at 5 by 0 points in, keeping the entry 32 points tall inside its 46 point well.
 
 ```tsx
 <Textarea embedded composer placeholder="What would you like to build?" accessibilityLabel="Message" />

@@ -133,6 +133,8 @@ export interface ButtonProps extends MeasureProps {
   compactIcon?: boolean;
   /** Medium utility icon box (32px). */
   mediumIcon?: boolean;
+  /** A composer send icon: disabled uses the neutral well and subtle ink at full opacity. Pair with mediumIcon and circle. */
+  composerSend?: boolean;
   /** Large utility icon box (34px). */
   largeIcon?: boolean;
   /** Give a compact icon box two extra pixels of horizontal room. */
@@ -255,7 +257,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const iconBox = iconBoxOf(props);
-    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, jumpLink: !!props.jumpLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, plainLink: !!props.plainLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, rounded: !!props.rounded, dashed: !!props.dashed, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { identityAction: !!props.identityAction, pageLink: !!props.pageLink, jumpLink: !!props.jumpLink, mono: !!props.mono, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, plainLink: !!props.plainLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, composerSend: !!props.composerSend, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, rounded: !!props.rounded, dashed: !!props.dashed, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer

@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 2705d9f5526f1f26830018e2b701125a77c3f3eca4d580c694212966189f6508
+Source SHA-256: 8fd7a28438d6450b1dfd81b439a434aaf67424501f2a2d655819a08170583dc2
 
 Source: `src/organisms/board/board.md`
 Human reference: https://canvas.nannier.com/components/board

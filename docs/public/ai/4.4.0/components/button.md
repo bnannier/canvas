@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 2705d9f5526f1f26830018e2b701125a77c3f3eca4d580c694212966189f6508
+Source SHA-256: 8fd7a28438d6450b1dfd81b439a434aaf67424501f2a2d655819a08170583dc2
 
 Source: `src/atoms/button/button.md`
 Human reference: https://canvas.nannier.com/components/button
@@ -33,6 +33,10 @@ horizontal room; `circle` rounds it fully. Pair with `ghost` for a plain surface
 the resting look while pressed, and `count` carries a notification badge over the
 upper trailing corner. The button still owns its accessible name, hover wash, and
 native touch-target extension.
+
+`composerSend mediumIcon circle` keeps a disabled send action as the neutral well with
+subtle ink at full opacity. Enabling it restores its chosen intent. Its disabled state
+still blocks activation and remains announced to assistive technology.
 
 Use `inlineLink link small` for an inline text action: an underlined 13-pixel
 label with no box, read as a link and washed on hover. The default size is 14
@@ -475,6 +479,7 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | icon | boolean \| undefined | no | false | Size (pick one). |
 | compactIcon | boolean \| undefined | no | false | Compact utility icon box (28px). |
 | mediumIcon | boolean \| undefined | no | false | Medium utility icon box (32px). |
+| composerSend | boolean \| undefined | no | false | A composer send icon: disabled uses the neutral well and subtle ink at full opacity. Pair with mediumIcon and circle. |
 | largeIcon | boolean \| undefined | no | false | Large utility icon box (34px). |
 | wideIcon | boolean \| undefined | no | false | Give a compact icon box two extra pixels of horizontal room. |
 | circle | boolean \| undefined | no | false | Round a utility icon box into a circle. |

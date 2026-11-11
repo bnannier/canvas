@@ -26,6 +26,10 @@ the resting look while pressed, and `count` carries a notification badge over th
 upper trailing corner. The button still owns its accessible name, hover wash, and
 native touch-target extension.
 
+`composerSend mediumIcon circle` keeps a disabled send action as the neutral well with
+subtle ink at full opacity. Enabling it restores its chosen intent. Its disabled state
+still blocks activation and remains announced to assistive technology.
+
 Use `inlineLink link small` for an inline text action: an underlined 13-pixel
 label with no box, read as a link and washed on hover. The default size is 14
 pixels; `large` is 16. `extraBold`, `foreground`, and `inverse` set its weight and
