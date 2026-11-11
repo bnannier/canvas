@@ -16,7 +16,7 @@ import { shape, widths } from "../../style/tokens.js";
 //   Assistant: unframed 14 / 1.55 text; an author line only when the app names an author
 //     or a provider, the 500 11 caption in the subtle ink.
 //   User: the accent's soft wash at the bubble corner, its trailing bottom corner tucked to
-//     the tail, 9 by 13 in, 86% of the thread at most.
+//     the tail, 9 by 13 in, 86% of the thread at most; no author line, even when named.
 //   Pending: three 5 px subtle dots 3 apart, then the 13 px label in the muted ink.
 //   Composer: 10 in under a `border` hairline, the sunken well at the composer corner on a
 //     `field-border` edge, 6 in (12 at the start), the draft and the 32 px round send
@@ -29,7 +29,8 @@ import { shape, widths } from "../../style/tokens.js";
 //     blocks of one turn 20 apart; narrower than 480, the gutters are 12.
 //   Assistant: unframed 15 / 21 text, list items on the line rhythm and paragraphs 12 apart.
 //   User: the neutral `muted` fill at the assistant bubble corner, 12 by 16 in, 80% of the
-//     column at most.
+//     column at most, under an author line when the app names one.
+//   Activity: its folded line at the replies' 14 / 21 in the muted ink.
 //   Composer: no divider; one 44 px box in the column, the `surface-raised` fill at the
 //     assistant composer corner on a `border` edge (the ring when focused) with a soft
 //     shadow: a bare add icon, the draft, and the send control, quiet until there is
@@ -77,9 +78,10 @@ export const editor: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%", 
 export const editorHeight: TextStyle = { maxHeight: 160 };
 export const footer: ViewStyle = { flexShrink: 0, minWidth: 0, gap: 8 };
 export const pending: ViewStyle = { paddingVertical: 4 };
-/** A folded activity line in the muted ink (a plain text action, no box); expanded details sit behind a start hairline. */
+/** A folded activity line (a plain text action, no box); expanded details sit behind a start hairline. */
 export const activity: ViewStyle = { alignItems: "flex-start", gap: 4, minWidth: 0 };
-export const activityLabel = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 21, color: tokens["muted-foreground"] });
+/** The hand-off draws no activity line, so its label keeps 0d5af5fc's 13 / 18 in the subtle ink. */
+export const activityLabel = (tokens: ColorTokens): TextStyle => ({ fontSize: 13, lineHeight: 18, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] });
 export const activityNested: ViewStyle = { alignItems: "flex-start", gap: 4, minWidth: 0 };
 export const activityGroupBody: ViewStyle = { gap: 4 };
 export const activityBody = (tokens: ColorTokens): ViewStyle => ({ borderStartWidth: 2, borderStartColor: tokens.border, paddingStart: 12, marginStart: 8, minWidth: 0, alignSelf: "stretch" });
@@ -124,6 +126,8 @@ export const assistantBlocks: ViewStyle = { minWidth: 0 };
 export const questionStack: ViewStyle = { gap: 14, minWidth: 0 };
 export const assistantQuestionStack: ViewStyle = { gap: 28, minWidth: 0 };
 export const assistantActivity: ViewStyle = { ...activity, paddingStart: ASSISTANT_INSET };
+/** The activity line on the replies' 14 / 21 rhythm in the muted ink, measured on the Claude desktop window. */
+export const assistantActivityLabel = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 21, color: tokens["muted-foreground"] });
 export const assistantComposer: ViewStyle = { ...assistantColumn, flexShrink: 0, paddingHorizontal: ASSISTANT_GUTTER, paddingTop: 4, paddingBottom: 16, gap: 8 };
 // The reference's composer box: the assistant composer corner (12), measured on the Claude desktop window.
 export const assistantComposerSurface = (tokens: ColorTokens, focused: boolean): ViewStyle => ({
