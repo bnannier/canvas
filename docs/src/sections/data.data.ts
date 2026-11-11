@@ -4,7 +4,7 @@ import { PLATFORM_COPY } from "../data/platform-copy";
 // for a type); docs/src/sections/data.tsx renders it.
 
 import type { ComponentProps } from "react";
-import type { BoardColumn, BoardItem, Calendar, ChatMessageData, CodeBlockTab } from "@nannier/canvas";
+import type { BoardColumn, BoardItem, Calendar, ChatMessageData, CodeBlockTab, FlowEdge, FlowNode } from "@nannier/canvas";
 
 /** A Calendar event (the kit exports the component, not this item type). */
 type CalendarEvent = NonNullable<ComponentProps<typeof Calendar>["events"]>[number];
@@ -113,4 +113,21 @@ export const BOARD_ITEMS: BoardItem[] = [
   { id: "overlays", columnId: "progress", title: "Overlays on glass-tint-dense", description: "Dialog, sheet, popover, toast and the command palette move to the densest tint.", badge: "#482" },
   { id: "series", columnId: "progress", title: "Chart series palette" },
   { id: "switch", columnId: "review", title: "Switch thumb spring", badge: "ready" },
+];
+
+/**
+ * The FlowEditor card's graph (a repository card: the hand-off predates FlowEditor): the
+ * delivery workflow of FlowEditor's own Usage, a rework edge returning work to Design. Three
+ * cards keep the fitted graph legible in a phone-width card.
+ */
+export const FLOW_NODES: FlowNode[] = [
+  { id: "product", label: "Product", description: "Requirements", x: 0, y: 48 },
+  { id: "design", label: "Design", description: "Mockups", x: 240, y: 48 },
+  { id: "build", label: "Engineering", x: 480, y: 48 },
+];
+
+export const FLOW_EDGES: FlowEdge[] = [
+  { id: "e1", from: "product", to: "design", label: "Ready" },
+  { id: "e2", from: "design", to: "build", label: "Ready" },
+  { id: "e3", from: "build", to: "design", label: "Contract changed", rework: true },
 ];

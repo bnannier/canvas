@@ -6,6 +6,7 @@ import { presentationFor, referenceGuidance, referenceTokens, referenceTokenValu
 import type { DocExample, DocGuidance } from "../docs/src/core/scope.ts";
 import { COMPONENTS } from "../docs/src/core/data/components.ts";
 import { colorsFor } from "../src/style/tokens.ts";
+import { REPOSITORY_COMPONENTS } from "../tools/v4/repository-components.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const source = readFileSync(join(ROOT, "tools/v4/handoff/canvas-docs.js"), "utf8");
@@ -43,10 +44,18 @@ describe("the reference's detail presentation", () => {
     expect(referenceVariants(current, reference)).toEqual([]);
   });
 
+  it("has a reference presentation for every component but the ones the hand-off predates", () => {
+    // A component the hand-off predates (tools/v4/repository-components.ts) has no reference
+    // to present: its detail page shows its current examples (referenceVariants without a
+    // presentation) and its own overview, tokens and related links.
+    expect(COMPONENTS.filter((component) => !presentationFor(component.slug)).map((component) => component.slug)).toEqual(Object.keys(REPOSITORY_COMPONENTS));
+  });
+
   it("can render every reference variant from current generated examples", () => {
     const root = join(ROOT, "docs/src/core/examples");
     const categories = readdirSync(root);
     for (const component of COMPONENTS) {
+      if (REPOSITORY_COMPONENTS[component.slug]) continue;
       const dir = component.dir ?? component.slug;
       const file = categories.map((category) => join(root, category, dir, `${dir}-docs.tsx`)).find(existsSync)!;
       const names = [...readFileSync(file, "utf8").matchAll(/^    \{ label: ("(?:[^"\\]|\\.)*")/gm)].map((match) => JSON.parse(match[1]!) as string);
