@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: cad8362f307ce0e914f64529ae9e6f6167ae84ffa078073eb1d3746d89c2808b
+Source SHA-256: 675fbe581e8b4ad6486d40d1b26a76d0ab3c2910cab444fa77edd63dd809f77b
 
 Source: `src/organisms/steps/steps.md`
 Human reference: https://canvas.nannier.com/components/steps
@@ -38,6 +38,17 @@ retain their normal controlled and uncontrolled behavior.
 ```tsx
 <Steps vertical compact defaultCurrent={1}
   steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]} />
+```
+
+### Sidebar rows
+
+`rows` with `vertical` draws each step as a 32 point row like a desktop app's sidebar
+list: the current step's row is filled, done steps carry a check, and the row reads
+", done" or ", current" to assistive technology. With `onStepPress` each row is a button.
+
+```tsx
+<Steps vertical rows defaultCurrent={1}
+  steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }, { label: "Review team" }]} />
 ```
 
 ### Vertical
@@ -212,6 +223,7 @@ column stacks too.
 | defaultCurrent | number \| undefined | no |  | Initial active step for uncontrolled use (pressing a step, with `onStepPress`, moves it). |
 | vertical | boolean \| undefined | no | false | Layout (pick one; default is horizontal). Precedence: progress, segmented, vertical. |
 | compact | boolean \| undefined | no | false | A short vertical list with 22px markers and no connector lines, for a workflow sidebar. |
+| rows | boolean \| undefined | no | false | Vertical only: each step a 32 px row like a desktop app's sidebar list (the Claude desktop window's), the current step's row filled, done steps marked with a check. |
 | segmented | boolean \| undefined | no | false | Equal segments in a row: each step a 4 px bar (the accent once reached, glowing on the current step) over its label and, from its `description`, a status line inked by the step's state (the success ink once done, the accent's text ink on the current step). |
 | progress | boolean \| undefined | no | false | Render a labeled percentage progress bar instead of discrete steps. |
 | stacks | boolean \| undefined | no | false | Responsive (horizontal layout only): render the EXISTING vertical layout when the component's own CONTAINER is at or below `stackBreakpoint` (default `sm` = 640). Container-measured with a viewport seed, mirroring Row `stacks`. `vertical` and `progress` are unaffected (a progress bar is already fluid). |
