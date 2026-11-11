@@ -32,7 +32,7 @@ test("docs and the smoke app consume one maintained public-API fixture body", ()
     const route = readFileSync(resolve(smoke, `src/app/testing/${fixture}.tsx`), "utf8");
     expect(route).toContain(`../../testing/${fixture}`);
   }
-  for (const fixture of ["form-autocomplete", "listbox", "escape-layers", "control-refs", "tabs", "materials", "hover", "avatar", "touch-target"]) {
+  for (const fixture of ["form-autocomplete", "listbox", "escape-layers", "control-refs", "tabs", "materials", "hover", "avatar", "touch-target", "flow-editor"]) {
     const docs = readFileSync(resolve(root, `docs/src/app/(home)/testing/${fixture}.tsx`), "utf8");
     expect(docs).toContain(`smoke/src/testing/${fixture}`);
   }

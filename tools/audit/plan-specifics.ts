@@ -277,6 +277,18 @@ export const COMPONENT_PLANS: ComponentPlan[] = [
   { slug: "drag-drop", families: ["rearrangement"], native: "DF / DF (own skins until this turn aliases them, K8c; the grip keeps the platform touch target)", specifics: ["keyboard drag", "live announcements", "touch long-press"] },
   { slug: "drawer", families: ["menus-overlays"], native: "HIG / M3", specifics: ["swipe dismiss", "RTL side", "open gaps `title`, `description`, `footer`"] },
   { slug: "filter-panel", families: ["navigation"], native: "sheet with checkmark rows (one job, different control, K8c) / M3", specifics: ["drawer mode at its breakpoint", "counts", "clear all"] },
+  {
+    slug: "flow-editor",
+    families: ["rearrangement", "data-display"],
+    native: "DF / DF (neither platform ships a node-graph editor; the platform Button and Select parts stay)",
+    specifics: [
+      "the graph stays controlled: moves, connections, additions and deletions are reported, never applied",
+      "Tab reaches each card, the arrow keys move a focused card one grid step and Delete removes the selection; the focused canvas takes + - 0",
+      "From and To with Connect or Disconnect are the keyboard path to an edge, which is drawn, not focusable",
+      "the view keeps the graph fitted through resizes until the user pans or zooms",
+      "`readOnly` keeps pan, zoom and selection and drops every edit",
+    ],
+  },
   { slug: "navbars", families: ["navigation"], native: "HIG / M3", specifics: ["iOS bar 44 with large title", "M3 top app bar 64", "narrow modes collapse to a menu"] },
   { slug: "row-menu", families: ["menus-overlays"], native: "HIG / M3", specifics: ["APG menu", "trigger named for its row"] },
   { slug: "sidebar", families: ["navigation"], native: "HIG / M3", specifics: ["`aria-current`", "drawer at breakpoint", "drill-down", "collapse"] },

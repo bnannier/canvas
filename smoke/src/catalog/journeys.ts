@@ -12,6 +12,7 @@ export const JOURNEYS = [
   { route: "/testing/touch-target", title: "Touch targets", description: "Minimum hit areas" },
   { route: "/testing/hover", title: "Hover", description: "Pointer hover states" },
   { route: "/testing/avatar", title: "Avatar", description: "Generated avatar colours" },
+  { route: "/testing/flow-editor", title: "FlowEditor", description: "Drag, connect, add, delete, pan and zoom" },
 ] as const;
 
 export type JourneyRoute = (typeof JOURNEYS)[number]["route"];

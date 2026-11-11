@@ -2475,6 +2475,14 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("dialog"), rows: IOS_ROW }),
     open: open("default", overlay("dialog"), ALL_ROWS, viaRecipe("dialog")),
   },
+  // FlowEditor's own controls are its cards (and the canvas stop); the toolbar's Buttons
+  // and Selects are kit parts their own recipes capture.
+  "flow-editor": {
+    focus: focus("default", byRole("button", /^Product/)),
+    // A card's PanResponder selects it on grant, so the held press shows the selected ring;
+    // a press that does not move leaves the card where it was, and a move would drag it.
+    pressed: pressed("default", byRole("button", /^Product/), { release: "in-place", how: "the pointer goes down on the first card and is held" }),
+  },
   "drag-drop": {
     focus: focus("default", byRole("button", /^Reorder /)),
     // The grip lifts its card while held (its PanResponder); a press that does not move
