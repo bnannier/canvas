@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: cad8362f307ce0e914f64529ae9e6f6167ae84ffa078073eb1d3746d89c2808b
+Source SHA-256: 675fbe581e8b4ad6486d40d1b26a76d0ab3c2910cab444fa77edd63dd809f77b
 
 Source: `src/organisms/wizard/wizard.md`
 Human reference: https://canvas.nannier.com/components/wizard
@@ -67,6 +67,22 @@ application actions at its end. Compact steps occupy the fixed sidebar. When the
 </Wizard>
 ```
 
+### Assistant workspace
+
+`assistant` lays the wizard out like a desktop assistant window: the steps as a full-height
+sidebar of rows, a 44 point top bar with the title and the status, and `previous` and
+`actions` in a bar under the conversation. The body is unpadded so an `assistant flush` Chat fills it; a scrolled body
+centers its content in the conversation's column. Below 720 points of panel the sidebar
+gives way to segmented steps under the title.
+
+```tsx
+<Wizard open embedded assistant onOpenChange={() => {}} title="Plan a project" scrollBody={false}
+  steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }]}
+  current={0} status="Autosaved" actions={<Button small ghost>Reset</Button>}>
+  <Chat assistant flush meta="Claude CLI" messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+</Wizard>
+```
+
 ### Child owns scrolling
 
 Set `scrollBody={false}` for a bounded child such as Chat that already manages its own thread scroll. The header and footer retain their positions.
@@ -123,6 +139,7 @@ Dialog supplies the accessible modal name, focus management, live close action, 
 | children | ReactNode | no |  |  |
 | scrollBody | boolean \| undefined | no | true | Scroll the body (default true). Set false when a child, such as Chat, owns its scroll. |
 | embedded | boolean \| undefined | no | false | Show the open wizard as a non-modal specimen, for a catalogue or a showcase: it keeps its look, its dialog role and its labelling, but does not take focus, trap Tab, claim `aria-modal`, or close on Escape or native back. It renders in place, in the flow of the page, as Dialog's contained form does, rather than presenting into an OverlayProvider. |
+| assistant | boolean \| undefined | no | false | Lay the wizard out like a desktop assistant's window (the Claude desktop window, reference claude-desktop-chat): the steps as sidebar rows down the panel's full height, a 44 px top bar with the title and the status, and `previous` and `actions` in a bar under the conversation. The body is unpadded so an `assistant flush` Chat fills it; a scrolled body centers its content in the conversation's column. The description is not drawn. |
 | testID | string \| undefined | no |  | Prefix for modal, steps, body-scroll and footer test hooks. |
 
 See [installation](https://canvas.nannier.com/ai/4.3.1/installation.md) for required peers and feature fallbacks.

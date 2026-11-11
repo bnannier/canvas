@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: cad8362f307ce0e914f64529ae9e6f6167ae84ffa078073eb1d3746d89c2808b
+Source SHA-256: 675fbe581e8b4ad6486d40d1b26a76d0ab3c2910cab444fa77edd63dd809f77b
 
 Source: `src/organisms/dialog/dialog.md`
 Human reference: https://canvas.nannier.com/components/dialog
@@ -93,6 +93,22 @@ the close and any `workspaceHeader`) over a rule, the body, and the footer under
 ```tsx
 <Dialog form banded icon={<Icon arrowUpRight decorative />} trigger="Publish" title="Publish release" description="Ship the changes to everyone in the workspace." footer={<Button primary>Publish</Button>}>
   <Input label="Release name" defaultValue="Canvas 4.0" />
+</Dialog>
+```
+
+### Toolbar header
+
+`toolbar` with `banded` turns the header into a 44 point top bar like a desktop app
+window's: the title in the 14 medium face on one line, `headerAccessory` after it, and
+`headerActions` before the close action. The description is not drawn, so name the
+dialog's purpose in its title. With `workspace` the sidebar runs the full height beside
+the bar and the body.
+
+```tsx
+<Dialog open embedded banded toolbar onOpenChange={() => {}} title="Plan pacman"
+  headerAccessory={<Typography small muted>Autosaved</Typography>}
+  headerActions={<Button small ghost>Reset</Button>}>
+  <Typography body>The conversation fills the body.</Typography>
 </Dialog>
 ```
 
@@ -326,6 +342,8 @@ the close and any `workspaceHeader`) over a rule, the body, and the footer under
 | workspaceSidebar | ReactNode | no |  | A fixed side rail beside a workspace's scrolling body. |
 | footer | ReactNode | no |  | Custom actions after the form body; fixed below the body in workspace mode. |
 | banded | boolean \| undefined | no | false | Draw the reference's shared workflow panel as three bands split by hairline rules: the header (title, `headerAccessory` and optional `workspaceHeader`), body, and footer. A `workspaceSidebar` stays beside the body. Embedded panels keep their opaque in-page surface without a veil or close action; live panels keep modal presentation. |
+| toolbar | boolean \| undefined | no | false | Banded only: the header is a 44 px top bar like a desktop app window's (the Claude desktop window's): the title in the 14 medium face, `headerAccessory` after it, `headerActions` before the close action. The description is not drawn. |
+| headerActions | ReactNode | no |  | Actions at the end of a `toolbar` header, before the close action. |
 | icon | ReactNode | no |  | A leading glyph for the panel, drawn as the accent's soft tone tile (`Emblem primary soft`) above the title. Pass an `<Icon />`; the tile tints and sizes it. |
 | panelWidth | number \| undefined | no |  | Maximum form panel width in pixels; defaults to 560. |
 | children | ReactNode | no |  |  |

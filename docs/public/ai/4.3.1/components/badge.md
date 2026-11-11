@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: cad8362f307ce0e914f64529ae9e6f6167ae84ffa078073eb1d3746d89c2808b
+Source SHA-256: 675fbe581e8b4ad6486d40d1b26a76d0ab3c2910cab444fa77edd63dd809f77b
 
 Source: `src/atoms/badge/badge.md`
 Human reference: https://canvas.nannier.com/components/badge
@@ -28,7 +28,7 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 
 Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (`tight` 4 / `compact` 6 / `snug` 8 / `cozy` 12, default `compact`, the hand-off's 6; the largest gap passed wins: `cozy` > `snug` > `compact` > `tight`) and centers its badges, so a call site never hand-rolls a flex row around them. Give it an `accessibilityLabel` (say, "Rachel Chen's roles") and it is announced as a named group that keeps its badges' text; without one it is a plain row.
 
-The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label and `large` 26 px. `count` is the small pill with the heavier label, `navigationCount` the small solid count, and `reference` a linked key at the 6 px key corner in the code face, underlined, with an arrow when it has an `href`. `token` is a code token chip, the 22 px pill under the small 11 px label in the code face, for a role, a state or an attribute name listed beside its term; `tier` is a tier tag, a 24 px pill with a 10 px inset under an 11 px mono label in caps on its own line, the tag that names a component's tier beside its title, in whichever tone the tier takes. `tiny` is the 18 px pill under a 10 px label on its own line, at the regular weight even when `solid` (a navigation row's "New" tag). The metric precedence is `notification` > `marker` > `disc` > `step` > `reference` > `navigationCount` > `count` > `tier` > `band` > `tick` > `token` > `tiny` > `small`. `primary` and `action` take the accent's wash, `soft` names the soft wash every toned pill already has, `neutralFill` fills with the border color, `foreground` overrides the label ink, `dot` adds the leading dot without a status tone, and `inverse` and `solid` supply branded surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
+The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label and `large` 26 px. `count` is the small pill with the heavier label, `navigationCount` the small solid count, and `reference` a linked key at the 6 px key corner in the code face, underlined, with an arrow when it has an `href`. `token` is a code token chip, the 22 px pill under the small 11 px label in the code face, for a role, a state or an attribute name listed beside its term; `tier` is a tier tag, a 24 px pill with a 10 px inset under an 11 px mono label in caps on its own line, the tag that names a component's tier beside its title, in whichever tone the tier takes. `tiny` is the 18 px pill under a 10 px label on its own line, at the regular weight even when `solid` (a navigation row's "New" tag). The metric precedence is `notification` > `marker` > `disc` > `step` > `reference` > `navigationCount` > `count` > `tier` > `band` > `tick` > `token` > `tiny` > `small`. `primary` and `action` take the accent's wash, `soft` names the soft wash every toned pill already has, `neutralFill` fills with the border color, `foreground` overrides the label ink, `dot` adds the leading dot without a status tone, and `inverse` and `solid` supply branded surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout; `truncate` keeps the label on one line and lets the pill shrink in a tight row, ending the label with an ellipsis instead of overflowing its host.
 
 `notification` is a destructive count: a 20 px pill with a 600 11 px label, soft by default and solid with `solid`, set off from the page by a ring of the background; `action` adds a halo of the destructive wash. Button carries its own count when passed a `count`.
 
@@ -454,6 +454,7 @@ text that names it. Give it an `accessibilityLabel` when it carries meaning of i
 | dot | boolean \| undefined | no | false | Show the intent dot without switching to the status family. With no children it is the bare 8 px dot in the tone's ink, with no pill (a marker beside text that names it). |
 | signal | boolean \| undefined | no | false | Standalone 10px signal marker, retaining its status label. |
 | start | boolean \| undefined | no | false | Pin to the start when embedded in an unmeasured host layout. |
+| truncate | boolean \| undefined | no | false | Keep the label on one line and let the pill shrink in a tight row, ending the label with an ellipsis instead of overflowing its host. |
 | uppercase | boolean \| undefined | no | false |  |
 | href | string \| undefined | no |  | A reference can open its source in the system browser. |
 | default | boolean \| undefined | no | false | Metadata tone (pick one; default is the accent's soft pill). |

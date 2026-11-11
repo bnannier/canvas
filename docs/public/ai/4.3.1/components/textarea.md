@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: cad8362f307ce0e914f64529ae9e6f6167ae84ffa078073eb1d3746d89c2808b
+Source SHA-256: 675fbe581e8b4ad6486d40d1b26a76d0ab3c2910cab444fa77edd63dd809f77b
 
 Source: `src/atoms/textarea/textarea.md`
 Human reference: https://canvas.nannier.com/components/textarea
@@ -100,6 +100,16 @@ web label. `accessibilityLabel` overrides the visible label’s accessible name;
   <Divider />
   <Textarea flush placeholder="Leave a comment…" />
 </Card>
+```
+
+### Composer
+
+`composer` sets a chat composer's metrics: 15 / 20 text 6 by 8 points in, one line by default (`rows` raises it), so one line sits
+in a 44 point composer box beside 32 point controls. Pair it with `embedded`; Chat's
+composer uses it.
+
+```tsx
+<Textarea embedded composer placeholder="What would you like to build?" accessibilityLabel="Message" />
 ```
 
 ### Disabled
@@ -219,6 +229,7 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | systemFocus | boolean \| undefined | no | false | Preserve the platform system focus outline. |
 | dense | boolean \| undefined | no | false | Dense paragraph-entry metrics matching the application field family. |
 | terminal | boolean \| undefined | no | false | Bare monospace prompt metrics for a terminal transcript composer. Implies embedded. |
+| composer | boolean \| undefined | no | false | A chat composer's entry: 15 / 20 text at 6 by 8 in, so one line sits in a 44 px composer box beside 32 px controls (the Claude desktop composer). Pair with `embedded`. |
 | accessibilityLabel | string \| undefined | no |  |  |
 | readOnly | boolean \| undefined | no | false | Prevent edits while retaining focus and the resting appearance. |
 | required | boolean \| undefined | no | false | Marks the field as required: appends a destructive "*" to the label (decorative, never in the accessible name) and announces the field as required, through aria-required on the web and with the word in its name ("Bio, required") on iOS and Android. The star and the spoken word take effect only alongside `label`. |

@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.3.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: cad8362f307ce0e914f64529ae9e6f6167ae84ffa078073eb1d3746d89c2808b
+Source SHA-256: 675fbe581e8b4ad6486d40d1b26a76d0ab3c2910cab444fa77edd63dd809f77b
 
 This generated source snapshot describes `@nannier/canvas` at repository package version `4.3.1`. Check the application's installed package version and its declarations before using an API. A source snapshot is not a claim that npm has published this version.
 
@@ -62,6 +62,7 @@ This generated source snapshot describes `@nannier/canvas` at repository package
 - [Feed](https://canvas.nannier.com/ai/4.3.1/components/feeds.md): Vertical activity streams with icons and timestamps. Used for audit logs, change history, and notification lists.
 - [Field](https://canvas.nannier.com/ai/4.3.1/components/field.md): A form row: a label, the control, and one message line under it. Field exists for the part no control owns on its own: every field family already owns its label, but nothing else in the kit renders helper or error text, so that message is what Field adds.
 - [FilterPanel](https://canvas.nannier.com/ai/4.3.1/components/filter-panel.md): Sidebar filter rail: grouped checkbox options under mono group headings, each with its count, and a "Clear N" action in the header while any filter is on (a plain accent text action). On the web an option's label is the 400 14px row label, 10px from its box.
+- [FlowEditor](https://canvas.nannier.com/ai/4.3.1/components/flow-editor.md): A node-graph editor: cards placed freely on a pannable, zoomable canvas, joined by directed edges. Use it to let people shape a process, such as a delivery workflow whose edges carry conditions. The application owns the graph; FlowEditor draws the `nodes` and `edges` it is given and reports what the user asked for (`onMoveNode`, `onConnect`, `onAddNode`, `onDelete`, `onSelectionChange`).
 - [Form](https://canvas.nannier.com/ai/4.3.1/components/form.md): Stitch your own fields inside it; Form adds the stacked or two-column rhythm, titled sections, the submit and cancel actions row, and Enter to submit.
 - [FunnelChart](https://canvas.nannier.com/ai/4.3.1/components/funnel-chart.md): Stage-by-stage conversion bars: one centered row per stage, labelled on the left and valued on the right.
 - [Gauge](https://canvas.nannier.com/ai/4.3.1/components/gauge.md): A semicircular dial: a 180 degree top arc (muted track plus a tone-colored value arc) for a 0-100 value, the percent readout in the open center of the semicircle, and an optional label below the graphic.
