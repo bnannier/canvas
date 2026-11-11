@@ -430,6 +430,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "organisms/drag-drop": ["control", "lane", "dragGhost"],
   "organisms/drawer": ["sheet", "navigationDrawer", "terminalScreen"],
   "organisms/filter-panel": ["floatingRail"],
+  "organisms/flow-editor": ["card", "tile"],
   "organisms/navbars": ["control", "card", "pill", "navBar"],
   "organisms/row-menu": ["control", "card", "menu", "menuRow", "listFrame", "groupedList"],
   "organisms/sidebar": ["control", "card", "navigationDrawer", "navRow", "navRowCompact", "rail", "floatingRail"],

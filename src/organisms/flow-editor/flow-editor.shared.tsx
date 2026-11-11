@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type ComponentType } from "react";
 import { PanResponder, type GestureResponderEvent, type LayoutChangeEvent } from "react-native";
-import Svg, { Circle, Defs, G, Path, Pattern, Rect, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, Defs, G, Path, Pattern, Rect } from "react-native-svg";
 import {
   View,
   Text,
@@ -287,7 +287,6 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
     // the keyboard path to an edge, which is drawn, not focusable.
     const pairEdge = edges.find((e) => e.from === connectFrom && e.to === connectTo);
     const edgeStyle = (selected: boolean) => skin.edge(t, selected);
-    const labelStyle = skin.edgeLabel(t);
     const marked = toolbarPart || canvasPart || nodePart || portPart || edgePart || edgeLabelPart ? anatomyMarks(nodes.map(shown), edges, camera) : null;
 
     return (
@@ -342,17 +341,10 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
                 const isSelected = selection?.kind === "edge" && selection.id === edge.id;
                 const s = edgeStyle(isSelected);
                 const head = arrowHead(g.tip, g.angle);
-                const width = edge.label ? flowEdgeLabelWidth(edge.label) : 0;
                 return (
                   <G key={edge.id}>
                     <Path d={g.d} stroke={s.stroke} strokeWidth={s.width} strokeDasharray={edge.rework ? "6 4" : undefined} fill="none" pointerEvents="none" />
                     <Path d={head} fill={s.stroke} pointerEvents="none" />
-                    {edge.label ? (
-                      <G pointerEvents="none">
-                        <Rect x={g.label.x - width / 2} y={g.label.y - FLOW_EDGE_LABEL_HEIGHT / 2} width={width} height={FLOW_EDGE_LABEL_HEIGHT} rx={FLOW_EDGE_LABEL_HEIGHT / 2} fill={labelStyle.background} stroke={s.stroke} strokeWidth={isSelected ? 1.5 : 0.75} />
-                        <SvgText x={g.label.x} y={g.label.y + 3.8} fontSize={labelStyle.fontSize} fontFamily={labelStyle.fontFamily} fill={labelStyle.fill} textAnchor="middle">{edge.label}</SvgText>
-                      </G>
-                    ) : null}
                   </G>
                 );
               })}
@@ -365,6 +357,25 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
               })() : null}
             </G>
           </Svg>
+          {edges.map((edge) => {
+            // A label is a capsule over its edge's midpoint, a View like the cards (a capsule
+            // corner is the pill, which an SVG rect cannot draw), placed and scaled by the camera.
+            const from = byId.get(edge.from), to = byId.get(edge.to);
+            if (!edge.label || !from || !to) return null;
+            const g = flowEdgeGeometry(shown(from), shown(to));
+            const width = flowEdgeLabelWidth(edge.label);
+            const isSelected = selection?.kind === "edge" && selection.id === edge.id;
+            const at = [
+              { translateX: camera.k * (g.label.x - width / 2) + camera.tx },
+              { translateY: camera.k * (g.label.y - FLOW_EDGE_LABEL_HEIGHT / 2) + camera.ty },
+              { scale: camera.k },
+            ];
+            return (
+              <View key={edge.id} pointerEvents="none" style={[skin.edgeLabelBox(t, isSelected), { width, transform: at }]}>
+                <Text style={skin.edgeLabelText(t)} numberOfLines={1}>{edge.label}</Text>
+              </View>
+            );
+          })}
           {([[nodePart, marked?.node], [portPart, marked?.port], [edgePart, marked?.edge], [edgeLabelPart, marked?.label]] as const).map(([part, box], i) =>
             part && box ? <View key={i} pointerEvents="none" ref={part.ref} onLayout={part.onLayout} style={[skin.mark, box]} /> : null)}
           {nodes.map((node) => (

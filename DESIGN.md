@@ -1025,13 +1025,13 @@ drawn by those entries' platforms.
 | --- | --- |
 | `control` | `atoms/button`, `atoms/button-group`, `atoms/skeleton`, `atoms/stepper`, `atoms/tooltip`, `molecules/card`, `molecules/code-block`, `molecules/stacked-lists`, `organisms/calendar`, `organisms/data-table`, `organisms/dialog`, `organisms/drag-drop`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/toast` |
 | `field` | `atoms/autocomplete`, `atoms/input`, `atoms/input-otp`, `atoms/select`, `atoms/textarea`, `organisms/command`, `organisms/data-table` |
-| `card` | `atoms/autocomplete`, `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/action-panels`, `molecules/card`, `molecules/code-block`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/stacked-lists`, `molecules/stats`, `organisms/calendar`, `organisms/carousel`, `organisms/chat`, `organisms/data-table`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/toast` |
+| `card` | `atoms/autocomplete`, `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/action-panels`, `molecules/card`, `molecules/code-block`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/stacked-lists`, `molecules/stats`, `organisms/calendar`, `organisms/carousel`, `organisms/chat`, `organisms/data-table`, `organisms/flow-editor`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/toast` |
 | `dialog` | `molecules/alert-dialog`, `organisms/dialog` |
 | `menu` | `atoms/autocomplete`, `atoms/button-group`, `atoms/dropdown`, `atoms/popover`, `atoms/select`, `organisms/action-sheet`, `organisms/calendar`, `organisms/row-menu`, `style` |
 | `sheet` | `atoms/popover`, `organisms/action-sheet`, `organisms/drawer` |
 | `checkbox` | `atoms/checkbox` |
 | `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/input`, `organisms/navbars`, `organisms/tabs` |
-| `tile` | `atoms/listbox`, `atoms/radio`, `atoms/swatch`, `molecules/card`, `molecules/grid-lists`, `molecules/media-objects`, `organisms/dashboard-grid`, `organisms/tabs` |
+| `tile` | `atoms/listbox`, `atoms/radio`, `atoms/swatch`, `molecules/card`, `molecules/grid-lists`, `molecules/media-objects`, `organisms/dashboard-grid`, `organisms/flow-editor`, `organisms/tabs` |
 | `chartTrack` | `charts/bullet-chart` |
 | `chartSelectedBar` | `charts/chart` |
 | `chartFlagDense` | `charts/candlestick-chart`, `charts/geo-map` |
