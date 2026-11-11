@@ -3,36 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, ChatThread } = scope;
+  const { Chat } = scope;
   return (
-<Stateful initial={{ answers: [] as { questionId: string; optionId?: string; optionIds?: string[]; customText?: string; multiple?: boolean }[], submitted: false }}>
-  {(state, setState) => (
-    <Stateful initial={0}>
-      {(questionIndex, setQuestionIndex) => (
-        <ChatThread
-          style={{ height: 420 }}
-          messages={[{
-            id: "planning-questions",
-            role: "assistant",
-            content: "Which release approach should we plan?",
-            questions: [{ id: "scope", title: "What should the first release include?", options: [
-              { id: "focused", label: "A focused first release", description: "Ship the essential workflow, then expand from feedback." },
-              { id: "complete", label: "The complete workflow", description: "Include reporting, collaboration, and administration in the first release." }
-            ] }, { id: "checks", title: "Which checks should we include?", multiple: true, options: [
-              { id: "desktop", label: "Desktop browser testing" },
-              { id: "mobile", label: "Mobile layout and accessibility testing" }
-            ] }],
-            questionAnswers: state.answers,
-            questionIndex,
-            questionsSubmitted: state.submitted
-          }]}
-          onQuestionAnswerChange={(_messageId, answers) => setState({ ...state, answers })}
-          onQuestionIndexChange={(_messageId, index) => setQuestionIndex(index)}
-          onSubmitQuestionAnswers={(_messageId, answers) => setState({ answers, submitted: true })}
-        />
-      )}
-    </Stateful>
-  )}
-</Stateful>
+<Chat style={{ height: 320 }} messages={[{ id: "request", role: "user", content: "Review this plan.", attachments: [{ id: "saved-plan", name: "release-plan.pdf" }] }]} value="" onChangeText={() => {}} onSend={() => {}} onAttach={() => {}} attachments={[{ id: "draft-notes", name: "notes.txt" }]} onRemoveAttachment={() => {}} onOpenAttachment={() => {}} />
   );
 }

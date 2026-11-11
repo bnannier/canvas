@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Chat, Typography } = scope;
+  const { Chat } = scope;
   return (
-<Chat terminal autoFocus style={{ height: 320 }} messages={[{ id: "request", role: "user", content: "Inspect the current change." }, { id: "reply", role: "assistant", author: "Claude", content: "I will read the **implementation** and its checks." }]} value="" onChangeText={() => {}} onSend={() => {}} footer={<Typography tiny muted>Enter to send · Shift+Enter for newline</Typography>} />
+<Chat assistant flush meta="Claude CLI" style={{ height: 320 }} messages={[{ id: "ask", role: "user", content: "Add a ghost that chases the player." }, { id: "plan", role: "assistant", content: "I'll add a **Chaser** ghost.\n\n1. Track the player tile\n2. Halve speed in tunnels" }, { id: "ran", role: "system", activity: true, author: "Ran bun test src/ghosts", content: "5 passed" }]} value="" onChangeText={() => {}} onSend={() => {}} />
   );
 }

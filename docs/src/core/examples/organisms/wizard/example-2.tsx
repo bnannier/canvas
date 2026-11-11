@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <Wizard open embedded assistant onOpenChange={() => {}} title="Plan a project" scrollBody={false}
   steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }]}
   current={0} status="Autosaved" actions={<Button small ghost>Reset</Button>}>
-  <Chat flush meta="Claude CLI" messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+  <Chat assistant flush meta="Claude CLI" messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
 </Wizard>
   );
 }
