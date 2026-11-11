@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 35b0556b3cf4787d8b9cdf8a7e93b47c770a9726957905f5b8d3a812e5fea783
+Source SHA-256: 2705d9f5526f1f26830018e2b701125a77c3f3eca4d580c694212966189f6508
 
 Source: `src/atoms/popover/popover.md`
 Human reference: https://canvas.nannier.com/components/popover

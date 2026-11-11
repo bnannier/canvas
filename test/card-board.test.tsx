@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { AccessibilityInfo } from "react-native";
+import { renderToString } from "react-dom/server";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
@@ -92,9 +93,14 @@ describe("Card board anatomy", () => {
 
   it("bounds both summaries at two lines with tail truncation", () => {
     const { getByTestId } = ui();
+    // happy-dom 21 does not implement the prefixed CSS property. Inspect React's
+    // actual serialized style instead of asking its incomplete CSSOM to parse it.
+    const server = document.createElement("div");
+    server.innerHTML = renderToString(<ThemeProvider><Card {...ticket} /></ThemeProvider>);
     for (const part of ["title", "description"]) {
       const text = getByTestId(`ticket-${part}`);
-      expect(text.style.getPropertyValue("-webkit-line-clamp") || (text.style as unknown as { WebkitLineClamp: string }).WebkitLineClamp).toBe("2");
+      const serialized = server.querySelector(`[data-testid="ticket-${part}"]`);
+      expect(serialized?.getAttribute("style")).toMatch(/(?:^|;)\s*-webkit-line-clamp:\s*2(?:;|$)/);
       expect((text.parentElement as HTMLElement).style.overflowX).toBe("hidden");
     }
     expect(titleSlot.height).toBe(40);

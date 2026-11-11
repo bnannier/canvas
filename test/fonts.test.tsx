@@ -160,7 +160,8 @@ describe("the themed primitives", () => {
     // A syntax token inside a mono run is mono (it painted in the sans face before).
     expect(family("token")).toBe("JetBrainsMono_400Regular");
     // Inside the caller's own family the span is left to inherit it.
-    expect(family("inherited")).toBe("inherit");
+    expect(screen.getByText("inherited").style.fontFamily).toBe("");
+    expect(family("inherited")).toBe("BrandSerif");
     // A span that names its own family keeps it.
     expect(family("named")).toBe("BrandSerif");
     // Inside a sans run a span still resolves the sans face for its own weight.
