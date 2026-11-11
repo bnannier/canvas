@@ -2,6 +2,8 @@
 // The v4 hand-off's section page cards (`Canvas v4.0.0 <Section>.dc.html`): each card's id,
 // its eyebrow title and meta, the components its chips link to (URL slugs), the floor of the
 // grid it tiles in, whether it spans the whole row, and the Data subsection it sits under.
+// A card for a component the hand-off predates is the repository's own (REPOSITORY_CARDS in
+// tools/v4/repository-components.ts), placed after the hand-off card it names.
 // The section pages (docs/src/sections/*) render a card per entry through ShowcaseCard,
 // which takes its header and chips from here. Plain data with no React import.
 
@@ -727,6 +729,20 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
         "title": "Board · Drag & drop",
         "meta": "DropZone · Draggable · DragHandle",
         "group": "g-workspace"
+      },
+      {
+        "id": "c-flow-editor",
+        "links": [
+          "flow-editor"
+        ],
+        "tile": 440,
+        "full": true,
+        "inset": 24,
+        "gap": 16,
+        "headGap": 10,
+        "title": "FlowEditor",
+        "meta": "read only · pan · zoom · select",
+        "group": "g-workspace"
       }
     ],
     "groups": [
@@ -762,7 +778,8 @@ export const SHOWCASE: Readonly<Record<SectionId, ShowcaseSection>> = {
           "Calendar",
           "Chat",
           "Board",
-          "Drag & drop"
+          "Drag & drop",
+          "FlowEditor"
         ]
       }
     ]

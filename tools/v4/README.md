@@ -23,6 +23,12 @@ What reads it:
   they pass to a real prop; a hand-off knob the repository has no prop for is listed in the
   spec's `dropped` with its reason.
 
+- `repository-components.ts`: the components the repository ships that the hand-off
+  predates (FlowEditor), declared once: each one's section placement, detail spec, Library
+  index tier (`REPOSITORY_COMPONENTS`) and section page card (`REPOSITORY_CARDS`).
+  `derive-detail-specs.ts`, `derive-showcase.ts` and the docs tests read it, and each
+  throws once the hand-off lists a declared slug, so the declaration is dropped then.
+
 - `derive-detail-presentation.ts`: records the hand-off's specimen labels and order,
   guidance selection and note counts. Detail pages use that presentation with current
   executable examples, without deleting newer kit docs.

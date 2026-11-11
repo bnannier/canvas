@@ -13,9 +13,16 @@
 // (a 30 px display title over the mono list of its components). A header whose text is a
 // template binding (`{{ vpLabel }}`) is live in the hand-off and is left out here.
 // test/docs-showcase.test.ts runs this with `--check` semantics.
+//
+// A component the hand-off predates has no hand-off card to link it, so its section page
+// carries a repository card (REPOSITORY_CARDS, declared in tools/v4/repository-components.ts
+// beside the component itself): it is placed after the hand-off card it names, in that
+// card's grid, frame and subsection, and the derivation throws once the hand-off links the
+// component from a card of its own, so the repository card is dropped rather than doubled.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { REPOSITORY_CARDS, REPOSITORY_COMPONENTS } from "./repository-components.ts";
 
 const REPO = join(import.meta.dir, "..", "..");
 const HANDOFF = join(REPO, "tools", "v4", "handoff");
@@ -130,11 +137,48 @@ export function deriveSection(page: string): DerivedSection {
   return { cards, groups: groups.map(({ id, title, names }) => ({ id, title, names })) };
 }
 
-/** Every section page's cards and subsections. */
+/**
+ * The repository's cards placed on the hand-off's pages: each one after the card it names,
+ * taking that card's tile floor, frame and subsection, and its names appended to that
+ * subsection's header list.
+ */
+function withRepositoryCards(pages: Record<keyof typeof SECTION_PAGES, DerivedSection>): Record<keyof typeof SECTION_PAGES, DerivedSection> {
+  const handoffLinks = new Set(Object.values(pages).flatMap((section) => section.cards.flatMap((card) => card.links)));
+  const handoffIds = new Set(Object.values(pages).flatMap((section) => section.cards.map((card) => card.id)));
+  for (const own of REPOSITORY_CARDS) {
+    if (!(own.page in pages)) throw new Error(`REPOSITORY_CARDS ${own.id}: no section page "${own.page}"`);
+    if (handoffIds.has(own.id)) throw new Error(`REPOSITORY_CARDS ${own.id}: the hand-off has a card with this id now; drop it from REPOSITORY_CARDS`);
+    for (const slug of own.links) {
+      if (handoffLinks.has(slug)) throw new Error(`REPOSITORY_CARDS ${own.id}: the hand-off links "${slug}" from a card now; drop it from REPOSITORY_CARDS`);
+      if (!REPOSITORY_COMPONENTS[slug]) throw new Error(`REPOSITORY_CARDS ${own.id}: "${slug}" is not a REPOSITORY_COMPONENTS component`);
+    }
+    const section = pages[own.page as keyof typeof SECTION_PAGES];
+    const at = section.cards.findIndex((card) => card.id === own.after);
+    if (at < 0) throw new Error(`REPOSITORY_CARDS ${own.id}: no card "${own.after}" on the ${own.page} page`);
+    const { tile, inset, gap, headGap, footGap, group } = section.cards[at]!;
+    const card: DerivedCard = { id: own.id, links: [...own.links], tile, full: own.full };
+    if (inset != null) card.inset = inset;
+    if (gap != null) card.gap = gap;
+    if (headGap != null) card.headGap = headGap;
+    if (footGap != null) card.footGap = footGap;
+    card.title = own.title;
+    card.meta = own.meta;
+    if (group) card.group = group;
+    section.cards.splice(at + 1, 0, card);
+    if (own.groupNames?.length) {
+      const header = section.groups.find((g) => g.id === group);
+      if (!header) throw new Error(`REPOSITORY_CARDS ${own.id}: "${own.after}" sits under no subsection to list its names`);
+      header.names.push(...own.groupNames);
+    }
+  }
+  return pages;
+}
+
+/** Every section page's cards and subsections, with the repository's cards in place. */
 export function deriveShowcase(): Record<keyof typeof SECTION_PAGES, DerivedSection> {
-  return Object.fromEntries(
+  return withRepositoryCards(Object.fromEntries(
     Object.entries(SECTION_PAGES).map(([id, page]) => [id, deriveSection(page)]),
-  ) as Record<keyof typeof SECTION_PAGES, DerivedSection>;
+  ) as Record<keyof typeof SECTION_PAGES, DerivedSection>);
 }
 
 /** The generated module's source. */
@@ -145,6 +189,8 @@ export function renderShowcase(): string {
     "// The v4 hand-off's section page cards (`Canvas v4.0.0 <Section>.dc.html`): each card's id,",
     "// its eyebrow title and meta, the components its chips link to (URL slugs), the floor of the",
     "// grid it tiles in, whether it spans the whole row, and the Data subsection it sits under.",
+    "// A card for a component the hand-off predates is the repository's own (REPOSITORY_CARDS in",
+    "// tools/v4/repository-components.ts), placed after the hand-off card it names.",
     "// The section pages (docs/src/sections/*) render a card per entry through ShowcaseCard,",
     "// which takes its header and chips from here. Plain data with no React import.",
     "",

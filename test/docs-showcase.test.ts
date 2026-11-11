@@ -5,9 +5,11 @@ import { SHOWCASE } from "../docs/src/data/showcase.ts";
 import { SECTION_ROOMS } from "../docs/src/data/rooms.ts";
 import { COMPONENTS } from "../docs/src/core/data/components.ts";
 import { renderShowcase } from "../tools/v4/derive-showcase.ts";
+import { REPOSITORY_CARDS, REPOSITORY_COMPONENTS } from "../tools/v4/repository-components.ts";
 
 // The section pages' cards (docs/src/data/showcase.ts, written from the hand-off by
 // tools/v4/derive-showcase.ts) and the section modules that render them (docs/src/sections).
+// A card for a component the hand-off predates is the repository's (REPOSITORY_CARDS).
 const SECTIONS_DIR = join(import.meta.dir, "../docs/src/sections");
 const SLUGS = new Set(COMPONENTS.map((c) => c.slug));
 
@@ -36,7 +38,8 @@ describe("the section page cards", () => {
   });
 
   it("span the whole row where the hand-off's do", () => {
-    const full = Object.fromEntries(Object.entries(SHOWCASE).map(([id, section]) => [id, section.cards.filter((card) => card.full).map((card) => card.id)]));
+    const own = new Set(REPOSITORY_CARDS.map((card) => card.id));
+    const full = Object.fromEntries(Object.entries(SHOWCASE).map(([id, section]) => [id, section.cards.filter((card) => card.full && !own.has(card.id)).map((card) => card.id)]));
     expect(full).toEqual({
       foundations: ["c-typography"],
       layout: ["c-breakpoints", "c-responsive", "c-sizing", "c-layout", "c-app-frame"],
@@ -47,6 +50,22 @@ describe("the section page cards", () => {
       charts: ["c-chart"],
       overlays: ["c-wizard", "c-command"],
     });
+  });
+
+  it("place each repository card after the hand-off card it names, in that card's grid, frame and subsection", () => {
+    for (const own of REPOSITORY_CARDS) {
+      const cards = SHOWCASE[own.page as keyof typeof SHOWCASE].cards;
+      const at = cards.findIndex((card) => card.id === own.id);
+      expect(cards[at - 1]?.id, own.id).toBe(own.after);
+      const { tile, inset, gap, headGap, footGap, group } = cards[at - 1]!;
+      expect(cards[at]).toEqual({ id: own.id, links: [...own.links], tile, full: own.full, inset, gap, headGap, footGap, title: own.title, meta: own.meta, group });
+      for (const slug of own.links) expect(REPOSITORY_COMPONENTS[slug], `${own.id} links ${slug}`).toBeDefined();
+    }
+  });
+
+  it("link every repository component from a card of the hand-off's or the repository's", () => {
+    const linked = new Set(Object.values(SHOWCASE).flatMap((section) => section.cards.flatMap((card) => card.links)));
+    expect(Object.keys(REPOSITORY_COMPONENTS).filter((slug) => !linked.has(slug))).toEqual([]);
   });
 
   it("put Data's cards under its three subsections", () => {

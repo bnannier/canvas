@@ -27,6 +27,7 @@ import {
   DescriptionList,
   Emblem,
   Feed,
+  FlowEditor,
   Grid,
   GridItem,
   GridList,
@@ -58,6 +59,8 @@ import {
   CHAT_REPLIES,
   CHAT_THREAD,
   CODE_TABS,
+  FLOW_EDGES,
+  FLOW_NODES,
   MEMBERS,
   QUESTIONS,
   SELECTED_MEMBERS,
@@ -69,7 +72,9 @@ import {
 // of live kit components with the hand-off's copy. Where the kit has no prop for something
 // the hand-off draws (the anatomy card's labelled dashed outlines, a GridList tile's icon,
 // a Monday-first calendar) the card shows what the kit has, and the difference is recorded
-// in the Phase 5 report rather than drawn by hand here.
+// in the Phase 5 report rather than drawn by hand here. The FlowEditor card after the Board
+// is the repository's own (the hand-off predates FlowEditor; REPOSITORY_CARDS in
+// tools/v4/repository-components.ts), built the way its Workspace neighbours are.
 
 /** A bundled sample photo, resolved for the platform (docs/src/core/photos.ts). */
 const photo = (path: string) => resolvePhoto(path) as string | undefined;
@@ -546,6 +551,15 @@ function BoardCard() {
   );
 }
 
+/** A repository card: the hand-off predates FlowEditor (tools/v4/repository-components.ts). */
+function FlowEditorCard() {
+  return (
+    <ShowcaseCard id="c-flow-editor" caption="<FlowEditor readOnly nodes={…} edges={…}> · pan, zoom and select stay · a rework edge is dashed">
+      <FlowEditor readOnly label="Delivery workflow" nodes={FLOW_NODES} edges={FLOW_EDGES} />
+    </ShowcaseCard>
+  );
+}
+
 export function Cards() {
   return (
     <Column chapter>
@@ -580,6 +594,7 @@ export function Cards() {
           <CalendarCard />
           <ChatCard />
           <GridItem full><BoardCard /></GridItem>
+          <GridItem full><FlowEditorCard /></GridItem>
         </ShowcaseGrid>
       </ShowcaseGroup>
     </Column>

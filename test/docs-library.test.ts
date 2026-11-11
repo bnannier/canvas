@@ -27,6 +27,7 @@ import {
   type TransformOp,
 } from "../docs/src/brand/library-hero-look.ts";
 import { fluidRoles, fluidType } from "../src/style/type-scale.ts";
+import { REPOSITORY_COMPONENTS } from "../tools/v4/repository-components.ts";
 
 // The docs home (docs/src/shell/home.tsx): the v4 hand-off's Library page as data
 // (docs/src/data/library.ts) and the brand illustrations' math
@@ -68,9 +69,18 @@ describe("the Library index", () => {
       }
     }
     const legend = new Map(TIER_LEGEND.map((entry) => [entry.tier, entry.letter]));
+    const unlisted: string[] = [];
     for (const column of LIBRARY_INDEX) {
-      for (const item of column.items) expect(`${item.name} ${legend.get(item.tier)}`).toBe(`${item.name} ${handoff.get(item.name)}`);
+      for (const item of column.items) {
+        // A component the hand-off predates is tagged with the tier the repository declares
+        // for it (tools/v4/repository-components.ts); every other one with the hand-off's.
+        const own = handoff.has(item.name) ? undefined : REPOSITORY_COMPONENTS[item.slug];
+        if (own) unlisted.push(item.slug);
+        const expected = own ? legend.get(own.tier) : handoff.get(item.name);
+        expect(`${item.name} ${legend.get(item.tier)}`).toBe(`${item.name} ${expected}`);
+      }
     }
+    expect(unlisted).toEqual(Object.keys(REPOSITORY_COMPONENTS));
   });
 
   it("counts from the registries", () => {

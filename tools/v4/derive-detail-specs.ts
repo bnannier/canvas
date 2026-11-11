@@ -21,6 +21,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import vm from "node:vm";
+import { REPOSITORY_COMPONENTS, REPOSITORY_KEYBOARD } from "./repository-components.ts";
 
 const REPO = join(import.meta.dir, "..", "..");
 const HANDOFF = join(REPO, "tools", "v4", "handoff");
@@ -107,25 +108,11 @@ const SPECIMEN_PROPS: Record<string, { props: Record<string, boolean>; omit?: st
   popover: { props: { inline: true }, omit: ["trigger"] },
 };
 
-// Components the repository ships that the vendored hand-off predates. The hand-off stays
-// verbatim (tools/v4/README.md), so each one's section, place in it and detail spec are the
-// repository's own, written in the hand-off's spec form (the `CVK.def` fields: `k` knobs in
-// the knob DSL, `st` states, `an` anatomy parts, `kb` keyboard pattern, `w` width) and
-// derived through the same code as a hand-off spec. A keyboard pattern the hand-off lacks is
-// added under REPOSITORY_KEYBOARD.
-const REPOSITORY_COMPONENTS: Record<string, { section: string; after: string; props: string; spec: { k?: string; st?: string; an?: string[]; kb?: string; w?: string } }> = {
-  "flow-editor": {
-    section: "Surfaces & data",
-    after: "board",
-    props: "FlowEditorProps",
-    spec: { k: "label=Delivery workflow;readOnly?;freePlacement?", an: ["Toolbar", "Canvas", "Node", "Port", "Edge", "Edge label"], kb: "flow-editor", w: "fill" },
-  },
-};
-
-// Keyboard patterns for REPOSITORY_COMPONENTS, as [keys, effect] rows.
-const REPOSITORY_KEYBOARD: Record<string, [string, string][]> = {
-  "flow-editor": [["Tab · Shift+Tab", "Moves between the toolbar, the canvas and each card"], ["Arrow keys", "Move the focused card one grid step"], ["Delete · Backspace", "Removes the selected card or edge"], ["+ · -", "Zooms the canvas in or out"], ["0", "Fits the whole graph in view"]],
-};
+// Components the repository ships that the vendored hand-off predates (REPOSITORY_COMPONENTS,
+// declared once in tools/v4/repository-components.ts): each one's section, place in it and
+// detail spec are the repository's own, written in the hand-off's spec form and derived
+// through the same code as a hand-off spec. A keyboard pattern the hand-off lacks is added
+// under REPOSITORY_KEYBOARD.
 
 // Knobs the repository spells as something other than a prop of the same name.
 // Icon's `name` knob picks a glyph, which the repository names with one boolean per glyph
@@ -308,7 +295,7 @@ function build() {
   for (const [key, rows] of Object.entries(kit.KB)) patterns[key] = rows.map(([a, b]) => [a, b]);
   for (const [key, rows] of Object.entries(REPOSITORY_KEYBOARD)) {
     if (patterns[key]) throw new Error(`REPOSITORY_KEYBOARD's "${key}" is a hand-off pattern now`);
-    patterns[key] = rows;
+    patterns[key] = rows.map(([a, b]) => [a, b]);
   }
   for (const key of kbKeys) if (!patterns[key]) throw new Error(`no keyboard table for the hand-off's "${key}" pattern`);
   return { sections, specs, patterns };
