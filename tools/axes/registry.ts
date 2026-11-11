@@ -388,7 +388,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Swatch.stretch", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#stretchesOf", rule: true, members: ["block", "circle", "inline"], resolve: stretchesOf }),
   subject({ id: "Switch.size", components: ["Switch"], pages: ["switch"], resolver: "src/atoms/switch/switch.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: switchSize }),
   subject({ id: "Textarea.size", components: ["Textarea"], pages: ["textarea"], resolver: "src/atoms/textarea/textarea.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: textareaSize }),
-  subject({ id: "Textarea.metrics", components: ["Textarea"], pages: ["textarea"], resolver: "src/atoms/textarea/textarea.shared.tsx#metricsOf", members: ["terminal", "dense"], resolve: textareaMetrics }),
+  subject({ id: "Textarea.metrics", components: ["Textarea"], pages: ["textarea"], resolver: "src/atoms/textarea/textarea.shared.tsx#metricsOf", members: ["terminal", "composer", "dense"], resolve: textareaMetrics }),
   subject({ id: "Tooltip.placement", components: ["Tooltip"], pages: ["tooltip"], resolver: "src/atoms/tooltip/tooltip.shared.tsx#placementOf", members: ["top", "bottom", "left", "right"], resolve: tooltipPlacement }),
   subject({
     id: "Tooltip.trigger",

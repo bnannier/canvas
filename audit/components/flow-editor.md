@@ -14,7 +14,7 @@ Audit checklist for `/components/flow-editor`. The facts block and the variants 
 | Platform entries | iOS: own build: FlowEditor (injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../atoms/select/select.ios.js)). Android: own build: FlowEditor (injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../atoms/select/select.android.js)) |
 | Platform-skins registry | iOS: FlowEditor; Android: FlowEditor |
 | Reference row | `flow-editor` (Shared, Built). iOS: none (iOS has no node-graph or flow editor control; apps that edit a graph draw their own canvas from views and gestures). Android: none (Material 3 has no node-graph or flow editor component; a graph editor is composed from cards on a custom canvas). Web: link [flow-editor (Web)](https://reactflow.dev/) (React Flow: nodes on a pannable, zoomable canvas joined by edges, with keyboard and screen reader support) |
-| Materials manifest | FlowEditor: organisms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, semantic-state |
+| Materials manifest | FlowEditor: organisms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
 | Hand-off metric gaps | none |

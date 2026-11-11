@@ -2922,14 +2922,18 @@
     "resolver": "src/atoms/textarea/textarea.shared.tsx#metricsOf",
     "order": [
       "terminal",
+      "composer",
       "dense"
     ],
     "none": "default",
     "single": {
       "terminal": "terminal",
+      "composer": "composer",
       "dense": "dense"
     },
     "pairs": {
+      "composer + dense": "composer",
+      "composer + terminal": "terminal",
       "dense + terminal": "terminal"
     }
   },
