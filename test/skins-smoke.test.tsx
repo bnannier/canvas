@@ -256,6 +256,18 @@ const CASES: SkinCase[] = [
       onPressItem: noop,
     },
   },
+  // FlowEditor mounts its toolbar (the platform Button and Select), two cards with their
+  // ports, and a labelled edge.
+  {
+    name: "FlowEditor",
+    dir: "organisms/flow-editor",
+    file: "flow-editor",
+    props: {
+      label: "Workflow",
+      nodes: [{ id: "a", label: "Product", description: "Requirements", x: 0, y: 0 }, { id: "b", label: "Design", x: 240, y: 0 }],
+      edges: [{ id: "ab", from: "a", to: "b", label: "Ready" }],
+    },
+  },
   { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { month: "June 2026", selected: 10, today: 12, daysInMonth: 30, startWeekday: 1, events: [{ day: 10, title: "Standup", start: 9 }, { day: 12 }] } },
   // Week + day views mount the timeline half of every skin (hour axis, slot lines, event blocks).
   { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { week: true, month: "June 2026", selected: 10, today: 12, daysInMonth: 30, startWeekday: 1, events: [{ day: 10, title: "Standup", start: 9 }, { day: 11, title: "Review", start: 9.5, end: 11 }] } },
