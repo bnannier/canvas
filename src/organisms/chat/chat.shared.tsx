@@ -431,7 +431,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
       <View {...(nested ? null : LIST_ITEM)} testID={testID} style={nested ? s.activityNested : assistant ? s.assistantActivity : s.activity}>
         <Button plainLink start accessibilityLabel={`${summary}, ${open ? "hide" : "show"} details`} {...({ "aria-expanded": open } as object)} disabled={!message.content}
           iconRight={message.content ? <Icon {...(open ? { chevronDown: true } : { chevronRight: true })} color={ink} size={12} /> : undefined} onPress={() => setOpen((value) => !value)}>
-          <Text style={terminal ? s.terminalMuted(tokens) : s.activityLabel(tokens)}>{summary}</Text>
+          <Text style={terminal ? s.terminalMuted(tokens) : assistant ? s.assistantActivityLabel(tokens) : s.activityLabel(tokens)}>{summary}</Text>
         </Button>
         {open && message.content ? <View style={s.activityBody(tokens)}><Details compact terminal={terminal}>{message.content}</Details></View> : null}
       </View>
@@ -449,7 +449,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
       <View {...LIST_ITEM} style={assistant ? s.assistantActivity : s.activity}>
         <Button plainLink start accessibilityLabel={`${items.length} steps: ${summary}, ${open ? "hide" : "show"} details`} {...({ "aria-expanded": open } as object)}
           iconRight={<Icon {...(open ? { chevronDown: true } : { chevronRight: true })} color={ink} size={12} />} onPress={() => setOpen((value) => !value)}>
-          <Text numberOfLines={1} style={s.activityLabel(tokens)}>{summary}</Text>
+          <Text numberOfLines={1} style={assistant ? s.assistantActivityLabel(tokens) : s.activityLabel(tokens)}>{summary}</Text>
         </Button>
         {open ? <View style={[s.activityBody(tokens), s.activityGroupBody]}>{items.map((item) => <ActivityRow key={item.id} message={item} assistant={assistant} nested />)}</View> : null}
       </View>
@@ -474,10 +474,13 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const bubble = user && !terminal
       ? <GlassSurface layer="content" tint={desk ? tokens.muted : tokens["primary-soft"]} style={desk ? skin.assistantMessage(tokens) : skin.message(tokens, true)}>{content}</GlassSurface>
       : content;
-    // As the hand-off's message renderer does, a turn carries an author line only when the
-    // app names its author or provider (several AIs in one conversation); the terminal
-    // always labels turns.
-    const identified = terminal || !!message.author || !!message.provider || message.providerIcon != null;
+    // As the hand-off's message renderer does (`!me&&(m.author||m.provider)`), a reply carries
+    // an author line only when the app names its author or provider (several AIs in one
+    // conversation), and the person's own turns carry none. `assistant` labels any named
+    // turn, the person's own included, as the desktop window does; the terminal always
+    // labels turns.
+    const named = !!message.author || !!message.provider || message.providerIcon != null;
+    const identified = terminal || (named && (desk || !user));
     return (
       <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, terminal ? null : user ? (desk ? s.assistantUserRow : s.userRow) : (desk ? s.assistantAssistantRow : s.assistantRow)]}>
         <View style={[s.messageContent, terminal ? s.terminalMessage : user ? s.userContent : null, message.questions?.length ? s.questionContent : null]}>

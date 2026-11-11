@@ -1,9 +1,27 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
+import { createElement, type ReactElement } from "react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { lightColors as t } from "../src/style/tokens.ts";
 import { DISPLAY_FONT, MONO_FONT } from "../src/style/mono.ts";
+import { ThemeProvider } from "../src/style/theme.tsx";
 import * as chat from "../src/organisms/chat/chat.styles.ts";
 import * as md from "../src/organisms/chat/markdown.styles.ts";
+import { ChatMessage, ChatThread, type ChatMessageData } from "../src/organisms/chat/chat.tsx";
 import { composerMinHeight } from "../src/atoms/textarea/textarea.styles.ts";
+
+afterEach(cleanup);
+
+const inLight = (node: ReactElement) => render(createElement(ThemeProvider, { light: true, solid: true }, node));
+/** A user turn that names its author, as an app with several people in one conversation passes it. */
+const namedUserTurn: ChatMessageData = { id: "ask", role: "user", author: "Ada", content: "Help me plan the release." };
+const namedReply: ChatMessageData = { id: "plan", role: "assistant", author: "Planner", content: "Start with scope." };
+const ranTests: ChatMessageData = { id: "ran", role: "system", activity: true, author: "Ran bun test", content: "42 passed" };
+const readNotes: ChatMessageData = { id: "read", role: "system", activity: true, author: "Read the release notes", content: "CHANGELOG.md" };
+/** The rendered size of an activity line's summary text. */
+const summaryLook = (text: string) => {
+  const style = getComputedStyle(screen.getByText(text));
+  return { fontSize: style.fontSize, lineHeight: style.lineHeight };
+};
 
 // The v4 hand-off's Chat renderer (cv-kit-data.js K.def('chat'), cv-kit-code3.js O('chat'), its parts and K.md).
 describe("the v4 chat", () => {
@@ -32,6 +50,26 @@ describe("the v4 chat", () => {
     expect(chat.dot(t)).toMatchObject({ width: 5, height: 5, backgroundColor: t["subtle-foreground"] });
     expect(chat.dots.gap).toBe(3);
     expect(chat.thinkingLabel(t)).toMatchObject({ fontSize: 13, color: t["muted-foreground"] });
+  });
+
+  // msgH: `${!me&&(m.author||m.provider)?<the 500 11 author line>:''}`.
+  it("draws an author line on a named reply but never on the person's own turn", () => {
+    inLight(createElement(ChatMessage, { message: namedUserTurn }));
+    expect(screen.queryByText("Ada")).toBeNull();
+    cleanup();
+    inLight(createElement(ChatMessage, { message: namedReply }));
+    expect(screen.getByText("Planner")).toBeTruthy();
+  });
+
+  // The hand-off draws no activity line, so the default keeps the line 0d5af5fc introduced
+  // (13 / 18 in the subtle ink), before e7a942aa set the desktop's 14 / 21 muted one on it.
+  it("sets a folded activity line at 13 / 18 in the subtle ink", () => {
+    expect(chat.activityLabel(t)).toEqual({ fontSize: 13, lineHeight: 18, color: t["subtle-foreground"] });
+    inLight(createElement(ChatMessage, { message: ranTests }));
+    expect(summaryLook("Ran bun test")).toEqual({ fontSize: "13px", lineHeight: "18px" });
+    cleanup();
+    inLight(createElement(ChatThread, { messages: [readNotes, ranTests] }));
+    expect(summaryLook("Read the release notes, Ran bun test")).toEqual({ fontSize: "13px", lineHeight: "18px" });
   });
 
   it("sets document Markdown at 14 / 1.55 with 600 headings and mono inline code", () => {
@@ -84,6 +122,23 @@ describe("the assistant chat", () => {
     expect((composerMinHeight().minHeight as number) + (surface.paddingVertical as number) * 2 + (surface.borderWidth as number) * 2).toBe(44);
     expect(chat.assistantComposerRow).toMatchObject({ flexDirection: "row", alignItems: "flex-end", gap: 4 });
     expect(chat.meta(t)).toMatchObject({ alignSelf: "flex-end", fontSize: 12, color: t["muted-foreground"] });
+  });
+
+  it("draws an author line on any turn whose author the app names, the person's own included", () => {
+    inLight(createElement(ChatMessage, { assistant: true, message: namedUserTurn }));
+    expect(screen.getByText("Ada")).toBeTruthy();
+    cleanup();
+    inLight(createElement(ChatMessage, { assistant: true, message: { ...namedUserTurn, author: undefined } }));
+    expect(screen.queryByText("You")).toBeNull();
+  });
+
+  it("sets a folded activity line at 14 / 21 in the muted ink", () => {
+    expect(chat.assistantActivityLabel(t)).toEqual({ fontSize: 14, lineHeight: 21, color: t["muted-foreground"] });
+    inLight(createElement(ChatMessage, { assistant: true, message: ranTests }));
+    expect(summaryLook("Ran bun test")).toEqual({ fontSize: "14px", lineHeight: "21px" });
+    cleanup();
+    inLight(createElement(ChatThread, { assistant: true, messages: [readNotes, ranTests] }));
+    expect(summaryLook("Read the release notes, Ran bun test")).toEqual({ fontSize: "14px", lineHeight: "21px" });
   });
 
   it("leaves the default chat on the hand-off's corners", () => {
