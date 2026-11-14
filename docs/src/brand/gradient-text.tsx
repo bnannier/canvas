@@ -3,6 +3,13 @@ import { Dimensions, Platform, type NativeSyntheticEvent, type TextLayoutEventDa
 import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from "react-native-svg";
 import { Text, Typography, View, useTheme, type FontFaces, type FontWeightKey } from "@nannier/canvas";
 import { GRADIENT_TEXT, baselineOffset, heroType } from "./library-hero-look";
+import { pageRoles } from "../../../src/style/type-scale";
+
+type WebGradientTextStyle = TextStyle & {
+  backgroundImage: string;
+  backgroundClip: "text";
+  WebkitBackgroundClip: "text";
+};
 
 // A brand illustration: one word in the display role filled by the brand artwork's
 // accent-to-cyan-to-mint sweep, the v4 hand-off's `background-clip: text` headline word
@@ -24,8 +31,8 @@ import { GRADIENT_TEXT, baselineOffset, heroType } from "./library-hero-look";
 // text layout (`y + height - descender`) where the platform reports one, and the CSS model
 // on the web, which reports none. The same code draws it on
 // iOS, Android and
-// the web. The word is decorative to assistive tech: the heading that holds it names itself
-// (Typography `accessibilityLabel`). The values are the table in ./library-hero-look.ts.
+// the web. Decorative words defer to the heading's accessible name; standalone copy
+// exposes its own text. The gradient values are the table in ./library-hero-look.ts.
 
 /**
  * The face the display role is drawn in, as the kit's text resolves it: a family that
@@ -56,11 +63,20 @@ const subscribeWindow = (onChange: () => void) => {
 const windowWidth = () => Dimensions.get("window").width;
 const noWidth = () => 0;
 
-export function GradientText({ children, anchor, testID }: { children: string; anchor: RefObject<NativeView | null>; testID?: string }) {
+export function GradientText({ children, anchor, testID, tagline = false, decorative = true }: {
+  children: string;
+  anchor: RefObject<NativeView | null>;
+  testID?: string;
+  /** Use the smaller display role for the platform line beneath the hero. */
+  tagline?: boolean;
+  /** The headline supplies its own accessible name; standalone copy stays readable. */
+  decorative?: boolean;
+}) {
   const { tokens, fonts } = useTheme();
   const id = `sweep${useId().replace(/[^A-Za-z0-9]/g, "")}`;
   // The hero role sizes the word by the window, as the headline around it does.
-  const type = heroType(useSyncExternalStore(subscribeWindow, windowWidth, noWidth));
+  const viewportWidth = useSyncExternalStore(subscribeWindow, windowWidth, noWidth);
+  const type = tagline ? pageRoles.sectionTitle : heroType(viewportWidth);
   const face = displayFace(fonts.display, type.fontSize, type.fontWeight) ?? displayFace(fonts.sans, type.fontSize, type.fontWeight);
   const box = useRef<NativeView>(null);
   const shift = useLineShift(anchor, box, type.lineHeight);
@@ -74,19 +90,21 @@ export function GradientText({ children, anchor, testID }: { children: string; a
   // the SVG renderer below, where text clipping is unavailable.
   if (Platform.OS === "web") {
     const stops = GRADIENT_TEXT.stops.map(stop => `${tokens[stop.role]} ${Number(stop.offset) * 100}%`).join(", ");
-    return <Text testID={testID} aria-hidden style={{
+    return <Text testID={testID} aria-hidden={decorative || undefined} style={{
       ...type, fontFamily: face?.fontFamily, fontWeight: face?.fontWeight,
       color: "transparent", backgroundImage: `linear-gradient(90deg, ${stops})`,
       backgroundClip: "text", WebkitBackgroundClip: "text",
-    } as TextStyle}>{children}</Text>;
+    } as WebGradientTextStyle}>{children}</Text>;
   }
   return (
-    <View ref={box} testID={testID} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ alignSelf: "flex-start" }}>
+    <View ref={box} testID={testID} accessible={!decorative} accessibilityLabel={decorative ? undefined : children}
+      aria-hidden={decorative || undefined} accessibilityElementsHidden={decorative}
+      importantForAccessibility={decorative ? "no-hide-descendants" : "yes"} style={{ alignSelf: "flex-start" }}>
       {/* The word's line box, held invisible; the gradient paints over it. The heading
           around the word carries its accessible name, so both layers are hidden from
           assistive tech. */}
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ opacity: 0 }}>
-        <Typography hero onTextLayout={onTextLayout}>{children}</Typography>
+        <Typography hero={!tagline} sectionTitle={tagline} onTextLayout={onTextLayout}>{children}</Typography>
       </View>
       <View
         accessibilityElementsHidden

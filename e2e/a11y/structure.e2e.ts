@@ -4,7 +4,7 @@ import { attach, describe as describeViolations, scanStructure, STRUCTURAL_RULES
 import { expect, test } from "../support/fixtures";
 
 const PAGES = [
-  { path: "/", title: "Light as material." },
+  { path: "/", title: "One UI Kit." },
   { path: "/components", title: "Components" },
   { path: "/tokens/colors", title: "Colors & Theme" },
   { path: "/integration", title: "Integration" },

@@ -77,7 +77,7 @@ for (const variant of VARIANTS) {
       await expect(page.getByText("Page not found")).toBeVisible();
       await expect(page).toHaveURL(new RegExp(`${BASE_PATH}/definitely-not-a-route(?:\\?|$)`));
       await page.getByRole("button", { name: "Go home", exact: true }).click();
-      await expect(page.getByRole("heading", { level: 1, name: "Light as material.", exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: "One UI Kit.", exact: true })).toBeVisible();
     });
   });
 }

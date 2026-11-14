@@ -1,10 +1,12 @@
-// The docs copy that names platforms, per build. The web keeps the hand-off's words, which
-// set the three platforms side by side; Metro resolves ./platform-copy.ios.ts in the iOS
+// The docs copy that names platforms, per build. The web sets the three platforms
+// side by side; Metro resolves ./platform-copy.ios.ts in the iOS
 // app and ./platform-copy.android.ts in the Android app, which name only their own platform
 // (App Store guideline 2.3.10, the owner's decision of 2026-10-28; the seam is
 // ../core/platforms-shown). Copy that names no platform stays where it is used.
 
 export interface PlatformCopy {
+  /** The smaller platform line beneath the Library headline. */
+  heroPlatforms: string;
   /** The Library hero's paragraph. */
   heroBody: string;
   /** The hero stats row's platform entry. */
@@ -41,8 +43,9 @@ export interface PlatformCopy {
 }
 
 export const PLATFORM_COPY: PlatformCopy = {
+  heroPlatforms: "iOS, Android, and Web.",
   heroBody:
-    "One component API, three native looks. Every surface is now lit glass: a single charged accent, spring motion, and type that carries the hierarchy on its own.",
+    "Build across platforms with React Native components, native controls, and customizable themes.",
   heroSkins: "3 platform skins",
   indexLead: "One API. Three native looks. All of it ships today.",
   indexAfter: ", native on iOS and Android and at home on the web, in five accents, light and dark, glass and solid.",

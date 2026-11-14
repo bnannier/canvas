@@ -8,8 +8,8 @@ import { PLATFORM_COPY } from "./platform-copy";
 // kit components and the brand illustrations in docs/src/brand; test/docs-library.test.ts
 // holds it to the hand-off and to the kit's real exports.
 //
-// The v4 hand-off supplies both the words and the motion. Counts come from the live
-// registries, while the visual design and its typography follow the reference.
+// The v4 hand-off supplies the design and motion. The owner revised the hero copy on
+// 2026-11-14 to explain the kit and its platforms; counts come from the live registries.
 //
 // Plain data with no React import, so the unit tests read it without a kit build.
 
@@ -20,8 +20,10 @@ export const LIBRARY_HERO = {
   /** The eyebrow after the version: "Canvas v4.0.0 · Component library". */
   eyebrow: (version: string) => `Canvas v${version} · Component library`,
   /** The headline's plain part, then its gradient word. The h1's accessible name is both. */
-  headline: { plain: "Light as", accent: "material." },
+  headline: { plain: "One UI", accent: "Kit." },
   /** Names the platforms, so it is per build (./platform-copy). */
+  platforms: PLATFORM_COPY.heroPlatforms,
+  /** The description beneath the platform line. */
   body: PLATFORM_COPY.heroBody,
   primary: { label: "Explore components", href: "/controls" },
   secondary: { label: "bnannier/canvas", url: REPO_URL },

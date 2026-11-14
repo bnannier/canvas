@@ -91,10 +91,9 @@ describe("the Library index", () => {
 });
 
 describe("the Library copy", () => {
-  it("takes the hand-off's headline, eyebrow and calls", () => {
-    expect(LIBRARY_HEADLINE).toBe("Light as material.");
-    expect(LIBRARY).toContain(`Light as <em style=`);
-    expect(LIBRARY).toContain(`">material.</em></h1>`);
+  it("uses the owner's hero copy with the hand-off's eyebrow and calls", () => {
+    expect(LIBRARY_HEADLINE).toBe("One UI Kit.");
+    expect(LIBRARY_HERO.body).toBe("Build across platforms with React Native components, native controls, and customizable themes.");
     expect(LIBRARY).toContain(`${LIBRARY_HERO.eyebrow("4.0.0")}</div>`);
     expect(LIBRARY).toContain(`>${LIBRARY_HERO.primary.label} <span>`);
     expect(LIBRARY).toContain(`>${LIBRARY_HERO.secondary.label} <span`);

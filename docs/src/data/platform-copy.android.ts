@@ -6,8 +6,9 @@ import type { PlatformCopy } from "./platform-copy";
 export type { PlatformCopy } from "./platform-copy";
 
 export const PLATFORM_COPY: PlatformCopy = {
+  heroPlatforms: "Android and Web.",
   heroBody:
-    "One component API, native on Android. Every surface is now lit glass: a single charged accent, spring motion, and type that carries the hierarchy on its own.",
+    "Build across platforms with React Native components, native controls, and customizable themes.",
   heroSkins: "native Material 3 skin",
   indexLead: "One API. Native on Android phones and tablets. All of it ships today.",
   indexAfter: ", native on Android and at home on the web, in five accents, light and dark, glass and solid.",

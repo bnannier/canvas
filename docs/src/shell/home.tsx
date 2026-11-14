@@ -43,7 +43,7 @@ import {
 import { Page } from "../ui/page";
 
 // The docs home: the v4 hand-off's Library page (`Canvas v4.0.0 Library.dc.html`): the hero
-// (the eyebrow, the "Light as material." headline, the paragraph, two calls, the stats row
+// (the eyebrow, the owner-revised headline and paragraph, two calls, the stats row
 // and the collage of live kit components over the aurora), the four direction cards, the
 // Index of the eight rooms with each component's tier, the tier legend, the sub-components
 // card and the templates call. The copy and the index are docs/src/data/library.ts; the
@@ -77,6 +77,7 @@ export function LibraryHero() {
   const router = useRouter();
   const { headline, primary, secondary } = LIBRARY_HERO;
   const headlineBox = useRef<NativeView>(null);
+  const platformsBox = useRef<NativeView>(null);
   const panels = useHeroPanels();
   const { tokens } = useTheme();
   return (
@@ -91,6 +92,11 @@ export function LibraryHero() {
             <Typography hero accessibilityLabel={LIBRARY_HEADLINE}>
               {`${headline.plain} `}
               <GradientText anchor={headlineBox} testID="library-headline-accent">{headline.accent}</GradientText>
+            </Typography>
+          </View>
+          <View ref={platformsBox}>
+            <Typography tagline>
+              <GradientText tagline decorative={false} anchor={platformsBox} testID="library-platforms">{LIBRARY_HERO.platforms}</GradientText>
             </Typography>
           </View>
           <Container xxl start>

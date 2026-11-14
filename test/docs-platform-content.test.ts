@@ -47,8 +47,10 @@ describe("docs platform content", () => {
     expect(Object.keys(androidCopy).sort()).toEqual(Object.keys(webCopy).sort());
     expect(JSON.stringify(iosCopy)).not.toMatch(NOT_ON_IOS);
     expect(JSON.stringify(androidCopy)).not.toMatch(NOT_ON_ANDROID);
-    // The web keeps the hand-off's words, the three platforms side by side.
-    expect(webCopy.heroBody.startsWith("One component API, three native looks.")).toBe(true);
+    expect(webCopy.heroPlatforms).toBe("iOS, Android, and Web.");
+    expect(iosCopy.heroPlatforms).toBe("iOS and Web.");
+    expect(androidCopy.heroPlatforms).toBe("Android and Web.");
+    expect(webCopy.heroBody).toBe("Build across platforms with React Native components, native controls, and customizable themes.");
     expect(webCopy.skinsLead).toBe("One tree. iOS capsule, Material stadium, Canvas web.");
   });
 
