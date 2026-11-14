@@ -60,12 +60,14 @@ export function timeline(time: number, period: number, keys: readonly number[], 
   return values[values.length - 1]!;
 }
 
-// SVG exposes native brush objects rather than ordinary RN style colors. Its web
-// setNativeProps follows that contract too, so convert animated fills on both hosts.
+// SVG's web setNativeProps needs brush objects. Native Reanimated processes colors
+// itself before passing them to SVG, and rejects an already wrapped brush object.
 const svgAdapter = createAnimatedPropAdapter((props) => {
   "worklet";
-  for (const name of ["fill", "stroke"]) {
-    if (typeof props[name] === "string") props[name] = { type: 0, payload: processColor(props[name] as string) };
+  if (Platform.OS === "web") {
+    for (const name of ["fill", "stroke"]) {
+      if (typeof props[name] === "string") props[name] = { type: 0, payload: processColor(props[name] as string) };
+    }
   }
   if (Platform.OS !== "web" && typeof props.transform === "string") {
     const operations = props.transform.match(/(translate|scale)\([^)]*\)/g) ?? [];
