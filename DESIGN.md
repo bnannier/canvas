@@ -968,6 +968,7 @@ kit's own Android parts at a step of the same scale.
 | web | `statSwatch` | 2px |
 | web | `dragGhost` | 12px |
 | web | `composer` | 16px |
+| web | `chatNotice` | 10px |
 | web | `bubble` | 16px |
 | web | `bubbleTail` | 4px |
 | web | `assistantComposer` | 12px |
@@ -1104,6 +1105,7 @@ drawn by those entries' platforms.
 | `statSwatch` | `molecules/stats` |
 | `dragGhost` | `organisms/drag-drop` |
 | `composer` | `organisms/chat` |
+| `chatNotice` | `organisms/chat` |
 | `bubble` | `organisms/chat` |
 | `bubbleTail` | `organisms/chat` |
 | `assistantComposer` | `organisms/chat` |
