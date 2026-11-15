@@ -26,7 +26,11 @@ for (const scheme of ["dark", "light"] as const) {
   for (const [formFactor, viewport] of Object.entries(VIEWPORTS)) {
     for (const route of MATERIAL_ROUTES) {
       test(`material ${route.slug} ${scheme} ${formFactor}`, async ({ page }, testInfo) => {
-        await page.clock.setFixedTime(FIXED_TIME);
+        if (route.slug === "toast") {
+          // Let navigation hydrate normally, then hold the four-second toast
+          // lifetime during evidence capture. setFixedTime does not stop timers.
+          await page.clock.install({ time: new Date(FIXED_TIME.getTime() - 60_000) });
+        } else await page.clock.setFixedTime(FIXED_TIME);
         await gotoDocs(page, route.path, { scheme, surface: "glass", viewport });
         const card = previewCard(page).first();
         const row = platformRow(page, "web").first();
@@ -37,11 +41,19 @@ for (const scheme of ["dark", "light"] as const) {
 
         if (route.slug === "toast") {
           await gotoDocs(page, "/components", { scheme, surface: "glass", viewport });
+          await page.clock.pauseAt(FIXED_TIME);
           const speaking = TOAST.region(page).filter({ hasText: /\S/ });
           const before = await speaking.count();
-          await TOAST.open(page);
-          await expect(speaking).toHaveCount(before + 1);
-          await attachMaterialEvidence(page, testInfo, "glass-notification", page.locator("[data-page-scroll]").first(), metadata, true);
+          try {
+            await TOAST.open(page);
+            await page.clock.runFor(16);
+            await expect(speaking).toHaveCount(before + 1);
+            await attachMaterialEvidence(page, testInfo, "glass-notification", page.locator("[data-page-scroll]").first(), metadata, true);
+            await page.clock.runFor(4000);
+            await expect(speaking).toHaveCount(before);
+          } finally {
+            await page.clock.resume();
+          }
         }
 
         // Preserve the existing solid image baselines and additionally verify
