@@ -1,5 +1,18 @@
 # @nannier/canvas
 
+## 4.4.1
+
+### Patch Changes
+
+- 89e9822: Refresh the generated design reference to include the Chat notice corner token.
+- 73857f0: Match the default Chat composer, notice callout, action buttons and message spacing to the v4 hand-off while preserving the assistant layout.
+- 5b8f392: Clarify the documentation homepage's cross-platform UI kit introduction and fix section links incorrectly opening the not-found page until refreshed.
+- 66e3cb7: Update happy-dom and its global registrator to address GHSA-834v-8h66-3h79.
+- b4e3e99: Keep the native Command smoke journey aligned with its current footer hints.
+- 4542bec: Align native smoke checks with the default violet palette in the hover and avatar examples.
+- 4eaeedf: Keep Android material lifecycle checks scrolling the page when the editor Slider occupies the center of the screen.
+- 4abce54: Prevent the native documentation section animations from crashing when Reanimated processes their SVG colors.
+
 ## 4.4.0
 
 ### Minor Changes
