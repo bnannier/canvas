@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/atoms/select/select.md`
 Human reference: https://canvas.nannier.com/components/select
@@ -233,6 +233,14 @@ platform field anatomy and minimum touch targets.
 </View>
 ```
 
+## Accessibility
+
+The trigger is a button with an expanded state and a relationship to its open listbox. `combobox` selects that role instead. Options expose their selected state, arrow keys move between them, Enter or Space selects, and Escape dismisses the list.
+
+The trigger's name includes the field purpose and current display label, including a selected option's leading glyph, or the placeholder when empty. `accessibilityLabel` replaces the purpose while retaining the current value; inline labels follow the same naming rule. A required field also announces required in its name.
+
+`error` marks the trigger invalid. Wrap a single Select in Field to connect its helper or error message, or pass description IDs through `aria-describedby` and a native `accessibilityHint`. These validation props provide accessibility state and descriptions; the Select skin keeps its existing appearance.
+
 ## Supported props
 
 ### SelectProps
@@ -245,8 +253,11 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | defaultValue | string \| undefined | no |  | Initial selection for uncontrolled use (a bare <Select options/> picks on its own). |
 | options | (string \| SelectOption)[] \| undefined | no |  | The selectable options: bare strings, or `{ value, label }` objects when the stored value differs from the text shown for it. |
 | label | string \| undefined | no |  | The field's persistent label. Its placement is platform-adaptive: iOS and web render it ABOVE the trigger; Android renders the Material 3 in-container FLOATING label (centered like a placeholder at rest, floating to the top once the menu opens or a value is selected). The label names the field for a11y. |
-| accessibilityLabel | string \| undefined | no |  | Accessible purpose for the trigger and option list. Overrides the visible label for assistive technology; otherwise the label or placeholder names them. |
-| inline | boolean \| undefined | no | false | Places the `label` as a LEADING cluster INSIDE the trigger row (a toolbar-style labeled select) instead of the persistent above/floating placement. Takes effect only alongside `label`. The inline label still names the trigger (accessibilityLabel / aria-labelledby) and shares its tap target, since it lives inside the trigger Pressable. Pairs with `fit` for a content-hugging toolbar cluster. |
+| accessibilityLabel | string \| undefined | no |  | Accessible field name. The trigger appends its selected display label or placeholder. |
+| accessibilityHint | string \| undefined | no |  | Native description of the field. Field supplies its message unless explicitly overridden. |
+| aria-describedby | string \| undefined | no |  | IDs of helper or error text describing the trigger. |
+| error | boolean \| undefined | no | false | Marks the selection invalid for assistive technology. |
+| inline | boolean \| undefined | no | false | Places the `label` as a LEADING cluster INSIDE the trigger row (a toolbar-style labeled select) instead of the persistent above/floating placement. Takes effect only alongside `label`. The inline label still names the trigger (accessibilityLabel / aria-label) and shares its tap target, since it lives inside the trigger Pressable. Pairs with `fit` for a content-hugging toolbar cluster. |
 | required | boolean \| undefined | no | false | Marks the field as required and announces "required" with the trigger name. A visible label also gets a decorative destructive "*". |
 | icon | boolean \| undefined | no | false | Renders a leading globe glyph inside the trigger, indented so the value clears it. |
 | placeholder | string \| undefined | no | "Select an option" | Prompt shown in the trigger when no value is selected. |

@@ -328,7 +328,7 @@ describe("the visible label's accessibility", () => {
       const required = (name: string) => (native ? `${name}, required` : name);
       for (const label of ["Input label", "Textarea label", "Autocomplete label", "Phone label"]) expect(namesOf(label), label).toEqual([required(label)]);
       expect(namesOf("Stepper label")).toEqual([required("Stepper label"), required("Stepper label")]);
-      expect(namesOf("Select label")).toContain("Select label, required");
+      expect(namesOf("Select label")).toContain("Select label, Select an option, required");
       expect(namesOf("Named by the caller")).toEqual([required("Named by the caller")]);
     });
   }
@@ -425,7 +425,7 @@ describe("a long label stays inside its field", () => {
       expect([text.whiteSpace, text.textOverflow]).toEqual(["nowrap", "ellipsis"]);
     }
     expect(screen.getByRole("textbox", { name: LONG })).toBeDefined();
-    expect(screen.getByRole("button", { name: LONG })).toBeDefined();
+    expect(screen.getByRole("button", { name: `${LONG}, Select an option` })).toBeDefined();
   });
 });
 
@@ -484,7 +484,7 @@ describe("the float follows the user's text size", () => {
   it("Select: the trigger has a floor rather than a height, takes the new reserve, and the float reads its measured height", () => {
     render(<ThemeProvider light><Select label="Region" options={["EU", "US"]} value="EU" /></ThemeProvider>);
     const seeds = seedsOf(selectSkin, "default");
-    const trigger = screen.getByRole("button", { name: "Region" });
+    const trigger = screen.getByRole("button", { name: "Region, EU" });
     expect(trigger.style.height).toBe("");
     expect(trigger.style.minHeight).toBe(`${heightOf(selectSkin.trigger(t, "default", false))}px`);
     const line = seeds.line * 2;

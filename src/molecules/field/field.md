@@ -202,3 +202,9 @@ tap target no longer includes it.
   <Input placeholder="you@example.com" />
 </Column>
 ```
+
+## Accessibility
+
+A single Input, Textarea, Select, Autocomplete or PhoneInput receives Field's required and error state even when it already has a label or Field has no label. Explicit child `label`, `required` and `error` values take precedence, including `false` for either state. Label delegation only changes where the label is drawn.
+
+The active helper or error message is added to the control's existing `aria-describedby` IDs. Errors use the alert role. Native controls receive the message as `accessibilityHint`; an explicit child hint takes precedence. These relationships update when validation changes. Multiple children and other control types keep their own validation and description wiring.

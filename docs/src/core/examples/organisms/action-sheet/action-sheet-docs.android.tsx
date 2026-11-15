@@ -19,6 +19,7 @@ export const docs: ComponentDocs = {
   category: "organisms",
   overview: [
     "It poses an optional title and message, lists a set of actions (any of which can be destructive), and offers a Cancel. Selecting an action runs it and closes the sheet; tapping the scrim or Cancel closes it without acting. Pass a `trigger` label for a self-contained button that opens the sheet, or drive `open` / `onOpenChange` yourself. For a small contextual menu anchored to a control, reach for Dropdown or RowMenu instead.",
+    "The sheet fits the available height, including after rotation into landscape when the host app permits it. Long action lists and oversized title/message text scroll inside the action card; a separate Cancel card stays visible. Safe-area insets keep the live sheet clear of the screen edges.",
     "On the web the sheet is two cards a little off the window's edges: a centered header over full-width rows in the accent's ink (a destructive one in the error ink), each under a hairline, and a separate Cancel card. Android keeps the Material 3 bottom sheet with a drag handle and list rows.",
     "Android system back requests cancellation without running an action. An open child overlay handles the request first. Disabled actions do not disable cancellation, and a controlled owner can keep the sheet open. The visible Cancel row remains available to assistive technology.",
   ],

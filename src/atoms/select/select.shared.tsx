@@ -90,14 +90,19 @@ export interface SelectProps extends MeasureProps {
    * The label names the field for a11y.
    */
   label?: string;
-  /** Accessible purpose for the trigger and option list. Overrides the visible
-   * label for assistive technology; otherwise the label or placeholder names them. */
+  /** Accessible field name. The trigger appends its selected display label or placeholder. */
   accessibilityLabel?: string;
+  /** Native description of the field. Field supplies its message unless explicitly overridden. */
+  accessibilityHint?: string;
+  /** IDs of helper or error text describing the trigger. */
+  "aria-describedby"?: string;
+  /** Marks the selection invalid for assistive technology. */
+  error?: boolean;
   /**
    * Places the `label` as a LEADING cluster INSIDE the trigger row (a toolbar-style
    * labeled select) instead of the persistent above/floating placement. Takes effect
    * only alongside `label`. The inline label still names the trigger (accessibilityLabel
-   * / aria-labelledby) and shares its tap target, since it lives inside the trigger
+   * / aria-label) and shares its tap target, since it lives inside the trigger
    * Pressable. Pairs with `fit` for a content-hugging toolbar cluster.
    */
   inline?: boolean;
@@ -304,7 +309,6 @@ export function createSelect(skin: SelectSkin) {
     // placeholder text is hidden while the floating label is the placeholder.
     const hasLabel = label != null && label !== "";
     const fieldName = props.accessibilityLabel?.trim() || label?.trim() || placeholder.trim() || "Select an option";
-    const triggerName = required ? `${fieldName}, required` : fieldName;
     // The trigger names itself from the label unless the caller named it, so natively the
     // label is then hidden beside it (labelA11y).
     const labelNames = !props.accessibilityLabel?.trim();
@@ -352,6 +356,9 @@ export function createSelect(skin: SelectSkin) {
     const displayText = hasValue ? selectedLabel : floating && !open ? "" : placeholder;
     // The selected option's leading glyph rides in the trigger before the value.
     const selectedLeading = hasValue ? selected?.leading : undefined;
+    const valueName = hasValue ? (selected ? optionName(selected) : value) : placeholder.trim() || "Select an option";
+    const purpose = props.accessibilityLabel?.trim() || label?.trim();
+    const triggerName = [purpose, valueName].filter((part, index, parts) => part && parts.indexOf(part) === index).join(", ") + (required ? ", required" : "");
     // The selection mark: its ink and the check glyph's size.
     const mark = skin.indicator(tokens, size);
     const markSize = asNum(mark.fontSize, 14);
@@ -394,15 +401,15 @@ export function createSelect(skin: SelectSkin) {
           accessibilityState={{ expanded: open, disabled: !!disabled }}
           aria-expanded={open}
           aria-disabled={!!disabled}
+          aria-required={props.combobox && required || undefined}
           aria-haspopup="listbox"
           aria-controls={open ? listId : undefined}
-          // Name the trigger by its label on both channels so a screen reader
-          // announces the field's name, not just the selected value/placeholder.
+          // Keep the field purpose and its current display value on both channels.
           accessibilityLabel={triggerName}
           aria-label={triggerName}
-          // The inline label lives inside this Pressable, so link it by nativeID
-          // (RNW forwards aria-labelledby to the DOM) as the trigger's name too.
-          aria-labelledby={inline && !props.accessibilityLabel && !required ? labelId : undefined}
+          accessibilityHint={props.accessibilityHint}
+          aria-describedby={props["aria-describedby"]}
+          aria-invalid={props.error || undefined}
         >
           {({ pressed }) => {
             const ink = glass ? { opacity: disabled ? skin.disabledOpacity : pressed && !props.steadyPress && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;

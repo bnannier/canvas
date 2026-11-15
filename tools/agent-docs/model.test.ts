@@ -111,6 +111,11 @@ test("real source snapshot resolves public API, complete props, links and hashes
   expect(installation).toContain("### Android capture module");
   expect(installation).toContain("npm install react-native-qrcode-svg expo-video");
   expect(installation).toContain("#package-and-source-terms");
+  for (const file of ["web-build.mjs", "web-flow.mjs"]) {
+    expect(first.get(`${prefix}${file}`)).toBe(readFileSync(new URL(`../package/consumer-support/${file}`, import.meta.url), "utf8"));
+    expect(installation).toContain(`https://canvas.nannier.com/${prefix}${file}`);
+    expect(manifest.sources[`tools/package/consumer-support/${file}`]).toBe(sha256(first.get(`${prefix}${file}`)!));
+  }
   for (const [file, content] of first) if (file.endsWith(".md") || file.endsWith(".txt")) expect(/\]\(https:\/\/github\.com\/bnannier\/canvas(?:\/|#|\))/.test(content)).toBe(false);
   for (const component of catalog.components) {
     expect(first.has(component.url.replace("https://canvas.nannier.com/", ""))).toBe(true);
@@ -122,7 +127,7 @@ test("real source snapshot resolves public API, complete props, links and hashes
     }
   }
   // Every generated Markdown/JSON link resolves within this source snapshot.
-  for (const content of first.values()) for (const link of content.matchAll(/https:\/\/canvas\.nannier\.com\/(ai\/[^\s)"<>]+\.(?:md|json))/g)) expect(first.has(link[1])).toBe(true);
+  for (const content of first.values()) for (const link of content.matchAll(/https:\/\/canvas\.nannier\.com\/(ai\/[^\s)"<>]+\.(?:md|json|mjs))/g)) expect(first.has(link[1])).toBe(true);
   expect(first.get("llms.txt")).toContain("not proof of an npm release");
   expect([...first.values()].some((content) => content.includes("/Users/"))).toBe(false);
 }, 20_000);

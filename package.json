@@ -68,7 +68,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p tools/tsconfig.json && tsc --noEmit -p tools/axes/tsconfig.json",
     "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json",
     "lint": "eslint .",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun scripts/build-native.ts",
+    "build": "rm -rf dist && bun scripts/build-web.ts && bun scripts/build-native.ts",
     "dev": "bun scripts/dev.ts",
     "verify-package": "bun scripts/verify-package.ts",
     "prepublishOnly": "node tools/licensegen/generate.mjs && bun run agent-docs:gen && bun run consumer:gen && bun run build && bun run verify-package",

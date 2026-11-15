@@ -1,5 +1,6 @@
 import { forwardRef, useId, useState, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import {
   StyleSheet,
@@ -317,7 +318,7 @@ export function createStepper(skin: StepperSkin) {
     // RNW TextInput owns onKeyDown and forwards it through onKeyPress. Use that
     // public event on every runtime so the editable field keeps focus while
     // adjusting. Leave modified keys and composition to ordinary text editing.
-    const onKeyPress = (event: TextInputKeyPressEvent) => {
+    const onKeyPress = useInputEscapeBridge((event: TextInputKeyPressEvent) => {
       const keyEvent = event.nativeEvent as typeof event.nativeEvent & {
         isComposing?: boolean;
         keyCode?: number;
@@ -337,7 +338,7 @@ export function createStepper(skin: StepperSkin) {
       if (key === "ArrowUp") increment();
       else if (key === "ArrowDown") decrement();
       else emit(key === "Home" ? min : max);
-    };
+    });
 
     // Parse on every keystroke: ignore non-numeric input, allow an empty/partial
     // transient draft, and emit the clamped number whenever the draft parses.

@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/atoms/dropdown/dropdown.md`
 Human reference: https://canvas.nannier.com/components/dropdown

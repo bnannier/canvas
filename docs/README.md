@@ -85,5 +85,15 @@ variable, plus the signing and store credentials configured in EAS. Project and
 profile configuration live in `app.json` and `eas.json`; current store setup and
 submission notes live in [store/SUBMISSION.md](../store/SUBMISSION.md).
 
+The app version follows the root Canvas `package.json` through `app.config.js`;
+there is no separate version to maintain in `app.json`. Deploy restores the
+validated candidate (including its Changesets version bump), then checks Expo's
+resolved version against that candidate before either native build is queued.
+EAS's remote `autoIncrement` advances build numbers separately. After Apple has
+approved a Canvas version, release a newer Canvas version before submitting
+another store release: rebuilding the approved version can still cause
+ITMS-90186 / ITMS-90062. The `appVersion` runtime policy follows the same Canvas
+version, so a version change requires a new native binary.
+
 The app uses the generated Canvas C mark, not Expo template branding. Regenerate
 icons through `bun run appicon:gen` from the repository root.

@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/molecules/field/field.md`
 Human reference: https://canvas.nannier.com/components/field
@@ -198,6 +198,12 @@ tap target no longer includes it.
 </Column>
 ```
 
+## Accessibility
+
+A single Input, Textarea, Select, Autocomplete or PhoneInput receives Field's required and error state even when it already has a label or Field has no label. Explicit child `label`, `required` and `error` values take precedence, including `false` for either state. Label delegation only changes where the label is drawn.
+
+The active helper or error message is added to the control's existing `aria-describedby` IDs. Errors use the alert role. Native controls receive the message as `accessibilityHint`; an explicit child hint takes precedence. These relationships update when validation changes. Multiple children and other control types keep their own validation and description wiring.
+
 ## Supported props
 
 ### FieldProps
@@ -206,7 +212,7 @@ Includes `MeasureProps`; their supported fields are expanded below.
 
 | Prop | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
-| label | string \| undefined | no |  | Row label. When the lone child is a field-family control (Input, Textarea, Select, Autocomplete) that carries no `label` of its own, the label and `required` are DELEGATED into that control so each platform places them per its own contract. Any other control keeps the static label above. |
+| label | string \| undefined | no |  | Row label. When the lone child is a field-family control (Input, Textarea, Select, Autocomplete, PhoneInput) that carries no `label` of its own, the label is delegated into that control so each platform places it per its own contract. Validation and descriptions reach that single control even when it owns its label or Field has no label. |
 | helper | string \| undefined | no |  | Muted hint under the control. Replaced by `error` when that is set. |
 | error | string \| undefined | no |  | Error text. Setting it puts the row in the error state: the message turns destructive and replaces `helper` in place, so the row never changes height and nothing below it jumps. |
 | required | boolean \| undefined | no | false | Marks the label with a destructive asterisk (decorative, never in an accessible name). A delegated control takes `required` and announces itself as required; over any other control, the label says it in its own name on iOS and Android ("Notifications, required"). |

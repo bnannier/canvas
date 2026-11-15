@@ -1,6 +1,7 @@
 {
-  // Web ESM and public declarations retain explicit .js specifiers. Native
-  // consumers use the separate dist/native output from scripts/build-native.ts,
+  // Web ESM and public declarations retain explicit .js specifiers.
+  // scripts/build-web.ts embeds source text in JS and declaration maps, since
+  // raw src/ is not published. Native consumers use scripts/build-native.ts,
   // whose extensionless relative requests let Metro select platform siblings.
   "extends": "./tsconfig.json",
   "compilerOptions": {

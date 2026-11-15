@@ -17,7 +17,7 @@ import { FormSection as WebFormSection, type FormSectionProps } from "../../mole
 import { Switch as WebSwitch, type SwitchProps } from "../../atoms/switch/switch.js";
 import { Card as WebCard, type CardProps } from "../../molecules/card/card.js";
 import { Icon } from "../../atoms/icon/icon.js";
-import { chatSubmitsOnEnter } from "./chat.logic.js";
+import { chatSubmitsOnEnter, chatThreadRows } from "./chat.logic.js";
 import { useChatTailFollow } from "./chat-scroll.js";
 import { createMarkdown, type MarkdownParts } from "./markdown.shared.js";
 import { webSkin as markdownSkin } from "./markdown.styles.js";
@@ -217,15 +217,6 @@ interface ChatParts extends MarkdownParts {
   FormSection: ComponentType<FormSectionProps>;
   Switch: ComponentType<SwitchProps>;
   Card: ComponentType<CardProps>;
-}
-
-/** The run of consecutive activity messages around `index`. */
-function activityRun(messages: readonly ChatMessageData[], index: number) {
-  let start = index;
-  while (start > 0 && messages[start - 1]!.activity) start -= 1;
-  let end = index;
-  while (end + 1 < messages.length && messages[end + 1]!.activity) end += 1;
-  return { start, items: messages.slice(start, end + 1) };
 }
 
 export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch, Card = WebCard, DataTable, Divider }: Partial<ChatParts> = {}) {
@@ -563,12 +554,10 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         >
           {!messages.length && !pending ? <View style={s.empty}>{emptyState}</View> : null}
           <View {...listProps({ label })} style={terminal ? s.terminalBlocks : desk ? s.assistantBlocks : s.blocks}>
-            {messages.map((message, index) => {
+            {chatThreadRows(messages, terminal).map(({ message, index, items }) => {
               // Consecutive activity folds into one line, as a desktop assistant folds its tool use;
               // the run is drawn once, at its first message.
-              const run = !terminal && message.activity ? activityRun(messages, index) : null;
-              if (run && run.start !== index) return null;
-              const row = run && run.items.length > 1 ? <ActivityGroup key={message.id} items={run.items} assistant={desk} />
+              const row = items ? <ActivityGroup key={message.id} items={items} assistant={desk} />
                 : <MessageRow key={message.id} anatomy={anatomyOf(message, index)} message={message} plain={plain} terminal={terminal} assistant={desk} onOpenAttachment={onOpenAttachment} onAction={onAction} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />;
               if (!desk || index === 0) return row;
               // A turn that changes speaker opens wider than the next block of the same turn.

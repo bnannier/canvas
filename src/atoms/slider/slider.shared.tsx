@@ -8,6 +8,7 @@ import {
   type AccessibilityActionEvent,
 } from "react-native";
 import { View, Text, GlassSurface, useControllableState, useFillStyle, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps } from "../../style/index.js";
+import { physicalLeftInset } from "../../style/rtl.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { useInteractionOverride } from "../../style/interaction-override.js";
@@ -323,6 +324,9 @@ export function createSlider(skin: SliderSkin) {
           if (disabledRef.current) return;
           emitRef.current(valueFromXRef.current(e.nativeEvent.locationX));
         },
+        // Keep a surrounding ScrollView from taking an enabled drag after its
+        // first movement. A disabled slider gives ownership back to its parent.
+        onPanResponderTerminationRequest: () => !!disabledRef.current,
         onPanResponderRelease: () => setPressed(false),
         onPanResponderTerminate: () => setPressed(false),
       }),
@@ -408,12 +412,12 @@ export function createSlider(skin: SliderSkin) {
         }
       }
     }
-    // Mirror a physical-left coordinate for RTL (the fill/thumb/ticks all paint with
-    // physical `left`, so RTL flips the anchor around the measured track width).
+    // Mirror measured coordinates once. Native may also swap left/right style keys;
+    // physicalLeftInset compensates for that so the painted rail matches touch x.
     const mirrorX = (x: number): number => (rtl ? trackWidth - x : x);
     const tickBox = (cx: number, cy: number): ViewStyle => ({
       position: "absolute",
-      left: mirrorX(cx) - dot / 2,
+      ...physicalLeftInset(mirrorX(cx) - dot / 2),
       top: cy - dot / 2,
       width: dot,
       height: dot,
@@ -492,7 +496,7 @@ export function createSlider(skin: SliderSkin) {
               onLayout={fillPart?.onLayout}
               style={[
                 skin.fill(tokens, size, !!disabled),
-                { position: "absolute", left: rtl ? Math.max(0, trackWidth - activeWidth) : 0, top: trackTop, width: activeWidth, height: trackHeight, pointerEvents: "none" },
+                { position: "absolute", ...physicalLeftInset(rtl ? Math.max(0, trackWidth - activeWidth) : 0), top: trackTop, width: activeWidth, height: trackHeight, pointerEvents: "none" },
               ]}
             />
             {/* The inactive segment, from `gap` after the handle to the far edge. */}
@@ -501,7 +505,7 @@ export function createSlider(skin: SliderSkin) {
               onLayout={trackPart?.onLayout}
               style={[
                 paneStyle(railTheme, railShape),
-                { position: "absolute", left: rtl ? Math.max(0, trackWidth - inactiveLeft - inactiveWidth) : inactiveLeft, top: trackTop, width: inactiveWidth, height: trackHeight, pointerEvents: "none" },
+                { position: "absolute", ...physicalLeftInset(rtl ? Math.max(0, trackWidth - inactiveLeft - inactiveWidth) : inactiveLeft), top: trackTop, width: inactiveWidth, height: trackHeight, pointerEvents: "none" },
               ]}
             >
               <GlassPane static layer="control" shape={railShape} />
@@ -533,7 +537,7 @@ export function createSlider(skin: SliderSkin) {
               : null}
             {/* The filled range, from the value edge to the value. The skin anchors it
                 left:0; in RTL re-anchor it to the right so it grows from the min end. */}
-            <View ref={fillPart?.ref} onLayout={fillPart?.onLayout} style={[skin.fill(tokens, size, !!disabled), { width: fillWidth, left: rtl ? Math.max(0, trackWidth - fillWidth) : 0 }]} />
+            <View ref={fillPart?.ref} onLayout={fillPart?.onLayout} style={[skin.fill(tokens, size, !!disabled), { width: fillWidth, ...physicalLeftInset(rtl ? Math.max(0, trackWidth - fillWidth) : 0) }]} />
           </View>
         )}
         {/* The thumb. The parent View's PanResponder owns the whole gesture (tapping the
@@ -551,7 +555,7 @@ export function createSlider(skin: SliderSkin) {
           stateBorder={pressBorder}
           style={[
             thumbShape,
-            { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop },
+            { ...physicalLeftInset(rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft), top: thumbTop },
             // A disabled slider takes no focus, so a pinned focus leaves its thumb bare.
             disabled ? null : frame.ring(),
           ]}
@@ -562,7 +566,7 @@ export function createSlider(skin: SliderSkin) {
           <View
             ref={thumbPart.ref}
             onLayout={thumbPart.onLayout}
-            style={{ position: "absolute", left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop, width: thumbW, height: thumbH, pointerEvents: "none" }}
+            style={{ position: "absolute", ...physicalLeftInset(rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft), top: thumbTop, width: thumbW, height: thumbH, pointerEvents: "none" }}
           />
         ) : null}
       </View>

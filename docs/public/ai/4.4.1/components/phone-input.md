@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/molecules/phone-input/phone-input.md`
 Human reference: https://canvas.nannier.com/components/phone-input
@@ -195,6 +195,7 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | small | boolean \| undefined | no | false | Size (pick one; default is the medium field). |
 | large | boolean \| undefined | no | false | Size (pick one; default is the medium field). |
 | accessibilityLabel | string \| undefined | no |  | Accessible name for the number field when there is no `label`. |
+| accessibilityHint | string \| undefined | no |  | Native helper or error description. An explicit hint takes precedence over Field's message. |
 | aria-describedby | string \| undefined | no |  | ID of the helper/error text that describes the field (its `nativeID`). |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |
 | autoFocus | boolean \| undefined | no | false | If true, focuses the input on componentDidMount. The default value is false. |

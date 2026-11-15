@@ -77,9 +77,9 @@ describe("floating labels use text roles without recoloring control indicators",
       await labelColor("Fruit", t["muted-foreground"]);
     });
 
-    it(`${scheme} Select uses open/close without acquiring an error API`, async () => {
+    it(`${scheme} Select uses open/close for its floating label ink`, async () => {
       render(<ThemeProvider scheme={scheme}><Select label="Region" options={["EU", "US"]} /></ThemeProvider>);
-      const trigger = screen.getByRole("button", { name: "Region" });
+      const trigger = screen.getByRole("button", { name: "Region, Select an option" });
       expect(rgb(trigger.style.backgroundColor)).toBe(rgb(t.muted));
       await labelColor("Region", t["muted-foreground"]);
       fireEvent.click(trigger);

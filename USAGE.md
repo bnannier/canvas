@@ -202,7 +202,7 @@ Canvas targets all three platforms from one install. The only thing that changes
 
 - **Expo** apps use the required peers and any optional modules needed by their features. The docs app in this repository is a working Expo example, including native glass and blur modules.
 - **Bare React Native** works the same way once the required peers are installed and linked (`react-native-svg` needs the usual autolinking / pod install). Add the optional peers if you want QRCode or full-fidelity glass.
-- **Web via React Native Web** needs one bundler step: install `react-native-web` and alias `react-native` to `react-native-web`, exactly as any RNW project does. Web bundlers use the default `dist/index.js` entry. On the web you can also flip glass at runtime with the exported `setSurface("glass")` / `setSurface("solid")` DOM helper.
+- **Web via React Native Web** needs React DOM, React Native Web, and bundler configuration for RNW and its dependencies; use the [plain-web setup below](#plain-web-bundler-setup). Web bundlers select the default `dist/index.js` entry. On the web you can also flip glass at runtime with the exported `setSurface("glass")` / `setSurface("solid")` DOM helper.
 
 Metro selects `dist/native/index.js` through the `react-native` export condition
 or legacy field. That compiled output preserves Metro's iOS and Android module
@@ -212,6 +212,76 @@ in consumer apps. Public declarations and the web ESM build remain in `dist/`.
 `bun run verify-native-consumer` packs the build and bundles an isolated React
 Native consumer for both platforms with all optional peers omitted. CI also runs
 this check on the exact sealed tarball before it can be published.
+
+### Plain-web bundler setup
+
+Expo configures its web bundler for you. In a standalone React Native Web app,
+keep the app's compatible React/React DOM and React Native versions, install
+`@nannier/canvas`, `react-native-web`, and `react-native-svg`, and configure:
+
+- An alias from `react-native` to `react-native-web`.
+- `.web.tsx`, `.web.ts`, `.web.jsx`, and `.web.js` resolution before their ordinary
+  extensions, so dependencies such as SVG select their browser implementations.
+- Build-time `__DEV__` and `process.env.NODE_ENV` values, plus `global` mapped to
+  `globalThis` where the bundler does not supply it. Animated native primitives
+  used through RNW can otherwise fail only when an overlay opens.
+- Flow preprocessing for `@react-native/assets-registry` when using React Native
+  versions that publish Flow syntax there. SVG imports this module; aliasing RN
+  alone does not process it. Use the Babel preset matching the app's RN version.
+
+For esbuild, copy [web-build.mjs](./tools/package/consumer-support/web-build.mjs)
+and [web-flow.mjs](./tools/package/consumer-support/web-flow.mjs) beside your build
+script. These are the same configuration helpers used by Canvas's isolated
+packed-package compatibility checks. Installed npm packages also contain both
+files under `node_modules/@nannier/canvas/docs/public/ai/<installed-version>/`;
+copy them from there when using this guide offline. The version is the package's
+own `package.json` version. Install `esbuild`, `@babel/core`, and a
+version of `@react-native/babel-preset` matching your React Native version as dev
+dependencies, then use:
+
+```js
+// build.mjs
+import { build } from "esbuild";
+import { createRequire } from "node:module";
+import { reactNativeWebOptions } from "./web-build.mjs";
+
+await build({
+  ...reactNativeWebOptions(createRequire(import.meta.url)),
+  entryPoints: ["main.jsx"],
+  outfile: "dist/app.js",
+  bundle: true,
+  format: "esm",
+});
+```
+
+Mount the quick-start `App` in `main.jsx`:
+
+```jsx
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App.jsx";
+
+createRoot(document.getElementById("root")).render(<App />);
+```
+
+Create `dist/index.html` containing a root element and the module entry:
+
+```html
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Canvas app</title>
+  <div id="root"></div>
+  <script type="module" src="./app.js"></script>
+</html>
+```
+
+Run `node build.mjs` and serve `dist` with your local HTTP server. Pass
+`{ development: true }` as the helper's second argument for development builds.
+Keep Canvas on its public package import; no source alias or native entry override
+is needed. The [consumer matrix](./tools/package/consumer-support/README.md)
+records the exact peer combinations exercised by the repository.
 
 ## Consumer tools and AI guidance
 

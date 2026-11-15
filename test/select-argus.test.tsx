@@ -8,7 +8,7 @@ afterEach(cleanup);
 test("compact selection fields expose their purpose and choose plain options without an indicator gutter", () => {
   const selections: string[] = [];
   const { container, getByRole, queryByRole } = render(<ThemeProvider light solid><Select dense eyebrow soft plainOptions steadyPress combobox menuWidth={260} label="Priority" defaultValue="medium" onSelect={(value) => selections.push(value)} options={[{ value: "high", label: "High" }, { value: "medium", label: "Medium" }]} /></ThemeProvider>);
-  const trigger = getByRole("combobox", { name: "Priority" });
+  const trigger = getByRole("combobox", { name: "Priority, Medium" });
   fireEvent.click(trigger);
   layoutEntrances(container, { width: 260, height: 84 });
   const high = getByRole("option", { name: "High" });
@@ -23,7 +23,7 @@ test("compact selection fields expose their purpose and choose plain options wit
 
 test("a soft field drops only its resting edge: open, its edge is the ring", () => {
   const { getByRole } = render(<ThemeProvider light solid><Select dense eyebrow soft label="Priority" defaultValue="medium" options={[{ value: "high", label: "High" }, { value: "medium", label: "Medium" }]} /></ThemeProvider>);
-  const trigger = getByRole("button", { name: "Priority" });
+  const trigger = getByRole("button", { name: "Priority, Medium" });
   const edge = () => getComputedStyle(trigger).borderTopColor;
   const rest = edge();
   fireEvent.click(trigger);

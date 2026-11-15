@@ -9,7 +9,7 @@ import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { assertInstalledPackage } from "../tools/native/candidate.mjs";
 import { supportMatrix, validatePeerCoverage, sealedPackage, assertNativeGraph } from "../tools/package/consumer-support/contract.mjs";
-import { reactNativeWebFlowPlugin } from "../tools/package/consumer-support/web-flow.mjs";
+import { reactNativeWebOptions } from "../tools/package/consumer-support/web-build.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtures = path.join(repo, "tools/package/consumer-support");
@@ -64,12 +64,10 @@ async function checkNative(app, require, label) {
 async function checkServer(app, require, expectedReact, label) {
   fs.copyFileSync(path.join(fixtures, "ssr.jsx"), path.join(app, "ssr.jsx"));
   const result = await require("esbuild").build({
+    ...reactNativeWebOptions(require, { development: true }),
     absWorkingDir: app, entryPoints: ["ssr.jsx"], outfile: "ssr.cjs", bundle: true,
     platform: "node", format: "cjs", metafile: true,
-    plugins: [reactNativeWebFlowPlugin(require)],
-    alias: { "react-native": "react-native-web" },
-    resolveExtensions: [".web.tsx", ".web.ts", ".web.jsx", ".web.js", ".tsx", ".ts", ".jsx", ".js", ".json"],
-    define: { "process.env.NODE_ENV": '"development"', __DEV__: "true" }, logLevel: "silent",
+    logLevel: "silent",
   });
   const inputs = Object.keys(result.metafile.inputs);
   if (!inputs.some((file) => file.endsWith("@nannier/canvas/dist/index.js"))) throw new Error("SSR did not use the installed public package");
@@ -88,12 +86,10 @@ async function checkWeb(app, require, expectedReact, label) {
   // for react-native-svg and Babel preprocessing of RN's Flow asset registry.
   // Nothing aliases Canvas, rewrites .js requests or stubs peers.
   const result = await require("esbuild").build({
+    ...reactNativeWebOptions(require),
     absWorkingDir: app, entryPoints: ["web.jsx"], outfile: "web-dist/app.js", bundle: true,
     platform: "browser", format: "esm", minify: true, metafile: true,
-    plugins: [reactNativeWebFlowPlugin(require)],
-    alias: { "react-native": "react-native-web" },
-    resolveExtensions: [".web.tsx", ".web.ts", ".web.jsx", ".web.js", ".tsx", ".ts", ".jsx", ".js", ".json"],
-    define: { "process.env.NODE_ENV": '"production"', __DEV__: "false" }, logLevel: "silent",
+    logLevel: "silent",
   });
   const inputs = Object.keys(result.metafile.inputs);
   if (!inputs.some((file) => file.endsWith("@nannier/canvas/dist/index.js"))) throw new Error("Web bundle did not use the installed public package");
@@ -128,13 +124,17 @@ async function checkWeb(app, require, expectedReact, label) {
     await page.getByRole("textbox", { name: "Workspace" }).fill("Research");
     await page.getByRole("checkbox", { name: "Subscribe to updates" }).press("Space");
     await expect(page.getByRole("checkbox", { name: "Subscribe to updates" })).toHaveAttribute("aria-checked", "true");
-    await page.getByRole("button", { name: "City" }).click();
+    await page.getByRole("button", { name: "City, Toronto" }).click();
     await page.getByRole("option", { name: "Montreal" }).click();
     await page.getByRole("textbox", { name: "Workspace" }).press("Enter");
     await expect(page.getByTestId("saved-workspace")).toHaveText("Research: Montreal: subscribed");
     await expect(page.getByRole("img", { name: "Optional QR renderer fallback" })).toBeVisible();
+    await page.getByRole("button", { name: "Open workspace actions", exact: true }).click();
+    await page.getByRole("button", { name: "Archive workspace", exact: true }).click();
+    await expect(page.getByTestId("sheet-result")).toHaveText("Archived");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     if (errors.length) throw new Error(`Web runtime errors:\n${errors.join("\n")}`);
-    console.log(`${label}: React ${expectedReact} web form, keyboard toggle, select, host focus and absent-peer fallback passed (${exports.length} exports)`);
+    console.log(`${label}: React ${expectedReact} web form, keyboard toggle, select, host focus, animated modal and absent-peer fallback passed (${exports.length} exports)`);
   } finally {
     await browser?.close();
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));

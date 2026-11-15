@@ -10,6 +10,7 @@ function Consumer() {
   const [city, setCity] = useState("Toronto");
   const [subscribed, setSubscribed] = useState(false);
   const [saved, setSaved] = useState("");
+  const [sheetResult, setSheetResult] = useState("None");
   const field = useRef(null);
   return <Canvas.ThemeProvider light>
     <Canvas.OverlayProvider>
@@ -23,6 +24,8 @@ function Consumer() {
         <Canvas.Button onPress={() => field.current?.focus()}>Focus workspace</Canvas.Button>
         <Canvas.Typography testID="saved-workspace">{saved || "Nothing saved"}</Canvas.Typography>
         <Canvas.QRCode value="https://canvas.nannier.com" accessibilityLabel="Optional QR renderer fallback" small />
+        <Canvas.ActionSheet trigger="Open workspace actions" actions={[{ label: "Archive workspace", onPress: () => setSheetResult("Archived") }]} />
+        <Canvas.Typography testID="sheet-result">{sheetResult}</Canvas.Typography>
       </Canvas.Column>
     </Canvas.OverlayProvider>
   </Canvas.ThemeProvider>;

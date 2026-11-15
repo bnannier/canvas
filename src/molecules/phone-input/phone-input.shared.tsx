@@ -1,6 +1,6 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
-import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { EscapeLayerProvider, useEscapeLayer, useInputEscapeBridge } from "../../style/escape-layer.js";
 import { AnatomyScope, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { useDelegatedParts } from "../../atoms/input/delegated-parts.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
@@ -106,6 +106,8 @@ export interface PhoneInputProps extends PhoneEntryProps, MeasureProps {
   large?: boolean;
   /** Accessible name for the number field when there is no `label`. */
   accessibilityLabel?: string;
+  /** Native helper or error description. An explicit hint takes precedence over Field's message. */
+  accessibilityHint?: string;
   /** ID of the helper/error text that describes the field (its `nativeID`). */
   "aria-describedby"?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
@@ -219,6 +221,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
       if (!editable) setOpen(false);
     }, [editable]);
     const escapeScope = useEscapeLayer(open, close);
+    const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     const pick = (next: PhoneCountry) => {
       setCode(next.code);
       close();
@@ -312,7 +315,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             maxLength={props.maxLength}
             returnKeyType={props.returnKeyType}
             onSubmitEditing={props.onSubmitEditing}
-            onKeyPress={props.onKeyPress}
+            onKeyPress={onKeyPress}
             testID={props.testID}
             {...frameHandlers(errorFrame.target, {
               onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
@@ -327,6 +330,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             aria-invalid={isError || undefined}
             aria-required={required || undefined}
             accessibilityLabel={accessibleName}
+            accessibilityHint={props.accessibilityHint}
             aria-label={accessibleName}
             aria-labelledby={label != null && props.accessibilityLabel == null ? labelId : undefined}
             aria-describedby={props["aria-describedby"]}

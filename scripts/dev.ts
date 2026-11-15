@@ -7,7 +7,7 @@ import { join } from "node:path";
  */
 
 const procs = [
-	Bun.spawn(["bunx", "tsc", "-p", "tsconfig.build.json", "--watch", "--preserveWatchOutput"], {
+	Bun.spawn(["bun", join(import.meta.dir, "build-web.ts"), "--watch"], {
 		stdout: "inherit",
 		stderr: "inherit",
 	}),

@@ -107,6 +107,12 @@ export interface AutocompleteProps extends MeasureProps {
    * The label names the field for assistive tech.
    */
   label?: string;
+  /** Native description of the field. Field supplies its message unless explicitly overridden. */
+  accessibilityHint?: string;
+  /** IDs of helper or error text describing the editor. */
+  "aria-describedby"?: string;
+  /** Marks the selection invalid for assistive technology. */
+  error?: boolean;
   /**
    * Marks the field as required: appends a destructive "*" to the label (decorative,
    * never in the accessible name) and announces the field as required,
@@ -473,6 +479,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             // field's name (not just the inner value/placeholder) on both channels.
             accessibilityLabel={fieldName}
             aria-label={fieldName}
+            accessibilityHint={props.accessibilityHint ?? helperText}
+            aria-describedby={[props["aria-describedby"], helperText ? `${labelId}-helper` : undefined].filter(Boolean).join(" ") || undefined}
+            aria-invalid={props.error || undefined}
           />
           {/* A pinned focus is the field's (its own active edge), so the toggle inside it
               is unpinned and never draws a ring of its own. */}
@@ -610,7 +619,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
         </AnchoredOverlay>
 
         {helperText != null && helperText !== "" ? (
-          <Text style={skin.helper(tokens)}>{helperText}</Text>
+          <Text nativeID={`${labelId}-helper`} style={skin.helper(tokens)}>{helperText}</Text>
         ) : null}
       </View>
       </AnatomyScope>

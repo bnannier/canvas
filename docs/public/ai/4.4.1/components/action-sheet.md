@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/organisms/action-sheet/action-sheet.md`
 Human reference: https://canvas.nannier.com/components/action-sheet
@@ -27,6 +27,12 @@ sheet; tapping the scrim or Cancel closes it without acting. Pass a `trigger`
 label for a self-contained button that opens the sheet, or drive `open` /
 `onOpenChange` yourself. For a small contextual menu anchored to a control,
 reach for Dropdown or RowMenu instead.
+
+The sheet fits the available height, including after rotation into landscape
+when the host app permits it.
+Long action lists and oversized title/message text scroll inside the action card;
+a separate Cancel card stays visible. Safe-area insets keep the live sheet clear
+of the screen edges.
 
 On the web the sheet is two cards a little off the window's edges: a centered header
 over full-width rows in the accent's ink (a destructive one in the error ink), each under

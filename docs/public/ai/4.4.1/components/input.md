@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/atoms/input/input.md`
 Human reference: https://canvas.nannier.com/components/input
@@ -308,6 +308,7 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | clearable | boolean \| undefined | no | false | A trailing clear button (a circled x) that empties the field, shown while the field holds text (the search field's clear affordance). Works in both the controlled and the uncontrolled mode: it clears the native field and reports "" through `onChangeText`. |
 | shortcut | string \| undefined | no |  | A keyboard shortcut hint at the field's end: a compact flat keycap (`<Kbd small flat>`, the 20 px `tiny` cap on a `small` field) after the value and any inline suffix, before the trailing glyphs, the hint a search field shows for the key that focuses it (`shortcut="⌘K"`). Pass the keys as Kbd's `keys` takes them: `"⌘K"` is one cap, `"⌘ K"` two. A hint only: bind the key yourself. |
 | accessibilityLabel | string \| undefined | no |  | Accessible name for the field when there is no programmatically-associated visible label. Maps to accessibilityLabel + the aria-label web alias on the underlying TextInput, so a Form/Field control is announced with its name. |
+| accessibilityHint | string \| undefined | no |  | Native helper or error description. An explicit hint takes precedence over Field's message. |
 | aria-labelledby | string \| undefined | no |  | ID of the visible label element that names this field (its `nativeID`). react-native-web forwards aria-labelledby to the DOM input; prefer this over accessibilityLabel when a visible <Text> label is present so the label and field are programmatically linked. |
 | aria-describedby | string \| undefined | no |  | ID of the helper/error text that describes this field (its `nativeID`), so a screen reader reads the hint after the field name. |
 | style | LayoutStyle | no |  | Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. |

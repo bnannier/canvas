@@ -229,3 +229,9 @@ The label is what the query matches and what `value` holds; the row is announced
 ```tsx
 <Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} disabled placeholder="Search a person…" />
 ```
+
+## Accessibility
+
+The editor exposes a combobox with its expanded state and active option relationship. Arrow keys move the active option while focus stays in the editor, Enter selects, Escape dismisses, and Tab closes the list. Options expose their selected state and remain available to native accessibility activation.
+
+`error` marks the editor invalid. Wrap a single Autocomplete in Field to connect its helper or error message, or pass description IDs through `aria-describedby` and a native `accessibilityHint`. The component's own helper text is also linked to the editor and supplies a native hint when no other hint is set. These validation props provide accessibility state and descriptions; the Autocomplete skin keeps its existing appearance.

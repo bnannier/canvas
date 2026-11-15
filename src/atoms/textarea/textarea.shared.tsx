@@ -95,6 +95,10 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
    */
   composer?: boolean;
   accessibilityLabel?: string;
+  /** Native helper or error description. An explicit hint takes precedence over Field's message. */
+  accessibilityHint?: string;
+  /** IDs of helper or error text describing this field. */
+  "aria-describedby"?: string;
   /** Prevent edits while retaining focus and the resting appearance. */
   readOnly?: boolean;
   /**
@@ -264,6 +268,8 @@ export function createTextarea(skin: TextareaSkin) {
       "aria-invalid": isError || undefined,
       "aria-required": required || undefined,
       accessibilityLabel: accessibleName,
+      accessibilityHint: props.accessibilityHint,
+      "aria-describedby": props["aria-describedby"],
       "aria-label": accessibleName,
       "aria-labelledby": ariaLabelledby,
     };

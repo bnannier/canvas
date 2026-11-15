@@ -64,9 +64,9 @@ describe("Autocomplete label names the field on every skin", () => {
 
 describe("Select label names the trigger on every skin", () => {
   for (const [plat, Select] of [["web", SelectWeb], ["ios", SelectIOS], ["android", SelectAndroid]] as const) {
-    it(`${plat}: the visible label is the trigger's accessible name`, () => {
+    it(`${plat}: the trigger announces its visible label and prompt`, () => {
       ui(<Select label="Region" options={["EU", "US"]} placeholder="Select a region" />);
-      const trigger = screen.getByLabelText("Region");
+      const trigger = screen.getByRole("button", { name: "Region, Select a region" });
       // The trigger is the pressable disclosure control (aria-expanded present).
       expect(trigger.getAttribute("aria-expanded")).not.toBeNull();
     });
@@ -95,7 +95,7 @@ describe("required fields announce their requirement without reading the decorat
   it("Select (android floating)", () => {
     ui(<SelectAndroid label="Region" required options={["EU"]} placeholder="Select a region" />);
     // A button cannot expose aria-required. Its name carries the requirement.
-    expect(screen.getByRole("button", { name: "Region, required" }).hasAttribute("aria-required")).toBe(false);
+    expect(screen.getByRole("button", { name: "Region, Select a region, required" }).hasAttribute("aria-required")).toBe(false);
   });
   it("Textarea (ios above)", () => {
     ui(<TextareaIOS label="Description" required placeholder="A few words…" rows={3} />);

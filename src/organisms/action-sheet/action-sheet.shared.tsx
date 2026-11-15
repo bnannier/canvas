@@ -182,6 +182,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
     // real height; it clears the tallest sheet the skins can produce (a 360-capped row
     // scroller plus header, Cancel, and insets), so the sheet never peeks at rest.
     const [sheetH, setSheetH] = useState(0);
+    const [headerH, setHeaderH] = useState(0);
     const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
       if (open) {
@@ -223,13 +224,13 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
     // one row from the next; on iOS the rows are detached capsules with a gap (no
     // dividers) and on Android the rows sit flush.
     const headerNode = hasHeader ? (
-      <Fragment>
+      <View onLayout={(event) => setHeaderH(event.nativeEvent.layout.height)}>
         <View style={skin.header}>
           {title != null ? <Text ref={titlePart?.ref} onLayout={titlePart?.onLayout} style={skin.headerTitle(tokens)}>{title}</Text> : null}
           {message != null ? <Text style={skin.headerMessage(tokens)}>{message}</Text> : null}
         </View>
         {skin.divider ? <View style={skin.divider(tokens)} /> : null}
-      </Fragment>
+      </View>
     ) : null;
 
     const actionRows = actions.map((action, i) => {
@@ -279,17 +280,17 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
     // The bottom-anchored stack: the actions card and, where the platform separates it,
     // the Cancel card.
     const stack = (
-                    <View style={[skin.stack, style]}>
-                      <GlassSurface floating style={skin.actionsCard(tokens)}>
+                    <View style={[skin.stack, style, s.shrink]}>
+                      <GlassSurface floating style={[skin.actionsCard(tokens), s.shrink]}>
                         {/* The card's own box, for the anatomy Sheet part: GlassSurface has no ref, so a pass-through fill measures it. */}
                         {sheetPart ? <View ref={sheetPart.ref} onLayout={sheetPart.onLayout} pointerEvents="none" style={StyleSheet.absoluteFill} /> : null}
                         {/* The handle (Android) sits above the header inside the sheet. */}
                         {skin.handle ? <View style={skin.handle(tokens)} /> : null}
-                        {headerNode}
-                        {/* The rows scroll if they overflow the viewport (a long action list).
-                            rowsContent spaces the rows on iOS (the detached-capsule gap);
-                            web/Android leave it undefined so the rows stay flush. */}
-                        <ScrollView bounces={false} style={{ maxHeight: 360 }}>
+                        {/* Preserve the 360-point row cap in a roomy window. In a short
+                            window the entire card, including a long/scaled header, scrolls
+                            within the available space. Separate Cancel stays outside. */}
+                        <ScrollView bounces={false} style={[s.shrink, { maxHeight: 360 + (hasHeader ? headerH : 0) }]}>
+                          {headerNode}
                           {/* RippleClip clips the Android bounded-ripple action rows to the
                               card's rounded top corners (a no-op on iOS/web). It also carries
                               the iOS detached-capsule gap (skin.rowsContent), moved off the
@@ -312,7 +313,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
                       </GlassSurface>
                       {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
                       {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
-                        <GlassSurface floating style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
+                        <GlassSurface floating style={[skin.cancelCard(tokens), { flexShrink: 0 }]}>{cancelRow}</GlassSurface>
                       ) : null}
                     </View>
     );
@@ -341,6 +342,9 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
           visible={mounted}
           transparent
           animationType="none"
+          // RN's iPhone default is portrait-only. The app's Info.plist still
+          // limits these orientations; the sheet itself should not lock rotation.
+          supportedOrientations={["portrait", "portrait-upside-down", "landscape"]}
           onRequestClose={escapeScope.onRequestClose}
           testID={testID}
           // Tell assistive tech the content behind this overlay is inert while the
@@ -393,10 +397,10 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
                     the native sheet); the inset resolves to 0 elsewhere, so the layout is
                     unchanged off iOS. */}
                 <Animated.View
-                  style={[s.scrimContent, { transform: [{ translateY: slide }] }]}
+                  style={[s.scrimContent, s.shrink, { maxHeight: "100%", transform: [{ translateY: slide }] }]}
                   onLayout={(e) => setSheetH(e.nativeEvent.layout.height)}
                 >
-                  <SafeAreaView edges={["bottom", "left", "right"]}>
+                  <SafeAreaView edges={["top", "bottom", "left", "right"]} style={s.shrink}>
                     {stack}
                   </SafeAreaView>
                 </Animated.View>

@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/organisms/flow-editor/flow-editor.md`
 Human reference: https://canvas.nannier.com/components/flow-editor
@@ -99,7 +99,9 @@ Cards snap to a 24-point grid by default. Pass `freePlacement` to keep them exac
 
 ## Accessibility
 
-Every pointer action has a keyboard and screen-reader path. Each card is a focusable button named by its title and description that announces its selected state; the arrow keys move a focused card one grid step and Delete removes it, and VoiceOver and TalkBack offer the same as named actions (move left, right, up and down, delete). The toolbar's From and To selects with Connect join two cards without dragging a port; when the two are joined already the button reads Disconnect and removes that edge, the keyboard path to an edge. Each palette entry adds its node in view when pressed. The canvas itself takes focus: plus and minus zoom and 0 fits the graph. Edges are selected by pressing them or their label; Delete removes the selection.
+Every pointer action has a keyboard and screen-reader path. Each card is a focusable button named by its title, description and incoming and outgoing connections. Each connection names its source and destination, its label when provided, and whether it is a rework edge; isolated cards announce no connections in either direction. These names follow graph updates and remain available in `readOnly` mode. Edges with a missing source or destination are omitted, just as they are from the drawing.
+
+Cards announce selection (pressed state on the web); Enter or Space selects a focused card. In editable mode, the arrow keys move a focused card one grid step and Delete removes it, and VoiceOver and TalkBack offer the same as named actions (move left, right, up and down, delete). Read-only cards retain selection without editing actions. The toolbar's From and To selects with Connect join two cards without dragging a port; when the two are joined already the button reads Disconnect and removes that edge, the keyboard path to an edge. Each palette entry adds its node in view when pressed. The canvas itself takes focus: plus and minus zoom and 0 fits the graph. Edges are selected by pressing them or their label; Delete removes the selection in editable mode.
 
 ## Supported props
 

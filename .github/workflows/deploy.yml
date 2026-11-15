@@ -276,6 +276,11 @@ jobs:
         working-directory: docs
         run: bun install --frozen-lockfile
 
+      - name: Verify native app version matches the validated Canvas release
+        run: |
+          (cd docs && bunx expo config --type public --json) > "$RUNNER_TEMP/expo-config.json"
+          node scripts/verify-app-version.mjs "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/expo-config.json"
+
       # --auto-submit only for production: docs/eas.json defines only
       # submit.production (TestFlight / Play internal draft); preview + development
       # are internal distribution and must not be submitted. --auto-submit composes
@@ -360,6 +365,11 @@ jobs:
       - name: Install docs deps
         working-directory: docs
         run: bun install --frozen-lockfile
+
+      - name: Verify native app version matches the validated Canvas release
+        run: |
+          (cd docs && bunx expo config --type public --json) > "$RUNNER_TEMP/expo-config.json"
+          node scripts/verify-app-version.mjs "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/expo-config.json"
 
       - name: EAS build (queued remotely; runner exits immediately)
         working-directory: docs

@@ -102,6 +102,7 @@ test("the native fingerprint follows the native build's inputs and nothing else"
   expect(nativeFingerprint(root)).toBe(first);
   // Every native input does.
   const changes: [string, string][] = [
+    ["package.json", "{\"version\":\"4.5.0\"}"],
     ["docs/plugins/with-cleartext-loopback.js", "module.exports = (config) => ({ ...config });"],
     ["docs/plugins/with-new-plugin.js", "module.exports = (config) => config;"],
     ["docs/app.config.js", "module.exports = () => ({ name: 'x' });"],

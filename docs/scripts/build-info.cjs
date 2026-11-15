@@ -53,7 +53,7 @@ const NATIVE_BUILD_PRODUCTS = new Set(["node_modules", "dist", "build", ".gradle
 function nativeFingerprint(root) {
   return fingerprint(root, {
     directories: ["docs/plugins", "docs/patches", "android"],
-    files: ["docs/app.json", "docs/app.config.js", "docs/package.json", "docs/bun.lock", "expo-module.config.json"],
+    files: ["package.json", "docs/app.json", "docs/app.config.js", "docs/package.json", "docs/bun.lock", "expo-module.config.json"],
     skip: NATIVE_BUILD_PRODUCTS,
   });
 }

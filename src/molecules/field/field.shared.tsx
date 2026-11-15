@@ -31,9 +31,9 @@ import { type FieldSkin } from "./field.styles.js";
 export interface FieldProps extends MeasureProps {
   /**
    * Row label. When the lone child is a field-family control (Input, Textarea, Select,
-   * Autocomplete) that carries no `label` of its own, the label and `required` are DELEGATED into
-   * that control so each platform places them per its own contract. Any other control keeps the
-   * static label above.
+   * Autocomplete, PhoneInput) that carries no `label` of its own, the label is delegated into
+   * that control so each platform places it per its own contract. Validation and descriptions
+   * reach that single control even when it owns its label or Field has no label.
    */
   label?: string;
   /** Muted hint under the control. Replaced by `error` when that is set. */
@@ -67,6 +67,7 @@ interface Delegable {
   required?: boolean;
   error?: boolean;
   "aria-describedby"?: string;
+  accessibilityHint?: string;
 }
 
 // The message row: the optional glyph centred on the text's line, the text taking the rest.
@@ -101,32 +102,33 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
     const isError = !!error;
     const message = isError ? error : helper;
 
-    // Delegate only when there is exactly ONE element child, it is a label-owning control, and it
-    // carries no label of its own. All three conditions matter: two children have no single owner,
-    // a non-field control has nowhere to put a floating label, and a control that already names
-    // itself must not be overridden.
+    // Validation and descriptions belong to a recognized single control independently of
+    // who supplies its label. Preserve the child's explicit state and native hint.
     const kids = Children.toArray(children);
     const only = kids.length === 1 && isValidElement(kids[0]) ? (kids[0] as ReactElement<Delegable>) : null;
-    const delegate =
-      label != null &&
-      only != null &&
-      labelOwners.includes(only.type as ComponentType<never>) &&
-      only.props.label == null;
+    const fieldChild = only != null && labelOwners.includes(only.type as ComponentType<never>) ? only : null;
+    const delegate = label != null && fieldChild != null && fieldChild.props.label == null;
+    const hasMessage = message != null && message !== "";
+    const describedBy = fieldChild ? [...new Set([
+      ...(fieldChild.props["aria-describedby"]?.split(/\s+/).filter(Boolean) ?? []),
+      ...(hasMessage ? [messageId] : []),
+    ])].join(" ") || undefined : undefined;
 
-    // Delegating the error STATE as well as the text is what makes the row read as one thing: the
-    // control paints its destructive border while Field paints the message under it. Without this
-    // an errored Field shows red text under a neutral-bordered box, which reads as unfinished.
+    // Pass the state as well as the message, so the control exposes validation to
+    // assistive technology and uses its own error visuals where its skin supports them.
+    const wired = fieldChild ? cloneElement(fieldChild, {
+      ...(delegate ? { label } : {}),
+      required: fieldChild.props.required ?? required,
+      error: fieldChild.props.error ?? isError,
+      "aria-describedby": describedBy,
+      accessibilityHint: fieldChild.props.accessibilityHint ?? (hasMessage ? message : undefined),
+    }) : children;
     const control = delegate ? (
       <DelegatedPartsContext.Provider value={delegatedParts}>
-        {cloneElement(only, {
-          label,
-          required,
-          ...(isError ? { error: true } : {}),
-          ...(message != null && message !== "" ? { "aria-describedby": messageId } : {}),
-        })}
+        {wired}
       </DelegatedPartsContext.Provider>
     ) : (
-      <AnatomyPart part={controlPart}>{children}</AnatomyPart>
+      <AnatomyPart part={controlPart}>{wired}</AnatomyPart>
     );
 
     // The message line: an errored one leads with the skin's alert glyph (the web's), in
@@ -140,7 +142,7 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
         {label != null && !delegate ? (
           // The label heads a control that names itself, so it stays a stop of its own
           // natively, named without its star (labelA11y). Field hands that control no
-          // `required`, so natively the heading's name says it (requiredName).
+          // label anatomy, so the heading's native name says when it is required.
           <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={skin.label(tokens)} {...labelA11y(requiredName(label, required), false)}>
             <LabelContent label={label} required={required} starColor={tokens.destructive} starPart={requiredPart} />
           </Text>

@@ -30,7 +30,7 @@ const cases: { name: string; node: ReactNode; open: () => void; content: string 
   { name: "Autocomplete", node: <Autocomplete label="Fruit" options={["Apple"]} />,
     open: () => fireEvent.focus(screen.getByRole("combobox", { name: "Fruit" })), content: "Apple" },
   { name: "Select", node: <Select label="Fruit" options={["Apple"]} />,
-    open: () => fireEvent.click(screen.getByRole("button", { name: "Fruit" })), content: "Apple" },
+    open: () => fireEvent.click(screen.getByRole("button", { name: "Fruit, Select an option" })), content: "Apple" },
   { name: "Dropdown", node: <Dropdown trigger="Actions" items={[{ label: "Archive" }]} />,
     open: () => fireEvent.click(screen.getByRole("button", { name: "Actions" })), content: "Archive" },
   { name: "Popover", node: <Popover trigger="Details" title="Information" />,

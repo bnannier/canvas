@@ -122,6 +122,10 @@ export const scrimDim = StyleSheet.create({
 // scrim reaches the dismiss control.
 export const scrimContent: ViewStyle = { zIndex: 1 };
 
+// Carry the modal's available height through each content-sized layer. Without
+// this chain Yoga lets the header, rows and Cancel overflow a landscape window.
+export const shrink: ViewStyle = { flexShrink: 1, minHeight: 0 };
+
 // An embedded specimen fills the box its parent gives it, the stack resting on its foot
 // over the dim.
 export const embeddedRoot: ViewStyle = { flexGrow: 1, alignSelf: "stretch", minHeight: 0, justifyContent: "flex-end", overflow: "hidden" };

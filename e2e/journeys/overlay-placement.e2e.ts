@@ -135,3 +135,36 @@ for (const scheme of ["light", "dark"] as const) {
     await expect(trigger).toBeFocused();
   });
 }
+
+// Rotate an open sheet into a short window. Its header must participate in
+// scrolling when it alone is taller than the viewport, with all actions reachable.
+for (const scheme of ["light", "dark"] as const) {
+  for (const triggerName of ["Landscape actions", "Long explanation actions"]) {
+    test(`action sheet fits landscape: ${triggerName} in ${scheme}`, async ({ page }) => {
+      await gotoDocs(page, "/testing/overlay-placement", { scheme, viewport: { width: 390, height: 844 } });
+      await page.getByRole("button", { name: triggerName, exact: true }).click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toBeVisible();
+      await page.setViewportSize({ width: 568, height: 320 });
+      await expect.poll(() => dialog.evaluate((node) => {
+        const scroller = [...node.querySelectorAll("div")].find((element) => ["auto", "scroll"].includes(getComputedStyle(element).overflowY));
+        if (!scroller) return false;
+        const box = scroller.getBoundingClientRect();
+        return box.top >= -0.5 && box.bottom <= innerHeight + 0.5 && box.height > 20;
+      })).toBe(true);
+      const last = dialog.getByRole("button", { name: "Option 40", exact: true });
+      await last.scrollIntoViewIfNeeded();
+      await expect(last).toBeInViewport({ ratio: 1 });
+      await last.click();
+      await expect(dialog).toHaveCount(0);
+      await expect(page.getByTestId("sheet-selection")).toHaveText("Sheet selection: Option 40");
+      await page.getByRole("button", { name: triggerName, exact: true }).click();
+      // The backdrop and visible Cancel share a name; the content Cancel is last.
+      const cancel = dialog.getByRole("button", { name: "Cancel", exact: true }).last();
+      await cancel.scrollIntoViewIfNeeded();
+      await expect(cancel).toBeInViewport({ ratio: 1 });
+      await cancel.click();
+      await expect(dialog).toHaveCount(0);
+    });
+  }
+}

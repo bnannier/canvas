@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/atoms/autocomplete/autocomplete.md`
 Human reference: https://canvas.nannier.com/components/autocomplete
@@ -217,6 +217,12 @@ The label is what the query matches and what `value` holds; the row is announced
 <Autocomplete label="Assigned to" options={["Wade Cooper", "Arlene Mccoy", "Devon Webb"]} disabled placeholder="Search a person…" />
 ```
 
+## Accessibility
+
+The editor exposes a combobox with its expanded state and active option relationship. Arrow keys move the active option while focus stays in the editor, Enter selects, Escape dismisses, and Tab closes the list. Options expose their selected state and remain available to native accessibility activation.
+
+`error` marks the editor invalid. Wrap a single Autocomplete in Field to connect its helper or error message, or pass description IDs through `aria-describedby` and a native `accessibilityHint`. The component's own helper text is also linked to the editor and supplies a native hint when no other hint is set. These validation props provide accessibility state and descriptions; the Autocomplete skin keeps its existing appearance.
+
 ## Supported props
 
 ### AutocompleteProps
@@ -237,6 +243,9 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | defaultOpen | boolean \| undefined | no | false | Render the list open initially for uncontrolled use (selecting or the chevron closes it). |
 | onOpenChange | ((open: boolean) => void) \| undefined | no |  | Fired when the open state changes (focus, typing, chevron, select). |
 | label | string \| undefined | no |  | The field's persistent label. Its placement is platform-adaptive: iOS and web render it ABOVE the field; Android renders the Material 3 in-container FLOATING label (centered like a placeholder at rest, floating to the top once the list opens or a value fills the field). The label names the field for assistive tech. |
+| accessibilityHint | string \| undefined | no |  | Native description of the field. Field supplies its message unless explicitly overridden. |
+| aria-describedby | string \| undefined | no |  | IDs of helper or error text describing the editor. |
+| error | boolean \| undefined | no | false | Marks the selection invalid for assistive technology. |
 | required | boolean \| undefined | no | false | Marks the field as required: appends a destructive "*" to the label (decorative, never in the accessible name) and announces the field as required, through aria-required on the web and with the word in its name ("Assigned to, required") on iOS and Android. The star and the spoken word take effect only alongside `label`. |
 | helperText | string \| undefined | no |  | Optional muted helper line rendered below the option list. |
 | disabled | boolean \| undefined | no | false | Dims the control and blocks interaction. |

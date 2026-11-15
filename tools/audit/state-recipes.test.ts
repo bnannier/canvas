@@ -470,8 +470,8 @@ describe("the states each component's source gives it", () => {
     expect(check("action-sheet", without("action-sheet"))).toEqual([
       // The rows render in two places: the live sheet's overlay and the `embedded` sheet's own
       // surface (the same stack, drawn open in place), so the example asks for both.
-      "action-sheet: its Disabled action example asks for a disabled control on its own surface (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:244), with no disabled recipe there",
-      "action-sheet: its Disabled action example asks for a disabled control in the overlay in ActionSheet (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:244), with no disabled recipe there",
+      "action-sheet: its Disabled action example asks for a disabled control on its own surface (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:245), with no disabled recipe there",
+      "action-sheet: its Disabled action example asks for a disabled control in the overlay in ActionSheet (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:245), with no disabled recipe there",
     ]);
     expect(check("row-menu", without("row-menu"))).toEqual([
       "row-menu: its Disabled item example asks for a disabled control in the overlay in RowMenu (disabled on <Pressable> at src/organisms/row-menu/row-menu.shared.tsx:125 via MenuRow), with no disabled recipe there",

@@ -10,6 +10,41 @@ export function walk(dir: string): string[] {
   });
 }
 
+// Require self-contained maps even when checking a repository build: otherwise
+// a nearby src/ directory can conceal broken maps in the published tarball.
+export function verifySourceMaps(root: string): string[] {
+  const errors: string[] = [];
+  const dist = path.join(root, "dist");
+  if (!fs.existsSync(dist)) return errors;
+  for (const file of walk(dist)) {
+    const name = path.relative(root, file);
+    if (file.endsWith(".js") || file.endsWith(".d.ts")) {
+      const source = fs.readFileSync(file, "utf8");
+      for (const match of source.matchAll(/\/\/[#@]\s*sourceMappingURL=([^\s]+)/g)) {
+        const reference = match[1];
+        const target = path.resolve(path.dirname(file), reference);
+        if (!reference.endsWith(".map") || !target.startsWith(path.resolve(dist) + path.sep) || !fs.existsSync(target) || !fs.statSync(target).isFile()) {
+          errors.push(`${name}: broken sourceMappingURL ${reference}`);
+        }
+      }
+    }
+    if (!file.endsWith(".map")) continue;
+    try {
+      const map = JSON.parse(fs.readFileSync(file, "utf8"));
+      if (map.version !== 3 || !Array.isArray(map.sources) || !map.sources.length || typeof map.mappings !== "string") {
+        errors.push(`${name}: invalid source map`);
+        continue;
+      }
+      for (let index = 0; index < map.sources.length; index++) {
+        if (typeof map.sources[index] !== "string" || typeof map.sourcesContent?.[index] !== "string") {
+          errors.push(`${name}: source ${map.sources[index]} must be embedded in sourcesContent (src/ is not published)`);
+        }
+      }
+    } catch { errors.push(`${name}: invalid source map JSON`); }
+  }
+  return errors;
+}
+
 export function verifyPackage(root: string): string[] {
   const errors: string[] = [];
   const dist = path.join(root, "dist");
@@ -79,6 +114,7 @@ export function verifyPackage(root: string): string[] {
     if (!files.some((file) => file.startsWith(native) && file.endsWith(`.${platform}.js`))) errors.push(`Native output has no ${platform} forks`);
   }
   errors.push(...verifyCaptureModule(root, metadata));
+  errors.push(...verifySourceMaps(root));
   if (metadata.bin?.canvas) errors.push(...verifyConsumerAssets(root, metadata));
   return [...new Set(errors)];
 }

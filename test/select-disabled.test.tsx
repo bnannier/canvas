@@ -20,7 +20,7 @@ for (const [platform, Component] of [["web", Select], ["ios", IOSSelect], ["andr
         </ThemeProvider>,
       );
 
-      const trigger = getByRole("button", { name: "Region" });
+      const trigger = getByRole("button", { name: "Region, EU" });
       expect(trigger.getAttribute("aria-disabled")).toBe("true");
       expect(trigger.getAttribute("aria-expanded")).toBe("false");
       expect(container.querySelector('[role="listbox"]')).toBeNull();
@@ -40,28 +40,28 @@ for (const [platform, Component] of [["web", Select], ["ios", IOSSelect], ["andr
         </ThemeProvider>
       );
       const { container, getByRole, rerender } = render(view(false));
-      fireEvent.click(getByRole("button", { name: "Region" }));
+      fireEvent.click(getByRole("button", { name: "Region, EU" }));
       layoutEntrance(getByRole("listbox", { hidden: true }), { width: 240, height: 120 });
       expect(container.querySelector('[role="listbox"]')).not.toBeNull();
       expect(openings).toEqual([true]);
 
       rerender(view(true));
-      expect(getByRole("button", { name: "Region" }).getAttribute("aria-expanded")).toBe("false");
+      expect(getByRole("button", { name: "Region, EU" }).getAttribute("aria-expanded")).toBe("false");
       expect(container.querySelector('[role="option"]')).toBeNull();
-      fireEvent.click(getByRole("button", { name: "Region" }));
-      fireEvent.keyDown(getByRole("button", { name: "Region" }), { key: "Escape" });
+      fireEvent.click(getByRole("button", { name: "Region, EU" }));
+      fireEvent.keyDown(getByRole("button", { name: "Region, EU" }), { key: "Escape" });
       expect(selections).toEqual([]);
       expect(openings).toEqual([true]);
 
       rerender(view(false));
       layoutEntrance(getByRole("listbox", { hidden: true }), { width: 240, height: 120 });
-      expect(getByRole("button", { name: "Region" }).getAttribute("aria-expanded")).toBe("true");
+      expect(getByRole("button", { name: "Region, EU" }).getAttribute("aria-expanded")).toBe("true");
       expect(getByRole("option", { name: /EU/ }).getAttribute("aria-selected")).toBe("true");
       fireEvent.click(getByRole("option", { name: /US/ }));
       expect(selections).toEqual(["US"]);
       expect(openings).toEqual([true, false]);
       expect(container.querySelector('[role="listbox"]')).toBeNull();
-      expect(getByRole("button", { name: "Region" }).textContent).toContain("US");
+      expect(getByRole("button", { name: "Region, US" }).textContent).toContain("US");
     });
 
     it("keeps parent-controlled changes made while disabled when re-enabled", () => {
@@ -77,11 +77,11 @@ for (const [platform, Component] of [["web", Select], ["ios", IOSSelect], ["andr
       rerender(view(true, false, "US"));
       rerender(view(false, false, "US"));
       expect(container.querySelector('[role="listbox"]')).toBeNull();
-      expect(getByRole("button", { name: "Region" }).textContent).toContain("US");
+      expect(getByRole("button", { name: "Region, US" }).textContent).toContain("US");
       expect(selections).toEqual([]);
       expect(openings).toEqual([]);
 
-      fireEvent.click(getByRole("button", { name: "Region" }));
+      fireEvent.click(getByRole("button", { name: "Region, US" }));
       expect(openings).toEqual([true]);
       expect(container.querySelector('[role="listbox"]')).toBeNull();
       rerender(view(false, true, "US"));

@@ -1,6 +1,6 @@
 import { Children, isValidElement, useCallback, useMemo, type ReactElement, type ReactNode } from "react";
-import { I18nManager, type Role } from "react-native";
-import { View, Text, useTheme, useFillStyle, useControllableState, useRovingFocus, type ColorTokens, type LayoutStyle, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { type Role } from "react-native";
+import { View, Text, useTheme, useFillStyle, useControllableState, useRovingFocus, isRTL, type ColorTokens, type LayoutStyle, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { ChipGroupContext, type ChipGroupContextValue } from "./chip-context.js";
 
 // ChipGroup is a pick-one set of chips: the WAI-ARIA radiogroup pattern drawn as chips.
@@ -103,7 +103,7 @@ export function ChipGroup(props: ChipGroupProps) {
       if (!disabled) setValue(values[i]);
     },
     orientation: "both",
-    rtl: I18nManager.isRTL,
+    rtl: isRTL(),
     isDisabled: (i) => optionDisabled[i] === true,
   });
 

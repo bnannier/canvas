@@ -156,8 +156,8 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
     const [connectTo, setConnectTo] = useState("");
 
     // What the once-created responders read.
-    const live = useRef({ camera, nodes, edges, readOnly, freePlacement, selection, props });
-    live.current = { camera: live.current.camera, nodes, edges, readOnly, freePlacement, selection, props };
+    const live = useRef({ camera, nodes, edges, readOnly, freePlacement, selection, props, setSelection });
+    live.current = { camera: live.current.camera, nodes, edges, readOnly, freePlacement, selection, props, setSelection };
     const setCamera = (next: ViewCamera) => {
       live.current.camera = next;
       setCameraState(next);
@@ -172,7 +172,7 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
       }
     };
     const select = (next: FlowSelection | null) => {
-      if (!sameSelection(next, live.current.selection)) setSelection(next);
+      if (!sameSelection(next, live.current.selection)) live.current.setSelection(next);
     };
     const place = (point: FlowPoint) => (live.current.freePlacement ? point : snapFlowPoint(point));
 
@@ -244,7 +244,6 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
           },
           onPanResponderTerminationRequest: () => false,
         }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       [],
     );
 
@@ -267,7 +266,9 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
     const remove = () => {
       if (selection && !readOnly) props.onDelete?.(selection);
     };
-    const canvasKeys = (event: { key: string; preventDefault: () => void }) => {
+    const canvasKeys = (event: { key: string; defaultPrevented?: boolean; preventDefault: () => void }) => {
+      // A focused node owns its handled key; it must not delete the canvas selection too.
+      if (event.defaultPrevented) return;
       if (event.key === "+" || event.key === "=") zoom(FLOW_ZOOM_STEP);
       else if (event.key === "-" || event.key === "_") zoom(1 / FLOW_ZOOM_STEP);
       else if (event.key === "0") fit();
@@ -277,6 +278,20 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
     };
 
     const byId = new Map(nodes.map((n) => [n.id, n] as const));
+    // Describe the same valid edges we draw, in each direction, on the existing card
+    // host. No traversal: cycles and parallel edges are ordinary graph relationships.
+    const relationships = new Map(nodes.map((node) => [node.id, { incoming: [] as string[], outgoing: [] as string[] }]));
+    for (const edge of edges) {
+      const from = byId.get(edge.from), to = byId.get(edge.to);
+      if (!from || !to) continue;
+      const connection = `${from.label} to ${to.label}${edge.label ? `, label: ${edge.label}` : ""}${edge.rework ? ", rework" : ""}`;
+      relationships.get(from.id)!.outgoing.push(connection);
+      relationships.get(to.id)!.incoming.push(connection);
+    }
+    const nodeName = (node: FlowNode) => {
+      const { incoming, outgoing } = relationships.get(node.id)!;
+      return `${node.label}${node.description ? `, ${node.description}` : ""}. Incoming: ${incoming.join("; ") || "none"}. Outgoing: ${outgoing.join("; ") || "none"}.`;
+    };
     const shown = (n: FlowNode): FlowNode => (drag?.id === n.id ? { ...n, ...drag.point } : n);
     const visible = (() => {
       const a = viewCameraToContent(camera, 0, 0), b = viewCameraToContent(camera, size.width, size.height);
@@ -326,7 +341,8 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
           {...background.panHandlers}
           testID={testID ? `${testID}-canvas` : undefined}
         >
-          <Svg width="100%" height="100%" style={skin.drawing} pointerEvents="box-none">
+          <Svg width="100%" height="100%" style={skin.drawing} pointerEvents="box-none"
+            accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
             <Defs>
               <Pattern id={gridId} x={0} y={0} width={FLOW_GRID} height={FLOW_GRID} patternUnits="userSpaceOnUse">
                 <Circle cx={FLOW_GRID / 2} cy={FLOW_GRID / 2} r={1.1} fill={skin.gridDot(t)} fillOpacity={0.35} />
@@ -371,7 +387,8 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
               { scale: camera.k },
             ];
             return (
-              <View key={edge.id} pointerEvents="none" style={[skin.edgeLabelBox(t, isSelected), { width, transform: at }]}>
+              <View key={edge.id} pointerEvents="none" style={[skin.edgeLabelBox(t, isSelected), { width, transform: at }]}
+                accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
                 <Text style={skin.edgeLabelText(t)} numberOfLines={1}>{edge.label}</Text>
               </View>
             );
@@ -380,7 +397,7 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
             part && box ? <View key={i} pointerEvents="none" ref={part.ref} onLayout={part.onLayout} style={[skin.mark, box]} /> : null)}
           {nodes.map((node) => (
             <FlowNodeCard key={node.id} node={shown(node)} camera={camera}
-
+              accessibilityLabel={nodeName(node)}
               selected={selection?.kind === "node" && selection.id === node.id}
               linking={link?.from === node.id}
               onSelect={() => select({ kind: "node", id: node.id })}
@@ -420,6 +437,7 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
 
   interface CardProps {
     node: FlowNode;
+    accessibilityLabel: string;
     camera: ViewCamera;
     selected: boolean;
     linking: boolean;
@@ -488,6 +506,7 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
     );
     const { node, camera, selected } = p;
     const keys = (event: { key: string; preventDefault: () => void }) => {
+      if (event.key === "Enter" || event.key === " ") { p.onSelect(); event.preventDefault(); return; }
       if (p.readOnly) return;
       if (event.key === "Delete" || event.key === "Backspace") { p.onDelete(); event.preventDefault(); return; }
       if (p.onMoveKey(event.key)) event.preventDefault();
@@ -502,12 +521,15 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
         style={[skin.node(t, selected), { transform: [{ translateX: camera.k * node.x + camera.tx }, { translateY: camera.k * node.y + camera.ty }, { scale: camera.k }] }]}
         accessible
         accessibilityRole="button"
-        accessibilityLabel={node.description ? `${node.label}, ${node.description}` : node.label}
+        accessibilityLabel={p.accessibilityLabel}
+        aria-label={p.accessibilityLabel}
         accessibilityState={{ selected }}
+        aria-pressed={selected}
         accessibilityActions={[{ name: "activate" }, ...actions]}
         onAccessibilityAction={(event) => {
           const name = event.nativeEvent.actionName;
           if (name === "activate") p.onSelect();
+          else if (p.readOnly) return;
           else if (name === "delete") p.onDelete();
           else if (keyOf[name]) p.onMoveKey(keyOf[name]);
         }}

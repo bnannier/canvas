@@ -251,8 +251,20 @@ release:
 - **Apple IDs**: App Store Connect Apple ID `6794454098`, Team ID `ZR2R53SLS7`. Set
 `ascAppId` to the former in `eas.json` before running `eas submit -p ios`.
 
-**Version**: `1.0.0`, from `docs/app.json`. EAS holds the build numbers remotely
-  (`appVersionSource: "remote"`, `autoIncrement` on the production profile).
+**App version**: follows the root Canvas `package.json` version through
+`docs/app.config.js`, including the new candidate version when Deploy releases
+pending changesets. Both native jobs check Expo's resolved version
+against the restored, validated release candidate before queuing EAS. A new binary
+still needs to be built and uploaded. Apple rejected `1.0.0` build 10 with
+ITMS-90186 and ITMS-90062 because `1.0.0` was already approved and its release train
+was closed.
+EAS holds and increments build numbers remotely (`appVersionSource: "remote"`,
+`autoIncrement` on the production profile), separately from the Canvas version.
+After Apple approves a Canvas version, publish a newer Canvas version through
+the manually dispatched Deploy workflow for the next store release. Rebuilding
+the same approved version still cannot reopen its release train. The `appVersion`
+runtime policy follows the Canvas version, so an OTA update or re-upload of the
+old binary cannot repair the rejection.
 
 ## Listing copy
 

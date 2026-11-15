@@ -24,9 +24,9 @@ describe("Select with value/label options", () => {
 			<Select open label="Region" required options={["EU", "US"]} />
 		</>);
 		layoutEntrances(container, { width: 240, height: 120 });
-		const project = getByRole("button", { name: "Destination project" });
+		const project = getByRole("button", { name: "Destination project, Select an option" });
 		const projectList = getByRole("listbox", { name: "Destination project" });
-		const region = getByRole("button", { name: "Region, required" });
+		const region = getByRole("button", { name: "Region, Select an option, required" });
 		const regionList = getByRole("listbox", { name: "Region" });
 		expect(project.getAttribute("aria-controls")).toBe(projectList.id);
 		expect(region.getAttribute("aria-controls")).toBe(regionList.id);
@@ -36,7 +36,7 @@ describe("Select with value/label options", () => {
 		expect(regionList.getAttribute("aria-required")).toBe("true");
 	});
 
-	it("keeps the prompt name after selection and removes the closed list relationship", () => {
+	it("exposes the value after selection and removes the closed list relationship", () => {
 		const { getByRole, queryByRole } = ui(<Select placeholder="Choose a region" options={["EU", "US"]} />);
 		const trigger = getByRole("button", { name: "Choose a region" });
 		expect(trigger.hasAttribute("aria-controls")).toBe(false);
@@ -44,7 +44,7 @@ describe("Select with value/label options", () => {
 		layoutEntrance(getByRole("listbox", { hidden: true }), { width: 240, height: 120 });
 		expect(getByRole("listbox", { name: "Choose a region" })).toBeDefined();
 		fireEvent.click(getByRole("option", { name: "US" }));
-		expect(getByRole("button", { name: "Choose a region" }).textContent).toContain("US");
+		expect(getByRole("button", { name: "US" }).textContent).toContain("US");
 		expect(trigger.hasAttribute("aria-controls")).toBe(false);
 		expect(queryByRole("listbox")).toBeNull();
 	});
@@ -52,7 +52,7 @@ describe("Select with value/label options", () => {
 	it("announces a required field even when its purpose has no visible label", () => {
 		const { getByRole } = ui(<Select open required accessibilityLabel="Billing region" options={["EU"]} />);
 		layoutEntrance(getByRole("listbox", { hidden: true }), { width: 240, height: 60 });
-		expect(getByRole("button", { name: "Billing region, required" }).hasAttribute("aria-required")).toBe(false);
+		expect(getByRole("button", { name: "Billing region, Select an option, required" }).hasAttribute("aria-required")).toBe(false);
 		expect(getByRole("listbox", { name: "Billing region" }).getAttribute("aria-required")).toBe("true");
 	});
 

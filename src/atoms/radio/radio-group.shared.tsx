@@ -1,6 +1,6 @@
 import { Children, Fragment, isValidElement, useCallback, useMemo, type ReactElement, type ReactNode } from "react";
-import { I18nManager, type Role } from "react-native";
-import { View, Text, GlassSurface, useTheme, useFillStyle, useControllableState, useRovingFocus, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
+import { type Role } from "react-native";
+import { View, Text, GlassSurface, useTheme, useFillStyle, useControllableState, useRovingFocus, isRTL, type ColorTokens, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { RadioGroupContext, type RadioGroupContextValue } from "./radio-context.js";
 import type { RadioSkin } from "./radio.shared.js";
 
@@ -153,7 +153,7 @@ export function createRadioGroup(skin: RadioSkin) {
         if (!disabled) setValue(values[i]);
       },
       orientation: "both",
-      rtl: I18nManager.isRTL,
+      rtl: isRTL(),
       isDisabled: (i) => optionDisabled[i] === true,
     });
 

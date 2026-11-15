@@ -42,6 +42,7 @@ export function generate(): Map<string, string> {
     ...walk(path.join(ROOT, "src")).filter((file) => /\.(?:ts|tsx|md)$/.test(file)).map(rel),
     ...["tools/agent-docs", "tools/docgen", "tools/api"].flatMap((dir) => walk(path.join(ROOT, dir))).filter((file) => /\.(?:ts|md)$/.test(file) && !/\.test\.ts$/.test(file) && !file.includes("/fixtures/")).map(rel),
     "package.json", "bun.lock", "USAGE.md", "tsconfig.json", "docs/src/core/data/components.ts", "docs/src/core/data/detail-sections.ts",
+    "tools/package/consumer-support/web-build.mjs", "tools/package/consumer-support/web-flow.mjs", "tools/package/consumer-support/README.md",
   ])].sort();
   const sources = Object.fromEntries(sourceFiles.map((file) => [file, sha256(read(file))]));
   const sourceHash = sha256(json(sources));
@@ -162,6 +163,9 @@ export function generate(): Map<string, string> {
   }).sort((a, b) => a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0);
 
   const guide = read("USAGE.md");
+  // The public guide must be usable without access to the private repository.
+  for (const file of ["web-build.mjs", "web-flow.mjs"]) put(file, read(`tools/package/consumer-support/${file}`));
+  put("web-compatibility.md", read("tools/package/consumer-support/README.md"));
   const installation = section(guide, "## Install").replace(/The \[Expo starter\]\(\.\/examples\/starter\/README\.md\) pins a released\nversion in its own manifest and lockfile\./, "The [packaged recipe onboarding](./examples/starter/README.md) explains how to create an app when your installed release provides the CLI.").replace(/The compiled npm package is MIT-licensed; the repository and\nstarter have separate \[source terms\]\(#license\)\./, "The npm package and its packaged recipes are MIT-licensed. The private repository and its development-only starter retain separate [source terms](#license).");
   const quickStart = section(guide, "## Quick start").split("### Overlay hosting")[0].replace(/For a complete runnable application,[\s\S]*?Its source follows the repository's all-rights-reserved terms\./, "For a runnable application, follow the [packaged recipe onboarding](./examples/starter/README.md). Check CLI availability in your installed release, then choose settings, dashboard or booking. Packaged recipes follow the npm package's LICENSE.");
   put("installation.md", `${pageHeader("Installation and runtime support")}${publicGuideLinks(installation, version)}\n\n## Quick start\n\n${publicGuideLinks(quickStart, version)}\n\n## Platforms\n\n${publicGuideLinks(section(guide, "## Platforms"), version)}\n\nUse the declarations installed with your dependency as the final API authority; this snapshot follows the source package version, not a registry lookup.\n`);

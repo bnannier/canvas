@@ -1,5 +1,6 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
+import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { usePinnedFocus } from "../../style/interaction-override.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
@@ -209,6 +210,7 @@ export function createInputOTP(skin: InputOTPSkin) {
     const [focusedState, setFocused] = useState(false);
     const inputRef = useRef<RNTextInput>(null);
     const hostRef = useComposedRefs(inputRef, ref);
+    const onKeyPress = useInputEscapeBridge(undefined);
     // A prerendered autoFocus input may already own focus before hydration attaches
     // onFocus. Read the native input's focus state after it mounts so the active cell
     // and caret reflect that focus too; subsequent focus changes use the handlers.
@@ -378,6 +380,7 @@ export function createInputOTP(skin: InputOTPSkin) {
             ref={hostRef}
             value={value}
             onChangeText={handleChange}
+            onKeyPress={onKeyPress}
             {...textEntryState({ disabled })}
             autoFocus={autoFocus}
             onFocus={() => setFocused(true)}

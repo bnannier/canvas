@@ -138,13 +138,20 @@ export const FLOAT_EASING: EasingFunction = Easing.inOut(Easing.ease);
 // while any consumer is mounted and released with the last one, when the value resets
 // so the next consumer starts from the same unread state.
 let reducedMotion = false;
+let reducedMotionEventVersion = 0;
 const reducedMotionListeners = new Set<() => void>();
 let reducedMotionSubscription: { remove?: () => void } | undefined;
 
-function onReduceMotionChanged(value: boolean) {
+function updateReducedMotion(value: boolean) {
   if (value === reducedMotion) return;
   reducedMotion = value;
   for (const listener of reducedMotionListeners) listener();
+}
+
+function onReduceMotionChanged(value: boolean) {
+  // Even an event matching the current value supersedes every earlier async read.
+  reducedMotionEventVersion++;
+  updateReducedMotion(value);
 }
 
 function subscribeReducedMotion(listener: () => void): () => void {
@@ -158,6 +165,7 @@ function subscribeReducedMotion(listener: () => void): () => void {
     reducedMotionSubscription?.remove?.();
     reducedMotionSubscription = undefined;
     reducedMotion = false;
+    reducedMotionEventVersion++;
   };
 }
 
@@ -176,8 +184,9 @@ export function useReducedMotion(): boolean {
   const reduced = useSyncExternalStore(subscribeReducedMotion, readReducedMotion, serverReducedMotion);
   useEffect(() => {
     let mounted = true;
+    const eventVersion = reducedMotionEventVersion;
     AccessibilityInfo.isReduceMotionEnabled().then((value) => {
-      if (mounted) onReduceMotionChanged(value);
+      if (mounted && eventVersion === reducedMotionEventVersion) updateReducedMotion(value);
     });
     return () => {
       mounted = false;

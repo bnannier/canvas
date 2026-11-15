@@ -20,7 +20,7 @@ it("flow editor reports moves, connections, additions and deletions without owni
     palette={[{ id: "review", label: "Review" }]}
     onMoveNode={move} onConnect={connect} onAddNode={add} onDelete={remove} /></ThemeProvider>);
   const card = view.getByTestId("flow-node-product");
-  expect(card.getAttribute("aria-label")).toBe("Product, Requirements");
+  expect(card.getAttribute("aria-label")).toBe("Product, Requirements. Incoming: none. Outgoing: none.");
   fireEvent.keyDown(card, { key: "ArrowRight" });
   expect(move).toHaveBeenCalledWith("product", { x: 24, y: 0 });
   fireEvent.keyDown(card, { key: "Delete" });
@@ -66,4 +66,33 @@ it("flow editor geometry snaps, hit tests, fits and routes edges", () => {
   const back = flowEdgeGeometry(nodes[1], nodes[0]);
   expect(back.d).toContain(`${FLOW_NODE_HEIGHT * 1.6}`);
   expect(back.tip).toEqual({ x: 0, y: FLOW_NODE_HEIGHT / 2 });
+});
+
+for (const key of ["Delete", "Backspace"]) {
+  it(`flow editor handles ${key} once at the focused node, independently of controlled selection`, () => {
+    const remove = mock(() => {});
+    const view = render(<ThemeProvider><FlowEditor label="Workflow" nodes={nodes} edges={[]}
+      selected={{ kind: "node", id: "design" }} onSelectionChange={() => {}} onDelete={remove} testID="flow" /></ThemeProvider>);
+    const card = view.getByTestId("flow-node-product");
+    fireEvent.focus(card);
+    fireEvent.keyDown(card, { key });
+    expect(remove.mock.calls).toEqual([[{ kind: "node", id: "product" }]]);
+    remove.mockClear();
+    fireEvent.keyDown(view.getByTestId("flow-canvas"), { key });
+    expect(remove.mock.calls).toEqual([[{ kind: "node", id: "design" }]]);
+  });
+}
+
+it("flow editor background selection uses the current callback after a rerender", () => {
+  const first = mock(() => {});
+  const latest = mock(() => {});
+  const ui = (onSelectionChange: typeof first) => <ThemeProvider><FlowEditor label="Workflow" nodes={nodes} edges={[]}
+    selected={{ kind: "node", id: "product" }} onSelectionChange={onSelectionChange} testID="flow" /></ThemeProvider>;
+  const view = render(ui(first));
+  view.rerender(ui(latest));
+  const canvas = view.getByTestId("flow-canvas");
+  fireEvent.mouseDown(canvas, { clientX: 600, clientY: 400, button: 0 });
+  fireEvent.mouseUp(canvas, { clientX: 600, clientY: 400, button: 0 });
+  expect(first).not.toHaveBeenCalled();
+  expect(latest.mock.calls).toEqual([[null]]);
 });

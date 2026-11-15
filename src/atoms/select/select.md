@@ -234,3 +234,11 @@ platform field anatomy and minimum touch targets.
   </Pressable>
 </View>
 ```
+
+## Accessibility
+
+The trigger is a button with an expanded state and a relationship to its open listbox. `combobox` selects that role instead. Options expose their selected state, arrow keys move between them, Enter or Space selects, and Escape dismisses the list.
+
+The trigger's name includes the field purpose and current display label, including a selected option's leading glyph, or the placeholder when empty. `accessibilityLabel` replaces the purpose while retaining the current value; inline labels follow the same naming rule. A required field also announces required in its name.
+
+`error` marks the trigger invalid. Wrap a single Select in Field to connect its helper or error message, or pass description IDs through `aria-describedby` and a native `accessibilityHint`. These validation props provide accessibility state and descriptions; the Select skin keeps its existing appearance.

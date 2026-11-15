@@ -12,11 +12,12 @@ light and dark themes, and semantic props like `<Button primary large>`.
 In an existing React Native or React Native Web app:
 
 ```bash
-npm install @nannier/canvas
+npm install @nannier/canvas react-native-svg
 ```
 
 Using Expo or an older React Native version? Follow the
 [platform setup guide](./USAGE.md#install) for compatible native dependencies.
+For a browser app without Expo, follow the [plain-web bundler setup](./USAGE.md#plain-web-bundler-setup), including peer resolution and React Native's build globals.
 
 ## Quick start
 

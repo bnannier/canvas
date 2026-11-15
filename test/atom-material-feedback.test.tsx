@@ -73,12 +73,12 @@ describe("liquid control foreground feedback", () => {
     it(`${p.name} keeps its original solid disabled surface dim`, () => {
       render(<ThemeProvider solid><p.Button disabled>Save</p.Button><p.Select disabled options={["North"]} defaultValue="North" label="Region" /></ThemeProvider>);
       expect(Number(screen.getByRole("button", { name: "Save" }).style.opacity)).toBe(p.buttonDisabled);
-      expect(Number(screen.getByRole("button", { name: "Region" }).style.opacity)).toBe(p.selectDisabled);
+      expect(Number(screen.getByRole("button", { name: "Region, North" }).style.opacity)).toBe(p.selectDisabled);
     });
 
     if (p.selectPressed !== null) it(`${p.name} keeps actual press feedback on the label instead of the native material`, async () => {
       const { container } = render(<ThemeProvider glass><p.Button>Save</p.Button><p.Select options={["North"]} defaultValue="North" label="Region" /><p.Chip selectable>Filter</p.Chip></ThemeProvider>);
-      const dims = [["Save", "Save", p.pressed], ["Region", "North", p.selectPressed], ["Filter", "Filter", 0.85]] as const;
+      const dims = [["Save", "Save", p.pressed], ["Region, North", "North", p.selectPressed], ["Filter", "Filter", 0.85]] as const;
       for (const [name, text, opacity] of dims.filter((d) => d[2] !== null)) {
         const host = screen.getByRole("button", { name });
         press(host);

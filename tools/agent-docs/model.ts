@@ -30,6 +30,10 @@ export function section(markdown: string, heading: string): string {
 export function publicGuideLinks(markdown: string, version: string): string {
   const links: Record<string, { url: string; label?: string }> = {
     "#platforms": { url: `${ORIGIN}/ai/${version}/installation.md#platforms` },
+    "#plain-web-bundler-setup": { url: `${ORIGIN}/ai/${version}/installation.md#plain-web-bundler-setup` },
+    "./tools/package/consumer-support/web-build.mjs": { url: `${ORIGIN}/ai/${version}/web-build.mjs` },
+    "./tools/package/consumer-support/web-flow.mjs": { url: `${ORIGIN}/ai/${version}/web-flow.mjs` },
+    "./tools/package/consumer-support/README.md": { url: `${ORIGIN}/ai/${version}/web-compatibility.md` },
     "#license": { url: `${ORIGIN}/agents.md#package-and-source-terms` },
     "./examples/starter/README.md": { url: `${ORIGIN}/agents.md#start-a-project-with-an-available-cli`, label: "packaged recipe onboarding" },
   };

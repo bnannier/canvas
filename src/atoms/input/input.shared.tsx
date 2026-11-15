@@ -271,6 +271,8 @@ export interface InputProps extends TextEntryProps, MeasureProps {
    * underlying TextInput, so a Form/Field control is announced with its name.
    */
   accessibilityLabel?: string;
+  /** Native helper or error description. An explicit hint takes precedence over Field's message. */
+  accessibilityHint?: string;
   /**
    * ID of the visible label element that names this field (its `nativeID`).
    * react-native-web forwards aria-labelledby to the DOM input; prefer this over
@@ -517,6 +519,7 @@ export function createInput(platformSkin: InputSkin) {
       // to a visible label / helper Text by nativeID (RNW forwards them to the DOM).
       // When `label` is set the field names itself (accessibleName / ariaLabelledby).
       accessibilityLabel: accessibleName,
+      accessibilityHint: props.accessibilityHint,
       "aria-label": accessibleName,
       "aria-labelledby": ariaLabelledby,
       "aria-describedby": props["aria-describedby"],

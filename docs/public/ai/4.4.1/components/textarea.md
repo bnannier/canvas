@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.4.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 1d94a30a44561e615d85cc364d208b4222c24ac8c8698a6210a2566482d4f113
+Source SHA-256: 9a063c1ecef06b61fade40466689419453bda5b73793d2bb1d7d9cb6fc40a436
 
 Source: `src/atoms/textarea/textarea.md`
 Human reference: https://canvas.nannier.com/components/textarea
@@ -232,6 +232,8 @@ Includes `MeasureProps`; their supported fields are expanded below.
 | terminal | boolean \| undefined | no | false | Bare monospace prompt metrics for a terminal transcript composer. Implies embedded. |
 | composer | boolean \| undefined | no | false | A chat composer's entry: 15 / 20 text at 6 by 8 in, so one line sits in a 44 px composer box beside 32 px controls (the Claude desktop composer). `small` uses the v4 entry's 14 / 22 text at 5 by 0 in. Pair with `embedded`. |
 | accessibilityLabel | string \| undefined | no |  |  |
+| accessibilityHint | string \| undefined | no |  | Native helper or error description. An explicit hint takes precedence over Field's message. |
+| aria-describedby | string \| undefined | no |  | IDs of helper or error text describing this field. |
 | readOnly | boolean \| undefined | no | false | Prevent edits while retaining focus and the resting appearance. |
 | required | boolean \| undefined | no | false | Marks the field as required: appends a destructive "*" to the label (decorative, never in the accessible name) and announces the field as required, through aria-required on the web and with the word in its name ("Bio, required") on iOS and Android. The star and the spoken word take effect only alongside `label`. |
 | rows | number \| undefined | no |  | Visible rows the field sizes to (4 when omitted). Sets the min height (rows times the skin's line plus the field's padding); the field still grows with content past this floor. |

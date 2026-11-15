@@ -18,3 +18,11 @@ import { I18nManager } from "react-native";
 export function isRTL(): boolean {
   return I18nManager.getConstants().isRTL;
 }
+
+/** Keep a measured physical-left inset physical when native RTL swaps style keys. */
+export function physicalLeftInset(left: number): { left: number | undefined; right: number | undefined } {
+  const constants = I18nManager.getConstants();
+  return constants.isRTL && constants.doLeftAndRightSwapInRTL
+    ? { left: undefined, right: left }
+    : { left, right: undefined };
+}

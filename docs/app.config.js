@@ -2,11 +2,15 @@ const { resolve } = require("node:path");
 const { readBuildInfo } = require("./scripts/build-info.cjs");
 
 module.exports = ({ config }) => {
+  const canvasBuild = readBuildInfo(resolve(__dirname, ".."));
   const app = {
     ...config,
+    // The restored release candidate owns both the kit and native app version.
+    // EAS autoIncrement only advances build numbers, not the store version.
+    version: canvasBuild.packageVersion,
     // Preserve the optional subpath export supported by the static-server suite.
     experiments: { ...config.experiments, baseUrl: process.env.EXPO_BASE_URL ?? "" },
-    extra: { ...config.extra, canvasBuild: readBuildInfo(resolve(__dirname, "..")) },
+    extra: { ...config.extra, canvasBuild },
   };
   return process.env.CANVAS_AUDIT_BUILD === "1" ? auditApp(app) : app;
 };

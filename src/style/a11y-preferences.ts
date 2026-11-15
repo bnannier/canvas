@@ -35,12 +35,19 @@ export function useReducedTransparency(): boolean {
     // so the web path falls through to the media query below.
     const nativeQuery = AccessibilityInfo.isReduceTransparencyEnabled;
     if (typeof nativeQuery === "function") {
-      nativeQuery().then((value) => {
-        if (mounted) setReduced(value);
-      });
+      // A live event supersedes the initial read, even if React skips its update
+      // because the event reports the value already in state.
+      let changed = false;
       // The change event is iOS-only; addEventListener returns a no-op remover on
       // Android, so subscribing unconditionally is safe.
-      const sub = AccessibilityInfo.addEventListener("reduceTransparencyChanged", setReduced);
+      const sub = AccessibilityInfo.addEventListener("reduceTransparencyChanged", (value) => {
+        if (!mounted) return;
+        changed = true;
+        setReduced(value);
+      });
+      nativeQuery().then((value) => {
+        if (mounted && !changed) setReduced(value);
+      });
       return () => {
         mounted = false;
         sub?.remove?.();
@@ -80,14 +87,21 @@ export function useIncreasedContrast(): boolean {
         ? AccessibilityInfo.isHighTextContrastEnabled
         : AccessibilityInfo.isDarkerSystemColorsEnabled;
     if (typeof nativeQuery === "function") {
-      nativeQuery().then((value) => {
-        if (mounted) setIncreased(value);
-      });
+      // Both event sources supersede the initial read, including same-value events.
+      let changed = false;
+      const onChange = (value: boolean) => {
+        if (!mounted) return;
+        changed = true;
+        setIncreased(value);
+      };
       // Subscribe both change events; each is a no-op remover on the platform that
       // lacks it (darkerSystemColorsChanged is iOS-only, highTextContrastChanged
       // Android-only).
-      const darker = AccessibilityInfo.addEventListener("darkerSystemColorsChanged", setIncreased);
-      const highText = AccessibilityInfo.addEventListener("highTextContrastChanged", setIncreased);
+      const darker = AccessibilityInfo.addEventListener("darkerSystemColorsChanged", onChange);
+      const highText = AccessibilityInfo.addEventListener("highTextContrastChanged", onChange);
+      nativeQuery().then((value) => {
+        if (mounted && !changed) setIncreased(value);
+      });
       return () => {
         mounted = false;
         darker?.remove?.();
