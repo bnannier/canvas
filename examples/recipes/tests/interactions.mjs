@@ -77,7 +77,7 @@ try {
     await search.fill("no matches");
     await expect(page.getByText("No matching work", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Reset filters", exact: true }).click();
-    const status = page.getByRole("button", { name: "Status", exact: true });
+    const status = page.getByRole("button", { name: /^Status(?:,|$)/ });
     await status.click();
     await page.getByRole("option", { name: "Needs attention", exact: true }).click();
     await expect(page.getByText("1 matching items", { exact: true })).toBeVisible();
@@ -101,9 +101,9 @@ try {
     await confirm.click();
     await expect(page.getByText("Choose a service.", { exact: true })).toBeVisible();
     await expect(page.getByText("Choose an appointment date.", { exact: true })).toBeVisible();
-    const service = page.getByRole("button", { name: "Service, required", exact: true });
+    const service = page.getByRole("button", { name: /^Service, (?:.*, )?required$/ });
     await service.click(); await page.getByRole("option", { name: "Design consultation · 30 min", exact: true }).click();
-    await page.getByRole("button", { name: "Appointment date, required", exact: true }).click();
+    await page.getByRole("button", { name: /^Appointment date, (?:Choose a date, )?required$/ }).click();
     await page.getByRole("option").first().click();
     await page.getByRole("radio", { name: "9:00 AM", exact: true }).click();
     await expect(page.getByRole("radio", { name: "9:00 AM", exact: true })).toHaveAttribute("aria-checked", "true");

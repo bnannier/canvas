@@ -2197,20 +2197,20 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   select: {
     hover: [
       // The web trigger's edge steps up to the subtle ink under a resting pointer.
-      hover("default", byRole("button", "Country")),
+      hover("default", byRole("button", "Country, United States")),
       hover("densefield", byRole("option", "Architect"), { within: overlay("select") }),
     ],
     focus: [
-      focus("default", byRole("button", "Country")),
+      focus("default", byRole("button", "Country, United States")),
       // Focus enters the list at the selected option (United States), the arrows move it.
       focus("requiredfield", byRole("option", "Canada"), { within: overlay("select"), keys: ["ArrowDown"] }),
     ],
     pressed: [
-      pressed("default", byRole("button", "Country")),
+      pressed("default", byRole("button", "Country, United States")),
       pressed("requiredfield", byRole("option", "Canada"), { within: overlay("select") }),
     ],
     open: open("default", overlay("select"), ALL_ROWS, viaRecipe("select")),
-    disabled: disabled("disabled", byRole("button", "Country")),
+    disabled: disabled("disabled", byRole("button", "Country, United States")),
   },
   skeleton: { static: true, reason: "A loading placeholder: it takes no input." },
   slider: {

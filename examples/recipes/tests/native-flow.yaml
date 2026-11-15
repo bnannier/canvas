@@ -45,11 +45,11 @@ name: Published Canvas recipes native interaction flow
 - tapOn: Booking
 - assertVisible: Make space to create.
 - scrollUntilVisible:
-    element: Service, required
+    element: Service, (Choose a service, )?required
     direction: DOWN
-- tapOn: Service, required
+- tapOn: Service, (Choose a service, )?required
 - tapOn: Design consultation · 30 min
-- tapOn: Appointment date, required
+- tapOn: Appointment date, (Choose a date, )?required
 - tapOn: ${APPOINTMENT_DATE}
 - scrollUntilVisible:
     element: 9:00 AM

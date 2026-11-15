@@ -5,7 +5,7 @@ import { expect, test } from "../support/fixtures";
 // The Android floating label at phone width, laid out by a real browser: a label longer than
 // its field stays inside it and clear of the trailing disclosure or toggle, truncating on one line
 // with an ellipsis, at rest and floated, while the field's accessible name stays the whole
-// label. The harness page (/testing/floating-label) renders the Android builds of every field
+// label (plus the current value for Select). The harness page (/testing/floating-label) renders the Android builds of every field
 // family that floats its label, the one place they render on the web.
 
 const LONG = "the name of the project as it appears on every invoice we send";
@@ -61,8 +61,8 @@ for (const scheme of ["light", "dark"] as const) {
     // Select: clear of the disclosure and at least 8 dp short of it. The Android disclosure is
     // the Material drop-down triangle in its 24 dp icon box, the trigger's one decorative
     // (aria-hidden) child; its box, not the 10x5 wedge, is what the label keeps clear of.
-    for (const name of [`Select: ${LONG}`, `Filled select: ${LONG}`]) {
-      const trigger = page.getByRole("button", { name, exact: true });
+    for (const [name, value] of [[`Select: ${LONG}`, "Select an option"], [`Filled select: ${LONG}`, "Europe"]]) {
+      const trigger = page.getByRole("button", { name: `${name}, ${value}`, exact: true });
       const disclosure = trigger.locator('[aria-hidden="true"]');
       await expect(disclosure, `${name}: one disclosure`).toHaveCount(1);
       expect((await boxOf(disclosure)).width, `${name}: the 24 dp disclosure box`).toBe(24);

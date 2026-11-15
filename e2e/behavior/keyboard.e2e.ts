@@ -56,7 +56,8 @@ test("a radio group moves the checked option with the arrows", async ({ page }) 
 
 test("a Select chooses with the arrow keys and returns focus to its trigger", async ({ page }) => {
   await gotoDocs(page, "/components/select/small", { scheme: "dark" });
-  const picker = platformRow(page, "web").getByRole("button", { name: "Country", exact: true });
+  const picker = platformRow(page, "web").getByRole("button", { name: /^Country, / });
+  await expect(picker).toHaveAccessibleName("Country, United States");
   await picker.focus();
   await page.keyboard.press("Enter");
   // The live documented Select exercises the same listbox keyboard contract
@@ -67,6 +68,7 @@ test("a Select chooses with the arrow keys and returns focus to its trigger", as
   await expect(list.getByRole("option", { name: "Canada", exact: true })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(picker).toContainText("Canada");
+  await expect(picker).toHaveAccessibleName("Country, Canada");
   await expect(picker).toHaveAttribute("aria-expanded", "false");
   await expect(picker).toBeFocused();
 });
