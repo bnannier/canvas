@@ -131,8 +131,14 @@ describe("Slider press feedback over the glass knob", () => {
   it("lets the iOS knob's resting hairline give way to the material while pressed", () => {
     const { container } = mount(<IOSSlider testID="slider" defaultValue={40} />, "glass");
     const knob = container.querySelector('[data-testid="slider-thumb"]') as HTMLElement;
-    press(handle(container)!);
-    expect(knob.style.borderColor).toMatch(transparent);
+    const root = handle(container)!;
+    press(root);
+    try {
+      expect(knob.style.borderColor).toMatch(transparent);
+    } finally {
+      // Unmounting does not clear React's document-wide held-mouse state.
+      release(root);
+    }
   });
 
   it("leaves the solid knob's markup exactly as it was once keyboard focus moves on", () => {

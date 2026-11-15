@@ -262,9 +262,15 @@ describe("pinned press on a control's own press state", () => {
     const pinned = markup(<InteractionOverride pressed><Slider testID="v" defaultValue={0} accessibilityLabel="Volume" /></InteractionOverride>);
     const { container } = render(light(<Slider testID="v" defaultValue={0} accessibilityLabel="Volume" />));
     const rest = html(container);
-    fireEvent.mouseDown(container.querySelector("[role=slider]")!, { button: 0, buttons: 1, clientX: 1, clientY: 1 });
-    expect(sortedStyles(pinned)).toBe(sortedStyles(html(container)));
-    expect(pinned).not.toBe(rest);
+    const slider = container.querySelector("[role=slider]")!;
+    fireEvent.mouseDown(slider, { button: 0, buttons: 1, clientX: 1, clientY: 1 });
+    try {
+      expect(sortedStyles(pinned)).toBe(sortedStyles(html(container)));
+      expect(pinned).not.toBe(rest);
+    } finally {
+      // React suppresses selection events until mouseup, even after unmount.
+      fireEvent.mouseUp(slider, { button: 0, buttons: 0, clientX: 1, clientY: 1 });
+    }
   });
 
   it("dims a drag grip as a held pointer does", () => {
