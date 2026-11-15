@@ -73,13 +73,13 @@
     },
     "components/autocomplete--dark": {
       "width": 1004,
-      "height": 320,
-      "sha256": "46c0143a0d99f9f1519345dc5478ee84ba55f84300afe5b578aff55aecd24b92"
+      "height": 319,
+      "sha256": "8282fc5cfeb87cf30d4d1714075240413c1478a25700f8c223e200371efd755b"
     },
     "components/autocomplete--light": {
       "width": 1004,
-      "height": 320,
-      "sha256": "8adce7f5e846bdb98898216de1fd630cd9822436a3597832c48a513055b403e5"
+      "height": 319,
+      "sha256": "b63c708583d317e45a1d7e17ac795716cb8169af0da08cc596e133990757d60d"
     },
     "components/avatar--dark": {
       "width": 1004,
