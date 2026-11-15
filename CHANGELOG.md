@@ -1,5 +1,25 @@
 # @nannier/canvas
 
+## 4.5.0
+
+### Minor Changes
+
+- 79fd5e1: Add accessible validation and description props to Select and Autocomplete, and native accessibility hints across the field family. This additive public capability allows applications to describe invalid selections and provide native reading guidance without replacing the controls.
+
+  Field now associates helper/error messages and required/error state with its single supported control even when the control owns its label, while preserving explicit child overrides. Select announces its current display value alongside its purpose. FlowEditor exposes incoming/outgoing relationships, edge labels, and rework status on its existing node controls, including read-only graphs.
+
+### Patch Changes
+
+- 79fd5e1: Prevent duplicate FlowEditor deletion requests and keep background selection callbacks current after rerenders. Restore dialog Escape handling from OTP, phone, and stepper editors while preserving editing cancellation. Prevent delayed accessibility preference queries from overriding newer Reduce Motion, Reduce Transparency, or Increase Contrast changes.
+- 79fd5e1: Group consecutive Chat activity messages in a linear pass, preserving row identities, original message positions, speaker spacing, and expanded details during streaming updates.
+- 79fd5e1: Keep RTL Slider paint aligned with physical touch coordinates when React Native swaps left/right styles. RadioGroup and ChipGroup now use the shared layout-direction reader for horizontal keyboard navigation.
+
+  Slider retains enabled drag gestures inside native scrolling containers, preventing a parent ScrollView from ending a drag after its first movement. Disabling the slider allows the parent to take ownership again.
+
+- 79fd5e1: Constrain ActionSheet to its available height and safe areas after rotation, allowing portrait and landscape within the host app's orientation settings. Oversized headers scroll with the action list, while a separate Cancel card remains visible.
+- 79fd5e1: Document complete plain-web setup, including the SVG peer, web module resolution, React Native build globals and Flow asset handling. Publish the tested esbuild configuration helpers alongside the versioned installation guide so setup does not require access to repository source.
+- 79fd5e1: Embed original sources in published web JavaScript and declaration maps so debugging and editor navigation work without the repository's src directory.
+
 ## 4.4.1
 
 ### Patch Changes
