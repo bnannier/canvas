@@ -115,12 +115,14 @@ work now:
    hand-off's flat page, the scheme's `background` in every palette
    (`docs/src/shell/page-look.ts`, since 2026-10-27); Dark Factory's gradient, orbs,
    frosted shell and wedges are retired. The web shell (`docs/src/shell/navbar.tsx`) is
-   the kit Navbar `floating compact scrolls` pill at every width (its row scrolls
-   sideways where it does not fit; the phone tab bar, mobile top bar and drawer are
-   gone), the room rail (kit Sidebar `embedded compact markers`) beside a room's pages
-   in a window of 760 px or more, the footer closing every page, and the grain over
-   everything; the rooms are `docs/src/data/rooms.ts`. Native keeps its tab bar and
-   header, with the grain and footer.
+   the kit Navbar `floating compact scrolls` pill on desktop, with the room rail
+   (kit Sidebar `embedded compact markers`) beside a room's pages. On 2026-11-15 the
+   owner restored the pre-v4 mobile-web navigation: at widths up to 1024 px, use a
+   page-title top bar with Back and Menu, a Home/Components/Utilities/Search bottom
+   tab bar, and the navigation drawer with appearance controls. Use the current v4
+   kit skins, measured chrome clearances, safe-area insets, and a stable route tree
+   across resizing. The footer closes every page and the grain covers the shell;
+   the rooms are `docs/src/data/rooms.ts`. Native keeps its tab bar and header.
 9. **Native docs show their own platform only.** The docs app ships to the stores, and
    App Store guideline 2.3.10 rejects an app that shows another mobile platform's name or
    imagery (the owner's 2026-10-28 decision). So the iOS build of the docs shows only each
