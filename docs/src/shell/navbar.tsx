@@ -76,7 +76,10 @@ function WebNav() {
   const railFits = useRailFits();
   const rail = wide && railFits && place != null;
   const top = wide ? PILL_BAND : headerHeight;
-  const bottom = wide ? 0 : barHeight;
+  // The floating capsule's shadow reaches above its measured box. Share the
+  // page's 16px clearance with keyboard scrolling and overlay placement so their
+  // focus rings do not land under that shadow.
+  const bottom = wide ? 0 : barHeight + 16;
   useEffect(() => { setMenuOpen(false); }, [wide, pathname]);
 
   // Global cmd-K / ctrl-K to toggle search (web only; document/window are web globals).
@@ -101,7 +104,7 @@ function WebNav() {
     // ScreenFrame. Nothing above it paints a page fill, so the e2e paint check reads the
     // page off the backdrop itself; the marker stays for the tools that find the shell.
     <ScrollEdgeProvider>
-      <ShellFrameProvider rail={rail} bottom={wide ? 0 : bottom + 16}>
+      <ShellFrameProvider rail={rail} bottom={bottom}>
         <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1 }} edges={["top"]}>
           <PageBackdrop />
           <WebScrollbarTheme />
