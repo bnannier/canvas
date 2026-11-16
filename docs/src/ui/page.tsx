@@ -8,6 +8,7 @@ import { SHELL } from "../shell/page-look";
 import { H1, Lead } from "./prose";
 import { DocsHead } from "./docs-head";
 import { useAuditProbe } from "../audit/probe-context";
+import { useScrollEdgeReporter } from "../shell/scroll-edge";
 
 // The standard scrollable content frame: the v4 hand-off's page frame (design-language
 // item 8). The content sits in a column capped at the hand-off's 1440 px and centred
@@ -65,7 +66,8 @@ export function Page({ children, lead, footer, detail = false, viewportOverlays 
   const probe = useAuditProbe();
   const Sensor = probe?.Sensor;
   const scrollerRef = useRef<ScrollView>(null);
-  const { rail } = useShellFrame();
+  const { rail, bottom } = useShellFrame();
+  const onScroll = useScrollEdgeReporter();
   const wideShell = useRailFits();
   const phoneShell = Platform.OS === "web" && !wideShell;
   useEffect(() => probe?.scroller({ ref: scrollerRef }), [probe]);
@@ -75,6 +77,8 @@ export function Page({ children, lead, footer, detail = false, viewportOverlays 
   const content = (
       <ScrollView
         ref={scrollerRef}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         // The audit driver scrolls a page's ends to where a user's scroll rests on iOS,
         // under the transparent header and above the tab bar (the automatic inset
         // adjustment), which React Native's scrollTo otherwise clamps away. Not passed
@@ -89,9 +93,10 @@ export function Page({ children, lead, footer, detail = false, viewportOverlays 
         style={{ flex: 1 }}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          // `PAGE_TOP`, unless a lead section owns that room. The footer closes the page,
-          // so the foot adds nothing.
+          // `PAGE_TOP`, unless a lead section owns that room. The measured mobile
+          // tabs add enough tail for the footer's last row to scroll above them.
           paddingTop: lead ? 0 : phoneShell && detail ? 88 : PAGE_TOP,
+          paddingBottom: bottom,
           width: "100%",
           alignItems: "center",
         }}

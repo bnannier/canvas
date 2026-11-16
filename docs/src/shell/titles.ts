@@ -4,7 +4,7 @@ import { getPattern } from "../core/data/patterns";
 import { getSectionRoom, SKINS_PAGE, TEMPLATES_PAGE } from "../data/rooms";
 
 // A route's title and its subtitle (the place it belongs to), for the native navigation
-// bar (./native-header.tsx). The web shell shows no page title in its chrome: the pill
+// bar (./native-header.tsx) and the restored mobile-web top bar. Desktop web's pill
 // names the room and each page its own H1.
 
 function titleize(slug: string): string {
@@ -31,6 +31,8 @@ const STATIC_TITLES: Record<string, { title: string; subtitle?: string }> = {
 
 export function titleFor(pathname: string): { title: string; subtitle?: string } {
   if (STATIC_TITLES[pathname]) return STATIC_TITLES[pathname];
+  const section = getSectionRoom(pathname.replace(/^\//, ""));
+  if (section) return { title: section.title, subtitle: "Sections" };
   const seg = pathname.split("/").filter(Boolean);
   if (seg[0] === "components" && seg[1]) {
     const c = getComponent(seg[1]);

@@ -224,8 +224,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The page scroll host fills the native screen; it paints nothing, so the page look behind it shows through.",
   },
   {
-    file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "contentContainerStyle", keys: ["alignItems", "paddingTop", "width"], occurrences: 1,
-    reason: "Page scroll content clears the floating pill navbar, supplies definite width to the page frame inside and centres it.",
+    file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "contentContainerStyle", keys: ["alignItems", "paddingBottom", "paddingTop", "width"], occurrences: 1,
+    reason: "Page scroll content clears the floating navigation bars, supplies definite width to the page frame inside and centres it. The measured mobile bottom bar sets the last row's clearance.",
   },
   {
     file: "docs/src/ui/page.tsx", owner: "content", tag: "ContentHost", attribute: "style", keys: ["flexBasis", "flexGrow", "flexShrink", "maxWidth", "width"], occurrences: 1,
@@ -276,8 +276,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The app's safe-area host fills the viewport, with the page look as its first child.",
   },
   {
-    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["flex"], occurrences: 1,
-    reason: "The main landmark host fills the window under the floating chrome, so the page scroller inside has a definite height.",
+    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 3,
+    reason: "The page host fills the window. The restored phone/tablet web bars are real kit Navbar and TabBar components, positioned over it by unpainted wrappers with measured scroll/overlay clearances (owner request 2026-11-15).",
   },
   {
     file: "docs/src/app/(search)/search.tsx", owner: "NativeSearch", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,

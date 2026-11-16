@@ -9,7 +9,7 @@ import { SHELL } from "./page-look";
 // page's own copy in `Canvas v4.0.0 Component.dc.html`), the kit Sidebar `embedded compact
 // markers` under a filter field. It stands at the frame's start edge (the 24 px gutter of
 // a frame capped at 1440 px and centred), 96 px down and 200 px wide, and scrolls itself;
-// the shell renders it only on a page of a room in a window of 760 px or more (S9).
+// the desktop shell renders it on a room's page; mobile web uses its navigation drawer.
 //
 // On a room's own page every row is the current place (the section `current`: the heading
 // in the accent's text ink, the rows in the foreground ink, each with the hairline dot);

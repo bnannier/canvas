@@ -3,6 +3,7 @@ import { Sidebar as KitSidebar, Button, type IconName, type SidebarSection } fro
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
 import { NAV_GROUPS, getActiveSlug, type NavItem } from "../data/nav";
+import { SECTION_ROOMS, SKINS_PAGE, TEMPLATES_PAGE } from "../data/rooms";
 
 // The docs sidebar is a THIN ADAPTER over the kit `Sidebar` organism: it maps the docs nav
 // tree (NAV_GROUPS) + the active route onto the kit component and wires navigation. All the
@@ -30,6 +31,7 @@ export function Sidebar({
   drawerTop,
   drawerBottom,
   footer,
+  sectionPages = false,
 }: {
   onNavigate?: () => void;
   collapsed?: boolean;
@@ -53,6 +55,8 @@ export function Sidebar({
    * has none.
    */
   footer?: ReactNode;
+  /** Include the v4 section pages that desktop web exposes in its pill navbar. */
+  sectionPages?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -63,6 +67,14 @@ export function Sidebar({
   const sections: SidebarSection[] = [
     { id: "overview", items: NAV_GROUPS[0].items.map(toItem) },
     { id: NAV_GROUPS[1].label, title: NAV_GROUPS[1].label, items: NAV_GROUPS[1].items.map(toItem) },
+    ...(sectionPages ? [{
+      id: "sections", title: "Sections", icon: "layoutGrid" as IconName, collapsible: true,
+      items: [
+        ...SECTION_ROOMS.map((room) => ({ id: room.id, label: room.title, href: room.href! })),
+        { id: getActiveSlug(SKINS_PAGE.href), label: SKINS_PAGE.title, href: SKINS_PAGE.href },
+        { id: getActiveSlug(TEMPLATES_PAGE.href), label: TEMPLATES_PAGE.title, href: TEMPLATES_PAGE.href },
+      ],
+    }] : []),
     ...NAV_GROUPS.slice(2).map(
       (g): SidebarSection => ({ id: g.label, title: g.label, icon: g.icon as IconName, collapsible: true, items: g.items.map(toItem) }),
     ),

@@ -10,7 +10,9 @@ for (const width of [1280, 390]) {
         await gotoDocs(page, "/tokens/colors", { scheme });
         // Search opens from the global shortcut at every width. The brand link
         // is a real keyboard focus target for the overlay to restore on dismissal.
-        const opener = page.getByRole("navigation", { name: "Primary", exact: true }).getByRole("link", { name: "Canvas", exact: true });
+        const opener = width <= 1024
+          ? page.getByRole("banner").getByRole("button", { name: "Menu", exact: true })
+          : page.getByRole("navigation", { name: "Primary", exact: true }).getByRole("link", { name: "Canvas", exact: true });
         const dialog = page.getByRole("dialog");
         const input = page.getByRole("textbox", { name: "Search components", exact: true });
 

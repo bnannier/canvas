@@ -59,8 +59,17 @@ for (const width of [1280, 390]) {
           }
         }
         await expect(page.getByRole("banner")).toHaveCount(1);
-        // The pill navbar is the Primary navigation at every width (docs/src/shell/pill-nav.tsx).
-        await expect(page.getByRole("banner").getByRole("navigation", { name: "Primary", exact: true })).toBeVisible();
+        const primary = page.getByRole("navigation", { name: "Primary", exact: true });
+        await expect(primary).toHaveCount(1);
+        await expect(primary).toBeVisible();
+        if (width > 1024) {
+          await expect(page.getByRole("banner").getByRole("navigation", { name: "Primary", exact: true })).toBeVisible();
+        } else {
+          // The top banner names the page; Primary is the separate bottom tab bar.
+          await expect(page.locator("[data-shell-mobile-top]")).toBeVisible();
+          await expect(primary.getByRole("tab")).toHaveCount(4);
+          await expect(primary.getByRole("tab", { selected: true })).toHaveCount(1);
+        }
         // Axe derives the previous heading from its whole virtual tree, including
         // excluded nodes. Typography deliberately teaches broken h1-to-h4 jumps,
         // so even .exclude(previewStage) incorrectly flags the next docs h3.
@@ -113,11 +122,9 @@ for (const width of [1280, 390]) {
       ])).toEqual([transparency, contrast]);
       await expect(page.getByRole("banner")).toHaveCount(1);
       await expect(page.getByRole("main")).toHaveCount(1);
-      // The pill is the one Primary navigation; a room's page adds the rail's navigation
-      // beside it in a window of 760 px or more (docs/src/shell/rail.tsx), and
-      // /tokens/colors is a page of the Guides room.
+      // Desktop has Primary plus the room rail; mobile has one Primary bottom bar.
       await expect(page.getByRole("navigation", { name: "Primary", exact: true })).toHaveCount(1);
-      await expect(page.getByRole("navigation")).toHaveCount(width >= 760 ? 2 : 1);
+      await expect(page.getByRole("navigation")).toHaveCount(width > 1024 ? 2 : 1);
       const findings = await scanStructure(page);
       await attach(testInfo, "glass-structure", findings);
       expect(findings, describeViolations(findings)).toEqual([]);
@@ -126,15 +133,14 @@ for (const width of [1280, 390]) {
 }
 
 test("phone search preserves named landmarks when opened and dismissed", async ({ page }, testInfo) => {
-  // Search uses the global shortcut; the brand provides a visible keyboard
-  // return target in the phone pill navbar.
+  // The phone's Search tab is a named keyboard return target outside the banner.
   await gotoDocs(page, "/tokens/colors", { viewport: { width: 390, height: 900 } });
   const primary = page.getByRole("navigation", { name: "Primary", exact: true });
   await expect(primary).toBeVisible();
   await expect(page.getByRole("navigation")).toHaveCount(1);
-  const opener = primary.getByRole("link", { name: "Canvas", exact: true });
+  const opener = primary.getByRole("tab", { name: "Search", exact: true });
   await opener.focus();
-  await page.keyboard.press("Control+k");
+  await opener.press("Enter");
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Search components", exact: true })).toBeFocused();
   const findings = await scanStructure(page, "body", ["landmark-unique", "region"]);

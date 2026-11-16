@@ -11,7 +11,7 @@ export function Tile({ tile }: { tile: CatTile }) {
   const Preview = tile.Preview;
   return (
     <Card grow>
-      <Button link href={tile.href} onPress={() => router.push(tile.href as never)} iconRight={<Icon arrowRight size={16} />}>
+      <Button link href={tile.href} onPress={(event) => { event.preventDefault(); router.push(tile.href as never); }} iconRight={<Icon arrowRight size={16} />}>
         {tile.title}
       </Button>
       <Divider />

@@ -112,6 +112,9 @@ export const MOBILE_TABS: NavTab[] = CONFIG.mobile.tabs;
 // section + its secondary nav.
 export function sectionFor(pathname: string): "home" | "components" | "utilities" {
   if (pathname.startsWith("/tokens") || pathname === "/utilities") return "utilities";
+  // v4 section pages belong to the same tab as their component details. Read their
+  // paths from the navigation registry, which also feeds the restored mobile drawer.
+  if (pathname === CONFIG.routes.skins.href || Object.entries(CONFIG.routes).some(([key, route]) => key.startsWith("section-") && route.href === pathname)) return "components";
   if (pathname.startsWith("/components") || pathname.startsWith("/templates") || pathname.startsWith("/patterns")) return "components";
   return "home";
 }

@@ -1,8 +1,8 @@
 import { Slot, usePathname } from "expo-router";
 import { useState, useEffect } from "react";
-import { Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { View, OverlayProvider, useTheme, alpha } from "@nannier/canvas";
+import { Platform, StyleSheet } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, OverlayProvider, useTheme, useFormFactor, alpha } from "@nannier/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { PageBackdrop, PageGrain } from "./page-backdrop";
 import { PillNav, PILL_BAND } from "./pill-nav";
@@ -13,10 +13,15 @@ import { SHELL } from "./page-look";
 import { WebScrollbarTheme, WebScrollPadding } from "../ui/web-scrollbar";
 import { MOBILE_TABS } from "../data/nav";
 import { roomFor } from "../data/rooms";
+import { Sidebar } from "./sidebar";
+import { ThemeToggles } from "./theme-toggles";
+import { MobileNavBar, MobileTabs } from "./mobile-nav";
+import { ScrollEdgeProvider } from "./scroll-edge";
+import { titleFor } from "./titles";
 
-// The one adaptive navigation component. On the web it is the v4 hand-off's shell at every
-// width: the floating pill navbar, the room rail beside a room's pages in a window of
-// 760 px or more, and the grain over everything; on iOS and Android it is a native tab
+// The adaptive navigation component. Desktop web keeps the v4 pill and room rail;
+// phone/tablet web restores the pre-v4 top bar, bottom tabs and navigation drawer
+// using the current kit skins. On iOS and Android it is a native tab
 // bar (real Liquid Glass on iOS 26, Material 3 on Android, native sidebar on tablets via
 // sidebarAdaptable) over the route groups. Screen bodies are platform-agnostic; this is
 // the single, user-authorized platform branch, scoped to navigation chrome.
@@ -56,19 +61,23 @@ function NativeNav() {
   );
 }
 
-// Web (every width): the hand-off's shell (design-language item 8). The page fills the
-// window under the chrome and scrolls itself (../ui/page.tsx); the pill floats over its
-// top (./pill-nav.tsx), the rail stands at the frame's start edge on a room's pages
-// (./rail.tsx), and the grain lies over all of it (./page-backdrop.tsx). The pill scrolls
-// sideways where it does not fit, so it is the navigation at every width: the phone tab
-// bar, the mobile top bar and their drawer are retired (S2), and the reference pages the
-// pill does not name are linked from the rail of their room and the footer. The cmd-K
-// search modal is shared, opened from the pill's search button too.
+// The owner restored the pre-v4 mobile-web navigation on 2026-11-15. As before,
+// widths up to 1024 use mobile bars. Their measured bounds also govern overlays,
+// focused controls and the last scrollable row; the desktop v4 layout stays intact.
 function WebNav() {
+  const wide = useFormFactor() === "desktop";
+  const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [barHeight, setBarHeight] = useState(0);
   const place = roomFor(pathname);
-  const rail = useRailFits() && place != null;
+  const railFits = useRailFits();
+  const rail = wide && railFits && place != null;
+  const top = wide ? PILL_BAND : headerHeight;
+  const bottom = wide ? 0 : barHeight;
+  useEffect(() => { setMenuOpen(false); }, [wide, pathname]);
 
   // Global cmd-K / ctrl-K to toggle search (web only; document/window are web globals).
   useEffect(() => {
@@ -91,29 +100,52 @@ function WebNav() {
     // fixed to the window behind everything; a native screen mounts its own inside
     // ScreenFrame. Nothing above it paints a page fill, so the e2e paint check reads the
     // page off the backdrop itself; the marker stays for the tools that find the shell.
-    <ShellFrameProvider rail={rail}>
-      <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1 }} edges={["top"]}>
-        <PageBackdrop />
-        <WebScrollbarTheme />
-        {/* Content scrolled into view parks below the pill, as the hand-off's sections
-            keep their 72 px scroll margin. */}
-        <WebScrollPadding top={PILL_BAND + SHELL.navTop} bottom={0} />
-        {/* The banner and the rail lead the document, so a keyboard reaches the
-            navigation first; they float over the page, which lies under them. */}
-        <PillNav />
-        {rail && place ? <Rail room={place.room} active={place.active} /> : null}
-        {/* A landmark-free host: the main landmark is the page body (ui/page.tsx), so the
-            footer that follows it is a top-level contentinfo, as the hand-off's component
-            page puts <main> and <footer> side by side (Component.dc.html lines 131, 307-312). */}
-        <View style={{ flex: 1 }}>
-          <OverlayProvider viewport viewportInsets={{ top: PILL_BAND, bottom: 0 }}>
-            <Slot />
-          </OverlayProvider>
-        </View>
-        <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
-        {/* Last, so it lies over the pill and the rail too (the hand-off's z-index 100). */}
-        <PageGrain />
-      </SafeAreaView>
-    </ShellFrameProvider>
+    <ScrollEdgeProvider>
+      <ShellFrameProvider rail={rail} bottom={wide ? 0 : bottom + 16}>
+        <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1 }} edges={["top"]}>
+          <PageBackdrop />
+          <WebScrollbarTheme />
+          {/* Content scrolled into view parks below the pill, as the hand-off's sections
+              keep their 72 px scroll margin. */}
+          <WebScrollPadding top={wide ? top + SHELL.navTop : top} bottom={bottom} />
+          {/* The banner and the rail lead the document, so a keyboard reaches the
+              navigation first; they float over the page, which lies under them. */}
+          {wide ? <PillNav /> : (
+            <View role="banner" {...({ dataSet: { shellMobileTop: "" } } as object)}
+              onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={mobileChrome.top}>
+              <MobileNavBar title={titleFor(pathname).title} pathname={pathname} onMenu={() => setMenuOpen(true)} />
+            </View>
+          )}
+          {rail && place ? <Rail room={place.room} active={place.active} /> : null}
+          {/* A landmark-free host: the main landmark is the page body (ui/page.tsx), so the
+              footer that follows it is a top-level contentinfo, as the hand-off's component
+              page puts <main> and <footer> side by side (Component.dc.html lines 131, 307-312). */}
+          <View style={{ flex: 1 }}>
+            <OverlayProvider viewport viewportInsets={{ top, bottom }}>
+              <Slot />
+            </OverlayProvider>
+          </View>
+          {!wide ? (
+            <View role="navigation" accessibilityLabel="Primary" aria-label="Primary"
+              {...({ dataSet: { shellMobileTabs: "" } } as object)}
+              onLayout={(event) => setBarHeight(event.nativeEvent.layout.height)} style={mobileChrome.bottom}>
+              <MobileTabs pathname={pathname} bottomInset={insets.bottom} onSearch={() => setSearchOpen(true)} />
+            </View>
+          ) : null}
+          <Sidebar drawer sectionPages open={!wide && menuOpen} onOpenChange={setMenuOpen}
+            onNavigate={() => setMenuOpen(false)} footer={<ThemeToggles />} />
+          <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
+          {/* Last, so it lies over the pill and the rail too (the hand-off's z-index 100). */}
+          <PageGrain />
+        </SafeAreaView>
+      </ShellFrameProvider>
+    </ScrollEdgeProvider>
   );
 }
+
+// The wrappers position the real kit bars. Registered box-none keeps the bottom
+// capsule's margins transparent to clicks on the page beneath it on React Native Web.
+const mobileChrome = StyleSheet.create({
+  top: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 40 },
+  bottom: { position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 40, pointerEvents: "box-none" },
+});

@@ -69,14 +69,13 @@ test("scheme=dark&palette=mint paints the dark page, with the mint accent", asyn
   expect(await readAccent(page)).toBe(accentOf("dark", "mint"));
 });
 
-test("the pill's Palette control picks the accent in either scheme", async ({ page }) => {
-  // The palette control is the pill navbar's five hue swatches (docs/src/shell/pill-nav.tsx),
-  // at every width: the page opens at phone width, where the pill scrolls sideways and the
-  // swatches sit past its links. It opens dark, where the control shows too: a palette
-  // paints its accent in both schemes.
+test("the mobile menu's Palette control picks the accent in either scheme", async ({ page }) => {
+  // On mobile, the restored navigation drawer carries the five hue swatches and
+  // the scheme control. A palette applies in both schemes.
   await gotoDocs(page, "/components/button", { scheme: "dark", viewport: { width: 390, height: 900 } });
-  const banner = page.getByRole("banner");
-  const palette = banner.getByRole("radiogroup", { name: "Palette", exact: true });
+  await page.getByRole("banner").getByRole("button", { name: "Menu", exact: true }).click();
+  const menu = page.getByRole("dialog");
+  const palette = menu.getByRole("radiogroup", { name: "Palette", exact: true });
   await expect(palette).toHaveCount(1);
   const violet = palette.getByRole("radio", { name: "Violet", exact: true });
   const mint = palette.getByRole("radio", { name: "Mint", exact: true });
@@ -87,7 +86,7 @@ test("the pill's Palette control picks the accent in either scheme", async ({ pa
   await expect(mint).toHaveAttribute("aria-checked", "true");
   await expect.poll(() => readAccent(page)).toBe(accentOf("dark", "mint"));
   expect(await readPageLook(page)).toEqual(pageChannels("dark"));
-  await schemeTab(page, "Light").click();
+  await menu.getByRole("button", { name: "Toggle color scheme", exact: true }).click();
   await expect.poll(() => readScheme(page)).toBe("light");
   await expect.poll(() => readAccent(page)).toBe(accentOf("light", "mint"));
 

@@ -35,7 +35,7 @@ const IMAGE_ALT = "The same Canvas Select component rendered as native iOS, Mate
 // so the web shell assumes a wide one and renders the room rail beside a room's pages,
 // with the page's content inset to clear it. On a phone the rail would cover the content
 // until the bundle ran, and the reflow at hydration measured as a Cumulative Layout
-// Shift. Below the hand-off's 760 px rail cut (S9) the rail (marked by
+// Shift. At the restored mobile shell's 1024 px cut the rail (marked by
 // docs/src/shell/rail.tsx) is hidden and the content's inset (marked by
 // docs/src/ui/page.tsx) dropped until then; after hydration the shell renders no rail at
 // those widths and no inset, so the rules change nothing. The id prefix outranks the
@@ -66,7 +66,7 @@ const FONT_CSS =
 const SHELL_CSS =
   FONT_CSS +
   "html{background:#0a0a0f}html[data-look^=\"light\"]{background:#f2f2f7}" +
-  "@media (max-width:759.98px){#root [data-shell-rail]{display:none}#root [data-shell-content]{padding-left:0!important}}";
+  "@media (max-width:1024px){#root [data-shell-rail]{display:none}#root [data-shell-content]{padding-left:0!important}}";
 
 export default function Root({ children }: PropsWithChildren) {
   const { bodyAttributes, bodyNodes, htmlAttributes, headNodes } = useServerDocumentContext();

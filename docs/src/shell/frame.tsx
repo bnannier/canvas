@@ -1,4 +1,4 @@
-import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
 import { Dimensions } from "react-native";
 import { SHELL } from "./page-look";
 
@@ -11,16 +11,16 @@ import { SHELL } from "./page-look";
 interface ShellFrame {
   /** The rail stands at the frame's start edge. */
   rail: boolean;
+  /** Scroll clearance for the floating mobile tabs, including their safe-area space. */
+  bottom: number;
 }
 
-const Ctx = createContext<ShellFrame>({ rail: false });
+const Ctx = createContext<ShellFrame>({ rail: false, bottom: 0 });
 
-export function ShellFrameProvider({ rail, children }: { rail: boolean; children: ReactNode }) {
-  return <Ctx.Provider value={rail ? WITH_RAIL : WITHOUT_RAIL}>{children}</Ctx.Provider>;
+export function ShellFrameProvider({ rail, bottom = 0, children }: { rail: boolean; bottom?: number; children: ReactNode }) {
+  const value = useMemo(() => ({ rail, bottom }), [rail, bottom]);
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
-
-const WITH_RAIL: ShellFrame = { rail: true };
-const WITHOUT_RAIL: ShellFrame = { rail: false };
 
 /** The web shell's frame (no rail outside the shell). */
 export function useShellFrame(): ShellFrame {
