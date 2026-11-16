@@ -1,5 +1,18 @@
 # @nannier/canvas
 
+## 4.6.0
+
+### Minor Changes
+
+- 5373b33: Allow pinned Sidebar section headings to link to their own destination through `SidebarSection.href` and `onSectionPress`, preserving their title/count styling and existing accordion behavior.
+
+### Patch Changes
+
+- 5373b33: Hide FlowEditor's decorative SVG through a native View so browser rendering keeps the graph accessible without forwarding unsupported accessibility attributes. Serialize arrowhead geometry at fixed precision so server and browser math produce matching markup.
+- 5373b33: Align mobile documentation with the v4 sections, restore the Canvas mark in the mobile header, and make section overviews reachable from headings and catalog counts. Improve narrow template navigation, preserve fields and keyboard taps, correct typography guidance, and match native tab accents to the active palette.
+
+  Keep Command's search field and Escape hint within narrow palettes by allowing the input to shrink below its browser intrinsic minimum width.
+
 ## 4.5.0
 
 ### Minor Changes
