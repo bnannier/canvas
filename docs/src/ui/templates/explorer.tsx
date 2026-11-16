@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ButtonGroup, Column, Container, OverlayProvider, Row, ScrollView, Sidebar, Typography, useTheme } from "@nannier/canvas";
+import { ButtonGroup, Column, Container, OverlayProvider, Row, ScrollView, Select, Sidebar, Typography, View, useContainerBreakpoint, useTheme } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
 import { getTemplate, templateGroups, templateNumber, DEFAULT_TEMPLATE } from "../../core/data/templates";
 import type { TemplateDoc, TemplatePlatform } from "../../core/data/template-types";
@@ -35,6 +35,7 @@ export function TemplatesExplorer({ slug }: { slug?: string }) {
   const router = useRouter();
   const params = useLocalSearchParams<{ platform?: string }>();
   const { tokens } = useTheme();
+  const { value: compact, onLayout } = useContainerBreakpoint({ base: false, md: true });
   // The web build previews all three skins; a device previews its own (build-scopes.native).
   const scopes = useMemo(() => buildScopes(tokens), [tokens]);
   const available = ORDER.filter((p) => scopes.some((s) => s.platform === p));
@@ -48,46 +49,55 @@ export function TemplatesExplorer({ slug }: { slug?: string }) {
   return (
     <Page>
       <DocsHead title={slug ? template.name : TEMPLATES_PAGE.title} />
-      <Row stacks stackBreakpoint="md" generous>
-        <Column span={2}>
-          <TemplateList active={template.slug} go={go} />
-        </Column>
-        <Column span={10}>
-          <Column airy>
-            <Row stacks stackBreakpoint="md" cozy>
-              <Column span={8}>
-                <Container xl start>
-                  <Column>
-                    <Typography eyebrow primary>{`${templateNumber(template.slug)} · ${template.group}`}</Typography>
-                    <Column comfortable>
-                      <Typography h2 level={1}>{template.name}</Typography>
-                      <Typography subtle>{template.description}</Typography>
-                    </Column>
-                  </Column>
-                </Container>
-              </Column>
-              <Column span={4} snug alignEnd end>
-                {available.length > 1 ? (
-                  <ButtonGroup
-                    small
-                    accessibilityLabel="Platform"
-                    active={available.indexOf(platform)}
-                    onSelect={(i) => pick(available[i]!)}
-                    items={available.map((p) => ({ label: PLATFORM_LABELS[p]!.label, icon: PLATFORM_LABELS[p]!.template.icon }))}
-                  />
-                ) : null}
-                <Typography caption mono subtle right>{PLATFORM_LABELS[platform]!.template.skin}</Typography>
-              </Column>
-            </Row>
-            <TemplateStage>
-              <FramedScreen key={`${template.slug}:${platform}`} template={template} platform={platform} K={K} go={go} />
-            </TemplateStage>
-            <Typography caption mono subtle>
-              Same tree on every platform. The skin swaps control shape, field shape, type, elevation and touch heights; phones drop the sidebar for a tab bar and every grid reflows on its own.
-            </Typography>
+      <View onLayout={onLayout}>
+        <Row stacks stackBreakpoint="md" generous>
+          <Column span={2}>
+            {compact ? (
+              <Select
+                label="Template"
+                value={template.slug}
+                onSelect={go}
+                options={templateGroups().flatMap(({ group, templates }) => templates.map((item) => ({ value: item.slug, label: `${templateNumber(item.slug)} · ${group} · ${item.name}` })))}
+              />
+            ) : <TemplateList active={template.slug} go={go} />}
           </Column>
-        </Column>
-      </Row>
+          <Column span={10}>
+            <Column airy>
+              <Row stacks stackBreakpoint="md" cozy>
+                <Column span={8}>
+                  <Container xl start>
+                    <Column>
+                      <Typography eyebrow primary>{`${templateNumber(template.slug)} · ${template.group}`}</Typography>
+                      <Column comfortable>
+                        <Typography h2 level={1}>{template.name}</Typography>
+                        <Typography subtle>{template.description}</Typography>
+                      </Column>
+                    </Column>
+                  </Container>
+                </Column>
+                <Column span={4} snug alignEnd end>
+                  {available.length > 1 ? (
+                    <ButtonGroup
+                      small
+                      accessibilityLabel="Platform"
+                      active={available.indexOf(platform)}
+                      onSelect={(i) => pick(available[i]!)}
+                      items={available.map((p) => ({ label: PLATFORM_LABELS[p]!.label, icon: PLATFORM_LABELS[p]!.template.icon }))}
+                    />
+                  ) : null}
+                  <Typography caption mono subtle right>{PLATFORM_LABELS[platform]!.template.skin}</Typography>
+                </Column>
+              </Row>
+              <TemplateStage>
+                <FramedScreen key={`${template.slug}:${platform}`} template={template} platform={platform} K={K} go={go} />
+              </TemplateStage>
+              <Typography caption mono subtle>
+                Same tree on every platform. The skin swaps control shape, field shape, type, elevation and touch heights; phones drop the sidebar for a tab bar and every grid reflows on its own.
+              </Typography>
+            </Column>
+          </Column>
+        </Row>
+      </View>
     </Page>
   );
 }
@@ -122,6 +132,7 @@ function FramedScreen({ template, platform, K, go }: {
   // The toast host comes from the frame's scope: each platform's useToast reads its own skin's provider.
   const { ToastProvider } = K;
   const sidebar = platform === "web" && template.app && width >= SIDEBAR_MIN;
+  const webTabs = platform === "web" && template.app && width > 0 && !sidebar;
   const pad = phone ? 16 : 28;
   const padBottom = platform === "ios" && template.app ? 96 : phone ? 20 : 28;
   return (
@@ -130,13 +141,14 @@ function FramedScreen({ template, platform, K, go }: {
       <OverlayProvider viewport style={styles.column}>
         <ToastProvider single brief bottomInset={platform === "ios" && template.app ? 84 : 20}>
           {template.app ? (
-            platform === "web" ? <WebTopBar K={K} /> : platform === "ios" ? <IosHeader K={K} title={template.name} /> : <AndroidTopBar K={K} title={template.name} />
+            platform === "web" ? <WebTopBar K={K} compact={width > 0 && width <= 480} /> : platform === "ios" ? <IosHeader K={K} title={template.name} /> : <AndroidTopBar K={K} title={template.name} />
           ) : null}
-          <ScrollView style={styles.body} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: pad, paddingTop: pad, paddingBottom: padBottom }}>
+          <ScrollView keyboardShouldPersistTaps="handled" style={styles.body} contentContainerStyle={{ flexGrow: 1, paddingHorizontal: pad, paddingTop: pad, paddingBottom: padBottom }}>
             <Screen K={K} phone={phone} go={go} />
           </ScrollView>
           {platform === "ios" && template.app ? <PhoneTabBar K={K} slug={template.slug} go={go} floating /> : null}
           {platform === "android" && template.app ? <PhoneTabBar K={K} slug={template.slug} go={go} floating={false} /> : null}
+          {webTabs ? <PhoneTabBar K={K} slug={template.slug} go={go} floating={false} /> : null}
         </ToastProvider>
       </OverlayProvider>
     </TemplateFrame>

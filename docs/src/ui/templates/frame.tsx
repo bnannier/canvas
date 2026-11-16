@@ -106,7 +106,7 @@ function BrowserBar({ path }: { path: string }) {
       <View style={[styles.address, { backgroundColor: tokens.muted }]}>
         <Row tight alignCenter>
           <Icon lock size={11} muted decorative />
-          <Typography caption mono muted numberOfLines={1}>{`app.riskora.com/${path}`}</Typography>
+          <Typography caption mono muted numberOfLines={1} style={{ flexShrink: 1 }}>{`app.riskora.com/${path}`}</Typography>
         </Row>
       </View>
       <View style={styles.browserEnd} />
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: 0, flexDirection: "row" },
   browserBar: { height: 42, flexShrink: 0, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, borderBottomWidth: 1 },
   light: { width: 11, height: 11, borderRadius: 6 },
-  address: { flex: 1, maxWidth: 420, height: 26, borderRadius: 8, alignItems: "center", justifyContent: "center", marginHorizontal: "auto", paddingHorizontal: 8 },
+  address: { flex: 1, minWidth: 0, maxWidth: 420, height: 26, borderRadius: 8, alignItems: "center", justifyContent: "center", marginHorizontal: "auto", paddingHorizontal: 8 },
   browserEnd: { width: 46 },
   iosStatus: { height: 50, flexShrink: 0, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingTop: 6, paddingLeft: 36, paddingRight: 30 },
   island: { position: "absolute", left: "50%", top: 10, width: 120, height: 32, marginLeft: -60, borderRadius: 20, backgroundColor: "#000" },

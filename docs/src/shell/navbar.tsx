@@ -50,7 +50,7 @@ function NativeNav() {
         }
       : {};
   return (
-    <NativeTabs sidebarAdaptable={Platform.OS === "ios"} minimizeBehavior="onScrollDown" {...androidTheme}>
+    <NativeTabs tintColor={tokens.primary} sidebarAdaptable={Platform.OS === "ios"} minimizeBehavior="onScrollDown" {...androidTheme}>
       {MOBILE_TABS.map((tab) => (
         <NativeTabs.Trigger key={tab.id} name={`(${tab.id})`} role={tab.role}>
           <NativeTabs.Trigger.Icon sf={tab.icon.ios as never} md={tab.icon.android as never} />
@@ -135,7 +135,7 @@ function WebNav() {
               <MobileTabs pathname={pathname} bottomInset={insets.bottom} onSearch={() => setSearchOpen(true)} />
             </View>
           ) : null}
-          <Sidebar drawer sectionPages open={!wide && menuOpen} onOpenChange={setMenuOpen}
+          <Sidebar drawer open={!wide && menuOpen} onOpenChange={setMenuOpen}
             onNavigate={() => setMenuOpen(false)} footer={<ThemeToggles />} />
           <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
           {/* Last, so it lies over the pill and the rail too (the hand-off's z-index 100). */}

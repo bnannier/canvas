@@ -4,6 +4,7 @@ import { inlineText } from "../../lib/inline-markdown";
 import { getAllPatterns } from "./patterns";
 import { getAllTemplates } from "./templates";
 import type { SearchEntry } from "./types";
+import { SECTION_ROOMS, SKINS_PAGE, TEMPLATES_PAGE } from "../../data/rooms";
 
 // Static guide + foundation + token entries. These mirror the routes the docs app
 // actually exposes (the RN app has richer token pages than the original web docs:
@@ -11,10 +12,13 @@ import type { SearchEntry } from "./types";
 // always resolves to a real page on every platform.
 const GUIDE_ENTRIES: SearchEntry[] = [
   { title: "Home", description: "Canvas design system overview", path: "/", category: "Pages", keywords: ["overview", "getting started", "install", "about"] },
-  { title: "All components", description: "Browse every Canvas component by category", path: "/components", category: "Pages", keywords: ["index", "list", "catalog", "browse"] },
+  { title: "All components", description: "Browse Canvas components by section", path: "/components", category: "Pages", keywords: ["index", "list", "catalog", "browse"] },
+  ...SECTION_ROOMS.map((room) => ({ title: room.title, description: room.lead, path: room.href!, category: "Sections", keywords: [room.id, room.label, "components", "browse"] })),
+  { title: SKINS_PAGE.title, description: SKINS_PAGE.lead, path: SKINS_PAGE.href, category: "Pages", keywords: ["skins", "platform", "appearance"] },
+  { title: TEMPLATES_PAGE.title, description: TEMPLATES_PAGE.lead, path: TEMPLATES_PAGE.href, category: "Pages", keywords: ["templates", "screens", "compositions"] },
   { title: "Colors & Theme", description: "Color tokens, light/dark scheme, and the glass surface", path: "/tokens/colors", category: "Foundations", keywords: ["colors", "theme", "tokens", "custom properties", "variables", "dark", "light"] },
   { title: "Spacing & Shape", description: "Spacing scale, radius, and shadow tokens", path: "/tokens/spacing", category: "Foundations", keywords: ["spacing", "gap", "radius", "rounded", "shadow", "shape", "tokens"] },
-  { title: "Typography", description: "Type scale, font families, and text tokens", path: "/tokens/typography", category: "Foundations", keywords: ["typography", "fonts", "type", "text", "geist", "tokens"] },
+  { title: "Typography", description: "Type scale, font families, and text tokens", path: "/tokens/typography", category: "Foundations", keywords: ["typography", "fonts", "type", "text", "Instrument Sans", "Bricolage Grotesque", "JetBrains Mono", "tokens"] },
   { title: "Layout & Flexbox", description: "Flexbox layout helpers and the responsive layout tokens", path: "/tokens/layout", category: "Foundations", keywords: ["layout", "flexbox", "flex", "grid", "responsive", "tokens", "breakpoint", "viewport", "form factor"] },
   { title: "Theming", description: "Light/dark mode, glass surface, density controls", path: "/theming", category: "Guides", keywords: ["dark mode", "light mode", "glass", "compact", "comfy", "theme", "density", "fonts", "typefaces", "nested providers", "ThemeProvider"] },
   { title: "Integration", description: "Install and consume Canvas, the universal React Native kit, on native and the web", path: "/integration", category: "Guides", keywords: ["react", "react native", "react-native-web", "install", "setup", "native", "web"] },
@@ -35,7 +39,7 @@ const ALL_ENTRIES: SearchEntry[] = [
     // shows it, and a query matches it, as the text a reader sees.
     description: inlineText(componentDescription(c)),
     path: `/components/${c.slug}`,
-    category: c.category,
+    category: c.section,
     // Keep the source-dir name searchable too, so "sidebar"/"switch" still find the
     // renamed Navigation/Toggle pages.
     keywords: [c.slug, ...c.slug.split("-"), ...(c.dir ? [c.dir] : [])],
@@ -74,7 +78,7 @@ export function titleCloseness(entry: SearchEntry, query: string): number {
 // order; the UI groups them by category in that order, so the component categories lead.
 export function search(query: string): SearchEntry[] {
   if (!query.trim()) return [];
-  const q = query.toLowerCase();
+  const q = query.trim().toLowerCase();
   const hits = ALL_ENTRIES.filter((entry) => {
     if (entry.title.toLowerCase().includes(q)) return true;
     if (entry.description.toLowerCase().includes(q)) return true;

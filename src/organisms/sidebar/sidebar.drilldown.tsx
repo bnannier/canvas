@@ -5,7 +5,7 @@ import { LayoutAxisProvider, ROW_AXIS } from "../../style/sizing.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import type { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { type Density } from "./sidebar.styles.js";
-import { SidebarItemBadge, SidebarRowFrame, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
+import { SidebarItemBadge, SidebarRowFrame, SidebarSectionHeading, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
 // Type-only, so it is erased whole and leaves no runtime edge back to the module
 // that builds this one.
 import type { SidebarSkin } from "./sidebar.shared.js";
@@ -34,6 +34,7 @@ export interface SidebarDrillDownProps {
   /** Whether the hosting Drawer is open — drives the reset/pre-drill on each open. */
   open: boolean;
   onSelect: (item: SidebarItem, index: number, event: GestureResponderEvent) => void;
+  onSectionPress?: (section: SidebarSection, event: GestureResponderEvent) => void;
   /** Close the hosting Drawer (after a leaf selection or a root-level back). */
   onRequestClose: () => void;
   /**
@@ -53,7 +54,7 @@ export interface SidebarDrillDownProps {
 
 /** Build the drill-down body from a Sidebar skin (mirrors createSidebar's skin closure). */
 export function createSidebarDrillDown(skin: SidebarSkin, Badge: typeof WebBadge) {
-  return function SidebarDrillDown({ groups, activeIndex, activeSectionKey, density, open, onSelect, onRequestClose, contentInsetBottom, fill = true }: SidebarDrillDownProps) {
+  return function SidebarDrillDown({ groups, activeIndex, activeSectionKey, density, open, onSelect, onSectionPress, onRequestClose, contentInsetBottom, fill = true }: SidebarDrillDownProps) {
     const { tokens } = useTheme();
     const reduced = useReducedMotion();
     // The skin's hover wash for the leaf and drill rows, as the rail's.
@@ -198,12 +199,7 @@ export function createSidebarDrillDown(skin: SidebarSkin, Badge: typeof WebBadge
               ) : (
                 <View key={g.key} style={skin.group(density)}>
                   {g.section.title != null ? (
-                    <View style={skin.sectionHeading(tokens, density)}>
-                      <Text style={skin.sectionTitle(tokens, density, !!g.section.current)} numberOfLines={1}>
-                        {g.section.title}
-                      </Text>
-                      {g.section.count != null ? <Text style={skin.sectionCount(tokens, !!g.section.current)}>{g.section.count}</Text> : null}
-                    </View>
+                    <SidebarSectionHeading section={g.section} skin={skin} density={density} onPress={(section, event) => { onSectionPress?.(section, event); onRequestClose(); }} />
                   ) : null}
                   {g.rows.map((r) => renderLeaf(r.item, r.index))}
                 </View>

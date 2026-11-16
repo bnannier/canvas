@@ -92,6 +92,7 @@ export function Page({ children, lead, footer, detail = false, viewportOverlays 
         {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
         style={{ flex: 1 }}
         contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           // `PAGE_TOP`, unless a lead section owns that room. The measured mobile
           // tabs add enough tail for the footer's last row to scroll above them.

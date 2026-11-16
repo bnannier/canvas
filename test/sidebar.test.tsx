@@ -1,10 +1,12 @@
-import { describe, it, expect, afterEach } from "bun:test";
+import { describe, it, expect, afterEach, spyOn } from "bun:test";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Badge } from "../src/atoms/badge/badge.tsx";
 import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
+import { Sidebar as IOSSidebar } from "../src/organisms/sidebar/sidebar.ios.tsx";
+import { Sidebar as AndroidSidebar } from "../src/organisms/sidebar/sidebar.android.tsx";
 import { createSidebarDrillDown } from "../src/organisms/sidebar/sidebar.drilldown.tsx";
 import { webSkin } from "../src/organisms/sidebar/sidebar.styles.ts";
 import { resizeViewport } from "./viewport.ts";
@@ -12,6 +14,7 @@ import { colorsFor } from "../src/style/tokens.ts";
 import { Input } from "../src/atoms/input/input.tsx";
 import { Column } from "../src/atoms/layout/layout.tsx";
 import { Typography } from "../src/atoms/typography/typography.tsx";
+import * as touchTarget from "../src/style/touch-target.ts";
 
 // A colour's channels and alpha, so "#b5b0ff", "rgb(181, 176, 255)" and "rgba(181, 176, 255, 1.00)" compare equal.
 const paint = (color: string) => {
@@ -155,6 +158,96 @@ describe("Sidebar accordion sections", () => {
     ui(<Sidebar sections={ACC} active="b1" />);
     expect(screen.getByText("b1")).toBeTruthy();
     expect(screen.queryByText("a1")).toBeNull();
+  });
+});
+
+describe("Sidebar section destinations", () => {
+  const section = { id: "foundations", title: "Foundations", count: 6, href: "/foundations", items: [{ id: "colors", label: "Colors" }] };
+
+  for (const [name, Component] of [["web", Sidebar], ["iOS", IOSSidebar], ["Android", AndroidSidebar]] as const) {
+    it(`${name}: a pinned heading links with its count and reports the section without selecting a row`, () => {
+      let destination: unknown;
+      let selected = false;
+      let prevented = false;
+      const { container } = ui(<Component sections={[section]} onSectionPress={(next, event) => {
+        destination = next;
+        event.preventDefault();
+        prevented = event.defaultPrevented;
+      }} onSelect={() => { selected = true; }} />);
+      const heading = screen.getByRole("link", { name: "Foundations, 6" });
+      expect(heading.tagName).toBe("A");
+      expect(heading.getAttribute("href")).toBe("/foundations");
+      expect(heading.textContent).toBe("Foundations6");
+      expect(heading.getAttribute("aria-expanded")).toBeNull();
+      fireEvent.click(heading);
+      expect(destination).toBe(section);
+      expect(prevented).toBe(true);
+      expect(selected).toBe(false);
+      expect(activeRows(container).length).toBe(0);
+    });
+  }
+
+  it("keeps headings without a destination inert", () => {
+    let pressed = false;
+    ui(<Sidebar sections={[{ title: "Foundations", count: 6, items: [] }]} onSectionPress={() => { pressed = true; }} />);
+    expect(screen.queryByRole("link")).toBeNull();
+    fireEvent.click(screen.getByText("Foundations"));
+    expect(pressed).toBe(false);
+  });
+
+  it("leaves modified link clicks to the browser", () => {
+    let pressed = false;
+    ui(<Sidebar sections={[section]} onSectionPress={() => { pressed = true; }} />);
+    const heading = screen.getByRole("link", { name: "Foundations, 6" });
+    for (const modifier of ["metaKey", "ctrlKey", "shiftKey", "altKey"]) fireEvent.click(heading, { [modifier]: true });
+    expect(pressed).toBe(false);
+  });
+
+  for (const minimum of [24, 44, 48]) {
+    it(`reserves a compact heading link's ${minimum}px target`, () => {
+      const target = spyOn(touchTarget, "platformMinTarget").mockReturnValue(minimum === 24 ? null : minimum);
+      try {
+        ui(<Sidebar compact sections={[section]} />);
+        const heading = screen.getByRole("link", { name: "Foundations, 6" }) as HTMLElement;
+        expect(heading.style.minHeight).toBe(`${minimum}px`);
+        expect(heading.contains(screen.getByRole("button", { name: "Colors" }))).toBe(false);
+      } finally { cleanup(); target.mockRestore(); }
+    });
+  }
+
+  it("retains an accordion heading's disclosure behavior when it carries a destination", () => {
+    let pressed = false;
+    ui(<Sidebar sections={[{ ...section, collapsible: true }]} onSectionPress={() => { pressed = true; }} />);
+    const heading = screen.getByRole("button", { name: "Foundations" });
+    expect(heading.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("link")).toBeNull();
+    fireEvent.click(heading);
+    expect(heading.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByText("Colors")).toBeTruthy();
+    expect(pressed).toBe(false);
+  });
+
+  it("links a pinned heading in the drawer and closes after its callback", () => {
+    const events: string[] = [];
+    const DrillDown = createSidebarDrillDown(webSkin, Badge);
+    ui(<DrillDown groups={[{ section, key: "foundations", rows: [{ item: section.items[0], index: 0 }] }]}
+      activeIndex={-1} activeSectionKey={null} density="default" open
+      onSelect={() => { events.push("row"); }} onSectionPress={(next, event) => { event.preventDefault(); events.push(next.href!); }}
+      onRequestClose={() => { events.push("close"); }} />);
+    fireEvent.click(screen.getByRole("link", { name: "Foundations, 6" }));
+    expect(events).toEqual(["/foundations", "close"]);
+  });
+
+  it("keeps a destination-bearing drill row as a disclosure button", () => {
+    let pressed = false;
+    const DrillDown = createSidebarDrillDown(webSkin, Badge);
+    ui(<DrillDown groups={[{ section: { ...section, collapsible: true }, key: "foundations", rows: [{ item: section.items[0], index: 0 }] }]}
+      activeIndex={-1} activeSectionKey={null} density="default" open
+      onSelect={() => {}} onSectionPress={() => { pressed = true; }} onRequestClose={() => {}} />);
+    fireEvent.click(screen.getByRole("button", { name: "Foundations" }));
+    expect(screen.getByText("Colors")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Back to Foundations" })).toBeTruthy();
+    expect(pressed).toBe(false);
   });
 });
 

@@ -32,17 +32,22 @@ function host(card: HTMLElement): { props: Record<string, unknown> } {
   throw new Error(`Missing native props for ${card.getAttribute("data-testid")}`);
 }
 
-// SVG is a no-op in the test harness. Inspect the props sent to that renderer
-// so the graph drawing's native and browser hiding aliases are still covered.
-function drawingProps(canvas: HTMLElement): Record<string, unknown> {
-  type Fiber = { type: unknown; memoizedProps: Record<string, unknown>; child: Fiber | null; sibling: Fiber | null };
+// SVG is a no-op in the test harness. Inspect its props and its RN hiding host;
+// native-only props must reach View, since Svg forwards them to the browser DOM.
+function drawingProps(canvas: HTMLElement) {
+  type Fiber = { type: unknown; memoizedProps: Record<string, unknown>; child: Fiber | null; sibling: Fiber | null; return: Fiber | null };
   const key = Object.keys(canvas).find((name) => name.startsWith("__reactFiber$"));
   if (!key) throw new Error("Missing canvas fiber");
   const pending = [(canvas as unknown as Record<string, Fiber>)[key].child];
   while (pending.length) {
     const fiber = pending.pop();
     if (!fiber) continue;
-    if (fiber.type === Svg) return fiber.memoizedProps;
+    if (fiber.type === Svg) {
+      for (let parent = fiber.return; parent; parent = parent.return) {
+        if (parent.memoizedProps.accessibilityElementsHidden) return { svg: fiber.memoizedProps, host: parent.memoizedProps };
+      }
+      throw new Error("Missing native host hiding the SVG drawing");
+    }
     pending.push(fiber.child, fiber.sibling);
   }
   throw new Error("Missing SVG drawing");
@@ -110,12 +115,15 @@ it("retains cycles, self loops and every parallel connection without traversing 
 for (const [platform, Editor] of [["web", FlowEditor], ["ios", IOSFlowEditor], ["android", AndroidFlowEditor]] as const) {
   it(`${platform} hides duplicate graph artwork while keeping relationships on readable nodes`, () => {
     const view = render(<ThemeProvider><Editor readOnly label="Workflow" nodes={nodes} edges={edges} testID="flow" /></ThemeProvider>);
-    const drawing = drawingProps(view.getByTestId("flow-canvas"));
+    const { host: drawing, svg } = drawingProps(view.getByTestId("flow-canvas"));
     expect(drawing.accessible).toBe(false);
     expect(drawing.accessibilityElementsHidden).toBe(true);
     expect(drawing.importantForAccessibility).toBe("no-hide-descendants");
     expect(drawing["aria-hidden"]).toBe(true);
-    expect(drawing.pointerEvents).toBe("box-none");
+    expect(drawing.pointerEvents).toBe("none");
+    expect(svg.accessible).toBeUndefined();
+    expect(svg.accessibilityElementsHidden).toBeUndefined();
+    expect(svg.importantForAccessibility).toBeUndefined();
     const caption = view.getByText("Ready").parentElement!;
     expect(caption.getAttribute("aria-hidden")).toBe("true");
     type Fiber = { memoizedProps: Record<string, unknown>; return: Fiber | null };

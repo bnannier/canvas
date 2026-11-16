@@ -34,7 +34,7 @@ import { Drawer as WebDrawer } from "../drawer/drawer.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type Density, type Frame } from "./sidebar.styles.js";
-import { SidebarItemBadge, SidebarRowFrame, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
+import { SidebarItemBadge, SidebarRowFrame, SidebarSectionHeading, type SidebarItem, type SidebarRowWash, type SidebarSection } from "./sidebar.item.js";
 import { createSidebarDrillDown } from "./sidebar.drilldown.js";
 
 /** The Icon color booleans a nav row's glyph can carry, per active state (the
@@ -202,6 +202,9 @@ export interface SidebarProps {
   defaultActive?: string | number;
   /** Fired with the selected row and its flat index across all sections. */
   onSelect?: (item: SidebarItem, index: number, event: GestureResponderEvent) => void;
+  /** Fired when a pinned heading with `href` is pressed. Use for native routing;
+   *  prevent the event's default to handle a web link with an app router. */
+  onSectionPress?: (section: SidebarSection, event: GestureResponderEvent) => void;
   // Density (pick one; default is the comfortable row).
   compact?: boolean;
   // Frame (pick one; default is the flush right-bordered column). `bordered` wins
@@ -603,6 +606,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
               density={density}
               open={drawerOpen}
               onSelect={select}
+              onSectionPress={props.onSectionPress}
               onRequestClose={() => setDrawerOpen(false)}
               contentInsetBottom={props.drawerContentInsetBottom}
               fill={fullHeight}
@@ -746,12 +750,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
             </Pressable>
           ) : section.title != null ? (
             // The heading line: the title, and its count at the far end.
-            <View ref={key === firstTitledKey ? sectionLabelPart?.ref : undefined} onLayout={key === firstTitledKey ? sectionLabelPart?.onLayout : undefined} style={skin.sectionHeading(tokens, density)}>
-              <Text style={skin.sectionTitle(tokens, density, current)} numberOfLines={1}>
-                {section.title}
-              </Text>
-              {section.count != null ? <Text style={skin.sectionCount(tokens, current)}>{section.count}</Text> : null}
-            </View>
+            <SidebarSectionHeading section={section} skin={skin} density={density} onPress={props.onSectionPress} part={key === firstTitledKey ? sectionLabelPart : undefined} />
           ) : null}
           {open ? rows.map((r) => renderRow(r.item, r.index, current)) : null}
         </View>

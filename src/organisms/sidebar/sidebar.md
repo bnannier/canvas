@@ -36,6 +36,14 @@ or every row of a section with `current: true`. A `current` section also sets it
 eyebrow in the accent's text ink and its resting rows in the foreground ink, and a
 section's `count` sits at the far end of its heading.
 
+A pinned section's `href` turns its title and count into one link while keeping the
+heading's appearance. `onSectionPress(section, event)` receives the section and press
+event; use it for native routing, or prevent the event's default to navigate through
+an app router on the web. Without a handler, the web follows the link normally.
+Selecting a section leaves the active row unchanged and closes an open drawer.
+Collapsible headings keep their accordion and drill-down behavior even when they
+carry an `href`; their trigger still opens the section's rows.
+
 `embedded` renders the navigation groups inside an app-owned rail: it inherits the
 rail's frame, fill, width and scroll, stacks its groups 16px apart, and renders the
 `header` and `footer` slots as plain blocks above and below them, so a filter field or

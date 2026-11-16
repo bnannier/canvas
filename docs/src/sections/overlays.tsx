@@ -88,7 +88,7 @@ function DrawerCard() {
           </Row>
         )}
         footer={(
-          <Row end snug>
+          <Row end snug wrap>
             <Button ghost>Cancel</Button>
             <Button primary raised>Send invite</Button>
           </Row>
@@ -199,7 +199,7 @@ function PopoverCard() {
           placed by this card-local outlet, inside the page's main landmark; a menu that
           closes on an outside tap would paint in the window's layer instead. */}
       <OverlayProvider>
-        <Row grow relaxed>
+        <Row stacks grow relaxed>
           <Column fill between alignStart>
             <Row snug alignCenter>
               <Tooltip label="Filter rows" open={!phone}>
@@ -217,14 +217,14 @@ function PopoverCard() {
               <Typography pageLabel mono muted>Popover</Typography>
             </Column>
           </Column>
-          <Column fill end alignEnd roomy>
+          <Column fill end alignEnd={!phone} roomy>
             <Popover inline top alignEnd title="Invite to Q4 plan" description="They get edit access to this board only.">
               <Column snug>
                 <Input small placeholder="name@company.com" accessibilityLabel="Email" />
                 <Button primary small block raised>Send invite</Button>
               </Column>
             </Popover>
-            <Button outline small iconLeft={<Icon userPlus size={14} decorative />}>Invite</Button>
+            <Row end><Button outline small iconLeft={<Icon userPlus size={14} decorative />}>Invite</Button></Row>
           </Column>
         </Row>
       </OverlayProvider>

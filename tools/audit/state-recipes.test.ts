@@ -635,10 +635,10 @@ describe("the states each component's source gives it", () => {
       "slider: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
       "chart: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
       "area-chart: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
+      "histogram: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
       "heatmap: its source gives it a hover state, with neither a hover recipe nor an exemption",
       "heatmap: its source gives it a focus state, with neither a focus recipe nor an exemption",
       "heatmap: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
-      "histogram: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
     ]);
     // The message names where the source takes the input.
     expect(errors.find((e) => e.startsWith("area-chart"))).toContain("via chartShell > CartesianFrame > PresentedFrame > ScrubSurface");
@@ -1382,9 +1382,11 @@ export function createProbe(skin: ProbeSkin) {
       [...new Set(ownControls(signalsOf("sidebar")).filter((c) => c.signals.some((s) => s.state === state)).map((c) => `${c.place || "surface"}: ${c.control.in} <${c.control.tag}> ${c.control.roles.join("/") || "no role"}`))].sort();
     expect(places("focus")).toEqual([
       "Sidebar: SidebarDrillDown <Pressable> button",
+      "Sidebar: SidebarSectionHeading <Pressable> link",
       "Sidebar: renderDrillRow <Pressable> button",
       "Sidebar: renderLeaf <Pressable> button",
       "surface: Sidebar <Pressable> button",
+      "surface: SidebarSectionHeading <Pressable> link",
       "surface: renderRow <Pressable> button",
       "surface: renderSection <Pressable> button",
     ]);
@@ -1396,9 +1398,9 @@ export function createProbe(skin: ProbeSkin) {
     // The rail's recipes, as the table had them at the desktop alone, leave the drawer unanswered.
     const rail = { hover: recipeFor("sidebar", "hover-default"), focus: recipeFor("sidebar", "focus-default"), pressed: recipeFor("sidebar", "pressed-default"), open: recipeFor("sidebar", "open") };
     expect(check("sidebar", rail)).toEqual([
-      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:128 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
-      "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:114 via SidebarDrillDown, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
-      "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:122 via SidebarDrillDown, and 5 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:173 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:115 via SidebarDrillDown, and 5 more), where no focus recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:123 via SidebarDrillDown, and 7 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // A recipe inside the drawer acts on a row of the drill-down's own there, and answers it.
     for (const name of ["hover-default-inside", "focus-default-inside", "pressed-default-inside"]) {

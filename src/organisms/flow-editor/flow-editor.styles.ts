@@ -58,7 +58,7 @@ export const webSkin: FlowEditorSkin = {
     borderColor: t.border,
     borderRadius: shape.web.card,
   }),
-  drawing: { position: "absolute", left: 0, top: 0 },
+  drawing: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0 },
   ghost: { opacity: 0.7 },
   mark: { position: "absolute" },
   node: (t, selected) => ({

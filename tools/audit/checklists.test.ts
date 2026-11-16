@@ -159,7 +159,7 @@ describe.skipIf(!hasDist)("the audit checklists", () => {
       expect(bridge).toContain("| Docs planned | none: every export has its page |");
       expect(bridge).toContain("| `drawer` | directly | `GlassModalBlurTarget` |");
       expect(bridge).toContain("| `sidebar` | through other kit components | `drawer` |");
-      expect(bridge).toMatch(/\| Capture through \| \d+, in this order: components `action-sheet`, `drawer`, /);
+      expect(bridge).toMatch(/\| Capture through \| \d+, in this order: components `drawer`, `action-sheet`, /);
       expect(bridge).toContain("## Contract rubric");
       expect(bridge).toContain("- [ ] 5. **Accessibility it provides or must not break** (A, S, N)");
       expect(bridge).toContain("- [ ] K12-5: documented on `integration`");

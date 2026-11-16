@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.5.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 2a2a21848836fec88abf2d79e82a42cb41b4cd46be8e9fda691b7bd40a6da565
+Source SHA-256: 8e9feefd31bf30c04eca9f80cb62635dcc73be7292011dd7df808b290dfa1cc5
 
 Source: `src/organisms/sidebar/sidebar.md`
 Human reference: https://canvas.nannier.com/components/sidebar
@@ -43,6 +43,14 @@ hairline on a row of the reader's current place, either one item with `marked: t
 or every row of a section with `current: true`. A `current` section also sets its
 eyebrow in the accent's text ink and its resting rows in the foreground ink, and a
 section's `count` sits at the far end of its heading.
+
+A pinned section's `href` turns its title and count into one link while keeping the
+heading's appearance. `onSectionPress(section, event)` receives the section and press
+event; use it for native routing, or prevent the event's default to navigate through
+an app router on the web. Without a handler, the web follows the link normally.
+Selecting a section leaves the active row unchanged and closes an open drawer.
+Collapsible headings keep their accordion and drill-down behavior even when they
+carry an `href`; their trigger still opens the section's rows.
 
 `embedded` renders the navigation groups inside an app-owned rail: it inherits the
 rail's frame, fill, width and scroll, stacks its groups 16px apart, and renders the
@@ -250,6 +258,7 @@ name and a detail line in the third ink (the collapsed rail keeps the avatar).
 | active | string \| number \| undefined | no |  | The active row (CONTROLLED), by id, by label, or by flat index across all rows. Omit for uncontrolled use. |
 | defaultActive | string \| number \| undefined | no |  | Initial active row for uncontrolled use (a bare sidebar moves the highlight on press). |
 | onSelect | ((item: SidebarItem, index: number, event: GestureResponderEvent) => void) \| undefined | no |  | Fired with the selected row and its flat index across all sections. |
+| onSectionPress | ((section: SidebarSection, event: GestureResponderEvent) => void) \| undefined | no |  | Fired when a pinned heading with `href` is pressed. Use for native routing; prevent the event's default to handle a web link with an app router. |
 | compact | boolean \| undefined | no | false | Density (pick one; default is the comfortable row). |
 | bordered | boolean \| undefined | no | false | A rounded card inside the field hairline. |
 | floating | boolean \| undefined | no | false | A rounded card lifted on the medium shadow (the bordered card natively). |

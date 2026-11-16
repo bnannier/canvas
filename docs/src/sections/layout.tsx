@@ -178,7 +178,7 @@ function MiniApp({ sizing, narrow, cramped, formWidth, membersWidth, onFormLayou
         defaultActive={0}
         actions={
           <Row comfortable alignCenter>
-            <Button primary small iconLeft={<Icon plus size={14} decorative />}>New</Button>
+            <Button primary small icon={cramped} accessibilityLabel="New" iconLeft={<Icon plus size={14} decorative />}>{cramped ? undefined : "New"}</Button>
             {cramped ? null : <Avatar small src={photo("/liang-bao.jpg")} name="Liang Bao" />}
           </Row>
         }

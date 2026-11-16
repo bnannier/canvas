@@ -10,20 +10,24 @@ import { ORGANISMS_TILES } from "../../../catalog/organisms";
 import { CHARTS_TILES } from "../../../catalog/charts";
 import { TEMPLATES_TILES } from "../../../catalog/templates";
 import { PATTERNS_TILES } from "../../../catalog/patterns";
+import { catalogSections } from "../../../catalog/sections";
+import { COMPONENTS } from "../../../core/data/components";
+import { getAllTemplates } from "../../../core/data/templates";
 
-const CATEGORY_IDS = ["Tokens", "Atoms", "Molecules", "Organisms", "Charts", "Templates", "Patterns"];
+const GROUPS = [
+  ...catalogSections([...ATOMS_TILES, ...MOLECULES_TILES, ...ORGANISMS_TILES, ...CHARTS_TILES]),
+  { id: "guides", label: "Token guides", href: undefined, count: TOKENS_TILES.length, noun: "pages", summary: `${TOKENS_TILES.length} pages`, tiles: TOKENS_TILES },
+  { id: "templates", label: "Templates", href: "/templates", count: getAllTemplates().length, noun: "templates", summary: `${getAllTemplates().length} templates · ${TEMPLATES_TILES.length} previews`, tiles: TEMPLATES_TILES },
+  { id: "patterns", label: "Patterns", href: undefined, count: PATTERNS_TILES.length, noun: "patterns", summary: `${PATTERNS_TILES.length} patterns`, tiles: PATTERNS_TILES },
+];
 
 // Previews are real, independently operable controls with separate reference links.
 export default function ComponentsIndex() {
-  const groups = [
-    ["Tokens", TOKENS_TILES], ["Atoms", ATOMS_TILES], ["Molecules", MOLECULES_TILES],
-    ["Organisms", ORGANISMS_TILES], ["Charts", CHARTS_TILES], ["Templates", TEMPLATES_TILES], ["Patterns", PATTERNS_TILES],
-  ] as const;
   return <Page>
     <H1>Components</H1>
-    <CatSubBar categories={CATEGORY_IDS} total={groups.reduce((n, [, tiles]) => n + tiles.length, 0)} />
+    <CatSubBar categories={GROUPS} total={COMPONENTS.length} />
     <Container xxl start><Typography subtle>Explore real Canvas components in the current theme. Try each control, then open its reference for examples and API details.</Typography></Container>
-    {groups.map(([label, tiles]) => <CatGroup key={label} label={label} count={tiles.length} tiles={[...tiles]} />)}
+    {GROUPS.map(({ id, label, href, summary, tiles }) => <CatGroup key={id} label={label} href={href} summary={summary} tiles={tiles} />)}
     <PageNav />
   </Page>;
 }

@@ -99,7 +99,7 @@ function SettingsScreen({ K, phone }: TemplateScreenProps) {
           </Column>
         </Card>
       ) : null}
-      <Row end snug alignCenter>
+      <Row end snug alignCenter wrap>
         <Button ghost onPress={() => toast({ message: "Changes discarded" })}>Discard</Button>
         <Button primary raised onPress={() => toast({ message: "Preferences saved" })}>Save changes</Button>
       </Row>

@@ -57,7 +57,7 @@ function DashboardScreen({ K, phone, go }: TemplateScreenProps) {
             <Typography small subtle>Riskora · last 30 days</Typography>
           </Column>
         )}
-        <Row snug wrap>
+        <Row snug wrap shrink>
           <Button outline iconLeft={<Icon download decorative />} onPress={() => toast({ message: "Export started · CSV" })}>Export</Button>
           <Button primary raised iconLeft={<Icon plus decorative />} onPress={() => toast({ message: "Report draft created" })}>New report</Button>
         </Row>

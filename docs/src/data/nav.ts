@@ -2,9 +2,8 @@ import navConfigJson from "./nav.config.json";
 
 // The single source of truth for navigation is nav.config.json: a `routes` registry,
 // a `web.sidebar` tree (with the component leaves enumerated), and a `mobile.tabs`
-// node. This module is the typed loader over it. It rebuilds the SAME NavGroup[] the
-// sidebar already consumes (so the web sidebar is unchanged) and exposes the mobile
-// config for the native tab bar. The JSON carries icon NAMES in kebab-case; the sidebar
+// node. Component groups follow the v4 rooms and their reading order on every platform;
+// each includes its overview page. The JSON carries icon NAMES in kebab-case; the sidebar
 // renders them with the kit `Icon` atom, so `icon()` just maps a JSON name to the kit's
 // camelCase glyph key (e.g. "bar-chart-2" -> "barChart2"); no external icon package.
 function icon(name: string): string {
@@ -38,7 +37,7 @@ interface NavConfigLeaf {
 }
 type NavConfigGroup =
   | { group: string; icon: string; collapsible?: boolean; routes: string[] }
-  | { group: string; icon: string; collapsible?: boolean; base: string; components: NavConfigLeaf[] };
+  | { group: string; icon: string; collapsible?: boolean; overview?: string; base: string; components: NavConfigLeaf[] };
 export interface NavTab {
   id: string;
   label: string;
@@ -56,6 +55,7 @@ const CONFIG = navConfigJson as unknown as NavConfig;
 
 // ── Active-state helpers (pathname is group-transparent, so these are unchanged) ─
 export function getActiveSlug(pathname: string): string {
+  pathname = pathname.replace(/\/+$/, "") || "/";
   if (pathname === "/") return "";
   const m = pathname.match(/^\/components\/(.+)$/);
   // A component page can carry a trailing /<variant> segment (a deep-linked Playground
@@ -83,15 +83,13 @@ export function routeItem(key: string): NavItem {
 export const NAV_GROUPS: NavGroup[] = CONFIG.web.sidebar.map((g): NavGroup => {
   const items: NavItem[] =
     "components" in g
-      ? g.components.map((c) => navItem(c.label, `${g.base}/${c.slug}`, c.icon))
+      ? [
+          ...(g.overview ? [{ ...routeItem(g.overview), label: `${g.group} overview` }] : []),
+          ...g.components.map((c) => navItem(c.label, `${g.base}/${c.slug}`, c.icon)),
+        ]
       : g.routes.map((k) => routeItem(k));
   return { label: g.group, icon: icon(g.icon), items };
 });
-
-// Alphabetize within each group.
-for (const group of NAV_GROUPS) {
-  group.items.sort((a, b) => a.label.localeCompare(b.label));
-}
 
 export function getActiveGroup(pathname: string): string | null {
   const slug = getActiveSlug(pathname);
@@ -111,6 +109,7 @@ export const MOBILE_TABS: NavTab[] = CONFIG.mobile.tabs;
 // from the path). Used by the native header and the mobile-web shell to source the active
 // section + its secondary nav.
 export function sectionFor(pathname: string): "home" | "components" | "utilities" {
+  pathname = pathname.replace(/\/+$/, "") || "/";
   if (pathname.startsWith("/tokens") || pathname === "/utilities") return "utilities";
   // v4 section pages belong to the same tab as their component details. Read their
   // paths from the navigation registry, which also feeds the restored mobile drawer.
@@ -179,7 +178,7 @@ export function nativeMenuFor(section: string, activeGroup?: string | null): Men
         nodes.unshift(active);
       }
     }
-    return nodes;
+    return [...nodes, ...(tab.topbar?.inline ?? []).map((key) => leafNode(routeItem(key)))];
   }
 
   const keys = [...(tab?.topbar?.inline ?? []), ...(tab?.topbar?.overflow ?? [])];
@@ -194,7 +193,10 @@ export function nativeMenuFor(section: string, activeGroup?: string | null): Men
     const [firstKey, ...restKeys] = guideKeys; // About leads; the remaining guides follow the submenus
     return [
       ...(firstKey ? [leafNode(routeItem(firstKey))] : []),
-      { kind: "submenu", label: "Components", icon: HOME_COMPONENTS_ICON, items: categorySubmenus(componentsTab?.topbar?.categories ?? []) },
+      { kind: "submenu", label: "Components", icon: HOME_COMPONENTS_ICON, items: [
+        ...(componentsTab?.topbar?.inline ?? []).map((key) => leafNode(routeItem(key))),
+        ...categorySubmenus(componentsTab?.topbar?.categories ?? []),
+      ] },
       { kind: "submenu", label: "Utilities", icon: HOME_UTILITIES_ICON, items: utilKeys.map((k) => leafNode(routeItem(k))) },
       ...restKeys.map((k) => leafNode(routeItem(k))),
     ];

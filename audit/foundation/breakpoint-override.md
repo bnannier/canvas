@@ -16,7 +16,7 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | Tests of it | 4 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/breakpoint-override[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/container.test.tsx`, `test/responsive-ssr.test.tsx`, `test/responsive.test.tsx` |
 | Consumers | 33 components: 2 directly, 25 through shared modules, 6 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | `pattern-responsive` (useFormFactor) |
-| Capture through | 34, in this order: components `filter-panel`, `sidebar`, `row-column`, `grid`, `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `tooltip`, `alert-dialog`, `description-lists`, `form`, `grid-lists`, `phone-input`, `calendar`, `chat`, `command`, `dashboard-grid`, `data-table`, `dialog`, `navbars`, `row-menu`, `steps`, `wizard`, `tabs`, `toast`, `avatar`, `video`, `field`, `app-frame`, `board`, `flow-editor`; pages `pattern-responsive` |
+| Capture through | 34, in this order: components `filter-panel`, `sidebar`, `row-column`, `grid`, `dashboard-grid`, `button-group`, `select`, `autocomplete`, `phone-input`, `form`, `tabs`, `navbars`, `steps`, `row-menu`, `data-table`, `grid-lists`, `description-lists`, `calendar`, `chat`, `dialog`, `alert-dialog`, `popover`, `tooltip`, `dropdown`, `command`, `wizard`, `toast`, `app-frame`, `avatar`, `field`, `video`, `board`, `flow-editor`; pages `pattern-responsive` |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/tokens/layout` (documents BreakpointOverride, formFactor, FormFactor, responsive, Responsive) |
 | Turn record | `audit/turns/breakpoint-override.md`, written by `bun run audit:turn -- --slug=breakpoint-override --phase=before\|after` (the before and after capture runs) |
 
@@ -26,33 +26,33 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | `sidebar` | directly | `useBreakpoint` |
 | `row-column` | through shared modules | `useContainerWidth` (src/style/container.ts) |
 | `grid` | through shared modules | `useContainerWidth` (src/style/container.ts) |
-| `autocomplete` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
+| `dashboard-grid` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `button-group` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
-| `dropdown` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
-| `popover` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `select` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
-| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
-| `alert-dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
-| `description-lists` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
-| `form` | through shared modules | `useContainerWidth` (src/style/container.ts) |
-| `grid-lists` | through shared modules | `useContainerWidth` (src/style/container.ts) |
+| `autocomplete` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `phone-input` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
+| `form` | through shared modules | `useContainerWidth` (src/style/container.ts) |
+| `tabs` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
+| `navbars` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
+| `steps` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
+| `row-menu` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
+| `data-table` | through shared modules | `useContainerWidth` (src/style/container.ts) |
+| `grid-lists` | through shared modules | `useContainerWidth` (src/style/container.ts) |
+| `description-lists` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `calendar` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `chat` | through shared modules | `useContainerWidth` (src/style/container.ts) |
-| `command` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
-| `dashboard-grid` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
-| `data-table` | through shared modules | `useContainerWidth` (src/style/container.ts) |
 | `dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
-| `navbars` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
-| `row-menu` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
-| `steps` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
+| `alert-dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
+| `popover` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
+| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
+| `dropdown` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
+| `command` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `wizard` | through shared modules | `ThemeProvider` (src/style/theme.tsx), `useContainerWidth` (src/style/container.ts) |
-| `tabs` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `toast` | through shared modules | `Portal` (src/style/portal.tsx) |
-| `avatar` | through other kit components | `dropdown` |
-| `video` | through other kit components | `row-column` |
-| `field` | through other kit components | `autocomplete`, `phone-input`, `select` |
 | `app-frame` | through other kit components | `row-column` |
+| `avatar` | through other kit components | `dropdown` |
+| `field` | through other kit components | `autocomplete`, `phone-input`, `select` |
+| `video` | through other kit components | `row-column` |
 | `board` | through other kit components | `row-menu` |
 | `flow-editor` | through other kit components | `select` |
 <!-- audit:facts:end -->

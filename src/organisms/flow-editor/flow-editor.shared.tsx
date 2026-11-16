@@ -37,6 +37,7 @@ import {
   FLOW_WHEEL_PX_PER_DOUBLING,
   FLOW_ZOOM_STEP,
   fitFlowCamera,
+  flowArrowHead,
   flowCanConnect,
   flowEdgeAt,
   flowEdgeGeometry,
@@ -341,38 +342,43 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
           {...background.panHandlers}
           testID={testID ? `${testID}-canvas` : undefined}
         >
-          <Svg width="100%" height="100%" style={skin.drawing} pointerEvents="box-none"
-            accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
-            <Defs>
-              <Pattern id={gridId} x={0} y={0} width={FLOW_GRID} height={FLOW_GRID} patternUnits="userSpaceOnUse">
-                <Circle cx={FLOW_GRID / 2} cy={FLOW_GRID / 2} r={1.1} fill={skin.gridDot(t)} fillOpacity={0.35} />
-              </Pattern>
-            </Defs>
-            <G transform={viewCameraMatrix(camera)}>
-              <Rect x={visible.x} y={visible.y} width={visible.width} height={visible.height} fill={`url(#${gridId})`} />
-              {edges.map((edge) => {
-                const from = byId.get(edge.from), to = byId.get(edge.to);
-                if (!from || !to) return null;
-                const g = flowEdgeGeometry(shown(from), shown(to));
-                const isSelected = selection?.kind === "edge" && selection.id === edge.id;
-                const s = edgeStyle(isSelected);
-                const head = arrowHead(g.tip, g.angle);
-                return (
-                  <G key={edge.id}>
-                    <Path d={g.d} stroke={s.stroke} strokeWidth={s.width} strokeDasharray={edge.rework ? "6 4" : undefined} fill="none" pointerEvents="none" />
-                    <Path d={head} fill={s.stroke} pointerEvents="none" />
-                  </G>
-                );
-              })}
-              {link ? (() => {
-                const from = byId.get(link.from);
-                if (!from) return null;
-                const g = flowEdgeGeometry(shown(from), link.point);
-                const s = edgeStyle(true);
-                return <Path d={g.d} stroke={s.stroke} strokeWidth={s.width} strokeDasharray="4 4" fill="none" pointerEvents="none" />;
-              })() : null}
-            </G>
-          </Svg>
+          {/* RN View translates native accessibility hiding on web; Svg forwards those
+              native-only props to the DOM. The nodes expose the graph's relationships. */}
+          <View style={skin.drawing} pointerEvents="none" accessible={false}
+            accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden
+            testID={testID ? `${testID}-drawing` : undefined}>
+            <Svg width="100%" height="100%">
+              <Defs>
+                <Pattern id={gridId} x={0} y={0} width={FLOW_GRID} height={FLOW_GRID} patternUnits="userSpaceOnUse">
+                  <Circle cx={FLOW_GRID / 2} cy={FLOW_GRID / 2} r={1.1} fill={skin.gridDot(t)} fillOpacity={0.35} />
+                </Pattern>
+              </Defs>
+              <G transform={viewCameraMatrix(camera)}>
+                <Rect x={visible.x} y={visible.y} width={visible.width} height={visible.height} fill={`url(#${gridId})`} />
+                {edges.map((edge) => {
+                  const from = byId.get(edge.from), to = byId.get(edge.to);
+                  if (!from || !to) return null;
+                  const g = flowEdgeGeometry(shown(from), shown(to));
+                  const isSelected = selection?.kind === "edge" && selection.id === edge.id;
+                  const s = edgeStyle(isSelected);
+                  const head = flowArrowHead(g.tip, g.angle);
+                  return (
+                    <G key={edge.id}>
+                      <Path d={g.d} stroke={s.stroke} strokeWidth={s.width} strokeDasharray={edge.rework ? "6 4" : undefined} fill="none" pointerEvents="none" />
+                      <Path d={head} fill={s.stroke} pointerEvents="none" />
+                    </G>
+                  );
+                })}
+                {link ? (() => {
+                  const from = byId.get(link.from);
+                  if (!from) return null;
+                  const g = flowEdgeGeometry(shown(from), link.point);
+                  const s = edgeStyle(true);
+                  return <Path d={g.d} stroke={s.stroke} strokeWidth={s.width} strokeDasharray="4 4" fill="none" pointerEvents="none" />;
+                })() : null}
+              </G>
+            </Svg>
+          </View>
           {edges.map((edge) => {
             // A label is a capsule over its edge's midpoint, a View like the cards (a capsule
             // corner is the pill, which an SVG rect cannot draw), placed and scaled by the camera.
@@ -619,12 +625,4 @@ function anatomyMarks(nodes: readonly FlowNode[], edges: readonly FlowEdge[], ca
     edge: g ? box(Math.min(...xs), Math.min(...ys) - 4, Math.max(...xs), Math.max(...ys) + 4) : null,
     label: g && edge?.label ? box(g.label.x - half, g.label.y - FLOW_EDGE_LABEL_HEIGHT / 2, g.label.x + half, g.label.y + FLOW_EDGE_LABEL_HEIGHT / 2) : null,
   };
-}
-
-/** A filled arrowhead with its tip at `tip`, pointing along `angle`. */
-function arrowHead(tip: FlowPoint, angle: number): string {
-  const len = 9, half = 4.5;
-  const bx = tip.x - len * Math.cos(angle), by = tip.y - len * Math.sin(angle);
-  const px = -Math.sin(angle) * half, py = Math.cos(angle) * half;
-  return `M ${tip.x} ${tip.y} L ${bx + px} ${by + py} L ${bx - px} ${by - py} Z`;
 }

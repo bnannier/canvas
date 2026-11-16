@@ -9,6 +9,15 @@
  */
 import { clampViewCamera, IDENTITY_CAMERA, type ViewCamera, type ViewCameraLimits } from "../../style/view-camera.js";
 
+/** Fixed SVG precision prevents platform math differences from changing SSR markup. */
+export function flowArrowHead(tip: FlowPoint, angle: number): string {
+  const len = 9, half = 4.5;
+  const bx = tip.x - len * Math.cos(angle), by = tip.y - len * Math.sin(angle);
+  const px = -Math.sin(angle) * half, py = Math.cos(angle) * half;
+  const n = (value: number) => Number(value.toFixed(3));
+  return `M ${n(tip.x)} ${n(tip.y)} L ${n(bx + px)} ${n(by + py)} L ${n(bx - px)} ${n(by - py)} Z`;
+}
+
 /** One step of a workflow or flow: a card on the canvas. */
 export interface FlowNode {
   /** Stable id, unique within the editor. */

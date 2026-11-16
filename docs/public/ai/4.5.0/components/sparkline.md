@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.5.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 2a2a21848836fec88abf2d79e82a42cb41b4cd46be8e9fda691b7bd40a6da565
+Source SHA-256: 8e9feefd31bf30c04eca9f80cb62635dcc73be7292011dd7df808b290dfa1cc5
 
 Source: `src/charts/sparkline/sparkline.md`
 Human reference: https://canvas.nannier.com/components/sparkline

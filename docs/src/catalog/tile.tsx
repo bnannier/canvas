@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Badge, BadgeGroup, Button, Card, Column, Divider, Grid, GridItem, Icon, Row, Typography } from "@nannier/canvas";
+import { Button, Card, Column, Divider, Grid, GridItem, Icon, Row, Typography } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 
 export type CatTile = { title: string; href: string; span?: boolean; Preview: () => ReactNode };
@@ -32,23 +32,27 @@ export function CatGrid({ tiles }: { tiles: CatTile[] }) {
 
 // A category is a section of the catalog page, so its name is the h2 under the page's
 // h1: an h3 here skips a level for every heading reader and outline.
-export function CatGroup({ label, count, tiles }: { label: string; count: number; tiles: CatTile[] }) {
+export function CatGroup({ label, href, summary, tiles }: { label: string; href?: string; summary: string; tiles: CatTile[] }) {
+  const router = useRouter();
   return (
     <Column relaxed>
       <Row between baseline wrap>
         <Typography h2>{label}</Typography>
-        <Typography small muted>{count} components</Typography>
+        {href ? <Button link small href={href} accessibilityLabel={`Browse ${label}: ${summary}`} onPress={(event) => { event.preventDefault(); router.push(href as never); }} iconRight={<Icon arrowRight size={16} />}>
+          {summary}
+        </Button> : <Typography small muted>{summary}</Typography>}
       </Row>
       <CatGrid tiles={tiles} />
     </Column>
   );
 }
 
-export function CatSubBar({ categories, total }: { categories: string[]; total: number }) {
+export function CatSubBar({ categories, total }: { categories: { label: string; href?: string; count: number; noun: string }[]; total: number }) {
+  const router = useRouter();
   return (
     <Column cozy>
-      <Row between alignCenter wrap>
-        <BadgeGroup>{categories.map((category) => <Badge outline key={category}>{category}</Badge>)}</BadgeGroup>
+      <Row between alignCenter stacks stackBreakpoint="sm">
+        <Column fill><Row wrap snug>{categories.flatMap(({ label, href, count, noun }) => href ? [<Button outline small key={href} href={href} accessibilityLabel={`Browse ${label}, ${count} ${noun}`} onPress={(event) => { event.preventDefault(); router.push(href as never); }}>{label} {count}</Button>] : [])}</Row></Column>
         <Typography small muted>{total} components</Typography>
       </Row>
       <Divider />

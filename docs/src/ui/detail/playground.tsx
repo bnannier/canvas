@@ -123,7 +123,7 @@ const KNOB_PAD = { padding: 18 } as const;
 /** The knob panel: the PROPS eyebrow with its Reset, then one labelled control per knob. */
 function KnobPanel({ spec, state, onChange, onReset }: { spec: DetailSpec; state: KnobState; onChange: (key: string, value: KnobValue) => void; onReset: () => void }) {
   return (
-    <ScrollView style={{ maxHeight: 560 }} contentContainerStyle={KNOB_PAD}>
+    <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 560 }} contentContainerStyle={KNOB_PAD}>
       <Column relaxed>
         <Row between alignCenter>
           <Typography pageLabel mono>Props</Typography>

@@ -42,3 +42,25 @@ for (const width of [1280, 390]) {
     expect(documents, "section links should navigate within the running app").toEqual([]);
   });
 }
+
+for (const width of [1280, 390]) {
+  test(`the Foundations heading and count open the section (${width})`, async ({ page }) => {
+    await gotoDocs(page, "/components/typography", { viewport: { width, height: 900 } });
+    if (width < 1025) await page.getByRole("button", { name: "Components in this section", exact: true }).click();
+    const navigation = page.getByRole("navigation", { name: "Foundations components", exact: true });
+    const heading = navigation.getByRole("link", { name: /Foundations.*6/ });
+    await expect(heading).toHaveAttribute("href", `${BASE_PATH}/foundations`);
+    await expect(heading).toBeVisible();
+    const target = await heading.boundingBox();
+    expect(target?.width).toBeGreaterThanOrEqual(24);
+    expect(target?.height).toBeGreaterThanOrEqual(24);
+    const firstRow = await navigation.getByRole("button").first().boundingBox();
+    expect(firstRow?.y).toBeGreaterThanOrEqual(target!.y + target!.height);
+    const documentStarted = await page.evaluate(() => performance.timeOrigin);
+    await heading.focus();
+    await heading.press("Enter");
+    await expect(page).toHaveURL(/\/foundations(?:\?|$)/);
+    expect(await page.evaluate(() => performance.timeOrigin)).toBe(documentStarted);
+    await expect(page.getByRole("main").getByRole("heading", { level: 1, name: "Foundations", exact: true })).toBeVisible();
+  });
+}

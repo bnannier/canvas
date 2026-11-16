@@ -2,6 +2,7 @@ import { Navbar, Button, Icon, TabBar } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { useAtScrollEdge } from "./scroll-edge";
 import { sectionFor } from "../data/nav";
+import { CanvasMark } from "../brand/canvas-mark";
 
 const SECTIONS = [
   { key: "home", label: "Home", href: "/", icon: (active: boolean) => <Icon home primary={active} muted={!active} size={22} /> },
@@ -19,9 +20,11 @@ export function MobileNavBar({ title, pathname, onMenu }: { title: string; pathn
   const atEdge = useAtScrollEdge();
   const atRoot = SECTIONS.some((section) => section.href === pathname);
   return <Navbar bare={atEdge} brand={title}
-    brandContent={!atRoot ? <Button ghost icon small accessibilityLabel="Back" iconLeft={<Icon chevronLeft />}
-      onPress={() => router.canGoBack() ? router.back() : router.push(mobileSectionRoot(pathname) as never)} /> : undefined}
-    actions={<Button ghost icon small accessibilityLabel="Menu" iconLeft={<Icon menu />} onPress={onMenu} />}
+    brandHref={pathname === "/" ? "/" : undefined}
+    onBrandPress={pathname === "/" ? (event) => { event.preventDefault(); router.push("/"); } : undefined}
+    brandContent={!atRoot ? <Button ghost icon large accessibilityLabel="Back" iconLeft={<Icon chevronLeft />}
+      onPress={() => router.canGoBack() ? router.back() : router.push(mobileSectionRoot(pathname) as never)} /> : <CanvasMark size={24} />}
+    actions={<Button ghost icon large accessibilityLabel="Menu" iconLeft={<Icon menu />} onPress={onMenu} />}
   />;
 }
 

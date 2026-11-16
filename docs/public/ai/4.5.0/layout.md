@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.5.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 2a2a21848836fec88abf2d79e82a42cb41b4cd46be8e9fda691b7bd40a6da565
+Source SHA-256: 8e9feefd31bf30c04eca9f80cb62635dcc73be7292011dd7df808b290dfa1cc5
 
 Parents provide bounds. Use `Container` measure steps, `Row` and `Column` spacing/alignment booleans, `span` for twelfths, and `Grid` for responsive tiles. A field fills its parent; a button hugs its contents unless `block` or a supported measure step changes it. Do not set fixed component widths or invent string variant props. Measure the component's own container for internal reflow; viewport breakpoints are for application chrome.
 

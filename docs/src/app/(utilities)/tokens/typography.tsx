@@ -1,36 +1,43 @@
 import { Card, CodeBlock, Column, DataTable, DescriptionList, Grid, Stats, Typography } from "@nannier/canvas";
+import { typeRoles } from "../../../../../src/style/type-scale";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { TokenH1, TokenLede, TokenSection } from "../../../ui/tokens-kit";
 
 const SCALE = [
-  { name: "Display", role: "display", spec: "24 / 27 · bold", use: "Hero titles. One per screen, at most." },
-  { name: "H1", role: "h1", spec: "20 / 25 · bold", use: "Top-level page titles." },
-  { name: "H2", role: "h2", spec: "17 / 22 · bold", use: "Major page sections, dialog titles." },
-  { name: "H3", role: "h3", spec: "16 / 20 · bold", use: "Subsections, sheet and drawer titles." },
-  { name: "H4", role: "h4", spec: "15 / 20 · bold", use: "In-app page titles, card titles." },
-  { name: "H5", role: "h5", spec: "14 / 19 · bold", use: "Section and card headings, form section labels." },
-  { name: "Lead", role: "lead", spec: "14 / 21 · medium", use: "Lead paragraphs, identity names." },
-  { name: "Body", role: "body", spec: "12.5 / 19 · medium", use: "Default reading text." },
-  { name: "Small", role: "small", spec: "11.5 / 17 · semibold · muted", muted: true, use: "Secondary text, helpers." },
-  { name: "Tiny", role: "tiny", spec: "11 / 15 · semibold · muted", muted: true, use: "Metadata, timestamps, labels." },
+  { name: "Display", role: "display", use: "Hero titles. One per screen, at most." },
+  { name: "H1", role: "h1", use: "Top-level page titles." },
+  { name: "H2", role: "h2", use: "Major page sections, dialog titles." },
+  { name: "H3", role: "h3", use: "Subsections, sheet and drawer titles." },
+  { name: "H4", role: "h4", use: "In-app page titles, card titles." },
+  { name: "H5", role: "h5", use: "Section and card headings, form section labels." },
+  { name: "Lead", role: "lead", use: "Lead paragraphs, identity names." },
+  { name: "Body", role: "body", use: "Default reading text." },
+  { name: "Small", role: "small", use: "Secondary text, helpers." },
+  { name: "Caption", role: "caption", use: "Supporting captions and short annotations." },
+  { name: "Tiny", role: "tiny", use: "Metadata, timestamps, labels." },
 ] as const;
 
-// Helper roles beyond the size scale, also boolean props on Typography: a muted
-// body, an uppercase caption/eyebrow, and two monospace roles (code carries the
-// muted pill fill; mono is bare). Rendered with the real component as well.
+/** The scale's size, line height and weight, read from the same roles as the component. */
+function specFor(role: (typeof SCALE)[number]["role"]): string {
+  const spec = typeRoles[role];
+  return `${spec.fontSize} / ${spec.lineHeight} · ${spec.fontWeight}`;
+}
+
+// Helpers compose the size scale with tone or a typeface. Eyebrow owns its
+// uppercase transformation and tracking; a caption is regular reading text.
 const HELPERS = [
   { name: "Muted", role: "muted", sample: "Sphinx of black quartz, judge my vow.", use: "De-emphasised body text." },
-  { name: "Caption", role: "caption", sample: "Section label", use: "Eyebrows, uppercase section labels (10/13 bold, 16% tracking)." },
+  { name: "Eyebrow", role: "eyebrow", sample: "Section label", use: `Uppercase mono section labels (${typeRoles.eyebrow.fontSize} / ${typeRoles.eyebrow.lineHeight} · ${typeRoles.eyebrow.fontWeight}, ${typeRoles.eyebrow.letterSpacing}px tracking).` },
   { name: "Code", role: "code", sample: "--primary", use: "Inline code, tokens, IDs (muted pill)." },
   { name: "Mono", role: "mono", sample: "01HZK7M8N9P0Q1R2", use: "Monospace values, no fill." },
 ] as const;
 
 const WEIGHTS = [
-  { prop: "regular", value: "400", name: "Regular", use: "An explicit lighter reading weight." },
-  { prop: "medium", value: "500", name: "Medium", use: "Body and lead copy, button labels." },
+  { prop: "regular", value: "400", name: "Regular", use: "Body, lead and supporting reading text." },
+  { prop: "medium", value: "500", name: "Medium", use: "Display headings and interface labels." },
   { prop: "semibold", value: "600", name: "Semibold", use: "Small labels and emphasis." },
-  { prop: "bold", value: "700", name: "Bold", use: "Titles and strong emphasis." },
+  { prop: "bold", value: "700", name: "Bold", use: "Strong emphasis when explicitly requested." },
 ] as const;
 
 export default function TypographyScreen() {
@@ -39,7 +46,7 @@ export default function TypographyScreen() {
       <Column loose>
         <Column cozy>
           <TokenH1>Typography</TokenH1>
-          <TokenLede>Instrument Sans carries the labels and reading text. Bricolage Grotesque carries the display role, the headings h1 to h4 and stat values. JetBrains Mono carries code and identifiers. Typography exposes the type scale through boolean roles; components own the typography of their labels.</TokenLede>
+          <TokenLede>Instrument Sans carries labels and reading text. Bricolage Grotesque carries the display role, headings h1 to h4 and stat values. JetBrains Mono carries code and identifiers. Typography exposes the type scale through boolean roles; components own the typography of their labels and choose their platform face.</TokenLede>
         </Column>
 
         <TokenSection title="Font families" description="Register the faces in the application and pass them to ThemeProvider fonts. The package ships no font files; the system face stands in until the configured family is available. Nested providers inherit the registered faces.">
@@ -75,14 +82,14 @@ export default function TypographyScreen() {
                 <Typography caption>{entry.name}</Typography>
                 <Typography {...{ [entry.role]: true }}>Sphinx of black quartz, judge my vow.</Typography>
                 <Typography code>{`<Typography ${entry.role}>`}</Typography>
-                <Typography small muted>{entry.spec}</Typography>
+                <Typography small muted>{specFor(entry.role)}</Typography>
                 <Typography small>{entry.use}</Typography>
               </Card>
             ))}
           </Grid>
         </TokenSection>
 
-        <TokenSection title="Helper roles" description="Muted text, captions, inline code and bare monospace values are also named roles.">
+        <TokenSection title="Helper roles" description="Muted text, eyebrows, inline code and bare monospace values are also named roles.">
           <Grid minTileWidth={280} columns={2} relaxed>
             {HELPERS.map((entry) => (
               <Card key={entry.role}>

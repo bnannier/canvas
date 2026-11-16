@@ -129,7 +129,10 @@ export interface CommandProps {
 // The editable slice of the search row: fill the space after the magnifier and
 // drop the platform's default inner padding, so the skin's search row (height,
 // gutter) governs the footprint exactly as it did around the old static text.
-const searchInput: TextStyle = { flex: 1, paddingVertical: 0, paddingHorizontal: 0 };
+// The search field shares its row with the glyph and Escape cap. Browsers give
+// inputs an intrinsic minimum width; release it so narrow palettes keep both
+// the editable field and the cap inside the panel on every platform.
+const searchInput: TextStyle = { flex: 1, minWidth: 0, paddingVertical: 0, paddingHorizontal: 0 };
 
 /** Build a Command component from a platform skin. */
 export function createCommand(skin: CommandSkin) {

@@ -56,11 +56,16 @@ export function Rail({ room, active }: { room: Room; active?: string }) {
                 {
                   id: room.id,
                   title: room.title,
+                  href: room.href,
                   count: items.length,
                   current,
                   items: items.map((item) => ({ id: item.id, label: item.label, href: item.href })),
                 },
               ]}
+              onSectionPress={(section, event) => {
+                event.preventDefault();
+                if (section.href) router.push(section.href as never);
+              }}
               onSelect={(item) => {
                 if (item.href) router.push(item.href as never);
               }}

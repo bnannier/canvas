@@ -127,7 +127,7 @@ describe("the docs' iOS header menu", () => {
       const groups = selectionGroups(menu);
       for (const group of groups) expect(group.checked.length).toBeLessThanOrEqual(1);
       expect(groups.find((g) => g.path === "Menu > Palette")?.checked).toEqual([label]);
-      expect(groups.find((g) => g.path === "Menu > Atoms")?.checked).toEqual(["Chip"]);
+      expect(groups.find((g) => g.path === "Menu > Controls")?.checked).toEqual(["Chip"]);
     }
   });
 

@@ -16,113 +16,113 @@ Audit checklist for the style-layer foundation `ThemeProvider`, audited for its 
 | Tests of it | 266 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/theme-provider[-<what>].test.tsx`): `test/a11y-state.test.tsx`, `test/accordion-activity.test.tsx`, `test/action-panel.test.tsx`, `test/action-role.test.tsx`, `test/action-sheet-orientation.test.tsx`, `test/anatomy-parts-charts-cartesian.test.tsx`, `test/anatomy-parts-charts-other.test.tsx`, `test/anatomy-parts-controls.test.tsx`, `test/anatomy-parts-data.test.tsx`, `test/anatomy-parts-foundations-layout.test.tsx`, `test/anatomy-parts-inputs.test.tsx`, `test/anatomy-parts-navigation.test.tsx`, `test/anatomy-parts-overlays.test.tsx`, `test/anatomy-parts-surfaces.test.tsx`, `test/anatomy.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/anchored-overlay-focus.test.tsx`, `test/anchored-overlay-placement.test.tsx`, `test/anchored-overlay-sheet.test.tsx`, `test/app-frame.test.tsx`, `test/appearance-motion.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/autocomplete-look.test.tsx`, `test/avatar-argus.test.tsx`, `test/avatar-look.test.tsx`, `test/avatar-menu.test.tsx`, `test/badge-argus.test.tsx`, `test/badge-band.test.tsx`, `test/behavior-smoke-a.test.tsx`, `test/behavior-smoke-b.test.tsx`, `test/behavior-smoke-c.test.tsx`, `test/behavior-smoke-d.test.tsx`, `test/behavior.test.tsx`, `test/board.test.tsx`, `test/breadcrumb.test.tsx`, `test/button-group-glass-size.test.tsx`, `test/button-group-glass.test.tsx`, `test/button-group-look.test.tsx`, `test/button-icon-ink.test.tsx`, `test/button-inline-link.test.tsx`, `test/button-loading-accessibility.test.tsx`, `test/button-look.test.tsx`, `test/button-looks.test.tsx`, `test/button-utility.test.tsx`, `test/calendar-accessibility.test.tsx`, `test/card-board.test.tsx`, `test/card.test.tsx`, `test/carousel-arrows.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/chart-materials.test.tsx`, `test/chart-presentation.test.tsx`, `test/charts-buildout.test.tsx`, `test/charts-cartesian.test.tsx`, `test/charts-composition-parity.test.tsx`, `test/charts-metric-parity.test.tsx`, `test/chat-activity-grouping.test.tsx`, `test/chat-look.test.ts`, `test/chat-scroll.test.tsx`, `test/chat-terminal.test.tsx`, `test/chat.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/chip-group.test.tsx`, `test/chip.test.tsx`, `test/code-block.test.tsx`, `test/collapsible-reference.test.tsx`, `test/color-overrides.test.tsx`, `test/command.test.tsx`, `test/components-extra.test.tsx`, `test/container.test.tsx`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/controllable-state.test.tsx`, `test/dashboard-grid-ssr.test.tsx`, `test/dashboard-grid.test.tsx`, `test/data-table-groups.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-performance.test.tsx`, `test/data-table-props-table.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table-text-entry-material.test.tsx`, `test/data-table.test.tsx`, `test/dense-overlays.test.tsx`, `test/description-list-nodes.test.tsx`, `test/description-list-ruled.test.tsx`, `test/design-rules-css.test.ts`, `test/design-rules-tokens.test.ts`, `test/destructive-intent.test.tsx`, `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/detail-reference-specimens.test.tsx`, `test/dev-warn.test.tsx`, `test/dialog-embedded.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-form.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/dialog-workspace.test.tsx`, `test/disclosure.test.tsx`, `test/dist-smoke.test.tsx`, `test/divider.test.tsx`, `test/docs-live-patterns.test.tsx`, `test/docs-page-look.test.ts`, `test/docs-palette-controls.test.tsx`, `test/docs-viewport-overlay.test.tsx`, `test/drag-drop.test.tsx`, `test/drawer-host.test.tsx`, `test/dropdown-projects.test.tsx`, `test/entrance-readiness.test.tsx`, `test/entrance.test.tsx`, `test/escape-layers.test.tsx`, `test/feed-activity-events.test.tsx`, `test/feedback.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/filter-panel.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-contract.test.tsx`, `test/floating-label-parity.test.tsx`, `test/flow-editor-relationships.test.tsx`, `test/flow-editor.test.tsx`, `test/focus-ring.test.tsx`, `test/focus-runtime.test.tsx`, `test/fonts.test.tsx`, `test/forms.test.tsx`, `test/frame-frost.test.tsx`, `test/geo-map.test.tsx`, `test/glass-box-stacking.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-android.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/glass-surface-host-view.test.tsx`, `test/glass-surface-ios.test.tsx`, `test/glass-surface-ladder.test.tsx`, `test/glass-surface-pointer-events.test.tsx`, `test/glass-surface-ssr.test.tsx`, `test/glass-tint.test.tsx`, `test/hardware-back.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/hover-lift.test.tsx`, `test/image.test.tsx`, `test/input-actions.test.tsx`, `test/input-compact.test.tsx`, `test/input-label.test.tsx`, `test/input-otp-look.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/input-search.test.tsx`, `test/interaction-override.test.tsx`, `test/ios-tints.test.ts`, `test/isomorphic-layout-effect.test.tsx`, `test/kbd.test.tsx`, `test/keyboard-nav.test.tsx`, `test/layout-gap-steps.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/layout-weights.test.tsx`, `test/list-semantics.test.tsx`, `test/listbox-a11y.test.tsx`, `test/listbox-look.test.tsx`, `test/markdown.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/media-object.test.tsx`, `test/menu-look.test.tsx`, `test/molecule-material-state.test.tsx`, `test/narrow-modes.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-accessibility-escape.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/native-frost-paint-order.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/navbar-bare.test.tsx`, `test/navbar-v4.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/numerals.test.tsx`, `test/option-list-idiom.test.tsx`, `test/organism-material-roles.test.tsx`, `test/overlay-android-names.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlay-list-scroll.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/pagination-look.test.tsx`, `test/pagination-responsive.test.tsx`, `test/phase2-form-accessibility.test.tsx`, `test/phone-input.test.tsx`, `test/popover-anchor.test.tsx`, `test/popover.test.tsx`, `test/pressable-link-enter.test.tsx`, `test/pressable-tab-stop.test.tsx`, `test/primary-text.test.tsx`, `test/progress.test.tsx`, `test/qrcode.test.tsx`, `test/radio-idiom.test.tsx`, `test/render.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/responsive-ssr.test.tsx`, `test/responsive.test.tsx`, `test/rtl-controls.test.tsx`, `test/scrim-frost.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/section-card-kit.test.tsx`, `test/select-argus.test.tsx`, `test/select-disabled.test.tsx`, `test/select-options.test.tsx`, `test/sidebar.test.tsx`, `test/sizing.test.tsx`, `test/skeleton-accessibility.test.tsx`, `test/skins-smoke.test.tsx`, `test/slider-glass.test.tsx`, `test/sparkline.test.tsx`, `test/specialized-input-overlay-escape.test.tsx`, `test/spinner-accessibility.test.tsx`, `test/stacked-list-reorder.test.tsx`, `test/stats-grid.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/status-colors.test.ts`, `test/status-text-roles.test.tsx`, `test/stepper-a11y.test.tsx`, `test/stepper-decimal.test.tsx`, `test/stepper-look.test.tsx`, `test/steps-compact.test.tsx`, `test/swatch.test.tsx`, `test/switch-label.test.tsx`, `test/tab-bar-floating.test.tsx`, `test/tabs-overflow.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx`, `test/textarea-argus.test.tsx`, `test/textarea-look.test.tsx`, `test/theme-palette-axis.test.tsx`, `test/theme-scheme-axis.test.tsx`, `test/theme-ssr.test.tsx`, `test/toast-look.test.tsx`, `test/tokens.test.ts`, `test/tooltip-toast-escape.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx`, `test/typography-argus.test.tsx`, `test/typography-leading.test.tsx`, `test/typography-page-roles.test.tsx`, `test/typography-tabular.test.tsx`, `test/typography-terminal.test.tsx`, `test/v4-charts.test.tsx`, `test/v4-detail-capabilities.test.tsx`, `test/video.test.tsx`, `test/virtualization.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx`, `test/wizard.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
 | Consumers | 101 components: 43 directly, 58 through shared modules (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | `pattern-accessibility` (useTheme), `pattern-glass` (ThemeProvider, useTheme) |
-| Capture through | 103, in this order: components `text`, `pressable`, `text-input`, `chip`, `breadcrumb`, `button-group`, `checkbox`, `divider`, `icon`, `radio`, `spinner`, `swatch`, `switch`, `typography`, `video`, `accordion`, `alert-dialog`, `card`, `code-block`, `collapsible`, `description-lists`, `field`, `feeds`, `form`, `grid-lists`, `stats`, `app-frame`, `chat`, `command`, `drag-drop`, `drawer`, `filter-panel`, `navbars`, `sidebar`, `wizard`, `flow-editor`, `tab-bar`, `tabs`, `sparkline`, `stacked-bar`, `gauge`, `uptime-bar`, `progress-ring`, `scroll-view`, `emblem`, `autocomplete`, `avatar`, `badge`, `button`, `dropdown`, `input`, `input-otp`, `kbd`, `listbox`, `stepper`, `pagination`, `popover`, `progress`, `select`, `skeleton`, `slider`, `textarea`, `tooltip`, `action-panels`, `alert`, `empty-state`, `media-objects`, `phone-input`, `stacked-lists`, `action-sheet`, `board`, `calendar`, `carousel`, `dashboard-grid`, `data-table`, `dialog`, `row-menu`, `steps`, `toast`, `chart`, `line-chart`, `area-chart`, `pie-chart`, `scatter-plot`, `candlestick-chart`, `depth-chart`, `heatmap`, `bar-list`, `metric-breakdown`, `service-health-list`, `bullet-chart`, `composed-chart`, `range-area-chart`, `histogram`, `box-plot`, `waterfall-chart`, `radial-bar-chart`, `funnel-chart`, `radar-chart`, `treemap`, `geo-map`; pages `pattern-accessibility`, `pattern-glass` |
+| Capture through | 103, in this order: components `typography`, `text`, `icon`, `swatch`, `divider`, `pressable`, `app-frame`, `button-group`, `switch`, `checkbox`, `radio`, `chip`, `text-input`, `field`, `form`, `filter-panel`, `tabs`, `tab-bar`, `navbars`, `sidebar`, `breadcrumb`, `card`, `stats`, `grid-lists`, `feeds`, `description-lists`, `accordion`, `collapsible`, `code-block`, `video`, `chat`, `flow-editor`, `drag-drop`, `sparkline`, `stacked-bar`, `gauge`, `progress-ring`, `uptime-bar`, `alert-dialog`, `drawer`, `command`, `wizard`, `spinner`, `emblem`, `scroll-view`, `dashboard-grid`, `button`, `slider`, `stepper`, `avatar`, `badge`, `kbd`, `input`, `textarea`, `select`, `input-otp`, `autocomplete`, `listbox`, `phone-input`, `pagination`, `steps`, `row-menu`, `data-table`, `stacked-lists`, `media-objects`, `action-panels`, `carousel`, `calendar`, `board`, `chart`, `line-chart`, `area-chart`, `range-area-chart`, `composed-chart`, `histogram`, `box-plot`, `scatter-plot`, `waterfall-chart`, `pie-chart`, `treemap`, `funnel-chart`, `radial-bar-chart`, `bullet-chart`, `radar-chart`, `metric-breakdown`, `bar-list`, `depth-chart`, `heatmap`, `candlestick-chart`, `service-health-list`, `geo-map`, `dialog`, `action-sheet`, `popover`, `tooltip`, `dropdown`, `toast`, `alert`, `empty-state`, `progress`, `skeleton`; pages `pattern-accessibility`, `pattern-glass` |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/theming` (documents ThemeProvider, useTheme; planned for Surface, ThemeProviderProps, ThemeTokenOverrides, ThemeValue) |
 | Turn record | `audit/turns/theme-provider.md`, written by `bun run audit:turn -- --slug=theme-provider --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |
 |---|---|---|
-| `text` | directly | `useTheme` |
-| `pressable` | directly | `useTheme` |
-| `text-input` | directly | `useTheme` |
-| `chip` | directly | `useTheme` |
-| `breadcrumb` | directly | `useTheme` |
-| `button-group` | directly | `useTheme` |
-| `checkbox` | directly | `useTheme` |
-| `divider` | directly | `useTheme` |
-| `icon` | directly | `useTheme` |
-| `radio` | directly | `useTheme` |
-| `spinner` | directly | `useTheme` |
-| `swatch` | directly | `useTheme` |
-| `switch` | directly | `useTheme` |
 | `typography` | directly | `useTheme` |
-| `video` | directly | `useTheme` |
-| `accordion` | directly | `useTheme` |
-| `alert-dialog` | directly | `useTheme` |
-| `card` | directly | `useTheme` |
-| `code-block` | directly | `useTheme` |
-| `collapsible` | directly | `useTheme` |
-| `description-lists` | directly | `useTheme` |
-| `field` | directly | `useTheme` |
-| `feeds` | directly | `useTheme` |
-| `form` | directly | `useTheme` |
-| `grid-lists` | directly | `useTheme` |
-| `stats` | directly | `useTheme` |
+| `text` | directly | `useTheme` |
+| `icon` | directly | `useTheme` |
+| `swatch` | directly | `useTheme` |
+| `divider` | directly | `useTheme` |
+| `pressable` | directly | `useTheme` |
 | `app-frame` | directly | `useTheme` |
-| `chat` | directly | `useTheme` |
-| `command` | directly | `useTheme` |
-| `drag-drop` | directly | `useTheme` |
-| `drawer` | directly | `useTheme` |
+| `button-group` | directly | `useTheme` |
+| `switch` | directly | `useTheme` |
+| `checkbox` | directly | `useTheme` |
+| `radio` | directly | `useTheme` |
+| `chip` | directly | `useTheme` |
+| `text-input` | directly | `useTheme` |
+| `field` | directly | `useTheme` |
+| `form` | directly | `useTheme` |
 | `filter-panel` | directly | `useTheme` |
+| `tabs` | directly | `useTheme` |
+| `tab-bar` | directly | `useTheme` |
 | `navbars` | directly | `useTheme` |
 | `sidebar` | directly | `useTheme` |
-| `wizard` | directly | `ThemeProvider`, `useTheme` |
+| `breadcrumb` | directly | `useTheme` |
+| `card` | directly | `useTheme` |
+| `stats` | directly | `useTheme` |
+| `grid-lists` | directly | `useTheme` |
+| `feeds` | directly | `useTheme` |
+| `description-lists` | directly | `useTheme` |
+| `accordion` | directly | `useTheme` |
+| `collapsible` | directly | `useTheme` |
+| `code-block` | directly | `useTheme` |
+| `video` | directly | `useTheme` |
+| `chat` | directly | `useTheme` |
 | `flow-editor` | directly | `useTheme` |
-| `tab-bar` | directly | `useTheme` |
-| `tabs` | directly | `useTheme` |
+| `drag-drop` | directly | `useTheme` |
 | `sparkline` | directly | `useTheme` |
 | `stacked-bar` | directly | `useTheme` |
 | `gauge` | directly | `useTheme` |
-| `uptime-bar` | directly | `useTheme` |
 | `progress-ring` | directly | `useTheme` |
-| `scroll-view` | through shared modules | `useFocusRingStyle` (src/style/pressable.tsx) |
+| `uptime-bar` | directly | `useTheme` |
+| `alert-dialog` | directly | `useTheme` |
+| `drawer` | directly | `useTheme` |
+| `command` | directly | `useTheme` |
+| `wizard` | directly | `ThemeProvider`, `useTheme` |
+| `spinner` | directly | `useTheme` |
 | `emblem` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
-| `autocomplete` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `FloatingLabel` (src/style/floating-label.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 7 more |
+| `scroll-view` | through shared modules | `useFocusRingStyle` (src/style/pressable.tsx) |
+| `dashboard-grid` | through shared modules | `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
+| `button` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `slider` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
+| `stepper` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `LabelContent` (src/style/floating-label.tsx), `Pressable` (src/style/pressable.tsx) and 5 more |
 | `avatar` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
 | `badge` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `button` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `dropdown` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 5 more |
-| `input` | through shared modules | `FloatingLabel` (src/style/floating-label.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `LabelContent` (src/style/floating-label.tsx) and 5 more |
-| `input-otp` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `TextInput` (src/style/text.tsx), `Text` (src/style/text.tsx) and 1 more |
 | `kbd` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
-| `listbox` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `stepper` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `LabelContent` (src/style/floating-label.tsx), `Pressable` (src/style/pressable.tsx) and 5 more |
-| `pagination` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `popover` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
-| `progress` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
-| `select` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `FloatingLabel` (src/style/floating-label.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 6 more |
-| `skeleton` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
-| `slider` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
+| `input` | through shared modules | `FloatingLabel` (src/style/floating-label.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `LabelContent` (src/style/floating-label.tsx) and 5 more |
 | `textarea` | through shared modules | `FloatingLabel` (src/style/floating-label.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `LabelContent` (src/style/floating-label.tsx) and 5 more |
-| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 2 more |
-| `action-panels` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
-| `alert` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `empty-state` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 2 more |
-| `media-objects` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
+| `select` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `FloatingLabel` (src/style/floating-label.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 6 more |
+| `input-otp` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `TextInput` (src/style/text.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `autocomplete` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `FloatingLabel` (src/style/floating-label.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 7 more |
+| `listbox` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
 | `phone-input` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `LabelContent` (src/style/floating-label.tsx) and 6 more |
-| `stacked-lists` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 4 more |
-| `action-sheet` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 5 more |
-| `board` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 4 more |
-| `calendar` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx) and 6 more |
-| `carousel` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 5 more |
-| `dashboard-grid` | through shared modules | `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
-| `data-table` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 7 more |
-| `dialog` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 6 more |
-| `row-menu` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
+| `pagination` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
 | `steps` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `toast` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 4 more |
+| `row-menu` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
+| `data-table` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 7 more |
+| `stacked-lists` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 4 more |
+| `media-objects` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
+| `action-panels` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
+| `carousel` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 5 more |
+| `calendar` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx) and 6 more |
+| `board` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 4 more |
 | `chart` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartLegend` (src/charts/shared/chart-legend.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx) and 4 more |
 | `line-chart` | through shared modules | `chartShell` (src/charts/shared/cartesian-series.tsx), `useSeriesChart` (src/charts/shared/cartesian-series.tsx) |
 | `area-chart` | through shared modules | `chartShell` (src/charts/shared/cartesian-series.tsx), `useSeriesChart` (src/charts/shared/cartesian-series.tsx) |
-| `pie-chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 2 more |
-| `scatter-plot` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartLegend` (src/charts/shared/chart-legend.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx) and 5 more |
-| `candlestick-chart` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartLegend` (src/charts/shared/chart-legend.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx) and 4 more |
-| `depth-chart` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 2 more |
-| `heatmap` | through shared modules | `ChartInspectionSurface` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 3 more |
-| `bar-list` | through shared modules | `BreakdownRows` (src/charts/shared/breakdown-rows.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `metric-breakdown` | through shared modules | `BreakdownRows` (src/charts/shared/breakdown-rows.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `service-health-list` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `bullet-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
-| `composed-chart` | through shared modules | `chartShell` (src/charts/shared/cartesian-series.tsx), `useSeriesChart` (src/charts/shared/cartesian-series.tsx) |
 | `range-area-chart` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 3 more |
+| `composed-chart` | through shared modules | `chartShell` (src/charts/shared/cartesian-series.tsx), `useSeriesChart` (src/charts/shared/cartesian-series.tsx) |
 | `histogram` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 3 more |
 | `box-plot` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 2 more |
+| `scatter-plot` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartLegend` (src/charts/shared/chart-legend.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx) and 5 more |
 | `waterfall-chart` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 2 more |
-| `radial-bar-chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 2 more |
-| `funnel-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
-| `radar-chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `pie-chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 2 more |
 | `treemap` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 2 more |
+| `funnel-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `radial-bar-chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 2 more |
+| `bullet-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
+| `radar-chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `metric-breakdown` | through shared modules | `BreakdownRows` (src/charts/shared/breakdown-rows.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `bar-list` | through shared modules | `BreakdownRows` (src/charts/shared/breakdown-rows.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `depth-chart` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartLegend` (src/charts/shared/chart-legend.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 2 more |
+| `heatmap` | through shared modules | `ChartInspectionSurface` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 3 more |
+| `candlestick-chart` | through shared modules | `CartesianFrame` (src/charts/shared/chart-frame.tsx), `ChartLegend` (src/charts/shared/chart-legend.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx) and 4 more |
+| `service-health-list` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
 | `geo-map` | through shared modules | `ChartInspectionSurface` (src/charts/shared/chart-inspect.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 7 more |
+| `dialog` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 6 more |
+| `action-sheet` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 5 more |
+| `popover` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
+| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 2 more |
+| `dropdown` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 5 more |
+| `toast` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 4 more |
+| `alert` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `empty-state` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 2 more |
+| `progress` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
+| `skeleton` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
 <!-- audit:facts:end -->
 
 ## Contract rubric

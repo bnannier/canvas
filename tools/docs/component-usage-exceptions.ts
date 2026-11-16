@@ -372,8 +372,13 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   },
   {
     file: "docs/src/ui/templates/frame.tsx", owner: "BrowserBar", tag: "View", attribute: "style",
-    keys: ["alignItems", "backgroundColor", "borderBottomWidth", "borderColor", "borderRadius", "flex", "flexDirection", "flexShrink", "gap", "height", "justifyContent", "marginHorizontal", "maxWidth", "paddingHorizontal", "width"], occurrences: 4,
-    reason: "Templates page device illustration (the hand-off's FRAMES): the noninteractive browser title bar, its window-control dots and its address pill.",
+    keys: ["alignItems", "backgroundColor", "borderBottomWidth", "borderColor", "borderRadius", "flex", "flexDirection", "flexShrink", "gap", "height", "justifyContent", "marginHorizontal", "maxWidth", "minWidth", "paddingHorizontal", "width"], occurrences: 4,
+    reason: "Templates page device illustration (the hand-off's FRAMES): the noninteractive browser title bar, its window-control dots and its address pill; a zero minimum lets the pill shrink within phone frames.",
+  },
+  {
+    file: "docs/src/ui/templates/frame.tsx", owner: "BrowserBar", tag: "Typography", attribute: "style",
+    keys: ["flexShrink"], occurrences: 1,
+    reason: "The browser-frame illustration truncates its address within the shrinking pill so the decorative URL does not cover the window controls on a phone.",
   },
   {
     file: "docs/src/ui/templates/frame.tsx", owner: "IosStatusBar", tag: "View", attribute: "style",
@@ -394,6 +399,11 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     file: "docs/src/ui/templates/app-chrome.tsx", owner: "WebSidebar", tag: "ScrollView", attribute: "contentContainerStyle",
     keys: ["paddingHorizontal", "paddingVertical"], occurrences: 1,
     reason: "Template app frame scaffolding: the rail's inset around the kit Sidebar, the hand-off's 16/12.",
+  },
+  {
+    file: "docs/src/ui/templates/app-chrome.tsx", owner: "WebTopBar", tag: "Input", attribute: "style",
+    keys: ["display"], occurrences: 1,
+    reason: "The compact template header hides its desktop search field without unmounting it, preserving field identity and drafts across hydration and resizing. The input's visual skin is unchanged.",
   },
   {
     file: "docs/src/ui/templates/app-chrome.tsx", owner: "IosHeader", tag: "View", attribute: "style",

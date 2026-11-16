@@ -50,9 +50,9 @@ const at = (px: number) => `${(px / RULER_END) * 100}%` as const;
  * A label centred on a point of its parent's width (the hand-off's `left:N%;
  * transform:translateX(-50%)`): a box wide enough for the label, centred on `left`.
  */
-function Anchor({ left, top, children }: { left: `${number}%`; top: number; children: ReactNode }) {
+function Anchor({ left, top, width, children }: { left: `${number}%`; top: number; width: number; children: ReactNode }) {
   return (
-    <View style={{ position: "absolute", left, top, width: 240, marginLeft: -120, alignItems: "center", pointerEvents: "none" }}>
+    <View style={{ position: "absolute", left, top, width, marginLeft: -width / 2, alignItems: "center", pointerEvents: "none" }}>
       {children}
     </View>
   );
@@ -84,7 +84,7 @@ export function WindowRuler({ width, label }: { width: number; label: string }) 
     { name: "desktop", share: RULER_END - breakpoints.lg, fill: softOf(tokens), hue: "primary" as const },
   ];
   // Every tick on the unmeasured frame; once measured, each one clear of the last kept.
-  const ticks: { key: keyof typeof breakpoints; x: `${number}%` }[] = [];
+  const ticks: { key: keyof typeof breakpoints; x: `${number}%`; width: number }[] = [];
   let last: { at: number; width: number } | null = null;
   for (const key of Object.keys(breakpoints) as (keyof typeof breakpoints)[]) {
     const text = `${key} ${breakpoints[key]}`;
@@ -92,7 +92,7 @@ export function WindowRuler({ width, label }: { width: number; label: string }) 
     const x = px(breakpoints[key]);
     if (span > 0 && last && x - last.at < (tickWidth + last.width) / 2) continue;
     if (span > 0 && x + tickWidth / 2 > span) continue;
-    ticks.push({ key, x: at(breakpoints[key]) });
+    ticks.push({ key, x: at(breakpoints[key]), width: tickWidth });
     last = { at: x, width: tickWidth };
   }
   const guides = [breakpoints.md, breakpoints.xl, breakpoints["2xl"]].map(at);
@@ -123,7 +123,7 @@ export function WindowRuler({ width, label }: { width: number; label: string }) 
         ))}
       </View>
       {ticks.map((tick) => (
-        <Anchor key={tick.key} left={tick.x} top={0}>
+        <Anchor key={tick.key} left={tick.x} top={0} width={tick.width}>
           <Typography tick mono subtle>{`${tick.key} ${breakpoints[tick.key]}`}</Typography>
         </Anchor>
       ))}

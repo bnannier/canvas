@@ -10,7 +10,7 @@ Audit checklist for `/templates/dashboard`. The facts block and the variants tab
 | Data module | `docs/src/core/data/templates/dashboard.tsx` |
 | Sections | none parsed |
 | Kit names its entry uses | none |
-| E2E naming it | 0: none |
+| E2E naming it | 1: `e2e/responsive/mobile-content.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 | Turn record | `audit/turns/template-dashboard.md`, written by `bun run audit:turn -- --slug=template-dashboard --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->

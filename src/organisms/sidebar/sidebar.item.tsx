@@ -1,10 +1,14 @@
 import { type ReactNode } from "react";
-import { type ViewStyle } from "react-native";
+import { type GestureResponderEvent, type ViewStyle } from "react-native";
 import { type IconName } from "../../atoms/icon/icon.js";
 import { Typography } from "../../atoms/typography/typography.js";
 import type { Badge as WebBadge } from "../../atoms/badge/badge.js";
-import { RippleClip, cornerRadii } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useTheme } from "../../style/index.js";
 import { useHover, washStyle, type HoverMotion } from "../../style/hover.js";
+import { platformMinTarget } from "../../style/touch-target.js";
+import type { AnatomyTarget } from "../../style/anatomy.js";
+import type { SidebarSkin } from "./sidebar.shared.js";
+import type { Density } from "./sidebar.styles.js";
 
 // One nav row: the shape a consumer passes in, and the trailing count the kit draws
 // from it. Both presentations of the Sidebar render the same row (the wide rail in
@@ -65,6 +69,9 @@ export interface SidebarSection {
   id?: string | number;
   /** Optional muted heading shown above the group. */
   title?: string;
+  /** Navigation target for a pinned section's heading. Accordion and drill-down
+   *  triggers keep their disclosure behavior. Handle native routing in `onSectionPress`. */
+  href?: string;
   /** A count shown at the end of the heading line (e.g. how many rows the group holds). */
   count?: string | number;
   /** The reader's current place (the page this group indexes): its heading takes the
@@ -84,6 +91,44 @@ export interface SidebarSection {
    *  pinned or when `openSections` is controlled; the section owning the active row
    *  auto-opens regardless). */
   defaultOpen?: boolean;
+}
+
+/** The same pinned heading in the rail and drawer; a destination makes it a link. */
+export function SidebarSectionHeading({ section, skin, density, onPress, part }: {
+  section: SidebarSection;
+  skin: SidebarSkin;
+  density: Density;
+  onPress?: (section: SidebarSection, event: GestureResponderEvent) => void;
+  part?: AnatomyTarget;
+}) {
+  const { tokens } = useTheme();
+  const current = !!section.current;
+  const shape = skin.sectionHeading(tokens, density);
+  const titleStyle = skin.sectionTitle(tokens, density, current);
+  // A heading sits directly above the first row. Reserve a link's minimum target
+  // in layout (24px on web, 44/48 natively), so its hit area cannot overlap that row.
+  const minimum = platformMinTarget() ?? 24;
+  const content = <>
+    <Text style={titleStyle} numberOfLines={1}>{section.title}</Text>
+    {section.count != null ? <Text style={skin.sectionCount(tokens, current)}>{section.count}</Text> : null}
+  </>;
+  if (section.href == null) return <View ref={part?.ref} onLayout={part?.onLayout} style={shape}>{content}</View>;
+  // RNW renders href as a real anchor, preserving open-in-new-tab and Enter.
+  // Native ignores href and delegates navigation to the consumer callback.
+  const anchor = { href: section.href };
+  return <Pressable
+    ref={part?.ref}
+    {...anchor}
+    onLayout={part?.onLayout}
+    onPress={(event) => {
+      const native = event.nativeEvent as unknown as { metaKey?: boolean; ctrlKey?: boolean; shiftKey?: boolean; altKey?: boolean; button?: number };
+      if (native.metaKey || native.ctrlKey || native.shiftKey || native.altKey || (native.button != null && native.button !== 0)) return;
+      onPress?.(section, event);
+    }}
+    accessibilityRole="link"
+    accessibilityLabel={section.count != null ? `${section.title}, ${section.count}` : section.title}
+    style={({ pressed }) => [shape, { minHeight: minimum }, skin.focusRing, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+  >{content}</Pressable>;
 }
 
 /** A row's trailing count and metadata. Three Badge looks: the default secondary

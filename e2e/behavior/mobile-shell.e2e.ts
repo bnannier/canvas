@@ -16,6 +16,11 @@ for (const width of [390, 768]) {
       await expect(top).toBeVisible();
       await expect(page.getByRole("banner")).toHaveCount(1);
       await expect(top.getByText("Foundations", { exact: true })).toBeVisible();
+      for (const name of ["Back", "Menu"]) {
+        const box = await top.getByRole("button", { name, exact: true }).boundingBox();
+        expect(box!.width, `${name} needs a mobile touch target`).toBeGreaterThanOrEqual(44);
+        expect(box!.height, `${name} needs a mobile touch target`).toBeGreaterThanOrEqual(44);
+      }
       await expect(tabs).toBeVisible();
       await expect(page.getByRole("navigation", { name: "Primary", exact: true })).toHaveCount(1);
       await expect(page.locator("[data-shell-rail]")).toHaveCount(0);
@@ -26,6 +31,8 @@ for (const width of [390, 768]) {
       await expect(components).toHaveAttribute("aria-selected", "true");
       await components.click();
       await expect(page).toHaveURL(/\/components(?:\?|$)/);
+      await expect.poll(() => page.locator("[data-page-scroll]").evaluate((node) => node.scrollWidth - node.clientWidth)).toBe(0);
+      await expect(page.getByRole("main").getByRole("heading", { name: /^(Atoms|Molecules|Organisms)$/ })).toHaveCount(0);
       await expect(components).toHaveAttribute("aria-selected", "true");
       await expect(top.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
       await utilities.click();
@@ -34,6 +41,9 @@ for (const width of [390, 768]) {
       await home.click();
       await expect(page).toHaveURL(/\/(?:\?[^/]*)?$/);
       await expect(home).toHaveAttribute("aria-selected", "true");
+      const brand = top.getByRole("link", { name: "Canvas", exact: true });
+      await expect(brand).toHaveAttribute("href", "/");
+      await expect(brand.locator("svg")).toBeVisible();
     });
 
     test("Back returns a component page to the catalog that opened it", async ({ page }) => {
@@ -74,10 +84,31 @@ for (const width of [390, 768]) {
 
       await opener.press("Enter");
       await expect(drawer).toBeVisible();
+      await drawer.getByRole("button", { name: "Back to Foundations", exact: true }).click();
       await drawer.getByRole("button", { name: "Controls", exact: true }).click();
+      await drawer.getByRole("button", { name: "Controls overview", exact: true }).click();
       await expect(page).toHaveURL(/\/controls(?:\?|$)/);
       await expect(drawer).toHaveCount(0);
       await expect(mobileTabs(page).getByRole("tab", { name: "Components", exact: true })).toHaveAttribute("aria-selected", "true");
+    });
+
+    test("the drawer groups components by their v4 room and reopens at the active component", async ({ page }) => {
+      await gotoDocs(page, "/");
+      const menu = mobileTop(page).getByRole("button", { name: "Menu", exact: true });
+      await menu.click();
+      const drawer = page.getByRole("dialog");
+      for (const name of ["Foundations", "Layout", "Controls", "Inputs", "Navigation", "Surfaces & data", "Charts", "Overlays & feedback"]) {
+        await expect(drawer.getByRole("button", { name, exact: true })).toBeVisible();
+      }
+      await expect(drawer.getByText(/^(Atoms|Molecules|Organisms)$/)).toHaveCount(0);
+      await drawer.getByRole("button", { name: "Controls", exact: true }).click();
+      await drawer.getByRole("button", { name: "Button", exact: true }).click();
+      await expect(page).toHaveURL(/\/components\/button(?:\?|$)/);
+      await expect(drawer).toHaveCount(0);
+      await menu.click();
+      await expect(drawer.getByRole("button", { name: "Button", exact: true })).toHaveAttribute("aria-current", "page");
+      await drawer.getByRole("button", { name: "Controls overview", exact: true }).click();
+      await expect(page).toHaveURL(/\/controls(?:\?|$)/);
     });
 
     test("the Search tab opens focused search and Escape restores its opener", async ({ page }) => {

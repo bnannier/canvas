@@ -1,7 +1,7 @@
 import { afterEach, expect, it, mock } from "bun:test";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { FlowEditor, type FlowEdge, type FlowNode } from "../src/organisms/flow-editor/flow-editor.tsx";
-import { fitFlowCamera, flowBounds, flowCanConnect, flowEdgeGeometry, flowFreeSpot, flowKeyMove, flowNodeAt, snapFlowPoint, FLOW_NODE_HEIGHT, FLOW_NODE_WIDTH } from "../src/organisms/flow-editor/flow-editor.logic.ts";
+import { fitFlowCamera, flowArrowHead, flowBounds, flowCanConnect, flowEdgeGeometry, flowFreeSpot, flowKeyMove, flowNodeAt, snapFlowPoint, FLOW_NODE_HEIGHT, FLOW_NODE_WIDTH } from "../src/organisms/flow-editor/flow-editor.logic.ts";
 import { ThemeProvider } from "../src/style/theme.tsx";
 
 const nodes: FlowNode[] = [
@@ -10,6 +10,13 @@ const nodes: FlowNode[] = [
 ];
 const edges: FlowEdge[] = [{ id: "pd", from: "product", to: "design", label: "Ready" }];
 afterEach(cleanup);
+
+it("serializes diagonal arrowheads at fixed precision across server and browser math", () => {
+  const back = flowEdgeGeometry({ id: "build", label: "Build", x: 432, y: 0 }, { id: "design", label: "Design", x: 216, y: 0 });
+  const path = flowArrowHead(back.tip, back.angle);
+  expect(path).toBe("M 216 32 L 211.403 40.951 L 206.081 33.693 Z");
+  expect(flowArrowHead(back.tip, back.angle + Number.EPSILON)).toBe(path);
+});
 
 it("flow editor reports moves, connections, additions and deletions without owning the graph", () => {
   const move = mock(() => {});
@@ -38,6 +45,10 @@ it("flow editor read only drops the toolbar and the ports", () => {
   expect(view.queryByTestId("flow-toolbar")).toBeNull();
   expect(view.queryByTestId("flow-node-product-port")).toBeNull();
   expect(view.getByLabelText("Workflow")).toBeTruthy();
+  // The decorative SVG sits under a RN host that translates accessibility hiding
+  // for the browser, while the node labels still expose the graph's relationships.
+  expect(view.getByTestId("flow-drawing").getAttribute("aria-hidden")).toBe("true");
+  expect(view.getByTestId("flow-node-product").getAttribute("aria-label")).toContain("Outgoing: Product to Design, label: Ready");
 });
 
 it("flow editor geometry snaps, hit tests, fits and routes edges", () => {

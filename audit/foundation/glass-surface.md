@@ -16,94 +16,94 @@ Audit checklist for the style-layer foundation `GlassSurface`, audited for its c
 | Tests of it | 53 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/glass-surface[-<what>].test.tsx`): `test/action-role.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/brand-ink.test.ts`, `test/button-group-glass-size.test.tsx`, `test/button-group-glass.test.tsx`, `test/button-group-look.test.tsx`, `test/capture-target.test.tsx`, `test/card.test.tsx`, `test/chart-materials.test.tsx`, `test/data-table-groups.test.tsx`, `test/data-table-text-entry-material.test.tsx`, `test/dense-overlays.test.tsx`, `test/drawer-host.test.tsx`, `test/field-focus-states.test.tsx`, `test/focus-ring.test.tsx`, `test/frame-frost.test.tsx`, `test/frost-method-props.test.tsx`, `test/glass-blur-plane.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-box-stacking.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-android.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/glass-surface-host-view.test.tsx`, `test/glass-surface-ios.test.tsx`, `test/glass-surface-ladder.test.tsx`, `test/glass-surface-pointer-events.test.tsx`, `test/glass-surface-rim.test.tsx`, `test/glass-surface-ssr.test.tsx`, `test/glass-surface.test.ts`, `test/glass-tint.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-frost-paint-order.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scrim-frost.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/slider-glass.test.tsx`, `test/text-entry-material.test.tsx`, `test/tokens.test.ts`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx`, `test/v4-detail-capabilities.test.tsx`, `test/web-frost-paint-order.test.tsx`, `test/web-glass-contract.test.tsx` |
 | Consumers | 82 components: 32 directly, 45 through shared modules, 5 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 82, in this order: components `button-group`, `dropdown`, `popover`, `radio`, `slider`, `accordion`, `alert-dialog`, `card`, `code-block`, `collapsible`, `description-lists`, `empty-state`, `feeds`, `grid-lists`, `media-objects`, `stacked-lists`, `stats`, `action-sheet`, `board`, `calendar`, `carousel`, `chat`, `command`, `data-table`, `dialog`, `drawer`, `navbars`, `sidebar`, `row-menu`, `tab-bar`, `toast`, `geo-map`, `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `button`, `input`, `input-otp`, `kbd`, `listbox`, `stepper`, `pagination`, `progress`, `select`, `skeleton`, `textarea`, `tooltip`, `video`, `action-panels`, `alert`, `phone-input`, `filter-panel`, `steps`, `tabs`, `chart`, `line-chart`, `area-chart`, `pie-chart`, `scatter-plot`, `candlestick-chart`, `depth-chart`, `heatmap`, `bar-list`, `metric-breakdown`, `service-health-list`, `bullet-chart`, `composed-chart`, `range-area-chart`, `histogram`, `box-plot`, `waterfall-chart`, `radial-bar-chart`, `funnel-chart`, `radar-chart`, `treemap`, `typography`, `field`, `form`, `wizard`, `flow-editor`; pages none |
+| Capture through | 82, in this order: components `button-group`, `radio`, `slider`, `tab-bar`, `navbars`, `sidebar`, `row-menu`, `card`, `stats`, `data-table`, `stacked-lists`, `grid-lists`, `media-objects`, `feeds`, `description-lists`, `accordion`, `collapsible`, `code-block`, `carousel`, `calendar`, `chat`, `board`, `geo-map`, `dialog`, `alert-dialog`, `drawer`, `action-sheet`, `popover`, `dropdown`, `command`, `toast`, `empty-state`, `emblem`, `button`, `stepper`, `chip`, `avatar`, `badge`, `kbd`, `input`, `textarea`, `select`, `input-otp`, `autocomplete`, `listbox`, `phone-input`, `filter-panel`, `tabs`, `pagination`, `steps`, `action-panels`, `video`, `chart`, `line-chart`, `area-chart`, `range-area-chart`, `composed-chart`, `histogram`, `box-plot`, `scatter-plot`, `waterfall-chart`, `pie-chart`, `treemap`, `funnel-chart`, `radial-bar-chart`, `bullet-chart`, `radar-chart`, `metric-breakdown`, `bar-list`, `depth-chart`, `heatmap`, `candlestick-chart`, `service-health-list`, `tooltip`, `alert`, `progress`, `skeleton`, `typography`, `field`, `form`, `flow-editor`, `wizard`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/integration` (documents GlassLayer, GlassSurface, GlassSurfaceProps) |
 | Turn record | `audit/turns/glass-surface.md`, written by `bun run audit:turn -- --slug=glass-surface --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |
 |---|---|---|
 | `button-group` | directly | `GlassSurface` |
-| `dropdown` | directly | `GlassSurface` |
-| `popover` | directly | `GlassSurface` |
 | `radio` | directly | `GlassSurface` |
 | `slider` | directly | `GlassSurface` |
-| `accordion` | directly | `GlassSurface` |
-| `alert-dialog` | directly | `GlassSurface` |
-| `card` | directly | `GlassSurface` |
-| `code-block` | directly | `GlassSurface` |
-| `collapsible` | directly | `GlassSurface` |
-| `description-lists` | directly | `GlassSurface` |
-| `empty-state` | directly | `GlassSurface` |
-| `feeds` | directly | `GlassSurface` |
-| `grid-lists` | directly | `GlassSurface` |
-| `media-objects` | directly | `GlassSurface` |
-| `stacked-lists` | directly | `GlassSurface` |
-| `stats` | directly | `GlassSurface` |
-| `action-sheet` | directly | `GlassSurface` |
-| `board` | directly | `GlassSurface` |
-| `calendar` | directly | `GlassSurface` |
-| `carousel` | directly | `GlassSurface` |
-| `chat` | directly | `GlassSurface` |
-| `command` | directly | `GlassSurface` |
-| `data-table` | directly | `GlassSurface` |
-| `dialog` | directly | `GlassSurface` |
-| `drawer` | directly | `GlassSurface` |
+| `tab-bar` | directly | `GlassSurface` |
 | `navbars` | directly | `GlassSurface` |
 | `sidebar` | directly | `GlassSurface` |
 | `row-menu` | directly | `GlassSurface` |
-| `tab-bar` | directly | `GlassSurface` |
-| `toast` | directly | `GlassSurface` |
+| `card` | directly | `GlassSurface` |
+| `stats` | directly | `GlassSurface` |
+| `data-table` | directly | `GlassSurface` |
+| `stacked-lists` | directly | `GlassSurface` |
+| `grid-lists` | directly | `GlassSurface` |
+| `media-objects` | directly | `GlassSurface` |
+| `feeds` | directly | `GlassSurface` |
+| `description-lists` | directly | `GlassSurface` |
+| `accordion` | directly | `GlassSurface` |
+| `collapsible` | directly | `GlassSurface` |
+| `code-block` | directly | `GlassSurface` |
+| `carousel` | directly | `GlassSurface` |
+| `calendar` | directly | `GlassSurface` |
+| `chat` | directly | `GlassSurface` |
+| `board` | directly | `GlassSurface` |
 | `geo-map` | directly | `GlassSurface` |
-| `chip` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `dialog` | directly | `GlassSurface` |
+| `alert-dialog` | directly | `GlassSurface` |
+| `drawer` | directly | `GlassSurface` |
+| `action-sheet` | directly | `GlassSurface` |
+| `popover` | directly | `GlassSurface` |
+| `dropdown` | directly | `GlassSurface` |
+| `command` | directly | `GlassSurface` |
+| `toast` | directly | `GlassSurface` |
+| `empty-state` | directly | `GlassSurface` |
 | `emblem` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `autocomplete` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `button` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `stepper` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `chip` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `avatar` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `badge` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `button` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `input` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `input-otp` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `kbd` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `listbox` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `stepper` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `pagination` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `progress` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `select` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `skeleton` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `input` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `textarea` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `video` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `action-panels` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `alert` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `select` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `input-otp` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `autocomplete` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `listbox` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `phone-input` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `filter-panel` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `steps` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `tabs` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `pagination` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `steps` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `action-panels` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `video` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `chart` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `line-chart` | through shared modules | `chartShell` (src/charts/shared/cartesian-series.tsx) |
 | `area-chart` | through shared modules | `chartShell` (src/charts/shared/cartesian-series.tsx) |
-| `pie-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `scatter-plot` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `candlestick-chart` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `depth-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `heatmap` | through shared modules | `ChartInspectionSurface` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `bar-list` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `metric-breakdown` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `service-health-list` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `bullet-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `composed-chart` | through shared modules | `chartShell` (src/charts/shared/cartesian-series.tsx) |
 | `range-area-chart` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `composed-chart` | through shared modules | `chartShell` (src/charts/shared/cartesian-series.tsx) |
 | `histogram` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `box-plot` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `scatter-plot` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `waterfall-chart` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `radial-bar-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `funnel-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `radar-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `pie-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `treemap` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `funnel-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `radial-bar-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `bullet-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `radar-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `metric-breakdown` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `bar-list` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `depth-chart` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `heatmap` | through shared modules | `ChartInspectionSurface` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `candlestick-chart` | through shared modules | `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `service-health-list` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `alert` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `progress` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `skeleton` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `typography` | through other kit components | `badge` |
 | `field` | through other kit components | `autocomplete`, `input`, `phone-input`, `select`, `textarea` |
 | `form` | through other kit components | `button` |
-| `wizard` | through other kit components | `button`, `dialog`, `steps`, `typography` |
 | `flow-editor` | through other kit components | `button`, `select` |
+| `wizard` | through other kit components | `button`, `dialog`, `steps`, `typography` |
 <!-- audit:facts:end -->
 
 ## Contract rubric

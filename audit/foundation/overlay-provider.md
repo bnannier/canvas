@@ -16,35 +16,35 @@ Audit checklist for the style-layer foundation `OverlayProvider`, audited for it
 | Tests of it | 40 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/overlay-provider[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/anchored-overlay-focus.test.tsx`, `test/anchored-overlay-placement.test.tsx`, `test/anchored-overlay-sheet.test.tsx`, `test/app-frame.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/avatar-menu.test.tsx`, `test/capture-target.test.tsx`, `test/command.test.tsx`, `test/control-refs.test.tsx`, `test/dialog-embedded.test.tsx`, `test/dialog-form.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/dialog-workspace.test.tsx`, `test/dist-smoke.test.tsx`, `test/docs-live-patterns.test.tsx`, `test/docs-viewport-overlay.test.tsx`, `test/drawer-host.test.tsx`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/glass-blur-plane.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-surface-android.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-frost-paint-order.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/scrim-frost.test.tsx`, `test/web-glass-contract.test.tsx`, `test/wizard.test.tsx` |
 | Consumers | 23 components: 9 directly, 6 through shared modules, 8 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 23, in this order: components `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `app-frame`, `command`, `drawer`, `row-menu`, `tooltip`, `alert-dialog`, `phone-input`, `calendar`, `dialog`, `toast`, `avatar`, `field`, `board`, `filter-panel`, `navbars`, `sidebar`, `wizard`, `flow-editor`; pages none |
+| Capture through | 23, in this order: components `app-frame`, `button-group`, `select`, `autocomplete`, `row-menu`, `drawer`, `popover`, `dropdown`, `command`, `phone-input`, `calendar`, `dialog`, `alert-dialog`, `tooltip`, `toast`, `avatar`, `field`, `filter-panel`, `navbars`, `sidebar`, `board`, `flow-editor`, `wizard`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/integration` (documents OverlayHost, OverlayProvider, useOverlayHost; planned for OverlayProviderProps, OverlayViewportInsets) |
 | Turn record | `audit/turns/overlay-provider.md`, written by `bun run audit:turn -- --slug=overlay-provider --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |
 |---|---|---|
-| `autocomplete` | directly | `useOverlayHost` |
-| `button-group` | directly | `useOverlayHost` |
-| `dropdown` | directly | `useOverlayHost` |
-| `popover` | directly | `useOverlayHost` |
-| `select` | directly | `useOverlayHost` |
 | `app-frame` | directly | `OverlayProvider` |
-| `command` | directly | `useOverlayHost` |
-| `drawer` | directly | `OverlayProvider` |
+| `button-group` | directly | `useOverlayHost` |
+| `select` | directly | `useOverlayHost` |
+| `autocomplete` | directly | `useOverlayHost` |
 | `row-menu` | directly | `useOverlayHost` |
-| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
-| `alert-dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
+| `drawer` | directly | `OverlayProvider` |
+| `popover` | directly | `useOverlayHost` |
+| `dropdown` | directly | `useOverlayHost` |
+| `command` | directly | `useOverlayHost` |
 | `phone-input` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `calendar` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
+| `alert-dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
+| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `toast` | through shared modules | `Portal` (src/style/portal.tsx) |
 | `avatar` | through other kit components | `dropdown` |
 | `field` | through other kit components | `autocomplete`, `phone-input`, `select` |
-| `board` | through other kit components | `row-menu` |
 | `filter-panel` | through other kit components | `drawer` |
 | `navbars` | through other kit components | `dropdown` |
 | `sidebar` | through other kit components | `drawer` |
-| `wizard` | through other kit components | `dialog` |
+| `board` | through other kit components | `row-menu` |
 | `flow-editor` | through other kit components | `select` |
+| `wizard` | through other kit components | `dialog` |
 <!-- audit:facts:end -->
 
 ## Contract rubric

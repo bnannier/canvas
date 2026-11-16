@@ -68,14 +68,17 @@ export function WebSidebar({ K, slug, go }: { K: ExampleScope; slug: string; go:
 }
 
 /** The web app's top bar: the kit Navbar holding the search field, the notifications button and the account photo. */
-export function WebTopBar({ K }: { K: ExampleScope }) {
+export function WebTopBar({ K, compact = false }: { K: ExampleScope; compact?: boolean }) {
   const { Navbar, Input, Button, Icon, Avatar, useToast } = K;
   const { toast } = useToast();
   return (
     <Navbar
-      brandContent={<Input small xs start leadingIcon icon="search" suffix="⌘K" placeholder="Search Riskora…" accessibilityLabel="Search Riskora" />}
+      brand={compact ? "Riskora" : undefined}
+      // Keep the search field's node and draft when the compact header hides it.
+      brandContent={<Input small xs start leadingIcon icon="search" suffix="⌘K" placeholder="Search Riskora…" accessibilityLabel="Search Riskora" style={{ display: compact ? "none" : "flex" }} />}
       actions={
         <>
+          {compact ? <Button ghost largeIcon accessibilityLabel="Search Riskora" iconLeft={<Icon search decorative />} onPress={() => toast({ message: "Search opened" })} /> : null}
           <Button
             outline
             largeIcon
