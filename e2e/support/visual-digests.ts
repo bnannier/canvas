@@ -29,19 +29,41 @@ const samePixels = (a: PixelDigest, b: PixelDigest) =>
 
 /** Two consecutive identical decoded frames are required; an unstable view fails. */
 export async function stablePixelDigest(capture: (remainingMs: number) => Promise<Buffer>, timeout = 10_000, approved?: { name: string; digest: PixelDigest }): Promise<PixelDigest> {
-  const deadline = Date.now() + timeout;
+  const startedAt = Date.now();
+  const deadline = startedAt + timeout;
   let previous: PixelDigest | undefined;
   let lastStable: PixelDigest | undefined;
   let polls = 0;
+  let attempts = 0;
+  let completedFrames = 0;
+  let lastCaptureMs = 0;
+  let phase = "before capture";
+  let captureTimeout: Error | undefined;
+  // Keep only bounded, one-way text evidence. A screenshot's TimeoutError call log
+  // distinguishes font/layout/compositor waits from frames whose pixels kept changing.
+  const frames: { attempt: number; captureMs: number; decodeMs: number; matchesPrevious: boolean; digest: PixelDigest }[] = [];
   while (Date.now() < deadline) {
     let png: Buffer;
+    attempts++;
+    const captureStartedAt = Date.now();
+    phase = "capture";
     try {
       png = await capture(Math.max(1, deadline - Date.now()));
     } catch (error) {
-      if (error instanceof Error && error.name === "TimeoutError" && Date.now() >= deadline) break;
+      if (error instanceof Error && error.name === "TimeoutError" && Date.now() >= deadline) {
+        lastCaptureMs = Date.now() - captureStartedAt;
+        captureTimeout = error;
+        break;
+      }
       throw error;
     }
+    const capturedAt = Date.now();
+    lastCaptureMs = capturedAt - captureStartedAt;
+    phase = "decode";
     const current = await pixelDigest(png);
+    completedFrames++;
+    frames.push({ attempt: attempts, captureMs: lastCaptureMs, decodeMs: Date.now() - capturedAt, matchesPrevious: !!previous && samePixels(previous, current), digest: current });
+    if (frames.length > 6) frames.shift();
     if (Date.now() > deadline) break;
     if (previous && samePixels(previous, current)) {
       lastStable = current;
@@ -52,10 +74,11 @@ export async function stablePixelDigest(capture: (remainingMs: number) => Promis
     // pending image rasterization and compositor updates settle instead of keeping
     // the renderer busy with uninterrupted screenshot requests.
     const delay = Math.min(approved ? [100, 250, 500][Math.min(polls++, 2)]! : 100, Math.max(0, deadline - Date.now()));
+    phase = "between captures";
     if (delay > 0) await new Promise((resume) => setTimeout(resume, delay));
   }
   if (approved && lastStable) assertPixelDigest(approved.name, lastStable, approved.digest);
-  throw new Error(`Visual capture did not produce two consecutive identical approved frames within ${timeout}ms. No digest was updated.`);
+  throw new Error(`Visual capture did not produce two consecutive identical approved frames within ${timeout}ms. No digest was updated.\nCapture diagnostics: ${JSON.stringify({ attempts, completedFrames, elapsedMs: Date.now() - startedAt, lastCaptureMs, phase, frames })}${captureTimeout ? `\nLast screenshot timeout:\n${captureTimeout.message}` : ""}`);
 }
 
 export function assertPixelDigest(name: string, actual: PixelDigest, expected: PixelDigest | undefined): void {

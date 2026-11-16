@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 import sharp from "sharp";
 import type { Locator, Page } from "@playwright/test";
 import { alignedVisualDimensions, assertPixelDigest, assertVisualDimensions, attachVisualDigest, digestUpdateRequested, fractionalOriginClip, pixelDigest, stablePixelDigest } from "../e2e/support/visual-digests.ts";
@@ -102,6 +102,27 @@ describe("non-reversible visual verification metadata", () => {
     const png = await image();
     await expect(stablePixelDigest(async () => { await Bun.sleep(5); return png; }, 1))
       .rejects.toThrow("did not produce two consecutive identical approved frames");
+  });
+
+  test("a screenshot timeout retains its call log and distinguishes capture waits from changing pixels", async () => {
+    let now = 1000;
+    const clock = spyOn(Date, "now").mockImplementation(() => now);
+    const timeout = new Error("locator.screenshot: Timeout 10ms exceeded.\nCall log:\n  - waiting for fonts to load...");
+    timeout.name = "TimeoutError";
+    try {
+      const error = await stablePixelDigest(async (remainingMs) => {
+        now += remainingMs;
+        throw timeout;
+      }, 10).then(() => undefined, (error: unknown) => error);
+      expect(error).toBeInstanceOf(Error);
+      const message = (error as Error).message;
+      expect(message).toContain("did not produce two consecutive identical approved frames within 10ms. No digest was updated.");
+      const diagnostics = JSON.parse(message.split("\nCapture diagnostics: ")[1]!.split("\n")[0]!);
+      expect(diagnostics).toEqual({ attempts: 1, completedFrames: 0, elapsedMs: 10, lastCaptureMs: 10, phase: "capture", frames: [] });
+      expect(message).toContain(`Last screenshot timeout:\n${timeout.message}`);
+    } finally {
+      clock.mockRestore();
+    }
   });
 
   test("keeps polling stable transient frames until the approved pixels settle", async () => {
