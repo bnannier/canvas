@@ -2,15 +2,17 @@ import { PLATFORM_COPY } from "../data/platform-copy";
 import { View, Row, Column, Divider, Typography } from "@nannier/canvas";
 import { CanvasMark } from "../brand/canvas-mark";
 import { FOOTER, SHELL } from "./page-look";
+import { useLatestVersion } from "../ui/use-latest-version";
 
 /** The section hand-off's closing brand, direction paragraph and typography credits. */
 export function Footer() {
+  const version = useLatestVersion();
   return (
     <View role="contentinfo" style={{ width: "100%", maxWidth: SHELL.frameMax, paddingTop: FOOTER.top, paddingHorizontal: FOOTER.side, paddingBottom: FOOTER.bottom, gap: FOOTER.ruleGap }}>
       <Divider />
       <Row between wrap loose alignStart>
         <View style={{ gap: 8, maxWidth: 450.203125, flexShrink: 1 }}>
-          <Row snug alignCenter><CanvasMark size={22} /><Typography h5 level={2} style={{ fontSize: 16, lineHeight: 16, fontWeight: "600", letterSpacing: 0 }}>Canvas v4.0.0 · component library</Typography></Row>
+          <Row snug alignCenter><CanvasMark size={22} /><Typography h5 level={2} style={{ fontSize: 16, lineHeight: 16, fontWeight: "600", letterSpacing: 0 }}>Canvas {version} · component library</Typography></Row>
           <Typography small muted style={{ lineHeight: 19.5 }}>{PLATFORM_COPY.footer}</Typography>
         </View>
         <Column compact>

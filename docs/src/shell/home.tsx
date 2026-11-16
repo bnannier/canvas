@@ -41,6 +41,7 @@ import {
   tierLetter,
 } from "../data/library";
 import { Page } from "../ui/page";
+import { useLatestVersion } from "../ui/use-latest-version";
 
 // The docs home: the v4 hand-off's Library page (`Canvas v4.0.0 Library.dc.html`): the hero
 // (the eyebrow, the owner-revised headline and paragraph, two calls, the stats row
@@ -54,9 +55,6 @@ import { Page } from "../ui/page";
 //
 // The old home's three-looks rotator (./three-looks-rotator.tsx and its captures) is no
 // longer mounted; it stays in the tree for a later decision.
-
-/** The design version being previewed; publication is still handled by the release workflow. */
-const VERSION = "4.0.0";
 
 /** The index's 16 px letter key, separate from the public Badge variants. */
 function TierTag({ tier }: { tier: Tier }) {
@@ -74,6 +72,7 @@ function TierTag({ tier }: { tier: Tier }) {
 }
 
 export function LibraryHero() {
+  const version = useLatestVersion();
   const router = useRouter();
   const { headline, primary, secondary } = LIBRARY_HERO;
   const headlineBox = useRef<NativeView>(null);
@@ -86,7 +85,7 @@ export function LibraryHero() {
         <HeroEntrance><Column panel center fill>
           <Row comfortable alignCenter>
             <HeroPulse />
-            <Typography eyebrowLg subtle>{LIBRARY_HERO.eyebrow(VERSION)}</Typography>
+            <Typography eyebrowLg subtle>{LIBRARY_HERO.eyebrow(version.slice(1))}</Typography>
           </Row>
           <View ref={headlineBox}>
             <Typography hero accessibilityLabel={LIBRARY_HEADLINE}>

@@ -64,6 +64,12 @@ tarball, including its native module, through CI. See the repository's
 `EXPO_BASE_URL` remains available for deployments under a subpath through
 `app.config.js`. Production and local development use the root path.
 
+The homepage and footer version labels read the latest published `@nannier/canvas`
+version from npm on screen focus, without a cached HTTP response. They retain the
+last successful lookup (or the build's package version before the first lookup)
+when the registry is unavailable. These labels are independent of the app binary's
+version, which remains tied to the validated release candidate.
+
 ## Native builds (EAS)
 
 For native builds, run **Deploy** manually on main, select the `ios` and/or
