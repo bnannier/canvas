@@ -89,4 +89,4 @@ Cards announce selection (pressed state on the web); Enter or Space selects a fo
 
 ## Who acts on a card
 
-A node's optional `agent` is a compact third line naming who acts on the card, such as a role and its skill count. The card keeps its size: its padding tightens when the line is shown. A node's optional `attention` is the reason the card needs attention: it draws a warning mark in the card's top-right corner, and the reason joins the card's accessible name as "needs attention: <reason>". The mark is not interactive; the application shows the detail, for example in an inspector.
+A node's optional `agent` is a compact third line naming who acts on the card, such as a role and its skill count. The card keeps its size: its padding tightens when the line is shown. A node's optional `attention` is the reason the card needs attention: it draws a warning mark in the card's top-right corner, and the card's accessible name ends with "needs attention:" and the reason. The mark is not interactive; the application shows the detail, for example in an inspector.
