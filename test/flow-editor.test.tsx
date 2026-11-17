@@ -107,3 +107,17 @@ it("flow editor background selection uses the current callback after a rerender"
   expect(first).not.toHaveBeenCalled();
   expect(latest.mock.calls).toEqual([[null]]);
 });
+
+it("a card can name who acts on it and say why it needs attention, in its accessible name too", () => {
+  const view = render(<ThemeProvider><FlowEditor label="Workflow" testID="flow" edges={[]} nodes={[
+    { id: "design", label: "Design", description: "Design review", agent: "Product Designer · 2 skills", x: 0, y: 0 },
+    { id: "verify", label: "Quality", agent: "No agent", attention: "no agent can run this step", x: 240, y: 0 },
+    { id: "plain", label: "Plain", x: 480, y: 0 },
+  ]} /></ThemeProvider>);
+  expect(view.getByTestId("flow-node-design").getAttribute("aria-label")).toBe("Design, Design review, Product Designer · 2 skills. Incoming: none. Outgoing: none.");
+  expect(view.getByText("Product Designer · 2 skills")).toBeTruthy();
+  expect(view.queryByTestId("flow-node-design-attention")).toBeNull();
+  expect(view.getByTestId("flow-node-verify").getAttribute("aria-label")).toBe("Quality, No agent, needs attention: no agent can run this step. Incoming: none. Outgoing: none.");
+  expect(view.getByTestId("flow-node-verify-attention")).toBeTruthy();
+  expect(view.getByTestId("flow-node-plain").getAttribute("aria-label")).toBe("Plain. Incoming: none. Outgoing: none.");
+});

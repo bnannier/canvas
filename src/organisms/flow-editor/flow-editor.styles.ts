@@ -34,6 +34,12 @@ export interface FlowEditorSkin {
   node: (t: ColorTokens, selected: boolean) => ViewStyle;
   nodeLabel: (t: ColorTokens) => TextStyle;
   nodeDescription: (t: ColorTokens) => TextStyle;
+  /** The compact third line naming who acts on the card. */
+  nodeAgent: (t: ColorTokens) => TextStyle;
+  /** A card with a third line keeps its height by tightening its padding. */
+  nodeWithAgent: ViewStyle;
+  /** The warning mark in a card's top-right corner. */
+  nodeAttention: (t: ColorTokens) => ViewStyle;
   port: (t: ColorTokens, active: boolean) => ViewStyle;
   gridDot: (t: ColorTokens) => string;
   edge: (t: ColorTokens, selected: boolean) => { stroke: string; width: number };
@@ -80,6 +86,9 @@ export const webSkin: FlowEditorSkin = {
   }),
   nodeLabel: (t) => ({ color: t.foreground, fontSize: 13, lineHeight: 18, fontWeight: "600" }),
   nodeDescription: (t) => ({ color: t["subtle-foreground"] ?? t["muted-foreground"], fontSize: 12, lineHeight: 16 }),
+  nodeAgent: (t) => ({ color: t["subtle-foreground"] ?? t["muted-foreground"], fontSize: 11, lineHeight: 14 }),
+  nodeWithAgent: { paddingVertical: 6 },
+  nodeAttention: (t) => ({ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: 9999, backgroundColor: t.warning }),
   port: (t, active) => ({
     position: "absolute",
     top: FLOW_NODE_HEIGHT / 2 - PORT / 2 - 1,

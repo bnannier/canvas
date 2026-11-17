@@ -26,6 +26,10 @@ export interface FlowNode {
   label: string;
   /** A muted second line under the title. */
   description?: string;
+  /** Who acts on this card, as a compact third line (for example a role and its skill count). */
+  agent?: string;
+  /** Why this card needs attention; shows a warning mark and joins the card's accessible name. */
+  attention?: string;
   /** Top-left corner in content units. */
   x: number;
   y: number;

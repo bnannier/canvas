@@ -291,7 +291,7 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
     }
     const nodeName = (node: FlowNode) => {
       const { incoming, outgoing } = relationships.get(node.id)!;
-      return `${node.label}${node.description ? `, ${node.description}` : ""}. Incoming: ${incoming.join("; ") || "none"}. Outgoing: ${outgoing.join("; ") || "none"}.`;
+      return `${node.label}${node.description ? `, ${node.description}` : ""}${node.agent ? `, ${node.agent}` : ""}${node.attention ? `, needs attention: ${node.attention}` : ""}. Incoming: ${incoming.join("; ") || "none"}. Outgoing: ${outgoing.join("; ") || "none"}.`;
     };
     const shown = (n: FlowNode): FlowNode => (drag?.id === n.id ? { ...n, ...drag.point } : n);
     const visible = (() => {
@@ -524,7 +524,7 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
     const keyOf: Record<string, string> = { moveLeft: "ArrowLeft", moveRight: "ArrowRight", moveUp: "ArrowUp", moveDown: "ArrowDown" };
     return (
       <View
-        style={[skin.node(t, selected), { transform: [{ translateX: camera.k * node.x + camera.tx }, { translateY: camera.k * node.y + camera.ty }, { scale: camera.k }] }]}
+        style={[skin.node(t, selected), node.agent ? skin.nodeWithAgent : null, { transform: [{ translateX: camera.k * node.x + camera.tx }, { translateY: camera.k * node.y + camera.ty }, { scale: camera.k }] }]}
         accessible
         accessibilityRole="button"
         accessibilityLabel={p.accessibilityLabel}
@@ -545,6 +545,8 @@ export function createFlowEditor(skin: FlowEditorSkin, parts: FlowEditorParts) {
       >
         <Text style={skin.nodeLabel(t)} numberOfLines={1}>{node.label}</Text>
         {node.description ? <Text style={skin.nodeDescription(t)} numberOfLines={1}>{node.description}</Text> : null}
+        {node.agent ? <Text style={skin.nodeAgent(t)} numberOfLines={1}>{node.agent}</Text> : null}
+        {node.attention ? <View pointerEvents="none" style={skin.nodeAttention(t)} testID={p.testID ? `${p.testID}-attention` : undefined} /> : null}
         {!p.readOnly ? (
           <>
             <View pointerEvents="none" style={[skin.port(t, false), { left: FLOW_PORT_OFFSET.in }]} />
