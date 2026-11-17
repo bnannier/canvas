@@ -53,13 +53,13 @@
     },
     "components/app-frame--dark": {
       "width": 1004,
-      "height": 349,
-      "sha256": "df966ac4e93974c9ce68fc0e7e3ffabb949db4897cb900e765a25d1731712f71"
+      "height": 485,
+      "sha256": "60a82a38faff38f39a46e9b314f105704ece94f702dc8c99320e4e80cffab5d3"
     },
     "components/app-frame--light": {
       "width": 1004,
-      "height": 349,
-      "sha256": "9dc73839f7e539710d08c7831f2573c37b1fa28f3cda52b2cb015f8f820d4186"
+      "height": 485,
+      "sha256": "f7a8bcf68c4c4d95c9bb7423912005c900c0b4195de591851f9fdc70976e369d"
     },
     "components/area-chart--dark": {
       "width": 1004,
@@ -303,13 +303,13 @@
     },
     "components/dashboard-grid--dark": {
       "width": 1004,
-      "height": 624,
-      "sha256": "e2bf3fe901978564be9a322865449d5b542c5ac644e3777bbba5033871e27a5a"
+      "height": 972,
+      "sha256": "df74787598ee83146dbd066ef850ed41b9ca05450d25aaf29fe4845f5853e650"
     },
     "components/dashboard-grid--light": {
       "width": 1004,
-      "height": 624,
-      "sha256": "386f59f27a4d7b189b9fee78a46198f04e69768b199a599213f797afb5e5a177"
+      "height": 972,
+      "sha256": "e60243641ce1eb9928e07facd4fed9949e6a31593a64340a9b2723e22dc600a0"
     },
     "components/data-table--dark": {
       "width": 1004,
@@ -353,13 +353,13 @@
     },
     "components/divider--dark": {
       "width": 1004,
-      "height": 320,
-      "sha256": "265170e66490763a22a08d1abacaa70d448e87c97bff1826128f9c73e246aef0"
+      "height": 319,
+      "sha256": "587cf5094393b571e64add3461f4fa823ee79f685d90b261a99aa5e8fd73eb37"
     },
     "components/divider--light": {
       "width": 1004,
-      "height": 320,
-      "sha256": "96c442a789dda8a2cbd94c8c3dccc9942a6799cfde3fc53af77e8e3b3193d7f8"
+      "height": 319,
+      "sha256": "72b6cb258ed132cf88ea50f776ddeb23296904a55a17edd80a781b73bbdafdfc"
     },
     "components/drag-drop--dark": {
       "width": 1004,
@@ -493,13 +493,13 @@
     },
     "components/grid--dark": {
       "width": 1004,
-      "height": 320,
-      "sha256": "67c90d8c5071fb57801a95501c02be6372a371b60db9995de9a00d07610816ad"
+      "height": 360,
+      "sha256": "3007a3e16a2715cd72f7412b58c2c5d04cffea97ad38d3ae048995d828e72385"
     },
     "components/grid--light": {
       "width": 1004,
-      "height": 320,
-      "sha256": "e03d0c2d7b1cde20b215a68aec24be871cb9deb4ef85f81324bf020cde8a1296"
+      "height": 360,
+      "sha256": "c5cc065f7a0b590b5958b72bf6a58506a3b066800307017ec109ddad2e98a2ef"
     },
     "components/grid-lists--dark": {
       "width": 1004,
@@ -893,13 +893,13 @@
     },
     "components/stats--dark": {
       "width": 1004,
-      "height": 320,
-      "sha256": "eb20fe0921ae04bf09da741acf759aa524049332befea267d60f365b099cd50a"
+      "height": 319,
+      "sha256": "b624f46a2d0d965c3d953a96e0bc96e35d29b63fbb25aa30921bd963dd92a30b"
     },
     "components/stats--light": {
       "width": 1004,
-      "height": 320,
-      "sha256": "32863fa9328adf9fe86ad8e347ce400d2cfbe053d0e214dad854ce285fa3b745"
+      "height": 319,
+      "sha256": "eef018c4701a0f7f20e84d318bea30d7617efc5bd7eee9daed0d1b22cb9269d5"
     },
     "components/stepper--dark": {
       "width": 1004,
