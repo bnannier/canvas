@@ -1,5 +1,18 @@
 # @nannier/canvas
 
+## 4.7.1
+
+### Patch Changes
+
+- 5c9fc54: Use the complete focus ring color for the Android Autocomplete's focused indicator, including after Escape closes its menu. Preserve the active accent indicator when the menu is open without editor focus.
+- cabbc78: Restore bottom padding on cards containing only a header, including title-only Grid tiles, using the active density's inset.
+- cabbc78: Keep chart axis label boxes within narrow containers while keeping endpoint text readable.
+- cabbc78: Make labeled horizontal dividers fill their parent and provide definite bounds in the docs playground so horizontal rules remain visible.
+- cabbc78: Fit the homepage hero to phone screens with narrower gutters and vertical spacing, and center the complete decorative collage using its visible panel bounds so it fills the available width without clipping. Keep the stacked tablet collage centered without enlarging its controls. Replace the repository-name link with an accessible GitHub logo button. Wrap the homepage legend, subcomponent lists, and template callout so lower-page content cannot widen the mobile viewport.
+- cabbc78: Let one-time-code cells share narrow parent bounds while retaining their input height. Demonstrate Steps' responsive stacking in its default docs example.
+- cabbc78: Generate every docs playground preview and displayed code from the same complete example. Preserve example state and handlers when applying knobs, demonstrate Pressable activation with a counter, and clarify the AppFrame anatomy with a bounded viewport and explanations of its regions. Keep anatomy and platform comparisons fully labelled even when a component's minimal usage example omits optional parts.
+- cabbc78: Keep docs playground configurations in the URL so shared links restore the edited controls, rendered example, generated code, and preview platform. Apply shared settings after static-page hydration so opening or reloading a configured link preserves the server-rendered page without hydration errors.
+
 ## 4.7.0
 
 ### Minor Changes
