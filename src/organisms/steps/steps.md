@@ -105,6 +105,7 @@ column stacks too.
 ```tsx
 <Steps
   stacks
+  stackBreakpoint="sm"
   steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]}
   defaultCurrent={1}
 />

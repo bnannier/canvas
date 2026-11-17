@@ -13,6 +13,7 @@ import {
   Text,
   View,
   useTheme,
+  useMeasuredWidth,
 } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
@@ -79,51 +80,56 @@ export function LibraryHero() {
   const headlineBox = useRef<NativeView>(null);
   const platformsBox = useRef<NativeView>(null);
   const panels = useHeroPanels();
+  const { width, onLayout } = useMeasuredWidth();
+  // Match Grid's two 460 px tiles and its broad (48 px) gap.
+  const stacked = width > 0 && width < HERO_GRID.minTileWidth * 2 + 48;
   const { tokens } = useTheme();
   return (
     <AuroraFrame testID="library-hero">
-      <Grid minTileWidth={HERO_GRID.minTileWidth} columns={2} broad>
-        <HeroEntrance><Column panel center fill>
-          <Row comfortable alignCenter>
-            <HeroPulse />
-            <Typography eyebrowLg subtle>{LIBRARY_HERO.eyebrow(version.slice(1))}</Typography>
-          </Row>
-          <View ref={headlineBox}>
-            <Typography hero accessibilityLabel={LIBRARY_HEADLINE}>
-              {`${headline.plain} `}
-              <GradientText anchor={headlineBox} testID="library-headline-accent">{headline.accent}</GradientText>
-            </Typography>
-          </View>
-          <View ref={platformsBox}>
-            <Typography tagline>
-              <GradientText tagline decorative={false} anchor={platformsBox} testID="library-platforms">{LIBRARY_HERO.platforms}</GradientText>
-            </Typography>
-          </View>
-          <Container xxl start>
-            <Typography lead subtle>{LIBRARY_HERO.body}</Typography>
-          </Container>
-          <Row cozy wrap alignCenter>
-            <LibraryAction
-              primary
-              large
-              raised
-              href={primary.href}
-              onPress={(event) => {
-                event?.preventDefault?.();
-                router.push(primary.href as never);
-              }}
-              iconRight={<Text style={{ fontSize: 15, lineHeight: 15, color: tokens["primary-foreground"] }}>→</Text>}
-            >
-              {primary.label}
-            </LibraryAction>
-            <Button outline icon large href={secondary.url} external accessibilityLabel="View Canvas on GitHub" onPress={() => Linking.openURL(secondary.url)} iconLeft={<Github size={22} color={tokens.foreground} />} />
-          </Row>
-          <Row loose wrap rowsSnug>
-            {heroStats(COMPONENTS.length).map((stat) => <Typography key={stat} caption mono muted singleLeading>{stat}</Typography>)}
-          </Row>
-        </Column></HeroEntrance>
-        <HeroCollage testID="library-collage" panels={panels} />
-      </Grid>
+      <View onLayout={onLayout}>
+        <Grid minTileWidth={HERO_GRID.minTileWidth} columns={2} broad>
+          <HeroEntrance><Column panel center fill>
+            <Row comfortable alignCenter>
+              <HeroPulse />
+              <Typography eyebrowLg subtle>{LIBRARY_HERO.eyebrow(version.slice(1))}</Typography>
+            </Row>
+            <View ref={headlineBox}>
+              <Typography hero accessibilityLabel={LIBRARY_HEADLINE}>
+                {`${headline.plain} `}
+                <GradientText anchor={headlineBox} testID="library-headline-accent">{headline.accent}</GradientText>
+              </Typography>
+            </View>
+            <View ref={platformsBox}>
+              <Typography tagline>
+                <GradientText tagline decorative={false} anchor={platformsBox} testID="library-platforms">{LIBRARY_HERO.platforms}</GradientText>
+              </Typography>
+            </View>
+            <Container xxl start>
+              <Typography lead subtle>{LIBRARY_HERO.body}</Typography>
+            </Container>
+            <Row cozy wrap alignCenter>
+              <LibraryAction
+                primary
+                large
+                raised
+                href={primary.href}
+                onPress={(event) => {
+                  event?.preventDefault?.();
+                  router.push(primary.href as never);
+                }}
+                iconRight={<Text style={{ fontSize: 15, lineHeight: 15, color: tokens["primary-foreground"] }}>→</Text>}
+              >
+                {primary.label}
+              </LibraryAction>
+              <Button outline icon large href={secondary.url} external accessibilityLabel="View Canvas on GitHub" onPress={() => Linking.openURL(secondary.url)} iconLeft={<Github size={22} color={tokens.foreground} />} />
+            </Row>
+            <Row loose wrap rowsSnug>
+              {heroStats(COMPONENTS.length).map((stat) => <Typography key={stat} caption mono muted singleLeading>{stat}</Typography>)}
+            </Row>
+          </Column></HeroEntrance>
+          <HeroCollage testID="library-collage" panels={panels} fit={stacked} />
+        </Grid>
+      </View>
     </AuroraFrame>
   );
 }

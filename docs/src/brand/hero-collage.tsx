@@ -29,7 +29,7 @@ function Panel({ panel, width, x, y, children, onSize }: {
   }, motion]}>{children}</Animated.View>;
 }
 
-export function HeroCollage({ panels, testID }: { panels: Record<CollagePanelId, ReactNode>; testID?: string }) {
+export function HeroCollage({ panels, testID, fit = false }: { panels: Record<CollagePanelId, ReactNode>; testID?: string; fit?: boolean }) {
   const [width, setWidth] = useState(SEED_WIDTH);
   const [sizes, setSizes] = useState<Partial<Record<CollagePanelId, [number, number]>>>({});
   const onSize = useCallback((id: CollagePanelId, w: number, h: number) => {
@@ -37,7 +37,7 @@ export function HeroCollage({ panels, testID }: { panels: Record<CollagePanelId,
   }, []);
   // Fit the complete illustration into its measured column, keeping the authored
   // panel geometry and perspective in one coordinate system on every platform.
-  const narrow = width < SEED_WIDTH - 1;
+  const narrow = fit || width < SEED_WIDTH - 1;
   const canvasWidth = narrow ? SEED_WIDTH : width;
   // Fit the visible panel bounds, rather than the empty area of the desktop
   // canvas. Native layout sizes and the shared projection math work on every OS.
@@ -50,7 +50,10 @@ export function HeroCollage({ panels, testID }: { panels: Record<CollagePanelId,
   const top = points.length ? Math.min(...points.map(point => point[1])) - 16 : 0;
   const drawingWidth = points.length ? Math.max(...points.map(point => point[0])) + 16 - left : canvasWidth + (narrow ? 144 : 0);
   const drawingHeight = points.length ? Math.max(...points.map(point => point[1])) + 16 - top : COLLAGE.height;
-  const scale = width / drawingWidth;
+  // A stacked tablet column is wider than the artwork. Centre the visible
+  // drawing there without inflating the controls; phones still scale to fit.
+  const scale = fit ? Math.min(1, width / drawingWidth) : width / drawingWidth;
+  const offset = (width - drawingWidth * scale) / 2;
   const box = useRef<View>(null);
   const reduced = useReducedMotion();
   const hover = useHoverCapable();
@@ -63,7 +66,7 @@ export function HeroCollage({ panels, testID }: { panels: Record<CollagePanelId,
     const move = (event: MouseEvent) => box.current?.measureInWindow((windowLeft, windowTop, w, h) => {
       if (!w || !h) return;
       const bounds = stackBounds(canvasWidth, [x.value, y.value, 3]);
-      const nx = Math.max(-1, Math.min(1, ((event.clientX - windowLeft) / scale + left - bounds.left - bounds.width / 2) / bounds.width));
+      const nx = Math.max(-1, Math.min(1, ((event.clientX - windowLeft - offset) / scale + left - bounds.left - bounds.width / 2) / bounds.width));
       const ny = Math.max(-1, Math.min(1, ((event.clientY - windowTop) / scale + top - bounds.top - bounds.height / 2) / bounds.height));
       const config = { duration: HERO_MOTION.tilt, easing: Easing.bezier(...HERO_MOTION.entrance) };
       x.value = withTiming(14 - ny * 8, config);
@@ -75,7 +78,7 @@ export function HeroCollage({ panels, testID }: { panels: Record<CollagePanelId,
       cancelAnimation(x);
       cancelAnimation(y);
     };
-  }, [hover, reduced, x, y, canvasWidth, scale, left, top]);
+  }, [hover, reduced, x, y, canvasWidth, scale, offset, left, top]);
   return (
     <View
       ref={box}
@@ -86,7 +89,7 @@ export function HeroCollage({ panels, testID }: { panels: Record<CollagePanelId,
       }}
       style={{ height: drawingHeight * scale }}
     >
-      <View style={{ width: canvasWidth, height: COLLAGE.height, transformOrigin: [0, 0, 0], transform: [{ scale }, { translateX: -left }, { translateY: -top }] }}>
+      <View style={{ width: canvasWidth, height: COLLAGE.height, transformOrigin: [0, 0, 0], transform: [{ translateX: offset }, { scale }, { translateX: -left }, { translateY: -top }] }}>
         {BACK_TO_FRONT.map((panel) => <Panel key={panel.id} panel={panel} width={canvasWidth} x={x} y={y} onSize={onSize}>{panels[panel.id]}</Panel>)}
       </View>
     </View>

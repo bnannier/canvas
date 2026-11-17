@@ -43,6 +43,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `stepprogress` | Step progress | [ ] | [ ] | [ ] |  |
 | `segmented` | Segmented | [ ] | [ ] | [ ] |  |
 | `progressbar` | Progress bar | [ ] | [ ] | [ ] |  |
+| `stacksatnarrowwidths` | Stacks at narrow widths | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric
