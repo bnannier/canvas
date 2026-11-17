@@ -18,7 +18,7 @@ export const docs: ComponentDocs = {
     "Pass `focusable={false}` for a surface only a pointer should reach, such as a row whose keyboard path is a button inside it: it still presses, and it leaves the tab order on the web too, where react-native-web's own Pressable would keep it a tab stop. A Pressable with the `link` role presses on Enter (and not on Space), as a link does, on the web too: react-native-web's own Pressable leaves that key to the browser, which activates only a link that has an `href`.",
   ],
   examples: [
-    { label: "Default", code: "<Pressable style={({ pressed }) => ({ padding: 12, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>\n  <Text style={{ color: tokens[\"primary-foreground\"] }}>Press and hold</Text>\n</Pressable>", render: e_atoms_pressable_example_0, note: ["Wire `onPress` to your own handler. The background dims while the button is held, straight from the `({ pressed }) => style` function."] },
+    { label: "Default", code: "<Stateful initial={0}>\n  {(presses, setPresses) => (\n    <Column cozy alignCenter>\n      <Pressable accessibilityRole=\"button\" onPress={() => setPresses(presses + 1)} style={({ pressed }) => ({ padding: 12, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>\n        <Text style={{ color: tokens[\"primary-foreground\"] }}>Press me</Text>\n      </Pressable>\n      <View accessibilityLiveRegion=\"polite\" aria-live=\"polite\">\n        <Typography small muted>{`Pressed ${presses} ${presses === 1 ? \"time\" : \"times\"}`}</Typography>\n      </View>\n    </Column>\n  )}\n</Stateful>", render: e_atoms_pressable_example_0, note: ["The background dims while held, and each completed press increments the counter through `onPress`. Enter and Space activate the focused surface too."] },
     { label: "Opacity", code: "<Pressable style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>\n  <Text style={{ color: tokens.foreground }}>Press and hold</Text>\n</Pressable>", render: e_atoms_pressable_example_1, note: ["The style function dims the whole surface to 50% opacity while pressed."] },
     { label: "Disabled", code: "<Pressable disabled style={{ padding: 12, borderRadius: 8, backgroundColor: tokens.muted, opacity: 0.5 }}>\n  <Text style={{ color: tokens.foreground }}>Disabled</Text>\n</Pressable>", render: e_atoms_pressable_example_2, note: ["A disabled Pressable ignores presses."] },
   ],
@@ -42,5 +42,5 @@ export const docs: ComponentDocs = {
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":[],"states":[],"aria":[],"touchTarget":[]},
   tokens: [],
-  related: ["text","typography","button","row-column","container","grid","divider","view"],
+  related: ["row-column","text","view","typography","button","container","grid","divider"],
 };

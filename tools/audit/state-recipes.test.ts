@@ -696,7 +696,7 @@ describe("the states each component's source gives it", () => {
     const states = (slug: string) => [...new Set(componentSignals(reader, component(slug)).map((s) => `${s.state} ${s.what}`))].sort();
     // React Native's own View, Text and ScrollView: no example hands them a handler.
     for (const slug of ["view", "text", "scroll-view"]) expect({ slug, states: states(slug) }).toEqual({ slug, states: [] });
-    expect(states("pressable")).toEqual(["disabled disabled on <Pressable>", "focus a tab stop: <Pressable>", "pressed a function taking `pressed` on <Pressable>"]);
+    expect(states("pressable")).toEqual(["disabled disabled on <Pressable>", "focus a tab stop: <Pressable>", "pressed a function taking `pressed` on <Pressable>", "pressed onPress on <Pressable>"]);
     expect(states("text-input")).toEqual(["disabled aria-disabled on <TextInput>", "focus a TextInput"]);
     // An example's props are read as a source's are, spread onto the tag included.
     const spread = reader.exampleSignals("View", [{ label: "Spread", code: "<View {...{ onHoverIn: () => {}, focusable: true }} />" }], "src/atoms/view/view.md");

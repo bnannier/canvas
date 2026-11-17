@@ -89,7 +89,7 @@ export function componentName(spec: DetailSpec, state: KnobState): string {
  * as the JSX reads it), and a text, number or enum knob its value unless empty (a text
  * knob with an `element` as that element holding the text).
  */
-export function knobProps(knobs: readonly Knob[], state: KnobState): PropDescriptors {
+export function knobProps(knobs: readonly Knob[], state: KnobState, explicit = false): PropDescriptors {
   const glyph: Record<string, PropValue> = {};
   const props: Record<string, PropValue> = {};
   for (const knob of knobs) {
@@ -100,7 +100,7 @@ export function knobProps(knobs: readonly Knob[], state: KnobState): PropDescrip
         break;
       case "boolean":
         if (value === true) props[knob.prop] = true;
-        else if (knob.value) props[knob.prop] = false;
+        else if (knob.value || explicit) props[knob.prop] = false;
         break;
       case "icon":
         if (typeof value === "string" && value !== "") props[knob.prop] = { icon: value };
@@ -111,10 +111,10 @@ export function knobProps(knobs: readonly Knob[], state: KnobState): PropDescrip
       case "component":
         break;
       case "text":
-        if (value !== "" && value != null) props[knob.prop] = knob.element ? { element: knob.element, children: String(value) } : value;
+        if ((explicit || value !== "") && value != null) props[knob.prop] = knob.element ? { element: knob.element, children: String(value) } : value;
         break;
       default:
-        if (value !== "" && value != null) props[knob.prop] = value;
+        if ((explicit || value !== "") && value != null) props[knob.prop] = value;
     }
   }
   return { ...glyph, ...props };
@@ -172,39 +172,6 @@ export type PinnedState = keyof typeof PINNED_STATES;
 
 export function isPinnedState(state: SpecOption): state is PinnedState {
   return state != null && state in PINNED_STATES;
-}
-
-/** A prop value's JSX attribute text, or null for `children`. */
-function attribute(name: string, value: PropValue): string {
-  if (value === true) return name;
-  if (value === false) return `${name}={false}`;
-  if (typeof value === "number") return `${name}={${value}}`;
-  if (typeof value === "string") return `${name}="${value}"`;
-  // An icon slot prints the bare glyph: the host colours it (a Button's icon slots take its label ink).
-  if ("icon" in value) return `${name}={<Icon ${value.icon} size={16} />}`;
-  if ("actionLabel" in value) return `${name}={{ label: ${JSON.stringify(value.actionLabel)}, onPress: () => {} }}`;
-  return `${name}={<${value.element}${value.children ? `>${value.children}</${value.element}>` : " />"}}`;
-}
-
-/**
- * The JSX the playground prints for a component and its props (the hand-off's `K.code`):
- * one line while it fits 80 columns, otherwise one attribute per line.
- */
-export function jsxCode(name: string, props: PropDescriptors): string {
-  const attributes: string[] = [];
-  let children = "";
-  for (const [key, value] of Object.entries(kitProps(name, props))) {
-    if (key === "children") {
-      children = typeof value === "object" && "element" in value ? `<${value.element}>${value.children ?? ""}</${value.element}>` : String(value);
-      continue;
-    }
-    attributes.push(attribute(key, value));
-  }
-  const open = `<${name}${attributes.length ? ` ${attributes.join(" ")}` : ""}`;
-  const oneLine = open.length + (children ? children.length + name.length + 3 : 3) < 80;
-  if (oneLine) return children !== "" ? `${open}>${children}</${name}>` : `${open} />`;
-  const head = `<${name}\n${attributes.map((a) => `  ${a}`).join("\n")}\n`;
-  return children !== "" ? `${head}>\n  ${children}\n</${name}>` : `${head}/>`;
 }
 
 /** The label a knob option shows: "default" for none passed, "none" for an empty icon. */

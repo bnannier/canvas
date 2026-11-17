@@ -8,12 +8,21 @@ Pass `focusable={false}` for a surface only a pointer should reach, such as a ro
 
 ## Usage
 
-Wire `onPress` to your own handler. The background dims while the button is held, straight from the `({ pressed }) => style` function.
+The background dims while held, and each completed press increments the counter through `onPress`. Enter and Space activate the focused surface too.
 
 ```tsx
-<Pressable style={({ pressed }) => ({ padding: 12, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>
-  <Text style={{ color: tokens["primary-foreground"] }}>Press and hold</Text>
-</Pressable>
+<Stateful initial={0}>
+  {(presses, setPresses) => (
+    <Column cozy alignCenter>
+      <Pressable accessibilityRole="button" onPress={() => setPresses(presses + 1)} style={({ pressed }) => ({ padding: 12, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>
+        <Text style={{ color: tokens["primary-foreground"] }}>Press me</Text>
+      </Pressable>
+      <View accessibilityLiveRegion="polite" aria-live="polite">
+        <Typography small muted>{`Pressed ${presses} ${presses === 1 ? "time" : "times"}`}</Typography>
+      </View>
+    </Column>
+  )}
+</Stateful>
 ```
 
 ## Variants

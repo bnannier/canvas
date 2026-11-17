@@ -8,6 +8,7 @@ import {
   areaBandPath,
   areaPath,
   bandScale,
+  centeredLabelBox,
   estimateTextWidth,
   formatCompact,
   formatAxis,
@@ -584,5 +585,26 @@ describe("estimateTextWidth", () => {
   it("estimates generously enough to cover real digit widths", () => {
     // Digits in the UI font run ~0.55em; the estimate must not be tighter.
     expect(estimateTextWidth("8888", 12)).toBeGreaterThanOrEqual(4 * 0.55 * 12);
+  });
+});
+
+describe("centeredLabelBox", () => {
+  it("keeps endpoint text readable when its tick is at the frame edge", () => {
+    expect(centeredLabelBox(264, 60, 264, 24)).toEqual({ left: 240, width: 24 });
+    expect(centeredLabelBox(0, 60, 264, 24)).toEqual({ left: 0, width: 24 });
+    expect(centeredLabelBox(260, 60, 264, 60)).toEqual({ left: 204, width: 60 });
+  });
+  it("retains the authored width and center when the whole label fits", () => {
+    expect(centeredLabelBox(120, 60, 264)).toEqual({ left: 90, width: 60 });
+  });
+
+  it("bounds narrow-frame endpoint labels while keeping their centers on the ticks", () => {
+    for (const center of [17, 247]) {
+      const box = centeredLabelBox(center, 60, 264);
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.left + box.width).toBeLessThanOrEqual(264);
+      expect(box.left + box.width / 2).toBe(center);
+      expect(box.width).toBe(34);
+    }
   });
 });

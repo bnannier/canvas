@@ -10,28 +10,73 @@ The board takes its widgets through `items`, the collection prop every other col
 
 ## Usage
 
-<!-- only: web -->
+The overview mixes three compact metrics with a wider revenue chart and a channel breakdown. Each widget owns its surface; `span` and `narrowSpan` describe how the same content reflows as the board's container narrows. Turn on `unlocked` in the playground to reveal the reorder grips, then drag a widget or focus its grip and press Space to move it with the arrow keys.
+
 ```tsx
 <DashboardGrid
   items={[
-    { id: "revenue", span: 8, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }, { label: "Wed", value: 15 }, { label: "Thu", value: 22 }]} /> },
-    { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "iOS", value: 64 }]} /> },
-    { id: "endpoints", span: 12, title: "Slowest endpoints", content: <BarList title="Slowest endpoints" items={[{ label: "/api/search", value: 240 }, { label: "/api/feed", value: 180 }]} /> },
+    {
+      id: "revenue",
+      span: 4,
+      narrowSpan: 4,
+      title: "Monthly revenue",
+      content: <Stats compact items={[{ label: "Monthly revenue", value: "$48,250", delta: "+12.8%", spark: [28, 32, 30, 38, 35, 42, 48] }]} />,
+    },
+    {
+      id: "customers",
+      span: 4,
+      narrowSpan: 4,
+      title: "Active customers",
+      content: <Stats compact items={[{ label: "Active customers", value: "2,420", delta: "+8.2%", spark: [15, 17, 16, 20, 21, 23, 24] }]} />,
+    },
+    {
+      id: "conversion",
+      span: 4,
+      narrowSpan: 4,
+      title: "Conversion rate",
+      content: <Stats compact items={[{ label: "Conversion rate", value: "4.8%", delta: "+0.6 pts", spark: [3.2, 3.6, 3.4, 4.1, 4.2, 4.5, 4.8] }]} />,
+    },
+    {
+      id: "trend",
+      span: 8,
+      narrowSpan: 12,
+      title: "Revenue by month",
+      content: (
+        <Chart
+          title="Revenue by month"
+          formatValue={(value) => "$" + value + "k"}
+          data={[
+            { label: "Jun", value: 28 },
+            { label: "Jul", value: 32 },
+            { label: "Aug", value: 30 },
+            { label: "Sep", value: 38 },
+            { label: "Oct", value: 42 },
+            { label: "Nov", value: 48.25 },
+          ]}
+        />
+      ),
+    },
+    {
+      id: "channels",
+      span: 4,
+      narrowSpan: 12,
+      title: "Customer acquisition",
+      content: (
+        <BarList
+          title="Customer acquisition"
+          share
+          items={[
+            { label: "Organic", value: 1089 },
+            { label: "Referral", value: 726 },
+            { label: "Paid", value: 484 },
+            { label: "Other", value: 121 },
+          ]}
+        />
+      ),
+    },
   ]}
 />
 ```
-<!-- /only -->
-<!-- only: ios android -->
-```tsx
-<DashboardGrid
-  items={[
-    { id: "revenue", span: 8, title: "Revenue", content: <Chart title="Revenue" data={[{ label: "Mon", value: 12 }, { label: "Tue", value: 18 }, { label: "Wed", value: 15 }, { label: "Thu", value: 22 }]} /> },
-    { id: "signups", span: 4, title: "Signups", content: <BarList title="Signups" items={[{ label: "Web", value: 82 }, { label: "App", value: 64 }]} /> },
-    { id: "endpoints", span: 12, title: "Slowest endpoints", content: <BarList title="Slowest endpoints" items={[{ label: "/api/search", value: 240 }, { label: "/api/feed", value: 180 }]} /> },
-  ]}
-/>
-```
-<!-- /only -->
 
 ## Variants
 

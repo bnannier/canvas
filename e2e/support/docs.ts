@@ -143,6 +143,8 @@ export function channels(hex: string): [number, number, number] {
 }
 
 export interface GotoOptions {
+  /** Encoded search parameters, separate from the auditable, static docs route. */
+  query?: string;
   scheme?: Scheme;
   /** Solid is the default here (glass frosts are GPU-nondeterministic). */
   surface?: Surface;
@@ -182,7 +184,7 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
   const palette = options.palette ?? "violet";
   if (options.viewport) await page.setViewportSize(options.viewport);
   await page.emulateMedia({ colorScheme: scheme });
-  const query = `scheme=${scheme}&surface=${surface}&palette=${palette}`;
+  const query = [options.query, `scheme=${scheme}&surface=${surface}&palette=${palette}`].filter(Boolean).join("&");
   const separator = route.includes("?") ? "&" : "?";
   await page.goto(`${BASE_PATH}${route}${separator}${query}`, { waitUntil: "load" });
   // The baked /privacy page is plain HTML with no app root and nothing to hydrate.

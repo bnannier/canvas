@@ -16,6 +16,8 @@ import {
   CardSeparator,
 } from "../src/molecules/card/card.tsx";
 import * as cardStyles from "../src/molecules/card/card.styles.ts";
+import { Card as IOSCard } from "../src/molecules/card/card.ios.tsx";
+import { Card as AndroidCard } from "../src/molecules/card/card.android.tsx";
 import { elevationOf, densityOf, mediaWellOf } from "../src/molecules/card/card.shared.tsx";
 import { platformShape } from "../src/style/platform-shape.ts";
 import { shape, lightColors } from "../src/style/tokens.ts";
@@ -35,6 +37,30 @@ const GAP = "8px";
 const COMPACT = "14px";
 
 describe("Card surface padding", () => {
+  for (const [platform, Component] of [["web", Card], ["ios", IOSCard], ["android", AndroidCard]] as const) {
+    for (const density of [{}, { compact: true }, { comfortable: true }]) {
+      it(`balances header-only insets on ${platform} at ${JSON.stringify(density)} density`, () => {
+        const { getByText, rerender } = ui(<Component {...density} title="Title" />);
+        const header = () => getByText("Title").parentElement!.parentElement!.parentElement!.parentElement!;
+        expect(Number.parseFloat(header().style.paddingBottom)).toBeGreaterThan(0);
+        expect(header().style.paddingBottom).toBe(header().style.paddingTop);
+        rerender(<ThemeProvider><Component {...density} title="Title" description="Description">{false}</Component></ThemeProvider>);
+        expect(header().style.paddingBottom).toBe(header().style.paddingTop);
+        rerender(<ThemeProvider><Component {...density} title="Title" body="Body" /></ThemeProvider>);
+        expect(header().style.paddingBottom).toBe("0px");
+        rerender(<ThemeProvider><Component {...density} title="Title"><Text>Body</Text></Component></ThemeProvider>);
+        expect(header().style.paddingBottom).toBe("0px");
+      });
+    }
+  }
+
+  it("closes the inset of an eyebrow-only card", () => {
+    const { getByText } = ui(<Card compact eyebrow="Summary" />);
+    const header = getByText("Summary").parentElement!;
+    expect(header.style.paddingBottom).toBe(COMPACT);
+    expect(header.style.paddingTop).toBe(COMPACT);
+  });
+
   it("pads raw children by default and spaces them (the surface owns the rhythm)", () => {
     const { getByTestId } = ui(
       <Card testID="c">

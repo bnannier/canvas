@@ -405,6 +405,11 @@ export function createCard(skin: CardSkin) {
     // A density on a sectioned card reshapes its sections (card.styles.ts `sectionInsets`);
     // the default density leaves them at their standard inset.
     const sections = hasSections && dens !== "default" ? s.sectionInsets(skin.density[dens]) : null;
+    // A header normally leaves its bottom inset to the following body/footer.
+    // When it is the last section, it must close the card's inset itself.
+    const headerEnd: ViewStyle | null = hasHeader && !(children != null ? hasBody : Boolean(body)) && !footer
+      ? { paddingBottom: sections?.content.paddingBottom ?? s.content.paddingVertical }
+      : null;
 
     // Shape: the corner step's radius from the skin's own row; iOS adds Apple's continuous
     // (superellipse) corner curve (an iOS-only RN style prop, omitted entirely on the other skins).
@@ -471,7 +476,7 @@ export function createCard(skin: CardSkin) {
     // header AND arbitrary children (a table, a form), which the string `body` cannot
     // express.
     const eyebrowNode = hasEyebrow ? (
-      <View style={[s.eyebrowRow, sections?.eyebrow]}>
+      <View style={[s.eyebrowRow, sections?.eyebrow, !hasTitle ? headerEnd : null]}>
         {props.eyebrow ? <Text ref={eyebrowPart?.ref} onLayout={eyebrowPart?.onLayout} style={[s.eyebrow(tokens), { fontFamily: MONO_FONT }]}>{props.eyebrow}</Text> : <View />}
         {props.badge ? <AnatomyPart part={badgePart}><Badge secondary mono small>{props.badge}</Badge></AnatomyPart> : null}
       </View>
@@ -484,7 +489,7 @@ export function createCard(skin: CardSkin) {
         {eyebrowNode}
         {hasTitle ? (
           // Below an eyebrow row the title keeps the card's 12px rhythm, not a second inset.
-          <CardHeader style={sections ? (hasEyebrow ? sections.headerBelow : sections.header) : hasEyebrow ? { paddingTop: 12 } : undefined}>
+          <CardHeader style={[sections ? (hasEyebrow ? sections.headerBelow : sections.header) : hasEyebrow ? { paddingTop: 12 } : null, headerEnd]}>
             <View style={headerStyles.row}>
               <View style={headerStyles.main}>
                 {icon}

@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 298687c2c9527f9e7939c595d70643983b473ea94c050070825d5d4aaf1e9519
+Source SHA-256: 6c82669c358671a41f6951a7bd1c4e7b8f5d69f19a920fe9c8a1090205b711f0
 
 Source: `src/atoms/layout/layout.md`
 Human reference: https://canvas.nannier.com/components/row-column

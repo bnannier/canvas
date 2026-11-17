@@ -11,12 +11,15 @@ Each screen renders a `Page`. Its content stacks at the loose rhythm and is capp
 The examples below render the frame inside the docs stage, where its parent is the stage instead of the window: the header, the body and the page measure behave as they do at an app's root, and the safe-area insets are 0.
 
 ```tsx
-<AppFrame header={<Navbar bordered brand="Acme" links={["Overview", "Reports"]} />}>
-  <Page>
-    <Typography h2>Overview</Typography>
-    <Card title="Revenue" description="$48,250 this week" />
-  </Page>
-</AppFrame>
+<PreviewViewport height={280}>
+  <AppFrame header={<Navbar compact bordered brand="Workspace" />}>
+    <Page>
+      <Typography small muted>Body · scrolling screen</Typography>
+      <Card compact title="Overview" description="Page content fills the space below the fixed header." />
+      <Card compact title="Recent activity" description="The page scrolls while the header stays in place." />
+    </Page>
+  </AppFrame>
+</PreviewViewport>
 ```
 
 ## Variants

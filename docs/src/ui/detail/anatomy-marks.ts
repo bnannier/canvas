@@ -24,6 +24,24 @@ export interface AnatomyMark {
   /** The leader line: from (x, lineTop) down `lineHeight` px. */
   lineTop: number;
   lineHeight: number;
+  /** Optional horizontal leader for nested app-frame regions. */
+  lineX?: number;
+  lineWidth?: number;
+}
+
+/** Keep nested frame regions apart: frame on the left, header/body on the right. */
+export function placeFrameMarks(parts: readonly string[], rects: Readonly<Record<string, PartRect>>, box: { width: number; height: number }): AnatomyMark[] {
+  return parts.flatMap((part, i) => {
+    const rect = rects[part];
+    if (!rect || rect.width <= 0 || rect.height <= 0) return [];
+    const left = part === "Frame";
+    const edge = left ? rect.x : rect.x + rect.width;
+    const x = Math.max(14, Math.min(edge + (left ? -24 : 24), box.width - 14));
+    const y = left ? rect.y + 12 : rect.y + rect.height / 2;
+    const start = left ? x + 11 : edge;
+    const end = left ? edge : x - 11;
+    return [{ n: i + 1, x, y, lineTop: y, lineHeight: 0, lineX: start, lineWidth: Math.max(0, end - start) }];
+  });
 }
 
 // Line 344: `y=Math.max(14,Math.min(y,r.height-14))`, `x=Math.max(14,Math.min(q.cx,r.width-14))`.

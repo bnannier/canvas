@@ -6,6 +6,7 @@ Multi-step progress indicators: horizontal, vertical, with progress.
 
 ```tsx
 <Steps
+  stacks
   steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]}
   defaultCurrent={1}
 />

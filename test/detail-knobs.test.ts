@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { DETAIL_SPECS, type Knob } from "../docs/src/core/data/detail-specs.ts";
-import { componentName, controlledProps, initialKnobs, isPinnedState, jsxCode, kitProps, knobKey, knobProps, optionLabel, withOption } from "../docs/src/ui/detail/knobs.ts";
-import { inStage, placeMarks } from "../docs/src/ui/detail/anatomy-marks.ts";
+import { componentName, controlledProps, initialKnobs, isPinnedState, kitProps, knobKey, knobProps, optionLabel, withOption } from "../docs/src/ui/detail/knobs.ts";
+import { inStage, placeMarks, placeFrameMarks } from "../docs/src/ui/detail/anatomy-marks.ts";
 import { zoomRect } from "../src/style/anatomy.tsx";
 
 // The v4 detail page's pure model: the playground's knob state, the props and JSX it
@@ -23,7 +23,6 @@ describe("reference values passed to live kit specimens", () => {
     const props = knobProps(knobs, initialKnobs(knobs));
     expect(props.action).toBe("Undo");
     expect(kitProps("Toast", props).action).toEqual({ actionLabel: "Undo" });
-    expect(jsxCode("Toast", { action: "Undo" })).toBe('<Toast action={{ label: "Undo", onPress: () => {} }} />');
     expect(kitProps("Toast", { action: " " })).not.toHaveProperty("action");
     expect(kitProps("Toast", { message: "Saved" })).not.toHaveProperty("action");
   });
@@ -51,7 +50,6 @@ describe("reference values passed to live kit specimens", () => {
     expect(props.segments).toBe(0);
     expect(kitProps("Progress", props)).toMatchObject({ value: 0.64 });
     expect(kitProps("Progress", props)).not.toHaveProperty("segments");
-    expect(jsxCode("Progress", { value: 64, segments: 0 })).toBe("<Progress value={0.64} />");
     expect(kitProps("Progress", { value: 100, segments: 8 })).toEqual({ value: 1, segments: 8 });
     expect(kitProps("Slider", { value: 64 })).toEqual({ value: 64 });
   });
@@ -65,7 +63,6 @@ describe("reference values passed to live kit specimens", () => {
     expect(kitProps("InputOTP", { ...props, length: 8, groups: 3 }).groups).toBe(3);
     expect(kitProps("InputOTP", { length: 4, groups: 2 }).groups).toBe(2);
     expect(kitProps("InputOTP", DETAIL_SPECS["input-otp"]!.anatomy.props)).toMatchObject({ length: 6, groups: 3 });
-    expect(jsxCode("InputOTP", { length: 6, groups: 2 })).toBe("<InputOTP length={6} groups={3} />");
   });
 
   it("renders the full Chat instead of selecting the delivery-error ChatMessage example", () => {
@@ -116,7 +113,6 @@ describe("knob props", () => {
     const knobs: readonly Knob[] = [{ kind: "text", prop: "children", value: "View", element: "Text" }];
     const props = knobProps(knobs, initialKnobs(knobs));
     expect(props).toEqual({ children: { element: "Text", children: "View" } });
-    expect(jsxCode("View", props)).toBe("<View><Text>View</Text></View>");
     expect(DETAIL_SPECS.view!.knobs).toEqual(knobs);
   });
 });
@@ -154,27 +150,21 @@ describe("size and state cells", () => {
   });
 });
 
-describe("jsxCode", () => {
-  it("prints a short element on one line", () => {
-    expect(jsxCode("Button", { children: "Save changes" })).toBe("<Button>Save changes</Button>");
-    expect(jsxCode("Button", { destructive: true, small: true, children: "Delete" })).toBe("<Button destructive small>Delete</Button>");
-    expect(jsxCode("Divider", {})).toBe("<Divider />");
-  });
-
-  it("prints values by type, an icon as an Icon element", () => {
-    expect(jsxCode("Icon", { star: true, size: 20 })).toBe("<Icon star size={20} />");
-    expect(jsxCode("Button", { wrap: false, children: "Go" })).toBe("<Button wrap={false}>Go</Button>");
-    // The glyph prints bare: a Button hands its icon slots its label ink (src/style/ink.tsx).
-    expect(jsxCode("Button", { iconLeft: { icon: "plus" }, children: "Add" })).toBe(
-      "<Button iconLeft={<Icon plus size={16} />}>Add</Button>",
-    );
-  });
-
-  it("breaks one attribute per line past 80 columns", () => {
-    const code = jsxCode("Button", { destructive: true, large: true, iconLeft: { icon: "trash2" }, iconRight: { icon: "chevronDown" }, children: "Delete project" });
-    expect(code).toBe(
-      ["<Button", "  destructive", "  large", "  iconLeft={<Icon trash2 size={16} />}", "  iconRight={<Icon chevronDown size={16} />}", ">", "  Delete project", "</Button>"].join("\n"),
-    );
+describe("placeFrameMarks", () => {
+  it("keeps nested frame, header and body labels beside their own regions", () => {
+    const rects = {
+      Frame: { x: 40, y: 80, width: 200, height: 280 },
+      Header: { x: 40, y: 80, width: 200, height: 48 },
+      Body: { x: 40, y: 128, width: 200, height: 232 },
+    };
+    const marks = placeFrameMarks(["Frame", "Header", "Body"], rects, { width: 280, height: 440 });
+    expect(marks.map(mark => mark.n)).toEqual([1, 2, 3]);
+    expect(marks[0].x).toBeLessThan(rects.Frame.x);
+    for (const [index, part] of [[1, "Header"], [2, "Body"]] as const) {
+      expect(marks[index].x).toBeGreaterThan(rects[part].x + rects[part].width);
+      expect(marks[index].y).toBe(rects[part].y + rects[part].height / 2);
+      expect(marks[index].lineWidth).toBeGreaterThan(0);
+    }
   });
 });
 

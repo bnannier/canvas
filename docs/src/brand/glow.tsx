@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
-import { View, useReducedMotion, useTheme } from "@nannier/canvas";
+import { View, useContainerBreakpoint, useReducedMotion, useTheme } from "@nannier/canvas";
 import { AURORA, HERO_FRAME, HERO_MOTION, auroraDiscs } from "./library-hero-look";
 
 // A brand illustration: the v4 hand-off's Library hero aurora (decision P5-G2, the
@@ -74,10 +74,11 @@ function AuroraGlow() {
  * children are the hero's kit components.
  */
 export function AuroraFrame({ children, testID }: { children: ReactNode; testID?: string }) {
+  const { value: phone, onLayout } = useContainerBreakpoint({ base: false, sm: true }, { seedViewport: true });
   return (
-    <View testID={testID} style={{ width: "100%", overflow: "hidden" }}>
+    <View testID={testID} onLayout={onLayout} style={{ width: "100%", overflow: "hidden" }}>
       <AuroraGlow />
-      <View style={{ width: "100%", maxWidth: HERO_FRAME.max, alignSelf: "center", paddingTop: HERO_FRAME.top, paddingBottom: HERO_FRAME.bottom, paddingHorizontal: HERO_FRAME.side }}>
+      <View style={{ width: "100%", maxWidth: HERO_FRAME.max, alignSelf: "center", paddingTop: phone ? 80 : HERO_FRAME.top, paddingBottom: phone ? 48 : HERO_FRAME.bottom, paddingHorizontal: phone ? 24 : HERO_FRAME.side }}>
         {children}
       </View>
     </View>

@@ -1,14 +1,15 @@
 import { type Ref } from "react";
 import { Platform } from "react-native";
-import { View, ScrollView, Row, Column, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, useMeasuredWidth, type ColorTokens } from "@nannier/canvas";
+import { View, ScrollView, Row, Column, Container, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, useMeasuredWidth, type ColorTokens } from "@nannier/canvas";
 import { CodeBlock as KitCodeBlock } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
 import type { DetailSpec, Knob } from "../../core/data/detail-specs";
-import type { PreviewScope } from "../../core/scope";
+import type { DocExample, PreviewScope } from "../../core/scope";
 import { ExampleErrorBoundary, FitStage } from "../stage";
-import { DetailSection, DotGrid, heldOpen, renderComponent, stageData, type SpecimenBase } from "./frame";
+import { DetailSection, DotGrid, heldOpen, stageData } from "./frame";
+import { playgroundInput } from "./playground-input";
 import { PLATFORMS_SHOWN, PLATFORM_LABELS } from "../../core/platforms-shown";
-import { knobKey, optionLabel, type KnobState, type KnobValue, type PropDescriptors } from "./knobs";
+import { knobKey, knobProps, optionLabel, type KnobState, type KnobValue, type PropDescriptors } from "./knobs";
 
 // The detail page's Playground (Component.dc.html `#cv-pg`): the component live on the
 // dotted staging ground, a 300 px knob panel beside it that drives a real prop of its
@@ -148,18 +149,18 @@ function KnobPanel({ spec, state, onChange, onReset }: { spec: DetailSpec; state
   );
 }
 
-export function PlaygroundSection({ spec, component, props, code, state, onChange, onReset, tokens, platform, onPlatformChange, base, sectionRef }: {
+export function PlaygroundSection({ spec, component, props, examples, state, onChange, onReset, tokens, platform, onPlatformChange, controlled, sectionRef }: {
   spec: DetailSpec;
   component: string;
   props: PropDescriptors;
-  code: string;
+  examples: readonly DocExample[];
   state: KnobState;
   onChange: (key: string, value: KnobValue) => void;
   onReset: () => void;
   tokens: ColorTokens;
   platform: PreviewScope["platform"];
   onPlatformChange: (platform: PreviewScope["platform"]) => void;
-  base?: SpecimenBase;
+  controlled: ReadonlySet<string>;
   sectionRef?: Ref<View>;
 }) {
   // At the hand-off's 1180 px window cut, its frame leaves 904 px of content:
@@ -169,9 +170,13 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   const stacked = measured && width < 904;
   const activePlatform = Math.max(0, PLATFORMS.findIndex((p) => p.platform === platform));
   const preview = scopeFor(tokens, platform);
+  const example = examples.find(item => item.render.playground?.[component]);
+  const source = example?.render.playground?.[component];
+  const input = playgroundInput(preview.scope, component, props, controlled, knobProps(spec.knobs, state, true));
+  const code = source ? source.code(input) : example?.code ?? examples[0]?.code ?? "";
   const live = (
     <ExampleErrorBoundary key={`${preview.platform}:${code}`}>
-      <FitStage>{renderComponent(preview.scope, component, props, base)}</FitStage>
+      <FitStage code={code}>{source ? source.render(preview.scope, input) : examples[0]?.render(preview.scope)}</FitStage>
     </ExampleErrorBoundary>
   );
   // The hand-off's stage (Component.dc.html line 156: `min-height:340px;padding:44px 28px;
@@ -181,13 +186,15 @@ export function PlaygroundSection({ spec, component, props, code, state, onChang
   const stage = (
     <CardMedia playground>
       <DotGrid />
-      <View
-        // The live render is an example like every other on the page, found by the same
-        // web-only tooling attribute (the e2e checks that hold examples to the kit's rules).
-        {...(Platform.OS === "web" ? ({ dataSet: stageData(heldOpen(props)) } as object) : null)}
-      >
-        {live}
-      </View>
+      <Container>
+        <View
+          // The live render is an example like every other on the page, found by the same
+          // web-only tooling attribute (the e2e checks that hold examples to the kit's rules).
+          {...(Platform.OS === "web" ? ({ dataSet: { ...stageData(heldOpen(props)), playgroundSource: code, playgroundComponent: component, playgroundExample: example?.label ?? examples[0]?.label ?? "" } } as object) : null)}
+        >
+          {live}
+        </View>
+      </Container>
     </CardMedia>
   );
   const panel = <KnobPanel spec={spec} state={state} onChange={onChange} onReset={onReset} />;

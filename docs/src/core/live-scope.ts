@@ -1,4 +1,5 @@
 import { ViewportOverlay } from "../ui/viewport-overlay";
+import { PreviewViewport } from "../ui/preview-viewport";
 import {
   View,
   Text,
@@ -157,6 +158,7 @@ import { Stateful, Ticker, applyDrop, IconGallery, WithToast, AppScreen, AppShel
 // are opaque to the consumers that read them, hence `unknown`.
 export const LIVE_SCOPE: Record<string, unknown> = {
   ViewportOverlay,
+  PreviewViewport,
   // Theme/style helpers for example fences that style a raw View/Text. `tokens`
   // is a placeholder here; <LiveExample> swaps in the live, theme-aware value
   // (so token colors follow the docs light/dark + glass toggles).

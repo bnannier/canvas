@@ -2,6 +2,7 @@ import { useMemo, type ReactNode } from "react";
 import * as Canvas from "@nannier/canvas";
 import { useTheme } from "@nannier/canvas";
 import { AppScreen, AppShell, IconGallery, Stateful, Ticker, WithToast, applyDrop } from "../../../docs/src/core/live-state";
+import { PreviewViewport } from "../../../docs/src/ui/preview-viewport";
 import { applyResolvedPhotos } from "../../../docs/src/core/photos";
 import type { ExampleScope } from "../../../docs/src/core/scope";
 
@@ -18,7 +19,7 @@ export function useExampleScope(): ExampleScope {
   return useMemo(() => {
     const scope: Record<string, unknown> = { ...Canvas };
     applyResolvedPhotos(scope);
-    Object.assign(scope, { tokens, Stateful, Ticker, applyDrop, IconGallery, WithToast, AppScreen, AppShell, ViewportOverlay });
+    Object.assign(scope, { tokens, Stateful, Ticker, applyDrop, IconGallery, WithToast, AppScreen, AppShell, ViewportOverlay, PreviewViewport });
     return scope as unknown as ExampleScope;
   }, [tokens]);
 }

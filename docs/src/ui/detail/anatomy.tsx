@@ -6,7 +6,7 @@ import type { ExampleScope } from "../../core/scope";
 import type { DetailSpec } from "../../core/data/detail-specs";
 import { ExampleErrorBoundary } from "../stage";
 import { DetailSection, DotGrid, heldOpen, renderComponent, stageData, type SpecimenBase } from "./frame";
-import { inStage, placeMarks } from "./anatomy-marks";
+import { inStage, placeMarks, placeFrameMarks } from "./anatomy-marks";
 import type { PropDescriptors } from "./knobs";
 
 // The detail page's Anatomy (Component.dc.html `#cv-an`): the component on the dotted
@@ -33,10 +33,10 @@ const webData = (data: Record<string, string>) => (Platform.OS === "web" ? ({ da
  * the provider reports beside them, so both are carried into the well before the markers
  * are placed. Docs-only illustration.
  */
-function Marks({ parts, rects, box }: { parts: readonly string[]; rects: AnatomyRects; box: AnatomyRect }) {
+function Marks({ parts, rects, box, frame = false }: { parts: readonly string[]; rects: AnatomyRects; box: AnatomyRect; frame?: boolean }) {
   const { tokens } = useTheme();
   const [stage, setStage] = useState({ width: 0, height: 0 });
-  const marks = stage.width > 0 && box.width > 0 ? placeMarks(parts, inStage(rects, box), stage) : [];
+  const marks = stage.width > 0 && box.width > 0 ? (frame ? placeFrameMarks : placeMarks)(parts, inStage(rects, box), stage) : [];
   return (
     <View
       style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, pointerEvents: "none" }}
@@ -46,7 +46,7 @@ function Marks({ parts, rects, box }: { parts: readonly string[]; rects: Anatomy
       {marks.length > 0 ? (
         <Svg width={stage.width} height={stage.height} style={{ position: "absolute", top: 0, left: 0 }}>
           {marks.map((m) => (
-            <Line key={m.n} x1={m.x + 0.5} x2={m.x + 0.5} y1={m.lineTop} y2={m.lineTop + m.lineHeight} stroke={tokens.primary} strokeOpacity={0.7} strokeWidth={1} />
+            <Line key={m.n} x1={m.lineX ?? m.x + 0.5} x2={m.lineX === undefined ? m.x + 0.5 : m.lineX + (m.lineWidth ?? 0)} y1={m.lineTop} y2={m.lineTop + m.lineHeight} stroke={tokens.primary} strokeOpacity={0.7} strokeWidth={1} />
           ))}
         </Svg>
       ) : null}
@@ -71,8 +71,13 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
   const demo = { ...props, ...(spec.anatomy.props as PropDescriptors) };
   // The demo's own props replace the example's too.
   const demoBase = base && { ...base, controlled: new Set([...base.controlled, ...Object.keys(spec.anatomy.props)]) };
+  const frameParts: Record<string, string> | undefined = component === "AppFrame" ? {
+    Frame: "The app boundary owns the safe area and background.",
+    Header: "Top navigation stays above the scrolling screen.",
+    Body: "The remaining height holds Page and its scrolling content.",
+  } : undefined;
   return (
-    <DetailSection id="an" title="Anatomy" sectionRef={sectionRef}>
+    <DetailSection id="an" title="Anatomy" note={frameParts ? "A bounded app viewport: the header stays in place while the page scrolls inside the body." : undefined} sectionRef={sectionRef}>
       <Row stacks stackBreakpoint="md" roomy>
         <Column weight={1.7}>
           {/* A preview stage like every specimen well (the tooling attribute on a wrapper
@@ -87,9 +92,9 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
               <CardMedia stage>
                 <DotGrid />
                 <AnatomyProvider zoomed={!spec.fill} onMeasure={onMeasure}>
-                  <ExampleErrorBoundary>{renderComponent(scope, component, demo, demoBase)}</ExampleErrorBoundary>
+                  <ExampleErrorBoundary>{frameParts && base?.examples[0] ? base.examples[0](scope) : renderComponent(scope, component, demo, demoBase)}</ExampleErrorBoundary>
                 </AnatomyProvider>
-                <Marks parts={parts} rects={rects} box={box} />
+                <Marks parts={parts} rects={rects} box={box} frame={!!frameParts} />
               </CardMedia>
             </Card>
           </View>
@@ -117,7 +122,10 @@ export function AnatomySection({ spec, component, props, base, scope, sectionRef
                     <View key={part} {...webData({ anatomyPart: part, anatomyShown: String(shown) })}>
                       <Row cozy alignCenter>
                         {shown ? <Badge disc default>{i + 1}</Badge> : <Badge disc secondary>{i + 1}</Badge>}
-                        <Typography legendLabel muted={!shown}>{part}</Typography>
+                        <Column tight shrink>
+                          <Typography legendLabel muted={!shown}>{part}</Typography>
+                          {frameParts?.[part] ? <Typography small muted>{frameParts[part]}</Typography> : null}
+                        </Column>
                       </Row>
                     </View>
                   );

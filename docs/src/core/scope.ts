@@ -81,11 +81,33 @@ export type ExampleScope = typeof import("@nannier/canvas") & {
   WithToast: WithToastHelper;
   AppScreen: AppScreenHelper;
   ViewportOverlay: (props: { children: ReactNode }) => ReactNode;
+  PreviewViewport: (props: { children: ReactNode; height?: number }) => ReactNode;
   AppShell: AppShellHelper;
 };
 
 // A generated example module's default export.
-export type ExampleRender = (scope: ExampleScope) => ReactNode;
+export interface PlaygroundValue {
+  /** The evaluated expression, using the active platform's scope for JSX slots. */
+  value: unknown;
+  /** The very same value as a JSX expression (strings include their JSON quotes). */
+  code: string;
+}
+
+export interface PlaygroundInput {
+  props: Readonly<Record<string, PlaygroundValue>>;
+  /** Original attributes controlled by the active knobs, including cleared choices. */
+  omit: readonly string[];
+}
+
+export interface PlaygroundExample {
+  render: (scope: ExampleScope, input: PlaygroundInput) => ReactNode;
+  code: (input: PlaygroundInput) => string;
+}
+
+export type ExampleRender = ((scope: ExampleScope) => ReactNode) & {
+  /** Generated from the same Usage JSX; no runtime compiler is needed on any platform. */
+  playground?: Readonly<Record<string, PlaygroundExample>>;
+};
 
 // One preview column for the Playground. The web build returns three (iOS / Android /
 // Web, each with the matching per-OS skins); the native build returns one (the running

@@ -1,5 +1,5 @@
-import { useCallback, useContext, useMemo, useRef, useState } from "react";
-import { Redirect } from "expo-router";
+import { useCallback, useContext, useMemo, useRef } from "react";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { HeaderHeightContext } from "expo-router/react-navigation";
 import { View, Column, Alert, useTheme, ICON_NAMES } from "@nannier/canvas";
 import { DETAIL_SPECS } from "../../core/data/detail-specs";
@@ -18,9 +18,11 @@ import { PropsSection } from "./props";
 import { AccessibilitySection } from "./accessibility";
 import { PlatformSkinsSection } from "./platform-skins";
 import { UsageSection, TokensSection, PrevNext } from "./sections";
-import { componentName, controlledProps, initialKnobs, jsxCode, knobProps, type KnobState, type KnobValue } from "./knobs";
+import { componentName, controlledProps, initialKnobs, knobKey, knobProps, type KnobValue } from "./knobs";
+import { exampleKnobs } from "./example-knobs";
+import { readPlaygroundProps, writePlaygroundProps } from "./playground-link";
 import { type SpecimenBase } from "./frame";
-import { HOST, type DocsPlatform } from "../../core/platforms-shown";
+import { HOST, PLATFORMS_SHOWN } from "../../core/platforms-shown";
 import { MobileComponentIndex } from "./mobile-index";
 import { presentationFor, referenceGuidance, referenceNotes, referenceTokens, referenceVariants } from "./presentation";
 
@@ -35,10 +37,8 @@ import { presentationFor, referenceGuidance, referenceNotes, referenceTokens, re
 // guidance; Do & Don't; Tokens with the related components; and the previous and next
 // components. The sections stand 64 apart (the kit's `chapter` step).
 //
-// Selecting an example works as the Playground page's rail did: local state seeded once
-// from the URL variant, the address bar rewritten in place (no navigation, so nothing
-// remounts), and a variant segment that names the default or nothing redirects to the
-// bare component URL so each example keeps exactly one canonical address.
+// Documented examples retain their variant paths. Playground edits live in the `props`
+// query, so a copied URL restores the controls, live example and generated code together.
 
 /** Icon's glyph names, the props its glyph knob drives. */
 const GLYPHS = ICON_NAMES.map((name) => name.key);
@@ -52,6 +52,8 @@ const NATIVE_JUMP_MARGIN = 16;
 type SectionId = "playground" | "variants" | "sizes" | "states" | "anatomy" | "props" | "a11y" | "platforms" | "usage" | "tokens";
 
 export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: string }) {
+  const router = useRouter();
+  const query = useLocalSearchParams<{ props?: string | string[]; platform?: string }>();
   const entry = useComponentDocs(comp.dir ?? comp.slug);
   const spec = DETAIL_SPECS[comp.slug];
   const { tokens } = useTheme();
@@ -60,9 +62,11 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   const examples = entry?.examples ?? [];
   const variantIdx = variant ? examples.findIndex((e) => variantSlug(e.label) === variant) : 0;
   const selected = variantIdx < 0 ? 0 : variantIdx;
-  const initial = useMemo(() => initialKnobs(spec?.knobs ?? []), [spec]);
-  const [knobs, setKnobs] = useState<KnobState>(initial);
-  const [platform, setPlatform] = useState<DocsPlatform>(HOST);
+  const platform = PLATFORMS_SHOWN.find(p => p === query.platform) ?? HOST;
+  const scope = useMemo(() => scopeFor(tokens, platform).scope, [tokens, platform]);
+  const initial = useMemo(() => spec && entry ? exampleKnobs(scope, spec, entry.examples, entry.props) : initialKnobs(spec?.knobs ?? []), [scope, spec, entry]);
+  const knobEdits = useMemo(() => readPlaygroundProps(query.props, spec?.knobs ?? [], GLYPHS), [query.props, spec]);
+  const knobs = { ...initial, ...knobEdits };
   const sections = useRef<Partial<Record<SectionId, View | null>>>({});
   const refFor = useCallback((id: SectionId) => (node: View | null) => {
     sections.current[id] = node;
@@ -98,8 +102,8 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
 
   const name = componentName(spec, knobs);
   const props = knobProps(spec.knobs, knobs);
-  const code = jsxCode(name, props);
-  const scope = scopeFor(tokens, platform).scope;
+  const edited = spec.knobs.filter(knob => Object.prototype.hasOwnProperty.call(knobEdits, knobKey(knob)));
+  const editedSpec = { ...spec, knobs: edited, sizes: undefined, states: undefined, specimen: undefined };
   const dir = comp.dir ?? comp.slug;
   const sourcePath = `src/${entry.category}/${dir}`;
   const presentation = presentationFor(comp.slug);
@@ -138,15 +142,15 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
       <PlaygroundSection
         spec={spec}
         component={name}
-        props={props}
-        code={code}
+        props={knobProps(edited, knobs, true)}
+        examples={examples}
         state={knobs}
-        onChange={(key: string, value: KnobValue) => setKnobs((s) => ({ ...s, [key]: value }))}
-        onReset={() => setKnobs(initial)}
+        onChange={(key: string, value: KnobValue) => router.setParams({ props: writePlaygroundProps({ ...knobEdits, [key]: value }) })}
+        onReset={() => router.setParams({ props: writePlaygroundProps({}) })}
         tokens={tokens}
         platform={platform}
-        onPlatformChange={setPlatform}
-        base={base}
+        onPlatformChange={(next) => router.setParams({ platform: next })}
+        controlled={controlledProps(editedSpec, GLYPHS)}
         sectionRef={refFor("playground")}
       />
       {variants.length ? <VariantsSection examples={variants} path={`${sourcePath}/${dir}.md`} scope={scope} sectionRef={refFor("variants")} /> : null}

@@ -697,3 +697,10 @@ export function estimateTextWidth(text: string, fontSize: number): number {
   for (const ch of text) em += charFactor(ch);
   return em * fontSize;
 }
+
+/** Bound an axis label's layout box, shifting endpoint ink only when its natural width needs room. */
+export function centeredLabelBox(center: number, desiredWidth: number, frameWidth: number, naturalWidth = 0): { left: number; width: number } {
+  const symmetric = Math.max(0, Math.min(desiredWidth / 2, center, frameWidth - center)) * 2;
+  const width = Math.min(frameWidth, Math.max(symmetric, naturalWidth));
+  return { left: Math.max(0, Math.min(center - width / 2, frameWidth - width)), width };
+}

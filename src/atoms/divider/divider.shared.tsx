@@ -6,6 +6,7 @@ import {
   useTheme,
   devWarn,
   channelsOf,
+  FILL,
   type ColorTokens,
   type ViewStyle,
   type TextStyle,
@@ -173,7 +174,7 @@ export function createDivider(skin: DividerSkin) {
             // itself, and Android only links the two (setLabeledBy).
             aria-labelledby={isText ? labelId : undefined}
             testID={testID}
-            style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}
+            style={[FILL, { flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}
           >
             <View ref={rulePart?.ref} onLayout={rulePart?.onLayout} style={[flankRule, fill]} />
             {isText ? (
@@ -189,7 +190,7 @@ export function createDivider(skin: DividerSkin) {
 
     // Plain horizontal hairline spanning the full width.
     return (
-      <View ref={rulePart?.ref} onLayout={rulePart?.onLayout} role="separator" testID={testID} style={[{ height: skin.ruleThickness, width: "100%" }, fill, style]} />
+      <View ref={rulePart?.ref} onLayout={rulePart?.onLayout} role="separator" testID={testID} style={[FILL, { height: skin.ruleThickness }, fill, style]} />
     );
   };
 }

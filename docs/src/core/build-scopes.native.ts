@@ -1,4 +1,5 @@
 import { ViewportOverlay } from "../ui/viewport-overlay";
+import { PreviewViewport } from "../ui/preview-viewport";
 import * as Canvas from "@nannier/canvas";
 import type { ColorTokens } from "@nannier/canvas";
 import { Stateful, Ticker, applyDrop, IconGallery, WithToast, AppScreen, AppShell } from "./live-state";
@@ -26,6 +27,7 @@ export function buildScopes(tokens: ColorTokens): PreviewScope[] {
   scope.WithToast = WithToast;
   scope.AppScreen = AppScreen;
   scope.ViewportOverlay = ViewportOverlay;
+  scope.PreviewViewport = PreviewViewport;
   scope.AppShell = AppShell;
   return [
     {

@@ -44,6 +44,8 @@ import { docBlockProblems, extractInherited, extractProps, isPropSource, program
 import { exportedTags, relatedSlugs, scanSemantics, scanTokens, type Semantics } from "./scan-detail.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import { SECTIONS } from "../../docs/src/core/data/detail-sections.ts";
+import { DETAIL_SPECS } from "../../docs/src/core/data/detail-specs.ts";
+import { playgroundExample } from "./playground.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
@@ -215,18 +217,34 @@ function usedScopeNames(code: string): string[] {
 
 // Emit one example module. `depth` is how many dirs the module sits below docs/src/core
 // (examples/<category>/<dir>/ = 3), used to reach docs/src/core/scope.ts.
-function exampleModule(code: string, source: string): string {
+function playgroundFamilies(dir: string): readonly (readonly string[])[] {
+  return COMPONENTS.filter((component) => (component.dir ?? component.slug) === dir).flatMap((component) => {
+    const spec = DETAIL_SPECS[component.slug];
+    if (!spec) return [];
+    const selector = spec.knobs.find((knob) => knob.kind === "component");
+    return [selector?.kind === "component" ? selector.options : [spec.propsInterface.replace(/^react-native:/, "").replace(/Props$/, "")]];
+  });
+}
+
+function exampleModule(code: string, source: string, families: readonly (readonly string[])[]): string {
   const used = usedScopeNames(code);
   const destructure = used.length ? `  const { ${used.join(", ")} } = scope;\n` : "";
+  const examples = new Map<string, ReturnType<typeof playgroundExample>>();
+  for (const family of families) for (const target of family) {
+    if (!examples.has(target)) examples.set(target, playgroundExample(code, family, target));
+  }
+  const playgrounds = [...examples].flatMap(([target, example]) => example ? [`  ${JSON.stringify(target)}: {\n    code: (input: PlaygroundInput) => playgroundCode(${JSON.stringify(example.source)}, input),\n    render: (scope: ExampleScope, input: PlaygroundInput) => {\n${destructure}      return (\n${example.expression}\n      );\n    },\n  },`] : []);
+  const helpers = playgrounds.length ? `\nimport type { PlaygroundInput } from "../../../scope";\nimport { applyPlaygroundElement, playgroundCode } from "../../../playground-example";` : "";
+  const metadata = playgrounds.length ? `\n\nExample.playground = {\n${playgrounds.join("\n")}\n};` : "";
   return `${GENERATED_HEADER}
 // Source: ${source}
-import type { ExampleScope } from "../../../scope";
+import type { ExampleScope } from "../../../scope";${helpers}
 
 export default function Example(scope: ExampleScope) {
 ${destructure}  return (
 ${code.trim()}
   );
-}
+}${metadata}
 `;
 }
 
@@ -257,14 +275,22 @@ type Entry = {
 // and shell read, and its related components.
 type Detail = { semantics: Semantics; tokens: string[]; related: string[] };
 
-function writeModule(category: Category, dir: string, name: string, code: string, source: string): {
+// A platform-specific entry may select a shared fence that the web did not select.
+// Accumulate its targets so reusing that module cannot lose another build's playground.
+const modulePlaygroundFamilies = new Map<string, readonly (readonly string[])[]>();
+const exampleModuleContents = new Map<string, { code: string; source: string }>();
+
+function writeModule(category: Category, dir: string, name: string, code: string, source: string, families: readonly (readonly string[])[] = []): {
   importName: string;
   file: string;
 } {
   const outDir = path.join(EXAMPLES_DIR, category, dir);
   if (!CHECK) fs.mkdirSync(outDir, { recursive: true });
   const file = path.join(outDir, `${name}.tsx`);
-  writeFileIfChanged(file, exampleModule(code, source));
+  const previous = modulePlaygroundFamilies.get(file) ?? [];
+  const combined = [...previous, ...families.filter(family => !previous.some(existing => existing.join("\0") === family.join("\0")))];
+  modulePlaygroundFamilies.set(file, combined);
+  exampleModuleContents.set(file, { code, source });
   writtenExampleFiles.add(file);
   return {
     importName: `e_${ident(category)}_${ident(dir)}_${ident(name)}`,
@@ -292,11 +318,14 @@ function buildEntry(category: Category, dir: string, doc: ParsedDoc, base?: Map<
   const source = `src/${category}/${dir}/${dir}.md`;
   const fresh = (code: string) => !base?.has(code);
   const examples = doc.examples.filter((ex) => fresh(ex.code));
-  const module = (name: string, code: string): ModuleRef => {
+  const module = (name: string, code: string, families: readonly (readonly string[])[] = []): ModuleRef => {
     const hit = base?.get(code);
-    if (hit) return hit;
+    if (hit) {
+      if (families.length) writeModule(category, dir, path.basename(hit.file), code, source, families);
+      return hit;
+    }
     const alt = base ? `alt-${crypto.createHash("sha1").update(code).digest("hex").slice(0, 10)}` : name;
-    return { code, ...writeModule(category, dir, alt, code, source) };
+    return { code, ...writeModule(category, dir, alt, code, source, families) };
   };
   for (const ex of examples) { recordFenceTags(ex.code, source); recordFenceStyle(ex.code, source, "example", dir); recordFenceBareWidth(ex.code, source, "example"); }
   for (const d of donts) {
@@ -320,8 +349,12 @@ function buildEntry(category: Category, dir: string, doc: ParsedDoc, base?: Map<
       recordFenceBareWidth(b.code, source, "example");
     }
   }
+  const claimed = new Set<string>();
+  const families = playgroundFamilies(dir);
   const exampleRefs: ExampleRef[] = doc.examples.map((ex, i) => {
-    const m = module(`example-${i}`, ex.code);
+    const selected = families.filter(family => !claimed.has(family[0]) && playgroundExample(ex.code, family, family[0]));
+    for (const family of selected) claimed.add(family[0]);
+    const m = module(`example-${i}`, ex.code, selected);
     return { label: ex.label, code: ex.code, note: ex.note, importName: m.importName, file: m.file };
   });
   const dontRefs: DontRef[] = donts.map((d, i) => {
@@ -797,6 +830,7 @@ function main() {
 
   // Drop modules from fences that no longer exist before writing the registry that
   // reaches them, so a stale orphan can't satisfy a key that should have failed.
+  for (const [file, { code, source }] of exampleModuleContents) writeFileIfChanged(file, exampleModule(code, source, modulePlaygroundFamilies.get(file) ?? []));
   pruneOrphans(EXAMPLES_DIR);
 
   writeFileIfChanged(REGISTRY_FILE, renderRegistry(entries));

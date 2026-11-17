@@ -127,7 +127,7 @@ const DIGITS_ONLY = /\D/g;
 const SEPARATOR = "–";
 
 // One run of cells: a row of the skin's separated cells, `gap` apart.
-const RUN: ViewStyle = { flexDirection: "row", alignItems: "center" };
+const RUN: ViewStyle = { flexDirection: "row", alignItems: "center", flexShrink: 1, minWidth: 0 };
 
 // Digits only unless `alphanumeric`, and never longer than the cell count.
 function cleanCode(raw: string, length: number, alphanumeric?: boolean): string {
@@ -307,7 +307,7 @@ export function createInputOTP(skin: InputOTPSkin) {
       <AnatomyScope>
       <View
         testID={testID}
-        style={[hug, disabled ? { opacity: skin.disabledOpacity } : null, style]}
+        style={[hug, { maxWidth: "100%", flexShrink: 1, minWidth: 0 }, disabled ? { opacity: skin.disabledOpacity } : null, style]}
       >
         {/* The visible segmented row. Relatively positioned so the real input can
             overlay it absolutely. The cells sit `gap` apart. */}
@@ -349,6 +349,9 @@ export function createInputOTP(skin: InputOTPSkin) {
                         onLayout={index === 0 ? cellPart?.onLayout : undefined}
                         style={[
                           paneStyle(theme, cellShape, active),
+                          // Keep the authored cell width when it fits; share a narrower
+                          // parent without shrinking the input's height or touch area.
+                          { flexShrink: 1, minWidth: 0 },
                           glass ? { backgroundColor: "transparent", borderColor: active ? cellShape.borderColor : "transparent" } : null,
                           { pointerEvents: "none" },
                         ]}

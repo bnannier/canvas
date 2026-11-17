@@ -22,6 +22,7 @@ import { GradientText } from "../brand/gradient-text";
 import { HeroCollage } from "../brand/hero-collage";
 import { HeroEntrance, HeroPulse } from "../brand/hero-motion";
 import { LibraryAction } from "../brand/library-action";
+import { Github } from "../brand/brand-logos";
 import { alpha } from "../../../src/style/color";
 import { useHeroPanels } from "../brand/hero-panels";
 import { HERO_GRID } from "../brand/library-hero-look";
@@ -115,9 +116,7 @@ export function LibraryHero() {
             >
               {primary.label}
             </LibraryAction>
-            <LibraryAction outline large href={secondary.url} external onPress={() => Linking.openURL(secondary.url)} iconRight={<Text style={{ fontSize: 13, lineHeight: 13, color: tokens["muted-foreground"] }}>↗</Text>}>
-              {secondary.label}
-            </LibraryAction>
+            <Button outline icon large href={secondary.url} external accessibilityLabel="View Canvas on GitHub" onPress={() => Linking.openURL(secondary.url)} iconLeft={<Github size={22} color={tokens.foreground} />} />
           </Row>
           <Row loose wrap rowsSnug>
             {heroStats(COMPONENTS.length).map((stat) => <Typography key={stat} caption mono muted singleLeading>{stat}</Typography>)}
@@ -191,22 +190,22 @@ function Index() {
         ))}
       </Grid>
       <Row wrap loose style={{ marginTop: 20, rowGap: 10 }}>
-        {TIER_LEGEND.map((entry) => <Row key={entry.tier} snug alignCenter><TierTag tier={entry.tier} /><Typography caption mono muted>{entry.label}</Typography></Row>)}
+        {TIER_LEGEND.map((entry) => <Row key={entry.tier} snug alignCenter style={{ maxWidth: "100%" }}><TierTag tier={entry.tier} /><Typography caption mono muted style={{ flexShrink: 1 }}>{entry.label}</Typography></Row>)}
       </Row>
       <Card style={{ marginTop: 24, padding: 20, borderRadius: 20, gap: 14 }}>
         <Row between wrap cozy><Typography eyebrow muted>{SUB_COMPONENTS_HEADING}</Typography><Typography eyebrow muted>{`${SUB_COMPONENT_COUNT} exports`}</Typography></Row>
         <Grid minTileWidth={320} loose style={{ rowGap: 4 }}>
           {SUB_COMPONENTS.map((group) => (
-            <IndexLink key={group.parent} href={group.href} style={{ flexDirection: "row", alignItems: "baseline", gap: 12, paddingVertical: 8, paddingHorizontal: 6, marginHorizontal: -6, borderRadius: 8, }}>
+            <IndexLink key={group.parent} href={group.href} style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "baseline", gap: 12, paddingVertical: 8, paddingHorizontal: 6, marginHorizontal: -6, borderRadius: 8, }}>
               <Typography small medium style={{ width: 140, flexShrink: 0 }}>{group.parent}</Typography>
-              <Typography caption mono subtle style={{ lineHeight: 18, flex: 1 }}>{group.names.join(" · ")}</Typography>
+              <Typography caption mono subtle style={{ lineHeight: 18, flexGrow: 1, flexShrink: 1, flexBasis: 160, minWidth: 0 }}>{group.names.join(" · ")}</Typography>
             </IndexLink>
           ))}
         </Grid>
       </Card>
       <Card style={{ marginTop: 12, paddingVertical: 18, paddingHorizontal: 20, borderRadius: 20, borderColor: t.ring, backgroundColor: t["primary-soft"], boxShadow: "none" }}>
         <Row between alignCenter wrap cozy>
-          <View style={{ gap: 2 }}><Typography h5 level={2}>{TEMPLATES_CALL.title(getAllTemplates().length)}</Typography><Typography small subtle>{TEMPLATES_CALL.body}</Typography></View>
+          <View style={{ gap: 2, flexShrink: 1, minWidth: 0 }}><Typography h5 level={2}>{TEMPLATES_CALL.title(getAllTemplates().length)}</Typography><Typography small subtle>{TEMPLATES_CALL.body}</Typography></View>
           <Button primary raised href={TEMPLATES_CALL.href} onPress={go(TEMPLATES_CALL.href)}>{TEMPLATES_CALL.label} →</Button>
         </Row>
       </Card>

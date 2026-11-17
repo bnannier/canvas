@@ -21,6 +21,7 @@ import { withPartLayout } from "../../style/anatomy.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import {
   bandScale,
+  centeredLabelBox,
   estimateTextWidth,
   formatAxis,
   linearScale,
@@ -298,6 +299,23 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
     );
   };
 
+  // Numeric endpoints may sit exactly on the plot edge. Bound their natural
+  // text boxes, then thin labels that would crowd the final endpoint after its
+  // small inward shift. The scale, ticks and plotted marks keep their geometry.
+  const numericLabels = xTicksInfo?.ticks.map((value, index) => {
+    const text = formatValue(value);
+    const naturalWidth = Math.min(60, estimateTextWidth(text, LABEL_SIZE) + 2);
+    return { index, text, ...centeredLabelBox(gutter + x(value), naturalWidth, width, naturalWidth) };
+  }) ?? [];
+  const visibleNumeric = new Set<number>();
+  let nextLabelLeft = Infinity;
+  for (let i = numericLabels.length - 1; i >= 0; i--) {
+    const label = numericLabels[i];
+    if (label.left + label.width + 4 > nextLabelLeft) continue;
+    visibleNumeric.add(label.index);
+    nextLabelLeft = label.left;
+  }
+
   const ready = width > 0 && plotW > 0;
   // The first x label drawn, which takes the axis labels' number when the chart asks for it.
   const firstX =
@@ -429,7 +447,9 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
             {/* X labels: band-centered (categorical) or tick-positioned (numeric).
                 A thinned label spans its whole stride (band.step * xLabelStep)
                 centered on its band, so on a dense axis it has room to read in
-                full instead of truncating to one narrow band's width. */}
+                full instead of truncating to one narrow band's width. Endpoint
+                boxes shrink to the frame edge and keep their natural text width;
+                a tick exactly on an endpoint nudges its label inward to keep it readable. */}
             {!hideAxes && xLabels && band
               ? xLabels.map((label, i) => {
                   if (!xLabelShown(i)) return null;
@@ -447,8 +467,7 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
                       onLayout={i === firstX ? xAxisPart?.onLayout : undefined}
                       style={{
                         position: "absolute",
-                        left: gutter + band.center(i) - slot / 2,
-                        width: slot,
+                        ...centeredLabelBox(gutter + band.center(i), slot, width, estimateTextWidth(label, LABEL_SIZE) + 6),
                         top: TOP_PAD + plotH + 4,
                         textAlign: "center",
                         ...axisInk,
@@ -464,20 +483,20 @@ function DefaultCartesianFrame(props: CartesianFrameProps) {
                 })
               : null}
             {!hideAxes && xTicksInfo
-              ? xTicksInfo.ticks.map((t, i) => (
+              ? numericLabels.filter((label) => visibleNumeric.has(label.index)).map((label) => (
                   <Text
-                    key={`xt${i}`}
+                    key={`xt${label.index}`}
                     style={{
                       position: "absolute",
-                      left: gutter + x(t) - 30,
-                      width: 60,
+                      left: label.left,
+                      width: label.width,
                       top: TOP_PAD + plotH + 4,
                       textAlign: "center",
                       ...axisInk,
                     }}
                     numberOfLines={1}
                   >
-                    {formatValue(t)}
+                    {label.text}
                   </Text>
                 ))
               : null}

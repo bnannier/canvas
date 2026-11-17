@@ -6,6 +6,11 @@ import type { DocsUsageException } from "./component-usage.ts";
 // D23 additionally authorizes the exact v4 page chrome and illustration footprints.
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   ...V4_PRESENTATION_EXCEPTIONS,
+  ...["<unresolved props>", "<computed prop>"].map(key => ({
+    file: "docs/src/core/playground-example.ts", owner: "applyPlaygroundElement", tag: "component", attribute: "spread" as const, keys: [key], occurrences: 1,
+    expression: "createElement(component, props)",
+    reason: "The generated playground renderer applies the same documented JSX-node overrides that its source printer displays, retaining the original example's typed props, closures and children. No independently authored specimen or styling is introduced.",
+  })),
   {
     file: "docs/src/ui/detail/reference-specimens.tsx", owner: "TextInputSpecimen", tag: "View", attribute: "style", keys: ["maxWidth", "width"], occurrences: 1,
     reason: "The hand-off's raw TextInput demonstration has a 280px parent, fluid below that cap; the actual primitive keeps its native editing behavior.",
@@ -47,7 +52,7 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Ten noninteractive numbered content tiles illustrate a real ScrollView: the hand-off's 120x80px horizontal tiles or 40px vertical rows, 10px corners and secondary fill; no control is substituted.",
   },
   {
-    file: "docs/src/ui/preview-viewport.tsx", owner: "PreviewViewport", tag: "View", attribute: "style", keys: ["height"], occurrences: 1,
+    file: "docs/src/ui/preview-viewport.tsx", owner: "PreviewViewport", tag: "View", attribute: "style", keys: ["height", "width"], occurrences: 1,
     reason: "Docs-only viewport harness supplies a definite parent height for app-sized previews inside the unbounded page scroller, and the 300 px of the section hero's stage (the v4 hand-off's canvas-hero.js `.st`); it paints no control or surface.",
   },
   {
@@ -338,6 +343,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   {
     file: "docs/src/ui/detail/anatomy.tsx", owner: "Marks", tag: "View", attribute: "style", keys: ["alignItems", "height", "justifyContent", "left", "pointerEvents", "position", "top", "width"], occurrences: 1,
     reason: "Each numbered anatomy marker (a kit Badge) is centred on the point placed beside its measured part, untouchable so the specimen under it stays live.",
+  },
+  {
+    file: "docs/src/brand/hero-collage.tsx", owner: "HeroCollage", tag: "View", attribute: "style", keys: ["height", "transform", "transformOrigin", "width"], occurrences: 2,
+    reason: "The decorative Library collage keeps its authored coordinate system inside a uniformly scaled drawing canvas; the measured parent sets the visible width and scaled height so every panel fits on phones.",
   },
   {
     file: "docs/src/brand/glow.tsx", owner: "AuroraGlow", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,
