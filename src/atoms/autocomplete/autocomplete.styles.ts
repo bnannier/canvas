@@ -28,7 +28,7 @@ import { type SelectDisclosure } from "../select/select.styles.js";
 //     inside its inset.
 //   Android (Material 3 exposed dropdown): the filled field (the `muted` fill, the Material 3
 //     field corner on top, the 1dp `muted-foreground` indicator thickening to 2dp `primary`
-//     while active), 56dp tall (48 small, 60 large), the 24dp drop-down triangle; the M3
+//     while open or `ring` while focused), 56dp tall (48 small, 60 large), the 24dp drop-down triangle; the M3
 //     menu 4dp below: the `popover` fill at the M3 menu corner, the md shadow, an 8dp
 //     vertical inset, 48dp rows 12dp in with a 14sp label, the active and chosen rows on
 //     the foreground's 10% state layer. The ripple is the press; disabled dims to 0.38.
@@ -47,10 +47,11 @@ export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
   label: (t: ColorTokens, size: Size) => TextStyle;
   /**
    * The editable field surface: shape, fill, and the edge of its state. `active` (the
-   * field holds focus or its list is open) is the field's own focus indicator; `hovered`
-   * is read only by a skin that draws it (the web's hover edge).
+   * field holds focus or its list is open) is the field's own state indicator; `hovered`
+   * is read only by a skin that draws it (the web's hover edge). `focused` distinguishes
+   * keyboard/editing focus from an open menu so the Material indicator can wear `ring`.
    */
-  field: (t: ColorTokens, size: Size, active: boolean, hovered?: boolean) => ViewStyle;
+  field: (t: ColorTokens, size: Size, active: boolean, hovered?: boolean, focused?: boolean) => ViewStyle;
   /** A pointer hover steps the resting edge (web and the iOS skin that shares its look; native pointer hover waits on the owner). */
   hover?: boolean;
   /** The halo a focused field wears around its edge, or none. */
@@ -241,7 +242,7 @@ const ANDROID_ROW_TEXT: TextStyle = { fontSize: 14, lineHeight: 20, letterSpacin
 export const androidSkin: AutocompleteSkin = {
   text: (size) => ANDROID_TEXT[size],
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...ANDROID_TEXT[size] }),
-  field: (t, size, active) => ({
+  field: (t, size, active, _hovered, focused) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -250,8 +251,9 @@ export const androidSkin: AutocompleteSkin = {
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
     // The M3 active indicator: the `muted-foreground` baseline thickening to `primary`
-    // while active; activeIndicator keeps the content box fixed across the change.
-    ...activeIndicator({ active, restColor: t["muted-foreground"], activeColor: t.primary }),
+    // while open, or `ring` while its editor holds focus. activeIndicator keeps the
+    // content box fixed across the change, including when Escape closes the menu.
+    ...activeIndicator({ active, restColor: t["muted-foreground"], activeColor: focused ? t.ring : t.primary }),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     // A floor, not a height: the field grows when a larger text size needs it.

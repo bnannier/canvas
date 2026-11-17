@@ -8,6 +8,7 @@ import type { DocGuidanceBlock, DocProse } from "../../core/scope";
 import { componentDescription } from "../../core/descriptions";
 import { useComponentDocs } from "../../core/use-component-docs";
 import { variantSlug } from "../../lib/variant";
+import { useHydrated } from "../../lib/hydrated";
 import { DocsHead } from "../docs-head";
 import { usePageScroller } from "../page";
 import { DetailHeader, type Jump } from "./header";
@@ -54,6 +55,9 @@ type SectionId = "playground" | "variants" | "sizes" | "states" | "anatomy" | "p
 export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: string }) {
   const router = useRouter();
   const query = useLocalSearchParams<{ props?: string | string[]; platform?: string }>();
+  // Static HTML has no recipient-specific query. Match it during hydration, then
+  // apply shared props and platform together without replacing the server tree.
+  const hydrated = useHydrated();
   const entry = useComponentDocs(comp.dir ?? comp.slug);
   const spec = DETAIL_SPECS[comp.slug];
   const { tokens } = useTheme();
@@ -62,10 +66,10 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   const examples = entry?.examples ?? [];
   const variantIdx = variant ? examples.findIndex((e) => variantSlug(e.label) === variant) : 0;
   const selected = variantIdx < 0 ? 0 : variantIdx;
-  const platform = PLATFORMS_SHOWN.find(p => p === query.platform) ?? HOST;
+  const platform = PLATFORMS_SHOWN.find(p => p === (hydrated ? query.platform : undefined)) ?? HOST;
   const scope = useMemo(() => scopeFor(tokens, platform).scope, [tokens, platform]);
   const initial = useMemo(() => spec && entry ? exampleKnobs(scope, spec, entry.examples, entry.props) : initialKnobs(spec?.knobs ?? []), [scope, spec, entry]);
-  const knobEdits = useMemo(() => readPlaygroundProps(query.props, spec?.knobs ?? [], GLYPHS), [query.props, spec]);
+  const knobEdits = useMemo(() => readPlaygroundProps(hydrated ? query.props : undefined, spec?.knobs ?? [], GLYPHS), [hydrated, query.props, spec]);
   const knobs = { ...initial, ...knobEdits };
   const sections = useRef<Partial<Record<SectionId, View | null>>>({});
   const refFor = useCallback((id: SectionId) => (node: View | null) => {
@@ -101,7 +105,11 @@ export function DetailPage({ comp, variant }: { comp: ComponentDoc; variant?: st
   };
 
   const name = componentName(spec, knobs);
-  const props = knobProps(spec.knobs, knobs);
+  // The comparison sections use fully labelled reference specimens. Minimal Usage
+  // examples can omit descriptions, counters or menu content; their omissions must
+  // not erase the parts these illustrations teach. Explicit playground edits apply
+  // to both, while the playground itself keeps the authored example's defaults.
+  const props = knobProps(spec.knobs, { ...initialKnobs(spec.knobs), ...knobEdits });
   const edited = spec.knobs.filter(knob => Object.prototype.hasOwnProperty.call(knobEdits, knobKey(knob)));
   const editedSpec = { ...spec, knobs: edited, sizes: undefined, states: undefined, specimen: undefined };
   const dir = comp.dir ?? comp.slug;

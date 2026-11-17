@@ -328,7 +328,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const above = hasLabel && !floating;
     const populated = fieldValue !== "";
     const hover = useHover(!!skin.hover && !disabled);
-    const fieldShape = skin.field(tokens, size, active, hover.hovered);
+    const fieldShape = skin.field(tokens, size, active, hover.hovered, focused);
     // A focused field wears the skin's halo around its edge (the web's accent ring).
     const halo = focused && !disabled && skin.focusHalo ? skin.focusHalo(tokens) : null;
     // The field's height: its floor where it grows with the text size (Android), else its height.

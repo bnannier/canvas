@@ -1,5 +1,5 @@
 import { gotoDocs } from "../support/docs";
-import { expect, test } from "../support/fixtures";
+import { describeProblems, expect, test, watchForProblems } from "../support/fixtures";
 
 for (const width of [390, 1440]) {
   test(`playground links restore configured buttons at ${width}px`, async ({ page, context }) => {
@@ -25,6 +25,7 @@ for (const width of [390, 1440]) {
     expect(JSON.parse(new URL(shared).searchParams.get("props")!)).toMatchObject({ "@Intent": "outline", "@Size": "large", disabled: true, iconLeft: "heart", children: "Save & share + 50% #? now" });
 
     const recipient = await context.newPage();
+    const recipientProblems = await watchForProblems(recipient);
     await gotoDocs(recipient, "/components/button", { query: new URL(shared).searchParams.toString() });
     const restored = recipient.locator('[data-detail-section="pg"]');
     await expect(restored.locator("[data-playground-source]")).toHaveAttribute("data-playground-source", source!);
@@ -36,6 +37,7 @@ for (const width of [390, 1440]) {
     await restored.getByRole("button", { name: "Reset", exact: true }).click();
     await expect.poll(() => JSON.parse(new URL(recipient.url()).searchParams.get("props")!)).toEqual({});
     await expect(restored.getByRole("textbox", { name: "children", exact: true })).toHaveValue("Save changes");
+    expect(describeProblems(recipientProblems), "shared links hydrate without rebuilding the recipient's page").toEqual([]);
     await recipient.close();
   });
 }

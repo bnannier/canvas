@@ -11,6 +11,7 @@ import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { colorsFor } from "../src/style/tokens.ts";
 import { layoutEntrance, layoutHostedEntrance, type FixtureSize } from "./entrance-layout.ts";
 
 const options = ["Apple", "Banana", "Cherry"];
@@ -37,6 +38,38 @@ afterEach(() => {
   cleanup();
   fireEvent.keyUp(document.body, { key: "Escape" });
 });
+
+for (const palette of ["violet", "mint"] as const) {
+  for (const surface of ["solid", "glass"] as const) {
+    it(`the Android editor wears the complete ${palette} ring under ${surface}, including after Escape`, () => {
+      const tokens = colorsFor(palette, "light");
+      render(<ThemeProvider light mint={palette === "mint"} solid={surface === "solid"} glass={surface === "glass"}>
+        <AutocompleteAndroid label="Fruit" options={options} />
+      </ThemeProvider>);
+      const field = screen.getByRole("combobox", { name: "Fruit" });
+      const box = field.parentElement!;
+      const toggle = screen.getByRole("button", { name: "Toggle options" });
+      fireEvent.click(toggle);
+      const openInk = box.style.borderBottomColor;
+      expect(openInk).not.toBe(tokens.ring);
+      fireEvent.click(toggle);
+      // Preserve the ring's authored alpha: comparing RGB channels alone mistakes
+      // the opaque primary indicator for the translucent focus token.
+      expect(box.style.borderBottomColor).not.toBe(tokens.ring);
+      focus(field);
+      expect(box.style.borderBottomColor).toBe(tokens.ring);
+      expect(box.style.borderBottomWidth).toBe("2px");
+      key(field, "Escape");
+      expect(field.getAttribute("aria-expanded")).toBe("false");
+      expect(box.style.borderBottomColor).toBe(tokens.ring);
+      act(() => field.blur());
+      expect(box.style.borderBottomColor).not.toBe(tokens.ring);
+      fireEvent.click(toggle);
+      expect(field.getAttribute("aria-expanded")).toBe("true");
+      expect(box.style.borderBottomColor).toBe(openInk);
+    });
+  }
+}
 
 for (const [platform, Component] of [["web", Autocomplete], ["ios", AutocompleteIos], ["android", AutocompleteAndroid]] as const) {
   describe(`Autocomplete ${platform} keyboard contract`, () => {

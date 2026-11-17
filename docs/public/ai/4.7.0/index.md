@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 6e381b696f80d093c6e3e5846b63a0b89e9a726291014f6b86aa7f77b42e7353
+Source SHA-256: 28bc0777dafb01344884368b82a4ba6ecd9c288af2350d8fec2d697f9bbe6849
 
 This generated source snapshot describes `@nannier/canvas` at repository package version `4.7.0`. Check the application's installed package version and its declarations before using an API. A source snapshot is not a claim that npm has published this version.
 
