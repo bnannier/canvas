@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.6.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 11279ce263017df9e71123331c0897aa9bc947b39f530ce108e9f0a860768bc1
+Source SHA-256: 1fc452315c108699eb9e8bc6178c2903198f541ee6a3c0f54d1818bffcfc96b5
 
 Source: `src/atoms/icon/icon.md`
 Human reference: https://canvas.nannier.com/components/icon
