@@ -1,5 +1,11 @@
 # @nannier/canvas
 
+## 4.7.0
+
+### Minor Changes
+
+- 9b3d3fd: FlowEditor nodes take an optional `agent` line, naming who acts on the card, and an optional `attention` reason, which draws a warning mark and joins the card's accessible name.
+
 ## 4.6.0
 
 ### Minor Changes
