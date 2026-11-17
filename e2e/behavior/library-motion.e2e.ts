@@ -12,7 +12,7 @@ test("the Library keeps the hand-off's hero layout after its entrance", async ({
   await expect(accent).toHaveCSS("background-clip", "text");
   await expect(accent).toHaveCSS("color", "rgba(0, 0, 0, 0)");
   const first = await hero.getByRole("link", { name: /Explore components/ }).boundingBox();
-  const second = await hero.getByRole("link", { name: /bnannier\/canvas/ }).boundingBox();
+  const second = await hero.getByRole("link", { name: "View Canvas on GitHub" }).boundingBox();
   expect(first?.x).toBe(48);
   expect(first?.height).toBe(48);
   expect(second?.height).toBe(48);
@@ -23,9 +23,12 @@ test("the collage follows the pointer and live Reduced Motion restores a still p
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await gotoDocs(page, "/");
-  const panel = page.getByTestId("library-collage").locator(":scope > div").first();
+  // The collage's first child is its static responsive canvas. Each panel
+  // owns the perspective animation, including its independent depth.
+  const panel = page.getByTestId("library-panel-revenue");
   await expect(panel).toBeVisible();
   await page.mouse.move(20, 100);
+  await expect.poll(() => panel.evaluate(node => getComputedStyle(node).transform)).toMatch(/^matrix3d\(/);
   const before = await panel.evaluate(node => getComputedStyle(node).transform);
   await page.mouse.move(1400, 750);
   await expect.poll(() => panel.evaluate(node => getComputedStyle(node).transform)).not.toBe(before);
