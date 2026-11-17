@@ -5,30 +5,30 @@ import type { PlaygroundInput } from "../../../scope";
 import { applyPlaygroundElement, playgroundCode } from "../../../playground-example";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, alpha, View, ScrollView } = scope;
+  const { tokens, View, ScrollView, Card } = scope;
   return (
 <ScrollView style={{ height: 176, width: "100%", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 192 }}><Card compact title="1. Build" description="Dependencies restored." /></View>
+  <View style={{ width: 192 }}><Card compact title="2. Test" description="All checks passed." /></View>
+  <View style={{ width: 192 }}><Card compact title="3. Publish" description="Image pushed to registry." /></View>
+  <View style={{ width: 192 }}><Card compact title="4. Roll out" description="Updating the fleet." /></View>
+  <View style={{ width: 192 }}><Card compact title="5. Complete" description="Every region is healthy." /></View>
 </ScrollView>
   );
 }
 
 Example.playground = {
   "ScrollView": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<ScrollView style={{ height: 176, width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n</ScrollView>","start":0,"end":661,"component":"ScrollView","attributes":[{"name":"style","source":"style={{ height: 176, width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }}"},{"name":"contentContainerStyle","source":"contentContainerStyle={{ padding: 12, gap: 12 }}"}],"children":"\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n"}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<ScrollView style={{ height: 176, width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>\n  <View style={{ width: 192 }}><Card compact title=\"1. Build\" description=\"Dependencies restored.\" /></View>\n  <View style={{ width: 192 }}><Card compact title=\"2. Test\" description=\"All checks passed.\" /></View>\n  <View style={{ width: 192 }}><Card compact title=\"3. Publish\" description=\"Image pushed to registry.\" /></View>\n  <View style={{ width: 192 }}><Card compact title=\"4. Roll out\" description=\"Updating the fleet.\" /></View>\n  <View style={{ width: 192 }}><Card compact title=\"5. Complete\" description=\"Every region is healthy.\" /></View>\n</ScrollView>","start":0,"end":726,"component":"ScrollView","attributes":[{"name":"style","source":"style={{ height: 176, width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }}"},{"name":"contentContainerStyle","source":"contentContainerStyle={{ padding: 12, gap: 12 }}"}],"children":"\n  <View style={{ width: 192 }}><Card compact title=\"1. Build\" description=\"Dependencies restored.\" /></View>\n  <View style={{ width: 192 }}><Card compact title=\"2. Test\" description=\"All checks passed.\" /></View>\n  <View style={{ width: 192 }}><Card compact title=\"3. Publish\" description=\"Image pushed to registry.\" /></View>\n  <View style={{ width: 192 }}><Card compact title=\"4. Roll out\" description=\"Updating the fleet.\" /></View>\n  <View style={{ width: 192 }}><Card compact title=\"5. Complete\" description=\"Every region is healthy.\" /></View>\n"}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
-  const { tokens, alpha, View, ScrollView } = scope;
+  const { tokens, View, ScrollView, Card } = scope;
       return (
 applyPlaygroundElement((<ScrollView style={{ height: 176, width: "100%", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 192 }}><Card compact title="1. Build" description="Dependencies restored." /></View>
+  <View style={{ width: 192 }}><Card compact title="2. Test" description="All checks passed." /></View>
+  <View style={{ width: 192 }}><Card compact title="3. Publish" description="Image pushed to registry." /></View>
+  <View style={{ width: 192 }}><Card compact title="4. Roll out" description="Updating the fleet." /></View>
+  <View style={{ width: 192 }}><Card compact title="5. Complete" description="Every region is healthy." /></View>
 </ScrollView>), input, scope.ScrollView)
       );
     },

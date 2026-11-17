@@ -6,6 +6,27 @@ import type { DocsUsageException } from "./component-usage.ts";
 // D23 additionally authorizes the exact v4 page chrome and illustration footprints.
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   ...V4_PRESENTATION_EXCEPTIONS,
+  ...["PaletteMotion", "RadiusMotion", "IconMotion", "SpringSample"].map(owner => ({
+    file: "docs/src/sections/foundations-motion.tsx", owner, tag: "Animated.View", attribute: "foreign-component", keys: ["react-native-reanimated#View"], occurrences: 1,
+    reason: "Owner-requested Foundations specimen animation (2026-11-17): a native Reanimated host moves actual kit specimens or the existing blank corner diagram; it does not replace a control.",
+  })),
+  ...["PaletteMotion", "IconMotion"].map(owner => ({
+    file: "docs/src/sections/foundations-motion.tsx", owner, tag: "Animated.View", attribute: "style", keys: ["<unresolved style>"], expression: "{motion}", occurrences: 1,
+    reason: "One shared UI-thread clock applies only a bounded transform to the kit Swatch/Icon specimen; live Reduced Motion restores the unchanged static specimen.",
+  })),
+  {
+    file: "docs/src/sections/foundations-motion.tsx", owner: "RadiusMotion", tag: "Animated.View", attribute: "style", keys: ["<unresolved style>", "backgroundColor", "borderColor", "borderWidth", "height", "width"],
+    expression: "{[{ width, height, backgroundColor: tokens.secondary, borderWidth: 1, borderColor: tokens[\"field-border\"] ?? tokens.input }, motion]}", occurrences: 1,
+    reason: "The existing Foundations blank radius diagram now demonstrates square-to-token corners without changing its dimensions or caption. It remains untouchable and hidden from assistive technology.",
+  },
+  {
+    file: "docs/src/sections/foundations-motion.tsx", owner: "SpringSample", tag: "View", attribute: "style", keys: ["backgroundColor", "borderColor", "borderRadius", "borderWidth", "height", "overflow", "paddingHorizontal", "paddingVertical"], occurrences: 1,
+    reason: "The hand-off's noninteractive 40px spring lane (Foundations c-motion): its measured bounds and 24px side clearance contain the 20px Swatch's spring overshoot at every viewport width.",
+  },
+  {
+    file: "docs/src/sections/foundations-motion.tsx", owner: "SpringSample", tag: "Animated.View", attribute: "style", keys: ["<unresolved style>", "height", "width"], expression: "{[{ width: 20, height: 20 }, motion]}", occurrences: 1,
+    reason: "The hand-off's spring specimen translates an actual 20px Swatch through its 2.4s timeline, bounded by the measured lane; Reduced Motion parks it at rest.",
+  },
   ...["<unresolved props>", "<computed prop>"].map(key => ({
     file: "docs/src/core/playground-example.ts", owner: "applyPlaygroundElement", tag: "component", attribute: "spread" as const, keys: [key], occurrences: 1,
     expression: "createElement(component, props)",

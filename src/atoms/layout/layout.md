@@ -34,10 +34,14 @@ roles preserve identity headers (24 top/horizontal, 18 bottom), action footers
 ## Usage
 
 ```tsx
-<Row>
-  <Button primary>Save</Button>
-  <Button ghost>Cancel</Button>
-</Row>
+<PreviewViewport height={220}>
+  <Row fill wrap>
+    <Badge small>Queued</Badge>
+    <Emblem primary large label="CV" />
+    <Badge success>Ready to ship</Badge>
+    <Avatar name="Rachel Chen" />
+  </Row>
+</PreviewViewport>
 ```
 
 ## Variants

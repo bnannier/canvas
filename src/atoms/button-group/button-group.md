@@ -59,7 +59,14 @@ segment while pressed; `start` pins the group in an app-owned host arrangement.
 ## Usage
 
 ```tsx
-<ButtonGroup items={["Day", "Week", "Month"]} />
+<ButtonGroup
+  accessibilityLabel="Calendar view"
+  items={[
+    { label: "Day", icon: "sun" },
+    { label: "Week", icon: "calendarDays" },
+    { label: "Month", icon: "calendar" }
+  ]}
+/>
 ```
 
 ## Variants

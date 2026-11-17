@@ -3,15 +3,25 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Wizard, Input, Typography } = scope;
+  const { ViewportOverlay, Stateful, Button, Wizard, Input, Typography, Column } = scope;
   return (
-<Wizard open embedded onOpenChange={() => {}} title="Create workspace"
-  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
-  current={1} status="Step 2 of 4" previous={{ label: "Back", onPress: () => {} }}
-  actions={<Button>Continue</Button>}>
-  <Typography body medium natural>Invite your team</Typography>
-  <Input compact placeholder="noor@nannier.com" accessibilityLabel="First teammate email" />
-  <Input compact placeholder="liang@nannier.com" accessibilityLabel="Second teammate email" />
-</Wizard>
+<Stateful initial={false}>
+  {(open, setOpen) => <Stateful initial={0}>
+    {(current, setCurrent) => <Column>
+      <Button outline onPress={() => { setCurrent(0); setOpen(true); }}>Open project setup</Button>
+      <ViewportOverlay><Wizard open={open} onOpenChange={setOpen} title="Set up a project"
+        description="Choose the basics, then review your project."
+        steps={[{ label: "Details" }, { label: "Review" }]} current={current}
+        previous={current > 0 ? { label: "Details", onPress: () => setCurrent(0) } : undefined}
+        status={`Step ${current + 1} of 2`}
+        actions={<Button primary onPress={() => current === 0 ? setCurrent(1) : setOpen(false)}>{current === 0 ? "Review project" : "Create project"}</Button>}>
+        <Column roomy>
+          <Typography h3>{current === 0 ? "Project details" : "Ready to create"}</Typography>
+          {current === 0 ? <Input label="Project name" defaultValue="Customer portal" /> : <Typography body>Customer portal is ready to create.</Typography>}
+        </Column>
+      </Wizard></ViewportOverlay>
+    </Column>}
+  </Stateful>}
+</Stateful>
   );
 }

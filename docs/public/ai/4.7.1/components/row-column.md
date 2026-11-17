@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/atoms/layout/layout.md`
 Human reference: https://canvas.nannier.com/components/row-column
@@ -50,10 +50,14 @@ roles preserve identity headers (24 top/horizontal, 18 bottom), action footers
 ## Usage
 
 ```tsx
-<Row>
-  <Button primary>Save</Button>
-  <Button ghost>Cancel</Button>
-</Row>
+<PreviewViewport height={220}>
+  <Row fill wrap>
+    <Badge small>Queued</Badge>
+    <Emblem primary large label="CV" />
+    <Badge success>Ready to ship</Badge>
+    <Avatar name="Rachel Chen" />
+  </Row>
+</PreviewViewport>
 ```
 
 ## Variants

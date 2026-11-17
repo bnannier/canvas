@@ -5,19 +5,29 @@ import type { PlaygroundInput } from "../../../scope";
 import { applyPlaygroundElement, playgroundCode } from "../../../playground-example";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Text } = scope;
+  const { tokens, Text, Container } = scope;
   return (
-<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>
+<Container xxs>
+  <Text style={{ color: tokens.foreground }}>
+    The design review is ready. Explore the updated components, check their behavior
+    on smaller screens, and share your feedback with the team before Friday.
+  </Text>
+</Container>
   );
 }
 
 Example.playground = {
   "Text": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>","start":0,"end":94,"component":"Text","attributes":[{"name":"style","source":"style={{ color: tokens.foreground }}"}],"children":"The quick brown fox jumps over the lazy dog."}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Container xxs>\n  <Text style={{ color: tokens.foreground }}>\n    The design review is ready. Explore the updated components, check their behavior\n    on smaller screens, and share your feedback with the team before Friday.\n  </Text>\n</Container>","start":18,"end":233,"component":"Text","attributes":[{"name":"style","source":"style={{ color: tokens.foreground }}"}],"children":"\n    The design review is ready. Explore the updated components, check their behavior\n    on smaller screens, and share your feedback with the team before Friday.\n  "}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
-  const { tokens, Text } = scope;
+  const { tokens, Text, Container } = scope;
       return (
-applyPlaygroundElement((<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>), input, scope.Text)
+<Container xxs>
+  {applyPlaygroundElement((<Text style={{ color: tokens.foreground }}>
+    The design review is ready. Explore the updated components, check their behavior
+    on smaller screens, and share your feedback with the team before Friday.
+  </Text>), input, scope.Text)}
+</Container>
       );
     },
   },

@@ -163,13 +163,13 @@
     },
     "components/button-group--dark": {
       "width": 1004,
-      "height": 320,
-      "sha256": "7887f04488dcf02d7ca4919ca28a07c7ac2cd09512eefeaa961ee968e59abc1f"
+      "height": 319,
+      "sha256": "0236bd8d8c7725c2c7a5c2190b50cb63734603f53361ee14cdd681402520dcd8"
     },
     "components/button-group--light": {
       "width": 1004,
-      "height": 320,
-      "sha256": "5131658298dc045aff6817285c78a11faf7b2edb351c328798f282cdde4b0abe"
+      "height": 319,
+      "sha256": "846adfe462d1a9e24bdde62c578072f74264ac29d46920f8b3807b5311007f36"
     },
     "components/calendar--dark": {
       "width": 1004,
@@ -493,13 +493,13 @@
     },
     "components/grid--dark": {
       "width": 1004,
-      "height": 360,
-      "sha256": "3007a3e16a2715cd72f7412b58c2c5d04cffea97ad38d3ae048995d828e72385"
+      "height": 610,
+      "sha256": "52069eef60e17864b692f3c5b38e5022d69fbe8f33b8e2d57f796e89af012f66"
     },
     "components/grid--light": {
       "width": 1004,
-      "height": 360,
-      "sha256": "c5cc065f7a0b590b5958b72bf6a58506a3b066800307017ec109ddad2e98a2ef"
+      "height": 610,
+      "sha256": "26890ba7be27fd107f8314056014f092ee51bab3937aab214362f422a0141816"
     },
     "components/grid-lists--dark": {
       "width": 1004,
@@ -763,13 +763,13 @@
     },
     "components/row-column--dark": {
       "width": 1004,
-      "height": 320,
-      "sha256": "212f205cff9fc49e631bb7cac866724c73838f9e9db00f5c31e714da2b18f1a5"
+      "height": 319,
+      "sha256": "af1f0aacefbb9f3ac83256d26b220b92ba947db35196a036d4991a75b975c94b"
     },
     "components/row-column--light": {
       "width": 1004,
-      "height": 320,
-      "sha256": "2ae56a706e849d48a2fd1e41277d486ec36a0dc6fe197be66f00697b3fa28f4e"
+      "height": 319,
+      "sha256": "fbabdf8f74ff17346d5ac168fac9b104da33164b6f09416b58466b9e662835c1"
     },
     "components/row-menu--dark": {
       "width": 1004,
@@ -913,13 +913,13 @@
     },
     "components/steps--dark": {
       "width": 1004,
-      "height": 320,
-      "sha256": "9419e05959cc14be2e6df03bcdfb00519730f18c7f28e4c37f17e8559756d687"
+      "height": 322,
+      "sha256": "8705671701c246c944795221f7297b688480a0836800936bef0d287940601b46"
     },
     "components/steps--light": {
       "width": 1004,
-      "height": 320,
-      "sha256": "364b2a092a886a6895acb2e9c76d3f2d22d01c4c6379308987d3a9ca54cc9a70"
+      "height": 322,
+      "sha256": "55e533824de432e37c2278a84fa538343f99d2bf3ad0fede6ce1401150689df2"
     },
     "components/swatch--dark": {
       "width": 1004,

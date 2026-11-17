@@ -12,7 +12,8 @@ export default function Example(scope: ExampleScope) {
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend" },
-    { label: "Design" }
+    { label: "Design" },
+    { label: "Platform" }
   ]}
 />
   );
@@ -20,7 +21,7 @@ export default function Example(scope: ExampleScope) {
 
 Example.playground = {
   "Listbox": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n/>","start":0,"end":149,"component":"Listbox","attributes":[{"name":"accessibilityLabel","source":"accessibilityLabel=\"Teams\""},{"name":"items","source":"items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}"}]}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" },\n    { label: \"Platform\" }\n  ]}\n/>","start":0,"end":176,"component":"Listbox","attributes":[{"name":"accessibilityLabel","source":"accessibilityLabel=\"Teams\""},{"name":"items","source":"items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" },\n    { label: \"Platform\" }\n  ]}"}]}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
   const { Listbox } = scope;
       return (
@@ -29,7 +30,8 @@ applyPlaygroundElement((<Listbox
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend" },
-    { label: "Design" }
+    { label: "Design" },
+    { label: "Platform" }
   ]}
 />), input, scope.Listbox)
       );

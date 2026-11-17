@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/atoms/swatch/swatch.md`
 Human reference: https://canvas.nannier.com/components/swatch
@@ -21,7 +21,7 @@ it, the anatomy a design-system color sheet repeats down a page. Swatch owns the
 whole lockup, so a sheet never sets a bare block next to a hand-built text
 column and drifts row to row.
 
-Pass a live theme token as `color` and the sample follows the active scheme; a
+Pass a live theme token as `color` and the sample follows the active scheme and palette; a
 hairline edge keeps a white or near-black sample visible on the surface behind
 it. The chip is 48px at a 12px corner (32 `small`, 72 `large`, and 20 `tiny`,
 the disc of a token Chip), the name a 13px line and the value lines 11px mono
@@ -61,10 +61,38 @@ narrow column), 6 px apart and 6 px under a 56 px `block`.
 
 ## Usage
 
+Choose a semantic token to inspect its fill, name and resolved color. The sample
+reads the current theme, so changing the scheme or accent palette updates it.
+
 ```tsx
-<Swatch color={tokens.primary} value="--primary">
-  primary
-</Swatch>
+<Stateful initial={0}>
+  {(index, setIndex) => {
+    const samples = [
+      { name: "primary", color: tokens.primary },
+      { name: "secondary", color: tokens.secondary },
+      { name: "muted", color: tokens.muted },
+      { name: "background", color: tokens.background },
+      { name: "card", color: tokens.card },
+      { name: "success", color: tokens.success },
+      { name: "warning", color: tokens.warning },
+      { name: "info", color: tokens.info },
+      { name: "destructive", color: tokens.destructive }
+    ];
+    const sample = samples[index] ?? samples[0];
+    return (
+      <Container xs start>
+        <Column relaxed>
+          <Select label="Theme token" value={sample.name}
+            options={samples.map(item => item.name)}
+            onSelect={name => setIndex(samples.findIndex(item => item.name === name))} />
+          <Swatch color={sample.color} value={sample.color} detail={`--${sample.name}`}>
+            {sample.name}
+          </Swatch>
+        </Column>
+      </Container>
+    );
+  }}
+</Stateful>
 ```
 
 ## Variants

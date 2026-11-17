@@ -5,53 +5,33 @@ import type { PlaygroundInput } from "../../../scope";
 import { applyPlaygroundElement, playgroundCode } from "../../../playground-example";
 
 export default function Example(scope: ExampleScope) {
-  const { ViewportOverlay, Stateful, Button, Wizard, Input, Typography, Column } = scope;
+  const { Wizard, Input, Textarea, Typography } = scope;
   return (
-<Stateful initial={false}>
-  {(open, setOpen) => <Stateful initial={0}>
-    {(current, setCurrent) => <Column>
-      <Button outline onPress={() => { setCurrent(0); setOpen(true); }}>Open project setup</Button>
-      <ViewportOverlay><Wizard open={open} onOpenChange={setOpen} title="Set up a project"
-        description="Choose the basics, then review your project."
-        steps={[{ label: "Details" }, { label: "Review" }]} current={current}
-        previous={current > 0 ? { label: "Details", onPress: () => setCurrent(0) } : undefined}
-        status={`Step ${current + 1} of 2`}
-        actions={<Button primary onPress={() => current === 0 ? setCurrent(1) : setOpen(false)}>{current === 0 ? "Review project" : "Create project"}</Button>}>
-        <Column roomy>
-          <Typography h3>{current === 0 ? "Project details" : "Ready to create"}</Typography>
-          {current === 0 ? <Input label="Project name" defaultValue="Customer portal" /> : <Typography body>Customer portal is ready to create.</Typography>}
-        </Column>
-      </Wizard></ViewportOverlay>
-    </Column>}
-  </Stateful>}
-</Stateful>
+<Wizard open embedded onOpenChange={() => {}} title="Create workspace"
+  description="Configure your workspace before inviting your team."
+  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
+  current={0} status="Draft">
+  <Typography h3>Workspace configuration</Typography>
+  <Input label="Workspace name" defaultValue="Customer portal" />
+  <Textarea label="Setup notes" placeholder="Keep notes as you configure the workspace…" />
+</Wizard>
   );
 }
 
 Example.playground = {
   "Wizard": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Stateful initial={false}>\n  {(open, setOpen) => <Stateful initial={0}>\n    {(current, setCurrent) => <Column>\n      <Button outline onPress={() => { setCurrent(0); setOpen(true); }}>Open project setup</Button>\n      <ViewportOverlay><Wizard open={open} onOpenChange={setOpen} title=\"Set up a project\"\n        description=\"Choose the basics, then review your project.\"\n        steps={[{ label: \"Details\" }, { label: \"Review\" }]} current={current}\n        previous={current > 0 ? { label: \"Details\", onPress: () => setCurrent(0) } : undefined}\n        status={`Step ${current + 1} of 2`}\n        actions={<Button primary onPress={() => current === 0 ? setCurrent(1) : setOpen(false)}>{current === 0 ? \"Review project\" : \"Create project\"}</Button>}>\n        <Column roomy>\n          <Typography h3>{current === 0 ? \"Project details\" : \"Ready to create\"}</Typography>\n          {current === 0 ? <Input label=\"Project name\" defaultValue=\"Customer portal\" /> : <Typography body>Customer portal is ready to create.</Typography>}\n        </Column>\n      </Wizard></ViewportOverlay>\n    </Column>}\n  </Stateful>}\n</Stateful>","start":234,"end":1056,"component":"Wizard","attributes":[{"name":"open","source":"open={open}"},{"name":"onOpenChange","source":"onOpenChange={setOpen}"},{"name":"title","source":"title=\"Set up a project\""},{"name":"description","source":"description=\"Choose the basics, then review your project.\""},{"name":"steps","source":"steps={[{ label: \"Details\" }, { label: \"Review\" }]}"},{"name":"current","source":"current={current}"},{"name":"previous","source":"previous={current > 0 ? { label: \"Details\", onPress: () => setCurrent(0) } : undefined}"},{"name":"status","source":"status={`Step ${current + 1} of 2`}"},{"name":"actions","source":"actions={<Button primary onPress={() => current === 0 ? setCurrent(1) : setOpen(false)}>{current === 0 ? \"Review project\" : \"Create project\"}</Button>}"}],"children":"\n        <Column roomy>\n          <Typography h3>{current === 0 ? \"Project details\" : \"Ready to create\"}</Typography>\n          {current === 0 ? <Input label=\"Project name\" defaultValue=\"Customer portal\" /> : <Typography body>Customer portal is ready to create.</Typography>}\n        </Column>\n      "}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Wizard open embedded onOpenChange={() => {}} title=\"Create workspace\"\n  description=\"Configure your workspace before inviting your team.\"\n  steps={[{ label: \"Name\" }, { label: \"Members\" }, { label: \"Theme\" }, { label: \"Review\" }]}\n  current={0} status=\"Draft\">\n  <Typography h3>Workspace configuration</Typography>\n  <Input label=\"Workspace name\" defaultValue=\"Customer portal\" />\n  <Textarea label=\"Setup notes\" placeholder=\"Keep notes as you configure the workspace…\" />\n</Wizard>","start":0,"end":483,"component":"Wizard","attributes":[{"name":"open","source":"open"},{"name":"embedded","source":"embedded"},{"name":"onOpenChange","source":"onOpenChange={() => {}}"},{"name":"title","source":"title=\"Create workspace\""},{"name":"description","source":"description=\"Configure your workspace before inviting your team.\""},{"name":"steps","source":"steps={[{ label: \"Name\" }, { label: \"Members\" }, { label: \"Theme\" }, { label: \"Review\" }]}"},{"name":"current","source":"current={0}"},{"name":"status","source":"status=\"Draft\""}],"children":"\n  <Typography h3>Workspace configuration</Typography>\n  <Input label=\"Workspace name\" defaultValue=\"Customer portal\" />\n  <Textarea label=\"Setup notes\" placeholder=\"Keep notes as you configure the workspace…\" />\n"}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
-  const { ViewportOverlay, Stateful, Button, Wizard, Input, Typography, Column } = scope;
+  const { Wizard, Input, Textarea, Typography } = scope;
       return (
-<Stateful initial={false}>
-  {(open, setOpen) => <Stateful initial={0}>
-    {(current, setCurrent) => <Column>
-      <Button outline onPress={() => { setCurrent(0); setOpen(true); }}>Open project setup</Button>
-      <ViewportOverlay>{applyPlaygroundElement((<Wizard open={open} onOpenChange={setOpen} title="Set up a project"
-        description="Choose the basics, then review your project."
-        steps={[{ label: "Details" }, { label: "Review" }]} current={current}
-        previous={current > 0 ? { label: "Details", onPress: () => setCurrent(0) } : undefined}
-        status={`Step ${current + 1} of 2`}
-        actions={<Button primary onPress={() => current === 0 ? setCurrent(1) : setOpen(false)}>{current === 0 ? "Review project" : "Create project"}</Button>}>
-        <Column roomy>
-          <Typography h3>{current === 0 ? "Project details" : "Ready to create"}</Typography>
-          {current === 0 ? <Input label="Project name" defaultValue="Customer portal" /> : <Typography body>Customer portal is ready to create.</Typography>}
-        </Column>
-      </Wizard>), input, scope.Wizard)}</ViewportOverlay>
-    </Column>}
-  </Stateful>}
-</Stateful>
+applyPlaygroundElement((<Wizard open embedded onOpenChange={() => {}} title="Create workspace"
+  description="Configure your workspace before inviting your team."
+  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
+  current={0} status="Draft">
+  <Typography h3>Workspace configuration</Typography>
+  <Input label="Workspace name" defaultValue="Customer portal" />
+  <Textarea label="Setup notes" placeholder="Keep notes as you configure the workspace…" />
+</Wizard>), input, scope.Wizard)
       );
     },
   },

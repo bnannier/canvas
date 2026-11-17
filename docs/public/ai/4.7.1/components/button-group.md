@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/atoms/button-group/button-group.md`
 Human reference: https://canvas.nannier.com/components/button-group
@@ -49,7 +49,14 @@ segment while pressed; `start` pins the group in an app-owned host arrangement.
 ## Usage
 
 ```tsx
-<ButtonGroup items={["Day", "Week", "Month"]} />
+<ButtonGroup
+  accessibilityLabel="Calendar view"
+  items={[
+    { label: "Day", icon: "sun" },
+    { label: "Week", icon: "calendarDays" },
+    { label: "Month", icon: "calendar" }
+  ]}
+/>
 ```
 
 ## Variants

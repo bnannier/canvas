@@ -7,17 +7,17 @@ import { applyPlaygroundElement, playgroundCode } from "../../../playground-exam
 export default function Example(scope: ExampleScope) {
   const { Tabs } = scope;
   return (
-<Tabs tabs={["General", "Security", "Notifications"]} />
+<Tabs tabs={["General", "Security", "Notifications", "Billing"]} />
   );
 }
 
 Example.playground = {
   "Tabs": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Tabs tabs={[\"General\", \"Security\", \"Notifications\"]} />","start":0,"end":56,"component":"Tabs","attributes":[{"name":"tabs","source":"tabs={[\"General\", \"Security\", \"Notifications\"]}"}]}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Tabs tabs={[\"General\", \"Security\", \"Notifications\", \"Billing\"]} />","start":0,"end":67,"component":"Tabs","attributes":[{"name":"tabs","source":"tabs={[\"General\", \"Security\", \"Notifications\", \"Billing\"]}"}]}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
   const { Tabs } = scope;
       return (
-applyPlaygroundElement((<Tabs tabs={["General", "Security", "Notifications"]} />), input, scope.Tabs)
+applyPlaygroundElement((<Tabs tabs={["General", "Security", "Notifications", "Billing"]} />), input, scope.Tabs)
       );
     },
   },

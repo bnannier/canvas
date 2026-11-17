@@ -3,12 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Chat, Wizard } = scope;
+  const { Button, Wizard, Input, Typography } = scope;
   return (
-<Wizard open embedded assistant onOpenChange={() => {}} title="Plan a project" scrollBody={false}
-  steps={[{ label: "Plan project" }, { label: "Review project plan" }, { label: "Plan workforce" }]}
-  current={0} status="Autosaved" actions={<Button small ghost>Reset</Button>}>
-  <Chat assistant flush meta="Claude CLI" messages={[{ id: "welcome", role: "assistant", content: "What should your project achieve?" }]} value="" onChangeText={() => {}} onSend={() => {}} />
+<Wizard open embedded onOpenChange={() => {}} title="Create workspace"
+  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
+  current={1} status="Step 2 of 4" previous={{ label: "Back", onPress: () => {} }}
+  actions={<Button>Continue</Button>}>
+  <Typography body medium natural>Invite your team</Typography>
+  <Input compact placeholder="noor@nannier.com" accessibilityLabel="First teammate email" />
+  <Input compact placeholder="liang@nannier.com" accessibilityLabel="Second teammate email" />
 </Wizard>
   );
 }

@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/organisms/tab-bar/tab-bar.md`
 Human reference: https://canvas.nannier.com/components/tab-bar
@@ -34,8 +34,10 @@ ordinary platform surface.
 <TabBar
   items={[
     { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
+    { key: "inbox", label: "Inbox", icon: (active) => <Icon inbox size={19} primary={active} muted={!active} /> },
+    { key: "board", label: "Board", icon: (active) => <Icon layoutGrid size={19} primary={active} muted={!active} /> },
+    { key: "chat", label: "Chat", icon: (active) => <Icon messageSquare size={19} primary={active} muted={!active} /> },
+    { key: "settings", label: "Settings", icon: (active) => <Icon settings size={19} primary={active} muted={!active} /> }
   ]}
 />
 ```

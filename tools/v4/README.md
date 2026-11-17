@@ -33,7 +33,7 @@ What reads it:
   guidance selection and note counts. Detail pages use that presentation with current
   executable examples, without deleting newer kit docs.
 
-The owner selected this vendored snapshot for exact appearance and motion on2026-10-29
+The owner selected this vendored snapshot for exact appearance and motion on 2026-10-29
 (PLAN D23), superseding older visual exceptions. Current public API rows remain accurate;
 reference presentation does not remove newer capabilities. Compare matching live browser
 states, including phone widths, scheme, palette, surface and animation phase. A screenshot

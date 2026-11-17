@@ -110,8 +110,14 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ## Usage
 
+Use a full-width column to see text alignment. Toggle `tabular` to give the digits
+equal widths: the decimal points in these two amounts then line up. Monospace
+styles already have equal-width digits.
+
 ```tsx
-<Typography>The quick brown fox</Typography>
+<Column>
+  <Typography>{"Invoice totals\n$111.11\n$888.88"}</Typography>
+</Column>
 ```
 
 ## Variants

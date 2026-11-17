@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/atoms/typography/typography.md`
 Human reference: https://canvas.nannier.com/components/typography
@@ -126,8 +126,14 @@ chip draws its fill and horizontal padding only; `inline` without `code` does no
 
 ## Usage
 
+Use a full-width column to see text alignment. Toggle `tabular` to give the digits
+equal widths: the decimal points in these two amounts then line up. Monospace
+styles already have equal-width digits.
+
 ```tsx
-<Typography>The quick brown fox</Typography>
+<Column>
+  <Typography>{"Invoice totals\n$111.11\n$888.88"}</Typography>
+</Column>
 ```
 
 ## Variants

@@ -4,7 +4,7 @@ import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, u
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { selectionTint } from "../../style/selection-tint.js";
 import { useHover } from "../../style/hover.js";
-import { useFillStyle } from "../../style/sizing.js";
+import { LayoutAxisProvider, ROW_AXIS, useFillStyle } from "../../style/sizing.js";
 import { AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -466,6 +466,12 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
         {avatar ? <Avatar small name={avatar} /> : null}
       </View>
     );
+    // These skin-owned rows publish their own axis: an outer Column's HUG
+    // alignment must not pin the collapsed menu above its brand. A consumer's
+    // nested Column still publishes its own axis inside either slot.
+    const clusters = (
+      <LayoutAxisProvider value={ROW_AXIS}>{left}{right}</LayoutAxisProvider>
+    );
 
     return (
       <AnatomyScope>
@@ -483,14 +489,10 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
               style={SCROLLER}
               contentContainerStyle={[SCROLL_ROW, { paddingHorizontal: barStyle.paddingHorizontal, gap: barStyle.gap }]}
             >
-              {left}
-              {right}
+              {clusters}
             </ScrollView>
           ) : (
-            <>
-              {left}
-              {right}
-            </>
+            clusters
           )}
         </Host>
       </AnatomyScope>

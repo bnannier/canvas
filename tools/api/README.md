@@ -75,9 +75,9 @@ commit as its manifest entry.
   since every planned page exists already and later turns write its sections.
 - **No page presents a kit internal as API.** A deprecated alias or an
   `internal-by-accident` helper that a snippet imports, calls, renders or names as a type,
-  or that an inline code span sets alone, fails on any page, and so it does in DESIGN.md
-  and README.md, which the package ships. Prose, JSX text, a style key (React Native's
-  `fontStyle`) and a JSX attribute never count. The owner removed every such name on
+  or that an inline code span sets alone, fails on any page, and so it does in DESIGN.md,
+  README.md and USAGE.md, which the package ships. Prose, JSX text, a style key
+  (React Native's `fontStyle`) and a JSX attribute never count. The owner removed every such name on
   2026-10-23 (nothing consumed them), so today the rule guards the next one.
 - **The two manifests agree.** The material inventory (tools/materials/manifest.ts)
   records a docs route for every renderable. It must be the API manifest's `docs`, or,

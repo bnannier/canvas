@@ -52,16 +52,25 @@ bun run typecheck:e2e     # end-to-end suite TypeScript
 bun run lint              # ESLint, including docs and tests
 bun run build             # refresh the published package's compiled output
 bun run verify-package    # compiled entry points, imports, and public types
+bun run check-size        # CSS and JavaScript size budgets
 bun run test              # unit tests and compiled-package smoke tests
 bun run check:api         # every export classified, every docs claim true
 bun run docs:gen:check     # generated docs match their source
+bun run agent-docs:gen:check # versioned agent reference matches its source
+bun run consumer:gen:check # packaged consumer guidance and recipes match source
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools/plugins -p 'test_*.py' -v
+bun run check:docs-components # handwritten docs use Canvas components
+bun run audit:checklists:check # audit facts match the current inventory
+bun run privacy:gen:check  # generated privacy policy matches its source
 bun run raster:gen:check   # generated native menu glyphs match their source
 bun run designmd:gen:check # generated design reference matches its source
+bun run notices:gen:check  # third-party notices match installed dependencies
 bunx tsc --noEmit -p docs/src/core/tsconfig.json # generated example TypeScript
+bun run --cwd docs typecheck # complete docs app TypeScript
 ```
 
-CI remains the release authority. It also checks the complete docs app and web
-export, browser behavior, theme tokens, design parity, and size budgets. The local
+CI remains the release authority. It also checks the docs web export, browser
+behavior, theme tokens, design parity, and material and interaction coverage. The local
 hook does not run the browser suite or deploy anything.
 
 Use `bun run test` to run every unit test under `test/` and `tools/`, with the

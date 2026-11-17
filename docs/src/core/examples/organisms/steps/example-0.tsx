@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Steps
   stacks
-  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]}
+  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Team" }, { label: "Review" }]}
   defaultCurrent={1}
 />
   );
@@ -17,13 +17,13 @@ export default function Example(scope: ExampleScope) {
 
 Example.playground = {
   "Steps": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Steps\n  stacks\n  steps={[{ label: \"Account\" }, { label: \"Profile\" }, { label: \"Review\" }]}\n  defaultCurrent={1}\n/>","start":0,"end":115,"component":"Steps","attributes":[{"name":"stacks","source":"stacks"},{"name":"steps","source":"steps={[{ label: \"Account\" }, { label: \"Profile\" }, { label: \"Review\" }]}"},{"name":"defaultCurrent","source":"defaultCurrent={1}"}]}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Steps\n  stacks\n  steps={[{ label: \"Account\" }, { label: \"Profile\" }, { label: \"Team\" }, { label: \"Review\" }]}\n  defaultCurrent={1}\n/>","start":0,"end":134,"component":"Steps","attributes":[{"name":"stacks","source":"stacks"},{"name":"steps","source":"steps={[{ label: \"Account\" }, { label: \"Profile\" }, { label: \"Team\" }, { label: \"Review\" }]}"},{"name":"defaultCurrent","source":"defaultCurrent={1}"}]}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
   const { Steps } = scope;
       return (
 applyPlaygroundElement((<Steps
   stacks
-  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]}
+  steps={[{ label: "Account" }, { label: "Profile" }, { label: "Team" }, { label: "Review" }]}
   defaultCurrent={1}
 />), input, scope.Steps)
       );

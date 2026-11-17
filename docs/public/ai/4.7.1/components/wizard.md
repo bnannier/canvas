@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/organisms/wizard/wizard.md`
 Human reference: https://canvas.nannier.com/components/wizard
@@ -26,7 +26,24 @@ native back, and it renders in place in the page's flow instead of presenting in
 
 ## Usage
 
-`ViewportOverlay` is docs-only scaffolding that presents the example above the docs page. In an application, mount Wizard beneath the app-root OverlayProvider.
+The embedded shell keeps the step rail and header beside application-owned content.
+
+```tsx
+<Wizard open embedded onOpenChange={() => {}} title="Create workspace"
+  description="Configure your workspace before inviting your team."
+  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
+  current={0} status="Draft">
+  <Typography h3>Workspace configuration</Typography>
+  <Input label="Workspace name" defaultValue="Customer portal" />
+  <Textarea label="Setup notes" placeholder="Keep notes as you configure the workspace…" />
+</Wizard>
+```
+
+## Variants
+
+### Modal workflow
+
+The application owns each stage's content, previous action and continuation. `ViewportOverlay` is docs-only scaffolding that presents the example above the docs page. In an application, mount Wizard beneath the app-root OverlayProvider.
 
 ```tsx
 <Stateful initial={false}>
@@ -48,8 +65,6 @@ native back, and it renders in place in the page's flow instead of presenting in
   </Stateful>}
 </Stateful>
 ```
-
-## Variants
 
 ### Team invitation
 

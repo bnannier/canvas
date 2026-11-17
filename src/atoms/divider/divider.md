@@ -4,13 +4,20 @@ Horizontal, vertical, with label, with action.
 
 ## Usage
 
-A divider spans the width of its parent, so give it a bounded container.
+A horizontal divider spans its parent; a vertical divider stretches to its row's
+height. The playground switches between these compositions with Orientation.
 
 ```tsx
 <Column>
-  <Typography>Profile</Typography>
+  <Column tight>
+    <Typography semibold>Workspace</Typography>
+    <Typography small muted>Manage your team and projects.</Typography>
+  </Column>
   <Divider />
-  <Typography>Account</Typography>
+  <Column tight>
+    <Typography semibold>Account</Typography>
+    <Typography small muted>Personal details and preferences.</Typography>
+  </Column>
 </Column>
 ```
 
@@ -19,10 +26,16 @@ A divider spans the width of its parent, so give it a bounded container.
 ### Vertical
 
 ```tsx
-<Row>
-  <Typography>Edit</Typography>
+<Row relaxed>
+  <Column fill tight>
+    <Typography semibold>Workspace</Typography>
+    <Typography small muted>Team and projects</Typography>
+  </Column>
   <Divider vertical />
-  <Typography>Delete</Typography>
+  <Column fill tight>
+    <Typography semibold>Account</Typography>
+    <Typography small muted>Personal settings</Typography>
+  </Column>
 </Row>
 ```
 

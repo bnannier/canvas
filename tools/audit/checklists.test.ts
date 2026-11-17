@@ -561,7 +561,7 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(button).not.toContain("e2e/visual/material-states.e2e.ts");
     expect(button).not.toContain("e2e/support/routes.ts");
     expect(componentFacts("feeds", sources.corpus).e2e).toEqual(["e2e/behavior/anatomy-markers.e2e.ts", "e2e/behavior/playground-source.e2e.ts", "e2e/behavior/scroll-focus.e2e.ts", "e2e/journeys/keyboard.e2e.ts"]);
-    expect(componentFacts("text", sources.corpus).e2e).toEqual(["e2e/behavior/anatomy-markers.e2e.ts", "e2e/behavior/playground-source.e2e.ts"]);
+    expect(componentFacts("text", sources.corpus).e2e).toEqual(["e2e/behavior/anatomy-markers.e2e.ts", "e2e/behavior/playground-source.e2e.ts", "e2e/responsive/playground-controls.e2e.ts"]);
   });
 
   it("credits the text-entry specs and the helper-loaded tests the facts used to drop (HIGH 1, HIGH 2, item a)", () => {

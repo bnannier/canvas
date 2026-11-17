@@ -25,7 +25,7 @@ export const docs: ComponentDocs = {
     "Single-select exposes a list of selectable options. With `multi`, it exposes a checkbox group: each row owns its label, checked state, and tap target. Give either mode a meaningful `accessibilityLabel`; the fallback is \"Options\". Arrow keys and Home/End move focus within one tab stop. Single-select follows focus, while multi-select keeps the current selection until Enter or Space toggles the focused row.",
   ],
   examples: [
-    { label: "Default", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n/>", render: e_atoms_listbox_example_0 },
+    { label: "Default", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" },\n    { label: \"Platform\" }\n  ]}\n/>", render: e_atoms_listbox_example_0 },
     { label: "Multi", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\", selected: true }\n  ]}\n  multi\n/>", render: e_atoms_listbox_example_1 },
     { label: "Small", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n  small\n/>", render: e_atoms_listbox_example_2 },
     { label: "Large", code: "<Listbox\n  accessibilityLabel=\"Teams\"\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\" },\n    { label: \"Design\" }\n  ]}\n  large\n/>", render: e_atoms_listbox_example_3 },

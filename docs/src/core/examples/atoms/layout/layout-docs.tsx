@@ -29,7 +29,7 @@ export const docs: ComponentDocs = {
     "`rowsTight`, `rowsComfortable`, `rowsSnug`, `rowsCozy`, `rowsSection` and `rowsPanel` set a wrapped or stacked row's vertical gap to 4, 10, 8, 12, 26 and 28 independently of its main gap (a stacked `Row stacks` lays its children down that vertical gap, so a hero whose halves sit 40 apart beside each other and 28 apart stacked is `ample rowsPanel`). Application inset roles preserve identity headers (24 top/horizontal, 18 bottom), action footers (16 vertical, 24 horizontal), theme controls (14 top, 26 horizontal), status bands (10 vertical, 28 horizontal), and navigation close controls (12 top/horizontal): `insetIdentity`, `insetActions`, `insetTheme`, `insetStatus`, and `insetTabs`.",
   ],
   examples: [
-    { label: "Default", code: "<Row>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>", render: e_atoms_layout_example_0 },
+    { label: "Default", code: "<PreviewViewport height={220}>\n  <Row fill wrap>\n    <Badge small>Queued</Badge>\n    <Emblem primary large label=\"CV\" />\n    <Badge success>Ready to ship</Badge>\n    <Avatar name=\"Rachel Chen\" />\n  </Row>\n</PreviewViewport>", render: e_atoms_layout_example_0 },
     { label: "Vertical stack", code: "<Column>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Column>", render: e_atoms_layout_example_1 },
     { label: "Chapters", code: "<Column chapter>\n  <Typography h3 level={2}>Playground</Typography>\n  <Typography h3 level={2}>Props</Typography>\n  <Typography h3 level={2}>Examples</Typography>\n</Column>", render: e_atoms_layout_example_2, note: ["The widest gap, between the major sections of a long page."] },
     { label: "Centered row", code: "<Row center>\n  <Badge>schema</Badge>\n  <Badge>role</Badge>\n</Row>", render: e_atoms_layout_example_3 },
@@ -54,5 +54,5 @@ export const docs: ComponentDocs = {
   // assistive tech, the colour roles its skins read, and the components it is used with.
   semantics: {"roles":[],"states":[],"aria":[],"touchTarget":[]},
   tokens: [],
-  related: ["button","typography","badge","card","input","container","grid","divider"],
+  related: ["badge","emblem","avatar","button","typography","card","input","container"],
 };

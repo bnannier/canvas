@@ -13,6 +13,7 @@ for (const width of [390, 1440]) {
     await text.press("End");
     await text.pressSequentially(" now");
     await expect(text).toHaveValue("Save & share + 50% #? now");
+    await playground.getByRole("textbox", { name: "Search iconLeft icons", exact: true }).fill("heart");
     await playground.getByRole("radiogroup", { name: "iconLeft", exact: true }).getByRole("radio", { name: "heart", exact: true }).click();
     await playground.getByRole("switch", { name: "disabled", exact: true }).click();
     const stage = playground.locator("[data-playground-source]");

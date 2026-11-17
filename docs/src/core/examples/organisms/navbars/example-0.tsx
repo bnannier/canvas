@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <Navbar
   brand="Canvas"
-  links={["Dashboard", "Users", "Settings"]}
+  links={["Dashboard", "Users", "Settings", "Billing"]}
   actionLabel="New"
   avatar="RC"
 />
@@ -18,13 +18,13 @@ export default function Example(scope: ExampleScope) {
 
 Example.playground = {
   "Navbar": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Navbar\n  brand=\"Canvas\"\n  links={[\"Dashboard\", \"Users\", \"Settings\"]}\n  actionLabel=\"New\"\n  avatar=\"RC\"\n/>","start":0,"end":106,"component":"Navbar","attributes":[{"name":"brand","source":"brand=\"Canvas\""},{"name":"links","source":"links={[\"Dashboard\", \"Users\", \"Settings\"]}"},{"name":"actionLabel","source":"actionLabel=\"New\""},{"name":"avatar","source":"avatar=\"RC\""}]}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Navbar\n  brand=\"Canvas\"\n  links={[\"Dashboard\", \"Users\", \"Settings\", \"Billing\"]}\n  actionLabel=\"New\"\n  avatar=\"RC\"\n/>","start":0,"end":117,"component":"Navbar","attributes":[{"name":"brand","source":"brand=\"Canvas\""},{"name":"links","source":"links={[\"Dashboard\", \"Users\", \"Settings\", \"Billing\"]}"},{"name":"actionLabel","source":"actionLabel=\"New\""},{"name":"avatar","source":"avatar=\"RC\""}]}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
   const { Navbar } = scope;
       return (
 applyPlaygroundElement((<Navbar
   brand="Canvas"
-  links={["Dashboard", "Users", "Settings"]}
+  links={["Dashboard", "Users", "Settings", "Billing"]}
   actionLabel="New"
   avatar="RC"
 />), input, scope.Navbar)

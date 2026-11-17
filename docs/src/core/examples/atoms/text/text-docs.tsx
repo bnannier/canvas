@@ -11,7 +11,7 @@ export const docs: ComponentDocs = {
   dir: "text",
   category: "atoms",
   examples: [
-    { label: "Default", code: "<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>", render: e_atoms_text_example_0 },
+    { label: "Default", code: "<Container xxs>\n  <Text style={{ color: tokens.foreground }}>\n    The design review is ready. Explore the updated components, check their behavior\n    on smaller screens, and share your feedback with the team before Friday.\n  </Text>\n</Container>", render: e_atoms_text_example_0, note: ["`numberOfLines` caps the visible lines and adds an ellipsis when the text is too long. Try 1, 2, and 3 with this paragraph; 0 removes the limit. The parent sets the width, which determines where each line wraps."] },
     { label: "Truncation", code: "<Container xxs>\n  <Text numberOfLines={1} style={{ color: tokens.foreground }}>\n    This single line is clipped with an ellipsis when it overflows its container.\n  </Text>\n</Container>", render: e_atoms_text_example_1 },
     { label: "Nested runs", code: "<Text style={{ color: tokens.foreground }}>\n  A run of text can carry an <Text style={{ fontWeight: \"700\" }}>inline emphasis</Text> that inherits everything else from its parent Text.\n</Text>", render: e_atoms_text_example_2 },
   ],

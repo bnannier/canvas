@@ -2,6 +2,22 @@ import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 for (const width of [390, 1280]) {
+  test(`vertical divider has a visible row and matching source at ${width}px`, async ({ page }) => {
+    const props = encodeURIComponent(JSON.stringify({ "@Orientation": "vertical" }));
+    await gotoDocs(page, "/components/divider", { query: `props=${props}`, viewport: { width, height: 1000 } });
+    const stage = page.locator('[data-playground-source]');
+    await expect(stage).toHaveAttribute("data-playground-source", /^<Row relaxed>/);
+    const rule = stage.getByRole("separator");
+    await expect(rule).toHaveAttribute("aria-orientation", "vertical");
+    await expect.poll(() => rule.evaluate(node => {
+      const box = node.getBoundingClientRect();
+      return box.width >= 1 && box.width <= 2 && box.height >= 36;
+    })).toBe(true);
+    await page.getByRole("radiogroup", { name: "Orientation", exact: true }).getByRole("radio", { name: "horizontal", exact: true }).click();
+    await expect(stage).toHaveAttribute("data-playground-source", /^<Column>/);
+    await expect.poll(() => rule.evaluate(node => node.getBoundingClientRect().width)).toBeGreaterThan(100);
+  });
+
   test(`horizontal dividers fill the playground at ${width}px`, async ({ page }) => {
     await gotoDocs(page, "/components/divider", { viewport: { width, height: 1000 } });
     const stage = page.locator('[data-detail-section="pg"] [data-preview-stage]');

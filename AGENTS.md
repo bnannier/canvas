@@ -3,6 +3,12 @@
 Canvas is a React Native UI kit, published as `@nannier/canvas`. It runs
 universally: native on iOS and Android, and on the web through React Native Web.
 
+## Commit attribution — 2026-11-17
+
+Use the repository's configured author identity. Do not add AI author or co-author
+trailers, generated-by signatures, or assistant session links to commits or pull
+requests. Shared tool settings disable automatic attribution; keep them in force.
+
 ## Release-only GitHub CI/CD — 2026-10-31
 
 The owner requires GitHub CI/CD to run only when releasing, never automatically
@@ -187,7 +193,7 @@ whole claim is that it is the real thing on each OS.
 
 Which components keep an iOS or Material 3 shape follows the design language above:
 the HIG and Material 3 metrics apply on a platform that ships the real control for the
-job, and the native skin is the DF look everywhere else. The native machinery (Liquid
+job, and the native skin is the v4 web look everywhere else. The native machinery (Liquid
 Glass, the frosted blur, hardware back, scroll physics, the ripple) stays on every
 component, whichever look its skin draws.
 

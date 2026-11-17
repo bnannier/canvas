@@ -36,8 +36,10 @@ bun run build:web      # complete static web artifact in dist/
 ```
 
 `build:web` runs the Expo export and then adds font preloads, inlines CSS, and
-prepares asset paths for Cloudflare Pages. Run this script when checking the
-shipping web artifact; a bare Expo export omits those preparation steps.
+prepares asset paths for Cloudflare Pages. It also exports the independent
+`examples/recipes` app into `/recipes/`; install that app's frozen dependencies
+before running the docs build. Run this script when checking the shipping web
+artifact; a bare Expo export omits those preparation steps.
 
 iOS builds need a UTF-8 locale for CocoaPods:
 
@@ -75,7 +77,8 @@ version, which remains tied to the validated release candidate.
 For native builds, run **Deploy** manually on main, select the `ios` and/or
 `android` input, and choose an EAS profile. These jobs use the accepted, validated
 source. The EAS pre-install hook installs the frozen root workspace before the
-docs postinstall compiles the optional module. The workflow queues builds with `--no-wait`; successful queueing is not a
+docs postinstall links the kit source. The native build compiles the autolinked
+Android module. The workflow queues builds with `--no-wait`; successful queueing is not a
 completed device build or store submission. Follow the EAS links in the run
 summary for those results.
 

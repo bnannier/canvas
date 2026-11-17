@@ -13,8 +13,25 @@ Reach for it directly only when no semantic primitive covers what you need: arra
 
 ## Usage
 
+The tinted parent View groups two child Views. Each child sizes to its content;
+the surrounding Column supplies spacing and padding. Edit `children` in the
+playground to replace the contents while keeping the parent's bounds visible.
+
 ```tsx
-<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />
+<Container sm>
+  <View style={{ minHeight: 160, backgroundColor: alpha(tokens.primary, 0.08) }}>
+    <Column pad relaxed>
+      <View>
+        <Typography h5>Project workspace</Typography>
+        <Typography small muted>A parent View groups related content.</Typography>
+      </View>
+      <View>
+        <Typography semibold>Design system</Typography>
+        <Typography small>12 components ready for review</Typography>
+      </View>
+    </Column>
+  </View>
+</Container>
 ```
 
 ## Variants

@@ -5,19 +5,23 @@ import type { PlaygroundInput } from "../../../scope";
 import { applyPlaygroundElement, playgroundCode } from "../../../playground-example";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography } = scope;
+  const { Typography, Column } = scope;
   return (
-<Typography>The quick brown fox</Typography>
+<Column>
+  <Typography>{"Invoice totals\n$111.11\n$888.88"}</Typography>
+</Column>
   );
 }
 
 Example.playground = {
   "Typography": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Typography>The quick brown fox</Typography>","start":0,"end":44,"component":"Typography","attributes":[],"children":"The quick brown fox"}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Column>\n  <Typography>{\"Invoice totals\\n$111.11\\n$888.88\"}</Typography>\n</Column>","start":11,"end":72,"component":"Typography","attributes":[],"children":"{\"Invoice totals\\n$111.11\\n$888.88\"}"}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
-  const { Typography } = scope;
+  const { Typography, Column } = scope;
       return (
-applyPlaygroundElement((<Typography>The quick brown fox</Typography>), input, scope.Typography)
+<Column>
+  {applyPlaygroundElement((<Typography>{"Invoice totals\n$111.11\n$888.88"}</Typography>), input, scope.Typography)}
+</Column>
       );
     },
   },

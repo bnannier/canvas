@@ -31,7 +31,7 @@ export const docs: ComponentDocs = {
     "A web segment is 8 px shorter than its track, padded 14 px a side (8 px for an icon alone) with a 500 label of 12 px at the small size and 13 px otherwise. `compact` is the hand-off component page's platform switch: the segments keep their size's height and take the 12 px label on a 12 px inset, on the web alone (a platform that ships the control keeps its one density; the split, stepper and spaced kinds ignore it). `steadyPress` preserves the resting opacity of a segment while pressed; `start` pins the group in an app-owned host arrangement.",
   ],
   examples: [
-    { label: "Default", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_example_0 },
+    { label: "Default", code: "<ButtonGroup\n  accessibilityLabel=\"Calendar view\"\n  items={[\n    { label: \"Day\", icon: \"sun\" },\n    { label: \"Week\", icon: \"calendarDays\" },\n    { label: \"Month\", icon: \"calendar\" }\n  ]}\n/>", render: e_atoms_button_group_example_0 },
     { label: "Small", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} small />", render: e_atoms_button_group_example_1 },
     { label: "Large", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} large />", render: e_atoms_button_group_example_2 },
     { label: "Compact", code: "<ButtonGroup compact items={[\"Day\", \"Week\", \"Month\"]} defaultActive={0} accessibilityLabel=\"Range\" />", render: e_atoms_button_group_example_3 },

@@ -27,7 +27,7 @@ export const docs: ComponentDocs = {
     "On the web the underline look marks the active tab with a glowing accent bar on the row's hairline, pills sit on a rounded track with a raised thumb, and the vertical rail washes its active row in the accent. iOS draws its segmented control (UISegmentedControl): underline and pills are a capsule track with a raised thumb, and vertical is a grouped rail. In glass mode a filled selection is a control-layer pane behind the selected label, in the platform skin's selected tint with readable foreground ink. Solid mode keeps the complete platform treatment.",
   ],
   examples: [
-    { label: "Default", code: "<Tabs tabs={[\"General\", \"Security\", \"Notifications\"]} />", render: e_organisms_tabs_example_0 },
+    { label: "Default", code: "<Tabs tabs={[\"General\", \"Security\", \"Notifications\", \"Billing\"]} />", render: e_organisms_tabs_example_0 },
     { label: "Pill", code: "<Tabs pills tabs={[\"All\", \"Active\", \"Archived\"]} />", render: e_organisms_tabs_example_1 },
     { label: "Vertical", code: "<Tabs vertical tabs={[\"General\", \"Security\", \"Notifications\"]} />", render: e_organisms_tabs_example_2 },
     { label: "Responsive vertical", code: "<Tabs vertical responsive tabs={[\"General\", \"Security\", \"Notifications\"]} />", render: e_organisms_tabs_example_3, note: ["`responsive` renders a vertical rail as the horizontal underline look when the component's own container is at or below `sm` (640): container-measured, so a settings rail inside a narrow column flattens to a top tab bar instead of starving the panel beside it."] },

@@ -79,7 +79,7 @@ export const KEYBOARD_PATTERNS: Record<KeyboardPatternKey, readonly (readonly [s
 export const DETAIL_SPECS: Record<string, DetailSpec> = {
   "typography": {
     knobs: [
-      {"kind":"axis","label":"Style","options":["h2","display","h1","h3","h4","h5","lead",null,"small","tiny","caption","code","mono","eyebrow","label","statValue"]},
+      {"kind":"axis","label":"Style","options":["h1","h2","h3","h4","h5","display","lead",null,"small","tiny","caption","code","mono","eyebrow","label","statValue"]},
       {"kind":"axis","label":"Tone","options":[null,"muted","primary","success","destructive"]},
       {"kind":"boolean","prop":"semibold","value":false},
       {"kind":"boolean","prop":"underline","value":false},
@@ -341,7 +341,7 @@ export const DETAIL_SPECS: Record<string, DetailSpec> = {
   },
   "radio": {
     knobs: [
-      {"kind":"enum","prop":"value","options":["stable","beta","canary"],"value":"stable"},
+      {"kind":"text","prop":"children","value":"Hobby"},
       {"kind":"boolean","prop":"card","value":false},
       {"kind":"axis","label":"Size","options":[null,"small","large"]},
       {"kind":"boolean","prop":"disabled","value":false},

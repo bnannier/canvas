@@ -64,7 +64,7 @@ links row nor the menu button that stands in for it.
 ```tsx
 <Navbar
   brand="Canvas"
-  links={["Dashboard", "Users", "Settings"]}
+  links={["Dashboard", "Users", "Settings", "Billing"]}
   actionLabel="New"
   avatar="RC"
 />

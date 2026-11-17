@@ -7,24 +7,30 @@ import { applyPlaygroundElement, playgroundCode } from "../../../playground-exam
 export default function Example(scope: ExampleScope) {
   const { Card, Grid } = scope;
   return (
-<Grid minTileWidth={220}>
-  <Card title="Overview" />
-  <Card title="Deploys" />
-  <Card title="Alerts" />
+<Grid minTileWidth={120} columns={3}>
+  <Card compact title="Overview" description="All systems operational." />
+  <Card compact title="Deploys" description="Production is up to date. The next release is waiting for review." />
+  <Card compact title="Alerts" description="No active incidents." />
+  <Card compact title="Traffic" description="Requests are up 12% this week, with steady response times across all regions." />
+  <Card compact title="Storage" description="42% used." />
+  <Card compact title="Team" description="Three teammates are on call today." />
 </Grid>
   );
 }
 
 Example.playground = {
   "Grid": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Grid minTileWidth={220}>\n  <Card title=\"Overview\" />\n  <Card title=\"Deploys\" />\n  <Card title=\"Alerts\" />\n</Grid>","start":0,"end":114,"component":"Grid","attributes":[{"name":"minTileWidth","source":"minTileWidth={220}"}],"children":"\n  <Card title=\"Overview\" />\n  <Card title=\"Deploys\" />\n  <Card title=\"Alerts\" />\n"}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Grid minTileWidth={120} columns={3}>\n  <Card compact title=\"Overview\" description=\"All systems operational.\" />\n  <Card compact title=\"Deploys\" description=\"Production is up to date. The next release is waiting for review.\" />\n  <Card compact title=\"Alerts\" description=\"No active incidents.\" />\n  <Card compact title=\"Traffic\" description=\"Requests are up 12% this week, with steady response times across all regions.\" />\n  <Card compact title=\"Storage\" description=\"42% used.\" />\n  <Card compact title=\"Team\" description=\"Three teammates are on call today.\" />\n</Grid>","start":0,"end":571,"component":"Grid","attributes":[{"name":"minTileWidth","source":"minTileWidth={120}"},{"name":"columns","source":"columns={3}"}],"children":"\n  <Card compact title=\"Overview\" description=\"All systems operational.\" />\n  <Card compact title=\"Deploys\" description=\"Production is up to date. The next release is waiting for review.\" />\n  <Card compact title=\"Alerts\" description=\"No active incidents.\" />\n  <Card compact title=\"Traffic\" description=\"Requests are up 12% this week, with steady response times across all regions.\" />\n  <Card compact title=\"Storage\" description=\"42% used.\" />\n  <Card compact title=\"Team\" description=\"Three teammates are on call today.\" />\n"}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
   const { Card, Grid } = scope;
       return (
-applyPlaygroundElement((<Grid minTileWidth={220}>
-  <Card title="Overview" />
-  <Card title="Deploys" />
-  <Card title="Alerts" />
+applyPlaygroundElement((<Grid minTileWidth={120} columns={3}>
+  <Card compact title="Overview" description="All systems operational." />
+  <Card compact title="Deploys" description="Production is up to date. The next release is waiting for review." />
+  <Card compact title="Alerts" description="No active incidents." />
+  <Card compact title="Traffic" description="Requests are up 12% this week, with steady response times across all regions." />
+  <Card compact title="Storage" description="42% used." />
+  <Card compact title="Team" description="Three teammates are on call today." />
 </Grid>), input, scope.Grid)
       );
     },

@@ -244,7 +244,15 @@ function build() {
       const dropped: { knob: string; reason: string }[] = [];
       const knobs: Knob[] = [];
       for (const k of parseKnobs(s.k ?? "", slug)) {
-        if ("prop" in k && DROPPED_KNOBS[slug]?.[k.prop]) {
+        // Owner's docs order: the heading scale first, then the remaining styles.
+        if (slug === "typography" && k.kind === "axis" && k.label === "Style") {
+          const headings = ["h1", "h2", "h3", "h4", "h5"];
+          knobs.push({ ...k, options: [...headings, ...k.options.filter(option => !headings.includes(option ?? ""))] });
+        } else if (slug === "radio" && "prop" in k && k.prop === "value") {
+          // Radio.value is an option identity, not the group's current selection.
+          // Demonstrate an editable label instead of unrelated release-channel IDs.
+          knobs.push({ kind: "text", prop: "children", value: "Hobby" });
+        } else if ("prop" in k && DROPPED_KNOBS[slug]?.[k.prop]) {
           dropped.push({ knob: k.prop, reason: DROPPED_KNOBS[slug][k.prop] });
         } else if ("prop" in k && GLYPH_KNOBS[slug] === k.prop) {
           knobs.push({ kind: "glyph", value: k.kind === "icon" ? k.value : String((k as { value: unknown }).value) });

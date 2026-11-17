@@ -27,7 +27,8 @@ Single-select exposes a list of selectable options. With `multi`, it exposes a c
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend" },
-    { label: "Design" }
+    { label: "Design" },
+    { label: "Platform" }
   ]}
 />
 ```

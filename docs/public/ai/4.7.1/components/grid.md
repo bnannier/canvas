@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/atoms/grid/grid.md`
 Human reference: https://canvas.nannier.com/components/grid
@@ -46,10 +46,13 @@ and Row and Column's widest step, `chapter` (64), which wins over every other st
 ## Usage
 
 ```tsx
-<Grid minTileWidth={220}>
-  <Card title="Overview" />
-  <Card title="Deploys" />
-  <Card title="Alerts" />
+<Grid minTileWidth={120} columns={3}>
+  <Card compact title="Overview" description="All systems operational." />
+  <Card compact title="Deploys" description="Production is up to date. The next release is waiting for review." />
+  <Card compact title="Alerts" description="No active incidents." />
+  <Card compact title="Traffic" description="Requests are up 12% this week, with steady response times across all regions." />
+  <Card compact title="Storage" description="42% used." />
+  <Card compact title="Team" description="Three teammates are on call today." />
 </Grid>
 ```
 

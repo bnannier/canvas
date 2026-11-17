@@ -1,7 +1,8 @@
 import { SectionVignette } from "../ui/showcase/section-vignette";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Badge,
+  Button,
   Card,
   Column,
   Divider,
@@ -12,6 +13,7 @@ import {
   type IconName,
   PALETTES,
   Reveal,
+  RevealGroup,
   Row,
   Skeleton,
   Spinner,
@@ -32,7 +34,8 @@ import { oklchHex } from "../../../src/style/color.js";
 import { statusColors } from "../../../src/style/status.js";
 import { primaryText } from "../../../src/style/primary-text.js";
 import { NAMES as GLYPHS } from "../../../src/atoms/icon/icon.glyphs.js";
-import { GlassWell, RadiusSample, ShowcaseCard, ShowcaseGrid, SpecimenRows } from "../ui/showcase";
+import { GlassWell, ShowcaseCard, ShowcaseGrid, SpecimenRows } from "../ui/showcase";
+import { FoundationsMotion, IconMotion, PaletteMotion, RadiusMotion, SpringSample } from "./foundations-motion";
 
 // The Foundations section page (`Canvas v4.0.0 Foundations.dc.html`): its hero vignette and
 // its eight cards. Every value a card prints is read from the kit's own tables (the tokens,
@@ -74,9 +77,11 @@ function ColorCard() {
     >
       {/* The five hues as the hand-off draws them, `oklch(.72 .17 hue)` in both schemes. */}
       <Row cozy>
-        {PALETTES.map((palette) => (
+        {PALETTES.map((palette, index) => (
           <Column key={palette} fill>
-            <Swatch fluid circle glow centered bare color={oklchHex(0.72, 0.17, paletteHue[palette])} value={String(paletteHue[palette])} accessibilityLabel={`${palette}, hue ${paletteHue[palette]}`} />
+            <PaletteMotion index={index}>
+              <Swatch fluid circle glow centered bare color={oklchHex(0.72, 0.17, paletteHue[palette])} value={String(paletteHue[palette])} accessibilityLabel={`${palette}, hue ${paletteHue[palette]}`} />
+            </PaletteMotion>
           </Column>
         ))}
       </Row>
@@ -183,17 +188,21 @@ function TypographyCard() {
       meta="Bricolage Grotesque · Instrument Sans · JetBrains Mono"
       caption="<Typography display> · <Typography h3> · <Typography body muted> · <Typography tiny> · <Text numberOfLines> for truncation"
     >
-      <SpecimenRows>
-        {TYPE_ROWS.map((row) => (
-          <Row key={row.role} between baseline wrap relaxed>
-            <Column shrink>
-              {/* A specimen of the role, not a heading of the page; the display line keeps to one line. */}
-              <Typography {...{ [row.role]: true }} {...(row.ink ? { [row.ink]: true } : null)} numberOfLines={row.role === "display" ? 1 : undefined} accessibilityRole="text">{row.sample}</Typography>
-            </Column>
-            <Mono right single>{roleSpec(row.role, row.face)}</Mono>
-          </Row>
-        ))}
-      </SpecimenRows>
+      <RevealGroup>
+        <SpecimenRows>
+          {TYPE_ROWS.map((row) => (
+            <Reveal key={row.role} brisk>
+              <Row between baseline wrap relaxed>
+                <Column shrink>
+                  {/* A specimen of the role, not a heading of the page; the display line keeps to one line. */}
+                  <Typography {...{ [row.role]: true }} {...(row.ink ? { [row.ink]: true } : null)} numberOfLines={row.role === "display" ? 1 : undefined} accessibilityRole="text">{row.sample}</Typography>
+                </Column>
+                <Mono right single>{roleSpec(row.role, row.face)}</Mono>
+              </Row>
+            </Reveal>
+          ))}
+        </SpecimenRows>
+      </RevealGroup>
     </ShowcaseCard>
   );
 }
@@ -219,13 +228,14 @@ function ShapeCard() {
       caption={`shape.web = { control: ${web.control}, tile: ${web.tile}, card: ${web.card}, dialog: ${web.dialog}, sheet: ${web.sheet} }`}
     >
       <Row wrap cozy alignEnd>
-        {shapeSamples(web).map((sample) => (
+        {shapeSamples(web).map((sample, index) => (
           <Column key={sample.role} snug alignCenter>
-            <RadiusSample width={sample.width} height={sample.height} radius={sample.radius} />
+            <RadiusMotion width={sample.width} height={sample.height} radius={sample.radius} index={index} />
             <Mono>{`${sample.radius >= 9999 ? "full" : sample.radius} · ${sample.role}`}</Mono>
           </Column>
         ))}
       </Row>
+      <Mono>Square → authored radius. Same footprint, softer corners.</Mono>
     </ShowcaseCard>
   );
 }
@@ -268,19 +278,23 @@ function DepthCard() {
   );
 }
 
-/** Motion · Spring: an entrance, the placeholder, and the spinner that never stops. */
+/** Motion · Spring: the reference spring lane, a replayable entrance and loading feedback. */
 function MotionCard() {
+  const [replay, setReplay] = useState(0);
+  const [checked, setChecked] = useState(true);
   return (
     <ShowcaseCard
       id="c-motion"
-      caption={`reveal  ease-out cubic · ${revealSkin.duration}ms (brisk ${revealSkin.durationBrisk}ms)\nhover   ${HOVER_EASING} · ${HOVER.button.duration}–${HOVER.card.duration}ms\n<Reveal> · <RevealGroup> rise ${revealSkin.travel}px once, then stay`}
+      caption={`spring  cubic-bezier(.34, 1.56, .64, 1) · 2400ms\nreveal  ease-out cubic · ${revealSkin.duration}ms (brisk ${revealSkin.durationBrisk}ms)\nhover   ${HOVER_EASING} · ${HOVER.button.duration}–${HOVER.card.duration}ms\n<Reveal> · <RevealGroup> rise ${revealSkin.travel}px once, then stay`}
     >
       <Column roomy>
-        <Reveal>
+        <SpringSample />
+        <Reveal key={replay} testID="foundation-replay-entrance">
           <Card flat compact>
-            <Switch defaultChecked>Glass surfaces</Switch>
+            <Switch checked={checked} onChange={setChecked}>Glass surfaces</Switch>
           </Card>
         </Reveal>
+        <Button secondary small iconLeft={<Icon rotateCcw size={14} decorative />} onPress={() => setReplay(value => value + 1)}>Replay entrance</Button>
         {/* The hand-off's 2 by 1fr placeholder grid: two bars, then a third at 60% of its cell. */}
         <Column snug>
           <Row snug>
@@ -323,7 +337,9 @@ function IconCard() {
       caption="<Icon search /> · <Icon trash2 destructive /> · <Icon bell primary size={20} /> · one weight, everywhere"
     >
       <Grid minTileWidth={40} compact>
-        {ICON_SET.map((name) => <Icon key={name} cell subtle {...{ [name]: true }} size={20} accessibilityLabel={name} />)}
+        {ICON_SET.map((name) => ["bell", "settings", "heart", "rocket"].includes(name)
+          ? <IconMotion key={name} name={name}><Icon cell subtle {...{ [name]: true }} size={20} accessibilityLabel={name} /></IconMotion>
+          : <Icon key={name} cell subtle {...{ [name]: true }} size={20} accessibilityLabel={name} />)}
       </Grid>
       <Column relaxed>
         <Divider />
@@ -392,15 +408,17 @@ function EmblemCard() {
 
 export function Cards() {
   return (
-    <ShowcaseGrid minTileWidth={340}>
-      <ColorCard />
-      <NeutralsCard />
-      <GridItem full><TypographyCard /></GridItem>
-      <ShapeCard />
-      <DepthCard />
-      <MotionCard />
-      <IconCard />
-      <EmblemCard />
-    </ShowcaseGrid>
+    <FoundationsMotion>
+      <ShowcaseGrid minTileWidth={340}>
+        <ColorCard />
+        <NeutralsCard />
+        <GridItem full><TypographyCard /></GridItem>
+        <ShapeCard />
+        <DepthCard />
+        <MotionCard />
+        <IconCard />
+        <EmblemCard />
+      </ShowcaseGrid>
+    </FoundationsMotion>
   );
 }

@@ -34,8 +34,10 @@ Android docks the Material 3 bar full-bleed, 80 tall under a hairline, with its 
 <TabBar
   items={[
     { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
+    { key: "inbox", label: "Inbox", icon: (active) => <Icon inbox size={19} primary={active} muted={!active} /> },
+    { key: "board", label: "Board", icon: (active) => <Icon layoutGrid size={19} primary={active} muted={!active} /> },
+    { key: "chat", label: "Chat", icon: (active) => <Icon messageSquare size={19} primary={active} muted={!active} /> },
+    { key: "settings", label: "Settings", icon: (active) => <Icon settings size={19} primary={active} muted={!active} /> }
   ]}
 />
 ```

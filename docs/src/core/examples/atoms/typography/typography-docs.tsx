@@ -101,7 +101,7 @@ export const docs: ComponentDocs = {
     "`code` is the standalone code pill (regular 13px mono on the muted fill, a 6 radius and 2 by 6 padding). `code inline` is the prose code chip, a word of code inside a sentence: the hand-off's inline `<code>`, regular weight at .88 of the surrounding reading role's size (pass that role beside it, `lead`, `small`, `pageBody`, `pageNote`, `pageLead` or `sectionLead`; body when none), a 5 radius, 1 by 5 padding, the surface fill and a 1px hairline rim. The chip keeps its regular weight inside a strong run, as the hand-off applies bold and code independently. Under glass the fill is the same ink tint the pill takes. Natively a Text nested in a Text has no border and no vertical box, so there the chip draws its fill and horizontal padding only; `inline` without `code` does nothing.",
   ],
   examples: [
-    { label: "Default", code: "<Typography>The quick brown fox</Typography>", render: e_atoms_typography_example_0 },
+    { label: "Default", code: "<Column>\n  <Typography>{\"Invoice totals\\n$111.11\\n$888.88\"}</Typography>\n</Column>", render: e_atoms_typography_example_0, note: ["Use a full-width column to see text alignment. Toggle `tabular` to give the digits equal widths: the decimal points in these two amounts then line up. Monospace styles already have equal-width digits."] },
     { label: "Hero", code: "<Typography hero>Made of light.</Typography>", render: e_atoms_typography_example_1 },
     { label: "Page title", code: "<Typography pageTitle>Button</Typography>", render: e_atoms_typography_example_2 },
     { label: "Section title", code: "<Typography sectionTitle>Playground</Typography>", render: e_atoms_typography_example_3 },

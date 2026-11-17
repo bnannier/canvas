@@ -10,8 +10,10 @@ export default function Example(scope: ExampleScope) {
 <TabBar
   items={[
     { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
+    { key: "inbox", label: "Inbox", icon: (active) => <Icon inbox size={19} primary={active} muted={!active} /> },
+    { key: "board", label: "Board", icon: (active) => <Icon layoutGrid size={19} primary={active} muted={!active} /> },
+    { key: "chat", label: "Chat", icon: (active) => <Icon messageSquare size={19} primary={active} muted={!active} /> },
+    { key: "settings", label: "Settings", icon: (active) => <Icon settings size={19} primary={active} muted={!active} /> }
   ]}
 />
   );
@@ -19,15 +21,17 @@ export default function Example(scope: ExampleScope) {
 
 Example.playground = {
   "TabBar": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<TabBar\n  items={[\n    { key: \"home\", label: \"Home\", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },\n    { key: \"search\", label: \"Search\", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },\n    { key: \"profile\", label: \"Profile\", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }\n  ]}\n/>","start":0,"end":373,"component":"TabBar","attributes":[{"name":"items","source":"items={[\n    { key: \"home\", label: \"Home\", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },\n    { key: \"search\", label: \"Search\", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },\n    { key: \"profile\", label: \"Profile\", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }\n  ]}"}]}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<TabBar\n  items={[\n    { key: \"home\", label: \"Home\", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },\n    { key: \"inbox\", label: \"Inbox\", icon: (active) => <Icon inbox size={19} primary={active} muted={!active} /> },\n    { key: \"board\", label: \"Board\", icon: (active) => <Icon layoutGrid size={19} primary={active} muted={!active} /> },\n    { key: \"chat\", label: \"Chat\", icon: (active) => <Icon messageSquare size={19} primary={active} muted={!active} /> },\n    { key: \"settings\", label: \"Settings\", icon: (active) => <Icon settings size={19} primary={active} muted={!active} /> }\n  ]}\n/>","start":0,"end":617,"component":"TabBar","attributes":[{"name":"items","source":"items={[\n    { key: \"home\", label: \"Home\", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },\n    { key: \"inbox\", label: \"Inbox\", icon: (active) => <Icon inbox size={19} primary={active} muted={!active} /> },\n    { key: \"board\", label: \"Board\", icon: (active) => <Icon layoutGrid size={19} primary={active} muted={!active} /> },\n    { key: \"chat\", label: \"Chat\", icon: (active) => <Icon messageSquare size={19} primary={active} muted={!active} /> },\n    { key: \"settings\", label: \"Settings\", icon: (active) => <Icon settings size={19} primary={active} muted={!active} /> }\n  ]}"}]}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
   const { Icon, TabBar } = scope;
       return (
 applyPlaygroundElement((<TabBar
   items={[
     { key: "home", label: "Home", icon: (active) => <Icon home size={19} primary={active} muted={!active} /> },
-    { key: "search", label: "Search", icon: (active) => <Icon search size={19} primary={active} muted={!active} /> },
-    { key: "profile", label: "Profile", icon: (active) => <Icon user size={19} primary={active} muted={!active} /> }
+    { key: "inbox", label: "Inbox", icon: (active) => <Icon inbox size={19} primary={active} muted={!active} /> },
+    { key: "board", label: "Board", icon: (active) => <Icon layoutGrid size={19} primary={active} muted={!active} /> },
+    { key: "chat", label: "Chat", icon: (active) => <Icon messageSquare size={19} primary={active} muted={!active} /> },
+    { key: "settings", label: "Settings", icon: (active) => <Icon settings size={19} primary={active} muted={!active} /> }
   ]}
 />), input, scope.TabBar)
       );

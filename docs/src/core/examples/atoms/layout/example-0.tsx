@@ -5,37 +5,49 @@ import type { PlaygroundInput } from "../../../scope";
 import { applyPlaygroundElement, playgroundCode } from "../../../playground-example";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Row } = scope;
+  const { PreviewViewport, Avatar, Badge, Row, Emblem } = scope;
   return (
-<Row>
-  <Button primary>Save</Button>
-  <Button ghost>Cancel</Button>
-</Row>
+<PreviewViewport height={220}>
+  <Row fill wrap>
+    <Badge small>Queued</Badge>
+    <Emblem primary large label="CV" />
+    <Badge success>Ready to ship</Badge>
+    <Avatar name="Rachel Chen" />
+  </Row>
+</PreviewViewport>
   );
 }
 
 Example.playground = {
   "Row": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Row>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>","start":0,"end":76,"component":"Row","attributes":[],"children":"\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n"}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<PreviewViewport height={220}>\n  <Row fill wrap>\n    <Badge small>Queued</Badge>\n    <Emblem primary large label=\"CV\" />\n    <Badge success>Ready to ship</Badge>\n    <Avatar name=\"Rachel Chen\" />\n  </Row>\n</PreviewViewport>","start":33,"end":204,"component":"Row","attributes":[{"name":"fill","source":"fill"},{"name":"wrap","source":"wrap"}],"children":"\n    <Badge small>Queued</Badge>\n    <Emblem primary large label=\"CV\" />\n    <Badge success>Ready to ship</Badge>\n    <Avatar name=\"Rachel Chen\" />\n  "}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
-  const { Button, Row } = scope;
+  const { PreviewViewport, Avatar, Badge, Row, Emblem } = scope;
       return (
-applyPlaygroundElement((<Row>
-  <Button primary>Save</Button>
-  <Button ghost>Cancel</Button>
-</Row>), input, scope.Row)
+<PreviewViewport height={220}>
+  {applyPlaygroundElement((<Row fill wrap>
+    <Badge small>Queued</Badge>
+    <Emblem primary large label="CV" />
+    <Badge success>Ready to ship</Badge>
+    <Avatar name="Rachel Chen" />
+  </Row>), input, scope.Row)}
+</PreviewViewport>
       );
     },
   },
   "Column": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Row>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>","start":0,"end":76,"component":"Column","attributes":[],"children":"\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n"}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<PreviewViewport height={220}>\n  <Row fill wrap>\n    <Badge small>Queued</Badge>\n    <Emblem primary large label=\"CV\" />\n    <Badge success>Ready to ship</Badge>\n    <Avatar name=\"Rachel Chen\" />\n  </Row>\n</PreviewViewport>","start":33,"end":204,"component":"Column","attributes":[{"name":"fill","source":"fill"},{"name":"wrap","source":"wrap"}],"children":"\n    <Badge small>Queued</Badge>\n    <Emblem primary large label=\"CV\" />\n    <Badge success>Ready to ship</Badge>\n    <Avatar name=\"Rachel Chen\" />\n  "}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
-  const { Button, Row } = scope;
+  const { PreviewViewport, Avatar, Badge, Row, Emblem } = scope;
       return (
-applyPlaygroundElement((<Row>
-  <Button primary>Save</Button>
-  <Button ghost>Cancel</Button>
-</Row>), input, scope.Column)
+<PreviewViewport height={220}>
+  {applyPlaygroundElement((<Row fill wrap>
+    <Badge small>Queued</Badge>
+    <Emblem primary large label="CV" />
+    <Badge success>Ready to ship</Badge>
+    <Avatar name="Rachel Chen" />
+  </Row>), input, scope.Column)}
+</PreviewViewport>
       );
     },
   },

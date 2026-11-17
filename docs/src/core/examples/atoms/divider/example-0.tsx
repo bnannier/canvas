@@ -8,23 +8,35 @@ export default function Example(scope: ExampleScope) {
   const { Divider, Typography, Column } = scope;
   return (
 <Column>
-  <Typography>Profile</Typography>
+  <Column tight>
+    <Typography semibold>Workspace</Typography>
+    <Typography small muted>Manage your team and projects.</Typography>
+  </Column>
   <Divider />
-  <Typography>Account</Typography>
+  <Column tight>
+    <Typography semibold>Account</Typography>
+    <Typography small muted>Personal details and preferences.</Typography>
+  </Column>
 </Column>
   );
 }
 
 Example.playground = {
   "Divider": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Column>\n  <Typography>Profile</Typography>\n  <Divider />\n  <Typography>Account</Typography>\n</Column>","start":46,"end":57,"component":"Divider","attributes":[]}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Column>\n  <Column tight>\n    <Typography semibold>Workspace</Typography>\n    <Typography small muted>Manage your team and projects.</Typography>\n  </Column>\n  <Divider />\n  <Column tight>\n    <Typography semibold>Account</Typography>\n    <Typography small muted>Personal details and preferences.</Typography>\n  </Column>\n</Column>","start":160,"end":171,"component":"Divider","attributes":[]}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
   const { Divider, Typography, Column } = scope;
       return (
 <Column>
-  <Typography>Profile</Typography>
+  <Column tight>
+    <Typography semibold>Workspace</Typography>
+    <Typography small muted>Manage your team and projects.</Typography>
+  </Column>
   {applyPlaygroundElement((<Divider />), input, scope.Divider)}
-  <Typography>Account</Typography>
+  <Column tight>
+    <Typography semibold>Account</Typography>
+    <Typography small muted>Personal details and preferences.</Typography>
+  </Column>
 </Column>
       );
     },

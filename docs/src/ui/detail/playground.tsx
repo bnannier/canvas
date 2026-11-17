@@ -1,6 +1,6 @@
-import { type Ref } from "react";
+import { useState, type Ref } from "react";
 import { Platform } from "react-native";
-import { View, ScrollView, Row, Column, Container, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, useMeasuredWidth, type ColorTokens } from "@nannier/canvas";
+import { View, ScrollView, Row, Column, Container, Card, CardMedia, Divider, Typography, Button, ButtonGroup, Chip, ChipGroup, Switch, Input, Slider, Icon, ICON_NAMES, useMeasuredWidth, type ColorTokens } from "@nannier/canvas";
 import { CodeBlock as KitCodeBlock } from "@nannier/canvas";
 import { buildScopes } from "../../core/build-scopes";
 import type { DetailSpec, Knob } from "../../core/data/detail-specs";
@@ -10,15 +10,13 @@ import { DetailSection, DotGrid, heldOpen, stageData } from "./frame";
 import { playgroundInput } from "./playground-input";
 import { PLATFORMS_SHOWN, PLATFORM_LABELS } from "../../core/platforms-shown";
 import { knobKey, knobProps, optionLabel, type KnobState, type KnobValue, type PropDescriptors } from "./knobs";
+import { iconPickerOptions } from "./icon-picker-options";
 
 // The detail page's Playground (Component.dc.html `#cv-pg`): the component live on the
 // dotted staging ground, a 300 px knob panel beside it that drives a real prop of its
 // props interface per control, and the JSX those props print, regenerated as the knobs
 // move. On the web the platform switch above it renders the same props through the iOS
 // or Android skins.
-
-/** The glyphs an icon slot offers, in the hand-off's order ("" is none). */
-const ICONS = ["", "plus", "sparkles", "chevronDown", "chevronRight", "arrowRight", "search", "settings", "bell", "check", "x", "copy", "send", "heart", "star", "zap", "globe", "lock", "user", "trash2", "download", "tag"] as const;
 
 /** The platforms the switch offers: the web's three, a native app's own alone (../../core/platforms-shown). */
 const PLATFORMS = PLATFORMS_SHOWN.map((platform) => ({ platform, label: PLATFORM_LABELS[platform]!.label }));
@@ -72,26 +70,34 @@ function OptionChips({ name, options, value, onPick }: { name: string; options: 
   );
 }
 
-/**
- * An icon slot's glyphs as icon-only chips ("none" first). The "none" pick is the same
- * 30 px tile as its neighbours (Component.dc.html line 163 draws every pick of the ICONS
- * list, the empty glyph included, as the one square), its label the tile's mono type.
- */
+/** Search the complete kit registry while keeping the icon tiles and radio semantics. */
 function IconChips({ name, value, onPick }: { name: string; value: KnobValue; onPick: (next: string) => void }) {
+  const [query, setQuery] = useState("");
+  const [requestedPage, setPage] = useState(0);
+  const selected = typeof value === "string" ? value : "";
+  const { icons, total, page, pages } = iconPickerOptions(ICON_NAMES, query, requestedPage, selected);
   return (
-    <ChipGroup option accessibilityLabel={name} value={typeof value === "string" ? value : ""} onChange={(next) => onPick(String(next))}>
-      {ICONS.map((glyph) => (
-        <Chip
-          key={glyph || "none"}
-          value={glyph}
-          square={!glyph}
-          accessibilityLabel={glyph || "none"}
-          icon={glyph ? <Icon {...{ [glyph]: true }} size={14} decorative /> : undefined}
-        >
-          {glyph ? undefined : "none"}
-        </Chip>
-      ))}
-    </ChipGroup>
+    <Column snug>
+      <Input small accessibilityLabel={`Search ${name} icons`} placeholder="Search icons or categories…" value={query}
+        onChangeText={(next) => { setQuery(next); setPage(0); }} autoCapitalize="none" autoCorrect={false} clearable />
+      <Typography tiny muted>{`Selected: ${selected || "none"}`}</Typography>
+      <ChipGroup option accessibilityLabel={name} value={selected} onChange={(next) => onPick(String(next))}>
+        <Chip value="" square accessibilityLabel="none">none</Chip>
+        {icons.map((glyph) => (
+          <Chip key={glyph.key} value={glyph.key} accessibilityLabel={glyph.key}
+            icon={<Icon {...{ [glyph.key]: true }} size={14} decorative />} />
+        ))}
+      </ChipGroup>
+      <View accessibilityLiveRegion="polite" aria-live="polite">
+        <Typography tiny muted>{total ? `${total} icons · page ${page + 1} of ${pages}` : "No matching icons. Try another name or category."}</Typography>
+      </View>
+      {pages > 1 ? (
+        <Row between snug>
+          <Button outline small disabled={page === 0} accessibilityLabel={`Previous ${name} icons`} onPress={() => setPage(page - 1)}>Previous</Button>
+          <Button outline small disabled={page === pages - 1} accessibilityLabel={`Next ${name} icons`} onPress={() => setPage(page + 1)}>Next</Button>
+        </Row>
+      ) : null}
+    </Column>
   );
 }
 
@@ -170,7 +176,12 @@ export function PlaygroundSection({ spec, component, props, examples, state, onC
   const stacked = measured && width < 904;
   const activePlatform = Math.max(0, PLATFORMS.findIndex((p) => p.platform === platform));
   const preview = scopeFor(tokens, platform);
-  const example = examples.find(item => item.render.playground?.[component]);
+  // Orientation changes the surrounding layout too: use the authored row example
+  // for a vertical separator, keeping the complete preview and copied code identical.
+  const orientedExample = component === "Divider" && state["@Orientation"] === "vertical"
+    ? examples.find(item => item.label === "Vertical" && item.render.playground?.[component])
+    : undefined;
+  const example = orientedExample ?? examples.find(item => item.render.playground?.[component]);
   const source = example?.render.playground?.[component];
   const input = playgroundInput(preview.scope, component, props, controlled, knobProps(spec.knobs, state, true));
   const code = source ? source.code(input) : example?.code ?? examples[0]?.code ?? "";

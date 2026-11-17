@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/atoms/scroll-view/scroll-view.md`
 Human reference: https://canvas.nannier.com/components/scroll-view
@@ -24,11 +24,11 @@ Unlike a plain View, a ScrollView lets its children exceed its size and scroll. 
 
 ```tsx
 <ScrollView style={{ height: 176, width: "100%", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
-  <View style={{ height: 36, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />
+  <View style={{ width: 192 }}><Card compact title="1. Build" description="Dependencies restored." /></View>
+  <View style={{ width: 192 }}><Card compact title="2. Test" description="All checks passed." /></View>
+  <View style={{ width: 192 }}><Card compact title="3. Publish" description="Image pushed to registry." /></View>
+  <View style={{ width: 192 }}><Card compact title="4. Roll out" description="Updating the fleet." /></View>
+  <View style={{ width: 192 }}><Card compact title="5. Complete" description="Every region is healthy." /></View>
 </ScrollView>
 ```
 

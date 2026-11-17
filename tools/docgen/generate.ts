@@ -352,7 +352,10 @@ function buildEntry(category: Category, dir: string, doc: ParsedDoc, base?: Map<
   const claimed = new Set<string>();
   const families = playgroundFamilies(dir);
   const exampleRefs: ExampleRef[] = doc.examples.map((ex, i) => {
-    const selected = families.filter(family => !claimed.has(family[0]) && playgroundExample(ex.code, family, family[0]));
+    // A vertical divider needs its authored Row composition, not a prop swap in
+    // the horizontal Column. Compile that alternative through the same source path.
+    const orientationExample = dir === "divider" && ex.label === "Vertical";
+    const selected = families.filter(family => (!claimed.has(family[0]) || orientationExample) && playgroundExample(ex.code, family, family[0]));
     for (const family of selected) claimed.add(family[0]);
     const m = module(`example-${i}`, ex.code, selected);
     return { label: ex.label, code: ex.code, note: ex.note, importName: m.importName, file: m.file };

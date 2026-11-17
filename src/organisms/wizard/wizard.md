@@ -10,7 +10,24 @@ native back, and it renders in place in the page's flow instead of presenting in
 
 ## Usage
 
-`ViewportOverlay` is docs-only scaffolding that presents the example above the docs page. In an application, mount Wizard beneath the app-root OverlayProvider.
+The embedded shell keeps the step rail and header beside application-owned content.
+
+```tsx
+<Wizard open embedded onOpenChange={() => {}} title="Create workspace"
+  description="Configure your workspace before inviting your team."
+  steps={[{ label: "Name" }, { label: "Members" }, { label: "Theme" }, { label: "Review" }]}
+  current={0} status="Draft">
+  <Typography h3>Workspace configuration</Typography>
+  <Input label="Workspace name" defaultValue="Customer portal" />
+  <Textarea label="Setup notes" placeholder="Keep notes as you configure the workspace…" />
+</Wizard>
+```
+
+## Variants
+
+### Modal workflow
+
+The application owns each stage's content, previous action and continuation. `ViewportOverlay` is docs-only scaffolding that presents the example above the docs page. In an application, mount Wizard beneath the app-root OverlayProvider.
 
 ```tsx
 <Stateful initial={false}>
@@ -32,8 +49,6 @@ native back, and it renders in place in the page's flow instead of presenting in
   </Stateful>}
 </Stateful>
 ```
-
-## Variants
 
 ### Team invitation
 

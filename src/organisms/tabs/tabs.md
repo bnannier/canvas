@@ -24,7 +24,7 @@ treatment.
 ## Usage
 
 ```tsx
-<Tabs tabs={["General", "Security", "Notifications"]} />
+<Tabs tabs={["General", "Security", "Notifications", "Billing"]} />
 ```
 
 ## Variants

@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.1
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 7554aa136d9a659fb48713ee9c6607cb11683d553e7bab49b170fdc90dc88d18
+Source SHA-256: de5ea526b4ae19d482b04b65f85a075689ab39c3ee20ffbdd9b8d3b1cde8ffaf
 
 Source: `src/atoms/text/text.md`
 Human reference: https://canvas.nannier.com/components/text
@@ -20,8 +20,17 @@ Renders text. In React Native every string must live inside a Text element, so y
 
 ## Usage
 
+`numberOfLines` caps the visible lines and adds an ellipsis when the text is too
+long. Try 1, 2, and 3 with this paragraph; 0 removes the limit. The parent sets
+the width, which determines where each line wraps.
+
 ```tsx
-<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>
+<Container xxs>
+  <Text style={{ color: tokens.foreground }}>
+    The design review is ready. Explore the updated components, check their behavior
+    on smaller screens, and share your feedback with the team before Friday.
+  </Text>
+</Container>
 ```
 
 ## Variants

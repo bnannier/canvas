@@ -5,23 +5,73 @@ import type { PlaygroundInput } from "../../../scope";
 import { applyPlaygroundElement, playgroundCode } from "../../../playground-example";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Swatch } = scope;
+  const { tokens, Stateful, Select, Swatch, Column, Container } = scope;
   return (
-<Swatch color={tokens.primary} value="--primary">
-  primary
-</Swatch>
+<Stateful initial={0}>
+  {(index, setIndex) => {
+    const samples = [
+      { name: "primary", color: tokens.primary },
+      { name: "secondary", color: tokens.secondary },
+      { name: "muted", color: tokens.muted },
+      { name: "background", color: tokens.background },
+      { name: "card", color: tokens.card },
+      { name: "success", color: tokens.success },
+      { name: "warning", color: tokens.warning },
+      { name: "info", color: tokens.info },
+      { name: "destructive", color: tokens.destructive }
+    ];
+    const sample = samples[index] ?? samples[0];
+    return (
+      <Container xs start>
+        <Column relaxed>
+          <Select label="Theme token" value={sample.name}
+            options={samples.map(item => item.name)}
+            onSelect={name => setIndex(samples.findIndex(item => item.name === name))} />
+          <Swatch color={sample.color} value={sample.color} detail={`--${sample.name}`}>
+            {sample.name}
+          </Swatch>
+        </Column>
+      </Container>
+    );
+  }}
+</Stateful>
   );
 }
 
 Example.playground = {
   "Swatch": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<Swatch color={tokens.primary} value=\"--primary\">\n  primary\n</Swatch>","start":0,"end":69,"component":"Swatch","attributes":[{"name":"color","source":"color={tokens.primary}"},{"name":"value","source":"value=\"--primary\""}],"children":"\n  primary\n"}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Stateful initial={0}>\n  {(index, setIndex) => {\n    const samples = [\n      { name: \"primary\", color: tokens.primary },\n      { name: \"secondary\", color: tokens.secondary },\n      { name: \"muted\", color: tokens.muted },\n      { name: \"background\", color: tokens.background },\n      { name: \"card\", color: tokens.card },\n      { name: \"success\", color: tokens.success },\n      { name: \"warning\", color: tokens.warning },\n      { name: \"info\", color: tokens.info },\n      { name: \"destructive\", color: tokens.destructive }\n    ];\n    const sample = samples[index] ?? samples[0];\n    return (\n      <Container xs start>\n        <Column relaxed>\n          <Select label=\"Theme token\" value={sample.name}\n            options={samples.map(item => item.name)}\n            onSelect={name => setIndex(samples.findIndex(item => item.name === name))} />\n          <Swatch color={sample.color} value={sample.color} detail={`--${sample.name}`}>\n            {sample.name}\n          </Swatch>\n        </Column>\n      </Container>\n    );\n  }}\n</Stateful>","start":854,"end":978,"component":"Swatch","attributes":[{"name":"color","source":"color={sample.color}"},{"name":"value","source":"value={sample.color}"},{"name":"detail","source":"detail={`--${sample.name}`}"}],"children":"\n            {sample.name}\n          "}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
-  const { tokens, Swatch } = scope;
+  const { tokens, Stateful, Select, Swatch, Column, Container } = scope;
       return (
-applyPlaygroundElement((<Swatch color={tokens.primary} value="--primary">
-  primary
-</Swatch>), input, scope.Swatch)
+<Stateful initial={0}>
+  {(index, setIndex) => {
+    const samples = [
+      { name: "primary", color: tokens.primary },
+      { name: "secondary", color: tokens.secondary },
+      { name: "muted", color: tokens.muted },
+      { name: "background", color: tokens.background },
+      { name: "card", color: tokens.card },
+      { name: "success", color: tokens.success },
+      { name: "warning", color: tokens.warning },
+      { name: "info", color: tokens.info },
+      { name: "destructive", color: tokens.destructive }
+    ];
+    const sample = samples[index] ?? samples[0];
+    return (
+      <Container xs start>
+        <Column relaxed>
+          <Select label="Theme token" value={sample.name}
+            options={samples.map(item => item.name)}
+            onSelect={name => setIndex(samples.findIndex(item => item.name === name))} />
+          {applyPlaygroundElement((<Swatch color={sample.color} value={sample.color} detail={`--${sample.name}`}>
+            {sample.name}
+          </Swatch>), input, scope.Swatch)}
+        </Column>
+      </Container>
+    );
+  }}
+</Stateful>
       );
     },
   },

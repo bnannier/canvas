@@ -5,19 +5,45 @@ import type { PlaygroundInput } from "../../../scope";
 import { applyPlaygroundElement, playgroundCode } from "../../../playground-example";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View } = scope;
+  const { tokens, alpha, View, Typography, Column, Container } = scope;
   return (
-<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />
+<Container sm>
+  <View style={{ minHeight: 160, backgroundColor: alpha(tokens.primary, 0.08) }}>
+    <Column pad relaxed>
+      <View>
+        <Typography h5>Project workspace</Typography>
+        <Typography small muted>A parent View groups related content.</Typography>
+      </View>
+      <View>
+        <Typography semibold>Design system</Typography>
+        <Typography small>12 components ready for review</Typography>
+      </View>
+    </Column>
+  </View>
+</Container>
   );
 }
 
 Example.playground = {
   "View": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />","start":0,"end":92,"component":"View","attributes":[{"name":"style","source":"style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }}"}]}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<Container sm>\n  <View style={{ minHeight: 160, backgroundColor: alpha(tokens.primary, 0.08) }}>\n    <Column pad relaxed>\n      <View>\n        <Typography h5>Project workspace</Typography>\n        <Typography small muted>A parent View groups related content.</Typography>\n      </View>\n      <View>\n        <Typography semibold>Design system</Typography>\n        <Typography small>12 components ready for review</Typography>\n      </View>\n    </Column>\n  </View>\n</Container>","start":17,"end":462,"component":"View","attributes":[{"name":"style","source":"style={{ minHeight: 160, backgroundColor: alpha(tokens.primary, 0.08) }}"}],"children":"\n    <Column pad relaxed>\n      <View>\n        <Typography h5>Project workspace</Typography>\n        <Typography small muted>A parent View groups related content.</Typography>\n      </View>\n      <View>\n        <Typography semibold>Design system</Typography>\n        <Typography small>12 components ready for review</Typography>\n      </View>\n    </Column>\n  "}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
-  const { tokens, View } = scope;
+  const { tokens, alpha, View, Typography, Column, Container } = scope;
       return (
-applyPlaygroundElement((<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />), input, scope.View)
+<Container sm>
+  {applyPlaygroundElement((<View style={{ minHeight: 160, backgroundColor: alpha(tokens.primary, 0.08) }}>
+    <Column pad relaxed>
+      <View>
+        <Typography h5>Project workspace</Typography>
+        <Typography small muted>A parent View groups related content.</Typography>
+      </View>
+      <View>
+        <Typography semibold>Design system</Typography>
+        <Typography small>12 components ready for review</Typography>
+      </View>
+    </Column>
+  </View>), input, scope.View)}
+</Container>
       );
     },
   },

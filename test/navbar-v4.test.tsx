@@ -10,6 +10,8 @@ import { Navbar as AndroidNavbar } from "../src/organisms/navbars/navbars.androi
 import { densityOf } from "../src/organisms/navbars/navbars.shared.tsx";
 import { webSkin, iosSkin, androidSkin } from "../src/organisms/navbars/navbars.styles.ts";
 import { resizeViewport } from "./viewport.ts";
+import { Column } from "../src/atoms/layout/layout.tsx";
+import { Avatar } from "../src/atoms/avatar/avatar.tsx";
 
 // The v4 Navbar: the hand-off's web bar (its `K.def('navbars')` renderer: 56px, a 16px
 // gutter, 20px between the clusters, 32px capsule links), the `compact` density (the
@@ -78,6 +80,19 @@ describe("Navbar density", () => {
     for (const [Bar, height] of [[Navbar, "44px"], [IosNavbar, "44px"], [AndroidNavbar, "48px"]] as const) {
       ui(<Bar compact testID="bar" brand="Canvas" links={LINKS} />);
       expect(screen.getByTestId("bar").style.height).toBe(height);
+      cleanup();
+    }
+  });
+
+  it("centers a collapsed menu beside a taller brand inside an outer Column", () => {
+    resizeViewport(375);
+    for (const Bar of [Navbar, IosNavbar, AndroidNavbar]) {
+      ui(<Column><Bar compact brand="Canvas" brandContent={<Avatar name="Canvas" />} links={LINKS} /></Column>);
+      const menu = screen.getByLabelText("Navigation menu");
+      // The trigger's wrapper participates in the Navbar's horizontal cluster;
+      // its inner Pressable still hugs within the wrapper's own column.
+      expect(menu.parentElement!.style.alignSelf).not.toBe("flex-start");
+      expect(menu.parentElement!.parentElement!.style.alignItems).toBe("center");
       cleanup();
     }
   });

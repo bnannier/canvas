@@ -4,8 +4,17 @@ Renders text. In React Native every string must live inside a Text element, so y
 
 ## Usage
 
+`numberOfLines` caps the visible lines and adds an ellipsis when the text is too
+long. Try 1, 2, and 3 with this paragraph; 0 removes the limit. The parent sets
+the width, which determines where each line wraps.
+
 ```tsx
-<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>
+<Container xxs>
+  <Text style={{ color: tokens.foreground }}>
+    The design review is ready. Explore the updated components, check their behavior
+    on smaller screens, and share your feedback with the team before Friday.
+  </Text>
+</Container>
 ```
 
 ## Variants

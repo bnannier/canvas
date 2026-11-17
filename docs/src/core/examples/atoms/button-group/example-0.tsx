@@ -7,17 +7,31 @@ import { applyPlaygroundElement, playgroundCode } from "../../../playground-exam
 export default function Example(scope: ExampleScope) {
   const { ButtonGroup } = scope;
   return (
-<ButtonGroup items={["Day", "Week", "Month"]} />
+<ButtonGroup
+  accessibilityLabel="Calendar view"
+  items={[
+    { label: "Day", icon: "sun" },
+    { label: "Week", icon: "calendarDays" },
+    { label: "Month", icon: "calendar" }
+  ]}
+/>
   );
 }
 
 Example.playground = {
   "ButtonGroup": {
-    code: (input: PlaygroundInput) => playgroundCode({"code":"<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} />","start":0,"end":48,"component":"ButtonGroup","attributes":[{"name":"items","source":"items={[\"Day\", \"Week\", \"Month\"]}"}]}, input),
+    code: (input: PlaygroundInput) => playgroundCode({"code":"<ButtonGroup\n  accessibilityLabel=\"Calendar view\"\n  items={[\n    { label: \"Day\", icon: \"sun\" },\n    { label: \"Week\", icon: \"calendarDays\" },\n    { label: \"Month\", icon: \"calendar\" }\n  ]}\n/>","start":0,"end":189,"component":"ButtonGroup","attributes":[{"name":"accessibilityLabel","source":"accessibilityLabel=\"Calendar view\""},{"name":"items","source":"items={[\n    { label: \"Day\", icon: \"sun\" },\n    { label: \"Week\", icon: \"calendarDays\" },\n    { label: \"Month\", icon: \"calendar\" }\n  ]}"}]}, input),
     render: (scope: ExampleScope, input: PlaygroundInput) => {
   const { ButtonGroup } = scope;
       return (
-applyPlaygroundElement((<ButtonGroup items={["Day", "Week", "Month"]} />), input, scope.ButtonGroup)
+applyPlaygroundElement((<ButtonGroup
+  accessibilityLabel="Calendar view"
+  items={[
+    { label: "Day", icon: "sun" },
+    { label: "Week", icon: "calendarDays" },
+    { label: "Month", icon: "calendar" }
+  ]}
+/>), input, scope.ButtonGroup)
       );
     },
   },
