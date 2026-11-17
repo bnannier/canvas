@@ -1,5 +1,8 @@
 # Phase 11 — public application recipes
 
+Commit references below were remapped to their equivalent history during the
+owner-approved attribution cleanup on 2026-11-17. File trees are unchanged.
+
 Verified 2026-11-02. The private Expo recipe app now consumes the published `@nannier/canvas@4.1.0`; its exact dependency and Bun integrity entry are the only dependency changes. Existing React Native settings, operations dashboard, and studio booking flows supply the public app. No docs v4 hand-off page, chrome, or component skin changed.
 
 ## Build contract
@@ -46,7 +49,7 @@ Full source verification passed: 8,768 tests, eight skips, zero failures. Seven 
 The owner approved committing/pushing the reviewed changes and deploying docs,
 with npm and store releases disabled, while keeping the kit repository public.
 An isolated worktree excludes unrelated in-progress icon edits. Its base is
-`3fe1a496`, the already-committed README/USAGE update on main. That update had
+`07897583`, the already-committed README/USAGE update on main. That update had
 regenerated the current 4.1.0 source snapshot; deployment verification must use
 the sealed docs artifact and current snapshot manifest, rather than asserting
 byte equality with the older npm-bundled documentation. Both identify themselves

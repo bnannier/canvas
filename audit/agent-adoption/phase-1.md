@@ -1,7 +1,10 @@
 # Phase 1: installation and evaluation foundation
 
+Commit references below were remapped to their equivalent history during the
+owner-approved attribution cleanup on 2026-11-17. File trees are unchanged.
+
 Started 2026-11-01. Base revision:
-`1b51bef68135a9426fed9ef7e0dc3fa3dcb274bb`.
+`579343cc9ee03dd84a5c779aac290221abf50890`.
 
 ## Registry evidence
 

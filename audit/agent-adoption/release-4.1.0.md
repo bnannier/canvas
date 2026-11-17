@@ -1,10 +1,13 @@
 # Canvas 4.1.0 release verification
 
+Commit references below were remapped to their equivalent history during the
+owner-approved attribution cleanup on 2026-11-17. File trees are unchanged.
+
 The owner approved npm and docs publication. The [release workflow](https://github.com/bnannier/canvas/actions/runs/41362322417)
 completed successfully on 2026-11-02 UTC: npm and Cloudflare succeeded, and both
-store jobs were skipped. Source commit: `198c70ef562fb96552458c1af3dade367ce276dd`.
+store jobs were skipped. Source commit: `84ce31980d2ef24dde2dad4e44cbc9d3d4676501`.
 The accepted version commit and `v4.1.0` tag are
-`d7bb5af31414552ed286562ce4fa91d0faf1debd`.
+`2bd4e7599878f53694fb73ac04b512a67baa71cd`.
 
 ## Public delivery
 
