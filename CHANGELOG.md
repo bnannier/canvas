@@ -1,5 +1,20 @@
 # @nannier/canvas
 
+## 4.9.0
+
+### Minor Changes
+
+- 301bedd: Add a decorative center logo slot to QRCode with high error correction.
+
+### Patch Changes
+
+- 301bedd: Reduce documentation startup work while preserving the rotating hero showcase. Render only active and upcoming specimens, paint the headline entrance before hydration, stabilize the initial responsive layout, and reuse aurora blur calculations. Keep shared navigation and search metadata independent of live template modules.
+
+  Place overlay showcase component links in wrapping card footers so previews cannot obscure them on phones, tablets, or desktop.
+
+- 301bedd: Fix a crash in the native documentation showcase when an animation uses the default easing curve, and fix default rotation in the library hero's animation helpers.
+- 301bedd: Keep the hero Sparkline in the compact surrounding rotation and remove its center sample.
+
 ## 4.8.0
 
 ### Minor Changes
