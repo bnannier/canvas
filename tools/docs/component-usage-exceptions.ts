@@ -7,6 +7,38 @@ import type { DocsUsageException } from "./component-usage.ts";
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   ...V4_PRESENTATION_EXCEPTIONS,
   {
+    file: "docs/src/ui/showcase/card.tsx", owner: "ShowcaseCard", tag: "ShowcaseCardBody", attribute: "spread", keys: ["<unresolved props>"], expression: "props", occurrences: 1,
+    reason: "The measured animation wrapper forwards the original typed ShowcaseCardProps unchanged to the existing card body.",
+  },
+  {
+    file: "docs/src/ui/showcase/demo.tsx", owner: "ShowcaseDemoFrame", tag: "View", attribute: "style", keys: ["flexGrow", "minWidth", "width"], occurrences: 1,
+    reason: "Owner-requested section animations (2026-11-17): an unpainted measured parent preserves the card's full grid footprint and stops offscreen playback. All specimens remain real kit components.",
+  },
+  {
+    file: "docs/src/sections/layout-motion.tsx", owner: "ResizeSample", tag: "View", attribute: "style", keys: ["height", "minWidth"], occurrences: 1,
+    reason: "The Layout sizing demonstration reserves a stable stage while the parent narrows and the real kit children reflow.",
+  },
+  {
+    file: "docs/src/sections/layout-motion.tsx", owner: "ResizeSample", tag: "Animated.View", attribute: "foreign-component", keys: ["react-native-reanimated#View"], occurrences: 1,
+    reason: "A native Reanimated parent demonstrates the kit's intrinsic resizing; it paints no replacement control.",
+  },
+  {
+    file: "docs/src/sections/layout-motion.tsx", owner: "ResizeSample", tag: "Animated.View", attribute: "style", keys: ["<unresolved style>", "minWidth"], expression: "{[{ minWidth: 0 }, sizing]}", occurrences: 1,
+    reason: "Only the specimen parent's percentage width animates. A fixed stage contains the resulting real component reflow, with live Reduced Motion support.",
+  },
+  {
+    file: "docs/src/sections/layout.tsx", owner: "ResponsiveCard", tag: "ScrollView", attribute: "style", keys: ["height"], occurrences: 1,
+    reason: "A bounded 560px app preview keeps automatic phone/tablet/desktop layout changes from moving the surrounding reading page; the actual preview remains scrollable.",
+  },
+  {
+    file: "docs/src/sections/overlays.tsx", owner: "StageMotion", tag: "Animated.View", attribute: "foreign-component", keys: ["react-native-reanimated#View"], occurrences: 1,
+    reason: "Owner-requested embedded overlay showcase transitions use a native Reanimated host around the real kit overlay without opening a page-level modal.",
+  },
+  {
+    file: "docs/src/sections/overlays.tsx", owner: "StageMotion", tag: "Animated.View", attribute: "style", keys: ["flexGrow"], occurrences: 1,
+    reason: "The animation host preserves its embedded overlay's stage footprint while entering or exiting; it adds no surface or control styling.",
+  },
+  {
     file: "docs/src/brand/hero-showcase-forms-navigation.tsx", owner: "HeroFormNavigationSpecimen", tag: "View", attribute: "style", keys: ["width"], occurrences: 1,
     reason: "The decorative TextInput sample needs a definite small scene footprint; this unpainted wrapper only supplies bounds.",
   },
@@ -163,6 +195,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   {
     file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["flexGrow"], occurrences: 1,
     reason: "A growing stage's overlay layer: the embedded overlay fills the stage in the flow, so its own dim covers it; it paints nothing.",
+  },
+  {
+    file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["paddingHorizontal", "paddingTop", "pointerEvents"], occurrences: 1,
+    reason: "A growing stage reserves the caption's intrinsic height before its embedded overlay. The existing 14px top and 16px side insets stay intact while long phone labels wrap without covering the dialog.",
   },
   {
     file: "docs/src/ui/showcase/card.tsx", owner: "Stage", tag: "View", attribute: "style", keys: ["bottom", "left", "paddingBottom", "paddingLeft", "paddingRight", "paddingTop", "position", "right", "top"], occurrences: 1,

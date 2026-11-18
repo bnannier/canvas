@@ -1,8 +1,10 @@
 import { SectionVignette } from "../ui/showcase/section-vignette";
+import { useEffect } from "react";
 import { useTheme, Card, Column, Grid, Icon, Row, Typography } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { ExampleScope, PreviewScope } from "../core/scope";
 import { PLATFORM_LABELS, shows } from "../core/platforms-shown";
+import { ShowcaseDemoFrame, useShowcaseDemo } from "../ui/showcase/demo";
 
 // The Skins page (`Canvas v4.0.0 Skins.dc.html`): its hero vignette and its three device
 // columns. Each column renders ONE tree (<Button primary>, <Field><Input>, <ButtonGroup
@@ -57,9 +59,9 @@ function DeviceBar({ platform }: { platform: Platform }) {
  * the disclosure chevron, since a StackedList row always leads with an avatar); Android
  * and the web list a person under a full-width hairline.
  */
-function SettingsCard({ platform, scope }: { platform: Platform; scope: ExampleScope }) {
+function SettingsCard({ platform, scope, checked, onChange }: { platform: Platform; scope: ExampleScope; checked: boolean; onChange: (checked: boolean) => void }) {
   const { Card: SkinCard, Divider, MediaObject, StackedList, Switch: SkinSwitch } = scope;
-  const glass = <SkinSwitch defaultChecked>Glass surfaces</SkinSwitch>;
+  const glass = <SkinSwitch checked={checked} onChange={onChange} testID={`skins-${platform}-glass`}>Glass surfaces</SkinSwitch>;
   if (platform === "ios") {
     const chevron = <Icon chevronRight size={16} muted decorative />;
     return (
@@ -88,30 +90,80 @@ function SettingsCard({ platform, scope }: { platform: Platform; scope: ExampleS
   );
 }
 
+type SkinFrame = {
+  name: string;
+  invalid: boolean;
+  phase: "idle" | "saving" | "saved";
+  range: number;
+  glass: boolean;
+};
+
+const REST: SkinFrame = { name: "", invalid: false, phase: "idle", range: 1, glass: true };
+const SKIN_FRAMES: readonly SkinFrame[] = [
+  REST,
+  { ...REST, name: "Ri", invalid: true, range: 0 },
+  { ...REST, name: "Riskora", range: 0 },
+  { ...REST, name: "Riskora", range: 2, phase: "saving", glass: false },
+  { ...REST, name: "Riskora", range: 2, phase: "saved", glass: false },
+  { ...REST, name: "Riskora copy" },
+];
+
 /** One device column: the same tree rendered through one platform's skins. */
 function SkinColumn({ platform, scope }: { platform: Platform; scope: ExampleScope }) {
   const { Button: SkinButton, ButtonGroup: SkinButtonGroup, Field, Input } = scope;
   const copy = PLATFORM_LABELS[platform]!.skin;
+  const id = `skins-${platform}`;
+  const { value, manual, setValue } = useShowcaseDemo(id, SKIN_FRAMES, { interval: 1350, delay: 600 });
+  const { name, invalid, phase, range, glass } = value;
+  const loading = phase === "saving";
+  const saved = phase === "saved";
+  const save = () => setValue((current) => {
+    const workspace = current.name.trim();
+    if (workspace.length < 3) return { ...current, invalid: true, phase: "idle" };
+    return { ...current, name: workspace, invalid: false, phase: "saving" };
+  });
+
+  useEffect(() => {
+    if (!manual || !loading) return;
+    const completion = setTimeout(() => {
+      setValue((current) => current.phase === "saving" ? { ...current, phase: "saved" } : current);
+    }, 520);
+    return () => clearTimeout(completion);
+  }, [loading, manual, setValue]);
+
   return (
-    <Card raised testID={`skins-${platform}`}>
-      <Column spacious>
-        <DeviceBar platform={platform} />
-        <Row between alignEnd cozy wrap>
-          <Typography h3 level={2}>{copy.title}</Typography>
-          <Typography tiny mono subtle>{copy.meta}</Typography>
-        </Row>
-        <Column cozy>
-          <SkinButton primary block>Save</SkinButton>
-          <SkinButton secondary block>Duplicate</SkinButton>
+    <ShowcaseDemoFrame id={id}>
+      <Card raised testID={id}>
+        <Column spacious>
+          <DeviceBar platform={platform} />
+          <Row between alignEnd cozy wrap>
+            <Typography h3 level={2}>{copy.title}</Typography>
+            <Typography tiny mono subtle>{copy.meta}</Typography>
+          </Row>
+          <Column cozy>
+            <SkinButton primary block loading={loading} iconLeft={saved ? <Icon check decorative /> : undefined} testID={`${id}-save`} onPress={save}>
+              {saved ? "Saved" : "Save"}
+            </SkinButton>
+            <SkinButton secondary block onPress={() => setValue((current) => ({
+              ...current, name: `${current.name.trim() || "Riskora"} copy`, invalid: false, phase: "idle",
+            }))}>Duplicate</SkinButton>
+          </Column>
+          <Field label="Workspace name" helper="Shown in the sidebar and on invoices." error={invalid ? "Enter at least 3 characters." : undefined}>
+            <Input
+              placeholder="Riskora"
+              accessibilityLabel="Workspace name"
+              value={name}
+              onChangeText={(next) => setValue((current) => ({
+                ...current, name: next, invalid: current.invalid && next.trim().length < 3, phase: "idle",
+              }))}
+            />
+          </Field>
+          <SkinButtonGroup segmented block active={range} onSelect={(index) => setValue((current) => ({ ...current, range: index }))} items={["Day", "Week", "Month"]} accessibilityLabel="Range" />
+          <SettingsCard platform={platform} scope={scope} checked={glass} onChange={(checked) => setValue((current) => ({ ...current, glass: checked }))} />
+          <Typography tiny mono subtle>{copy.foot}</Typography>
         </Column>
-        <Field label="Workspace name" helper="Shown in the sidebar and on invoices.">
-          <Input placeholder="Riskora" accessibilityLabel="Workspace name" />
-        </Field>
-        <SkinButtonGroup segmented block defaultActive={1} items={["Day", "Week", "Month"]} accessibilityLabel="Range" />
-        <SettingsCard platform={platform} scope={scope} />
-        <Typography tiny mono subtle>{copy.foot}</Typography>
-      </Column>
-    </Card>
+      </Card>
+    </ShowcaseDemoFrame>
   );
 }
 

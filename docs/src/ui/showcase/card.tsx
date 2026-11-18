@@ -5,6 +5,7 @@ import { CARD_BORDER } from "../../../../src/molecules/card/card.styles.js";
 import { pageRoles } from "../../../../src/style/type-scale.js";
 import { getComponent } from "../../core/data/components";
 import { showcaseCard } from "../../data/showcase";
+import { ShowcaseDemoFrame } from "./demo";
 
 // A section page's card (the hand-off's `<div id="c-...">` in `Canvas v4.0.0 <Section>.dc.html`,
 // `background:var(--sf);border:1px solid var(--ln);border-radius:20px;box-shadow:var(--sh-sm);
@@ -137,12 +138,17 @@ function Stage({ id, spec, chips, caption, children }: { id: string; spec: Stage
         ) : null}
         {spec.scene}
         {spec.scrim ? <View aria-hidden style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: tokens.scrim, pointerEvents: "none" }} /> : null}
+        {spec.grows && caption != null && !spec.noLabel ? (
+          <View style={{ paddingTop: 14, paddingHorizontal: 16, pointerEvents: "none" }}>
+            {spec.labelSubtle ? <Typography pageLabel mono subtle>{caption}</Typography> : <Typography pageLabel mono muted>{caption}</Typography>}
+          </View>
+        ) : null}
         {centred ? children : spec.grows ? <View style={{ flexGrow: 1 }}>{children}</View> : (
           <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, paddingTop: inset[0], paddingRight: inset[1], paddingBottom: inset[2], paddingLeft: inset[3] }}>
             {children}
           </View>
         )}
-        {caption != null && !spec.noLabel ? (
+        {caption != null && !spec.noLabel && !spec.grows ? (
           <View style={{ position: "absolute", left: 16, top: 14, right: 16, pointerEvents: "none" }}>
             {spec.labelSubtle ? <Typography pageLabel mono subtle>{caption}</Typography> : <Typography pageLabel mono muted>{caption}</Typography>}
           </View>
@@ -153,7 +159,11 @@ function Stage({ id, spec, chips, caption, children }: { id: string; spec: Stage
   );
 }
 
-export function ShowcaseCard({ id, title, meta, links, caption, tinyCaption, split, stage, children }: ShowcaseCardProps) {
+export function ShowcaseCard(props: ShowcaseCardProps) {
+  return <ShowcaseDemoFrame id={props.id}><ShowcaseCardBody {...props} /></ShowcaseDemoFrame>;
+}
+
+function ShowcaseCardBody({ id, title, meta, links, caption, tinyCaption, split, stage, children }: ShowcaseCardProps) {
   const spec = showcaseCard(id);
   const head = { title: title ?? spec?.title, meta: meta ?? spec?.meta };
   const chips = links ?? spec?.links ?? [];

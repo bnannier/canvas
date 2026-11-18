@@ -11,7 +11,11 @@
     "docs/src/shell/page-look.ts",
     "src/style/glass-surface/ios-tints.ts",
     "docs/src/brand/library-hero-look.ts",
-    "docs/src/brand/hero-showcase-motion.ts"
+    "docs/src/brand/hero-showcase-motion.ts",
+    "docs/src/ui/showcase/demo-clock.ts",
+    "docs/src/sections/layout-motion.tsx",
+    "docs/src/sections/overlays.tsx",
+    "docs/src/ui/showcase/demo.tsx"
   ],
   "references": [
     {
@@ -176,6 +180,13 @@
         "/private/tmp/canvas-glass-native-reference.xFgnxK/dark.png"
       ],
       "card": "tools/native/liquid-motion.md#ios-navigation-glass-2026"
+    },
+    {
+      "name": "section-functional-showcases",
+      "what": "Owner-requested functional showcase motion on the eight main section pages, 2026-11-17: actual component states, independent card timelines, embedded overlays, and parent resizing. The existing v4 specimens retain their skins.",
+      "run": "Run the docs on localhost:8081 and inspect each section at 1440, 768, and 390px; enable live Reduced Motion, scroll cards into/out of view, and take over with pointer, touch, keyboard, or typing. Captures are temporary only.",
+      "strips": [],
+      "card": "tools/native/liquid-motion.md#section-functional-showcases"
     }
   ],
   "harness": {

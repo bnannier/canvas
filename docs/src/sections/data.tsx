@@ -1,5 +1,5 @@
 import { SectionVignette } from "../ui/showcase/section-vignette";
-import { useState, type ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { PLATFORM_COPY } from "../data/platform-copy";
 import {
   Accordion,
@@ -47,11 +47,15 @@ import {
   Typography,
   Video,
   useTheme,
+  type BoardItem,
   type ChatMessageData,
+  type DataTableSort,
+  type FlowSelection,
 } from "@nannier/canvas";
 import { resolvePhoto } from "../core/photos";
 import { COMPONENTS } from "../core/data/components";
 import { ShowcaseCard, ShowcaseGrid, ShowcaseGroup } from "../ui/showcase";
+import { ShowcaseDemoFrame, useShowcaseDemo } from "../ui/showcase/demo";
 import {
   BOARD_COLUMNS,
   BOARD_ITEMS,
@@ -90,7 +94,10 @@ export function Vignette() {
 const specimenLabel = (label: string) => <Typography eyebrow subtle>{label}</Typography>;
 
 /** Card · default: the page's own card at rest, its chip linking the Card page. */
+const SAVE_FRAMES = ["ready", "saving", "saved", "saved"] as const;
+
 function CardDefault() {
+  const { value, setValue, active } = useShowcaseDemo("c-card", SAVE_FRAMES, { interval: 1900 });
   return (
     <ShowcaseCard id="c-card" title="Card · default">
       <Column snug>
@@ -98,8 +105,10 @@ function CardDefault() {
         <Typography small muted>Rests at elevation sm. Lifts to md on hover, on the spring.</Typography>
       </Column>
       <Row snug>
-        <Button primary small>Save</Button>
-        <Button ghost small>Later</Button>
+        <Button primary small loading={active && value === "saving"} onPress={() => setValue("saved")} testID="section-demo-card-save">
+          {value === "saved" ? "Saved" : "Save"}
+        </Button>
+        <Button ghost small onPress={() => setValue("ready")}>Later</Button>
       </Row>
     </ShowcaseCard>
   );
@@ -138,21 +147,31 @@ function CardGlass() {
 }
 
 /** Card · selected: the ion border and ring, with a specimen well for the media slot. */
+const CARD_SELECTION = [true, false, true, true];
+
 function CardSelected() {
+  const { value, setValue } = useShowcaseDemo("c-card-selected", CARD_SELECTION, { interval: 2000 });
   return (
-    <Card selected testID="showcase-c-card-selected">
-      <Row between alignCenter>
-        {specimenLabel("Card · selected")}
-        <Icon circleCheck primary size={18} decorative />
-      </Row>
-      <Typography subheading semibold>Team · 24 members</Typography>
-      <Typography small muted>Selection is a 1px ion border and a 4px ring. Never a fill.</Typography>
-      <Card flat flush>
-        <CardMedia compact>
-          <Typography caption mono subtle>media slot · 16:9</Typography>
-        </CardMedia>
+    <ShowcaseDemoFrame id="c-card-selected">
+      <Card
+        selected={value}
+        onPress={() => setValue(!value)}
+        accessibilityLabel={value ? "Deselect Team, 24 members" : "Select Team, 24 members"}
+        testID="showcase-c-card-selected"
+      >
+        <Row between alignCenter>
+          {specimenLabel("Card · selected")}
+          <Icon circleCheck={value} circle={!value} primary={value} muted={!value} size={18} decorative />
+        </Row>
+        <Typography subheading semibold>Team · 24 members</Typography>
+        <Typography small muted>Selection is a 1px ion border and a 4px ring. Never a fill.</Typography>
+        <Card flat flush>
+          <CardMedia compact>
+            <Typography caption mono subtle>media slot · 16:9</Typography>
+          </CardMedia>
+        </Card>
       </Card>
-    </Card>
+    </ShowcaseDemoFrame>
   );
 }
 
@@ -171,7 +190,16 @@ function Mode({ name, note, children }: { name: string; note: string; children: 
   );
 }
 
+const ANATOMY_FRAMES = [
+  { complete: 14, glass: true, scheme: 0, applyTheme: false },
+  { complete: 16, glass: false, scheme: 0, applyTheme: true },
+  { complete: 18, glass: true, scheme: 1, applyTheme: true },
+  { complete: 18, glass: true, scheme: 0, applyTheme: true },
+];
+
 function CardAnatomy() {
+  const { value, setValue } = useShowcaseDemo("c-card-anatomy", ANATOMY_FRAMES);
+  const { scheme, palette, surface } = useTheme();
   return (
     <ShowcaseCard
       id="c-card-anatomy"
@@ -187,12 +215,12 @@ function CardAnatomy() {
             </CardHeader>
             <CardSeparator />
             <CardContent>
-              <Progress value={14 / 18} description="14 / 18">QA checklist</Progress>
+              <Progress value={value.complete / 18} description={`${value.complete} / 18`} testID="section-demo-qa-progress">QA checklist</Progress>
             </CardContent>
             <CardFooter>
               <Row end snug>
                 <Button ghost small>Later</Button>
-                <Button primary small>Review</Button>
+                <Button primary small onPress={() => setValue((current) => ({ ...current, complete: 18 }))}>Review</Button>
               </Row>
             </CardFooter>
           </Card>
@@ -224,10 +252,16 @@ function CardAnatomy() {
               </Column>
             </Mode>
             <Mode name="controls" note="a settings surface">
-              <Card controls>
-                <Switch defaultChecked>Glass</Switch>
-                <ButtonGroup segmented block defaultActive={0} accessibilityLabel="Scheme" items={["Dark", "Light"]} />
-              </Card>
+              <ThemeProvider
+                scheme={value.applyTheme ? (value.scheme === 0 ? "dark" : "light") : scheme}
+                surface={value.applyTheme ? (value.glass ? "glass" : "solid") : surface}
+                {...{ [palette]: true }}
+              >
+                <Card controls>
+                  <Switch checked={value.glass} onChange={(glass) => setValue((current) => ({ ...current, glass, applyTheme: true }))}>Glass</Switch>
+                  <ButtonGroup segmented block active={value.scheme} onSelect={(scheme) => setValue((current) => ({ ...current, scheme, applyTheme: true }))} accessibilityLabel="Scheme" items={["Dark", "Light"]} />
+                </Card>
+              </ThemeProvider>
             </Mode>
           </Grid>
         </Column>
@@ -238,21 +272,29 @@ function CardAnatomy() {
 
 // ── Stats ───────────────────────────────────────────────────────────────────────────
 
+const STAT_FRAMES = [
+  { revenue: "$128.4k", gain: "+18.2%", revenueSpark: [30, 42, 38, 50, 46, 58, 64, 80], members: "1,204", joined: 72, newMembers: "+6", latency: 212, change: "+41ms", slow: true, latencySpark: [40, 38, 44, 52, 48, 60, 66, 74], ios: 64, mobile: 18, web: 9 },
+  { revenue: "$131.8k", gain: "+21.3%", revenueSpark: [42, 38, 50, 46, 58, 64, 80, 87], members: "1,227", joined: 73, newMembers: "+23", latency: 184, change: "−28ms", slow: false, latencySpark: [38, 44, 52, 48, 60, 66, 74, 53], ios: 65, mobile: 19, web: 10 },
+  { revenue: "$136.2k", gain: "+25.4%", revenueSpark: [38, 50, 46, 58, 64, 80, 87, 94], members: "1,260", joined: 75, newMembers: "+33", latency: 171, change: "−13ms", slow: false, latencySpark: [44, 52, 48, 60, 66, 74, 53, 43], ios: 66, mobile: 19, web: 11 },
+];
+
 function StatsCard() {
+  const { value } = useShowcaseDemo("c-stats", STAT_FRAMES, { interval: 2400 });
   return (
     <ShowcaseCard id="c-stats" caption="<Stats items={…}> · deltas and sparks · <ProgressRing>">
       <Stats
+        testID="section-demo-stats"
         items={[
-          { label: "Revenue", value: "$128.4k", delta: "+18.2%", spark: [30, 42, 38, 50, 46, 58, 64, 80] },
-          { label: "Active members", value: "1,204", delta: "+6", description: "72% of 1,680 invited", share: [{ label: "Joined", value: 72 }, { label: "Invited", value: 28 }] },
-          { label: "p95 latency", value: "212 ms", delta: "+41ms", down: true, spark: [40, 38, 44, 52, 48, 60, 66, 74] },
+          { label: "Revenue", value: value.revenue, delta: value.gain, spark: value.revenueSpark },
+          { label: "Active members", value: value.members, delta: value.newMembers, description: `${value.joined}% of 1,680 invited`, share: [{ label: "Joined", value: value.joined }, { label: "Invited", value: 100 - value.joined }] },
+          { label: "p95 latency", value: `${value.latency} ms`, delta: value.change, down: value.slow, spark: value.latencySpark },
         ]}
       />
       <Row cozy alignCenter>
-        <ProgressRing value={91} compact />
+        <ProgressRing value={value.ios + value.mobile + value.web} compact />
         <Column tight>
           <Typography eyebrow subtle>Platforms</Typography>
-          <Typography small muted>{`iOS 64% · ${PLATFORM_COPY.samplePlatform} 18% · Web 9%`}</Typography>
+          <Typography small muted>{`iOS ${value.ios}% · ${PLATFORM_COPY.samplePlatform} ${value.mobile}% · Web ${value.web}%`}</Typography>
         </Column>
       </Row>
     </ShowcaseCard>
@@ -261,17 +303,38 @@ function StatsCard() {
 
 // ── DataTable ───────────────────────────────────────────────────────────────────────
 
+interface MembersFrame {
+  selected: Array<string | number>;
+  sort: DataTableSort | null;
+  invitationAccepted: boolean;
+}
+
+const MEMBER_FRAMES: MembersFrame[] = [
+  { selected: [...SELECTED_MEMBERS], sort: null, invitationAccepted: false },
+  { selected: [1, 3, 2], sort: null, invitationAccepted: true },
+  { selected: [2, 5], sort: { column: "Balance", descending: true }, invitationAccepted: true },
+  { selected: [5], sort: { column: "Balance" }, invitationAccepted: true },
+];
+
+const MEMBER_ROWS = MEMBERS.map((member, key) => ({ ...member, key }));
+
 function MembersTable() {
-  const [selected, setSelected] = useState<Array<string | number>>([...SELECTED_MEMBERS]);
+  const { value, setValue, stop } = useShowcaseDemo("c-data-table", MEMBER_FRAMES, { interval: 2600 });
+  const [query, setQuery] = useState("");
+  const term = query.trim().toLowerCase();
+  const members = MEMBER_ROWS.filter((member) => `${member.name} ${member.email} ${member.team}`.toLowerCase().includes(term));
+  const visibleKeys = new Set<string | number>(members.map((member) => member.key));
+  const selected = value.selected.filter((key) => visibleKeys.has(key));
+  const statusOf = (member: (typeof MEMBER_ROWS)[number]) => value.invitationAccepted && member.status === "Invited" ? "Active" : member.status;
   return (
     <ShowcaseCard id="c-data-table" caption="<DataTable selectable sortable> · rows select on press · cells take any node">
       <Row between alignCenter wrap cozy>
         <Column tight>
           <Typography subheading semibold>Members</Typography>
-          <Typography small muted>{`${selected.length} selected · ${MEMBERS.length} rows · click a row`}</Typography>
+          <Typography small muted>{`${selected.length} selected · ${members.length} ${members.length === 1 ? "row" : "rows"} · click a row`}</Typography>
         </Column>
         <Row snug alignCenter>
-          <Input sm leadingIcon icon="search" placeholder="Filter members" accessibilityLabel="Filter members" />
+          <Input sm leadingIcon icon="search" placeholder="Filter members" accessibilityLabel="Filter members" value={query} onFocus={stop} onChangeText={(text) => { stop(); setQuery(text); }} />
           <Button outline small>Export</Button>
           <Button primary small>Invite</Button>
         </Row>
@@ -279,11 +342,24 @@ function MembersTable() {
       <DataTable
         attached
         selectable
+        sortable
+        testID="section-demo-members"
         selectedKeys={selected}
-        onSelectionChange={setSelected}
-        rowKey={(_, index) => index}
-        columns={["Member", "Team", "Status", { label: "Balance", numeric: true }, "Activity · 8w"]}
-        rows={MEMBERS.map((member) => [
+        onSelectionChange={(selected) => setValue((current) => ({
+          ...current,
+          selected: [...current.selected.filter((key) => !visibleKeys.has(key)), ...selected],
+        }))}
+        sort={value.sort}
+        onSortChange={(sort) => setValue((current) => ({ ...current, sort }))}
+        rowKey={(_, index) => members[index]!.key}
+        columns={[
+          { label: "Member", sortValue: (_cell, _row, i) => members[i]!.name },
+          "Team",
+          { label: "Status", sortValue: (_cell, _row, i) => statusOf(members[i]!) },
+          { label: "Balance", numeric: true, sortValue: (_cell, _row, i) => Number(members[i]!.balance.replaceAll(",", "")) },
+          { label: "Activity · 8w", sortable: false },
+        ]}
+        rows={members.map((member) => [
           <Row key="member" snug alignCenter>
             <Avatar small src={photo(member.photo)} name={member.name} />
             <Column flush>
@@ -292,13 +368,13 @@ function MembersTable() {
             </Column>
           </Row>,
           member.team,
-          <Badge key="status" status success={member.status === "Active"} info={member.status === "Invited"} error={member.status === "Suspended"}>{member.status}</Badge>,
+          <Badge key="status" status success={statusOf(member) === "Active"} info={statusOf(member) === "Invited"} error={statusOf(member) === "Suspended"}>{statusOf(member)}</Badge>,
           <Typography key="balance" small mono tabular right>{`$${member.balance}`}</Typography>,
           <Sparkline key="activity" compact values={member.activity} />,
         ])}
       />
       <Row between alignCenter>
-        <Typography caption muted>{`Showing 1–${MEMBERS.length} of 24`}</Typography>
+        <Typography caption muted>{term ? `${members.length} matching ${members.length === 1 ? "member" : "members"}` : `Showing 1–${MEMBERS.length} of 24`}</Typography>
         <Row snug>
           <Button ghost small>‹ Prev</Button>
           <Button ghost small>Next ›</Button>
@@ -310,29 +386,45 @@ function MembersTable() {
 
 // ── Lists & disclosure ──────────────────────────────────────────────────────────────
 
+const LIST_FRAMES = [
+  { grace: "Admin · 2h ago", kira: "Invited", liang: "Viewer · yesterday", accepted: false },
+  { grace: "Admin · online", kira: "Invited", liang: "Viewer · yesterday", accepted: false },
+  { grace: "Admin · online", kira: "Joined", liang: "Viewer · online", accepted: true },
+  { grace: "Admin · 1m ago", kira: "Joined", liang: "Viewer · online", accepted: true },
+];
+
 function StackedListCard() {
+  const { value } = useShowcaseDemo("c-stacked-list", LIST_FRAMES, { interval: 2300 });
   return (
     <ShowcaseCard id="c-stacked-list" caption="<StackedList> · rows take onPress and the whole row is the target · inset hairlines on iOS">
       <StackedList
         items={[
           { name: "Ada Lovelace", detail: "ada@ionize.io", meta: "Owner · online", avatar: photo("/ada-lovelace.jpg") },
-          { name: "Grace Hopper", detail: "grace@ionize.io", meta: "Admin · 2h ago", avatar: photo("/grace-hopper.jpg") },
-          { name: "Kira Tanaka", detail: "kira@ionize.io", badge: "Invited", info: true, avatar: photo("/kira-tanaka.jpg") },
-          { name: "Liang Bao", detail: "liang@ionize.io", meta: "Viewer · yesterday", avatar: photo("/liang-bao.jpg") },
+          { name: "Grace Hopper", detail: "grace@ionize.io", meta: value.grace, avatar: photo("/grace-hopper.jpg") },
+          { name: "Kira Tanaka", detail: "kira@ionize.io", badge: value.kira, info: !value.accepted, success: value.accepted, avatar: photo("/kira-tanaka.jpg") },
+          { name: "Liang Bao", detail: "liang@ionize.io", meta: value.liang, avatar: photo("/liang-bao.jpg") },
         ]}
       />
     </ShowcaseCard>
   );
 }
 
+const DIRECTORY_FRAMES: Array<{ noor?: string; marcus?: string }> = [
+  {},
+  { noor: "Available" },
+  { noor: "In review", marcus: "Available" },
+  { marcus: "Away" },
+];
+
 function GridListCard() {
+  const { value } = useShowcaseDemo("c-grid-list", DIRECTORY_FRAMES, { interval: 2600 });
   return (
     <ShowcaseCard id="c-grid-list" caption="<GridList> people directories · collections · galleries · tiles lift on the spring">
       <GridList
         cols2
         items={[
-          { title: "Noor Park", subtitle: "Mobile lead", avatar: photo("/noor-park.jpg"), actions: [{ label: "Mail", outline: true }, { label: "Chat", outline: true }] },
-          { title: "Marcus Allen", subtitle: "Growth", avatar: photo("/marcus-allen.jpg"), actions: [{ label: "Mail", outline: true }, { label: "Chat", outline: true }] },
+          { title: "Noor Park", subtitle: "Mobile lead", avatar: photo("/noor-park.jpg"), badge: value.noor, actions: [{ label: "Mail", outline: true }, { label: "Chat", outline: true }] },
+          { title: "Marcus Allen", subtitle: "Growth", avatar: photo("/marcus-allen.jpg"), badge: value.marcus, actions: [{ label: "Mail", outline: true }, { label: "Chat", outline: true }] },
           { title: "Tokens", subtitle: "48 roles" },
           { title: "Charts", subtitle: `${COMPONENTS.filter((c) => c.section === "Charts").length} types` },
         ]}
@@ -341,7 +433,14 @@ function GridListCard() {
   );
 }
 
+const MEDIA_OBJECT_FRAMES = [
+  { title: "Ready for review", glyph: "gitPullRequest", time: "9:41" },
+  { title: "Review approved", glyph: "circleCheck", time: "9:43" },
+  { title: "Merged into main", glyph: "gitMerge", time: "9:46" },
+] as const;
+
 function MediaObjectCard() {
+  const { value } = useShowcaseDemo("c-media-object", MEDIA_OBJECT_FRAMES, { interval: 2600 });
   return (
     <ShowcaseCard id="c-media-object" caption="<MediaObject> · avatar, Emblem or Image in the media slot · the base of every row above">
       <MediaObject
@@ -351,9 +450,9 @@ function MediaObjectCard() {
         description="The ion ring reads better at 4px than 3. Shipping it with the field update."
       />
       <MediaObject
-        icon={<Emblem primary small><Icon gitPullRequest size={16} decorative /></Emblem>}
-        title="Ready for review"
-        meta="9:41"
+        icon={<Emblem primary small><Icon {...{ [value.glyph]: true }} size={16} decorative /></Emblem>}
+        title={value.title}
+        meta={value.time}
         description="#482 · Overlays move to glass-tint-dense"
       />
       <MediaObject
@@ -366,47 +465,82 @@ function MediaObjectCard() {
   );
 }
 
+type FeedItems = NonNullable<ComponentProps<typeof Feed>["items"]>;
+
+const FEED_ITEMS: FeedItems = [
+  { id: "merge", actor: "Kira", action: "merged", target: "#482 into main", time: "2 min ago", icon: "gitMerge" },
+  { id: "palette", actor: "Bobby", action: "moved", target: "--hue from 285 to 205", time: "1 hour ago", icon: "palette" },
+  { id: "comment", actor: "Liang", action: "commented", time: "3 hours ago", avatar: photo("/liang-bao.jpg"), content: "Filtering a series out never renumbers the rest. Keep chart-3 mint." },
+  { id: "publish", actor: "v6.2.0", action: "published to npm", time: "yesterday", icon: "rocket" },
+];
+
+const FEED_FRAMES: FeedItems[] = [
+  FEED_ITEMS,
+  [
+    { id: "review", actor: "Noor", action: "approved", target: "the QA checklist", time: "just now", icon: "circleCheck" },
+    ...FEED_ITEMS.slice(0, 3),
+  ],
+  [
+    { id: "release", actor: "v6.3.0", action: "published to npm", time: "just now", icon: "rocket" },
+    { id: "review", actor: "Noor", action: "approved", target: "the QA checklist", time: "2 min ago", icon: "circleCheck" },
+    ...FEED_ITEMS.slice(0, 2),
+  ],
+];
+
 function FeedCard() {
+  const { value } = useShowcaseDemo("c-feed", FEED_FRAMES, { interval: 2700 });
   return (
     <ShowcaseCard id="c-feed" caption="<Feed> · the icon names the event · one hairline spine, never a card per row">
-      <Feed
-        items={[
-          { actor: "Kira", action: "merged", target: "#482 into main", time: "2 min ago", icon: "gitMerge" },
-          { actor: "Bobby", action: "moved", target: "--hue from 285 to 205", time: "1 hour ago", icon: "palette" },
-          { actor: "Liang", action: "commented", time: "3 hours ago", avatar: photo("/liang-bao.jpg"), content: "Filtering a series out never renumbers the rest. Keep chart-3 mint." },
-          { actor: "v6.2.0", action: "published to npm", time: "yesterday", icon: "rocket" },
-        ]}
-      />
+      <Feed items={value} testID="section-demo-feed" />
     </ShowcaseCard>
   );
 }
 
+const WORKSPACE_FRAMES = [
+  { count: 24, syncing: false },
+  { count: 24, syncing: true },
+  { count: 25, syncing: false },
+  { count: 26, syncing: false },
+];
+
 function DescriptionListCard() {
+  const { value, stop } = useShowcaseDemo("c-description-list", WORKSPACE_FRAMES, { interval: 2500 });
   return (
     <ShowcaseCard id="c-description-list" caption="<DescriptionList> rows flagged update edit in place · ↵ saves, esc cancels · <ActionPanel> one decision, one action">
       <DescriptionList
         inline
+        onUpdate={stop}
         items={[
           { term: "Display name", value: "Bobby Nannier", update: true },
           { term: "Email", value: "bobby@nannier.com", update: true },
-          { term: "Workspace", value: <Row snug alignCenter><Typography base>Riskora · 24 members</Typography><Badge status success>Active</Badge></Row> },
+          { term: "Workspace", value: <Row snug alignCenter><Typography base>Riskora · {value.count} members</Typography><Badge status success={!value.syncing} info={value.syncing}>{value.syncing ? "Syncing" : "Active"}</Badge></Row> },
         ]}
       />
       <ActionPanel title="Export workspace" description="Every board, token and asset as one .zip." actionLabel="Export" inline />
-      <ActionPanel title="Delete workspace" description="Removes Riskora for all 24 members. There is no undo." actionLabel="Delete" destructive inline />
+      <ActionPanel title="Delete workspace" description={`Removes Riskora for all ${value.count} members. There is no undo.`} actionLabel="Delete" destructive inline />
     </ShowcaseCard>
   );
 }
 
+const DISCLOSURE_FRAMES: Array<{ accordion: string | string[]; collapsible: boolean }> = [
+  { accordion: "glass", collapsible: false },
+  { accordion: "variant", collapsible: false },
+  { accordion: "rebrand", collapsible: false },
+  { accordion: [], collapsible: true },
+];
+
 function AccordionCard() {
+  const { value, setValue } = useShowcaseDemo("c-accordion", DISCLOSURE_FRAMES, { interval: 2800 });
   return (
     <ShowcaseCard id="c-accordion" caption="<Accordion items={…}> a stack of disclosures · <Collapsible title=&quot;…&quot;> exactly one">
       <Accordion
         card
-        defaultValue="glass"
+        value={value.accordion}
+        onValueChange={(accordion) => setValue((current) => ({ ...current, accordion }))}
+        testID="section-demo-accordion"
         items={QUESTIONS.map((q) => ({ key: q.key, title: q.title, content: <Typography small muted>{q.body}</Typography> }))}
       />
-      <Collapsible title="3 removed props">
+      <Collapsible title="3 removed props" open={value.collapsible} onOpenChange={(collapsible) => setValue((current) => ({ ...current, collapsible }))}>
         <Row wrap snug>
           <Badge mono>variant="primary"</Badge>
           <Badge mono>size="lg"</Badge>
@@ -419,10 +553,26 @@ function AccordionCard() {
 
 // ── Content & media ─────────────────────────────────────────────────────────────────
 
+const CODE_FRAMES = [
+  { tab: 0, lines: [5] },
+  { tab: 0, lines: [6] },
+  { tab: 1, lines: [2, 3] },
+  { tab: 1, lines: [4, 5] },
+];
+
 function CodeBlockCard() {
+  const { value, setValue } = useShowcaseDemo("c-code-block", CODE_FRAMES, { interval: 2100 });
   return (
     <ShowcaseCard id="c-code-block" caption="<CodeBlock> highlight · line emphasis · diff · folding · tabbed alternatives · copy via expo-clipboard on native">
-      <CodeBlock tabs={CODE_TABS} numbered copy highlightLines={[5]} />
+      <CodeBlock
+        tabs={CODE_TABS}
+        numbered
+        copy
+        active={value.tab}
+        onTabChange={(tab) => setValue({ tab, lines: CODE_FRAMES.find((frame) => frame.tab === tab)?.lines ?? [] })}
+        highlightLines={value.lines}
+        testID="section-demo-code-block"
+      />
     </ShowcaseCard>
   );
 }
@@ -434,12 +584,18 @@ function Slide({ eyebrow, title, promo }: { eyebrow: string; title: string; prom
     : <Card featured eyebrow={eyebrow} title={title} />;
 }
 
+const CAROUSEL_FRAMES = [0, 1, 2, 3, 2, 1];
+
 function CarouselCard() {
+  const { value, setValue } = useShowcaseDemo("c-carousel", CAROUSEL_FRAMES, { interval: 3000 });
   return (
     <ShowcaseCard id="c-carousel" caption={PLATFORM_COPY.carouselCaption}>
       <Carousel
         showArrows
         showDots
+        index={value}
+        onIndexChange={setValue}
+        testID="section-demo-carousel"
         items={[
           { key: "material", content: <Slide eyebrow={PLATFORM_COPY.slideEyebrow} title="Light is the material" /> },
           { key: "accent", content: <Slide promo eyebrow="02 · Accent" title="One charged hue does every job" /> },
@@ -462,18 +618,19 @@ function CarouselCard() {
   );
 }
 
+const IMAGE_FIT_FRAMES = [false, false, true, true];
+
 function MediaCard() {
+  const { value: swapFit } = useShowcaseDemo("c-media", IMAGE_FIT_FRAMES, { interval: 2500 });
   return (
     <ShowcaseCard id="c-media" caption={"<Image cover> · <Image contain> · <Video poster autoplay muted loop> · <QRCode value=\"…\">"}>
       <Row cozy>
-        <Column fill snug>
-          <Image source={{ uri: photo("/marcus-allen.jpg") }} cover height={96} radius="lg" alt="Marcus Allen, cropped to fill" />
-          <Typography caption mono subtle>cover · crops</Typography>
-        </Column>
-        <Column fill snug>
-          <Image source={{ uri: photo("/marcus-allen.jpg") }} contain height={96} radius="lg" alt="Marcus Allen, letterboxed" />
-          <Typography caption mono subtle>contain · letterboxes</Typography>
-        </Column>
+        {[!swapFit, swapFit].map((cover, i) => (
+          <Column key={i === 0 ? "first" : "second"} fill snug>
+            <Image source={{ uri: photo("/marcus-allen.jpg") }} cover={cover} contain={!cover} height={96} radius="lg" alt={cover ? "Marcus Allen, cropped to fill" : "Marcus Allen, letterboxed"} />
+            <Typography caption mono subtle>{cover ? "cover · crops" : "contain · letterboxes"}</Typography>
+          </Column>
+        ))}
       </Row>
       <Video
         source={{ uri: resolvePhoto("/video-sample.mp4") as string }}
@@ -494,7 +651,10 @@ function MediaCard() {
 
 // ── Workspace ───────────────────────────────────────────────────────────────────────
 
+const CALENDAR_FRAMES = [26, 28, 30, 12, 21];
+
 function CalendarCard() {
+  const { value, setValue } = useShowcaseDemo("c-calendar", CALENDAR_FRAMES, { interval: 2300 });
   return (
     <ShowcaseCard id="c-calendar" caption="<Calendar events={…}> · dots in the month grid, blocks on the week and day timelines">
       <Calendar
@@ -502,25 +662,50 @@ function CalendarCard() {
         daysInMonth={31}
         startWeekday={4}
         today={26}
-        defaultSelected={26}
+        selected={value}
+        onSelect={setValue}
         dayPeek
         events={CALENDAR_EVENTS}
+        testID="section-demo-calendar"
       />
     </ShowcaseCard>
   );
 }
 
+type ChatFrame = { messages: ChatMessageData[]; pending?: boolean };
+
+const CHAT_DEMO_QUESTION: ChatMessageData = { id: 4, role: "user", content: "How does a component get its width?" };
+const CHAT_DEMO_ANSWER: ChatMessageData = { id: 5, role: "assistant", provider: "Claude", content: CHAT_REPLIES[0] };
+const CHAT_QUESTION_THREAD = [...CHAT_THREAD, CHAT_DEMO_QUESTION];
+const CHAT_COMPLETE_THREAD = [...CHAT_QUESTION_THREAD, CHAT_DEMO_ANSWER];
+const CHAT_FRAMES: ChatFrame[] = [
+  { messages: CHAT_THREAD },
+  { messages: CHAT_QUESTION_THREAD, pending: true },
+  { messages: [...CHAT_QUESTION_THREAD, { ...CHAT_DEMO_ANSWER, content: "Every component takes its width from its parent:", streaming: true }] },
+  { messages: CHAT_COMPLETE_THREAD },
+  { messages: CHAT_COMPLETE_THREAD },
+];
+
 function ChatCard() {
-  const [messages, setMessages] = useState<ChatMessageData[]>(CHAT_THREAD);
+  const { value, setValue, stop, active, manual } = useShowcaseDemo("c-chat", CHAT_FRAMES, { interval: 1900 });
   const [draft, setDraft] = useState("");
+  const streaming = value.messages.some((message) => message.streaming);
+  const pending = active && value.pending;
+  const unfinished = value.pending || streaming;
+  const responding = pending || (active && streaming);
+  let messages = value.messages;
+  if (unfinished && manual) messages = CHAT_COMPLETE_THREAD;
+  else if (unfinished && !active) messages = CHAT_QUESTION_THREAD;
   const send = (text: string) => {
     const content = text.trim();
     if (!content) return;
-    setMessages((thread) => [
+    const thread = unfinished ? CHAT_COMPLETE_THREAD : value.messages;
+    const reply = CHAT_REPLIES[Math.floor(thread.length / 2) % CHAT_REPLIES.length]!;
+    setValue({ messages: [
       ...thread,
       { id: thread.length + 1, role: "user", content },
-      { id: thread.length + 2, role: "assistant", provider: "Claude", content: CHAT_REPLIES[(thread.length / 2) % CHAT_REPLIES.length | 0] },
-    ]);
+      { id: thread.length + 2, role: "assistant", provider: "Claude", content: reply },
+    ] });
     setDraft("");
   };
   return (
@@ -529,33 +714,52 @@ function ChatCard() {
         icon={<Emblem primary small><Icon sparkles size={16} decorative /></Emblem>}
         title="Canvas assistant"
         description="provider · Claude"
-        action={<Badge status success>online</Badge>}
+        action={<Badge status success={!responding} info={responding}>{responding ? "responding" : "online"}</Badge>}
       />
       <Chat
         messages={messages}
+        pending={pending}
         value={draft}
-        onChangeText={setDraft}
+        onChangeText={(text) => { stop(); setDraft(text); }}
         onSend={send}
         placeholder="Ask about a component…"
-        onAttach={() => {}}
+        onAttach={stop}
+        testID="section-demo-chat"
       />
     </ShowcaseCard>
   );
 }
 
+const BOARD_FRAMES = [
+  BOARD_ITEMS,
+  BOARD_ITEMS.map((item) => item.id === "timeline" ? { ...item, columnId: "progress" } : item),
+  BOARD_ITEMS.map((item) => item.id === "timeline" ? { ...item, columnId: "review", badge: "ready" } : item),
+];
+const BOARD_LANES = BOARD_COLUMNS.map(({ id, label }) => ({ id, label }));
+
 function BoardCard() {
+  const { value, setValue } = useShowcaseDemo<BoardItem[]>("c-board", BOARD_FRAMES, { interval: 2900 });
   return (
     <ShowcaseCard id="c-board" caption="<Board columns={…}> on <DragDropProvider> · every column is a <DropZone>, every card a <Draggable> with a <DragHandle>">
-      <Board draggable columns={BOARD_COLUMNS} defaultItems={BOARD_ITEMS} />
+      <Board draggable columns={BOARD_LANES} items={value} onItemsChange={setValue} testID="section-demo-board" />
     </ShowcaseCard>
   );
 }
 
 /** A repository card: the hand-off predates FlowEditor (tools/v4/repository-components.ts). */
+const FLOW_FRAMES: Array<FlowSelection | null> = [
+  null,
+  { kind: "node", id: "product" },
+  { kind: "node", id: "design" },
+  { kind: "node", id: "build" },
+  { kind: "edge", id: "e3" },
+];
+
 function FlowEditorCard() {
+  const { value, setValue } = useShowcaseDemo("c-flow-editor", FLOW_FRAMES, { interval: 2000 });
   return (
     <ShowcaseCard id="c-flow-editor" caption="<FlowEditor readOnly nodes={…} edges={…}> · pan, zoom and select stay · a rework edge is dashed">
-      <FlowEditor readOnly label="Delivery workflow" nodes={FLOW_NODES} edges={FLOW_EDGES} />
+      <FlowEditor readOnly label="Delivery workflow" nodes={FLOW_NODES} edges={FLOW_EDGES} selected={value} onSelectionChange={setValue} testID="section-demo-flow-editor" />
     </ShowcaseCard>
   );
 }

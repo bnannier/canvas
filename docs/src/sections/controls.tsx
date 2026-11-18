@@ -1,5 +1,5 @@
 import { SectionVignette } from "../ui/showcase/section-vignette";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { PLATFORM_COPY } from "../data/platform-copy";
 import {
   Avatar,
@@ -28,6 +28,7 @@ import {
 } from "@nannier/canvas";
 import { resolvePhoto } from "../core/photos";
 import { ShowcaseCard, ShowcaseGrid } from "../ui/showcase";
+import { useShowcaseDemo } from "../ui/showcase/demo";
 
 // The Controls section page (`Canvas v4.0.0 Controls.dc.html`): its hero vignette and its
 // seven cards, composed of live kit controls with the hand-off's copy. Where the kit has
@@ -56,16 +57,26 @@ const LABELS: Record<Intent, { label: string; loading: string }> = {
   link: { label: "Learn more", loading: "Opening…" },
 };
 
-function IntentButton({ intent, loading, disabled }: { intent: Intent; loading?: boolean; disabled?: boolean }) {
+function IntentButton({ intent, loading, disabled, saved, onPress, testID }: {
+  intent: Intent;
+  loading?: boolean;
+  disabled?: boolean;
+  saved?: boolean;
+  onPress?: () => void;
+  testID?: string;
+}) {
   const copy = LABELS[intent];
+  const trailing = saved ? <Icon check size={14} decorative /> : intent === "link" && !loading ? <Icon arrowRight size={14} decorative /> : undefined;
   return (
     <Button
       {...{ [intent]: true }}
       loading={loading}
       disabled={disabled}
-      iconRight={intent === "link" && !loading ? <Icon arrowRight size={14} decorative /> : undefined}
+      iconRight={trailing}
+      onPress={onPress}
+      testID={testID}
     >
-      {loading ? copy.loading : copy.label}
+      {loading ? copy.loading : saved ? "Saved" : copy.label}
     </Button>
   );
 }
@@ -79,7 +90,18 @@ function Pinned({ hovered, pressed, children }: { hovered?: boolean; pressed?: b
 }
 
 /** Button · Intents × states: every intent at rest, hovered, pressed, loading and disabled. */
+const SAVE_FRAMES = ["idle", "idle", "saving", "saved", "saved"] as const;
+type SavePhase = (typeof SAVE_FRAMES)[number];
+
 function ButtonMatrix() {
+  const { value, stop } = useShowcaseDemo("c-button", SAVE_FRAMES, { interval: 780 });
+  const [manualSave, setManualSave] = useState<SavePhase>();
+  const save = manualSave ?? value;
+  useEffect(() => {
+    if (manualSave !== "saving") return;
+    const timer = setTimeout(() => setManualSave("saved"), 700);
+    return () => clearTimeout(timer);
+  }, [manualSave]);
   const column = (label: string) => ({ label, minWidth: 188 });
   return (
     <ShowcaseCard id="c-button" caption="<Button primary> · <Button secondary loading> · <Button destructive disabled> · <Button link>">
@@ -88,7 +110,10 @@ function ButtonMatrix() {
         columns={[{ label: "", width: 124 }, column("default"), column("hover"), column("pressed"), column("loading"), column("disabled")]}
         rows={INTENTS.map((intent) => [
           rowLabel(intent),
-          <IntentButton key="default" intent={intent} />,
+          <IntentButton key="default" intent={intent} loading={intent === "primary" && save === "saving"}
+            saved={intent === "primary" && save === "saved"}
+            testID={intent === "primary" ? "section-demo-save-button" : undefined}
+            onPress={intent === "primary" ? () => { stop(); setManualSave("saving"); } : stop} />,
           <Pinned key="hover" hovered><IntentButton intent={intent} /></Pinned>,
           <Pinned key="pressed" pressed><IntentButton intent={intent} /></Pinned>,
           <IntentButton key="loading" intent={intent} loading />,
@@ -100,44 +125,66 @@ function ButtonMatrix() {
 }
 
 /** Button · Sizes & shapes. */
+const SIZE_FRAMES = [-1, 0, 1, 2, 1] as const;
+
 function ButtonSizes() {
+  const { value, setValue, stop } = useShowcaseDemo<number>("c-button-sizes", SIZE_FRAMES, { interval: 1050 });
   return (
     <ShowcaseCard id="c-button-sizes" caption="<Button small> · <Button large> · <Button icon> · <ButtonGroup> · <Button block>">
       <Row wrap cozy alignCenter>
-        <Button primary small>Small</Button>
-        <Button primary>Default</Button>
-        <Button primary large>Large</Button>
+        <Button primary small onPress={stop}>Small</Button>
+        <Button primary onPress={stop}>Default</Button>
+        <Button primary large onPress={stop}>Large</Button>
       </Row>
       <Row wrap cozy alignCenter>
-        <Button outline small icon accessibilityLabel="Add" iconLeft={<Icon plus size={14} decorative />} />
-        <Button outline icon accessibilityLabel="Add" iconLeft={<Icon plus size={16} decorative />} />
-        <Button primary large icon accessibilityLabel="Add" iconLeft={<Icon plus primaryForeground size={18} decorative />} />
+        <Button outline small icon accessibilityLabel="Add" iconLeft={<Icon plus size={14} decorative />} onPress={stop} />
+        <Button outline icon accessibilityLabel="Add" iconLeft={<Icon plus size={16} decorative />} onPress={stop} />
+        <Button primary large icon accessibilityLabel="Add" iconLeft={<Icon plus primaryForeground size={18} decorative />} onPress={stop} />
       </Row>
-      <ButtonGroup defaultActive={-1} items={["Left", "Center", "Right"]} />
-      <Button outline block>Block · full width</Button>
+      <ButtonGroup active={value} onSelect={setValue} items={["Left", "Center", "Right"]} accessibilityLabel="Alignment" testID="section-demo-alignment" />
+      <Button outline block onPress={stop}>Block · full width</Button>
     </ShowcaseCard>
   );
 }
 
 /** Switch · Checkbox · Radio. */
+type ToggleFrame = {
+  glass: boolean;
+  reducedMotion: boolean;
+  haptics: boolean;
+  email: boolean;
+  digest: boolean;
+  teams: boolean | "mixed";
+  channel: string | number;
+};
+const TOGGLE_FRAMES: ToggleFrame[] = [
+  { glass: true, reducedMotion: false, haptics: true, email: true, digest: false, teams: "mixed", channel: "stable" },
+  { glass: false, reducedMotion: false, haptics: true, email: true, digest: true, teams: false, channel: "beta" },
+  { glass: false, reducedMotion: true, haptics: false, email: false, digest: true, teams: "mixed", channel: "beta" },
+  { glass: true, reducedMotion: true, haptics: false, email: true, digest: true, teams: true, channel: "canary" },
+  { glass: true, reducedMotion: false, haptics: true, email: true, digest: false, teams: true, channel: "stable" },
+];
+
 function Toggles() {
+  const { value, setValue } = useShowcaseDemo("c-switch", TOGGLE_FRAMES, { interval: 1150 });
+  const update = <K extends keyof ToggleFrame>(key: K) => (next: ToggleFrame[K]) => setValue((current) => ({ ...current, [key]: next }));
   return (
     <ShowcaseCard id="c-switch" caption={"<Switch description=\"…\">Glass surfaces</Switch> · <Checkbox indeterminate> · <RadioGroup> + <Radio>"}>
       <Column cozy>
-        <Switch defaultChecked description="Liquid Glass on iOS 26, frost elsewhere">Glass surfaces</Switch>
+        <Switch checked={value.glass} onChange={update("glass")} testID="section-demo-glass-switch" description="Liquid Glass on iOS 26, frost elsewhere">Glass surfaces</Switch>
         <Divider />
-        <Switch description="Zero every duration, keep spinners">Reduced motion</Switch>
+        <Switch checked={value.reducedMotion} onChange={update("reducedMotion")} description="Zero every duration, keep spinners">Reduced motion</Switch>
         <Divider />
-        <Switch defaultChecked>Haptics</Switch>
+        <Switch checked={value.haptics} onChange={update("haptics")}>Haptics</Switch>
       </Column>
       <Divider />
       <Column snug>
-        <Checkbox defaultChecked description="Get notified when activity happens.">Email notifications</Checkbox>
-        <Checkbox>Weekly digest</Checkbox>
-        <Checkbox indeterminate description="Indeterminate → off → mixed → on">Select all teams</Checkbox>
+        <Checkbox checked={value.email} onChange={update("email")} description="Get notified when activity happens.">Email notifications</Checkbox>
+        <Checkbox checked={value.digest} onChange={update("digest")}>Weekly digest</Checkbox>
+        <Checkbox selection indeterminate={value.teams === "mixed"} checked={value.teams === true} onChange={update("teams")} description="Indeterminate → off → mixed → on">Select all teams</Checkbox>
       </Column>
       <Divider />
-      <RadioGroup defaultValue="stable">
+      <RadioGroup value={value.channel} onChange={update("channel")}>
         <Radio value="stable" description="3.0.0">Stable</Radio>
         <Radio value="beta" description="3.1.0-beta.2">Beta</Radio>
         <Radio value="canary" description="nightly">Canary</Radio>
@@ -147,11 +194,21 @@ function Toggles() {
 }
 
 /** Slider · Stepper. */
+const SLIDER_FRAMES = [
+  { intensity: 62, spacing: 2 }, { intensity: 62, spacing: 2 },
+  { intensity: 68, spacing: 2 }, { intensity: 78, spacing: 3 }, { intensity: 88, spacing: 4 },
+  { intensity: 92, spacing: 5 }, { intensity: 92, spacing: 6 }, { intensity: 92, spacing: 6 },
+  { intensity: 86, spacing: 6 }, { intensity: 72, spacing: 5 }, { intensity: 56, spacing: 4 },
+  { intensity: 42, spacing: 3 }, { intensity: 36, spacing: 2 }, { intensity: 36, spacing: 2 },
+  { intensity: 42, spacing: 2 }, { intensity: 54, spacing: 2 },
+];
+
 function SliderStepper() {
+  const { value, setValue } = useShowcaseDemo("c-slider", SLIDER_FRAMES, { interval: 310 });
   return (
     <ShowcaseCard id="c-slider" caption="<Slider value={62} step={1}> · <Stepper min={0} max={99}>">
-      <Slider defaultValue={62} step={1} showValue>Glass intensity</Slider>
-      <Stepper label="Spacing" description="× 4px" defaultValue={2} min={0} max={99} />
+      <Slider value={value.intensity} onChange={(intensity) => setValue((current) => ({ ...current, intensity }))} step={1} showValue testID="section-demo-glass-intensity">Glass intensity</Slider>
+      <Stepper label="Spacing" description="× 4px" value={value.spacing} onChange={(spacing) => setValue((current) => ({ ...current, spacing }))} min={0} max={99} testID="section-demo-spacing" />
     </ShowcaseCard>
   );
 }
@@ -163,7 +220,17 @@ const MENU_ITEMS = [
 ];
 
 /** Avatar · Badge · Chip. */
+const IDENTITY_FRAMES = [
+  { ios: true, mobile: false, web: true, member: true, unread: 3 },
+  { ios: true, mobile: true, web: true, member: true, unread: 4 },
+  { ios: false, mobile: true, web: true, member: true, unread: 5 },
+  { ios: false, mobile: true, web: false, member: false, unread: 5 },
+  { ios: true, mobile: false, web: true, member: false, unread: 0 },
+];
+
 function Identity() {
+  const { value, setValue, stop } = useShowcaseDemo("c-avatar", IDENTITY_FRAMES, { interval: 1180 });
+  const markRead = () => setValue((current) => ({ ...current, unread: 0 }));
   return (
     <ShowcaseCard
       id="c-avatar"
@@ -196,11 +263,15 @@ function Identity() {
       <Divider />
       <Column snug>
         <Row wrap snug>
-          <Chip selectable defaultSelected>iOS</Chip>
-          <Chip selectable>{PLATFORM_COPY.samplePlatform}</Chip>
-          <Chip selectable defaultSelected>Web</Chip>
+          <Chip selectable selected={value.ios} onSelectedChange={(ios) => setValue((current) => ({ ...current, ios }))}>iOS</Chip>
+          <Chip selectable selected={value.mobile} onSelectedChange={(mobile) => setValue((current) => ({ ...current, mobile }))}>{PLATFORM_COPY.samplePlatform}</Chip>
+          <Chip selectable selected={value.web} onSelectedChange={(web) => setValue((current) => ({ ...current, web }))}>Web</Chip>
         </Row>
-        <Chip icon={<Avatar tiny src={photo("/noor-park.jpg")} name="Noor Park" />} onRemove={() => {}}>Noor Park</Chip>
+        {value.member ? (
+          <Chip icon={<Avatar tiny src={photo("/noor-park.jpg")} name="Noor Park" />} onRemove={() => setValue((current) => ({ ...current, member: false }))}>Noor Park</Chip>
+        ) : (
+          <Chip icon={<Icon plus size={14} decorative />} onPress={() => setValue((current) => ({ ...current, member: true }))}>Restore Noor Park</Chip>
+        )}
       </Column>
       <Divider />
       <Column snug>
@@ -223,12 +294,13 @@ function Identity() {
           email="liang@ionize.io"
           src={photo("/liang-bao.jpg") as string | undefined}
           items={MENU_ITEMS}
+          onOpenChange={stop}
         />
         <Typography caption mono subtle>AvatarMenu</Typography>
       </Column>
       <Row wrap cozy alignCenter>
-        <Button outline icon count={3} accessibilityLabel="Notifications, 3 unread" iconLeft={<Icon bell size={16} decorative />} />
-        <Button outline icon accessibilityLabel="Inbox" iconLeft={<Icon inbox size={16} decorative />} />
+        <Button outline icon count={value.unread} accessibilityLabel={`Notifications, ${value.unread} unread`} iconLeft={<Icon bell size={16} decorative />} onPress={markRead} testID="section-demo-notification-count" />
+        <Button outline icon accessibilityLabel="Inbox" iconLeft={<Icon inbox size={16} decorative />} onPress={markRead} />
         <Typography caption mono subtle>NotificationBadge</Typography>
       </Row>
       <Row wrap cozy alignCenter>
@@ -244,36 +316,58 @@ function Identity() {
 }
 
 /** ButtonGroup · segmented · split. */
+const GROUP_FRAMES = [
+  { view: 0, format: 0 }, { view: 1, format: 0 },
+  { view: 1, format: 1 }, { view: 2, format: 1 },
+  { view: 2, format: 2 }, { view: 0, format: 2 },
+];
+
 function Groups() {
+  const { value, setValue, stop } = useShowcaseDemo("c-button-group", GROUP_FRAMES, { interval: 975 });
+  const [deployment, setDeployment] = useState("");
+  const deploy = (_index: number, action: string) => {
+    stop();
+    setDeployment(action === "Schedule…" ? "Scheduled" : "Deployed");
+  };
   return (
     <ShowcaseCard id="c-button-group" caption="<ButtonGroup segmented> · <ButtonGroup split> · attached groups share one hairline and one recess">
       <ButtonGroup
         segmented
         block
-        defaultActive={0}
+        active={value.view}
+        onSelect={(view) => setValue((current) => ({ ...current, view }))}
         accessibilityLabel="View"
+        testID="section-demo-view-group"
         items={[{ label: "List", icon: "layoutList" }, { label: "Grid", icon: "layoutGrid" }, { label: "Board", icon: "columns2" }]}
       />
       <Row wrap cozy alignCenter>
-        <ButtonGroup split items={[{ label: "Deploy", icon: "rocket" }]} menu={["Deploy to preview", "Deploy to production", "Schedule…"]} />
-        <ButtonGroup segmented defaultActive={0} accessibilityLabel="Text style" items={["B", "I", "U"]} />
+        <ButtonGroup split items={[{ label: deployment || "Deploy", icon: deployment ? "check" : "rocket" }]} menu={["Deploy to preview", "Deploy to production", "Schedule…"]} onSelect={deploy} />
+        <ButtonGroup segmented active={value.format} onSelect={(format) => setValue((current) => ({ ...current, format }))} accessibilityLabel="Text style" items={["B", "I", "U"]} />
       </Row>
-      <ButtonGroup stepper active={1} items={["50%", "100%", "200%"]} />
+      <ButtonGroup stepper defaultActive={1} items={["50%", "100%", "200%"]} onSelect={stop} />
     </ShowcaseCard>
   );
 }
 
 /** Radio · card style · inline. */
+const RADIO_FRAMES: { channel: string | number; digest: string | number }[] = [
+  { channel: "stable", digest: "weekly" },
+  { channel: "beta", digest: "weekly" },
+  { channel: "canary", digest: "daily" },
+  { channel: "stable", digest: "daily" },
+];
+
 function Radios() {
+  const { value, setValue } = useShowcaseDemo("c-radio", RADIO_FRAMES, { interval: 1350 });
   return (
     <ShowcaseCard id="c-radio" caption="<RadioGroup> stacked by default · card style for richer choices · inline for two to three short options">
-      <RadioGroup row defaultValue="stable">
+      <RadioGroup row value={value.channel} onChange={(channel) => setValue((current) => ({ ...current, channel }))}>
         <Radio card value="stable" description="3.0.0">Stable</Radio>
         <Radio card value="beta" description="3.1.0-beta.2">Beta</Radio>
         <Radio card value="canary" description="nightly">Canary</Radio>
       </RadioGroup>
       <Row wrap cozy alignCenter>
-        <RadioGroup row label="Digest" defaultValue="weekly">
+        <RadioGroup row label="Digest" value={value.digest} onChange={(digest) => setValue((current) => ({ ...current, digest }))}>
           <Radio value="daily">Daily</Radio>
           <Radio value="weekly">Weekly</Radio>
         </RadioGroup>

@@ -62,6 +62,8 @@ const DATA_ROLES: Record<string, string> = {
   "docs/src/sections/foundations.tsx": "each type-scale row's `role` names a type-scale role (display, h1, body, eyebrow)",
   "docs/src/sections/data.tsx": MESSAGE_AUTHOR,
   "docs/src/sections/data.data.ts": MESSAGE_AUTHOR,
+  "docs/src/sections/inputs.tsx": "the input and form demonstrations select workspace membership roles (Editor, Viewer)",
+  "docs/src/sections/overlays.tsx": "the embedded invitation drawer selects a membership role (Editor, Viewer), never a View role",
   "docs/src/brand/hero-showcase-data.tsx": "person roles are job labels; Chat message roles are authors, never View roles",
   // The examples are generated from chat.md and wizard.md (docs:gen), so a new example that
   // writes a message takes a line here.

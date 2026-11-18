@@ -4,6 +4,7 @@ import { Page } from "../../ui/page";
 import { NotFoundPage } from "../../ui/not-found";
 import { SectionHero } from "../../ui/showcase";
 import { SECTION_PAGES } from "../../sections";
+import { ShowcaseMotion } from "../../ui/showcase/demo";
 import { SECTION_ROOMS, getSectionRoom, type SectionId } from "../../data/rooms";
 
 // A section page (`Canvas v4.0.0 <Section>.dc.html`): the hero (the room's title, lead and
@@ -23,7 +24,7 @@ export default function SectionScreen() {
       {/* The hand-off's hero sits 40 over the cards (its grid's `margin-bottom:40px`). */}
       <Column ample>
         <SectionHero room={room} vignette={<Vignette />} />
-        <Cards />
+        {room.id === "foundations" ? <Cards /> : <ShowcaseMotion key={room.id}><Cards /></ShowcaseMotion>}
       </Column>
     </Page>
   );

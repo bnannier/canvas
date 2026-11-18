@@ -1,5 +1,5 @@
 import { SectionVignette } from "../ui/showcase/section-vignette";
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { Dimensions, type LayoutChangeEvent } from "react-native";
 import {
   Avatar,
@@ -21,6 +21,7 @@ import {
   MediaObject,
   Navbar,
   Row,
+  ScrollView,
   Select,
   Sparkline,
   StackedList,
@@ -52,6 +53,8 @@ import {
   WindowRuler,
 } from "../ui/showcase/layout-diagrams";
 import { GAP_SCALE, RESIZE_PRESETS, SAMPLED_STEPS, SIZING, SIZING_MODES, type SizingMode } from "./layout.data";
+import { useShowcaseDemo } from "../ui/showcase/demo";
+import { ResizeSample } from "./layout-motion";
 
 
 // The Layout section page (`Canvas v4.0.0 Layout.dc.html`): its hero vignette and its seven
@@ -94,6 +97,7 @@ const FORM_FACTORS = [
 
 /** Breakpoints · form factors: the window-width ruler with this window on it, the three tiers. */
 function BreakpointsCard() {
+  const demo = useShowcaseDemo("c-breakpoints", [2, 1, 0, 1], { interval: 2200 });
   const bucket = useBreakpoint();
   const factor = useFormFactor();
   const width = useSyncExternalStore(subscribeWindow, windowWidth, noWidth);
@@ -104,9 +108,10 @@ function BreakpointsCard() {
       caption="A breakpoint applies at its width and below · unknown width (server, first frame) renders the desktop variant · useBreakpoint() and useFormFactor() are for window chrome only"
     >
       <WindowRuler width={width} label={`this window · ${bucket} · ${factor}`} />
+      <WindowRuler width={[390, 820, 1280][demo.value]!} label={`preview · ${FORM_FACTORS[demo.value]!.name}`} />
       <Grid minTileWidth={260} columns={3} relaxed>
-        {FORM_FACTORS.map((tier) => (
-          <Card key={tier.name} sunken calloutCorners insetContent>
+        {FORM_FACTORS.map((tier, index) => (
+          <Card key={tier.name} sunken selected={index === demo.value} onPress={() => demo.setValue(index)} accessibilityLabel={`${tier.name} preview${index === demo.value ? ", selected" : ""}`} calloutCorners insetContent>
             <Column comfortable>
               <Row between baseline snug>
                 <Typography tileTitle natural>{tier.name}</Typography>
@@ -267,8 +272,11 @@ function MiniApp({ sizing, narrow, cramped, formWidth, membersWidth, onFormLayou
 
 /** Live · resize the container: the same screen at four container widths. */
 function ResponsiveCard() {
-  const [preset, setPreset] = useState(2);
-  const [sizing, setSizing] = useState(false);
+  const demo = useShowcaseDemo("c-responsive", [
+    { preset: 2, sizing: false }, { preset: 1, sizing: false },
+    { preset: 0, sizing: true }, { preset: 1, sizing: true }, { preset: 3, sizing: false },
+  ], { interval: 3200 });
+  const { preset, sizing } = demo.value;
   const controls = useMeasuredWidth();
   const frame = useMeasuredWidth();
   const form = useMeasuredWidth();
@@ -308,7 +316,7 @@ function ResponsiveCard() {
             compact
             block={controls.width > 0 && controls.width < CONTROLS_HUG}
             active={preset}
-            onSelect={setPreset}
+            onSelect={preset => demo.setValue(previous => ({ ...previous, preset }))}
             accessibilityLabel="Container width"
             items={RESIZE_PRESETS.map((entry) => ({ label: entry.label, icon: entry.icon }))}
           />
@@ -318,20 +326,18 @@ function ResponsiveCard() {
             {tier === "sm" ? <Badge token mint>{tier}</Badge> : tier === "lg" ? <Badge token cyan>{tier}</Badge> : <Badge token>{tier}</Badge>}
           </Row>
           <Column grow />
-          <Switch checked={sizing} onValueChange={setSizing}>Show sizing</Switch>
+          <Switch checked={sizing} onValueChange={sizing => demo.setValue(previous => ({ ...previous, sizing }))}>Show sizing</Switch>
         </Row>
       </View>
       <StagingGround>
+        <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ height: 560 }} testID="section-demo-responsive-preview">
         <BreakpointOverride value={current.bucket}>
           {/* The readout measures the frame itself, inside the step that caps it. */}
-          {current.step ? (
-            <Container {...{ [current.step]: true }} start>
-              <View onLayout={frame.onLayout}>{app}</View>
-            </Container>
-          ) : (
+          <Container {...(current.step ? { [current.step]: true } : {})} start>
             <View onLayout={frame.onLayout}>{app}</View>
-          )}
+          </Container>
         </BreakpointOverride>
+        </ScrollView>
       </StagingGround>
       <Row wrap snug>
         {rules.map((rule) => (rule.on ? <Badge key={rule.text} large dot>{rule.text}</Badge> : <Badge key={rule.text} large outline dot>{rule.text}</Badge>))}
@@ -350,11 +356,23 @@ function ModeBadge({ mode }: { mode: SizingMode }) {
 
 /** Sizing contract · every family. */
 function SizingCard() {
+  const demo = useShowcaseDemo("c-sizing", [1, 0.65, 0.85, 1], { interval: 2400 });
   return (
     <ShowcaseCard
       id="c-sizing"
       caption="Floors are minWidth plus wrapping, never a fixed width · caps are Container steps · a nested surface is never wider or rounder than what holds it"
     >
+      <ResizeSample fraction={demo.value} height={280}>
+        <Card outlined compact>
+          <Column cozy>
+            <Input defaultValue="Fields fill their container" onChangeText={demo.stop} accessibilityLabel="Fill sizing example" />
+            <Row wrap snug><Button small primary>Hug</Button><Badge>Content width</Badge></Row>
+            <Grid minTileWidth={88} columns={3} snug>
+              {["Auto-fit", "Equal tiles", "Wrap"].map(label => <Card flat dense key={label}><Typography caption>{label}</Typography></Card>)}
+            </Grid>
+          </Column>
+        </Card>
+      </ResizeSample>
       <Row wrap spacious rowsSnug alignCenter>
         {SIZING_MODES.map((entry) => (
           <Row key={entry.mode} snug alignCenter>
@@ -397,19 +415,20 @@ function Code({ children }: { children: string }) {
 
 /** How a component finds its size: the three mechanisms, in the order to try them. */
 function ResolutionCard() {
+  const demo = useShowcaseDemo("c-resolution", [0, 1, 2, 1], { interval: 2000 });
   return (
     <ShowcaseCard id="c-resolution">
       <Column roomy>
         <MediaObject
           bareIcon
-          icon={<Badge step default>1</Badge>}
+          icon={<Badge step default={demo.value === 0} secondary={demo.value !== 0}>1</Badge>}
           title="Intrinsic · no JavaScript"
           description="Fill or hug inside the parent's bounds, a minWidth floor, wrapping. Correct on the first frame and on the server."
           body={<Code>{"<Grid minTileWidth={240}> · <Row wrap> · <Row stacks>"}</Code>}
         />
         <MediaObject
           bareIcon
-          icon={<Badge step>2</Badge>}
+          icon={<Badge step default={demo.value === 1} secondary={demo.value !== 1}>2</Badge>}
           title="Container measurement · its own width"
           description="A component that changes shape measures itself against the shared breakpoints, so every family flips at the same widths."
           body={
@@ -421,7 +440,7 @@ function ResolutionCard() {
         />
         <MediaObject
           bareIcon
-          icon={<Badge step secondary>3</Badge>}
+          icon={<Badge step default={demo.value === 2} secondary={demo.value !== 2}>3</Badge>}
           title="Viewport · chrome only"
           description="Only window-level chrome reads the window: Sidebar and FilterPanel drawers, phone sheets, app shells."
           body={<Code>{"useBreakpoint() · useFormFactor() · BreakpointOverride for previews"}</Code>}
@@ -461,6 +480,9 @@ const GRID_MODES = [
 
 /** DashboardGrid · 12 columns · spans in twelfths. */
 function DashboardGridCard() {
+  const demo = useShowcaseDemo("c-dashboard-grid", [
+    { revenue: 8, seats: 4 }, { revenue: 6, seats: 6 }, { revenue: 4, seats: 8 }, { revenue: 6, seats: 6 },
+  ], { interval: 2300 });
   return (
     <ShowcaseCard
       id="c-dashboard-grid"
@@ -471,7 +493,7 @@ function DashboardGridCard() {
           compact
           items={WIDGETS.map((widget) => ({
             id: widget.id,
-            span: widget.span,
+            span: widget.id === "revenue" ? demo.value.revenue : widget.id === "seats" ? demo.value.seats : widget.span,
             narrowSpan: widget.narrowSpan,
             title: widget.title,
             content: (
@@ -479,7 +501,7 @@ function DashboardGridCard() {
                 <Column compact>
                   <Row between alignCenter>
                     <Typography gridLabel muted>{widget.title}</Typography>
-                    <Typography gridLabel primary>{widget.id === "revenue" ? `span ${widget.span}` : String(widget.span)}</Typography>
+                    <Typography gridLabel primary>{widget.id === "revenue" ? `span ${demo.value.revenue}` : String(widget.id === "seats" ? demo.value.seats : widget.span)}</Typography>
                   </Row>
                   {widget.content}
                 </Column>
@@ -504,11 +526,15 @@ function DashboardGridCard() {
 
 /** Layout · Row & Column · Container · Grid · Divider. */
 function LayoutCard() {
+  const demo = useShowcaseDemo("c-layout", [0, 1, 2, 3, 4, 5, 4, 3, 2, 1], { interval: 1300 });
+  const gap = GAP_SCALE[demo.value]!;
   return (
     <ShowcaseCard id="c-layout">
       <Grid minTileWidth={280} apart>
         <Column comfortable>
           <Typography legendLabel>Gap scale</Typography>
+          <GapRow name={gap.name} value={spacing[gap.step]} />
+          <Divider />
           <Column comfortable>
             {GAP_SCALE.map((gap) => <GapRow key={gap.name} name={gap.name} value={spacing[gap.step]} />)}
           </Column>
@@ -523,12 +549,14 @@ function LayoutCard() {
         </Column>
         <Column comfortable>
           <Typography legendLabel>Grid</Typography>
+          <ResizeSample fraction={[1, 0.85, 0.65, 0.48, 0.65, 0.85][demo.value]!} height={258}>
           <Grid minTileWidth={72} columns={3} snug>
             <PlaceholderTile label="≥ 72" />
             <PlaceholderTile label="≥ 72" />
             <PlaceholderTile label="≥ 72" />
             <PlaceholderTile label="reflows" reflows />
           </Grid>
+          </ResizeSample>
           <Mono>{"<Grid minTileWidth={72} columns={3}> + <GridItem> · measures its own width: the fourth tile wraps; 3-up, 2-up, 1-up"}</Mono>
           <Column roomy>
             <Divider />
@@ -564,6 +592,7 @@ function LayoutCard() {
 
 /** AppFrame · Page: the frame's banner over a capped page, beside a phone's safe areas. */
 function AppFrameCard() {
+  const demo = useShowcaseDemo("c-app-frame", [0, 1], { interval: 2400 });
   return (
     <ShowcaseCard id="c-app-frame">
       {/* The frame drawn with the parts it holds: a real AppFrame mounts the page's banner
@@ -576,7 +605,8 @@ function AppFrameCard() {
             brand="Riskora"
             brandContent={<CanvasMark size={20} />}
             links={["Boards", "Reports"]}
-            defaultActive={0}
+            active={demo.value}
+            onSelect={demo.setValue}
             actions={<Badge band mono keyCorners>banner</Badge>}
           />
         }
