@@ -46,6 +46,7 @@ import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import { SECTIONS } from "../../docs/src/core/data/detail-sections.ts";
 import { DETAIL_SPECS } from "../../docs/src/core/data/detail-specs.ts";
 import { playgroundExample } from "./playground.ts";
+import { renderRouteMetadata } from "../api/docs.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
@@ -56,6 +57,7 @@ const DOCS_INDEX_FILE = path.join(REPO, "docs", "src", "core", "docs-index.ts");
 const CHUNKS_FILE = path.join(REPO, "docs", "src", "core", "docs-chunks.json");
 const PREVIEWS_FILE = path.join(REPO, "docs", "src", "core", "previews.ts");
 const DESCRIPTIONS_FILE = path.join(REPO, "docs", "src", "core", "descriptions.ts");
+const ROUTE_METADATA_FILE = path.join(REPO, "docs", "src", "core", "data", "route-metadata.ts");
 const INHERITED_FILE = path.join(EXAMPLES_DIR, "inherited-props.ts");
 // A native build's sibling of one of the files above (registry.ios.ts), which Metro resolves
 // in that build in place of the web file.
@@ -840,6 +842,7 @@ function main() {
   writeFileIfChanged(DOCS_INDEX_FILE, renderDocsIndex(entries));
   writeFileIfChanged(PREVIEWS_FILE, renderPreviews(entries));
   writeFileIfChanged(DESCRIPTIONS_FILE, renderDescriptions(entries));
+  writeFileIfChanged(ROUTE_METADATA_FILE, renderRouteMetadata(REPO));
   // Each native build's siblings: a registry whenever a page reads differently there, and
   // the descriptions and previews only when their text differs from the web's.
   for (const platform of NATIVE_PLATFORMS) {
@@ -867,7 +870,7 @@ function main() {
   if (CHECK) {
     if (drift.length) {
       throw new Error(
-        `docs:gen --check found ${drift.length} generated file(s) out of sync with the component markdown. ` +
+        `docs:gen --check found ${drift.length} generated file(s) out of sync with their sources. ` +
           `Run \`bun run docs:gen\` and commit the result:\n${drift
             .sort()
             .map((d) => `    ${d}`)

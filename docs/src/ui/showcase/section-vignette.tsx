@@ -46,14 +46,15 @@ const SMOOTH = [0.65, 0, 0.35, 1] as const;
 const EASE = [0.25, 0.1, 0.25, 1] as const;
 
 /** Evaluate CSS keyframes, applying easing to each interval, not the entire cycle. */
-export function timeline(time: number, period: number, keys: readonly number[], values: readonly number[], curve: readonly number[] = EASE, delay = 0): number {
+export function timeline(time: number, period: number, keys: readonly number[], values: readonly number[], curve?: readonly number[], delay = 0): number {
   "worklet";
   if (time < delay) return values[0]!;
+  const easing = curve ?? EASE;
   const p = ((time - delay) % period) / period;
   for (let i = 1; i < keys.length; i++) {
     if (p <= keys[i]!) {
       const u = (p - keys[i - 1]!) / (keys[i]! - keys[i - 1]!);
-      const e = bezier(u, curve[0]!, curve[1]!, curve[2]!, curve[3]!);
+      const e = bezier(u, easing[0]!, easing[1]!, easing[2]!, easing[3]!);
       return values[i - 1]! + (values[i]! - values[i - 1]!) * e;
     }
   }

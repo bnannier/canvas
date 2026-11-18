@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useRouter } from "expo-router";
-import { Card, Chip, Column, Grid, Icon, Row, Typography, View, useTheme } from "@nannier/canvas";
+import { Card, CardFooter, Chip, Column, Grid, Icon, Row, Typography, View, useTheme } from "@nannier/canvas";
 import { CARD_BORDER } from "../../../../src/molecules/card/card.styles.js";
 import { pageRoles } from "../../../../src/style/type-scale.js";
 import { getComponent } from "../../core/data/components";
@@ -45,19 +45,16 @@ function ComponentChip({ slug }: { slug: string }) {
 /**
  * A stage card (the Overlays page's `c-dialog`, `c-drawer`, `c-alert-dialog`, `c-action-sheet`,
  * `c-popover`, `c-wizard` and `c-command`, decision OD-1): the card IS the stage, `--bg2` under
- * the card's hairline at the showcase corner with no padding and no shadow, its chips in the
- * flow at the top, then the `scene` (faux page and orbs), the optional full-bleed `scrim`, the
- * open overlay, and the caption as the mono label pinned at 16 / 14.
+ * the card's hairline at the showcase corner with no shadow. The `scene` (faux page and
+ * orbs), optional full-bleed `scrim`, open overlay and mono label form the preview. The
+ * component links follow in the card's footer, clear of the preview's layers.
  */
 export interface StageSpec {
-  /** The stage's fixed height (the hand-off's border box); the overlay layer spreads over it. */
+  /** The preview's fixed height (the hand-off's border box); the overlay layer spreads over it. */
   height?: number;
   /**
    * A centred stage instead (`display:grid;place-items:center`): at least this tall, the
-   * chips and the overlay centred in the flow inside `pad` ([vertical, horizontal]). The
-   * grid's two auto rows share the free height equally and each item centres in its row,
-   * which places them as a column spread `space-around` does: the chips do not sit on the
-   * overlay's edge (the 2026-10-29 wizard, whose dialog covered its chip).
+   * overlay centred in the flow inside `pad` ([vertical, horizontal]).
    */
   minHeight?: number;
   pad?: [number, number];
@@ -69,8 +66,6 @@ export interface StageSpec {
    * the stage grows when the overlay is taller than the floor (a phone).
    */
   grows?: boolean;
-  /** On a fixed stage, the chips centred across the stage at this top instead of in the flow. */
-  chipsAt?: number;
   /** The overlay layer's inset on a fixed stage ([top, right, bottom, left]). */
   inset?: [number, number, number, number];
   /** A full-bleed `--scrim` over the scene, for an overlay that draws no dim of its own. */
@@ -90,6 +85,8 @@ export interface ShowcaseCardProps {
   meta?: string;
   /** The components the chips link to, by URL slug; the manifest's by default. */
   links?: readonly string[];
+  /** Place the component links below the example and its caption. Stage cards always do this. */
+  linksInFooter?: boolean;
   /** The mono line at the card's foot, usually the JSX the card demonstrates. */
   caption?: ReactNode;
   /**
@@ -108,8 +105,8 @@ export interface ShowcaseCardProps {
   children?: ReactNode;
 }
 
-/** The stage card's body: chips, scene, scrim, the overlay and the pinned label, in paint order. */
-function Stage({ id, spec, chips, caption, children }: { id: string; spec: StageSpec; chips: readonly string[]; caption?: ReactNode; children?: ReactNode }) {
+/** The stage preview and its in-flow links share one card. */
+function Stage({ id, spec, chips, caption, children }: { id: string; spec: StageSpec; chips: readonly ReactNode[]; caption?: ReactNode; children?: ReactNode }) {
   const { tokens } = useTheme();
   const centred = spec.minHeight != null;
   const inner = (centred ? spec.minHeight! : spec.height ?? 460) - 2 * CARD_BORDER;
@@ -119,42 +116,35 @@ function Stage({ id, spec, chips, caption, children }: { id: string; spec: Stage
     // A plain Column holds the card so a grid row taller than the stage (a frame card beside
     // it) leaves the stage at its own height, as the hand-off's fixed-height stage does.
     <Column>
-    <Card sunken flush clip showcaseCorners testID={`showcase-${id}`}>
-      <View
-        style={centred
-          ? { minHeight: inner, paddingVertical: padV, paddingHorizontal: padH, alignItems: "center", justifyContent: "space-around" }
-          : spec.grows ? { minHeight: inner } : { height: inner }}
-      >
-        {chips.length > 0 ? (
-          <View
-            style={spec.chipsAt != null
-              ? { position: "absolute", top: spec.chipsAt, left: 0, right: 0, alignItems: "center" }
-              : { marginTop: -6, alignSelf: centred ? "center" : "flex-start" }}
-          >
-            <Row wrap compact>
-              {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
-            </Row>
-          </View>
-        ) : null}
-        {spec.scene}
-        {spec.scrim ? <View aria-hidden style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: tokens.scrim, pointerEvents: "none" }} /> : null}
-        {spec.grows && caption != null && !spec.noLabel ? (
-          <View style={{ paddingTop: 14, paddingHorizontal: 16, pointerEvents: "none" }}>
-            {spec.labelSubtle ? <Typography pageLabel mono subtle>{caption}</Typography> : <Typography pageLabel mono muted>{caption}</Typography>}
-          </View>
-        ) : null}
-        {centred ? children : spec.grows ? <View style={{ flexGrow: 1 }}>{children}</View> : (
-          <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, paddingTop: inset[0], paddingRight: inset[1], paddingBottom: inset[2], paddingLeft: inset[3] }}>
-            {children}
-          </View>
-        )}
-        {caption != null && !spec.noLabel && !spec.grows ? (
-          <View style={{ position: "absolute", left: 16, top: 14, right: 16, pointerEvents: "none" }}>
-            {spec.labelSubtle ? <Typography pageLabel mono subtle>{caption}</Typography> : <Typography pageLabel mono muted>{caption}</Typography>}
-          </View>
-        ) : null}
-      </View>
-    </Card>
+      <Card sunken flush clip showcaseCorners testID={`showcase-${id}`}>
+        <View
+          style={[
+            { overflow: "hidden" },
+            centred
+              ? { minHeight: inner, paddingVertical: padV, paddingHorizontal: padH, alignItems: "center", justifyContent: "space-around" }
+              : spec.grows ? { minHeight: inner } : { height: inner },
+          ]}
+        >
+          {spec.scene}
+          {spec.scrim ? <View aria-hidden style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: tokens.scrim, pointerEvents: "none" }} /> : null}
+          {spec.grows && caption != null && !spec.noLabel ? (
+            <View style={{ paddingTop: 14, paddingHorizontal: 16, pointerEvents: "none" }}>
+              {spec.labelSubtle ? <Typography pageLabel mono subtle>{caption}</Typography> : <Typography pageLabel mono muted>{caption}</Typography>}
+            </View>
+          ) : null}
+          {centred ? children : spec.grows ? <View style={{ flexGrow: 1 }}>{children}</View> : (
+            <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, paddingTop: inset[0], paddingRight: inset[1], paddingBottom: inset[2], paddingLeft: inset[3] }}>
+              {children}
+            </View>
+          )}
+          {caption != null && !spec.noLabel && !spec.grows ? (
+            <View style={{ position: "absolute", left: 16, top: 14, right: 16, pointerEvents: "none" }}>
+              {spec.labelSubtle ? <Typography pageLabel mono subtle>{caption}</Typography> : <Typography pageLabel mono muted>{caption}</Typography>}
+            </View>
+          ) : null}
+        </View>
+        {chips.length > 0 ? <CardFooter><Row fill wrap compact>{chips}</Row></CardFooter> : null}
+      </Card>
     </Column>
   );
 }
@@ -163,17 +153,17 @@ export function ShowcaseCard(props: ShowcaseCardProps) {
   return <ShowcaseDemoFrame id={props.id}><ShowcaseCardBody {...props} /></ShowcaseDemoFrame>;
 }
 
-function ShowcaseCardBody({ id, title, meta, links, caption, tinyCaption, split, stage, children }: ShowcaseCardProps) {
+function ShowcaseCardBody({ id, title, meta, links, linksInFooter, caption, tinyCaption, split, stage, children }: ShowcaseCardProps) {
   const spec = showcaseCard(id);
   const head = { title: title ?? spec?.title, meta: meta ?? spec?.meta };
-  const chips = links ?? spec?.links ?? [];
+  const chips = (links ?? spec?.links ?? []).map((slug) => <ComponentChip key={slug} slug={slug} />);
   if (stage) return <Stage id={id} spec={stage} chips={chips} caption={caption}>{children}</Stage>;
   if (split) {
     return (
       <Card showcaseCorners roomy testID={`showcase-${id}`}>
         <Grid minTileWidth={320} apart>
           <Row wrap compact style={{ marginTop: -6 }}>
-            {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
+            {chips}
           </Row>
           {children}
         </Grid>
@@ -186,7 +176,8 @@ function ShowcaseCardBody({ id, title, meta, links, caption, tinyCaption, split,
   // gap between the header, the composition and the caption, from the layout gap scale. The
   // header and the chips sit the card's gap plus the header's own margin apart, less the chip
   // row's `margin-top:-6px` (14 on a 20 card, 8 on a Charts card, 22 on the Form card).
-  const header = head.title != null || head.meta != null || chips.length > 0 ? (
+  const chipRow = chips.length > 0 ? <Row wrap compact>{chips}</Row> : null;
+  const header = head.title != null || head.meta != null || (!linksInFooter && chipRow != null) ? (
     <GapColumn gap={spec?.headGap ?? 14}>
       {head.title != null || head.meta != null ? (
         // Both lines shrink and wrap when the row runs out of room, as the hand-off's
@@ -199,11 +190,7 @@ function ShowcaseCardBody({ id, title, meta, links, caption, tinyCaption, split,
           {head.meta != null ? <Column shrink style={{ minWidth: wordFloor(head.meta) }}><Typography pageLabel mono muted right>{head.meta}</Typography></Column> : null}
         </Row>
       ) : null}
-      {chips.length > 0 ? (
-        <Row wrap compact>
-          {chips.map((slug) => <ComponentChip key={slug} slug={slug} />)}
-        </Row>
-      ) : null}
+      {linksInFooter ? null : chipRow}
     </GapColumn>
   ) : null;
   const body = <GapColumn gap={spec?.gap ?? 20} grow>{children}</GapColumn>;
@@ -226,6 +213,7 @@ function ShowcaseCardBody({ id, title, meta, links, caption, tinyCaption, split,
             {foot}
           </>
         )}
+        {linksInFooter ? chipRow : null}
       </GapColumn>
     </FrameCard>
   );

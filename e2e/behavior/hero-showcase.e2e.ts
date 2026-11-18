@@ -26,13 +26,12 @@ function opaquePanelIds(frame: ShowcaseSample) {
 async function sample(page: Page, duration: number) {
   return page.evaluate(duration => new Promise<ShowcaseSample[]>(resolve => {
     const collage = document.querySelector('[data-testid="library-collage"]')!;
-    const nodes = [...collage.querySelectorAll<HTMLElement>('[data-testid^="library-panel-"]')];
     const frames: ShowcaseSample[] = [];
     const start = performance.now();
     const tick = () => {
       const time = performance.now() - start;
       if (time - (frames.at(-1)?.time ?? -100) >= 60) {
-        const panels = nodes.map(node => {
+        const panels = Array.from(collage.querySelectorAll<HTMLElement>('[data-testid^="library-panel-"]'), node => {
           const style = getComputedStyle(node);
           return { id: node.dataset.testid!, opacity: Number(style.opacity), position: `${style.left}, ${style.top}`, transform: style.transform };
         });
@@ -51,18 +50,8 @@ for (const width of [1440, 768, 390]) {
     await gotoDocs(page, "/", { viewport: { width, height: 1100 } });
     const collage = page.getByTestId("library-collage");
     await expect(collage).toHaveAttribute("inert", "");
-    await expect(collage.locator('[data-testid^="library-panel-"]')).toHaveCount(109);
+    await expect(collage.locator('[data-testid^="library-panel-"]')).toHaveCount(6);
     const center = collage.getByTestId(/^library-panel-revenue(?:-\d+)?$/);
-    await expect(center).toHaveCount(61);
-    await expect(center.getByTestId("hero-control-skeleton")).toHaveCount(1);
-    for (const [position, count] of Object.entries({ glass: 9, online: 8, segmented: 8, ship: 8, toast: 10 })) {
-      await expect(collage.getByTestId(new RegExp(`^library-panel-${position}-\\d+$`))).toHaveCount(count);
-    }
-    const tooltip = page.getByText(/^Copy the (workspace|project|share) link$/);
-    await expect(tooltip).toHaveCount(1);
-    await expect(center.getByText(/^Copy the (workspace|project|share) link$/)).toHaveCount(1);
-    await expect(collage.getByTestId(/^library-panel-toast-\d+$/)
-      .locator('[role="img"][aria-label="Visits trending upward"]')).toHaveCSS("height", "34px");
     await expect.poll(async () => opaquePanelIds((await sample(page, 0))[0]!)).toEqual(RESTING_PANELS);
     const initialBounds = await collage.boundingBox();
     await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -77,7 +66,8 @@ for (const width of [1440, 768, 390]) {
     let longestStill = 0;
     for (let index = 1; index < moving.length; index++) {
       const { time, panels } = moving[index]!;
-      const previous = moving[index - 1]!.panels;
+      const previous = new Map(moving[index - 1]!.panels.map(item => [item.id, item]));
+      expect(panels.length, "six selected, the moving arrival and one prepared arrival").toBeLessThanOrEqual(8);
       const changing = panels.filter(item => item.opacity > 0.001 && item.opacity < 0.999);
       const flying = new Set(changing.map(item => item.position));
       const transforms = new Map<string, string>();
@@ -90,14 +80,17 @@ for (const width of [1440, 768, 390]) {
       expect(flying.size, `positions in flight at ${Math.round(time)}ms`).toBeLessThanOrEqual(1);
       expect(panels.filter(item => item.opacity >= 0.999).length).toBeGreaterThanOrEqual(5);
 
-      const arrival = panels.find((item, i) => item.opacity > previous[i]!.opacity && item.transform !== previous[i]!.transform);
+      const arrival = panels.find(item => {
+        const before = previous.get(item.id);
+        return before && item.opacity > before.opacity && item.transform !== before.transform;
+      });
       if (arrival && arrival.id !== arrivals.at(-1)?.id) {
         expect(arrival.position, `arrival ${arrival.id} at ${Math.round(time)}ms`).not.toBe(arrivals.at(-1)?.position);
         arrivals.push(arrival);
       }
 
       // Follow the flight past the point when its incoming specimen reaches full opacity.
-      if (panels.some((item, i) => item.transform !== previous[i]!.transform)) {
+      if (panels.some(item => previous.has(item.id) && item.transform !== previous.get(item.id)!.transform)) {
         sawMotion = true;
         stillSince = undefined;
       } else if (sawMotion) {
@@ -131,9 +124,8 @@ for (const width of [1440, 768, 390]) {
     await expect(opener).toBeFocused();
 
     if (width === 1440) {
-      const authoredPanel = collage.getByTestId("library-panel-revenue");
       // Entries in the rotation columns stay fixed when a flight only adds translation.
-      const rotation = () => authoredPanel.evaluate(node => {
+      const rotation = () => center.first().evaluate(node => {
         const { m13, m23 } = new DOMMatrixReadOnly(getComputedStyle(node).transform);
         return [m13, m23] as const;
       });
@@ -145,6 +137,7 @@ for (const width of [1440, 768, 390]) {
       }).toBeGreaterThan(0.02);
     }
     await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(collage.locator('[data-testid^="library-panel-"]')).toHaveCount(6);
     await expect.poll(async () => opaquePanelIds((await sample(page, 0))[0]!)).toEqual(RESTING_PANELS);
     await animationFrames(page, 2);
     const still = await sample(page, 600);

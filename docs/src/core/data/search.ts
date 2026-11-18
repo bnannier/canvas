@@ -1,8 +1,7 @@
 import { COMPONENTS } from "./components";
 import { componentDescription } from "../descriptions";
 import { inlineText } from "../../lib/inline-markdown";
-import { getAllPatterns } from "./patterns";
-import { getAllTemplates } from "./templates";
+import { PATTERN_METADATA, TEMPLATE_METADATA } from "./route-metadata";
 import type { SearchEntry } from "./types";
 import { SECTION_ROOMS, SKINS_PAGE, TEMPLATES_PAGE } from "../../data/rooms";
 
@@ -45,14 +44,14 @@ const ALL_ENTRIES: SearchEntry[] = [
     keywords: [c.slug, ...c.slug.split("-"), ...(c.dir ? [c.dir] : [])],
     component: true,
   })),
-  ...getAllPatterns().map((p) => ({
+  ...PATTERN_METADATA.map((p) => ({
     title: p.name,
     description: p.description,
     path: `/patterns/${p.slug}`,
     category: "Patterns",
     keywords: [p.slug, ...p.slug.split("-")],
   })),
-  ...getAllTemplates().map((t) => ({
+  ...TEMPLATE_METADATA.map((t) => ({
     title: t.name,
     description: t.description,
     path: `/templates/${t.slug}`,

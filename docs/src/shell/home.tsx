@@ -9,6 +9,7 @@ import {
   Grid,
   Row,
   Pressable,
+  QRCode,
   Typography,
   Text,
   View,
@@ -17,19 +18,20 @@ import {
 } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
-import { getAllTemplates } from "../core/data/templates";
+import { TEMPLATE_METADATA } from "../core/data/route-metadata";
 import { AuroraFrame } from "../brand/glow";
 import { GradientText } from "../brand/gradient-text";
 import { HeroCollage } from "../brand/hero-collage";
 import { HeroEntrance, HeroPulse } from "../brand/hero-motion";
 import { LibraryAction } from "../brand/library-action";
-import { Github } from "../brand/brand-logos";
+import { Apple, Github } from "../brand/brand-logos";
 import { alpha } from "../../../src/style/color";
 import { useHeroPanels } from "../brand/hero-panels";
 import { useHeroShowcasePanels } from "../brand/hero-showcase-panels";
 import { HERO_GRID } from "../brand/library-hero-look";
 import type { Tier } from "../data/tiers";
 import {
+  APP_STORE_URL,
   INDEX_COPY,
   LIBRARY_HEADLINE,
   LIBRARY_HERO,
@@ -44,6 +46,7 @@ import {
   tierLetter,
 } from "../data/library";
 import { Page } from "../ui/page";
+import { ShownOn } from "../ui/shown-on";
 import { useLatestVersion } from "../ui/use-latest-version";
 
 // The docs home: the v4 hand-off's Library page (`Canvas v4.0.0 Library.dc.html`): the hero
@@ -83,20 +86,22 @@ export function LibraryHero() {
   const panels = useHeroPanels();
   const alternatives = useHeroShowcasePanels();
   const { width, onLayout } = useMeasuredWidth();
-  // Match Grid's two 460 px tiles and its broad (48 px) gap.
+  // The two intrinsic cells wrap at 2 × 460 + 48, before any layout measurement.
+  // Only the illustration's fit mode needs the measured width.
   const stacked = width > 0 && width < HERO_GRID.minTileWidth * 2 + 48;
   const { tokens } = useTheme();
   return (
     <AuroraFrame testID="library-hero">
       <View onLayout={onLayout}>
-        <Grid minTileWidth={HERO_GRID.minTileWidth} columns={2} broad>
+        <Row broad wrap stretch>
+          <Column grow shrink testID="library-copy-cell" style={{ flexBasis: HERO_GRID.minTileWidth, minWidth: 0, maxWidth: "100%" }}>
           <HeroEntrance><Column panel center fill>
             <Row comfortable alignCenter>
               <HeroPulse />
               <Typography eyebrowLg subtle>{LIBRARY_HERO.eyebrow(version.slice(1))}</Typography>
             </Row>
             <View ref={headlineBox}>
-              <Typography hero accessibilityLabel={LIBRARY_HEADLINE}>
+              <Typography hero testID="library-headline" accessibilityLabel={LIBRARY_HEADLINE}>
                 {`${headline.plain} `}
                 <GradientText anchor={headlineBox} testID="library-headline-accent">{headline.accent}</GradientText>
               </Typography>
@@ -123,14 +128,29 @@ export function LibraryHero() {
               >
                 {primary.label}
               </LibraryAction>
-              <Button outline icon large href={secondary.url} external accessibilityLabel="View Canvas on GitHub" onPress={() => Linking.openURL(secondary.url)} iconLeft={<Github size={22} color={tokens.foreground} />} />
+              <Row cozy alignCenter>
+                <Button outline icon large href={secondary.url} external accessibilityLabel="View Canvas on GitHub" onPress={() => Linking.openURL(secondary.url)} iconLeft={<Github size={22} color={tokens.foreground} />} />
+                <ShownOn platform="web">
+                  <Pressable role="link" accessibilityRole="link" accessibilityLabel="Download Canvas on the App Store"
+                    {...({ href: APP_STORE_URL, hrefAttrs: { target: "_blank", rel: "noopener noreferrer" } } as object)}>
+                    <Column snug alignCenter>
+                      <QRCode small value={APP_STORE_URL} logo={<Apple size={14} color="#0a0a0a" />}
+                        accessibilityLabel="Scan to download Canvas on the App Store" testID="library-app-store-qr" />
+                      <Typography caption muted>App Store</Typography>
+                    </Column>
+                  </Pressable>
+                </ShownOn>
+              </Row>
             </Row>
             <Row loose wrap rowsSnug>
               {heroStats(COMPONENTS.length).map((stat) => <Typography key={stat} caption mono muted singleLeading>{stat}</Typography>)}
             </Row>
           </Column></HeroEntrance>
+          </Column>
+          <Column grow shrink testID="library-collage-cell" style={{ flexBasis: HERO_GRID.minTileWidth, minWidth: 0, maxWidth: "100%" }}>
           <HeroCollage testID="library-collage" panels={panels} alternatives={alternatives} fit={stacked} />
-        </Grid>
+          </Column>
+        </Row>
       </View>
     </AuroraFrame>
   );
@@ -213,7 +233,7 @@ function Index() {
       </Card>
       <Card style={{ marginTop: 12, paddingVertical: 18, paddingHorizontal: 20, borderRadius: 20, borderColor: t.ring, backgroundColor: t["primary-soft"], boxShadow: "none" }}>
         <Row between alignCenter wrap cozy>
-          <View style={{ gap: 2, flexShrink: 1, minWidth: 0 }}><Typography h5 level={2}>{TEMPLATES_CALL.title(getAllTemplates().length)}</Typography><Typography small subtle>{TEMPLATES_CALL.body}</Typography></View>
+          <View style={{ gap: 2, flexShrink: 1, minWidth: 0 }}><Typography h5 level={2}>{TEMPLATES_CALL.title(TEMPLATE_METADATA.length)}</Typography><Typography small subtle>{TEMPLATES_CALL.body}</Typography></View>
           <Button primary raised href={TEMPLATES_CALL.href} onPress={go(TEMPLATES_CALL.href)}>{TEMPLATES_CALL.label} →</Button>
         </Row>
       </Card>

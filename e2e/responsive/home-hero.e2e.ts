@@ -7,18 +7,11 @@ const PANEL_SELECTOR = '[data-testid^="library-panel-"]';
 async function restingCollageFit(collage: Locator) {
   return collage.evaluate((node, panelSelector) => {
     const frame = node.getBoundingClientRect();
-    // Reduced Motion leaves the opening panels in place and the other specimens transparent.
-    const panels = Array.from(node.querySelectorAll(panelSelector)).map(panel => ({
-      box: panel.getBoundingClientRect(),
-      visible: Number(getComputedStyle(panel).opacity) > 0,
-    }));
-    const boxes = panels.filter(panel => panel.visible).map(panel => panel.box);
-    const horizontalBounds = (rects: DOMRect[]) => ({
-      left: Math.min(...rects.map(rect => rect.left)),
-      right: Math.max(...rects.map(rect => rect.right)),
-    });
-    const { left, right } = horizontalBounds(boxes);
-    const mounted = horizontalBounds(panels.map(panel => panel.box));
+    const boxes = Array.from(node.querySelectorAll(panelSelector))
+      .filter(panel => Number(getComputedStyle(panel).opacity) > 0)
+      .map(panel => panel.getBoundingClientRect());
+    const left = Math.min(...boxes.map(rect => rect.left));
+    const right = Math.max(...boxes.map(rect => rect.right));
     const frameCenter = (frame.left + frame.right) / 2;
     return {
       visiblePanels: boxes.length,
@@ -26,7 +19,6 @@ async function restingCollageFit(collage: Locator) {
       fitsColumnWidth: left >= frame.left && right <= frame.right,
       // The layout centers the full rotation pool. The opening glass panel sits slightly inside that envelope.
       openingCentered: Math.abs((left + right) / 2 - frameCenter) < 3,
-      allSpecimensCentered: Math.abs((mounted.left + mounted.right) / 2 - frameCenter) < 1,
       fillsPhoneColumn: (right - left) / frame.width > 0.9,
     };
   }, PANEL_SELECTOR);
@@ -37,16 +29,22 @@ for (const width of [320, 390, 430, 640, 768, 820, 1024, 1180, 1440]) {
     await gotoDocs(page, "/", { viewport: { width, height: 900 } });
     const hero = page.getByTestId("library-hero");
     const collage = hero.getByTestId("library-collage");
-    await expect(collage.locator(PANEL_SELECTOR)).toHaveCount(109);
+    await expect(collage.locator(PANEL_SELECTOR)).toHaveCount(6);
     // The hero clips its decorative glow, so document scrollWidth alone cannot
     // detect an illustration cut off inside it. Measure the resting projection.
     await expect.poll(() => restingCollageFit(collage)).toMatchObject({
       visiblePanels: 6,
       fitsViewportWidth: true,
-      ...(width <= 1024 ? { fitsColumnWidth: true, openingCentered: true, allSpecimensCentered: true } : {}),
+      ...(width <= 1024 ? { fitsColumnWidth: true, openingCentered: true } : {}),
       ...(width <= 640 ? { fillsPhoneColumn: true } : {}),
     });
     await expect.poll(() => page.locator("[data-page-scroll]").evaluate((node) => node.scrollWidth - node.clientWidth)).toBe(0);
+    const appStore = hero.getByRole("link", { name: "Download Canvas on the App Store" });
+    await expect(appStore).toHaveAttribute("href", "https://apps.apple.com/app/id6794454098");
+    const githubBox = (await hero.getByRole("link", { name: "View Canvas on GitHub" }).boundingBox())!;
+    const storeBox = (await appStore.boundingBox())!;
+    expect(storeBox.x).toBeGreaterThan(githubBox.x + githubBox.width);
+    expect(Math.abs((storeBox.y + storeBox.height / 2) - (githubBox.y + githubBox.height / 2))).toBeLessThan(1);
     if (width <= 640) {
       const bar = await page.locator("[data-shell-mobile-top]").boundingBox();
       const eyebrow = await hero.getByText(/^Canvas v.+ · Component library$/).boundingBox();
@@ -57,7 +55,7 @@ for (const width of [320, 390, 430, 640, 768, 820, 1024, 1180, 1440]) {
       const github = hero.getByRole("link", { name: "View Canvas on GitHub" });
       await expect(github).toHaveAttribute("href", "https://github.com/bnannier/canvas");
       await expect(github.locator("svg")).toBeVisible();
-      for (const name of ["Explore components", "View Canvas on GitHub"]) {
+      for (const name of ["Explore components", "View Canvas on GitHub", "Download Canvas on the App Store"]) {
         const link = hero.getByRole("link", { name: new RegExp(name) });
         await expect(link).toBeVisible();
         const box = await link.boundingBox();
@@ -84,7 +82,7 @@ test.describe("the live tablet hero", () => {
     ]) {
       await page.setViewportSize(viewport);
       await expect.poll(() => restingCollageFit(collage), { message: `collage fit at ${viewport.width} × ${viewport.height}` })
-        .toMatchObject({ visiblePanels: 6, fitsViewportWidth: true, fitsColumnWidth: true, openingCentered: true, allSpecimensCentered: true });
+        .toMatchObject({ visiblePanels: 6, fitsViewportWidth: true, fitsColumnWidth: true, openingCentered: true });
       await expect.poll(() => page.locator("[data-page-scroll]").evaluate(node => node.scrollWidth - node.clientWidth)).toBe(0);
     }
   });

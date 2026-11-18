@@ -14,6 +14,8 @@ import { PLATFORM_COPY } from "./platform-copy";
 // Plain data with no React import, so the unit tests read it without a kit build.
 
 export const REPO_URL = "https://github.com/bnannier/canvas";
+/** The compact Apple ID link avoids hard-coding a storefront in the QR. */
+export const APP_STORE_URL = "https://apps.apple.com/app/id6794454098";
 
 /** The hero: the eyebrow, the headline in its two parts, the paragraph and the two calls. */
 export const LIBRARY_HERO = {

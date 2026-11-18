@@ -25,7 +25,7 @@ test("the collage follows the pointer and live Reduced Motion restores a still p
   await gotoDocs(page, "/");
   // The collage's first child is its static responsive canvas. Each panel
   // owns the perspective animation, including its independent depth.
-  const panel = page.getByTestId("library-panel-revenue");
+  const panel = page.getByTestId(/^library-panel-revenue(?:-\d+)?$/).first();
   await expect(panel).toBeVisible();
   await page.mouse.move(20, 100);
   await expect.poll(() => panel.evaluate(node => getComputedStyle(node).transform)).toMatch(/^matrix3d\(/);

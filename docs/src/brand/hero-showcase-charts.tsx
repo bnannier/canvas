@@ -2,14 +2,14 @@ import {
   AreaChart, BarList, BoxPlot, BulletChart, CandlestickChart, Chart, Column,
   ComposedChart, DepthChart, FunnelChart, Gauge, GeoMap, Heatmap, Histogram,
   LineChart, MetricBreakdown, PieChart, ProgressRing, RadarChart, RadialBarChart,
-  RangeAreaChart, ScatterPlot, ServiceHealthList, Sparkline, StackedBar, Treemap,
+  RangeAreaChart, ScatterPlot, ServiceHealthList, StackedBar, Treemap,
   Typography, UptimeBar, WaterfallChart, type UptimePeriod,
 } from "@nannier/canvas";
 import { useDemonstrationStep } from "./hero-showcase-activity";
 
 export const HERO_CHART_KINDS = [
   "chart", "line-chart", "area-chart", "pie-chart", "scatter-plot",
-  "candlestick-chart", "depth-chart", "sparkline", "stacked-bar", "gauge",
+  "candlestick-chart", "depth-chart", "stacked-bar", "gauge",
   "heatmap", "bar-list", "metric-breakdown", "uptime-bar", "service-health-list",
   "bullet-chart", "progress-ring", "composed-chart", "range-area-chart",
   "histogram", "box-plot", "waterfall-chart", "radial-bar-chart", "funnel-chart",
@@ -100,16 +100,6 @@ export function HeroChartSpecimen({ kind }: { kind: HeroChartKind }) {
         { price: 103, size: 14 }, { price: 104, size: 25 - change },
         { price: 105, size: 11 }, { price: 106, size: 21 },
       ]} testID={testID} />;
-    case "sparkline": {
-      const latest = [1840, 1912, 1856, 1978][phase]!;
-      return <Column loose pad>
-        <Column tight>
-          <Typography small muted>Daily downloads</Typography>
-          <Typography metricValue>{latest.toLocaleString("en-US")}</Typography>
-        </Column>
-        <Sparkline tall line track values={[426, 708, 590, 925, 810, 1140, 1020, 1342, 1268, 1520, 1452, latest]} accessibilityLabel="Downloads over the last 12 days" testID={testID} />
-      </Column>;
-    }
     case "stacked-bar":
       return <Column relaxed pad>
         <Column tight>

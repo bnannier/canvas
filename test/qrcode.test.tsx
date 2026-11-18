@@ -3,6 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import QRRenderer from "react-native-qrcode-svg";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { View } from "../src/style/primitives.ts";
 import { Row, Column } from "../src/atoms/layout/layout.tsx";
 import { QRCode } from "../src/atoms/qrcode/qrcode.tsx";
 import { iosSkin, webSkin, androidSkin } from "../src/atoms/qrcode/qrcode.styles.ts";
@@ -25,7 +26,7 @@ const URL = "https://example.com/invite/42";
 const rootOf = (c: HTMLElement) => c.querySelector('[role="img"]') as HTMLElement;
 
 /** The props QRCode handed react-native-qrcode-svg, read off the React tree under its frame. */
-function rendererProps(frame: HTMLElement): { value: string; size: number; color: string; backgroundColor: string } {
+function rendererProps(frame: HTMLElement): { value: string; size: number; color: string; backgroundColor: string; ecl?: string } {
   const key = Object.keys(frame).find((k) => k.startsWith("__reactFiber$"));
   if (!key) throw new Error("no React fiber on the QRCode frame");
   type Fiber = { type: unknown; memoizedProps: Record<string, unknown>; child: Fiber | null; sibling: Fiber | null };
@@ -98,6 +99,52 @@ describe("QRCode stays scannable", () => {
       });
     }
   }
+});
+
+describe("QRCode center logo", () => {
+  const logo = <View role="img" aria-label="Brand mark" testID="brand-mark" />;
+
+  it("uses high correction with a logo and keeps the default correction without one", () => {
+    const withLogo = ui(<QRCode value={URL} logo={logo} />);
+    expect(rendererProps(rootOf(withLogo.container)).ecl).toBe("H");
+    withLogo.unmount();
+
+    const { container } = ui(<QRCode value={URL} logo={false} />);
+    expect(rendererProps(rootOf(container)).ecl).toBeUndefined();
+    expect(container.querySelector('[aria-hidden="true"]')).toBeNull();
+  });
+
+  it("exposes the code as a single named image and hides its decorative logo", () => {
+    const { getByTestId, getAllByRole } = ui(<QRCode value={URL} logo={logo} accessibilityLabel="Scan to join" />);
+    const images = getAllByRole("img");
+    expect(images).toHaveLength(1);
+    expect(images[0].getAttribute("aria-label")).toBe("Scan to join");
+    expect(getByTestId("brand-mark").closest('[aria-hidden="true"][inert]')).not.toBeNull();
+  });
+
+  it.each([
+    [{ small: true }, 96],
+    [{}, 140],
+    [{ large: true }, 200],
+  ] as const)("keeps the logo and its margin inside a centered field (%j)", (sizeProps, size) => {
+    const { container, getByTestId } = ui(<QRCode value={URL} logo={logo} {...sizeProps} />);
+    const frame = rootOf(container);
+    const field = getByTestId("brand-mark").closest<HTMLElement>('[aria-hidden="true"]')!;
+    const content = field.firstElementChild as HTMLElement;
+    const fieldSize = Number.parseFloat(field.style.width);
+
+    expect(rendererProps(frame).size).toBe(size);
+    expect(frame.style.paddingTop).toBe("12px");
+    expect(field.style.backgroundColor).toBe(frame.style.backgroundColor);
+    expect(field.style.height).toBe(field.style.width);
+    expect(fieldSize).toBeLessThanOrEqual(size / 5);
+    expect(field.style.top).toBe(`${(size - fieldSize) / 2}px`);
+    expect(field.style.left).toBe(field.style.top);
+    expect(content.style.overflowX).toBe("hidden");
+    expect(content.style.overflowY).toBe("hidden");
+    expect(content.style.height).toBe(content.style.width);
+    expect(Number.parseFloat(content.style.width)).toBeLessThanOrEqual(fieldSize - 4);
+  });
 });
 
 describe("QRCode edge cases and sizing", () => {

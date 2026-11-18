@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { AppState } from "react-native";
 import Animated, { cancelAnimation, Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated";
 import { View, useReducedMotion, useHoverCapable } from "@nannier/canvas";
-import { COLLAGE, HERO_MOTION, panelTransform, projectCss, stackBounds, type CollagePanel, type CollagePanelId } from "./library-hero-look";
+import { COLLAGE, HERO_MOTION, HERO_SLOT_SIZES, panelTransform, projectCss, stackBounds, type CollagePanel, type CollagePanelId } from "./library-hero-look";
 import { inertProps } from "../../../src/style/inert";
 import { HeroShowcaseSequence, entryDirection, flightFrame, flyingPanelTransform, SHOWCASE_MOTION, type ShowcaseFlight } from "./hero-showcase-motion";
-import { ShowcaseActivity } from "./hero-showcase-activity";
+import { ShowcaseActivity, ShowcaseStep } from "./hero-showcase-activity";
 
 // A brand illustration: the v4 hand-off's Library hero collage (decision P5-T1, the
 // `v4-library-hero` card), six decorative panels laid out in a tilted 3D stack. The
@@ -24,10 +24,21 @@ const NO_ALTERNATIVES = {};
 const BACK_TO_FRONT = [...COLLAGE.panels].sort((a, b) => a.z - b.z);
 type ActiveShowcaseFlight = ShowcaseFlight & { start: number };
 
-function Panel({ panel, width, x, y, children, onSize, variant, selected, flight, progress, running }: {
+// Settled layout maxima of the complete rotation at its 648px artboard width.
+// Reserve the same fit before any alternative mounts. Layout can still extend
+// these bounds for larger text or a differently sized native control.
+const SLOT_SIZES = HERO_SLOT_SIZES;
+const OPENING = BACK_TO_FRONT.map(() => 0);
+
+function afterFlight(selected: number[], flight: ShowcaseFlight) {
+  return selected.map((value, slot) => slot === flight.slot ? flight.to : value);
+}
+
+function Panel({ panel, width, x, y, children, onSize, variant, selected, flight, progress, running, step }: {
   panel: CollagePanel; width: number; x: SharedValue<number>; y: SharedValue<number>; children: ReactNode;
   onSize: (id: CollagePanelId, variant: number, width: number, height: number) => void;
   variant: number; selected: number; flight: ActiveShowcaseFlight | null; progress: SharedValue<number>; running: boolean;
+  step: { current: number };
 }) {
   const moving = flight != null && (variant === flight.from || variant === flight.to);
   // Reanimated subscribes to captured shared values even when a worklet branches around them.
@@ -41,7 +52,9 @@ function Panel({ panel, width, x, y, children, onSize, variant, selected, flight
   return <Animated.View testID={`library-panel-${panel.id}${variant ? `-${variant}` : ""}`} onLayout={({ nativeEvent: { layout } }) => onSize(panel.id, variant, layout.width, layout.height)} style={[{
     position: "absolute", left: panel.x, top: panel.y,
     ...(panel.width != null ? { width: panel.width } : null), transformOrigin: [0, 0, 0],
-  }, motion]}><ShowcaseActivity.Provider value={visible && running}>{children}</ShowcaseActivity.Provider></Animated.View>;
+  }, motion]}><ShowcaseActivity.Provider value={visible && running}>
+    <ShowcaseStep.Provider value={step}>{children}</ShowcaseStep.Provider>
+  </ShowcaseActivity.Provider></Animated.View>;
 }
 
 export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, testID, fit = false }: {
@@ -49,38 +62,48 @@ export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, testID, fi
   testID?: string; fit?: boolean;
 }) {
   const [width, setWidth] = useState(SEED_WIDTH);
-  const [specimenSizes, setSpecimenSizes] = useState<Record<string, [number, number]>>({});
+  const [measured, setMeasured] = useState(false);
+  const [oversized, setOversized] = useState<Record<string, [number, number]>>({});
   const onSize = useCallback((id: CollagePanelId, variant: number, w: number, h: number) => {
     const key = `${id}-${variant}`;
-    setSpecimenSizes(prev => {
+    setOversized(prev => {
+      if (w <= SLOT_SIZES[id][0] && h <= SLOT_SIZES[id][1]) {
+        if (!prev[key]) return prev;
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
       return prev[key]?.[0] === w && prev[key]?.[1] === h ? prev : { ...prev, [key]: [w, h] };
     });
   }, []);
-  // Reserve the union of the current specimen measurements, not their largest
-  // historical size: a responsive component's initial stacked layout can be
-  // taller than its settled layout and must not leave a permanent blank region.
+  // Update each specimen's last measurement as it settles. A transient stacked
+  // layout must not permanently enlarge its slot.
   const sizes = useMemo(() => {
-    const result: Partial<Record<CollagePanelId, [number, number]>> = {};
+    const result = { ...SLOT_SIZES };
     for (const panel of BACK_TO_FRONT) {
-      const measured = Object.entries(specimenSizes).filter(([key]) => key.startsWith(`${panel.id}-`)).map(([, size]) => size);
-      if (measured.length) result[panel.id] = [Math.max(...measured.map(size => size[0])), Math.max(...measured.map(size => size[1]))];
+      for (const [key, [w, h]] of Object.entries(oversized)) {
+        if (key.startsWith(`${panel.id}-`)) {
+          const [width, height] = result[panel.id];
+          result[panel.id] = [Math.max(width, w), Math.max(height, h)];
+        }
+      }
     }
     return result;
-  }, [specimenSizes]);
+  }, [oversized]);
   // Fit the complete illustration into its measured column, keeping the authored
   // panel geometry and perspective in one coordinate system on every platform.
   const narrow = fit || width < SEED_WIDTH - 1;
   const canvasWidth = narrow ? SEED_WIDTH : width;
   // Fit the visible panel bounds, rather than the empty area of the desktop
   // canvas. Native layout sizes and the shared projection math work on every OS.
-  const points = narrow && BACK_TO_FRONT.every(panel => sizes[panel.id])
+  const points = narrow
     ? BACK_TO_FRONT.flatMap(panel => {
-      const [w, h] = sizes[panel.id]!;
+      const [w, h] = sizes[panel.id];
       return [[0, 0], [w, 0], [w, h], [0, h]].map(point => projectCss(panel, canvasWidth, point as [number, number]));
     }) : [];
-  const left = points.length ? Math.min(...points.map(point => point[0])) - 16 : narrow ? -72 : 0;
+  const left = points.length ? Math.min(...points.map(point => point[0])) - 16 : 0;
   const top = points.length ? Math.min(...points.map(point => point[1])) - 16 : 0;
-  const drawingWidth = points.length ? Math.max(...points.map(point => point[0])) + 16 - left : canvasWidth + (narrow ? 144 : 0);
+  const drawingWidth = points.length ? Math.max(...points.map(point => point[0])) + 16 - left : canvasWidth;
   const drawingHeight = points.length ? Math.max(...points.map(point => point[1])) + 16 - top : COLLAGE.height;
   // A stacked tablet column is wider than the artwork. Centre the visible
   // drawing there without inflating the controls; phones still scale to fit.
@@ -95,47 +118,52 @@ export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, testID, fi
     return () => subscription.remove();
   }, []);
   const running = !reduced && foreground;
-  const [selected, setSelected] = useState(() => BACK_TO_FRONT.map(() => 0));
+  const [selected, setSelected] = useState(OPENING);
   const [flight, setFlight] = useState<ActiveShowcaseFlight | null>(null);
-  const previousSlot = useRef(-1);
+  const [queued, setQueued] = useState<ShowcaseFlight | null>(null);
   const sequence = useRef<HeroShowcaseSequence | null>(null);
   if (!sequence.current) sequence.current = new HeroShowcaseSequence();
   const progress = useSharedValue(0);
   const counts = useMemo(() => BACK_TO_FRONT.map(panel => (alternatives[panel.id]?.length ?? 0) + 1), [alternatives]);
+  const steps = useMemo(() => counts.map(count => Array.from({ length: count }, () => ({ current: 0 }))), [counts]);
   useEffect(() => {
     if (!running || !counts.some(count => count > 1)) return;
-    if (!flight) {
-      // Let the page's opening entrance finish once; each later replacement
-      // starts immediately after the previous flight in a different position.
+    if (!flight && !queued) {
+      // Prepare the first specimen during the opening entrance. Deferring the
+      // draw allows cleanup to cancel it on a Strict Mode effect replay.
       const timer = setTimeout(() => {
-        // The authored starting illustration yields to live demonstrations;
-        // every later arrival comes from the animated specimen pool.
-        const next = sequence.current!.next(selected, counts, previousSlot.current);
-        // Keep the clock monotonic: an old worklet stays at its finished frame
-        // while React installs the next flight, instead of flashing its old item.
-        setFlight(next ? { ...next, start: progress.value, direction: entryDirection(BACK_TO_FRONT[next.slot]!.id, next.direction) } : null);
-      }, previousSlot.current < 0 ? HERO_MOTION.rise : 0);
+        setQueued(sequence.current!.next(selected, counts, -1));
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+    const advance = () => {
+      const settled = flight ? afterFlight(selected, flight) : selected;
+      setSelected(settled);
+      // Keep the shared clock monotonic while the worklets switch owners.
+      setFlight(queued ? { ...queued, start: progress.value, direction: entryDirection(BACK_TO_FRONT[queued.slot]!.id, queued.direction) } : null);
+      // Warm exactly one future arrival. Its invisible tree can measure chart
+      // geometry while the current pair is in flight.
+      setQueued(queued ? sequence.current!.next(afterFlight(settled, queued), counts, queued.slot) : null);
+    };
+    if (!flight) {
+      const timer = setTimeout(advance, HERO_MOTION.rise);
       return () => clearTimeout(timer);
     }
     const remaining = SHOWCASE_MOTION.duration * (1 - (progress.value - flight.start));
     // The live Canvas preference gates this effect; Reanimated's system flag
     // is cached at startup and otherwise cannot resume a newly enabled preview.
     progress.value = withTiming(flight.start + 1, { duration: remaining, easing: Easing.linear, reduceMotion: ReduceMotion.Never });
-    const timer = setTimeout(() => {
-      previousSlot.current = flight.slot;
-      setSelected(prev => prev.map((value, slot) => slot === flight.slot ? flight.to : value));
-      setFlight(null);
-    }, remaining + 32);
+    const timer = setTimeout(advance, remaining + 32);
     return () => { clearTimeout(timer); cancelAnimation(progress); };
-  }, [running, counts, flight, selected, progress]);
+  }, [running, counts, flight, queued, selected, progress]);
   useEffect(() => {
     if (!reduced) return;
     cancelAnimation(progress);
     progress.value = 0;
     setFlight(null);
-    previousSlot.current = -1;
+    setQueued(null);
     sequence.current = new HeroShowcaseSequence();
-    setSelected(BACK_TO_FRONT.map(() => 0));
+    setSelected(OPENING);
   }, [reduced, progress]);
   const x = useSharedValue<number>(COLLAGE.rotate[0]);
   const y = useSharedValue<number>(COLLAGE.rotate[1]);
@@ -163,6 +191,7 @@ export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, testID, fi
     <View
       ref={box}
       testID={testID}
+      {...({ dataSet: { heroUnmeasured: measured ? undefined : "" } } as object)}
       {...inertProps()}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
@@ -170,17 +199,26 @@ export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, testID, fi
       pointerEvents="none"
       onLayout={(event) => {
         const next = event.nativeEvent.layout.width;
-        if (next > 0) setWidth((prev) => (Math.abs(prev - next) < 1 ? prev : next));
+        if (next > 0) {
+          setWidth((prev) => (Math.abs(prev - next) < 1 ? prev : next));
+          setMeasured(true);
+        }
       }}
       style={{ height: drawingHeight * scale }}
     >
-      <View style={{ width: canvasWidth, height: COLLAGE.height, transformOrigin: [0, 0, 0], transform: [{ translateX: offset }, { scale }, { translateX: -left }, { translateY: -top }] }}>
-        {BACK_TO_FRONT.map((panel, slot) => [panels[panel.id], ...(alternatives[panel.id] ?? [])].map((specimen, variant) => (
-          <Panel key={`${panel.id}-${variant}`} panel={panel} width={canvasWidth} x={x} y={y} onSize={onSize}
-            variant={variant} selected={selected[slot]!} flight={flight?.slot === slot ? flight : null} progress={progress} running={running}>
-            {specimen}
-          </Panel>
-        )))}
+      <View testID="library-artboard" style={{ width: canvasWidth, height: COLLAGE.height, transformOrigin: [0, 0, 0], transform: [{ translateX: offset }, { scale }, { translateX: -left }, { translateY: -top }] }}>
+        {BACK_TO_FRONT.map((panel, slot) => {
+          const variants = new Set([selected[slot]!]);
+          if (flight?.slot === slot) variants.add(flight.to);
+          if (queued?.slot === slot) variants.add(queued.to);
+          return [...variants].sort((a, b) => a - b).map(variant => (
+            <Panel key={`${panel.id}-${variant}`} panel={panel} width={canvasWidth} x={x} y={y} onSize={onSize}
+              variant={variant} selected={selected[slot]!} flight={flight?.slot === slot ? flight : null}
+              progress={progress} running={running} step={steps[slot]![variant]!}>
+              {variant === 0 ? panels[panel.id] : alternatives[panel.id]?.[variant - 1]}
+            </Panel>
+          ));
+        })}
       </View>
     </View>
   );

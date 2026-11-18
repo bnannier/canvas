@@ -1,6 +1,5 @@
 import { getComponent } from "../core/data/components";
-import { getTemplate } from "../core/data/templates";
-import { getPattern } from "../core/data/patterns";
+import { PATTERN_METADATA, TEMPLATE_METADATA } from "../core/data/route-metadata";
 import { getSectionRoom, SKINS_PAGE, TEMPLATES_PAGE } from "../data/rooms";
 
 // A route's title and its subtitle (the place it belongs to), for the native navigation
@@ -42,7 +41,7 @@ export function titleFor(pathname: string): { title: string; subtitle?: string }
     const room = getSectionRoom(seg[1]);
     if (room) return { title: room.title, subtitle: "Sections" };
   }
-  if (seg[0] === "templates" && seg[1]) return { title: getTemplate(seg[1])?.name ?? titleize(seg[1]), subtitle: "Templates" };
-  if (seg[0] === "patterns" && seg[1]) return { title: getPattern(seg[1])?.name ?? titleize(seg[1]), subtitle: "Patterns" };
+  if (seg[0] === "templates" && seg[1]) return { title: TEMPLATE_METADATA.find((template) => template.slug === seg[1])?.name ?? titleize(seg[1]), subtitle: "Templates" };
+  if (seg[0] === "patterns" && seg[1]) return { title: PATTERN_METADATA.find((pattern) => pattern.slug === seg[1])?.name ?? titleize(seg[1]), subtitle: "Patterns" };
   return { title: "Canvas" };
 }

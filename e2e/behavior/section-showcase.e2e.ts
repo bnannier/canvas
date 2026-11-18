@@ -1,5 +1,31 @@
+import { SHOWCASE } from "../../docs/src/data/showcase";
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
+
+for (const width of [320, 820, 1440]) {
+  test(`overlay component links stay inside the card footer and remain actionable (${width})`, async ({ page }) => {
+    await gotoDocs(page, "/overlays", { viewport: { width, height: 900 } });
+
+    for (const { id, links } of SHOWCASE.overlays.cards) {
+      const card = page.getByTestId(`showcase-${id}`);
+      for (const slug of links) {
+        const link = card.getByRole("link").and(card.locator(`[href$="/components/${slug}"]`));
+        await link.click({ trial: true });
+        const [frame, chip] = await Promise.all([card.boundingBox(), link.boundingBox()]);
+        if (!frame || !chip) throw new Error(`Missing bounds for ${slug} in ${id}`);
+        expect(chip.y).toBeGreaterThan(frame.y + frame.height / 2);
+        expect(chip.y + chip.height).toBeLessThan(frame.y + frame.height);
+        expect(chip.x).toBeGreaterThan(frame.x);
+        expect(chip.x + chip.width).toBeLessThan(frame.x + frame.width);
+      }
+    }
+
+    const dialogLink = page.getByTestId("showcase-c-dialog").getByRole("link", { name: "Dialog", exact: true });
+    await dialogLink.focus();
+    await dialogLink.press("Enter");
+    await expect(page).toHaveURL(/\/components\/dialog(?:[?#]|$)/);
+  });
+}
 
 test("the Skins button keeps a valid corner radius as it springs back to the web shape", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });

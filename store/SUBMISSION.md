@@ -66,43 +66,18 @@ for review.
 
 ### Apple App Store
 
-**Name** (30 max): `Canvas UI Kit`
+The current English (U.S.) copy is maintained in
+[app-store/en-US.json](app-store/en-US.json): name, subtitle, promotional text,
+description, keywords, release notes, URLs, and reviewer notes. This is the copy
+prepared on 18 November 2026 for the next App Store submission. Version 4.8.0
+build 16 was available in TestFlight, but native verification found a section
+animation crash; submit the corrected replacement build instead.
 
-**Subtitle** (30 max): `React Native component docs`
-
-**Promotional text** (170 max):
-> Browse every Canvas component running natively, with live examples you can tap,
-> switch between light and dark, and read the full prop reference offline.
-
-**Description**:
-> Canvas is a universal React Native UI kit, and this is its reference app: the same
-> component library running natively on your device rather than described in a web page.
->
-> Browse the full catalog of components, from buttons and inputs through data tables,
-> calendars, and charts. Every entry pairs a live, interactive example with its complete
-> prop reference, so you can tap, type, drag, and toggle each control to see exactly how
-> it behaves before you write any code.
->
-> WHAT IS INSIDE
->
-> - Live examples for every component, running as real native views
-> - Full prop tables, generated from the library's own TypeScript source
-> - Design tokens for color, typography, spacing, and layout
-> - Templates and patterns showing how components compose into real screens
-> - Instant search across the entire catalog
-> - Light and dark themes, plus a glass surface mode
->
-> BUILT THE WAY iOS EXPECTS
->
-> Canvas components follow iOS design conventions, driven by a single component API. This
-> app is the clearest way to see that: it is built entirely from the library it documents.
->
-> Canvas is free to use, with no account, no sign-in, no ads, and no tracking.
-> The compiled @nannier/canvas package on npm is MIT licensed; the source
-> repository remains all rights reserved.
-
-**Keywords** (100 max, comma separated, no spaces):
-`react native,ui kit,components,design system,developer,reference,ios,ipad,expo,mobile,design`
+The refreshed listing describes the 108-component catalog, five accent palettes,
+light and dark appearances, native Liquid Glass on supported systems, and
+interactive iPhone and iPad examples. Keep claims aligned with the selected build.
+Apple's limits are 30 characters for the name and subtitle, 170 for promotional
+text, 100 for keywords, and 4,000 for the description and release notes.
 
 Keep the iOS description, keywords, and screenshots specific to iOS. The
 native docs also build with platform-specific content. See
@@ -124,8 +99,9 @@ native docs also build with platform-specific content. See
 **Short description** (80 max):
 > Live, interactive reference for the Canvas React Native component library.
 
-**Full description** (4000 max). Use the common opening and feature list above,
-then adapt the platform section for Play.
+**Full description** (4000 max). Use the catalog overview and feature list in
+[app-store/en-US.json](app-store/en-US.json) as a starting point, then replace
+the iPhone, iPad, iOS, and Liquid Glass copy with Android-specific capabilities.
 
 > BUILT FOR ANDROID
 >

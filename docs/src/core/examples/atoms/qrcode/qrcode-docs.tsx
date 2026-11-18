@@ -4,6 +4,7 @@ import type { ComponentDocs } from "../../../scope";
 import e_atoms_qrcode_example_0 from "./example-0";
 import e_atoms_qrcode_example_1 from "./example-1";
 import e_atoms_qrcode_example_2 from "./example-2";
+import e_atoms_qrcode_example_3 from "./example-3";
 import e_atoms_qrcode_dont_0_do from "./dont-0-do";
 import e_atoms_qrcode_dont_0_dont from "./dont-0-dont";
 
@@ -14,16 +15,17 @@ export const docs: ComponentDocs = {
     { label: "Default", code: "<QRCode value=\"https://canvas.nannier.com\" />", render: e_atoms_qrcode_example_0 },
     { label: "Small", code: "<QRCode value=\"https://canvas.nannier.com\" small />", render: e_atoms_qrcode_example_1 },
     { label: "Large", code: "<QRCode value=\"https://canvas.nannier.com\" large />", render: e_atoms_qrcode_example_2 },
+    { label: "Center logo", code: "<QRCode value=\"https://canvas.nannier.com\" large logo={<Icon sparkles size={24} />} />", render: e_atoms_qrcode_example_3, note: ["The `logo` slot centers a decorative mark on a small white field and enables high error correction. Use a short value and size the logo to fit its square viewport, which is 15 px for `small`, 24 px by default, and 32 px for `large`.", "High error correction holds less data than a plain code. Prefer a short URL: a value near the plain code's capacity can exceed the renderer's encoding limit when a logo is added."] },
   ],
   donts: [
     { title: "Keep it scannable", do: { caption: "Leave the fixed dark-on-white card in place so the code stays high-contrast for any camera.", code: "<QRCode value=\"https://canvas.nannier.com\" />", render: e_atoms_qrcode_dont_0_do }, dont: { caption: "Shrinking a data-dense value to the small size drops the modules below a reliably scannable density.", code: "<QRCode value=\"https://canvas.nannier.com/get/the/app?ref=docs&utm=homepage&v=2\" small />", render: e_atoms_qrcode_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
-  props: [{"name":"QRCodeProps","props":[{"name":"value","type":"string","required":true,"description":"The string to encode: a URL, plain text, a token, etc."},{"name":"small","type":"boolean","required":false,"description":"A compact 96px code.","default":"false","group":0},{"name":"large","type":"boolean","required":false,"description":"A large 200px code.","default":"false","group":0},{"name":"accessibilityLabel","type":"string","required":false,"description":"Spoken equivalent for screen readers. A QR code is camera-only content, so without a label assistive tech announces nothing. Defaults to `QR code encoding ${value}`; pass a generic label (e.g. \"QR code\") when surfacing the raw value is undesirable.","group":0},{"name":"testID","type":"string","required":false,"description":"E2E hook forwarded to the root element.","group":0},{"name":"style","type":"LayoutStyle","required":false,"description":"Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds.","group":0}],"groups":[{"title":"Size axis","pickOne":true,"note":"Size axis (pick one; default is the medium 140px code)."}],"inherits":[]}],
+  props: [{"name":"QRCodeProps","props":[{"name":"value","type":"string","required":true,"description":"The string to encode: a URL, plain text, a token, etc."},{"name":"logo","type":"ReactElement | false | null","required":false,"description":"A decorative icon or image centered on the code. Uses high error correction, which reduces payload capacity; use a short value. Clips the logo to a small square."},{"name":"small","type":"boolean","required":false,"description":"A compact 96px code.","default":"false","group":0},{"name":"large","type":"boolean","required":false,"description":"A large 200px code.","default":"false","group":0},{"name":"accessibilityLabel","type":"string","required":false,"description":"Spoken equivalent for screen readers. A QR code is camera-only content, so without a label assistive tech announces nothing. Defaults to `QR code encoding ${value}`; pass a generic label (e.g. \"QR code\") when surfacing the raw value is undesirable.","group":0},{"name":"testID","type":"string","required":false,"description":"E2E hook forwarded to the root element.","group":0},{"name":"style","type":"LayoutStyle","required":false,"description":"Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds.","group":0}],"groups":[{"title":"Size axis","pickOne":true,"note":"Size axis (pick one; default is the medium 140px code)."}],"inherits":[]}],
   // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
   // assistive tech, the colour roles its skins read, and the components it is used with.
-  semantics: {"roles":["image","img"],"states":[],"aria":["aria-label"],"touchTarget":[]},
+  semantics: {"roles":["image","img"],"states":[],"aria":["aria-hidden","aria-label"],"touchTarget":[]},
   tokens: [],
-  related: ["card","stats","data-table","stacked-lists","grid-lists","media-objects","feeds","description-lists"],
+  related: ["icon","card","stats","data-table","stacked-lists","grid-lists","media-objects","feeds"],
 };

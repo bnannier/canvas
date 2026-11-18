@@ -189,7 +189,7 @@ function ToastCard() {
   const { syncing, dismissed, detail } = demo.value;
   const showDetail = (next: string) => demo.setValue((current) => ({ ...current, detail: next }));
   return (
-    <ShowcaseCard id="c-toast" caption={"const { toast } = useToast() · toast({ title: \"Tokens published\" }) · <ToastProvider>"}>
+    <ShowcaseCard id="c-toast" linksInFooter caption={"const { toast } = useToast() · toast({ title: \"Tokens published\" }) · <ToastProvider>"}>
       {dismissed ? (
         <Row><Button small outline onPress={() => demo.setValue(TOAST_REST)}>Show toast</Button></Row>
       ) : (
@@ -225,7 +225,7 @@ function AlertCard() {
   const demo = useShowcaseDemo("c-alert", ALERT_FRAMES, { interval: 1150 });
   const { upload, workspace } = demo.value;
   return (
-    <ShowcaseCard id="c-alert" title="Alert · Empty state · Progress" meta="inline" caption="<Alert info dismissible> · <Alert destructive> · <EmptyState> · <Progress value={0.64}>">
+    <ShowcaseCard id="c-alert" linksInFooter title="Alert · Empty state · Progress" meta="inline" caption="<Alert info dismissible> · <Alert destructive> · <EmptyState> · <Progress value={0.64}>">
       <Alert info dismissible title="Glass is a theming mode, not a prop" description="Use <ThemeProvider glass>; there is no per-component switch." />
       <Alert destructive title="2 tokens fail the contrast floor" description="warning-foreground on warning is 3.9:1 in light." />
       <EmptyState
@@ -397,7 +397,7 @@ function SkeletonCard() {
   const demo = useShowcaseDemo("c-skeleton", SKELETON_FRAMES, { interval: 1400 });
   const { loaded, strength } = demo.value;
   return (
-    <ShowcaseCard id="c-skeleton" caption="<Skeleton> mirrors the shape it replaces · <Spinner small | large> · <Progress indeterminate> · segmented meter · spinners ignore reduced motion">
+    <ShowcaseCard id="c-skeleton" linksInFooter caption="<Skeleton> mirrors the shape it replaces · <Spinner small | large> · <Progress indeterminate> · segmented meter · spinners ignore reduced motion">
       <StageMotion key={loaded ? "loaded" : "loading"}>
         <Card outlined well testID={loaded ? "demo-index-loaded" : "demo-index-loading"}>
           {loaded ? (
@@ -513,7 +513,7 @@ function WizardCard() {
     <ShowcaseCard
       id="c-wizard"
       caption="Wizard · Dialog + Steps + Button, fixed chrome around a scrolling body"
-      stage={{ height: 540, grows: true, scene: <WizardScene />, chipsAt: 57, labelSubtle: true }}
+      stage={{ height: 540, grows: true, scene: <WizardScene />, labelSubtle: true }}
     >
       <Wizard
         open

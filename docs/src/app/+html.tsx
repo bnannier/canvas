@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from "react";
 import { ScrollViewStyleReset, useServerDocumentContext } from "expo-router/html";
 import WEB_FONTS from "../ui/web-fonts.json";
+import { COLLAGE, HERO_TYPE, HERO_SLOT_SIZES, projectCss } from "../brand/library-hero-look";
 
 // The document every pre-rendered page is written into (app.json `web.output:
 // "static"`). The export writes each route into it, and the dev server does the same
@@ -64,9 +65,42 @@ const FONT_CSS =
   Object.values(WEB_FONTS)
     .map((font) => `@font-face{font-family:"${font.family}";src:url(${font.path}) format("woff2");font-weight:${font.weight[0]} ${font.weight[1]};font-display:swap}`)
     .join("") + "body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}";
+// Reserve the same projected artwork height before its first onLayout. The
+// attribute disappears after measurement, so larger text and native skins keep
+// their measured fit. The 1064px threshold is 2 × 460 + 48 + the 96px page inset.
+const heroPoints = COLLAGE.panels.flatMap(panel => {
+  const [w, h] = HERO_SLOT_SIZES[panel.id];
+  return [[0, 0], [w, 0], [w, h], [0, h]].map(point => projectCss(panel, 648, point as [number, number]));
+});
+const heroFitLeft = Math.min(...heroPoints.map(p => p[0])) - 16;
+const heroFitTop = Math.min(...heroPoints.map(p => p[1])) - 16;
+const heroFitWidth = Math.max(...heroPoints.map(p => p[0])) + 16 - heroFitLeft;
+const heroFitHeight = Math.max(...heroPoints.map(p => p[1])) + 16 - heroFitTop;
+const unmeasuredCollage = "#root [data-testid=library-collage][data-hero-unmeasured]";
+const unmeasuredArtboard = `${unmeasuredCollage}>[data-testid=library-artboard]`;
+const heroFitScale = `calc(100cqw / ${heroFitWidth}px)`;
+// Fit the artboard as well as its reserved height where typed CSS arithmetic
+// is supported. Hydration replaces this transform with the measured projection.
+const heroArtboardFit =
+  "@supports (transform:scale(calc(1px / 1px))){" +
+  `@media (max-width:1437px){${unmeasuredCollage}{container-type:inline-size}` +
+  `${unmeasuredArtboard}{--hero-fit-scale:${heroFitScale};` +
+  `transform:translateX(calc((100cqw - ${heroFitWidth}px * var(--hero-fit-scale)) / 2)) scale(var(--hero-fit-scale)) translateX(${-heroFitLeft}px) translateY(${-heroFitTop}px)!important}}` +
+  `@media (max-width:1063px){${unmeasuredArtboard}{--hero-fit-scale:min(1,${heroFitScale})}}}`;
 const SHELL_CSS =
   FONT_CSS +
   "html{background:#0a0a0f}html[data-look^=\"light\"]{background:#f2f2f7}" +
+  "@media (prefers-reduced-motion:reduce){#root [data-testid=library-entrance]{animation:none!important}}" +
+  // Typography's native viewport measurement has the same authored fluid curve.
+  // The web document can resolve it before hydration, including its inline accent.
+  `#root [data-testid=library-headline]{font-size:clamp(${HERO_TYPE.min}px,${HERO_TYPE.vw * 100}vw,${HERO_TYPE.max}px)!important;line-height:${HERO_TYPE.ratio}!important;letter-spacing:${HERO_TYPE.trackingEm}em!important}` +
+  "#root [data-testid=library-headline-accent]{font-size:inherit!important;line-height:inherit!important;letter-spacing:inherit!important}" +
+  `@media (max-width:1437px){${unmeasuredCollage}{height:auto!important;aspect-ratio:${heroFitWidth / heroFitHeight}}}` +
+  `@media (max-width:1063px){${unmeasuredCollage}{max-height:${heroFitHeight}px}}` +
+  heroArtboardFit +
+  // The page-wide hero uses the same phone spacing after container measurement.
+  // Match it on the first document paint, just as the shell rail does below.
+  "@media (max-width:640px){#root [data-testid=library-hero-content]{padding:80px 24px 48px!important}}" +
   "@media (max-width:1024px){#root [data-shell-rail]{display:none}#root [data-shell-content]{padding-left:0!important}}";
 
 export default function Root({ children }: PropsWithChildren) {

@@ -125,6 +125,11 @@ export interface GlowDisc {
   stops: readonly { offset: number; opacity: number }[];
 }
 
+const BLUR_SPOKES = Array.from({ length: 64 }, (_, index) => {
+  const theta = ((index + 0.5) / 64) * 2 * Math.PI;
+  return { cosine: Math.cos(theta), sine: Math.sin(theta) };
+});
+
 /**
  * A disc whose alpha falls linearly from 1 at its centre to 0 at `ramp` px, convolved with
  * a Gaussian of standard deviation `sigma`: the alpha at each of `count` radii from 0 to
@@ -134,7 +139,8 @@ export interface GlowDisc {
 export function blurredDisc(ramp: number, sigma: number, count: number): { radius: number; stops: { offset: number; opacity: number }[] } {
   const radius = ramp + 3 * sigma;
   const RINGS = 40;
-  const SPOKES = 64;
+  const angleStep = (2 * Math.PI) / BLUR_SPOKES.length;
+  const twiceVariance = 2 * sigma * sigma;
   const norm = 1 / (2 * Math.PI * sigma * sigma);
   const stops: { offset: number; opacity: number }[] = [];
   for (let i = 0; i < count; i++) {
@@ -143,12 +149,12 @@ export function blurredDisc(ramp: number, sigma: number, count: number): { radiu
     for (let j = 0; j < RINGS; j++) {
       const rho = ((j + 0.5) / RINGS) * ramp;
       const alpha = 1 - rho / ramp;
-      const area = rho * (ramp / RINGS) * ((2 * Math.PI) / SPOKES);
-      for (let k = 0; k < SPOKES; k++) {
-        const theta = ((k + 0.5) / SPOKES) * 2 * Math.PI;
-        const dx = rho * Math.cos(theta) - r;
-        const dy = rho * Math.sin(theta);
-        sum += alpha * area * norm * Math.exp(-(dx * dx + dy * dy) / (2 * sigma * sigma));
+      const area = rho * (ramp / RINGS) * angleStep;
+      const weight = alpha * area * norm;
+      for (const { cosine, sine } of BLUR_SPOKES) {
+        const dx = rho * cosine - r;
+        const dy = rho * sine;
+        sum += weight * Math.exp(-(dx * dx + dy * dy) / twiceVariance);
       }
     }
     stops.push({ offset: i / (count - 1), opacity: Math.min(1, sum) });
@@ -156,28 +162,44 @@ export function blurredDisc(ramp: number, sigma: number, count: number): { radiu
   return { radius, stops };
 }
 
+/** The costly blur profiles depend on viewport width alone. */
+export function auroraProfiles(viewportWidth: number) {
+  return AURORA.orbs.map((orb: Orb) => {
+    const size = orb.size * viewportWidth;
+    // A circle radial gradient in a square box runs to the farthest corner, size / sqrt 2.
+    const ramp = AURORA.rampEnd * (size / Math.SQRT2);
+    return { orb, size, ...blurredDisc(ramp, orb.blur, AURORA.stops) };
+  });
+}
+
 /**
  * The three discs in the glow layer's box (`width` x `height`: the hero section, from the
  * page's top to the hero's hairline, window edge to window edge), the window width standing
  * in for the hand-off's `vw`.
  */
-export function auroraDiscs(width: number, height: number, viewportWidth: number = width): GlowDisc[] {
+export function positionAuroraDiscs(width: number, height: number, profiles: ReturnType<typeof auroraProfiles>): GlowDisc[] {
   const x0 = -AURORA.inset * width;
   const y0 = -AURORA.inset * height;
   const lw = width * (1 + 2 * AURORA.inset);
   const lh = height * (1 + 2 * AURORA.inset);
-  return AURORA.orbs.map((orb: Orb) => {
-    const size = orb.size * viewportWidth;
+  return profiles.map(({ orb, size, radius, stops }) => {
     const left = orb.left != null ? x0 + orb.left * lw : x0 + lw * (1 - (orb.right ?? 0)) - size;
     const top = orb.top != null ? y0 + orb.top * lh : y0 + lh * (1 - (orb.bottom ?? 0)) - size;
-    // A circle radial gradient in a square box runs to the farthest corner, size / sqrt 2.
-    const ramp = AURORA.rampEnd * (size / Math.SQRT2);
-    const { radius, stops } = blurredDisc(ramp, orb.blur, AURORA.stops);
     return { role: orb.role, cx: left + size / 2, cy: top + size / 2, r: radius, stops };
   });
 }
 
+export function auroraDiscs(width: number, height: number, viewportWidth: number = width): GlowDisc[] {
+  return positionAuroraDiscs(width, height, auroraProfiles(viewportWidth));
+}
+
 export type CollagePanelId = "revenue" | "segmented" | "online" | "glass" | "toast" | "ship";
+
+/** Settled bounds of each complete showcase pool at the authored artboard width. */
+export const HERO_SLOT_SIZES: Record<CollagePanelId, readonly [number, number]> = {
+  revenue: [380, 310], online: [152, 68], segmented: [240, 55],
+  glass: [286, 99], toast: [300, 77], ship: [158, 48],
+};
 
 export interface CollagePanel {
   id: CollagePanelId;
@@ -213,8 +235,9 @@ type Vec3 = [number, number, number];
 const RAD = Math.PI / 180;
 
 /** The stack's rotation applied to a vector: CSS `rotateX(a) rotateY(b) rotateZ(c)`, the last first. */
-export function rotateStack(v: Vec3, [a, b, c]: readonly [number, number, number] = COLLAGE.rotate): Vec3 {
+export function rotateStack(v: Vec3, rotation?: readonly [number, number, number]): Vec3 {
   "worklet";
+  const [a, b, c] = rotation ?? COLLAGE.rotate;
   const [x0, y0, z0] = v;
   const cz = Math.cos(c * RAD), sz = Math.sin(c * RAD);
   const x1 = cz * x0 - sz * y0, y1 = sz * x0 + cz * y0, z1 = z0;
@@ -243,13 +266,14 @@ export type TransformOp =
  * `v.z` is a scale of `d / (d - v.z)` about the perspective origin with the perspective
  * shortened to `d - v.z` (the same projection, exactly).
  */
-export function panelTransform(panel: Pick<CollagePanel, "x" | "y" | "z">, width: number, rotation: readonly [number, number, number] = COLLAGE.rotate): TransformOp[] {
+export function panelTransform(panel: Pick<CollagePanel, "x" | "y" | "z">, width: number, rotation?: readonly [number, number, number]): TransformOp[] {
   "worklet";
+  const angles = rotation ?? COLLAGE.rotate;
   const d = COLLAGE.perspective;
   const po = [COLLAGE.origin[0] * width, COLLAGE.origin[1] * COLLAGE.height];
   const sc = [width / 2, COLLAGE.height / 2];
-  const [vx, vy, vz] = rotateStack([0, 0, panel.z], rotation);
-  const [rx, ry, rz] = rotation;
+  const [vx, vy, vz] = rotateStack([0, 0, panel.z], angles);
+  const [rx, ry, rz] = angles;
   return [
     { translateX: po[0]! - panel.x },
     { translateY: po[1]! - panel.y },

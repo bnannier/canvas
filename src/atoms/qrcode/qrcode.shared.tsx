@@ -1,5 +1,8 @@
+import type { ReactElement, ReactNode } from "react";
 import type RNQRCodeType from "react-native-qrcode-svg";
 import { AnatomyPart, AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
+import { InkProvider } from "../../style/ink.js";
+import { inertProps } from "../../style/inert.js";
 import { View, useHugStyle, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 
 // react-native-qrcode-svg is an OPTIONAL peer (it drags a large text-encoding
@@ -65,6 +68,8 @@ export interface QRCodeSkin {
 export interface QRCodeProps {
   /** The string to encode: a URL, plain text, a token, etc. */
   value: string;
+  /** A decorative icon or image centered on the code. Uses high error correction, which reduces payload capacity; use a short value. Clips the logo to a small square. */
+  logo?: ReactElement | false | null;
   // Size axis (pick one; default is the medium 140px code).
   /** A compact 96px code. */
   small?: boolean;
@@ -90,6 +95,9 @@ export function sizeOf(p: QRCodeProps): number {
   return 140;
 }
 
+const LOGO_FIELD: ViewStyle = { position: "absolute", alignItems: "center", justifyContent: "center", pointerEvents: "none" };
+const LOGO_CONTENT: ViewStyle = { alignItems: "center", justifyContent: "center", overflow: "hidden" };
+
 export function createQRCode(skin: QRCodeSkin) {
   return function QRCode(props: QRCodeProps) {
     // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
@@ -97,7 +105,8 @@ export function createQRCode(skin: QRCodeSkin) {
     // node we hold), so it is measured through AnatomyPart.
     const codePart = useAnatomyPart("Code");
     const quietPart = useAnatomyPart("Quiet zone");
-    const { value, accessibilityLabel, testID, style } = props;
+    const { value, logo, accessibilityLabel, testID, style } = props;
+    const size = sizeOf(props);
     // The QR draws as a bare SVG of rects (an <svg> of rects on web via RNW); without
     // a label assistive tech announces nothing, not even that a code is present. Expose
     // a spoken equivalent of the otherwise camera-only content. aria-label is added for
@@ -105,38 +114,62 @@ export function createQRCode(skin: QRCodeSkin) {
     const label = accessibilityLabel ?? `QR code encoding ${value}`;
     // HUG: the card keeps the code's size inside a stretching Column.
     const hug = useHugStyle();
+
+    let code: ReactNode;
+    if (RNQRCode) {
+      // The renderer rejects an empty string. High error correction recovers modules covered by the logo.
+      code = <RNQRCode value={value || " "} size={size} color={skin.moduleColor} backgroundColor={skin.fieldColor} ecl={logo ? "H" : undefined} />;
+      if (logo) {
+        // Limit the entire white field to one fifth of the edge. The smaller clip
+        // inside it preserves a white margin even when the supplied logo is oversized.
+        const fieldSize = Math.floor(size / 5);
+        const fieldOffset = (size - fieldSize) / 2;
+        const margin = Math.max(2, Math.floor(size / 50));
+        const logoSize = fieldSize - 2 * margin;
+        code = (
+          <View style={{ width: size, height: size }}>
+            {code}
+            <View
+              {...inertProps()}
+              accessible={false}
+              aria-hidden
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              style={[LOGO_FIELD, { top: fieldOffset, left: fieldOffset, width: fieldSize, height: fieldSize, backgroundColor: skin.fieldColor }]}
+            >
+              <View style={[LOGO_CONTENT, { width: logoSize, height: logoSize }]}>
+                <InkProvider ink={skin.moduleColor}>{logo}</InkProvider>
+              </View>
+            </View>
+          </View>
+        );
+      }
+    } else {
+      // Keep the labeled frame and its footprint when the optional renderer is absent.
+      if (isDevMode() && !warnedMissing) {
+        warnedMissing = true;
+        console.warn(
+          "[canvas] <QRCode /> requires the optional peer dependency react-native-qrcode-svg. Install it to render QR codes.",
+        );
+      }
+      code = <View style={{ width: size, height: size }} />;
+    }
+
     return (
       <AnatomyScope>
-      <View
-        ref={quietPart?.ref}
-        onLayout={quietPart?.onLayout}
-        style={[skin.frame, hug, style]}
-        testID={testID}
-        accessible
-        accessibilityRole="image"
-        role="img"
-        accessibilityLabel={label}
-        aria-label={label}
-      >
-        <AnatomyPart part={codePart}>
-        {RNQRCode ? (
-          // react-native-qrcode-svg throws on an empty string, so fall back to a space.
-          <RNQRCode value={value || " "} size={sizeOf(props)} color={skin.moduleColor} backgroundColor={skin.fieldColor} />
-        ) : (
-          // Optional peer not installed: keep the labeled frame (sized like the code)
-          // so layout holds, and tell the developer what to install.
-          (() => {
-            if (isDevMode() && !warnedMissing) {
-              warnedMissing = true;
-              console.warn(
-                "[canvas] <QRCode /> requires the optional peer dependency react-native-qrcode-svg. Install it to render QR codes.",
-              );
-            }
-            return <View style={{ width: sizeOf(props), height: sizeOf(props) }} />;
-          })()
-        )}
-        </AnatomyPart>
-      </View>
+        <View
+          ref={quietPart?.ref}
+          onLayout={quietPart?.onLayout}
+          style={[skin.frame, hug, style]}
+          testID={testID}
+          accessible
+          accessibilityRole="image"
+          role="img"
+          accessibilityLabel={label}
+          aria-label={label}
+        >
+          <AnatomyPart part={codePart}>{code}</AnatomyPart>
+        </View>
       </AnatomyScope>
     );
   };

@@ -1,4 +1,4 @@
-import { useContext, type ReactNode } from "react";
+import { useContext, useMemo, type ReactNode } from "react";
 import {
   Alert, Autocomplete, Avatar, AvatarGroup, AvatarMenu, Badge, BadgeGroup, Breadcrumb,
   Button, ButtonGroup, Checkbox, Chip, Collapsible, Dropdown, Field, Icon, Image,
@@ -164,7 +164,7 @@ function specimens(kinds: readonly SpecimenKind[]): ReactNode[] {
 
 /** The center accepts large specimens and each surrounding slot has its own pool. */
 export function useHeroShowcasePanels(): PanelPools {
-  return {
+  return useMemo(() => ({
     revenue: [
       ...HERO_CHART_KINDS.map(kind => <HeroChartSpecimen key={kind} kind={kind} />),
       <HeroSkeletonSpecimen key="skeleton" />,
@@ -177,5 +177,5 @@ export function useHeroShowcasePanels(): PanelPools {
     glass: [...specimens(HERO_SURROUNDING_KINDS.glass), <HeroFormNavigationSpecimen key="text-input" kind="text-input" />],
     toast: [...specimens(HERO_SURROUNDING_KINDS.toast), <HeroFormNavigationSpecimen key="navbars" kind="navbars" />, <HeroFormNavigationSpecimen key="tab-bar" kind="tab-bar" />],
     ship: specimens(HERO_SURROUNDING_KINDS.ship),
-  };
+  }), []);
 }

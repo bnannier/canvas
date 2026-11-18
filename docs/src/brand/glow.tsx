@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
 import { View, useContainerBreakpoint, useReducedMotion, useTheme } from "@nannier/canvas";
-import { AURORA, HERO_FRAME, HERO_MOTION, auroraDiscs } from "./library-hero-look";
+import { AURORA, HERO_FRAME, HERO_MOTION, auroraProfiles, positionAuroraDiscs, type GlowDisc } from "./library-hero-look";
 
 // A brand illustration: the v4 hand-off's Library hero aurora (decision P5-G2, the
 // `v4-library-hero` card), three soft discs of the brand sweep behind the hero, and the
@@ -13,7 +13,7 @@ import { AURORA, HERO_FRAME, HERO_MOTION, auroraDiscs } from "./library-hero-loo
 // reversal and delay as the hand-off, driven outside React's render cycle.
 
 function DriftingDisc({ disc, index, width, color, opacity, id }: {
-  disc: ReturnType<typeof auroraDiscs>[number]; index: number; width: number; color: string; opacity: number; id: string;
+  disc: GlowDisc; index: number; width: number; color: string; opacity: number; id: string;
 }) {
   const reduced = useReducedMotion();
   const timing = HERO_MOTION.drifts[index]!;
@@ -24,12 +24,14 @@ function DriftingDisc({ disc, index, width, color, opacity, id }: {
     return () => cancelAnimation(progress);
   }, [progress, reduced, timing]);
   const size = AURORA.orbs[index]!.size * width;
+  // Position the decorative disc on the same compositor transform as its drift.
+  // A changed hero height must not relayout the glow as visible content.
   const drift = useAnimatedStyle(() => ({ transform: [
-    { translateX: reduced ? 0 : size * 0.08 * progress.value },
-    { translateY: reduced ? 0 : size * 0.12 * progress.value },
+    { translateX: disc.cx - disc.r + (reduced ? 0 : size * 0.08 * progress.value) },
+    { translateY: disc.cy - disc.r + (reduced ? 0 : size * 0.12 * progress.value) },
     { scale: reduced ? 1 : 1 + 0.15 * progress.value },
   ] }));
-  return <Animated.View style={[{ position: "absolute", left: disc.cx - disc.r, top: disc.cy - disc.r, width: disc.r * 2, height: disc.r * 2 }, drift]}>
+  return <Animated.View style={[{ position: "absolute", left: 0, top: 0, width: disc.r * 2, height: disc.r * 2 }, drift]}>
     <Svg width={disc.r * 2} height={disc.r * 2}>
       <Defs><RadialGradient id={id} cx="50%" cy="50%" r="50%">
         {disc.stops.map((stop) => <Stop key={stop.offset} offset={stop.offset} stopColor={color} stopOpacity={stop.opacity * opacity} />)}
@@ -44,7 +46,9 @@ function AuroraGlow() {
   const { tokens, dark } = useTheme();
   const key = useId().replace(/[^A-Za-z0-9]/g, "");
   const [box, setBox] = useState<{ width: number; height: number } | null>(null);
-  const discs = useMemo(() => (box ? auroraDiscs(box.width, box.height) : []), [box]);
+  const width = box?.width;
+  const profiles = useMemo(() => width == null ? null : auroraProfiles(width), [width]);
+  const discs = box && profiles ? positionAuroraDiscs(box.width, box.height, profiles) : [];
   const layer = dark ? AURORA.opacity.dark : AURORA.opacity.light;
   return (
     <View
@@ -78,7 +82,7 @@ export function AuroraFrame({ children, testID }: { children: ReactNode; testID?
   return (
     <View testID={testID} onLayout={onLayout} style={{ width: "100%", overflow: "hidden" }}>
       <AuroraGlow />
-      <View style={{ width: "100%", maxWidth: HERO_FRAME.max, alignSelf: "center", paddingTop: phone ? 80 : HERO_FRAME.top, paddingBottom: phone ? 48 : HERO_FRAME.bottom, paddingHorizontal: phone ? 24 : HERO_FRAME.side }}>
+      <View testID="library-hero-content" style={{ width: "100%", maxWidth: HERO_FRAME.max, alignSelf: "center", paddingTop: phone ? 80 : HERO_FRAME.top, paddingBottom: phone ? 48 : HERO_FRAME.bottom, paddingHorizontal: phone ? 24 : HERO_FRAME.side }}>
         {children}
       </View>
     </View>

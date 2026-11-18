@@ -12,12 +12,12 @@ import { TEMPLATES_TILES } from "../../../catalog/templates";
 import { PATTERNS_TILES } from "../../../catalog/patterns";
 import { catalogSections } from "../../../catalog/sections";
 import { COMPONENTS } from "../../../core/data/components";
-import { getAllTemplates } from "../../../core/data/templates";
+import { TEMPLATE_METADATA } from "../../../core/data/route-metadata";
 
 const GROUPS = [
   ...catalogSections([...ATOMS_TILES, ...MOLECULES_TILES, ...ORGANISMS_TILES, ...CHARTS_TILES]),
   { id: "guides", label: "Token guides", href: undefined, count: TOKENS_TILES.length, noun: "pages", summary: `${TOKENS_TILES.length} pages`, tiles: TOKENS_TILES },
-  { id: "templates", label: "Templates", href: "/templates", count: getAllTemplates().length, noun: "templates", summary: `${getAllTemplates().length} templates · ${TEMPLATES_TILES.length} previews`, tiles: TEMPLATES_TILES },
+  { id: "templates", label: "Templates", href: "/templates", count: TEMPLATE_METADATA.length, noun: "templates", summary: `${TEMPLATE_METADATA.length} templates · ${TEMPLATES_TILES.length} previews`, tiles: TEMPLATES_TILES },
   { id: "patterns", label: "Patterns", href: undefined, count: PATTERNS_TILES.length, noun: "patterns", summary: `${PATTERNS_TILES.length} patterns`, tiles: PATTERNS_TILES },
 ];
 

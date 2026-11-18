@@ -23,7 +23,7 @@ it("covers the included component checklist and excludes Layout and Foundations"
   expect([...covered].sort()).toEqual(COMPONENTS.filter(component => component.section !== "Layout" && component.section !== "Foundations").map(component => component.slug).sort());
 });
 
-it("gives each chart export exactly one center specimen", () => {
+it("gives every chart except the surrounding Sparkline one center specimen", () => {
   const chartIndex = readFileSync(new URL("../src/charts/index.ts", import.meta.url), "utf8");
   const showcase = readFileSync(new URL("../docs/src/brand/hero-showcase-charts.tsx", import.meta.url), "utf8");
   const chartSlugs = Array.from(chartIndex.matchAll(/^export \* from "\.\/([a-z-]+)\/\1\.js";$/gm), match => match[1]).sort();
@@ -31,8 +31,9 @@ it("gives each chart export exactly one center specimen", () => {
   const poolSlugs = Array.from(pool.matchAll(/"([a-z-]+)"/g), match => match[1]).sort();
   const specimenSlugs = Array.from(showcase.matchAll(/case "([a-z-]+)":/g), match => match[1]).sort();
   expect(chartSlugs.length).toBeGreaterThan(0);
-  expect(poolSlugs).toEqual(chartSlugs);
-  expect(specimenSlugs).toEqual(chartSlugs);
+  const centerCharts = chartSlugs.filter(slug => slug !== "sparkline");
+  expect(poolSlugs).toEqual(centerCharts);
+  expect(specimenSlugs).toEqual(centerCharts);
 });
 
 describe("shuffled hero replacements", () => {
@@ -43,7 +44,7 @@ describe("shuffled hero replacements", () => {
         state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
         return state / 0x100000000;
       });
-      const counts = [61, 9, 9, 10, 11, 9];
+      const counts = [60, 9, 9, 10, 11, 9];
       const selected = counts.map(() => 0);
       const visits = counts.map(() => [] as number[]);
       const positions: number[] = [];

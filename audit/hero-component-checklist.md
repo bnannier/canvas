@@ -2,11 +2,11 @@
 
 Track each included documented component as an individual hero specimen. Expansion stopped at the owner’s request on 2026-11-17. A component used only inside another sample does not count as its own specimen.
 
-Current coverage: **93 of 93 included components**. All 27 chart types have center samples.
+Current coverage: **93 of 93 included components**. The center includes 26 chart types; Sparkline stays in the compact surrounding rotation.
 
 - [x] Continuous one-at-a-time arrivals in different locations
 - [x] Directional entrances/exits and mouse-follow perspective
-- [x] All 27 center chart types
+- [x] All 26 larger center chart types; Sparkline in the surrounding rotation
 - [x] Taller surrounding Sparkline
 - [x] Exclude Layout and Foundations standalone samples
 - [x] Expanded surrounding sample pools
@@ -117,7 +117,7 @@ Layout and Foundations are excluded at the owner’s request (15 components). Th
 - [x] [RangeAreaChart](https://canvas.nannier.com/components/range-area-chart) — center
 - [x] [ScatterPlot](https://canvas.nannier.com/components/scatter-plot) — center
 - [x] [ServiceHealthList](https://canvas.nannier.com/components/service-health-list) — center
-- [x] [Sparkline](https://canvas.nannier.com/components/sparkline) — center
+- [x] [Sparkline](https://canvas.nannier.com/components/sparkline) — compact surrounding sample
 - [x] [StackedBar](https://canvas.nannier.com/components/stacked-bar) — center
 - [x] [Treemap](https://canvas.nannier.com/components/treemap) — center
 - [x] [UptimeBar](https://canvas.nannier.com/components/uptime-bar) — center
