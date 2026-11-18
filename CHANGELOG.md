@@ -1,5 +1,34 @@
 # @nannier/canvas
 
+## 4.8.0
+
+### Minor Changes
+
+- 0c84492: Give Navbar a capsule brand and a trailing circular menu on phones and tablets on the web. In glass mode the controls float separately and use an iOS-inspired glass treatment. Add a built-in Back button for nested pages and accessible labels for Back and Menu.
+
+  Keep nested page titles readable with a soft fade behind the controls when content scrolls beneath the bar.
+
+  Preserve focus and the contents of Navbar's caller-provided slots across viewport changes. Links keep their destinations when Navbar collapses into a Dropdown on the web, and Dropdown exposes each anchor's press event for client-side routing.
+
+### Patch Changes
+
+- a099381: Refresh the social link-preview image with the Canvas logo and homepage hero’s
+  gradient headline, soft glow, and tilted component collage. Update Open Graph
+  and Twitter image metadata.
+- a099381: Refresh installation, design, and generated agent guidance to match the current
+  release workflow, material behavior, and component documentation.
+- a099381: Expand the homepage hero to showcase all 93 included components, with Layout and Foundations excluded. Keep all 27 charts and other large specimens in the center, including Skeleton, with compact surrounding controls and a taller Sparkline. Shuffle locations and samples without early repeats, and start each arrival as the previous one finishes. Preserve directional flights, pointer-follow perspective, and overflow.
+
+  Keep decorative overlay samples out of the page’s Escape stack. Pause decorative Spinners independently, honor live Reduced Motion, and avoid flashing retired specimens between flights. Fit the collage to current specimen measurements so temporary responsive layouts cannot leave permanent empty space.
+
+  Remove the hero playback controls and replace the draft-message and release-details samples with compact note and workspace examples. Raw TextInput values now use the theme foreground by default so they remain readable in dark mode, while explicit field colors retain precedence.
+
+  Use the component-name-first page-title format, such as “Button - Canvas”.
+
+- decfbdd: Animate functional component showcases throughout the Layout, Controls, Inputs,
+  Navigation, Data, Charts, Overlays, and Skins documentation sections. Examples
+  pause offscreen, honor Reduced Motion, and hand control to the reader on interaction.
+
 ## 4.7.2
 
 ### Patch Changes

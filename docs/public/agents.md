@@ -1,7 +1,7 @@
 <!-- Generated from tools/agent-docs/agents.md; edit the template, then regenerate. -->
 # Build with Canvas
 
-Repository package version: 4.7.2. This is source documentation, not proof
+Repository package version: 4.8.0. This is source documentation, not proof
 that npm has published this version.
 
 Canvas (`@nannier/canvas`) is a React Native UI kit for native iOS and Android
@@ -14,12 +14,12 @@ runtime rather than treating a browser skin preview as native verification.
 
 In an existing project, read the resolved version in your lockfile or run
 `npm ls @nannier/canvas`. Use documentation and declarations matching that
-installed version. The currently generated [documentation index](/ai/4.7.2/index.md)
+installed version. The currently generated [documentation index](/ai/4.8.0/index.md)
 identifies its package version, source snapshot status and source digest.
 
 The commands below use the package's `canvas` executable, identified in its
 `package.json` bin entry. For an older release without that entry, consult the
-[installation guide](/ai/4.7.2/installation.md) and the installed declarations.
+[installation guide](/ai/4.8.0/installation.md) and the installed declarations.
 For example, the published `4.0.0` package does **not** include the CLI.
 
 ## Start a project with an available CLI
@@ -66,11 +66,11 @@ or a working application without verification.
 ## Read the API
 
 - [Discovery index](/llms.txt) and [combined documentation](/llms-full.txt)
-- [Installation](/ai/4.7.2/installation.md)
-- [Theming](/ai/4.7.2/theming.md)
-- [Layout](/ai/4.7.2/layout.md)
-- [Overlays](/ai/4.7.2/overlays.md)
-- [Component catalog](/ai/4.7.2/catalog.json) and [source/content manifest](/ai/4.7.2/manifest.json)
+- [Installation](/ai/4.8.0/installation.md)
+- [Theming](/ai/4.8.0/theming.md)
+- [Layout](/ai/4.8.0/layout.md)
+- [Overlays](/ai/4.8.0/overlays.md)
+- [Component catalog](/ai/4.8.0/catalog.json) and [source/content manifest](/ai/4.8.0/manifest.json)
 
 Compose existing Canvas components. Use boolean styling such as
 `<Button primary large>` and layout components such as `Container`, `Row`,
