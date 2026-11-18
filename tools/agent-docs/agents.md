@@ -12,17 +12,15 @@ runtime rather than treating a browser skin preview as native verification.
 
 ## Check the version first
 
-This page describes the source package's onboarding workflow. As of 2026-11-01,
-the published `4.0.0` package does **not** include the CLI shown below. These
-commands require a package containing the CLI. Check the installed package's
-`package.json` for the `canvas` executable before using them; otherwise follow
-the [installation guide](/ai/{{VERSION}}/installation.md) and installed declarations.
-Repository previews and generated source snapshots do not prove publication.
-
 In an existing project, read the resolved version in your lockfile or run
 `npm ls @nannier/canvas`. Use documentation and declarations matching that
 installed version. The currently generated [documentation index](/ai/{{VERSION}}/index.md)
 identifies its package version, source snapshot status and source digest.
+
+The commands below use the package's `canvas` executable, identified in its
+`package.json` bin entry. For an older release without that entry, consult the
+[installation guide](/ai/{{VERSION}}/installation.md) and the installed declarations.
+For example, the published `4.0.0` package does **not** include the CLI.
 
 ## Start a project with an available CLI
 
@@ -32,8 +30,8 @@ Choose one recipe and a new destination:
 npx @nannier/canvas init --recipe settings --dir ./my-app
 ```
 
-The other recipes are `dashboard` and `booking`. Canvas copies a starter and
-recipe files, refuses to overwrite existing files and prints the next steps.
+The other recipes are `dashboard` and `booking`. Canvas copies the packaged app
+scaffold, sets the initial recipe, checks for file collisions and prints the next steps.
 The CLI does not install dependencies or run a package manager. Review the
 generated files, then follow their installation and run instructions yourself.
 The `npx` invocation can fetch the package; the Canvas CLI itself does not make

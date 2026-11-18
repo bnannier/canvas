@@ -9,15 +9,21 @@ light and dark themes, and semantic props like `<Button primary large>`.
 
 ## Install
 
-In an existing React Native or React Native Web app:
+In an existing bare React Native or React Native Web app:
 
 ```bash
 npm install @nannier/canvas react-native-svg
 ```
 
-Using Expo or an older React Native version? Follow the
-[platform setup guide](./USAGE.md#install) for compatible native dependencies.
-For a browser app without Expo, follow the [plain-web bundler setup](./USAGE.md#plain-web-bundler-setup), including peer resolution and React Native's build globals.
+In an Expo app, use Expo to select its compatible SVG version:
+
+```bash
+npx expo install @nannier/canvas react-native-svg
+```
+
+See the [platform setup guide](./USAGE.md#install) for peer version requirements
+and the [plain-web bundler setup](./USAGE.md#plain-web-bundler-setup) for apps
+using React Native Web without Expo.
 
 ## Quick start
 

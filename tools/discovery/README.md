@@ -7,12 +7,14 @@ background service and is not wired to GitHub CI, releases or telemetry.
 ```sh
 node tools/discovery/check.mjs --version 4.1.0 \
   --manifest-sha256 92e205ea91494f8476572dfc5aaf7d057410a1a982f329eeda0cd653a5839bac \
-  --synthetic-bots --output audit/agent-adoption/phase-7.json
+  --synthetic-bots --output /tmp/canvas-discovery-4.1.0.json
 bun test tools/discovery
 ```
 
-The optional manifest pin above comes from the existing
-`audit/agent-adoption/release-4.1.0.json` delivery record. Omit it when no independent
+This example replays the 4.1.0 check with the manifest pin in
+`audit/agent-adoption/release-4.1.0.json`. The temporary output preserves the
+original observations in `audit/agent-adoption/phase-7.json`. For another release,
+pass its version and corresponding manifest digest. Omit the digest when no independent
 release pin is available; the output then explicitly reports an unpinned check.
 `--origin https://canvas.nannier.com` is the default. `--output` writes only the
 requested local JSON file; otherwise output goes to stdout. An unsuccessful

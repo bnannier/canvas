@@ -4,8 +4,8 @@ Run `bun run check:api` from the repository root, or add `--json` for the counts
 errors as data. The gate reads the package's public surface from source and needs no
 build: package.json `exports`, the named exports of `.` through the TypeScript checker,
 the files npm packs under `./styles/*`, the docs app's pages, and the material
-inventory's docs routes. It runs in the pre-push hook and in CI beside
-`check:materials`.
+inventory's docs routes. It runs in the local pre-push hook and alongside
+`check:materials` during validation for the manually dispatched Deploy workflow.
 
 The surface itself is explicit. src/index.ts re-exports the components' entries and
 src/style/public.ts, which lists the style foundation's public names one by one;
@@ -38,9 +38,9 @@ commit as its manifest entry.
   or removed without its entry fails, and so does a new file under `styles/` that npm
   would pack (Finder's `.DS_Store`, editor swap files and the rest of npm's never-packed
   names are not surface; an ignore file below the root stops the read).
-- **The native entry exports what the web entry does, with the same facts.** dist/native
-  resolves each platform's sibling files under Metro (`.ios`, then `.native`, then the
-  plain file). The checker reads the entry under that lookup for iOS and for Android,
+- **The native entry exports what the web entry does, with the same facts.** Metro
+  resolves dist/native imports using the platform suffix (`.ios` or `.android`),
+  then `.native`, then the plain file. The checker uses that lookup for each platform,
   and a fork that drops or adds a name, turns a value type-only, a component into a
   non-component, a function into data, or deprecates a name on one OS fails.
 - **A kind agrees with the source.** `type` is a type-only export (a type-only helper

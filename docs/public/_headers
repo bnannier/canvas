@@ -89,7 +89,7 @@
 
   # Stop other origins pulling these bytes into their own pages. The site is one origin and
   # loads nothing from anywhere else, so nothing legitimate is lost. Social previews are
-  # unaffected: crawlers fetch og.png server-side, where CORP is not enforced.
+  # unaffected: crawlers fetch the Open Graph image server-side, where CORP is not enforced.
   Cross-Origin-Resource-Policy: same-origin
 
   # Cloudflare Pages sends `Access-Control-Allow-Origin: *` by default, which invites any

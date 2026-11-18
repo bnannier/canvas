@@ -11,7 +11,7 @@ With no `OverlayProvider` mounted it still floats, on an absolute anchor beside 
 trigger, but an ancestor that clips its content can then cut it off.
 
 The bubble inverts against the page (dark in the light scheme, light in the dark one)
-and sets its text in Dark Factory's label type;
+and sets its helper text at 12px;
 <!-- only: web -->
 iOS, which has no tooltip, shows the
 same bubble, and Android keeps the Material 3 plain tooltip.

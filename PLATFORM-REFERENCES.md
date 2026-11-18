@@ -41,7 +41,7 @@ branded via props.
 
 Every docs component has a row, the primitives and layout components included. A
 component keeps a native shape only on a platform whose cell cites a control for its job
-(design-language item 3 in `CLAUDE.md`); where the cell is a none note, its native skin is
+(design-language item 4 in `AGENTS.md`); where the cell is a none note, its native skin is
 the web skin. `test/platform-references.test.ts` holds the table to the code: Treatment is
 Shared exactly when no platform builds a skin of the component's own, and a native skin
 of the component's own stands under a none note only as a recorded one-job substitute (the

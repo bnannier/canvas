@@ -8,10 +8,10 @@ does not query npm and does not publish documentation.
 The output is `docs/public/ai/<package.json version>/`, plus the current source
 entry guide `docs/public/agents.md` and indexes `docs/public/llms.txt` and
 `docs/public/llms-full.txt`. The entry guide is generated from the maintained
-`tools/agent-docs/agents.md` template; `{{VERSION}}` follows the root manifest while
-the dated statement about the published 4.0.0 package remains historical. Human docs, examples,
-visuals and animations are untouched. Copy these static files to the same public
-site root when preparing Pages. Preserve old `ai/<version>/` directories when
+`tools/agent-docs/agents.md` template. `{{VERSION}}` follows the root manifest.
+The public entry guide uses the installed package version and executable to
+route readers to the appropriate instructions. The docs web build includes
+these files at the public site root. Preserve old `ai/<version>/` directories when
 building or deploying a later version; a clean build must include those tracked
 directories too.
 
@@ -45,8 +45,8 @@ public source API; use installed declarations when the dependency differs.
 
 Installation, runtime support and overlay guidance reuse the corresponding `USAGE.md`
 sections; theming props come from `ThemeProviderProps`, and layout links the existing
-Container, Row/Column and Grid pages. The generator does not use the usage guide's legacy
-theme prose as a source of palette or font values.
+Container, Row/Column and Grid pages. The theming guide pairs authored usage
+guidance with generated theme prop tables.
 Usage-guide navigation is mapped to public versioned guides and onboarding/terms anchors;
 unmapped repository links fail generation instead of sending readers to private source.
 

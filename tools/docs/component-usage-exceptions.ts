@@ -6,6 +6,10 @@ import type { DocsUsageException } from "./component-usage.ts";
 // D23 additionally authorizes the exact v4 page chrome and illustration footprints.
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   ...V4_PRESENTATION_EXCEPTIONS,
+  {
+    file: "docs/src/brand/hero-showcase-panels.tsx", owner: "ShowcaseSlot", tag: "View", attribute: "style", keys: ["width"], occurrences: 1,
+    reason: "Owner-requested rotating homepage illustration (2026-11-17): a definite scene slot bounds actual kit controls before the whole perspective collage scales to its container. The wrapper paints nothing and never changes a control skin.",
+  },
   ...["PaletteMotion", "RadiusMotion", "IconMotion", "SpringSample"].map(owner => ({
     file: "docs/src/sections/foundations-motion.tsx", owner, tag: "Animated.View", attribute: "foreign-component", keys: ["react-native-reanimated#View"], occurrences: 1,
     reason: "Owner-requested Foundations specimen animation (2026-11-17): a native Reanimated host moves actual kit specimens or the existing blank corner diagram; it does not replace a control.",
@@ -195,7 +199,7 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   },
   ...["html", "head", "body", "style", "meta"].map(tag => ({
     file: "docs/src/app/+html.tsx", owner: "Root", tag, attribute: "html", keys: [tag],
-    occurrences: tag === "meta" ? 17 : 1,
+    occurrences: tag === "meta" ? 19 : 1,
     reason: "Expo Router's web document and metadata surround the React Native app; these are not rendered app controls.",
   })),
   {
@@ -368,6 +372,11 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   {
     file: "docs/src/brand/hero-collage.tsx", owner: "HeroCollage", tag: "View", attribute: "style", keys: ["height", "transform", "transformOrigin", "width"], occurrences: 2,
     reason: "The decorative Library collage keeps its authored coordinate system inside a uniformly scaled drawing canvas; the measured parent sets the visible width and scaled height so every panel fits on phones.",
+  },
+  {
+    file: "docs/src/brand/hero-collage.tsx", owner: "HeroCollage", tag: "View", attribute: "spread", keys: ["<unresolved props>"], occurrences: 1,
+    expression: "inertProps()",
+    reason: "The shared inertProps helper removes decorative animated specimens from keyboard navigation and interaction on React 18 and 19; native accessibility hiding accompanies it.",
   },
   {
     file: "docs/src/brand/glow.tsx", owner: "AuroraGlow", tag: "View", attribute: "style", keys: ["bottom", "left", "pointerEvents", "position", "right", "top"], occurrences: 1,

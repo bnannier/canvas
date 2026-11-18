@@ -1,7 +1,8 @@
 # Interaction evidence
 
-Run `bun scripts/check-interaction-coverage.ts` from the repository root, or add
-`--json` for the machine-readable report. CI checks the registry on every candidate.
+Run `bun run check:interactions` from the repository root, or add `--json` for the
+machine-readable report. GitHub checks the registry during validation for the
+manually dispatched Deploy workflow.
 
 `registry.ts` records the complete docs component inventory and reviewed behavioral
 test declarations. Adding or removing a component requires an explicit inventory

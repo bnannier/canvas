@@ -6,9 +6,9 @@ components so a theme change cannot silently add an unwanted surface. They do
 not introduce new component frames or claim that every variant appears in the
 default example.
 
-`components.e2e.ts`, `overlays.e2e.ts`, and `tokens.e2e.ts` retain all 236
-capture flows and check their approved frame dimensions by default. Existing
-functional, style, and accessibility assertions remain in place. Screenshot
+`components.e2e.ts`, `overlays.e2e.ts`, and `tokens.e2e.ts` check approved frame
+dimensions by default, alongside their functional, style, and accessibility
+assertions. Screenshot
 buffers exist only in memory; reports retain text metadata, never image evidence.
 
 **This reduces automated visual coverage. Dimension checks cannot detect color,
@@ -19,10 +19,10 @@ SHA256 equality proved unsuitable as the default CI gate. Full visual hand-off
 review still requires matching live views or ephemeral local captures, which must
 not be committed or uploaded by CI.
 
-`pixel-digests.json` preserves dimensions and non-reversible SHA256 metadata for
-all 236 previously approved Linux PNGs, derived directly before removal. The
-images cannot be reconstructed from these entries. For an explicit strict pixel
-diagnostic, run:
+`pixel-digests.json` stores approved Linux frame dimensions and non-reversible
+SHA-256 digests. The initial 236 entries were derived from the approved PNGs
+before removal. The file now includes later reviewed additions and updates.
+For an explicit strict pixel diagnostic, run:
 
 ```sh
 bun run e2e:pixels
@@ -43,9 +43,10 @@ reviewed metadata updates retain the original element-capture path.
 
 Comparisons remain Linux-only. Other operating systems execute the flows without
 comparing the Linux dimensions or hashes. Use Linux with the pinned Playwright
-version and matching fonts to compare or update. CI currently uses ubuntu-latest,
-not a pinned operating-system image. `E2E_FORCE_VISUAL` is only for an equivalent
-Linux environment. Playwright screenshot, trace, and video retention are off.
+version and matching fonts to compare or update. The manually dispatched release
+validation runs the browser jobs on `ubuntu-latest`. Reserve `E2E_FORCE_VISUAL`
+for environments equivalent to that Linux renderer. Playwright screenshot, trace,
+and video retention are off.
 
 To review an intentional change, open the affected live view in the matching
 Linux browser at the test's viewport (normally 1280 by 900, scale 1), scheme,
@@ -65,11 +66,14 @@ failures. Ordinary runs, missing approvals, unstable captures, and
 `--update-snapshots` cannot accept new metadata. Updates are forbidden on CI.
 
 The material matrix captures light and dark glass at desktop and phone widths
-only in memory and retains computed browser material diagnostics as text. Glass
-pixels are not portable GPU baselines. The subsequent solid pass asserts zero
-active backdrop effects and zero clear materials in the component row and opened
-overlay host. A passing count does not establish composited text contrast;
-review the live view and run Lookout locally when image evidence is needed.
+in memory and reports computed browser material diagnostics, dimensions and pixel
+digests as JSON. Its glass digests describe the run's renderer. In glass mode,
+the reference's in-page surfaces keep their solid web skins. The solid pass checks
+for zero active backdrop effects and zero clear materials in the component row and
+opened overlay host. The web form Dialog retains its authored 2px scrim veil in both
+modes, so its solid pass checks that the veil is the only active backdrop effect
+and the panel is opaque. Review composited text contrast in the live view or in
+a temporary local Lookout capture.
 
 Lookout keeps its fixed-viewport rest captures and adds `full-content` evidence
 for every glass route. This state fits viewport height to the complete preview

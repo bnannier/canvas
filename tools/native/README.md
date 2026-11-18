@@ -6,8 +6,8 @@ are the verification fixtures the journeys drive (`smoke/src/testing`, routed un
 `@nannier/canvas`. Candidate preparation verifies the release seal, copies the committed
 `smoke/` tree into a fresh directory, installs the exact Canvas tarball (its Android
 capture module included) only in that copy, under the dependency name the app declares
-for it, and compares installed package bytes before building or testing. Every import in
-the copy resolves to the sealed package; the candidate identity still carries the
+for it, and compares installed package bytes before building or testing. Every Canvas
+import in the copy resolves to the sealed package. The candidate identity carries the
 package's own name and version. No source resolver, workspace link, `.origin` overlay or
 optional-peer stub is allowed. The package hash and version are retained in the identity.
 Preparation also proves Android autolinking resolves the capture module from the
@@ -29,11 +29,13 @@ docs modules and the sample photos beside the app and hashes them with its sourc
 Component catalog journey mounts every component's examples in turn and the flow requires
 all of them rendered with no failure.
 
-The journeys run at both native form factors: `test --form-factor phone|tablet` passes
-`FORM_FACTOR` to the flows for their few form-factor branches, and CI runs an iPhone and an
-iPad simulator, and the `pixel_7` and `pixel_tablet` emulator profiles. The web build
-(`build --platform web`, an export of the same prepared copy) runs under Playwright at a
-desktop window, a tablet and a phone (`e2e/smoke-app`, the `smoke-web` validate job).
+The journeys run at both native form factors. `test --form-factor phone|tablet` passes
+`FORM_FACTOR` to the flows for their form-factor branches. The manually dispatched
+Deploy workflow calls reusable validation, which runs iPhone and iPad simulators
+and the `pixel_7` and `pixel_tablet` emulator profiles. The native smoke jobs report
+failures without blocking the release. The web build (`build --platform web`, an
+export of the same prepared copy) runs under Playwright at a desktop window, a tablet
+and a phone (`e2e/smoke-app`, the `smoke-web` validate job).
 
 The runner requires a clean checkout of the identified candidate, its `candidate`
 directory, and the sealed `artifacts` directory. Use task-local output paths:
@@ -84,9 +86,9 @@ identities. A failed command cannot pass because a report exists, and previous
 connected-test reports are removed before the attempt. Candidate/module hashes,
 preserved test inventories, current tooling hashes, device API/fingerprint, actual
 Gradle project/source configuration, logs, and XML/HTML reports are retained in
-`android-instrumentation-evidence` during the run. CI retains only its result JSON
-and JUnit XML, even when the gate fails. This reuses the independent consumer and emulator;
-it does not build a second docs project or claim all supported Android versions.
+`android-instrumentation-evidence` during the run. CI uploads the instrumentation's
+JUnit XML, including available reports from failed runs. Instrumentation reuses
+the independent consumer and emulator.
 
 The release builds contain embedded JavaScript, so they do not require Metro.
 Before input, the flow reads the actual runtime candidate revision and tarball hash,
@@ -117,9 +119,10 @@ theme in diagnostics, and restores the device's prior appearance. It writes
 screenshots. A result is written as passed only after both complete flows succeed.
 Binary digests and app source inventories prevent an old binary or edited fixture
 from being reused as candidate evidence. CI uploads only candidate identity, build
-and result JSON plus JUnit XML. Screenshots, command logs, bundle observations and
-input archives remain on the runner and are discarded when the job ends. Local runs
-can inspect their output directory while diagnosing a failure.
+and journey result JSON plus JUnit XML, with seven days of retention. Screenshots,
+command logs, bundle observations and input archives remain on the runner and are
+discarded when the job ends. During local diagnosis, generate captures temporarily
+and remove them after inspection.
 Device API level, OS and framework versions identify what was exercised;
 one device run does not prove every supported OS version.
 
@@ -215,17 +218,17 @@ unavailable startup acknowledgement; it does not start another collector or stop
 the native attempt. The original collector can become ready later. The finalizer
 uses its recorded owner identity even after that timeout, verifies PID start
 identity, then requests its final flush and stop with a bounded acknowledgement. It never signals ADB or the emulator. Partial diagnostics
-are uploaded with the normal 14-day artifact retention. A hard runner loss can
-prevent finalization/upload. These records improve diagnosis; they do not fix a
+stay on the runner and are discarded when the job ends. A hard runner loss can
+prevent finalization. These records improve diagnosis; they do not fix a
 transport disconnect or make one later successful run proof of its cause.
 
 ## iOS compiled-route build evidence
 
 After Xcode succeeds, the runner retains the exact pre-Hermes bundle, embedded
 bytecode, embedded Expo configuration and Info.plist in `ios-bundle-evidence/`.
-The build manifest records the report path and checksum; CI uploads this directory
-with the native evidence even when a later journey fails. Observation failures
-remain explicit and do not change the build outcome.
+The build manifest records the report path and checksum. CI uploads the build
+manifest and leaves the bundle evidence directory on the runner. Observation
+failures remain explicit and do not change the build outcome.
 
 The installed Babel parser and lexical bindings identify the compiled
 `TestingLayout` within the full Metro bundle. Only recognized unconditional JSX

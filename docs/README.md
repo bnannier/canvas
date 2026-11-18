@@ -26,20 +26,25 @@ The web docs are at <http://localhost:8081/>. The preview opener routes HTTP lin
 to a booted iOS simulator or Android emulator with the docs development app
 installed. Use `bun run dev --clear` if Metro needs its cache cleared.
 
-From `docs/`, the platform and export commands are:
+From `docs/`, run the app on the target platform:
 
 ```sh
 bun run web            # Metro web development without the preview opener
 bun run ios            # build and run natively with Xcode
 bun run android        # build and run natively with the Android SDK
-bun run build:web      # complete static web artifact in dist/
 ```
 
-`build:web` runs the Expo export and then adds font preloads, inlines CSS, and
-prepares asset paths for Cloudflare Pages. It also exports the independent
-`examples/recipes` app into `/recipes/`; install that app's frozen dependencies
-before running the docs build. Run this script when checking the shipping web
-artifact; a bare Expo export omits those preparation steps.
+Install the independent recipes app's locked dependencies before building the
+web artifact. From `docs/`:
+
+```sh
+bun install --cwd ../examples/recipes --frozen-lockfile
+bun run build:web
+```
+
+`build:web` runs the Expo export into `dist/`, inlines CSS, prepares the output
+for Cloudflare Pages, and schedules bundle execution after the first paint. It
+then exports the recipes app into `/recipes/` and refreshes the sitemap.
 
 iOS builds need a UTF-8 locale for CocoaPods:
 
@@ -51,26 +56,32 @@ LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 bun run ios
 
 The **Deploy** workflow in `.github/workflows/deploy.yml` runs only when a release
 is manually requested on main. Commits and pull requests do not trigger GitHub
-CI/CD. Deploy prepares version metadata before calling the shared validation
-workflow. Validation builds the package and web docs, checks their types and
-generated sources, and runs the unit and browser suites.
+CI/CD. Select `pages` for a web deployment and `npm` to publish a patch or minor
+from pending changesets. Deploy freezes the selected source before the shared
+validation workflow runs. The candidate carries a version bump when an npm release
+is requested and has a valid changeset plan. Validation builds the package and
+web docs, checks their types and generated sources, and runs the unit and browser
+suites.
 
 Publication accepts the frozen candidate only while its source is still the
 current main revision. If main advances, the candidate is discarded; manually
-dispatch another release from the current main revision. Cloudflare Pages receives
-the same prepared web artifact that the browser tests exercised, at
-<https://canvas.nannier.com/>. The npm release publishes the validated Canvas
-tarball, including its native module, through CI. See the repository's
-[contribution guide](../CONTRIBUTING.md) for changeset and recovery rules.
+dispatch another release from the current main revision. With `pages` selected and
+`CLOUDFLARE_ENABLED=true`, Cloudflare Pages receives the same prepared web artifact
+that the browser tests exercised. The production site is
+[canvas.nannier.com](https://canvas.nannier.com/).
+
+An npm release publishes the validated Canvas tarball, including its native
+module, through CI. The [contribution guide](../CONTRIBUTING.md) covers changesets
+and recovery.
 
 `EXPO_BASE_URL` remains available for deployments under a subpath through
 `app.config.js`. Production and local development use the root path.
 
-The homepage and footer version labels read the latest published `@nannier/canvas`
-version from npm on screen focus, without a cached HTTP response. They retain the
-last successful lookup (or the build's package version before the first lookup)
-when the registry is unavailable. These labels are independent of the app binary's
-version, which remains tied to the validated release candidate.
+The homepage and footer version labels, including the component detail footer,
+fetch the latest published `@nannier/canvas` version from npm on screen focus.
+When the registry is unavailable, the labels retain the last successful lookup.
+They use the build's package version before the first successful lookup. The app
+binary's version comes from the validated release candidate.
 
 ## Native builds (EAS)
 
@@ -96,11 +107,11 @@ submission notes live in [store/SUBMISSION.md](../store/SUBMISSION.md).
 
 The app version follows the root Canvas `package.json` through `app.config.js`;
 there is no separate version to maintain in `app.json`. Deploy restores the
-validated candidate (including its Changesets version bump), then checks Expo's
-resolved version against that candidate before either native build is queued.
-EAS's remote `autoIncrement` advances build numbers separately. After Apple has
-approved a Canvas version, release a newer Canvas version before submitting
-another store release: rebuilding the approved version can still cause
+validated candidate and checks Expo's resolved version against it before either
+native build is queued. EAS's production profile uses remote `autoIncrement` to
+advance build numbers separately. After Apple has approved a Canvas version,
+release a newer Canvas version before submitting another store release.
+Rebuilding the approved version can still cause
 ITMS-90186 / ITMS-90062. The `appVersion` runtime policy follows the same Canvas
 version, so a version change requires a new native binary.
 

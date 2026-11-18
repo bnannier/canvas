@@ -15,7 +15,9 @@ below.
 
 ## The guarded literal require (copy this)
 
-From `src/style/glass-surface/glass-surface.tsx`:
+The material runtime uses this pattern in
+`src/style/glass-surface/material-runtime.ts` and its platform entries. This
+example shows a private binding typed from the installed development peer:
 
 ```ts
 import type * as ExpoBlurTypes from "expo-blur"; // type-only: erased, never emitted
@@ -44,7 +46,7 @@ Each line earns its place:
 - The literal `require` sits directly inside the `try` block. Metro checks the
   FIRST enclosing block to classify an optional dependency. An intervening
   `if (typeof require === "function") { … }` makes the dependency required and
-  breaks consumers who skip it. See `src/organisms/backdrop/skia-runtime.ts`.
+  breaks consumers who skip it. See `src/style/glass-surface/material-runtime.ts`.
   A pure-ESM runtime's missing `require` throws a `ReferenceError` that the same
   `catch` already handles.
 - `require("expo-blur")` with a STRING-LITERAL id: a bundler that HAS the peer
@@ -92,8 +94,8 @@ Do NOT:
 
 Per-platform peers live in the matching fork so other platforms never pull them:
 `expo-glass-effect` (iOS-only Liquid Glass) is required only in
-`glass-surface.ios.tsx` and `liquid-glass.ios.ts`; the base
-`glass-surface.tsx` / `liquid-glass.ts` never mention it.
+`material-runtime.ios.ts` and `liquid-glass.ios.ts`; their base runtime
+entries do not load it.
 
 ## Graceful fallback + one dev warning
 

@@ -16,7 +16,10 @@ to `dist/` (gitignored).
 
 ## Setup
 
-Canvas uses [Bun](https://bun.sh) for everything: install, scripts, and tests.
+Install [Bun](https://bun.sh) using the version in the root `package.json`.
+Bun manages dependencies and runs the development scripts and tests. Use Node.js
+for the tooling invoked by those scripts and Python 3 for the plugin unit tests
+in the pre-push hook.
 
 ```bash
 bun install            # root: kit dependencies
@@ -36,9 +39,8 @@ To run the docs app (the kit's live showcase and your development harness):
 cd docs && bun run dev # Metro on http://localhost:8081, native preview opener on :8790
 ```
 
-Component edits hot-reload into the docs. Note that Metro does not hot-watch the
-symlinked kit source in every case; if a kit edit does not show up, restart with
-`bun run dev --clear`.
+Metro watches the repository root and resolves Canvas to live kit source through
+the symlink. If Metro needs its cache cleared, restart with `bun run dev --clear`.
 
 ## Checks
 
@@ -69,8 +71,10 @@ bunx tsc --noEmit -p docs/src/core/tsconfig.json # generated example TypeScript
 bun run --cwd docs typecheck # complete docs app TypeScript
 ```
 
-CI remains the release authority. It also checks the docs web export, browser
-behavior, theme tokens, design parity, and material and interaction coverage. The local
+If the local tuning-harness gate is installed, the hook first checks the pushed
+commits for the tuning evidence described in [AGENTS.md](./AGENTS.md#motion-v4-reference-timing-and-verification).
+The shared validation workflow also checks the docs web export, browser behavior,
+theme tokens, design parity, and material and interaction coverage. The local
 hook does not run the browser suite or deploy anything.
 
 Use `bun run test` to run every unit test under `test/` and `tools/`, with the
@@ -93,8 +97,9 @@ run check:api` fails when an export or a file appears or disappears without its 
 when a kind disagrees with the source, when a public value has no summary, when a named
 route does not exist or never names the export, when a staged name's planned page
 already names it, and when the materials manifest records a different docs route. A
-deprecated alias needs a summary and `@deprecated` text naming its replacement, and no
-page, and no document the package ships, may present it or a kit internal as API. A planned route closes at the audit turn that owns it
+deprecated alias needs a summary and `@deprecated` text naming its replacement.
+Keep deprecated aliases and kit internals out of the API documented on pages or
+in packaged guidance. A planned route closes at the audit turn that owns it
 (`PLANNED_ROUTES` in the manifest), so nothing stays staged for a closed route. An
 intended change to the surface also refreshes its snapshot with `bun run check:api
 --write-snapshot`. Read the source and the page before writing an entry;
@@ -117,7 +122,7 @@ the summary for a consumer reading the changelog.
 ### Run CI locally before pushing
 
 Run the CI validation on your machine before every push. GitHub repeats these
-checks when a release is requested, rather than on commits or pull requests:
+checks on a manual release dispatch.
 
 ```bash
 brew install colima docker act
@@ -126,12 +131,12 @@ bun run ci:local
 ```
 
 `ci:local` (`scripts/ci-local.mjs`) runs `.github/workflows/validate.yml` through
-[act](https://github.com/nektos/act) in Linux runner containers: the check job, all
-four e2e shards and the starter, with artifacts passed between jobs as on GitHub
-(`bun run ci:local -- --job check` runs one job). Commit first: act copies the working
-tree, which must be exactly the commit you will push. The script's header lists the
-mechanical differences between the workflow act runs and `validate.yml`, and why each
-is needed. The native smoke jobs (an iOS simulator on a macOS runner, an Android
+[act](https://github.com/nektos/act) in Linux runner containers. It runs the check
+job, all four e2e shards, the web smoke job and the starter, with artifacts passed
+between jobs as on GitHub (`bun run ci:local -- --job check` runs one job).
+Commit first because act copies the working tree, which must match the commit you
+will push. The script's header explains how it adapts `validate.yml` for act.
+The native smoke jobs (an iOS simulator on a macOS runner, an Android
 emulator) cannot run in a container. When a change touches native code, run them on
 the Mac with `scripts/native-smoke.mjs` (see `tools/native/README.md`), and say so in
 the commit when you have not.
@@ -142,14 +147,19 @@ Publication goes through CI; do not run `npm publish` locally. The `release`
 script is CI-only and requires the prepared candidate and validated artifact
 directories.
 
-Start a release by manually dispatching the Deploy workflow on `main`. Commits and
-pull requests do not trigger GitHub CI/CD. Deploy prepares the versioned candidate
-before the shared validation jobs run. CI validates the candidate, packs the npm
-package, and tests the prepared web artifact. Publication uses a normal
-fast-forward candidate push and the validated tarballs. If main advances, it
-discards the candidate without publishing; manually dispatch another release from
-the current main revision. Cloudflare receives the tested docs artifact. Manual
-soak tests and npm deprecation remain explicit troubleshooting and maintenance tools.
+Start a release by manually dispatching the Deploy workflow on `main`. Select
+the `npm` input, which defaults to off, to publish a patch or minor from pending
+changesets. For an authorized major, use `major` and `major_version` as described
+above. The `pages`, `ios`, and `android` inputs select web deployment and native
+builds independently. With npm publication disabled, Deploy validates the
+selected revision at its existing version.
+
+CI freezes the candidate before validation, packs the npm package, and tests the
+prepared web artifact. For an npm release, acceptance fast-forwards `main` to the
+validated version commit and publication uses the sealed tarball. If `main`
+advances before acceptance, dispatch again from its current revision. The selected
+docs deployment and native jobs use the accepted candidate. Manual soak tests
+and npm deprecation remain explicit troubleshooting and maintenance tools.
 
 Canvas is one npm package, `@nannier/canvas`, and its Android capture module ships
 inside it (`android/`, autolinked through the root `expo-module.config.json`). Every

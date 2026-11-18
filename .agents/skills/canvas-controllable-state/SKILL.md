@@ -51,7 +51,7 @@ Internally: `isControlled` is latched via `useRef(controlled !== undefined).curr
 | Slider / NumberInput | `value` | `defaultValue` | `onChange` | `number` |
 | Select (value) | `value` | `defaultValue` | `onSelect` | `string` |
 | Select (open) | `open` | `defaultOpen` | `onOpenChange` | `boolean` |
-| Combobox | `query` | `defaultQuery` | `onQueryChange` | `string` |
+| Autocomplete | `query` | `defaultQuery` | `onQueryChange` | `string` |
 | Tabs | `active` | `defaultActive` | `onChange` | `number` |
 | TabBar | `active` | `defaultActive` | `onSelect` | `string` |
 
@@ -92,7 +92,7 @@ const [value, setValue] = useControllableState<string>(props.value, props.defaul
 - Mode is latched at mount. Never flip a component between controlled and
   uncontrolled across renders (do not swap `value={x}` for `value={undefined}`).
 - One hook call per independent scalar axis. Where open state must interleave with
-  focus/typing side effects (Combobox, `src/atoms/combobox/combobox.shared.tsx`),
+  focus/typing side effects (Autocomplete, `src/atoms/autocomplete/autocomplete.shared.tsx`),
   the hook drives `query` while `open` uses the same contract hand-rolled
   (`openProp ?? internalOpen`); keep the contract identical either way.
 - New stateful component ⇒ it ships in `@nannier/canvas`, so add a changeset
@@ -107,5 +107,5 @@ bun test            # forms.test.tsx: controlled toggling; behavior.test.tsx: un
 
 `test/forms.test.tsx` asserts controlled toggling (Switch/Checkbox report the next
 value); `test/behavior.test.tsx` (~L53) asserts the uncontrolled path (a bare
-Combobox is typeable and seeds from `defaultQuery`). A new control needs both a
+Autocomplete is typeable and seeds from `defaultQuery`). A new control needs both a
 controlled test and a bare-component-is-interactive test.

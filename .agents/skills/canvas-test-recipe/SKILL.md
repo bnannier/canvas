@@ -11,18 +11,22 @@ The harness is wired in `test/setup.ts` (a bun preload, per `bunfig.toml`
 `preload = ["./test/setup.ts"]`). Follow the render + query conventions below or
 tests either fail to load the kit or assert against the wrong DOM.
 
-## 0. What the harness gives you (test/setup.ts)
+## 0. What the harness gives you
 
-The preload does three things before any test file loads:
+`test/setup.ts` imports `tools/rnw-preload.ts`, which configures the environment
+before any test file loads:
 
 - Registers happy-dom (`GlobalRegistrator.register()`) so components render to a DOM.
 - Aliases `react-native` to `react-native-web` via `plugin({ build.module("react-native", …) })`.
   Node/Bun cannot parse RN's Flow-typed entry, so this alias is mandatory; it also
   means `import { Text } from "react-native"` in a test IS react-native-web.
 - Stubs the optional/native peers `expo-blur`, `expo-glass-effect`, and
-  `react-native-svg`. GlassSurface then takes its documented translucent-View
+  `react-native-svg`. Native-material paths then take their documented solid-surface
   fallback, and svg-drawn parts (Icon, Spinner, Popover) render as no-op fragments.
   So test the LOGIC/interaction, not rendered vector paths or the real glass material.
+
+`test/setup.ts` also installs a resettable 1280×800 viewport and cleans up
+leaked PressResponder key listeners between tests.
 
 Do NOT re-import or re-configure any of this per file; it is process-wide.
 

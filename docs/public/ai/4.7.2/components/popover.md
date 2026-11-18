@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.2
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: a941ce093bb6d90f2fae1f7f9f8fd1901363668be66092d7b9134c8ed1dc72b3
+Source SHA-256: ae83e97d5ef24a47d3c97180f43a6e5f00f907c93539fcc79e31cbb2094c3d46
 
 Source: `src/atoms/popover/popover.md`
 Human reference: https://canvas.nannier.com/components/popover
@@ -31,7 +31,7 @@ way it flips to the other side when its own lacks room, and the beak follows the
 side it took. At phone width a triggered card that can close is presented as a sheet
 on the bottom edge of the window, over the tab bar and a dimming scrim that glass on the
 web also blurs,
-its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and
+its content kept clear of the home indicator: the v4 sheet on the web, the iOS sheet on iPhone and
 the Material 3 bottom sheet on Android.
 
 In glass mode the triggered card is a functional-layer glass panel beside its

@@ -10,5 +10,5 @@
       "@nannier-com/canvas": ["../src/index.ts"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts", "../tools/oggen/artwork.tsx"]
 }

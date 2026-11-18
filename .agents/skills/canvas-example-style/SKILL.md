@@ -51,17 +51,21 @@ source comment is not authorization.
 
 ## Typography → role + tone + weight
 
+Choose the role by meaning; the current v4 sizes come from `typeRoles` in
+`src/style/type-scale.ts`. These replace the former Dark Factory scale.
+
 `<Text style={{ fontSize… }}>` → `<Typography ROLE TONE WEIGHT>`. A bare
 `<Text>` with NO style stays raw Text (allowed primitive).
 
 | fontSize | role |
 |---|---|
-| 24 / 20 / 17 / 16 / 15 / 14 | `display` / `h1` / `h2` / `h3` / `h4` / `h5` |
-| 14, supporting reading text | `lead` |
-| 12.5, default reading text | `body` |
-| 11.5, secondary reading text | `small` |
+| 56 / 44 / 34 / 26 / 21 / 17 | `display` / `h1` / `h2` / `h3` / `h4` / `h5` |
+| 19, supporting reading text | `lead` |
+| 15, default reading text | `body` |
+| 13, secondary reading text | `small` |
+| 12, caption text | `caption` |
 | 11, metadata | `tiny` |
-| uppercase eyebrow | `caption` |
+| uppercase mono eyebrow | `eyebrow` |
 
 Tone by color: foreground/card-foreground → omit; muted-foreground → `muted`;
 primary → `primary`; destructive → `destructive`; a green → `success`; an amber

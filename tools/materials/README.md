@@ -19,12 +19,18 @@ string-valued styling props:
 - `liquid`: functional material appropriate to its context and native capability.
 - `inherited`: content, layout or data ink that does not own a separate pane.
 
-Every owned surface also follows the solid contract:
+On the web, in-page content and controls keep their solid appearance in glass
+mode. Floating chrome and overlays are the regular frosted surfaces. Native
+renderers also apply material to in-page surfaces where supported.
+
+Every owned surface follows the solid contract:
 
 - Appearance: restore the opaque fill, boundary, elevation and foreground and state
   roles, and keep deliberately unfilled anatomy unfilled.
 - Resources: a resolved solid surface mounts no capture, refraction or glass
-  highlight; shared resources survive only for the remaining glass consumers.
+  highlight. Shared resources survive only for the remaining glass consumers.
+  The web form Dialog's authored 2px scrim veil is independent of its panel and
+  appears in both modes.
 - Transitions: switching in either direction preserves focus, refs, caret, IME,
   values, open state, scrolling and hit targets; controlled state stays
   authoritative.

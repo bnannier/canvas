@@ -28,6 +28,7 @@ import {
 } from "../docs/src/brand/library-hero-look.ts";
 import { fluidRoles, fluidType } from "../src/style/type-scale.ts";
 import { REPOSITORY_COMPONENTS } from "../tools/v4/repository-components.ts";
+import { flyingPanelTransform } from "../docs/src/brand/hero-showcase-motion.ts";
 
 // The docs home (docs/src/shell/home.tsx): the v4 hand-off's Library page as data
 // (docs/src/data/library.ts) and the brand illustrations' math
@@ -185,6 +186,25 @@ describe("the hero illustrations", () => {
         expect(x).toBeLessThanOrEqual(bounds.left + bounds.width + 1e-8);
         expect(y).toBeGreaterThanOrEqual(bounds.top - 1e-8);
         expect(y).toBeLessThanOrEqual(bounds.top + bounds.height + 1e-8);
+      }
+    }
+  });
+
+  it("slides specimens within the same perspective plane throughout pointer tilts", () => {
+    for (const width of [390, 648, 960]) {
+      for (const rotation of [[6, -32, 3], [14, -22, 3], [22, -12, 3]] as const) {
+        for (const panel of COLLAGE.panels) for (const distance of [-210, -75, 0, 80, 210]) {
+          const matrix = matrixOf(flyingPanelTransform(panel, width, rotation, distance));
+          for (const [x, y] of [[0, 0], [100, 50], [380, 250]] as [number, number][]) {
+            const v = [x, y, 0, 1];
+            const out = matrix.map(row => row.reduce((sum, value, index) => sum + value * v[index]!, 0));
+            // Project the travelled point independently. A screen-space translate
+            // after projection would fail as the pointer changes the stack's tilt.
+            const expected = projectCss(panel, width, [x + distance, y - distance * 0.16], rotation);
+            expect(panel.x + out[0]! / out[3]!).toBeCloseTo(expected[0], 8);
+            expect(panel.y + out[1]! / out[3]!).toBeCloseTo(expected[1], 8);
+          }
+        }
       }
     }
   });

@@ -7,6 +7,7 @@ import {
   Container,
   Divider,
   Grid,
+  Icon,
   Row,
   Pressable,
   Typography,
@@ -14,6 +15,7 @@ import {
   View,
   useTheme,
   useMeasuredWidth,
+  useReducedMotion,
 } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
@@ -26,6 +28,7 @@ import { LibraryAction } from "../brand/library-action";
 import { Github } from "../brand/brand-logos";
 import { alpha } from "../../../src/style/color";
 import { useHeroPanels } from "../brand/hero-panels";
+import { useHeroShowcasePanels } from "../brand/hero-showcase-panels";
 import { HERO_GRID } from "../brand/library-hero-look";
 import type { Tier } from "../data/tiers";
 import {
@@ -80,6 +83,9 @@ export function LibraryHero() {
   const headlineBox = useRef<NativeView>(null);
   const platformsBox = useRef<NativeView>(null);
   const panels = useHeroPanels();
+  const alternatives = useHeroShowcasePanels();
+  const [showcasePaused, setShowcasePaused] = useState(false);
+  const reduced = useReducedMotion();
   const { width, onLayout } = useMeasuredWidth();
   // Match Grid's two 460 px tiles and its broad (48 px) gap.
   const stacked = width > 0 && width < HERO_GRID.minTileWidth * 2 + 48;
@@ -127,7 +133,12 @@ export function LibraryHero() {
               {heroStats(COMPONENTS.length).map((stat) => <Typography key={stat} caption mono muted singleLeading>{stat}</Typography>)}
             </Row>
           </Column></HeroEntrance>
-          <HeroCollage testID="library-collage" panels={panels} fit={stacked} />
+          <Column snug>
+            <HeroCollage testID="library-collage" panels={panels} alternatives={alternatives} paused={showcasePaused} fit={stacked} />
+            {!reduced && <Row end><Button ghost small accessibilityLabel={showcasePaused ? "Resume component showcase" : "Pause component showcase"}
+              iconLeft={showcasePaused ? <Icon play /> : <Icon pause />}
+              onPress={() => setShowcasePaused(value => !value)}>{showcasePaused ? "Resume" : "Pause"}</Button></Row>}
+          </Column>
         </Grid>
       </View>
     </AuroraFrame>

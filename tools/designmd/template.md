@@ -16,9 +16,6 @@ an iOS capsule with a semibold label, a Material 3 stadium with a ripple, and a
 selection and calls to action, near-black or near-white surfaces, glass that frosts and
 saturates what sits behind it), without the caller choosing between them.
 
-The rest of this document is what an agent or a developer needs to build with the kit
-and get it right: the values, and the four rules that are easy to break by accident.
-
 ## Components
 
 **Every visual variation is a boolean prop, named for what it means.** Passing the prop
@@ -85,8 +82,8 @@ Two roles carry the brand. `primary` is the selection color: checked, selected a
 current states, links and the focus ring. `action` is the call-to-action fill: primary
 buttons, meters, count badges. In every palette both are the accent; a theme that
 overrides `primary` alone repaints both, since `action` follows an overriding `primary`
-unless the theme sets it too. `scrim` dims the page behind every modal (under glass on the web it also
-blurs it by 2 px). `inverse`,
+unless the theme sets it too. `scrim` dims the page behind modals. The web form Dialog
+also keeps its authored 2px backdrop blur in both surface modes. `inverse`,
 `inverse-foreground` and `inverse-primary` are the toast pill, its ink and the action on
 it (every toast paints them: the web and iOS pill and the Android snackbar;
 `inverse-primary` is the palette's own brand hue lightened to read on the pill). The `-soft` washes, `shade` (the shadow tint) and
@@ -100,22 +97,19 @@ theme that omits any of these keeps the older fallbacks.
 The chart series is a fixed assignment: series one is always `chart-1`, and filtering a
 series out never renumbers the rest.
 
-**Glass is a theming mode, not a component prop.** `<ThemeProvider glass>` forces the
-material on, `<ThemeProvider solid>` forces the flat look, and passing neither resolves
-to the platform default: glass on iOS 26 and above, where Apple makes Liquid Glass the
-system material, and solid everywhere else. Under glass every surface renders through
-the material, layered, each layer with its own under-fill: the functional shells and
-overlays (navbars, the tab bar, the sidebar, dialogs, sheets, drawers, popovers, the
-command palette) take the sheer `glass-tint`; the content panes (cards, lists, tables,
-calendars, charts, alerts) the denser `glass-tint-content`, so their text keeps its
-contrast; the controls (fields, buttons, tabs, chips, badges) the bright
-`glass-tint-control` puck, brand-tinted where the fill is the brand; and the surfaces
-a user reads and acts on (menus, selects, alert dialogs, toasts, tooltips) the
-densest `glass-tint-dense`. Radios, checkboxes and switches are marks inside content
-and keep their solid look. Fills inside a surface become ink tints, a brand puck
-stays as sheer as its ink's 4.5:1 allows, and solid mode is untouched. There is
-no per-component `glass` prop, and hand-painting the material onto a component is not
-a supported way to get one.
+Choose the material as a theming mode on `ThemeProvider`. The `glass` prop requests glass and the
+`solid` prop requests the opaque skin. When both are omitted, Canvas defaults to
+glass where iOS Liquid Glass is available and solid elsewhere. OS preferences
+and platform capabilities can resolve a glass request to solid.
+
+On the web, floating chrome and overlays use frosted glass with a 20px backdrop
+blur, 1.6× saturation and a 1px rim. In-page surfaces such as cards and fields
+keep their solid appearance. On native, glass also reaches in-page surfaces where
+supported. Functional chrome and overlays use the sheer `glass-tint`. Content
+panes use the denser `glass-tint-content` with stable frost, and controls use
+`glass-tint-control` with a brand tint where the fill carries the accent. Dense
+overlays such as menus, alert dialogs and toasts use `glass-tint-dense`. Radios,
+checkboxes and switches keep their solid marks.
 
 ## Typography
 
@@ -245,7 +239,10 @@ Canvas is authored desktop-first: size a component for the desktop case, then ad
 variants that scale it down. A component never dictates its own width: it fills
 (fields, cards, tables, charts) or hugs its content (buttons, badges, chips), and the
 nearest layout container provides the bounds, a `Container` step, a Row child's `span`
-or a `Grid` tile. There are three mechanisms, in order of preference.
+or a `Grid` tile. Fields and controls that expose measure props can use the same
+width scale directly. For example, `<Input sm start />` fills the space available
+up to the `sm` cap and aligns at the start of a column. There are three mechanisms,
+in order of preference.
 
 1. **Intrinsic sizing**, which costs no JavaScript: fill or hug inside the bounds the
    parent provides, a `minWidth` floor plus wrapping. Correct on the first frame and on
@@ -259,8 +256,8 @@ or a `Grid` tile. There are three mechanisms, in order of preference.
    `useContainerWidth`'s px fallback); the seed waits for hydration, follows a
    `BreakpointOverride`, and the measured width wins once it lands.
 3. **Viewport breakpoints**, for window-level chrome only: `useBreakpoint`,
-   `useFormFactor`, `useResponsive`. Only the Sidebar and FilterPanel drawer modes, an
-   overlay's phone sheet (Popover's) and app shells qualify.
+   `useFormFactor`, `useResponsive`. Use them for app shells, Sidebar and
+   FilterPanel drawer modes, and anchored overlays presented as phone sheets.
 
 The viewport tier is the window's width alone, on every platform. A breakpoint applies
 at its width and below (`sm` 640, `md` 768, `lg` 1024, `xl` 1280, `2xl` 1536); the
@@ -301,12 +298,13 @@ Android the skins are the implementation.
 
 ## Iteration guide
 
-Change a colour in `styles/tokens/colors.css`, mirror the resolved sRGB hex into
-`src/style/tokens.ts`, and run `bun run validate-tokens`, which compares the two sides
-including the oklch conversion. Change a component's metrics in its `*.styles.ts` skin
-and mirror them into `styles/tokens/platforms.css`. Then run `bun run designmd:gen` so
-this document keeps up, and `bun test`, whose design-rule suites assert most of what is
-written above.
+Edit semantic colors in `src/style/tokens.ts` and browser glass values in
+`src/style/glass-surface/web-frost.ts`. Run `bun run tokens:css` to regenerate
+`styles/tokens/colors.css`, then `bun run validate-tokens` to check the CSS
+against the source values across palettes and schemes. Change a component's
+metrics in its `*.styles.ts` skin and mirror them into `styles/tokens/platforms.css`
+where the CSS exposes them. Run `bun run designmd:gen` to refresh this document
+and `bun test` to run the design-rule suites.
 
 ## Known gaps
 

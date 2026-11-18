@@ -25,11 +25,12 @@ import WEB_FONTS from "../ui/web-fonts.json";
 //
 // This file is the one place in the docs that renders raw DOM elements, by design: it
 // is the web document around the app, not UI, and expo-router ignores it on iOS and
-// Android. og.png is generated from .github/assets/hero.png by `bun run og:gen`.
+// Android. `bun run og:gen` renders the social artwork from real Canvas components.
 const DESCRIPTION =
   "Canvas is a universal React Native UI kit that renders native iOS, Material 3 Android, and web looks from a single component API. Semantic boolean props, accessible by default, with real Liquid Glass on iOS 26.";
-const TITLE = "Canvas: One component API. Three native looks.";
-const IMAGE_ALT = "The same Canvas Select component rendered as native iOS, Material 3 Android, and web, side by side";
+const TITLE = "Canvas: One UI Kit. iOS, Android, and Web.";
+const IMAGE_URL = "https://canvas.nannier.com/og-canvas-v4.png";
+const IMAGE_ALT = "Canvas rainbow logo and gradient One UI Kit headline beside the homepage’s tilted component collage, with a revenue chart, avatars, tabs, switch, button, and toast.";
 
 // Pre-hydration only. Every page is pre-rendered for a window the server cannot measure,
 // so the web shell assumes a wide one and renders the room rail beside a room's pages,
@@ -82,14 +83,16 @@ export default function Root({ children }: PropsWithChildren) {
         <meta property="og:title" content={TITLE} />
         <meta property="og:description" content={DESCRIPTION} />
         <meta property="og:url" content="https://canvas.nannier.com/" />
-        <meta property="og:image" content="https://canvas.nannier.com/og.png" />
+        <meta property="og:image" content={IMAGE_URL} />
+        <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={IMAGE_ALT} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={TITLE} />
         <meta name="twitter:description" content={DESCRIPTION} />
-        <meta name="twitter:image" content="https://canvas.nannier.com/og.png" />
+        <meta name="twitter:image" content={IMAGE_URL} />
+        <meta name="twitter:image:alt" content={IMAGE_ALT} />
         {Object.values(WEB_FONTS).filter((font) => !("preload" in font) || font.preload !== false).map((font) => (
           <link key={font.path} rel="preload" as="font" type="font/woff2" crossOrigin="anonymous" href={font.path} />
         ))}

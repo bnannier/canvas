@@ -17,9 +17,10 @@ Skipping any registration step hard-fails the build, so follow all of it.
 - Styling API is flat BOOLEAN props only — one boolean per choice, grouped into
   mutually-exclusive axes with a documented first-match precedence
   (`toneOf`/`sizeOf` resolver functions). NEVER `variant="..."`/`size="lg"`.
-- No `style` escape hatches: `style` may exist for sizing/composition only
-  (width/maxWidth); the docgen guardrail hard-fails examples that pass banned
-  style keys.
+- No `style` escape hatches in examples. Non-layout components use `LayoutStyle`,
+  which excludes width and flex bounds. Use Container steps, Row spans, Grid cells,
+  or a supported measure-axis prop to provide bounds. The docgen guardrail rejects
+  banned style keys; layout containers and skins have their own typed contracts.
 
 ## 1. The file recipe (src/atoms|molecules|organisms/<name>/)
 
@@ -156,8 +157,9 @@ A heading spelled loosely fails under the rule that owns it: S1 for `#`, S3 for
   `tsc` against the real exports.
 - Usage/Variants/Do fences must be shim-free (guardrail hard-fails banned
   `style={{…}}` keys). `Don't` fences are exempt on purpose.
-- Justified rare exception: a `// docgen-allow-style: <reason>` comment on the
-  line where the style begins.
+- A `// docgen-allow-style: <reason>` comment is a parser escape, not permission
+  to bypass the styling contract. Use it only for an already-reviewed exception;
+  handwritten docs allowances live in `tools/docs/component-usage-exceptions.ts`.
 
 ## 4. Changeset
 
@@ -180,7 +182,10 @@ rejects stale codegen.
 
 ## 6. Visual QA
 
-Metro does NOT hot-watch the symlinked kit: restart the docs app with
-`cd docs && npx expo start --clear` or the running bundle is stale. Verify the
-component page in light AND dark before calling it done. If no browser/app is
-reachable, say so explicitly — green typechecks are not visual verification.
+The docs Metro configuration pins `@nannier/canvas` to live source and watches
+the repository (`docs/metro.config.js`), so ordinary source edits hot-reload.
+Keep the existing `cd docs && bun run dev` session running; restart with a clear
+cache only when diagnosing a confirmed resolver or transform-cache problem.
+Verify the component page in light AND dark before calling it done. If no
+browser/app is reachable, say so explicitly — green typechecks are not visual
+verification.

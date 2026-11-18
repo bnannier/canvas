@@ -93,9 +93,10 @@ or the prop when the required setup is complete.
 
 ### Theme choices
 
-The disc is the theme's own colour, data the example carries rather than a token: the
-hand-off's `THM` table (cv-kit-code.js line 67) gives blush `oklch(.8 .09 10)` and mint
-`oklch(.84 .11 165)`, which are `#f1a6b0` and `#80e2b9` in sRGB.
+Theme choice buttons can name application-defined themes. These two discs use
+custom sample colors; they do not select a built-in Canvas palette. The current
+ThemeProvider palettes are violet, cyan, mint, rose, and amber. Use Swatch's palette
+booleans for the built-in palette picker.
 
 ```tsx
 <Row snug>

@@ -56,14 +56,12 @@ preview does not publish a version.
 
 ## Design language: Canvas v4, "Light as material"
 
-On 2026-10-27 the owner decided that Canvas takes the Canvas v4 design hand-off ("Light as
-material", the prototype vendored at `tools/v4/handoff`, its reference images captured by
-`tools/v4/capture-references.ts` into `.v4-reference/`) and ships it as 4.0.0. It
-replaces the Dark Factory (DF) language of 2026-09-23. The migration lands in ordered
-phases on main (`audit/v4-redesign/PLAN.md`, decisions D1 to D12); until a phase lands,
-the code it covers still shows the DF look it replaces, and the sections below describe
-that code until the phase that changes it rewrites them. These decisions bind all new
-work now:
+On 2026-10-27 the owner chose the Canvas v4 design hand-off ("Light as material"),
+vendored at `tools/v4/handoff`, to replace the Dark Factory (DF) language of
+2026-09-23. The migration shipped in 4.0.0. The dated decisions and phases are
+recorded in `audit/v4-redesign/PLAN.md`. For current work, use the hand-off and
+the visual authority above. Regenerate its reference images locally with
+`tools/v4/capture-references.ts` into `.v4-reference/`.
 
 1. **Tokens.** The hand-off's values on web, iOS and Android (`src/style/tokens.ts`,
    `colorsFor(palette, scheme)`): neutrals, status colors, glass and shadows as literals;
@@ -109,23 +107,25 @@ work now:
    (`glass-surface/web-frost.ts`), and on the web only what floats over the page takes it
    (the hand-off's `--gl` surfaces: the navbar, tab bar, dialogs, alert dialogs, sheets,
    drawers, popovers, the command palette, toasts, carousel arrows, video controls, marked
-   `floating`); every other web surface keeps its complete solid skin in glass mode
-   (`resolveMaterial`'s "design" fallback, the owner's 2026-10-28 pixel-exact rule, PLAN
-   D13), which narrows the four-layer model below to the floating surfaces on the web. iOS
-   Liquid Glass and the Android blur keep their own material on every layer, with the
-   hand-off's tints. Solid keeps each skin's complete opaque look.
+   `floating`). In-page web surfaces keep their complete solid skin in glass mode under
+   `resolveMaterial`'s "design" fallback (the owner's 2026-10-28 pixel-exact rule, PLAN
+   D13). The material resolver also supports explicit frame frost and modal veils.
+   Native surfaces use platform material where their role, capabilities, and backdrop
+   permit it.
 8. **Docs.** The docs take the hand-off's information architecture and chrome (the
    floating pill navbar with hue swatches and the scheme and glass switches, the grain,
    one page per section with its rail, a detail page per component, the Skins and
    Templates pages). Component routes stay `components/<slug>`. The page is the
    hand-off's flat page, the scheme's `background` in every palette
    (`docs/src/shell/page-look.ts`, since 2026-10-27); Dark Factory's gradient, orbs,
-   frosted shell and wedges are retired. The web shell (`docs/src/shell/navbar.tsx`) is
-   the kit Navbar `floating compact scrolls` pill on desktop, with the room rail
-   (kit Sidebar `embedded compact markers`) beside a room's pages. On 2026-11-15 the
-   owner restored the pre-v4 mobile-web navigation: at widths up to 1024 px, use a
-   page-title top bar with Back and Menu, a Home/Components/Utilities/Search bottom
-   tab bar, and the navigation drawer with appearance controls. Use the current v4
+   frosted shell and wedges are retired. The desktop web shell
+   (`docs/src/shell/navbar.tsx`) renders `PillNav`, the kit Navbar
+   `floating compact scrolls` pill, with the room rail (kit Sidebar
+   `embedded compact markers`) beside a room's pages. On 2026-11-15 the owner
+   restored the pre-v4 mobile-web navigation. At widths up to 1024 px, use a
+   page-title top bar with the Canvas mark on tab roots and Back on nested routes,
+   a Menu action, a Home/Components/Utilities/Search bottom tab bar, and the
+   navigation drawer with appearance controls. Use the current v4
    kit skins, measured chrome clearances, safe-area insets, and a stable route tree
    across resizing. The footer closes every page and the grain covers the shell;
    the rooms are `docs/src/data/rooms.ts`. Native keeps its tab bar and header.
@@ -140,13 +140,14 @@ work now:
    `test/docs-platform-content.test.ts` scans the native copy for the banned words.
 10. **Examples.** A docs example is shown only when an existing kit component fits it;
    never create a kit component to satisfy an example (see "Dogfood the kit").
-11. **Version.** The owner authorized the 4.0.0 major for this redesign ("bump to
-    4.0.0", 2026-10-27). A push never bumps a major: the release is the Deploy workflow
-    dispatched with `major=true` and `major_version=4.0.0` once the last phase lands.
+11. **Version.** The owner authorized the redesign's 4.0.0 major on 2026-10-27
+    ("bump to 4.0.0"). For a future authorized major, manually dispatch Deploy
+    with `major=true` and the exact next major version in `major_version`.
 
 The reference cards for everything judged by eye are in `tools/native/liquid-motion.md`
-under `## References` (`v4-glass` and the cards each phase adds; the `df-*` cards stay as
-the record of the DF work), their strips under `tools/native/reference/`. On 2026-10-23
+under `## References`, including `v4-glass`. The `df-*` cards record the former
+design. Reference strips are regenerated locally under `tools/native/reference/`
+according to the test image retention rule above. On 2026-10-23
 the owner removed every deprecated JS export and every helper published by accident,
 since nothing consumed them (a minor, by that decision); the deprecated `styles/*`
 custom properties keep working as aliases until a major says otherwise. Why: the owner
@@ -406,11 +407,11 @@ applied together.
 Glass is NOT a per-component axis: it is a theming-level surface mode, like the
 light/dark scheme, and the `ThemeProvider` spells it in the same boolean grammar as
 every component axis: `<ThemeProvider glass>` requests the role-appropriate material
-where supported, `<ThemeProvider solid>` requests the complete opaque appearance, and passing neither
-resolves to the PLATFORM DEFAULT: **glass on iOS 26+** (Apple makes Liquid Glass the
-system material for the functional layer there, so a Canvas app matches the OS), and
-**solid everywhere else** (web, Android, iOS < 26, Reduce Transparency). `glass`
-wins if both are passed. The legacy `surface="solid" | "glass"` value prop remains
+where supported, and `<ThemeProvider solid>` requests the complete opaque appearance.
+Passing neither uses **glass when native Liquid Glass is available** (iOS 26+ with
+the optional `expo-glass-effect` module linked and Reduce Transparency off) and **solid
+everywhere else**. `glass` wins if both are passed. The legacy
+`surface="solid" | "glass"` value prop remains
 supported for config-driven code holding a `Surface` value, and on the web the DOM
 helper is `setSurface("glass")` / `setSurface("solid")`. The scheme axis speaks the
 same grammar: `<ThemeProvider dark>` / `<ThemeProvider light>` force a scheme
@@ -423,8 +424,8 @@ hand-off a palette is one `--hue` on `data-palette`, on the root or any wrapper.
 `getPalette()`. The platform default is computed from
 `liquidGlassAvailable()` (exported from the kit).
 
-Under glass EVERY surface renders through the material, layered. The model has four
-layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.ts`,
+Eligible glass surfaces render through the shared material in one of four layers,
+each with its own under-fill token (`glass-tint*` in `src/style/tokens.ts`,
 `--glass-tint*` in `styles/tokens/colors.css`), from sheer to dense:
 
 - **Functional** (`glass-tint`, the sheer tint): the floating shells and overlays,
@@ -444,31 +445,32 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   glass: `brand={tokens.primary}`, whose under-fill `brandTint` keeps as sheer as its
   ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A toned
   WASH (a soft Badge, a coloured Chip, a toned Alert) is its own soft wash, the pane's
-  `tint` in place of the layer's, under the same ink as in solid mode: `statusColors`
-  for the status tones, and a free Chip hue's 500 step at Dark Factory's soft alpha
-  under its deep 800/300 label. A control with no
-  surface of its own stays bare: a ghost or link Button, the web's outline and secondary
-  Buttons (Dark Factory's transparent outline pills), and on every platform Pagination's
-  resting pages, arrows and rows-per-page trigger. Radio, Checkbox and Switch are small
-  marks inside content, not surfaces: under glass they draw their solid look on every
+  `tint` in place of the layer's, under the same ink as in solid mode. Status tones
+  use `statusColors`, and free Chip hues use the hand-off's OKLCH wash, edge and ink
+  in `hueChip`. Controls that stay bare include ghost and link Buttons, web outline
+  Buttons, and Pagination's resting pages, arrows and rows-per-page trigger.
+  The v4 web secondary Button paints a raised neutral well. Radio, Checkbox and
+  Switch are small marks inside content and draw their solid look on every
   platform, with no pane and no rim (a checked mark its solid brand fill, an unchecked
   ring, box or off track its solid boundary, the Switch knob its own colour). A Radio
   `card` tile is a content pane, as a selectable Card is.
 - **Dense** (`glass-tint-dense`, the densest tint): the surfaces a user reads and
   acts on, the option lists (Dropdown, Select, Autocomplete, RowMenu, the SplitButton
-  overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the
-  chart value flag. AnchoredOverlay selects it with `dense`. The two INVERSE surfaces
-  take `inverseDenseTint`, their own fill at the dense alpha (the Tooltip bubble the
-  ink, every Toast DF's `inverse` pill), so their inverse text keeps its contrast.
+  overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Tooltip, the
+  Android Toast snackbar, and the chart value flag. AnchoredOverlay selects it
+  with `dense`. The inverse Tooltip bubble and Android Toast use
+  `inverseDenseTint` when their material is active. Web and iOS Toast use a
+  floating card on the functional layer.
 
 Those surfaces render through the shared `GlassSurface` primitive
-(`src/style/glass-surface`), which paints the active material per platform: Apple's
-real native Liquid Glass via `expo-glass-effect` on iOS 26+, the hand-off's material on
-the web (the layer's tint, a `blur(20px) saturate(1.6)` backdrop and a 1px hairline rim;
-`glass-surface/web-frost.ts`, no module needed), a genuine frosted blur
-via `expo-blur` on Android and iOS < 26, and the layer's tint fill as a fallback when no
-material is available. Pass it the skin's shape style (it
-strips the fill and border and supplies the material) and its `layer`. Where the node
+(`src/style/glass-surface`). The shared resolver selects the platform renderer.
+Web frost uses the hand-off's tint, `blur(20px) saturate(1.6)` backdrop and 1 px
+rim. iOS uses `expo-glass-effect` for eligible Liquid Glass surfaces and
+`expo-blur` for frost. Android prefers Canvas's capture frost on a safe native
+target and can use compatible `expo-blur` integrations. Unavailable material or
+a missing required target resolves to the complete solid skin. Pass `GlassSurface`
+the skin's shape style and its `layer`. When the material renders, it replaces
+the fill and resting border. Where the node
 that paints the surface also owns something else (a Pressable's tap, ripple and dim,
 a live region, a native TextInput), keep that node and render a `GlassPane` (the same
 material as a sibling BEHIND its content, `layer` + `shape` + optional `tint` /
@@ -522,9 +524,10 @@ Do not add a per-component `glass` prop and do NOT hand-paint glass (backdrop-fi
 specular edges, a translucent fill of your own) onto individual components: route a
 new surface through `GlassSurface` or `GlassPane` with the layer it belongs to, and
 its inner fills through `innerFill`. The modal scrim (`scrimFill`, the `scrim` token) is
-no surface: under glass on the web it also blurs what it dims by Dark Factory's 2 px
-(`WEB_FROST.scrimBlur`, through `useScrimFrost`); solid mode and every native scrim keep
-the plain dim. `test/glass-tint.test.tsx`,
+no surface. When web glass is active, the scrim uses the hand-off's 2 px blur
+(`WEB_FROST.scrimBlur`, through `useScrimFrost` or `useHeldScrim`). Solid mode
+and native scrims use a plain dim. The web form Dialog separately renders its
+authored 2 px veil in both surface modes where supported. `test/glass-tint.test.tsx`,
 `test/glass-controls.test.tsx` and `test/dense-overlays.test.tsx` pin the layers, the
 legibility floors and the solid-mode byte identity.
 
@@ -659,13 +662,11 @@ one is `/testing/materials`, the hover one `/testing/hover`, the identity disc o
 `/testing/avatar`. The tunables live in one table per effect, never in a public
 value prop. The evidence log is `tools/native/liquid-motion.md`: its sections
 up to the removal are HISTORY of deleted code, its `## References` section keeps the
-`ios-native-menu` card (strips under `tools/native/reference/`) as the record of what
+`ios-native-menu` card (local strips under `tools/native/reference/`) as the record of what
 that work was judged against, and every row under a version 2 table names its
 `Surface` and its `Versus reference` verdict. `.tuning-harness.json` at the repo root
-(version 2) tells the global push gate which files are tunables (`src/style/motion.ts`,
-`src/style/glass-surface/web-frost.ts`, `src/style/identity-hue.ts`,
-`src/style/glass-surface/glass-wash.ts`, `src/style/selected-card.ts`,
-`src/style/glass-surface/ios-tints.ts` and `docs/src/shell/page-look.ts`): a push whose
+(version 2) lists the tunable files in `sources`. The local pre-push hook invokes
+the gate when the global tuning-harness skill is installed. A push whose
 newest tunable change has no evidence row in or after it is refused, and so is a row
 with an empty `Surface` or `Versus reference` cell or a `matches` written on a harness
 route. A pure refactor of those files with no visual change carries the commit
@@ -732,9 +733,11 @@ live-watched (Turbopack and Metro natively; DarkFactory's webpack needs its
 two conditional overrides), so no aliases or extra links are involved.
 
 - When editing canvas alongside a consumer, keep `bun run dev` running here.
-  It pairs the tsc watch (rebuilds `dist/`) with `scripts/dev-sync.ts`, which
-  mirrors dist/ and styles/ into every overlay whose `.origin` points at this
-  checkout. Consumers resolve built output, not `src/`.
+  It watches the web and native builds and runs `scripts/dev-sync.ts` to
+  mirror `dist/`, `styles/` and package metadata into registered sibling
+  overlays whose `.origin` points at this checkout. These consumers resolve
+  built output. The docs app uses its own live-source symlink described in
+  [docs/README.md](./docs/README.md).
 - The overlay is a local-dev mechanism only. Consumers pin the published
   npmjs version in their package.json, and CI/prod installs that real package
   because no sibling checkout exists there. Never switch a consumer's

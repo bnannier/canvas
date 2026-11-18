@@ -25,7 +25,7 @@ side it took. At phone width a triggered card that can close is presented as a s
 on the bottom edge of the window, over the tab bar and a dimming scrim that glass on the
 web also blurs,
 <!-- only: web -->
-its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and
+its content kept clear of the home indicator: the v4 sheet on the web, the iOS sheet on iPhone and
 the Material 3 bottom sheet on Android.
 <!-- /only -->
 <!-- only: ios -->

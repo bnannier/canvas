@@ -173,9 +173,10 @@ in a tree or a counter alone is insufficient: the painted target's focus bounds,
 spoken identity and double-tap result must agree.
 
 A pass requires observed results for every step. Any missing device, signing
-identity or screen-reader service remains an explicit external limitation. Keep
-audio/video or accessibility inspector evidence where possible, with no personal
-data entered into the sample app.
+identity or screen-reader service remains an explicit external limitation. Use
+temporary recordings or accessibility inspector captures for review. Retain the
+spoken wording and focus observations as text, and remove images, videos and
+diagnostic archives containing them after inspection. Use sample data only.
 
 
 For glass visual evidence, open `testing/escape-layers?scenario=glass-messages`

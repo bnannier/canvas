@@ -1760,3 +1760,16 @@ and stops on unmount. No kit motion tokens, gradients or material parameters cha
 | Date | Effect | Runtime | Surface | Observation | Versus reference | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
 | 2026-11-17 | Foundations specimens and spring lane | Playwright Chromium, macOS, 1440/768/390 × 1000, dark violet glass; also 390 light mint glass | Shipped docs route `/foundations` on local Metro 8081 | Each 6.5s sample contains a complete illustration cycle; all five observed specimen types move, then each has one stable state under live Reduced Motion. Spring overshoot stays inside its measured lane. Keyboard replay retains Switch value and button focus. No overflow or browser errors. Card captures inspected temporarily. | New illustration motion is owner-authorized; spring period and easing come from the hand-off's c-motion. No exact pixel-parity or native-runtime claim. | `audit/foundations-motion-2026-11-17.json`; `e2e/behavior/foundations-motion.e2e.ts` |
+
+## Individual hero component replacements — 2026-11-17
+
+Reference: the existing `v4-library-hero` geometry and pointer-follow motion, plus
+the owner's request for independent random replacements. Preserve the original six
+positions, plane angles and mouse response. Replace one item at a time with a real
+component that demonstrates its state. The center accepts charts; surrounding items
+use compact kit variants. Slide inside the existing plane before projection, never
+on an unrelated screen axis. Honor live Reduced Motion and expose a pause control.
+
+| Date | Effect | Runtime | Surface | Observation | Versus reference | Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2026-11-17 | Independent hero specimen flights | Playwright Chromium, macOS, 1440/768/390 × 1100, dark violet glass | Shipped docs route `/` on local Metro 8081 | Random single-slot replacements sampled for 15s at each width. Never more than one slot in flight; five other positions remain settled. Shared projection tested across widths, depths and pointer tilts. Keyboard pause/resume, inert specimens, stable hero height, no horizontal overflow, pointer tracking and live Reduced Motion passed. All 24 incoming specimens separately demonstrated state changes; temporary desktop/phone captures inspected. | Original resting projection and mouse behavior retained; independent replacements are the owner's requested extension. No native-runtime or exact pixel-parity claim. | `test/docs-hero-showcase.test.ts`; `test/docs-library.test.ts`; `e2e/behavior/hero-showcase.e2e.ts`; screenshots inspected only in `/tmp` |

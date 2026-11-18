@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { AppState } from "react-native";
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated";
 import { View, useReducedMotion, useHoverCapable } from "@nannier/canvas";
 import { COLLAGE, HERO_MOTION, panelTransform, projectCss, stackBounds, type CollagePanel, type CollagePanelId } from "./library-hero-look";
+import { inertProps } from "../../../src/style/inert";
+import { chooseReplacement, flightFrame, flyingPanelTransform, SHOWCASE_MOTION, type ShowcaseFlight } from "./hero-showcase-motion";
+import { ShowcaseActivity } from "./hero-showcase-activity";
 
 // A brand illustration: the v4 hand-off's Library hero collage (decision P5-T1, the
 // `v4-library-hero` card), six decorative panels laid out in a tilted 3D stack. The
@@ -18,22 +22,37 @@ const SEED_WIDTH = 648;
 
 const BACK_TO_FRONT = [...COLLAGE.panels].sort((a, b) => a.z - b.z);
 
-function Panel({ panel, width, x, y, children, onSize }: {
+function Panel({ panel, width, x, y, children, onSize, variant, selected, flight, progress, running }: {
   panel: CollagePanel; width: number; x: SharedValue<number>; y: SharedValue<number>; children: ReactNode;
   onSize: (id: CollagePanelId, width: number, height: number) => void;
+  variant: number; selected: number; flight: ShowcaseFlight | null; progress: SharedValue<number>; running: boolean;
 }) {
-  const motion = useAnimatedStyle(() => ({ transform: panelTransform(panel, width, [x.value, y.value, 3]) }));
-  return <Animated.View testID={`library-panel-${panel.id}`} onLayout={({ nativeEvent: { layout } }) => onSize(panel.id, layout.width, layout.height)} style={[{
+  const moving = flight != null && (variant === flight.from || variant === flight.to);
+  const visible = variant === selected || (flight != null && variant === flight.to);
+  const motion = useAnimatedStyle(() => {
+    if (!moving || !flight) return { opacity: variant === selected ? 1 : 0, transform: panelTransform(panel, width, [x.value, y.value, 3]) };
+    const frame = flightFrame(progress.value, variant === flight.to, flight.direction);
+    return { opacity: frame.opacity, transform: flyingPanelTransform(panel, width, [x.value, y.value, 3], frame.distance) };
+  });
+  return <Animated.View testID={`library-panel-${panel.id}${variant ? `-${variant}` : ""}`} onLayout={({ nativeEvent: { layout } }) => onSize(panel.id, layout.width, layout.height)} style={[{
     position: "absolute", left: panel.x, top: panel.y,
     ...(panel.width != null ? { width: panel.width } : null), transformOrigin: [0, 0, 0],
-  }, motion]}>{children}</Animated.View>;
+  }, motion]}><ShowcaseActivity.Provider value={visible && running}>{children}</ShowcaseActivity.Provider></Animated.View>;
 }
 
-export function HeroCollage({ panels, testID, fit = false }: { panels: Record<CollagePanelId, ReactNode>; testID?: string; fit?: boolean }) {
+export function HeroCollage({ panels, alternatives = [], paused = false, testID, fit = false }: {
+  panels: Record<CollagePanelId, ReactNode>; alternatives?: readonly Record<CollagePanelId, ReactNode>[];
+  paused?: boolean; testID?: string; fit?: boolean;
+}) {
   const [width, setWidth] = useState(SEED_WIDTH);
   const [sizes, setSizes] = useState<Partial<Record<CollagePanelId, [number, number]>>>({});
   const onSize = useCallback((id: CollagePanelId, w: number, h: number) => {
-    setSizes(prev => prev[id]?.[0] === w && prev[id]?.[1] === h ? prev : { ...prev, [id]: [w, h] });
+    // Reserve the union of every specimen up front. Replacements and their
+    // demonstrations never change the hero's height or its mouse coordinate space.
+    setSizes(prev => {
+      const next: [number, number] = [Math.max(prev[id]?.[0] ?? 0, w), Math.max(prev[id]?.[1] ?? 0, h)];
+      return prev[id]?.[0] === next[0] && prev[id]?.[1] === next[1] ? prev : { ...prev, [id]: next };
+    });
   }, []);
   // Fit the complete illustration into its measured column, keeping the authored
   // panel geometry and perspective in one coordinate system on every platform.
@@ -57,6 +76,44 @@ export function HeroCollage({ panels, testID, fit = false }: { panels: Record<Co
   const box = useRef<View>(null);
   const reduced = useReducedMotion();
   const hover = useHoverCapable();
+  const [foreground, setForeground] = useState(AppState.currentState !== "background" && AppState.currentState !== "inactive");
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", state => setForeground(state === "active"));
+    return () => subscription.remove();
+  }, []);
+  const running = !reduced && !paused && foreground;
+  const [selected, setSelected] = useState(() => BACK_TO_FRONT.map(() => 0));
+  const [flight, setFlight] = useState<ShowcaseFlight | null>(null);
+  const previousSlot = useRef(-1);
+  const progress = useSharedValue(0);
+  const count = alternatives.length + 1;
+  useEffect(() => {
+    if (!running || count < 2) return;
+    if (!flight) {
+      const timer = setTimeout(() => {
+        progress.value = 0;
+        // The authored starting illustration yields to live demonstrations;
+        // every later arrival comes from the animated specimen pool.
+        setFlight(chooseReplacement(selected, BACK_TO_FRONT.map(() => count), previousSlot.current, Math.random, 1));
+      }, SHOWCASE_MOTION.minimumRest + Math.random() * SHOWCASE_MOTION.restRange);
+      return () => clearTimeout(timer);
+    }
+    const remaining = SHOWCASE_MOTION.duration * (1 - progress.value);
+    progress.value = withTiming(1, { duration: remaining, easing: Easing.linear });
+    const timer = setTimeout(() => {
+      previousSlot.current = flight.slot;
+      setSelected(prev => prev.map((value, slot) => slot === flight.slot ? flight.to : value));
+      setFlight(null);
+    }, remaining + 32);
+    return () => { clearTimeout(timer); cancelAnimation(progress); };
+  }, [running, count, flight, selected, progress]);
+  useEffect(() => {
+    if (!reduced) return;
+    cancelAnimation(progress);
+    progress.value = 0;
+    setFlight(null);
+    setSelected(BACK_TO_FRONT.map(() => 0));
+  }, [reduced, progress]);
   const x = useSharedValue<number>(COLLAGE.rotate[0]);
   const y = useSharedValue<number>(COLLAGE.rotate[1]);
   useEffect(() => {
@@ -83,6 +140,11 @@ export function HeroCollage({ panels, testID, fit = false }: { panels: Record<Co
     <View
       ref={box}
       testID={testID}
+      {...inertProps()}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      aria-hidden
+      pointerEvents="none"
       onLayout={(event) => {
         const next = event.nativeEvent.layout.width;
         if (next > 0) setWidth((prev) => (Math.abs(prev - next) < 1 ? prev : next));
@@ -90,7 +152,12 @@ export function HeroCollage({ panels, testID, fit = false }: { panels: Record<Co
       style={{ height: drawingHeight * scale }}
     >
       <View style={{ width: canvasWidth, height: COLLAGE.height, transformOrigin: [0, 0, 0], transform: [{ translateX: offset }, { scale }, { translateX: -left }, { translateY: -top }] }}>
-        {BACK_TO_FRONT.map((panel) => <Panel key={panel.id} panel={panel} width={canvasWidth} x={x} y={y} onSize={onSize}>{panels[panel.id]}</Panel>)}
+        {BACK_TO_FRONT.map((panel, slot) => [panels, ...alternatives].map((set, variant) => (
+          <Panel key={`${panel.id}-${variant}`} panel={panel} width={canvasWidth} x={x} y={y} onSize={onSize}
+            variant={variant} selected={selected[slot]!} flight={flight?.slot === slot ? flight : null} progress={progress} running={running}>
+            {set[panel.id]}
+          </Panel>
+        )))}
       </View>
     </View>
   );

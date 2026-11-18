@@ -9,7 +9,8 @@
     "src/style/selected-card.ts",
     "docs/src/shell/page-look.ts",
     "src/style/glass-surface/ios-tints.ts",
-    "docs/src/brand/library-hero-look.ts"
+    "docs/src/brand/library-hero-look.ts",
+    "docs/src/brand/hero-showcase-motion.ts"
   ],
   "references": [
     {

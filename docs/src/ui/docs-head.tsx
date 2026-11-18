@@ -40,7 +40,7 @@ export function DocsHead({ title, path }: { title?: string; path?: string }) {
   const canonical = `${SITE_ORIGIN}${resolvedPath === "/" ? "/" : resolvedPath.replace(/\/+$/, "")}`;
   return (
     <Head>
-      <title>{title ? `${title} · ${SITE_NAME}` : SITE_NAME}</title>
+      <title>{title ? `${title} - ${SITE_NAME}` : SITE_NAME}</title>
       <link rel="canonical" href={canonical} />
       {hydrated ? <html data-hydrated="" /> : null}
     </Head>

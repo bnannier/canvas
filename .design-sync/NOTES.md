@@ -22,8 +22,9 @@ config cannot say.
   them, the hashed file names change: update `fonts.css` to match.
 - The provider is `ThemeProvider` with `fonts` set to the three family stacks; without
   `fonts` the kit paints in the system face.
-- Playwright: the repo's own `playwright-core` pins chromium 1247, which is cached in
-  `~/Library/Caches/ms-playwright`; nothing to install.
+- Playwright: use the browser revision pinned by the repository's lockfile.
+  Run `bunx playwright install chromium` if that browser is not installed; a
+  fresh checkout must not assume a particular machine's browser cache exists.
 
 ## Discovery
 
@@ -33,8 +34,8 @@ config cannot say.
   bundled heuristic named groups after kebab-case component dirs. The fork imports
   `ts-morph`, so a fresh clone needs `ln -sfn ../.ds-sync/node_modules .design-sync/node_modules`.
 - `docsDir` is `src` (each component's `.md` sits beside it). The default `docs/` matched the
-  docs app's generated per-version copies (`docs/public/ai/<version>/components/`), four
-  per component.
+  docs app's generated per-version copies (`docs/public/ai/<version>/components/`),
+  duplicating each component once per archived release.
 - Excluded from the sync (`componentSrcMap: null`): `AnatomyPart`, `AnatomyProvider`,
   `InteractionOverride`, the docs specimen seams (src/style/public.ts says so); not app API.
 - `View` is a React Native re-export (src/style/primitives.ts), pinned in `componentSrcMap`.
@@ -60,8 +61,9 @@ config cannot say.
 - Uncontrolled components need their default-state prop to show a selection
   (`defaultActive`, `defaultChecked`, `defaultValue`); Dropdown's open state is the
   controlled `open` prop.
-- Single-key Kbd, Dropdown and Tooltip triggers stretch to full width in a Column: wrap them
-  in a Row (or `Column alignCenter`) in previews.
+- Kbd, Dropdown and Tooltip triggers use the kit's HUG sizing and stay content-sized
+  in a Column. Use Row or Column alignment props when the preview needs a different
+  arrangement; do not add width shims to counter an obsolete stretch behavior.
 - States that cannot render statically and are shown at rest instead: ToastProvider (toasts
   appear on press; Toast's own previews carry the look), StackedList reordering, Video
   controls, OverlayProvider's hosted tooltip.

@@ -16,6 +16,6 @@
     "types": ["node"],
     "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "include": ["./audit/**/*.ts", "./skins/**/*.ts", "./api/**/*.ts", "./tokens/**/*.ts", "./agent-docs/**/*.ts"],
+  "include": ["./audit/**/*.ts", "./skins/**/*.ts", "./api/**/*.ts", "./tokens/**/*.ts", "./agent-docs/**/*.ts", "./oggen/generate.ts"],
   "exclude": ["./**/*.test.ts"]
 }

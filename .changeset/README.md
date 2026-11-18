@@ -3,9 +3,15 @@
 This folder is managed by [changesets](https://github.com/changesets/changesets).
 
 Every user-facing change (new component, API change, bug fix, breaking change)
-should include a changeset. When merged to `main`, the release workflow opens
-a "Version Packages" PR that consolidates changesets into a version bump +
-CHANGELOG entry + publish.
+should include a changeset. Pushes and pull requests do not start GitHub CI or
+publish a version. Manually dispatch `.github/workflows/deploy.yml` on `main`
+to release: it prepares a frozen version candidate from the pending changesets,
+validates its package and docs artifacts, then accepts the version commit and
+publishes the tested artifacts. It does not open a "Version Packages" PR.
+
+If `main` advances during validation, dispatch a new release from the current
+revision. A push does not schedule a replacement. Major releases require the
+workflow's explicit `major` and `major_version` inputs and owner authorization.
 
 ## Creating a changeset
 

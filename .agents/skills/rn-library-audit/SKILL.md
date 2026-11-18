@@ -38,9 +38,9 @@ documented conventions — don't report them as findings.
 - Barrel + hard deps: does importing Button pull chart/QR libs? (`dependencies` audit + subpath/laziness.)
 
 **4. Packaging (highest-yield dimension for source-shipped kits)**
-- Raw TS shipping: NodeNext `.js` specifiers CANNOT resolve in stock Metro (`grep -rE 'from "\..*\.js"' src | wc -l`); if the repo's own app needs a metro `resolveRequest` hack, every consumer is broken.
+- Raw TS shipping: NodeNext `.js` specifiers CANNOT resolve in stock Metro (`grep -rE 'from "\..*\.js"' src | wc -l`); inspect the published artifact separately from a docs app that intentionally resolves live TypeScript source. Prove consumer failure with the installed package; a development-only resolver does not establish it.
 - Shipped `.ts` as types = consumer tsc errors that `skipLibCheck` can't suppress (it only covers `.d.ts`); DOM globals in shipped source are the classic leak.
-- Optional peers statically imported = build failure for everyone who skipped them. Fix: guarded LITERAL `require` (literal id keeps it bundleable; `typeof require === "function"` guard keeps pure-ESM alive) + `peerDependenciesMeta.optional`. Avoid `"type": "module"` if the dist mixes require (webpack strict-ESM drops it).
+- Optional peers statically imported = build failure for everyone who skipped them. Fix: a LITERAL `require` directly inside `try`/`catch`, plus `peerDependenciesMeta.optional`. Do not insert a `typeof require` conditional block: Metro inspects the first enclosing block and would classify the peer as required. A missing `require` in pure ESM already throws into the catch. Avoid `"type": "module"` if the dist mixes require (webpack strict-ESM drops it).
 - Bare `__DEV__` breaks non-Metro bundlers — guard it.
 - CI must validate the ARTIFACT: build → specifier-resolution integrity over dist → platform-fork preservation (.ios.js/.android.js) → no raw TS → no DOM types in public .d.ts → render components FROM dist in tests. (See scripts/verify-package.ts + test/dist-smoke.test.tsx in Canvas.)
 
