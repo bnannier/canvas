@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.8.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 407403b08cd23b840a24a5738c3fee500ee49a7d8f1aa1606e08e90c9109047d
+Source SHA-256: 8d62b060d0d6052bc586f18fc69417310c100387434ec0216f9e9cebac75a72a
 
 Source: `src/atoms/qrcode/qrcode.md`
 Human reference: https://canvas.nannier.com/components/qrcode
@@ -40,6 +40,16 @@ The code stays a fixed dark-on-white card so any camera can read it, whatever th
 <QRCode value="https://canvas.nannier.com" large />
 ```
 
+### Center logo
+
+The `logo` slot centers a decorative mark on a small white field and enables high error correction. Use a short value and size the logo to fit its square viewport, which is 15 px for `small`, 24 px by default, and 32 px for `large`.
+
+High error correction holds less data than a plain code. Prefer a short URL: a value near the plain code's capacity can exceed the renderer's encoding limit when a logo is added.
+
+```tsx
+<QRCode value="https://canvas.nannier.com" large logo={<Icon sparkles size={24} />} />
+```
+
 ## Do & Don't
 
 ### Keep it scannable
@@ -63,6 +73,7 @@ The code stays a fixed dark-on-white card so any camera can read it, whatever th
 | Prop | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
 | value | string | yes |  | The string to encode: a URL, plain text, a token, etc. |
+| logo | false \| ReactElement<unknown, string \| React.JSXElementConstructor<any>> \| null \| undefined | no |  | A decorative icon or image centered on the code. Uses high error correction, which reduces payload capacity; use a short value. Clips the logo to a small square. |
 | small | boolean \| undefined | no | false | A compact 96px code. |
 | large | boolean \| undefined | no | false | A large 200px code. |
 | accessibilityLabel | string \| undefined | no |  | Spoken equivalent for screen readers. A QR code is camera-only content, so without a label assistive tech announces nothing. Defaults to `QR code encoding ${value}`; pass a generic label (e.g. "QR code") when surfacing the raw value is undesirable. |
