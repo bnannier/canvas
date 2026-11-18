@@ -1,11 +1,24 @@
 import { describe, expect, it } from "bun:test";
-import { chooseReplacement, flightFrame } from "../docs/src/brand/hero-showcase-motion";
+import { readFileSync } from "node:fs";
+import { chooseReplacement, entryDirection, flightFrame } from "../docs/src/brand/hero-showcase-motion";
 
 const samples = [0, 0.2, 0.49, 0.5, 0.8, 0.999999];
 const randomSequence = (...values: number[]) => {
   let index = 0;
   return () => values[index++ % values.length]!;
 };
+
+it("gives each chart export exactly one center specimen", () => {
+  const chartIndex = readFileSync(new URL("../src/charts/index.ts", import.meta.url), "utf8");
+  const showcase = readFileSync(new URL("../docs/src/brand/hero-showcase-charts.tsx", import.meta.url), "utf8");
+  const chartSlugs = Array.from(chartIndex.matchAll(/^export \* from "\.\/([a-z-]+)\/\1\.js";$/gm), match => match[1]).sort();
+  const pool = showcase.match(/export const HERO_CHART_KINDS = \[([\s\S]+?)\] as const;/)?.[1] ?? "";
+  const poolSlugs = Array.from(pool.matchAll(/"([a-z-]+)"/g), match => match[1]).sort();
+  const specimenSlugs = Array.from(showcase.matchAll(/case "([a-z-]+)":/g), match => match[1]).sort();
+  expect(chartSlugs.length).toBeGreaterThan(0);
+  expect(poolSlugs).toEqual(chartSlugs);
+  expect(specimenSlugs).toEqual(chartSlugs);
+});
 
 describe("individual hero replacements", () => {
   it("can retire the opening artwork so every later arrival demonstrates a live component", () => {
@@ -77,6 +90,27 @@ describe("individual hero replacements", () => {
 });
 
 describe("hero arrival and departure frames", () => {
+  it("starts each arrival immediately without an invisible lead-in", () => {
+    for (const direction of [-1, 1]) {
+      expect(flightFrame(0.01, true, direction).opacity).toBeGreaterThan(0);
+      expect(Math.abs(flightFrame(0.01, true, direction).distance)).toBeLessThan(Math.abs(flightFrame(0, true, direction).distance));
+    }
+  });
+  it("brings side positions in from their own edge and sends them out across the scene", () => {
+    for (const centerDirection of [-1, 1]) {
+      for (const position of ["online", "glass"] as const) {
+        const direction = entryDirection(position, centerDirection);
+        expect(flightFrame(0, true, direction).distance).toBeLessThan(0);
+        expect(flightFrame(1, false, direction).distance).toBeGreaterThan(0);
+      }
+      for (const position of ["segmented", "toast", "ship"] as const) {
+        const direction = entryDirection(position, centerDirection);
+        expect(flightFrame(0, true, direction).distance).toBeGreaterThan(0);
+        expect(flightFrame(1, false, direction).distance).toBeLessThan(0);
+      }
+      expect(entryDirection("revenue", centerDirection)).toBe(centerDirection);
+    }
+  });
   it("starts with the old item at rest and ends with the replacement at the same resting position", () => {
     for (const direction of [-1, 1]) {
       const outgoingStart = flightFrame(0, false, direction);

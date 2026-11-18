@@ -1,8 +1,8 @@
-import { panelTransform, type CollagePanel } from "./library-hero-look";
+import { panelTransform, type CollagePanel, type CollagePanelId } from "./library-hero-look";
 
 // One independent replacement at a time. Travel is in the collage's own plane,
 // before its perspective projection, so even a moving card follows the pointer.
-export const SHOWCASE_MOTION = { duration: 1350, minimumRest: 1700, restRange: 1600, travel: 210 } as const;
+export const SHOWCASE_MOTION = { duration: 1350, travel: 210 } as const;
 export interface ShowcaseFlight { slot: number; from: number; to: number; direction: number }
 
 export function chooseReplacement(selected: readonly number[], counts: readonly number[], previousSlot: number, random = Math.random, minimumVariant = 0): ShowcaseFlight | null {
@@ -18,9 +18,15 @@ export function chooseReplacement(selected: readonly number[], counts: readonly 
   return { slot, from, to, direction: random() < 0.5 ? -1 : 1 };
 }
 
+/** The sign names the arrival side; departure travels to the opposite side. */
+export function entryDirection(position: CollagePanelId, centerDirection: number): number {
+  if (position === "revenue") return centerDirection;
+  return position === "online" || position === "glass" ? -1 : 1;
+}
+
 export function flightFrame(progress: number, incoming: boolean, direction: number) {
   "worklet";
-  const t = Math.max(0, Math.min(1, incoming ? (progress - 0.16) / 0.84 : progress / 0.76));
+  const t = Math.max(0, Math.min(1, incoming ? progress : progress / 0.76));
   // Ease-out for arrivals; ease-in for departures. Fade near the outer
   // end of the path, leaving a readable, genuinely sliding component in between.
   const eased = incoming ? 1 - Math.pow(1 - t, 4) : t * t;

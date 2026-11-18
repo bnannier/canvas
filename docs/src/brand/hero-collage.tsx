@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState } from "react-native";
 import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated";
 import { View, useReducedMotion, useHoverCapable } from "@nannier/canvas";
 import { COLLAGE, HERO_MOTION, panelTransform, projectCss, stackBounds, type CollagePanel, type CollagePanelId } from "./library-hero-look";
 import { inertProps } from "../../../src/style/inert";
-import { chooseReplacement, flightFrame, flyingPanelTransform, SHOWCASE_MOTION, type ShowcaseFlight } from "./hero-showcase-motion";
+import { chooseReplacement, entryDirection, flightFrame, flyingPanelTransform, SHOWCASE_MOTION, type ShowcaseFlight } from "./hero-showcase-motion";
 import { ShowcaseActivity } from "./hero-showcase-activity";
 
 // A brand illustration: the v4 hand-off's Library hero collage (decision P5-T1, the
@@ -19,6 +19,7 @@ import { ShowcaseActivity } from "./hero-showcase-activity";
 
 /** The collage width the hand-off's desktop column gives it, for the frame before it measures. */
 const SEED_WIDTH = 648;
+const NO_ALTERNATIVES = {};
 
 const BACK_TO_FRONT = [...COLLAGE.panels].sort((a, b) => a.z - b.z);
 
@@ -40,8 +41,8 @@ function Panel({ panel, width, x, y, children, onSize, variant, selected, flight
   }, motion]}><ShowcaseActivity.Provider value={visible && running}>{children}</ShowcaseActivity.Provider></Animated.View>;
 }
 
-export function HeroCollage({ panels, alternatives = [], paused = false, testID, fit = false }: {
-  panels: Record<CollagePanelId, ReactNode>; alternatives?: readonly Record<CollagePanelId, ReactNode>[];
+export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, paused = false, testID, fit = false }: {
+  panels: Record<CollagePanelId, ReactNode>; alternatives?: Partial<Record<CollagePanelId, readonly ReactNode[]>>;
   paused?: boolean; testID?: string; fit?: boolean;
 }) {
   const [width, setWidth] = useState(SEED_WIDTH);
@@ -86,16 +87,19 @@ export function HeroCollage({ panels, alternatives = [], paused = false, testID,
   const [flight, setFlight] = useState<ShowcaseFlight | null>(null);
   const previousSlot = useRef(-1);
   const progress = useSharedValue(0);
-  const count = alternatives.length + 1;
+  const counts = useMemo(() => BACK_TO_FRONT.map(panel => (alternatives[panel.id]?.length ?? 0) + 1), [alternatives]);
   useEffect(() => {
-    if (!running || count < 2) return;
+    if (!running || !counts.some(count => count > 1)) return;
     if (!flight) {
+      // Let the page's opening entrance finish once; each later replacement
+      // starts immediately after the previous flight in a different position.
       const timer = setTimeout(() => {
         progress.value = 0;
         // The authored starting illustration yields to live demonstrations;
         // every later arrival comes from the animated specimen pool.
-        setFlight(chooseReplacement(selected, BACK_TO_FRONT.map(() => count), previousSlot.current, Math.random, 1));
-      }, SHOWCASE_MOTION.minimumRest + Math.random() * SHOWCASE_MOTION.restRange);
+        const next = chooseReplacement(selected, counts, previousSlot.current, Math.random, 1);
+        setFlight(next ? { ...next, direction: entryDirection(BACK_TO_FRONT[next.slot]!.id, next.direction) } : null);
+      }, previousSlot.current < 0 ? HERO_MOTION.rise : 0);
       return () => clearTimeout(timer);
     }
     const remaining = SHOWCASE_MOTION.duration * (1 - progress.value);
@@ -106,7 +110,7 @@ export function HeroCollage({ panels, alternatives = [], paused = false, testID,
       setFlight(null);
     }, remaining + 32);
     return () => { clearTimeout(timer); cancelAnimation(progress); };
-  }, [running, count, flight, selected, progress]);
+  }, [running, counts, flight, selected, progress]);
   useEffect(() => {
     if (!reduced) return;
     cancelAnimation(progress);
@@ -152,10 +156,10 @@ export function HeroCollage({ panels, alternatives = [], paused = false, testID,
       style={{ height: drawingHeight * scale }}
     >
       <View style={{ width: canvasWidth, height: COLLAGE.height, transformOrigin: [0, 0, 0], transform: [{ translateX: offset }, { scale }, { translateX: -left }, { translateY: -top }] }}>
-        {BACK_TO_FRONT.map((panel, slot) => [panels, ...alternatives].map((set, variant) => (
+        {BACK_TO_FRONT.map((panel, slot) => [panels[panel.id], ...(alternatives[panel.id] ?? [])].map((specimen, variant) => (
           <Panel key={`${panel.id}-${variant}`} panel={panel} width={canvasWidth} x={x} y={y} onSize={onSize}
             variant={variant} selected={selected[slot]!} flight={flight?.slot === slot ? flight : null} progress={progress} running={running}>
-            {set[panel.id]}
+            {specimen}
           </Panel>
         )))}
       </View>
