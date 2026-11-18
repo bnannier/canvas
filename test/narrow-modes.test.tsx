@@ -6,6 +6,8 @@ import { render, cleanup, screen, fireEvent, act } from "@testing-library/react"
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Navbar } from "../src/organisms/navbars/navbars.tsx";
+import { Navbar as IosNavbar } from "../src/organisms/navbars/navbars.ios.tsx";
+import { Navbar as AndroidNavbar } from "../src/organisms/navbars/navbars.android.tsx";
 import { Steps } from "../src/organisms/steps/steps.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { FilterPanel } from "../src/organisms/filter-panel/filter-panel.tsx";
@@ -50,27 +52,35 @@ describe("Navbar narrow collapse", () => {
     expect(screen.queryByLabelText("Navigation menu")).toBeNull();
   });
 
-  it("swaps the links row for a menu button at phone widths; selecting fires onSelect", () => {
-    resizeViewport(375);
-    let picked = -1;
-    ui(<Navbar brand="Canvas" links={LINKS} onSelect={(i) => { picked = i; }} />);
-    // Links live behind the closed menu now.
-    expect(screen.queryByText("Deploys")).toBeNull();
-    const trigger = screen.getByLabelText("Navigation menu");
-    // The menu button leads the bar, ahead of the brand.
-    expect(trigger.compareDocumentPosition(screen.getByText("Canvas")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    fireEvent.click(trigger);
-    fireEvent.click(screen.getByText("Deploys"));
-    expect(picked).toBe(1);
-  });
+  for (const width of [375, 1024]) {
+    it(`moves web links into a trailing menu at ${width}px`, () => {
+      resizeViewport(width);
+      let picked = -1;
+      ui(<Navbar brand="Canvas" links={LINKS} onSelect={(i) => { picked = i; }} />);
+      expect(screen.queryByText("Deploys")).toBeNull();
+      const trigger = screen.getByRole("button", { name: "Navigation menu" });
+      expect(trigger.compareDocumentPosition(screen.getByText("Canvas")) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+      fireEvent.click(trigger);
+      expect(trigger.getAttribute("aria-expanded")).toBe("true");
+      fireEvent.click(screen.getByRole("menuitem", { name: "Deploys" }));
+      expect(picked).toBe(1);
+      expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    });
+  }
 
-  it("leads with the app's menu button at every width when onMenu is set", () => {
-    for (const width of [1280, 375]) {
+  it("keeps the app menu leading on desktop and native, and trailing on mobile web", () => {
+    for (const [Bar, width, position] of [
+      [Navbar, 1025, Node.DOCUMENT_POSITION_FOLLOWING],
+      [Navbar, 375, Node.DOCUMENT_POSITION_PRECEDING],
+      [IosNavbar, 375, Node.DOCUMENT_POSITION_FOLLOWING],
+      [AndroidNavbar, 375, Node.DOCUMENT_POSITION_FOLLOWING],
+    ] as const) {
       resizeViewport(width);
       let opened = 0;
-      ui(<Navbar brand="Canvas" links={LINKS} onMenu={() => { opened += 1; }} />);
+      ui(<Bar brand="Canvas" links={LINKS} onMenu={() => { opened += 1; }} />);
       const trigger = screen.getByLabelText("Navigation menu");
-      expect(trigger.compareDocumentPosition(screen.getByText("Canvas")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(trigger.compareDocumentPosition(screen.getByText("Canvas")) & position).toBeTruthy();
       // The app menu replaces the links row and its dropdown.
       expect(screen.queryByText("Deploys")).toBeNull();
       fireEvent.click(trigger);
@@ -78,6 +88,19 @@ describe("Navbar narrow collapse", () => {
       expect(screen.queryByText("Deploys")).toBeNull();
       cleanup();
     }
+  });
+
+  it("shows explicit Back and Menu controls around the mobile page title", () => {
+    resizeViewport(375);
+    let backed = 0;
+    ui(<Navbar brand="Settings" onBack={() => { backed += 1; }} backLabel="Previous page" onMenu={() => {}} menuLabel="Menu" />);
+    const title = screen.getByText("Settings");
+    const back = screen.getByRole("button", { name: "Previous page" });
+    const menu = screen.getByRole("button", { name: "Menu" });
+    expect(back.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(menu.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+    fireEvent.click(back);
+    expect(backed).toBe(1);
   });
 
   it("collapses nothing for a bar with no links: no menu button, trailing actions intact", () => {

@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import sharp from "sharp";
 import { accentOf, gotoDocs, readAccent, readScheme } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
@@ -17,9 +18,13 @@ for (const width of [390, 768]) {
       await expect(page.getByRole("banner")).toHaveCount(1);
       await expect(top.getByText("Foundations", { exact: true })).toBeVisible();
       for (const name of ["Back", "Menu"]) {
-        const box = await top.getByRole("button", { name, exact: true }).boundingBox();
+        const button = top.getByRole("button", { name, exact: true });
+        const box = await button.boundingBox();
         expect(box!.width, `${name} needs a mobile touch target`).toBeGreaterThanOrEqual(44);
         expect(box!.height, `${name} needs a mobile touch target`).toBeGreaterThanOrEqual(44);
+        expect(box!.width).toBeCloseTo(box!.height);
+        const radius = await button.evaluate((node) => parseFloat(getComputedStyle(node).borderTopLeftRadius));
+        expect(radius).toBeGreaterThanOrEqual(box!.height / 2);
       }
       await expect(tabs).toBeVisible();
       await expect(page.getByRole("navigation", { name: "Primary", exact: true })).toHaveCount(1);
@@ -44,6 +49,61 @@ for (const width of [390, 768]) {
       const brand = top.getByRole("link", { name: "Canvas", exact: true });
       await expect(brand).toHaveAttribute("href", "/");
       await expect(brand.locator("svg")).toBeVisible();
+    });
+
+    test("the brand capsule and menu use separate glass surfaces", async ({ page }) => {
+      await gotoDocs(page, "/", { scheme: width === 390 ? "light" : "dark", surface: "glass" });
+      const top = mobileTop(page);
+      const brand = top.getByRole("link", { name: "Canvas", exact: true });
+      const menu = top.getByRole("button", { name: "Menu", exact: true });
+      await expect(brand.getByTestId("glass-material")).toHaveCount(1);
+      await expect(menu.getByTestId("glass-material")).toHaveCount(1);
+      const brandBox = (await brand.boundingBox())!;
+      const menuBox = (await menu.boundingBox())!;
+      expect(brandBox.width).toBeGreaterThan(brandBox.height);
+      expect(brandBox.height).toBeCloseTo(menuBox.height);
+      expect(brandBox.x + brandBox.width).toBeLessThan(menuBox.x);
+
+      await page.locator("[data-page-scroll]").evaluate((node) => { node.scrollTop = 200; });
+      await expect(top.getByTestId("glass-material")).toHaveCount(2);
+      await expect(top.getByTestId("navbar-scroll-edge")).toHaveCount(0);
+    });
+
+    test("the scroll edge keeps a nested title readable over page content", async ({ page }) => {
+      const phone = width === 390;
+      const section = phone ? "button" : "description-lists";
+      const name = phone ? "Button" : "DescriptionList";
+      await gotoDocs(page, `/components/${section}`, { scheme: phone ? "light" : "dark", surface: "glass" });
+      const top = mobileTop(page);
+      const edge = top.getByTestId("navbar-scroll-edge");
+      const title = top.getByText(name, { exact: true });
+      const heading = page.getByRole("main").getByRole("heading", { name, level: 1, exact: true });
+      const menu = top.getByRole("button", { name: "Menu", exact: true });
+      await expect(edge).toHaveCount(0);
+      await menu.focus();
+
+      const label = (await title.boundingBox())!;
+      const body = (await heading.boundingBox())!;
+      const clip = { x: Math.floor(label.x), y: Math.floor(label.y), width: Math.ceil(label.width), height: Math.ceil(label.height) };
+      const pixels = async () => sharp(await page.screenshot({ clip, animations: "disabled" })).removeAlpha().raw().toBuffer();
+      const atRest = await pixels();
+      const underTitle = Math.round(body.y + body.height / 2 - label.y - label.height / 2);
+      const scroller = page.locator("[data-page-scroll]");
+      await scroller.evaluate((node, offset) => { node.scrollTop = offset; }, underTitle);
+      await expect(edge).toBeVisible();
+      await expect(edge).toHaveCSS("pointer-events", "none");
+      await expect(top.getByTestId("glass-material")).toHaveCount(2);
+      await expect(menu).toBeFocused();
+      const scrolled = (await heading.boundingBox())!;
+      expect(scrolled.y).toBeLessThan(label.y + label.height);
+      expect(scrolled.y + scrolled.height).toBeGreaterThan(label.y);
+      expect(scrolled.x + scrolled.width).toBeGreaterThan(label.x);
+
+      const afterScroll = await pixels();
+      const changed = afterScroll.reduce((count, channel, i) => count + Number(Math.abs(channel - atRest[i]!) > 3), 0);
+      expect(changed / afterScroll.length, "the page heading must not bleed through under the Navbar title").toBeLessThan(0.02);
+      await scroller.evaluate((node) => { node.scrollTop = 0; });
+      await expect(edge).toHaveCount(0);
     });
 
     test("Back returns a component page to the catalog that opened it", async ({ page }) => {

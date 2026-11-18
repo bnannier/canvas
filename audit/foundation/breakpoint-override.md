@@ -14,15 +14,16 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | Docs planned | none: every export has its page |
 | Materials manifest | BreakpointOverride: style, inherited; docs route `tokens/layout`; verification inherited-composition, semantic-state |
 | Tests of it | 4 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/breakpoint-override[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/container.test.tsx`, `test/responsive-ssr.test.tsx`, `test/responsive.test.tsx` |
-| Consumers | 33 components: 2 directly, 25 through shared modules, 6 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 33 components: 3 directly, 24 through shared modules, 6 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | `pattern-responsive` (useFormFactor) |
-| Capture through | 34, in this order: components `filter-panel`, `sidebar`, `row-column`, `grid`, `dashboard-grid`, `button-group`, `select`, `autocomplete`, `phone-input`, `form`, `tabs`, `navbars`, `steps`, `row-menu`, `data-table`, `grid-lists`, `description-lists`, `calendar`, `chat`, `dialog`, `alert-dialog`, `popover`, `tooltip`, `dropdown`, `command`, `wizard`, `toast`, `app-frame`, `avatar`, `field`, `video`, `board`, `flow-editor`; pages `pattern-responsive` |
+| Capture through | 34, in this order: components `filter-panel`, `navbars`, `sidebar`, `row-column`, `grid`, `dashboard-grid`, `button-group`, `select`, `autocomplete`, `phone-input`, `form`, `tabs`, `steps`, `row-menu`, `data-table`, `grid-lists`, `description-lists`, `calendar`, `chat`, `dialog`, `alert-dialog`, `popover`, `tooltip`, `dropdown`, `command`, `wizard`, `toast`, `app-frame`, `avatar`, `field`, `video`, `board`, `flow-editor`; pages `pattern-responsive` |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/tokens/layout` (documents BreakpointOverride, formFactor, FormFactor, responsive, Responsive) |
 | Turn record | `audit/turns/breakpoint-override.md`, written by `bun run audit:turn -- --slug=breakpoint-override --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |
 |---|---|---|
 | `filter-panel` | directly | `useBreakpoint` |
+| `navbars` | directly | `useFormFactor` |
 | `sidebar` | directly | `useBreakpoint` |
 | `row-column` | through shared modules | `useContainerWidth` (src/style/container.ts) |
 | `grid` | through shared modules | `useContainerWidth` (src/style/container.ts) |
@@ -33,7 +34,6 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | `phone-input` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `form` | through shared modules | `useContainerWidth` (src/style/container.ts) |
 | `tabs` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
-| `navbars` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `steps` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `row-menu` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `data-table` | through shared modules | `useContainerWidth` (src/style/container.ts) |

@@ -1,4 +1,4 @@
-import { Navbar, Button, Icon, TabBar } from "@nannier/canvas";
+import { Navbar, Icon, TabBar } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { useAtScrollEdge } from "./scroll-edge";
 import { sectionFor } from "../data/nav";
@@ -22,9 +22,10 @@ export function MobileNavBar({ title, pathname, onMenu }: { title: string; pathn
   return <Navbar bare={atEdge} brand={title}
     brandHref={pathname === "/" ? "/" : undefined}
     onBrandPress={pathname === "/" ? (event) => { event.preventDefault(); router.push("/"); } : undefined}
-    brandContent={!atRoot ? <Button ghost icon large accessibilityLabel="Back" iconLeft={<Icon chevronLeft />}
-      onPress={() => router.canGoBack() ? router.back() : router.push(mobileSectionRoot(pathname) as never)} /> : <CanvasMark size={24} />}
-    actions={<Button ghost icon large accessibilityLabel="Menu" iconLeft={<Icon menu />} onPress={onMenu} />}
+    brandContent={atRoot ? <CanvasMark size={24} /> : undefined}
+    onBack={!atRoot ? () => router.canGoBack() ? router.back() : router.push(mobileSectionRoot(pathname) as never) : undefined}
+    onMenu={onMenu}
+    menuLabel="Menu"
   />;
 }
 

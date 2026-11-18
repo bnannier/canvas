@@ -4,6 +4,7 @@
   "sources": [
     "src/style/motion.ts",
     "src/style/glass-surface/web-frost.ts",
+    "src/style/glass-surface/web-navigation-glass.ts",
     "src/style/identity-hue.ts",
     "src/style/glass-surface/glass-wash.ts",
     "src/style/selected-card.ts",
@@ -165,6 +166,16 @@
       "run": "recorded 2026-11-08 with screencapture -l of the open Claude window on a 1x display; local only because the window shows a private conversation",
       "strips": [],
       "card": "tools/native/liquid-motion.md#claude-desktop-chat"
+    },
+    {
+      "name": "ios-navigation-glass-2026",
+      "what": "Apple iOS 27 regular-glass navigation controls: a stock 44pt toolbar button and custom text capsule plus 44/48pt circles, in light/dark and over neutral content. Web comparison covers resting geometry, neutral tint and directional rim, not native dynamic lensing.",
+      "run": "Recorded 2026-11-17 with a temporary SwiftUI NavigationStack and unmodified .glassEffect(.regular) controls on audit simulator 47FA146E-AA59-4A4B-9B5E-F4B0DF599A11, iOS 27 with SDK 27.2; source and captures in /private/tmp/canvas-glass-native-reference.xFgnxK. Recreate those system controls if temporary captures have expired.",
+      "strips": [
+        "/private/tmp/canvas-glass-native-reference.xFgnxK/light.png",
+        "/private/tmp/canvas-glass-native-reference.xFgnxK/dark.png"
+      ],
+      "card": "tools/native/liquid-motion.md#ios-navigation-glass-2026"
     }
   ],
   "harness": {

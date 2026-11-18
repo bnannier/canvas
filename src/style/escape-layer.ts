@@ -21,6 +21,15 @@ interface EscapeLayer {
 }
 
 const EscapeParent = createContext<EscapeLayer | null>(null);
+const EscapeEnabled = createContext(true);
+
+/** Internal isolation for decorative specimens of real overlays. A disabled
+ * ancestor always wins, including when a descendant republishes its scope through
+ * a portal. This changes dismissal ownership, not the component's visible state. */
+export function EscapeParticipation({ enabled, children }: { enabled: boolean; children: ReactNode }) {
+  const inherited = useContext(EscapeEnabled);
+  return createElement(EscapeEnabled.Provider, { value: inherited && enabled }, children);
+}
 
 /** The common subset of DOM keydown and React Native TextInput key events. */
 interface EscapeEvent {
@@ -193,10 +202,11 @@ export function consumeEscapeKey(event: EscapeEvent): void {
 /** Preserve local editing decisions before bridging RNW's stopped input keys. */
 export function useInputEscapeBridge(onKeyPress: TextInputProps["onKeyPress"]): NonNullable<TextInputProps["onKeyPress"]> {
   const owner = useContext(EscapeParent);
+  const participating = useContext(EscapeEnabled);
   const nativeRuntime = Platform.select({ web: false, default: true });
   return useCallback((event) => {
     onKeyPress?.(event);
-    if (eventKey(event) !== "Escape") return;
+    if (!participating || eventKey(event) !== "Escape") return;
     const native = event.nativeEvent as typeof event.nativeEvent & { isComposing?: boolean; keyCode?: number; defaultPrevented?: boolean };
     const keyboard = event as typeof event & { isComposing?: boolean; keyCode?: number };
     if (native.isComposing || keyboard.isComposing || native.keyCode === 229 || keyboard.keyCode === 229) {
@@ -212,12 +222,14 @@ export function useInputEscapeBridge(onKeyPress: TextInputProps["onKeyPress"]): 
       // the field itself is outside the currently open overlay.
       dispatch(storeFor(document), event);
     }
-  }, [onKeyPress, owner, nativeRuntime]);
+  }, [onKeyPress, owner, nativeRuntime, participating]);
 }
 
 /** Internal ownership hook for Canvas overlays; the public hook remains below. */
-export function useEscapeLayer(active: boolean, onEscape: () => void) {
+export function useEscapeLayer(requestedActive: boolean, onEscape: () => void) {
   const parent = useContext(EscapeParent);
+  const participating = useContext(EscapeEnabled);
+  const active = requestedActive && participating;
   const nativeRuntime = Platform.select({ web: false, default: true });
   const callback = useRef(onEscape);
   callback.current = onEscape;
@@ -273,11 +285,12 @@ export function useEscapeLayer(active: boolean, onEscape: () => void) {
 
   return {
     layer,
+    participating,
     onAccessibilityEscape,
     // RNW TextInput stops keydown propagation. Its existing local handlers call
     // this AFTER local editing decisions, using the same owner as document keys.
     onKeyPress(event: EscapeEvent) {
-      if (eventKey(event) !== "Escape") return;
+      if (!participating || eventKey(event) !== "Escape") return;
       if (nativeRuntime) {
         if (!event.defaultPrevented && !event.nativeEvent?.defaultPrevented && requestNativeClose(layer)) event.preventDefault?.();
       } else if (typeof document !== "undefined") {
@@ -312,5 +325,7 @@ export function EscapeLayerProvider({ scope, children }: {
   scope: ReturnType<typeof useEscapeLayer>;
   children: ReactNode;
 }) {
-  return createElement(EscapeParent.Provider, { value: scope.layer }, children);
+  return createElement(EscapeParticipation, { enabled: scope.participating, children:
+    createElement(EscapeParent.Provider, { value: scope.layer }, children),
+  });
 }

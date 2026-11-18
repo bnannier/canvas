@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.2
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: ae83e97d5ef24a47d3c97180f43a6e5f00f907c93539fcc79e31cbb2094c3d46
+Source SHA-256: b86d4b118f8515fc19be59e1bcae8cad191db1b1135cafa375586435c1b4d640
 
 Source: `src/organisms/navbars/navbars.md`
 Human reference: https://canvas.nannier.com/components/navbars
@@ -23,14 +23,15 @@ The bar measures its own width: at and below the `sm` breakpoint (640) the links
 row automatically collapses into a menu button opening a dropdown of the same
 links (the active one checkmarked), so links never clip off a phone screen;
 `active` and `onSelect` keep their contract in both renderings.
-The menu button
-leads the bar, ahead of the logo and brand, where Material 3's top app bar puts
-its navigation icon.
+At phone and tablet widths up to 1024px, the brand sits in a capsule and the
+circular menu button sits at the trailing edge. In glass mode the capsule and
+button each float above the page. On wider windows a bar inside a narrow
+container still collapses its links into a leading menu.
 Pass `scrolls` to keep every link at every width instead: the bar's content row
 then pans sideways inside the bar, with no scroll indicator, and the links never
 fold into the menu. `onMenu` still replaces the links when both are passed.
 
-On the web the bar is the v4 hand-off's: 56px tall with a 16px gutter, 32px
+On desktop web the bar is the v4 hand-off's: 56px tall with a 16px gutter, 32px
 capsule links in the interface face, the active one (and a hovered one) on the
 `secondary` fill. `floating` lifts it as a pill on the stronger hairline with the
 md shade.
@@ -50,6 +51,9 @@ Either cluster takes a caller-supplied element beside its built-in parts:
 controls (a search button, icon buttons), ahead of `actionLabel` and `avatar`.
 `links` is optional, so a console topbar with no middle nav renders neither the
 links row nor the menu button that stands in for it.
+
+Pass `onBack` to show a leading Back button on a nested screen and use `brand`
+for its title. `backLabel` and `menuLabel` set the accessible control names.
 
 ## Usage
 
@@ -78,8 +82,9 @@ links row nor the menu button that stands in for it.
 
 ### Compact
 
-`compact` is the density axis's one member: the tight bar, 44px with a 5px inset
-and 2px between every item on the web (a shorter bar with tighter gaps natively).
+`compact` tightens the bar to 44px with a 5px inset and 2px between items on
+desktop web and reduces spacing on native. On mobile web `scrolls` retains
+the compact layout with all links visible in a horizontal scroller.
 
 ```tsx
 <Navbar compact floating brand="Canvas" links={["Docs", "Components", "Templates"]} />
@@ -108,7 +113,8 @@ only while the links row is on the bar.
 ### Links with destinations
 
 `hrefs` gives the links their destinations, by index. On the web each becomes a real
-anchor, so middle-click and open-in-new-tab work, while a plain click still selects
+anchor in both the bar and the collapsed menu. Middle-click and open-in-new-tab work,
+while a plain click selects
 the link and calls `onSelect` with the press event (call `event.preventDefault()`
 there to route on the client). A modifier or middle click is left to the browser.
 Natively `hrefs` is ignored and `onSelect` does the navigating.
@@ -127,15 +133,18 @@ navigation bar and Material 3's top app bar do.
 A framed bar (`bordered`, `floating`)
 keeps its frame over `bare`.
 
+On mobile web, a nested page title gains a page-color fade behind it when
+content scrolls beneath the bar and `bare` is dropped. The glass controls
+keep their separate surfaces.
+
 ```tsx
 <Navbar bare brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
 ```
 
 ### App menu
 
-An app with more destinations than a bar can hold (a component catalog, a settings
-tree) passes `onMenu`: the bar leads with a menu button at every width and the app
-opens its own navigation, such as a Drawer of grouped sections. It replaces `links`.
+An app with more destinations than a bar can hold can use `onMenu` to open its
+own navigation, such as a Drawer of grouped sections. It replaces `links`.
 
 ```tsx
 <Stateful initial={false}>
@@ -233,17 +242,10 @@ opens its own navigation, such as a Drawer of grouped sections. It replaces `lin
 
 ### Mobile
 
-**Do** — Collapse the links into a hamburger and keep only the logo and avatar in the bar.
+**Do** — Use Navbar's built-in menu so the links collapse and the logo and avatar stay visible.
 
 ```tsx
-<Card flat flush style={{ overflow: "hidden" }}>
-  <Row alignCenter snug pad style={{ height: 56 }}>
-    <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
-    <Typography small semibold>Canvas</Typography>
-    <Column grow />
-    <Avatar small src="/rachel-chen.jpg" name="RC" />
-  </Row>
-</Card>
+<Navbar brand="Canvas" brandContent={<Icon layers />} links={["Dashboard", "Users", "Settings"]} avatar="RC" />
 ```
 
 **Don't** — A full horizontal nav at phone width wraps onto a second row and crowds out the logo.
@@ -280,6 +282,8 @@ opens its own navigation, such as a Drawer of grouped sections. It replaces `lin
 | brandContent | ReactNode | no |  | A brand ELEMENT for the left cluster (a logo mark, a workspace switcher). It LEADS the cluster, so passing it beside `brand` renders the mark first and keeps the wordmark beside it; passing it alone makes the mark the whole brand. It takes the left cluster's own gap, so it needs no wrapper. |
 | brandHref | string \| undefined | no |  | Where the brand leads (an app's home, `/`). With it, or with `onBrandPress`, the brand lockup is one link: a real anchor on the web (an `<a href>`, so middle-click and modifier-click open it in a new tab), named by `brand`, with the kit's focus ring. |
 | onBrandPress | ((event: GestureResponderEvent) => void) \| undefined | no |  | Called when the brand is pressed; on the web a modifier-click on a `brandHref` stays the browser's. |
+| onBack | (() => void) \| undefined | no |  | Show a leading Back button for a nested screen and call this when it is pressed. |
+| backLabel | string \| undefined | no | "Back" | Accessible name of the Back button. Defaults to `Back`. |
 | brandDivider | boolean \| undefined | no | false | Draw a short vertical separator between the brand and the links (the kit `<Divider vertical inset strong />`), as the hand-off's floating docs pill does. It shows only while both the brand and the links row are on the bar, so a collapsed bar or one without links never ends its brand on a stray rule. |
 | links | string[] \| undefined | no |  | Ordered navigation link labels rendered in the middle row. Omit it (or pass an empty array) for a bar with no middle nav: neither the links row nor the narrow menu button that stands in for it renders. |
 | hrefs | string[] \| undefined | no |  | Destinations for `links`, by index (parallel to it). A link with an href renders as a real anchor on the web (an `<a href>`, so middle-click, modifier-click and open-in-new-tab work); natively it is ignored. A plain click still selects the link and calls `onSelect` with the press event, so an app that routes on the client calls `event.preventDefault()` there; a modifier or middle click is left to the browser and selects nothing. Omit it (or an entry) for a link without a destination. |
@@ -289,12 +293,13 @@ opens its own navigation, such as a Drawer of grouped sections. It replaces `lin
 | actionLabel | string \| undefined | no |  | Optional primary action; renders a <Button primary small> on the right. |
 | onAction | (() => void) \| undefined | no |  | Called when the action button is pressed. |
 | avatar | string \| undefined | no |  | Optional account initials/name; renders an <Avatar small> on the right. |
-| onSelect | ((index: number, event?: GestureResponderEvent) => void) \| undefined | no |  | Called when a nav link is pressed, with its index, and the press event when it came from the link itself (not from the narrow menu). |
-| onMenu | (() => void) \| undefined | no |  | The app's own navigation menu. When set, the bar leads with a menu button at every width and calls this on press, so the app can open navigation of its own (a Drawer of grouped sections). It replaces the `links` row and its narrow menu: pass one or the other. |
+| onSelect | ((index: number, event?: GestureResponderEvent) => void) \| undefined | no |  | Called when a nav link is selected, with its index and the press event when available. |
+| onMenu | (() => void) \| undefined | no |  | The app's own navigation menu. It replaces the `links` row and its narrow menu. The button trails the brand on mobile web and leads it on desktop and native. |
+| menuLabel | string \| undefined | no | "Navigation menu" | Accessible name of the navigation menu button. Defaults to `Navigation menu`. |
 | bordered | boolean \| undefined | no | false | Surface (pick one; default is the flush bottom-hairline bar). |
 | floating | boolean \| undefined | no | false | Surface (pick one; default is the flush bottom-hairline bar). |
-| bare | boolean \| undefined | no | false | No surface and no hairline: the bar sits clear on what is behind it. Pass it while nothing has scrolled under the bar (the scroll edge) and drop it once content does. |
-| compact | boolean \| undefined | no | false | The tight bar: 44px with a 5px inset and 2px between items on the web (the docs pill). |
+| bare | boolean \| undefined | no | false | No surface and no hairline: the bar sits clear on what is behind it. Pass it while nothing has scrolled under the bar (the scroll edge) and drop it once content does. On mobile web, dropping `bare` fades scrolling content behind an unbacked page title. |
+| compact | boolean \| undefined | no | false | Tight spacing for desktop web and native. Mobile web uses the touch-height bar unless `scrolls` is set. |
 | scrolls | boolean \| undefined | no | false | Keep every link at every width: the bar's content row scrolls sideways inside the bar (no scroll indicator) instead of folding the links into the narrow menu button. Pair it with `floating` and `compact` for the hand-off's docs pill. |
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |

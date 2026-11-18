@@ -1,6 +1,6 @@
 # TextInput
 
-Single-line (or multiline) text entry. Control it with `value` + `onChangeText`, and style the box with the usual View style props. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.
+Single-line (or multiline) text entry with the theme’s foreground and typeface. Control it with `value` + `onChangeText`. Use `Input` or `Textarea` when you need a styled field with a label. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.
 
 ## Usage
 

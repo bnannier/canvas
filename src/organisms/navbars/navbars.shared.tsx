@@ -1,7 +1,10 @@
-import { type ComponentProps, type ComponentType, type ReactNode } from "react";
-import { StyleSheet, type GestureResponderEvent } from "react-native";
+import { useRef, useState, type ComponentProps, type ComponentType, type ReactNode, type RefObject } from "react";
+import { StyleSheet, type GestureResponderEvent, type View as ViewInstance } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassPane, GlassSurface, paneStyle, paneRipple, withInnerFill, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { NavigationGlassProvider } from "../../style/glass-surface/navigation-glass.js";
+import { GradientFill } from "../../style/gradient-fill.js";
+import { browserOwnsClick } from "../../style/link-press.js";
 import { selectionTint } from "../../style/selection-tint.js";
 import { useHover } from "../../style/hover.js";
 import { LayoutAxisProvider, ROW_AXIS, useFillStyle } from "../../style/sizing.js";
@@ -12,7 +15,7 @@ import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Divider } from "../../atoms/divider/divider.js";
 import { Dropdown as WebDropdown, type DropdownProps, type DropdownItem } from "../../atoms/dropdown/dropdown.js";
-import { type Surface, type Density } from "./navbars.styles.js";
+import { type Surface, type Density, type MobileNavbarSkin } from "./navbars.styles.js";
 
 // Shared Navbar shell. The structure (the left brand + links cluster, the right
 // action + avatar cluster), the surface-axis precedence, the active-link
@@ -51,8 +54,9 @@ import { type Surface, type Density } from "./navbars.styles.js";
 // pill (44px, a 5px inset, 2px between every item), natively a shorter bar with the
 // gutter and the gaps pulled in.
 //
-// Narrow widths: by default the bar measures its own width and, at and below `sm`,
-// folds the links into a menu button. `scrolls` trades that fold for the hand-off
+// Narrow widths: the bar measures its own width and, at and below `sm`, folds the
+// links into a menu button. The mobile web skin also folds links on tablets and
+// frames the brand and trailing menu separately. `scrolls` trades that fold for the hand-off
 // pill's own answer: the bar keeps every link and its content row pans sideways inside
 // the bar (a horizontal scroller with no indicator), at every width. `onMenu` still
 // replaces the links; a bar with `scrolls` and `onMenu` scrolls its brand and actions.
@@ -60,6 +64,8 @@ import { type Surface, type Density } from "./navbars.styles.js";
 // The platform-varying surface. Everything color/shape-bearing the bar needs
 // lives here, built from the active tokens (so each follows light/dark/glass).
 export interface NavbarSkin {
+  /** Phone and tablet app chrome, supplied by the web skin. */
+  mobile?: MobileNavbarSkin;
   /** iOS/web dim a pressed link; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
   /** Android ripple over a pressed link; null on iOS/web. */
@@ -127,6 +133,10 @@ export interface NavbarProps {
   brandHref?: string;
   /** Called when the brand is pressed; on the web a modifier-click on a `brandHref` stays the browser's. */
   onBrandPress?: (event: GestureResponderEvent) => void;
+  /** Show a leading Back button for a nested screen and call this when it is pressed. */
+  onBack?: () => void;
+  /** Accessible name of the Back button. Defaults to `Back`. */
+  backLabel?: string;
   /**
    * Draw a short vertical separator between the brand and the links (the kit
    * `<Divider vertical inset strong />`), as the hand-off's floating docs pill does. It
@@ -168,27 +178,27 @@ export interface NavbarProps {
   /** Optional account initials/name; renders an <Avatar small> on the right. */
   avatar?: string;
   /**
-   * Called when a nav link is pressed, with its index, and the press event when it came
-   * from the link itself (not from the narrow menu).
+   * Called when a nav link is selected, with its index and the press event when available.
    */
   onSelect?: (index: number, event?: GestureResponderEvent) => void;
   /**
-   * The app's own navigation menu. When set, the bar leads with a menu button at
-   * every width and calls this on press, so the app can open navigation of its own
-   * (a Drawer of grouped sections). It replaces the `links` row and its narrow menu:
-   * pass one or the other.
+   * The app's own navigation menu. It replaces the `links` row and its narrow menu.
+   * The button trails the brand on mobile web and leads it on desktop and native.
    */
   onMenu?: () => void;
+  /** Accessible name of the navigation menu button. Defaults to `Navigation menu`. */
+  menuLabel?: string;
   // Surface (pick one; default is the flush bottom-hairline bar).
   bordered?: boolean;
   floating?: boolean;
   /**
    * No surface and no hairline: the bar sits clear on what is behind it. Pass it while
    * nothing has scrolled under the bar (the scroll edge) and drop it once content does.
+   * On mobile web, dropping `bare` fades scrolling content behind an unbacked page title.
    */
   bare?: boolean;
   // Density (pick one; default is the comfortable bar).
-  /** The tight bar: 44px with a 5px inset and 2px between items on the web (the docs pill). */
+  /** Tight spacing for desktop web and native. Mobile web uses the touch-height bar unless `scrolls` is set. */
   compact?: boolean;
   /**
    * Keep every link at every width: the bar's content row scrolls sideways inside the
@@ -217,17 +227,20 @@ export function densityOf(p: NavbarProps): Density {
   return "default";
 }
 
-// A modifier or middle click on an anchor is the browser's (a new tab or window), so
-// the bar neither selects the link nor reports it. Natively the event carries none of
-// these keys, so every press is a plain one.
-/** The bar's material host: a GlassSurface that floats over the page. */
-function FloatingSurface(props: ComponentProps<typeof GlassSurface>) {
+type NavbarHostProps = Pick<ComponentProps<typeof View>, "children" | "onLayout" | "style" | "testID">;
+
+function FloatingSurface(props: NavbarHostProps) {
   return <GlassSurface {...props} floating />;
 }
 
-function browserOwnsClick(event: GestureResponderEvent): boolean {
-  const native = event.nativeEvent as unknown as { metaKey?: boolean; ctrlKey?: boolean; shiftKey?: boolean; button?: number };
-  return !!(native.metaKey || native.ctrlKey || native.shiftKey || (native.button != null && native.button !== 0));
+function WebNavbarHost({ framed, style, children, ...host }: NavbarHostProps & { framed?: boolean }) {
+  const material = useMaterialTheme({ floating: true, layer: "functional" });
+  return (
+    <View {...host} style={framed ? paneStyle(material, style) : style}>
+      {framed ? <GlassPane floating layer="functional" shape={style} /> : null}
+      {children}
+    </View>
+  );
 }
 
 // The platform-styled parts the bar composes: the Dropdown behind the narrow
@@ -239,7 +252,59 @@ export interface NavbarParts {
   Dropdown?: ComponentType<DropdownProps>;
   Button?: typeof WebButton;
   Avatar?: typeof WebAvatar;
+  useMobileLayout?: () => boolean;
 }
+
+interface MobileNavButtonProps {
+  anchor?: RefObject<ViewInstance | null>;
+  shape: ViewStyle;
+  label: string;
+  glyph: "menu" | "back";
+  expanded?: boolean;
+  onPress: () => void;
+}
+
+const mobilePressed: ViewStyle = { transform: [{ scale: 0.97 }] };
+
+function MobileNavButton({ anchor, shape, label, glyph, expanded, onPress }: MobileNavButtonProps) {
+  const material = useMaterialTheme({ floating: true, layer: "functional" });
+  const bubble = material.surface === "glass" ? { ...shape, boxShadow: undefined } : shape;
+  const style = paneStyle(material, bubble);
+  return (
+    <Pressable ref={anchor} style={({ pressed }) => [style, pressed ? mobilePressed : null]}
+      accessibilityRole="button" accessibilityLabel={label} aria-label={label}
+      accessibilityState={expanded == null ? undefined : { expanded }} aria-expanded={expanded}
+      {...(expanded == null ? null : { "aria-haspopup": "menu" })} onPress={onPress}>
+      <NavigationGlassProvider>
+        <GlassPane floating layer="functional" shape={shape} />
+      </NavigationGlassProvider>
+      <Icon menu={glyph === "menu"} chevronLeft={glyph === "back"} size={20} decorative />
+    </Pressable>
+  );
+}
+
+interface MobileLinksMenuProps {
+  Dropdown: ComponentType<DropdownProps>;
+  shape: ViewStyle;
+  label: string;
+  items: DropdownItem[];
+  onSelect: (index: number, event?: GestureResponderEvent) => void;
+}
+
+function MobileLinksMenu({ Dropdown, shape, label, items, onSelect }: MobileLinksMenuProps) {
+  const anchor = useRef<ViewInstance>(null);
+  const [open, setOpen] = useState(false);
+  return (
+    <View>
+      <MobileNavButton anchor={anchor} shape={shape} label={label} glyph="menu"
+        expanded={open} onPress={() => setOpen((previous) => !previous)} />
+      <Dropdown anchorRef={anchor} alignEnd open={open} onOpenChange={setOpen}
+        items={items} onSelect={(_item, index, event) => onSelect(index, event)} />
+    </View>
+  );
+}
+
+const useDesktopLayout = () => false;
 
 // One nav link: its tile, the glass puck under the active one, and the web hover. A
 // component of its own so every link reads its own hover.
@@ -319,6 +384,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Dropdown = parts.Dropdown ?? WebDropdown;
   const Button = parts.Button ?? WebButton;
   const Avatar = parts.Avatar ?? WebAvatar;
+  const useMobileLayout = parts.useMobileLayout ?? useDesktopLayout;
   return function Navbar(props: NavbarProps) {
     // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
     // hand-off's order: Bar, Brand, Links, Active link, Actions, taken before the tree's
@@ -332,12 +398,18 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     // specimen, so inside one the bar fills its stage (else it hugs, measures narrow and
     // folds its links into the menu button).
     const stageFill = useFillStyle("Navbar");
-    const { brand, brandContent, brandHref, onBrandPress, brandDivider, links: linkProp = [], hrefs, actions, actionLabel, onAction, avatar, onSelect, onMenu, scrolls, testID, style } = props;
+    const {
+      brand, brandContent, brandHref, onBrandPress, brandDivider, onBack, backLabel = "Back",
+      links: linkProp = [], hrefs, actions, actionLabel, onAction, avatar, onSelect,
+      onMenu, menuLabel = "Navigation menu", scrolls, testID, style,
+    } = props;
     // An app menu (`onMenu`) stands in for the links row and its narrow menu at every width.
     const links = onMenu ? [] : linkProp;
     const { tokens } = useTheme();
     const surface = surfaceOf(props);
     const density = densityOf(props);
+    const atMobileWidth = useMobileLayout();
+    const mobile = atMobileWidth && !scrolls ? skin.mobile : undefined;
     // Controlled when `active` is provided, self-managed otherwise, so a bare
     // navbar moves the active link to the pressed one instead of ignoring taps.
     const [active, setActive] = useControllableState<number>(props.active, props.defaultActive ?? 0);
@@ -349,7 +421,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
       { base: false, sm: true },
       { seedViewport: true },
     );
-    const collapsed = narrow && !scrolls;
+    const collapsed = (narrow || mobile != null) && !scrolls;
     const scrollFocus = useHorizontalScrollFocus();
     // The collapse stands in for the LINKS row, so a bar with no links has nothing
     // to collapse: it renders neither the row nor the menu button, rather than a
@@ -358,6 +430,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     const hasLinks = links.length > 0;
     const menuItems: DropdownItem[] = links.map((link, index) => ({
       label: link,
+      href: hrefs?.[index],
       // The active link carries the conventional menu checkmark.
       icon: index === active ? "check" : undefined,
     }));
@@ -367,8 +440,8 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     // background in default mode. The glass fill is stripped by GlassSurface, so
     // the skin keeps supplying the solid background only. A bare bar is the row
     // alone, with no surface in either mode.
-    const bare = surface === "bare";
-    const barStyle = skin.bar(tokens, density);
+    const bare = surface === "bare" || (mobile != null && surface === "default");
+    const barStyle = { ...skin.bar(tokens, density), ...mobile?.bar };
     // A scrolling bar hands its gutter and gap to the scroller's content row, so the
     // row pans under the bar's whole inner width, as the hand-off pill's does.
     const shell: ViewStyle = scrolls ? { ...barStyle, paddingHorizontal: 0, gap: undefined } : barStyle;
@@ -380,32 +453,64 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
       stage,
       style,
     ];
-    // The bar floats over the page, so the web frosts it under glass as the hand-off's
-    // pill and app bars are; a bare bar is a plain View.
-    const Host = bare ? View : FloatingSurface;
+    // Keep the same web host through mobile and scroll-edge changes. Its desktop pane
+    // changes independently of the caller's slot state and focus.
+    const Host = skin.mobile != null ? WebNavbarHost : bare ? View : FloatingSurface;
+    const frame = Host === WebNavbarHost ? { framed: !bare && mobile == null } : null;
 
     const select = (index: number, event?: GestureResponderEvent) => {
       setActive(index);
       onSelect?.(index, event);
     };
 
+    const circle = mobile?.circle(tokens);
+    const menu = onMenu ? (
+      circle ? <MobileNavButton shape={circle} label={menuLabel} glyph="menu" onPress={onMenu} /> : (
+        <Button ghost small accessibilityLabel={menuLabel} iconLeft={<Icon menu size={20} decorative />} onPress={onMenu} />
+      )
+    ) : hasLinks && collapsed ? (
+      circle ? <MobileLinksMenu Dropdown={Dropdown} shape={circle} label={menuLabel} items={menuItems} onSelect={select} /> : (
+        <Dropdown triggerLabel={menuLabel} items={menuItems} onSelect={(_item, index, event) => select(index, event)}>
+          <Icon menu size={20} decorative />
+        </Dropdown>
+      )
+    ) : null;
+    const back = onBack ? (
+      circle ? <MobileNavButton shape={circle} label={backLabel} glyph="back" onPress={onBack} /> : (
+        <Button ghost small icon accessibilityLabel={backLabel} iconLeft={<Icon chevronLeft size={20} decorative />} onPress={onBack} />
+      )
+    ) : null;
+
+    const hasBrand = brandContent != null || !!brand;
+    const capsule = mobile != null && (brandContent != null || !onBack);
+    const scrollEdge = surface === "default" && brand && !capsule ? mobile?.scrollEdge : undefined;
+    const brandGroup = skin.brandGroup(tokens, density);
+    const brandMaterial = useMaterialTheme({ floating: true, layer: "functional" });
+    const brandPill = capsule ? mobile.brandPill(tokens) : null;
+    const brandHost = brandPill ? [mobile?.brandHost, paneStyle(brandMaterial,
+      brandMaterial.surface === "glass" ? { ...brandPill, boxShadow: undefined } : brandPill,
+    )] : [brandGroup, mobile?.brandHost];
+    const brandChildren = (
+      <>
+        {brandPill ? (
+          <NavigationGlassProvider>
+            <GlassPane floating layer="functional" shape={brandPill} />
+          </NavigationGlassProvider>
+        ) : null}
+        {brandContent}
+        {brand ? (
+          <Text numberOfLines={mobile ? 1 : undefined} style={[skin.brand(tokens, density), mobile ? mobileTitle : null]}>
+            {brand}
+          </Text>
+        ) : null}
+      </>
+    );
+
     const left = (
-      <View style={skin.leftGroup(tokens, density)}>
-        {/* Collapsed, the menu button leads the bar ahead of the brand, as Material 3's
-            top app bar puts its navigation icon and the web's collapsed nav does. */}
-        {onMenu ? (
-          <Button ghost small accessibilityLabel="Navigation menu" iconLeft={<Icon menu size={20} decorative />} onPress={onMenu} />
-        ) : null}
-        {hasLinks && collapsed ? (
-          <Dropdown
-            triggerLabel="Navigation menu"
-            items={menuItems}
-            onSelect={(_item, index) => select(index)}
-          >
-            <Icon menu size={20} />
-          </Dropdown>
-        ) : null}
-        {brandContent != null || brand ? (
+      <View style={[skin.leftGroup(tokens, density), mobile?.leftGroup]}>
+        {back}
+        {!mobile ? menu : null}
+        {hasBrand ? (
           brandHref != null || onBrandPress ? (
             <Pressable
               {...(brandHref != null ? ({ href: brandHref } as object) : undefined)}
@@ -417,19 +522,17 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
               }}
               accessibilityRole="link"
               accessibilityLabel={brand ?? "Home"}
-              style={[skin.brandGroup(tokens, density), skin.focusRing]}
+              style={({ pressed }) => [brandHost, skin.focusRing, mobile && pressed ? mobilePressed : null]}
             >
-              {brandContent}
-              {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
+              {brandChildren}
             </Pressable>
           ) : (
-            <View ref={brandPart?.ref} onLayout={brandPart?.onLayout} style={skin.brandGroup(tokens, density)}>
-              {brandContent}
-              {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
+            <View ref={brandPart?.ref} onLayout={brandPart?.onLayout} style={brandHost}>
+              {brandChildren}
             </View>
           )
         ) : null}
-        {brandDivider && (brandContent != null || !!brand) && hasLinks && !collapsed ? (
+        {brandDivider && hasBrand && hasLinks && !collapsed ? (
           <Divider vertical inset strong />
         ) : null}
         {!hasLinks || collapsed ? null : (
@@ -464,6 +567,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
           </Button>
         ) : null}
         {avatar ? <Avatar small name={avatar} /> : null}
+        {mobile ? menu : null}
       </View>
     );
     // These skin-owned rows publish their own axis: an outer Column's HUG
@@ -475,7 +579,15 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
 
     return (
       <AnatomyScope>
-        <Host testID={testID} style={container} onLayout={onBarLayout}>
+        <Host {...frame} testID={testID} style={container} onLayout={onBarLayout}>
+          {scrollEdge ? (
+            <View testID="navbar-scroll-edge" style={scrollEdge.style}>
+              <GradientFill angle={180} stops={[
+                { color: tokens.background, at: scrollEdge.opaqueUntil },
+                { color: tokens.background, at: 1, opacity: 0 },
+              ]} />
+            </View>
+          ) : null}
           {/* The Bar part's node inside a docs provider: a pass-through fill of the bar. */}
           {barPart ? <View ref={barPart.ref} onLayout={barPart.onLayout} style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]} /> : null}
           {scrolls ? (
@@ -505,3 +617,4 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
 // while the row fits and pan once it does not.
 const SCROLLER: ViewStyle = { flexGrow: 1, flexShrink: 1, minWidth: 0, alignSelf: "stretch" };
 const SCROLL_ROW: ViewStyle = { flexGrow: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" };
+const mobileTitle: TextStyle = { flexShrink: 1, minWidth: 0 };

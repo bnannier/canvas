@@ -1,6 +1,6 @@
-import { type ReactElement, type ReactNode, useEffect, useRef } from "react";
+import { createContext, type ReactElement, type ReactNode, useContext, useEffect, useRef } from "react";
 import { Animated, Easing } from "react-native";
-import { View, Text, useTheme, supportsNativeDriver, type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, useTheme, useReducedMotion, supportsNativeDriver, type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { AnatomyScope, useAnatomyPart } from "../../style/anatomy.js";
 import { type Tone, TONE_TOKEN } from "./spinner.styles.js";
 
@@ -13,6 +13,10 @@ import { type Tone, TONE_TOKEN } from "./spinner.styles.js";
 // createSpinner. The web skin draws the hand-off's ring; the iOS skin draws the ring
 // of fading spokes (UIActivityIndicatorView); the Android skin draws the single
 // sweeping arc (M3 CircularProgressIndicator).
+
+/** Internal specimen scheduling; ordinary application spinners remain enabled.
+ * This context is deliberately absent from the package's public exports. */
+export const SpinnerAnimationContext = createContext(true);
 
 export interface SpinnerProps {
   /**
@@ -88,6 +92,7 @@ export interface SpinnerSkin {
     color: string;
     rotate: Animated.Value;
     tokens: ColorTokens;
+    animating: boolean;
   }) => ReactElement;
   /** The label text beside/below the indicator (500 14, the foreground). */
   label: (tokens: ColorTokens) => TextStyle;
@@ -96,7 +101,7 @@ export interface SpinnerSkin {
   /**
    * Whether this skin consumes the shared rotation value. When `false`, the
    * shell skips starting the perpetual rotation loop (e.g. the web
-   * ActivityIndicator animates itself and never reads `rotate`, so driving an
+   * ring animates itself and never reads `rotate`, so driving an
    * Animated.Value for it would be a wasted, never-stopping per-instance timer).
    * Defaults to `true`.
    */
@@ -121,6 +126,9 @@ export function createSpinner(skin: SpinnerSkin) {
   return function Spinner(props: SpinnerProps) {
     const { children, description, stacked, accessibilityLabel, testID } = props;
     const { tokens } = useTheme();
+    const enabled = useContext(SpinnerAnimationContext);
+    const reduced = useReducedMotion();
+    const animating = enabled && !reduced;
     const tone = toneOf(props);
     const size = (skin.sizes ?? DEFAULT_SIZES)[sizeKeyOf(props)];
     const color = tokens[TONE_TOKEN[tone]] ?? tokens["muted-foreground"];
@@ -133,7 +141,7 @@ export function createSpinner(skin: SpinnerSkin) {
 
     // One continuous rotation per ~900ms, looping forever. The skins that spin a
     // drawn shape (iOS spokes, Android arc) interpolate this 0..1 value to
-    // 0..360deg; the web ActivityIndicator animates itself and ignores it.
+    // 0..360deg; the web ring uses its compositor loop and ignores this value.
     // The loop runs on the native driver where there is one and on the JS driver on
     // web (supportsNativeDriver, src/style/motion.ts): under the New Architecture a
     // JS-driven frame is a shadow-tree commit per animated view, so a JS loop is never
@@ -142,10 +150,10 @@ export function createSpinner(skin: SpinnerSkin) {
     const rotate = useRef(new Animated.Value(0)).current;
     const spins = skin.spins !== false;
     useEffect(() => {
-      // Skins that animate themselves (the web ActivityIndicator) never read
+      // Skins that animate themselves (the web ring) never read
       // `rotate`; starting a loop for them would spin an Animated.Value forever
       // with no subscriber in the render tree. Only loop when the skin spins.
-      if (!spins) return;
+      if (!spins || !animating) return;
       const loop = Animated.loop(
         Animated.timing(rotate, {
           toValue: 1,
@@ -156,7 +164,7 @@ export function createSpinner(skin: SpinnerSkin) {
       );
       loop.start();
       return () => loop.stop();
-    }, [rotate, spins]);
+    }, [rotate, spins, animating]);
 
     // Resolve the accessible name: an explicit accessibilityLabel wins; else a
     // string label (children) becomes the name; else the "Loading" default.
@@ -178,7 +186,7 @@ export function createSpinner(skin: SpinnerSkin) {
         {/* The anatomy Ring is this plain host around the drawn ring, not the Animated
             view, which never reported as a part on the live web page. */}
         <View ref={ringPart?.ref} onLayout={ringPart?.onLayout} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-          {skin.render({ size, color, rotate, tokens })}
+          {skin.render({ size, color, rotate, tokens, animating })}
         </View>
       </Animated.View>
     );

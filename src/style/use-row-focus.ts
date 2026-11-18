@@ -13,7 +13,14 @@ import { focusInto, type FocusNode } from "./accessibility-focus.js";
 // (AnchoredOverlay's `dismissOnTab`), and the card gives focus back to its trigger.
 
 /** A web key event, as react-native-web hands it to a row (RN's types omit onKeyDown). */
-export interface RowKeyEvent { key: string; preventDefault: () => void }
+export interface RowKeyEvent {
+  key: string;
+  preventDefault: () => void;
+  altKey?: boolean;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+}
 
 /** What a row spreads onto its Pressable (the key handler rides a cast: RN's types omit it). */
 export interface RowFocusProps {
@@ -29,8 +36,9 @@ export function useRowFocus(count: number): {
   /**
    * The focus props for row `index`; `activate` runs on Enter and Space with the key
    * event (what react-native-web itself hands a Pressable's onPress for a key press).
+   * With `followHref`, Enter uses the browser's anchor behavior and Space issues a click.
    */
-  rowProps: (index: number, activate: (event: RowKeyEvent) => void) => RowFocusProps;
+  rowProps: (index: number, activate: (event: RowKeyEvent) => void, followHref?: boolean) => RowFocusProps;
 } {
   const [active, setActive] = useState(0);
   const nodes = useRef<FocusNode[]>([]);
@@ -40,7 +48,7 @@ export function useRowFocus(count: number): {
     setActive(row);
     focusInto(nodes.current[row]);
   }, [count]);
-  const rowProps = (index: number, activate: (event: RowKeyEvent) => void): RowFocusProps => {
+  const rowProps = (index: number, activate: (event: RowKeyEvent) => void, followHref = false): RowFocusProps => {
     const roving = getItemProps(index);
     return {
       // One ref feeding two readers: the roving hook (arrow moves) and the node table
@@ -53,8 +61,14 @@ export function useRowFocus(count: number): {
       tabIndex: roving.tabIndex,
       onKeyDown: (event) => {
         if (event.key === "Enter" || event.key === " ") {
+          if (followHref && event.key === "Enter") return;
           event.preventDefault();
-          activate(event);
+          if (followHref) {
+            const anchor = nodes.current[index] as (FocusNode & { click?: () => void });
+            if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) anchor?.click?.();
+          } else {
+            activate(event);
+          }
           return;
         }
         roving.onKeyDown(event);

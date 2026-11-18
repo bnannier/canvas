@@ -3,7 +3,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { MENU_CHOICE } from "../../style/menu-choice-role.js";
 import { useHover } from "../../style/hover.js";
 import { useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, type GestureResponderEvent } from "react-native";
 import { GlassSurface } from "../../style/glass-surface/glass-surface.js";
 import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
@@ -13,6 +13,7 @@ import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
 import { AnatomyPart, AnatomyScope, useAnatomyPart, type AnatomyTarget } from "../../style/anatomy.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { browserOwnsClick } from "../../style/link-press.js";
 
 // Shared Dropdown shell. The structure (the trigger plus a floating menu of
 // action rows, each with an optional leading icon glyph, a label, and an
@@ -42,6 +43,8 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 
 export interface DropdownItem {
   label: string;
+  /** Destination rendered as a real anchor on the web. Native apps navigate through `onSelect`. */
+  href?: string;
   /** Stable stored value for command or project selection. */
   value?: string;
   /** Muted second line under the label. */
@@ -127,8 +130,8 @@ export interface DropdownProps {
   open?: boolean;
   /** Fired when the open state changes (trigger press, select, etc.). */
   onOpenChange?: (open: boolean) => void;
-  /** Fired with the selected item and its index when a row is pressed. */
-  onSelect?: (item: DropdownItem, index: number) => void;
+  /** Fired with the selected item, its index, and the press event when available. */
+  onSelect?: (item: DropdownItem, index: number, event?: GestureResponderEvent) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
@@ -173,7 +176,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     compact?: boolean;
     steadyPress?: boolean;
     focusProps: RowFocusProps;
-    onSelect: () => void;
+    onSelect: (event?: GestureResponderEvent) => void;
     ripple: { color: string; borderless: boolean } | undefined;
     /** The menu holds a selected choice, so a glyphless row keeps the check's column. */
     choiceColumn: boolean;
@@ -202,9 +205,11 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
       if (node) part.onLayout();
     }), [part]);
     const rowRef = useComposedRefs<View>(focusProps.ref, partRef);
+    const anchor = !disabled && item.href != null ? { href: item.href } : null;
     return (
       <Pressable
         {...(focusProps as object)}
+        {...anchor}
         ref={rowRef}
         onLayout={part?.onLayout}
         {...target}
@@ -367,14 +372,19 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
               </Text>
             ) : null}
             {items.map((item, index) => {
-              const selectItem = () => { onSelect?.(item, index); if (!item.keepOpen) setOpen(false); };
+              const selectItem = (event?: GestureResponderEvent) => {
+                if (item.href != null && event && browserOwnsClick(event)) return;
+                onSelect?.(item, index, event);
+                if (!item.keepOpen) setOpen(false);
+              };
+              const focusProps = rows.rowProps(index, () => { if (!item.disabled) selectItem(); }, !item.disabled && item.href != null);
               return (
               <View key={item.value ?? `${item.label}-${index}`} style={item.sectionBefore ? { gap: skin.rowGap } : undefined}>
                 {item.sectionBefore ? <Text {...(!label && index === firstSection ? sectionAnatomy : null)} style={labelStyle}>{item.sectionBefore}</Text> : null}
                 {item.separatorBefore && skin.separator ? (
                   <View style={skin.separator(tokens)} />
                 ) : null}
-                <MenuRow item={item} compact={compact} steadyPress={props.steadyPress} focusProps={rows.rowProps(index, () => { if (!item.disabled) selectItem(); })} onSelect={selectItem} ripple={ripple} choiceColumn={choiceColumn} part={index === firstItem ? itemPart : index === firstDestructive ? destructivePart : undefined} shortcutPart={index === firstShortcut ? shortcutPart : undefined} />
+                <MenuRow item={item} compact={compact} steadyPress={props.steadyPress} focusProps={focusProps} onSelect={selectItem} ripple={ripple} choiceColumn={choiceColumn} part={index === firstItem ? itemPart : index === firstDestructive ? destructivePart : undefined} shortcutPart={index === firstShortcut ? shortcutPart : undefined} />
               </View>
               );
             })}

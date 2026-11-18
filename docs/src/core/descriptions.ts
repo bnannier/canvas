@@ -43,7 +43,7 @@ export const COMPONENT_DESCRIPTIONS: Record<string, string> = {
   "swatch": "A color sample: a filled rounded block with the token's name and value beneath it, the anatomy a design-system color sheet repeats down a page. Swatch owns the whole lockup, so a sheet never sets a bare block next to a hand-built text column and drifts row to row.",
   "switch": "On / off switch, isolated or grouped in a settings list.",
   "text": "Renders text. In React Native every string must live inside a Text element, so you cannot put a bare string in a View. For type scale and tone in app code, reach for `<Typography>` (e.g. `<Typography h3>`, `<Typography body>`, `<Typography tiny muted>`), which owns the kit's roles and colors; use the raw Text primitive for the primitive-level cases it does not cover: `numberOfLines` truncation and nested inline runs.",
-  "text-input": "Single-line (or multiline) text entry. Control it with `value` + `onChangeText`, and style the box with the usual View style props. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.",
+  "text-input": "Single-line (or multiline) text entry with the theme’s foreground and typeface. Control it with `value` + `onChangeText`. Use `Input` or `Textarea` when you need a styled field with a label. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.",
   "textarea": "Multi-line input, with character count, with toolbar.",
   "tooltip": "Small floating helper text on hover or focus.",
   "typography": "Type scale classes for headings, body text, and helper styles.",

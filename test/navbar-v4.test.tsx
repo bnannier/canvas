@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { createRef, type ReactNode } from "react";
+import type { TextInput as TextInputInstance } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { darkColors, lightColors } from "../src/style/tokens.ts";
 import { webShadow } from "../src/style/shadow.ts";
@@ -12,6 +13,7 @@ import { webSkin, iosSkin, androidSkin } from "../src/organisms/navbars/navbars.
 import { resizeViewport } from "./viewport.ts";
 import { Column } from "../src/atoms/layout/layout.tsx";
 import { Avatar } from "../src/atoms/avatar/avatar.tsx";
+import { TextInput } from "../src/style/text.tsx";
 
 // The v4 Navbar: the hand-off's web bar (its `K.def('navbars')` renderer: 56px, a 16px
 // gutter, 20px between the clusters, 32px capsule links), the `compact` density (the
@@ -89,10 +91,13 @@ describe("Navbar density", () => {
     for (const Bar of [Navbar, IosNavbar, AndroidNavbar]) {
       ui(<Column><Bar compact brand="Canvas" brandContent={<Avatar name="Canvas" />} links={LINKS} /></Column>);
       const menu = screen.getByLabelText("Navigation menu");
-      // The trigger's wrapper participates in the Navbar's horizontal cluster;
-      // its inner Pressable still hugs within the wrapper's own column.
-      expect(menu.parentElement!.style.alignSelf).not.toBe("flex-start");
-      expect(menu.parentElement!.parentElement!.style.alignItems).toBe("center");
+      // Every trigger wrapper inherits alignment from the Navbar's horizontal cluster.
+      let row = menu.parentElement;
+      while (row && row.style.flexDirection !== "row") {
+        expect(row.style.alignSelf).not.toBe("flex-start");
+        row = row.parentElement;
+      }
+      expect(row?.style.alignItems).toBe("center");
       cleanup();
     }
   });
@@ -151,6 +156,65 @@ describe("Navbar hrefs", () => {
     const { container } = ui(<Navbar brand="Canvas" links={LINKS} hrefs={["/docs"]} />);
     expect(container.querySelectorAll("a")).toHaveLength(1);
   });
+
+  it("preserves anchor behavior and the original press event in the tablet menu", () => {
+    resizeViewport(1024);
+    const picked: number[] = [];
+    ui(<Navbar brand="Canvas" links={LINKS} hrefs={HREFS} onSelect={(index, event) => {
+      picked.push(index);
+      event?.preventDefault();
+    }} />);
+    const menu = screen.getByRole("button", { name: "Navigation menu" });
+    fireEvent.click(menu);
+    const link = screen.getByRole("menuitem", { name: "Components" });
+    expect(link.tagName).toBe("A");
+    expect(link.getAttribute("href")).toBe("/components");
+    for (const click of [{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { button: 1 }]) {
+      expect(fireEvent.click(link, click)).toBe(true);
+      expect(picked).toEqual([]);
+      expect(menu.getAttribute("aria-expanded")).toBe("true");
+    }
+    expect(fireEvent.click(link)).toBe(false);
+    expect(picked).toEqual([1]);
+    expect(menu.getAttribute("aria-expanded")).toBe("false");
+  });
+});
+
+it("keeps brand and action fields mounted across the mobile threshold and bare toggle", () => {
+  const brandRef = createRef<TextInputInstance>();
+  const actionRef = createRef<TextInputInstance>();
+  const nav = (bare: boolean) => (
+    <ThemeProvider glass>
+      <Navbar bare={bare} brand="Canvas" brandContent={<TextInput ref={brandRef} accessibilityLabel="Workspace" />}
+        actions={<TextInput ref={actionRef} accessibilityLabel="Search" />} links={LINKS} />
+    </ThemeProvider>
+  );
+  const { rerender } = render(nav(false));
+  const brand = screen.getByRole<HTMLInputElement>("textbox", { name: "Workspace" });
+  const action = screen.getByRole<HTMLInputElement>("textbox", { name: "Search" });
+  const initialBrandRef = brandRef.current;
+  const initialActionRef = actionRef.current;
+  fireEvent.change(brand, { target: { value: "Draft workspace" } });
+  fireEvent.change(action, { target: { value: "Draft search" } });
+  brand.focus();
+  resizeViewport(1024);
+  expect(screen.getByRole("button", { name: "Navigation menu" })).toBeTruthy();
+  expect(document.activeElement).toBe(brand);
+  expect(brandRef.current).toBe(initialBrandRef);
+  expect(actionRef.current).toBe(initialActionRef);
+  expect(brand.value).toBe("Draft workspace");
+  expect(action.value).toBe("Draft search");
+
+  action.focus();
+  rerender(nav(true));
+  expect(document.activeElement).toBe(action);
+  resizeViewport(1025);
+  rerender(nav(false));
+  expect(screen.getByRole("link", { name: "Docs" })).toBeTruthy();
+  expect(screen.getByRole("textbox", { name: "Search" })).toBe(action);
+  expect(screen.getByRole("textbox", { name: "Workspace" })).toBe(brand);
+  expect(document.activeElement).toBe(action);
+  expect(action.value).toBe("Draft search");
 });
 
 // `brandDivider`: the hand-off pill's separator between the brand and the first link, the

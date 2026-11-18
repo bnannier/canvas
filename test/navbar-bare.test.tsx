@@ -1,10 +1,11 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Navbar } from "../src/organisms/navbars/navbars.tsx";
 import { Navbar as IosNavbar } from "../src/organisms/navbars/navbars.ios.tsx";
 import { Navbar as AndroidNavbar } from "../src/organisms/navbars/navbars.android.tsx";
 import { surfaceOf } from "../src/organisms/navbars/navbars.shared.tsx";
+import { resizeViewport } from "./viewport.ts";
 
 // The Navbar's `bare` surface: the scroll-edge appearance, where the bar paints no surface
 // and no hairline and sits clear on what is behind it (the docs' top bar on Dark Factory's
@@ -42,5 +43,29 @@ describe("Navbar bare", () => {
     expect(surfaceOf({ bare: true, bordered: true })).toBe("bordered");
     expect(surfaceOf({ bare: true, floating: true })).toBe("floating");
     expect(surfaceOf({})).toBe("default");
+  });
+
+  it("keeps the web row transparent and borderless under Increase Contrast", async () => {
+    const media = spyOn(window, "matchMedia").mockImplementation((query) => ({
+      matches: query.includes("prefers-contrast"), media: query,
+      addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {},
+    }) as MediaQueryList);
+    try {
+      render(<ThemeProvider light glass>
+        <Navbar bare testID="contrast-bare" brand="Canvas" onMenu={() => {}} />
+        <Navbar testID="contrast-framed" brand="Settings" />
+      </ThemeProvider>);
+      await waitFor(() => expect(bar("contrast-framed").style.borderTopWidth).toBe("1px"));
+      const bare = bar("contrast-bare");
+      expect(bare.style.borderWidth).toBe("");
+      expect(bare.style.backgroundColor).toBe("");
+      resizeViewport(390);
+      expect(bar("contrast-bare")).toBe(bare);
+      expect(bare.style.borderWidth).toBe("");
+      expect(bare.style.backgroundColor).toBe("");
+      expect(materials(bare)).toBe(0);
+    } finally {
+      media.mockRestore();
+    }
   });
 });

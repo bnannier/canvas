@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Animated, type TextStyle } from "react-native";
 import Svg, { Circle, Rect } from "react-native-svg";
 import { LoopView, createLoopChannel, alpha, type ColorTokens } from "../../style/index.js";
@@ -111,22 +111,26 @@ export const androidSkin: SpinnerSkin = {
 // Web: the ring rotates on the loop primitive (src/style/loop.tsx), a compositor CSS
 // animation, so nothing commits through React per frame. One channel turns every web
 // spinner on the page, once per 900 ms (the shell's period), and runs only while one is
-// mounted.
+// animating.
 const ring = createLoopChannel({ period: 900 });
 const TURN = { channel: ring, inputRange: [0, 1], outputRange: [0, 360] };
 let turning = 0;
 
-function WebRing({ size, color }: { size: number; color: string }) {
+function WebRing({ size, color, animating }: { size: number; color: string; animating: boolean }) {
+  // A paused specimen keeps its ring and current angle while unrelated spinners
+  // can continue sharing the compositor channel. Re-renders retain that angle.
+  const rotation = useMemo(() => animating ? TURN : ring.position() * 360, [animating]);
   useEffect(() => {
+    if (!animating) return;
     if (turning++ === 0) ring.play();
     return () => {
       if (--turning === 0) ring.stop();
     };
-  }, []);
+  }, [animating]);
   const width = Math.max(2, size / 8);
   return (
     <LoopView
-      rotate={TURN}
+      rotate={rotation}
       style={{
         width: size,
         height: size,
@@ -143,7 +147,7 @@ export const webSkin: SpinnerSkin = {
   // The ring turns on its own loop channel, so the shell drives no Animated loop for it.
   spins: false,
   sizes: { small: 14, base: 20, large: 32 },
-  render: ({ size, color }) => <WebRing size={size} color={color} />,
+  render: ({ size, color, animating }) => <WebRing size={size} color={color} animating={animating} />,
   label,
   description,
 };

@@ -1,6 +1,6 @@
 import { type ViewStyle } from "react-native";
 import { primaryText } from "../../style/primary-text.js";
-import { shadow, alpha, shape } from "../../style/index.js";
+import { shadow, alpha, shape, type ColorTokens } from "../../style/index.js";
 import { DISPLAY_FONT } from "../../style/mono.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { webHover } from "../../style/hover.js";
@@ -39,11 +39,53 @@ export type Density = "default" | "compact";
 const BAR_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between" };
 const ROW: ViewStyle = { flexDirection: "row", alignItems: "center" };
 
+export interface MobileNavbarSkin {
+  bar: ViewStyle;
+  leftGroup: ViewStyle;
+  brandHost: ViewStyle;
+  brandPill: (tokens: ColorTokens) => ViewStyle;
+  circle: (tokens: ColorTokens) => ViewStyle;
+  scrollEdge: { style: ViewStyle; opaqueUntil: number };
+}
+
+const MOBILE_CONTROL_SIZE = 44;
+
+function mobileBubble(tokens: ColorTokens): ViewStyle {
+  return {
+    ...ROW,
+    height: MOBILE_CONTROL_SIZE,
+    justifyContent: "center",
+    borderRadius: shape.web.pill,
+    borderWidth: 1,
+    borderColor: tokens["field-border"],
+    backgroundColor: tokens.popover,
+    ...shadow("sm", tokens),
+  };
+}
+
+const mobileWeb: MobileNavbarSkin = {
+  bar: { height: 60, paddingHorizontal: 16, gap: 12 },
+  leftGroup: { flexShrink: 1, minWidth: 0, gap: 10 },
+  brandHost: { flexShrink: 1, minWidth: 0, borderRadius: shape.web.pill },
+  brandPill(tokens) {
+    return { ...mobileBubble(tokens), paddingHorizontal: 14, gap: 8 };
+  },
+  circle(tokens) {
+    return { ...mobileBubble(tokens), width: MOBILE_CONTROL_SIZE };
+  },
+  // Paint the page color across the title's full line, then fade it past the bar.
+  scrollEdge: {
+    style: { position: "absolute", top: 0, left: 0, right: 0, height: 80, pointerEvents: "none" },
+    opaqueUntil: 0.55,
+  },
+};
+
 // =============================================================================
 // Web: the hand-off's bar.
 // =============================================================================
 
 export const webSkin: NavbarSkin = {
+  mobile: mobileWeb,
   // The original bar dims links on press (active:opacity-90); no ripple.
   pressedOpacity: 0.9,
   ripple: null,

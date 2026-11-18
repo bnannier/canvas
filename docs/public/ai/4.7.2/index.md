@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.2
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: ae83e97d5ef24a47d3c97180f43a6e5f00f907c93539fcc79e31cbb2094c3d46
+Source SHA-256: b86d4b118f8515fc19be59e1bcae8cad191db1b1135cafa375586435c1b4d640
 
 This generated source snapshot describes `@nannier/canvas` at repository package version `4.7.2`. Check the application's installed package version and its declarations before using an API. A source snapshot is not a claim that npm has published this version.
 
@@ -115,7 +115,7 @@ This generated source snapshot describes `@nannier/canvas` at repository package
 - [TabBar](https://canvas.nannier.com/ai/4.7.2/components/tab-bar.md): Bottom app navigation: a row of equal-width destinations, each an icon over a short label, with exactly one active. The mobile idiom (the iOS 26 floating tab bar / Material 3 navigation bar), rendered through the glass functional layer.
 - [Tabs](https://canvas.nannier.com/ai/4.7.2/components/tabs.md): Underline, pill, vertical, with badges.
 - [Text](https://canvas.nannier.com/ai/4.7.2/components/text.md): Renders text. In React Native every string must live inside a Text element, so you cannot put a bare string in a View. For type scale and tone in app code, reach for `<Typography>` (e.g. `<Typography h3>`, `<Typography body>`, `<Typography tiny muted>`), which owns the kit's roles and colors; use the raw Text primitive for the primitive-level cases it does not cover: `numberOfLines` truncation and nested inline runs.
-- [TextInput](https://canvas.nannier.com/ai/4.7.2/components/text-input.md): Single-line (or multiline) text entry. Control it with `value` + `onChangeText`, and style the box with the usual View style props. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.
+- [TextInput](https://canvas.nannier.com/ai/4.7.2/components/text-input.md): Single-line (or multiline) text entry with the theme’s foreground and typeface. Control it with `value` + `onChangeText`. Use `Input` or `Textarea` when you need a styled field with a label. Common props: `placeholder`, `secureTextEntry` (passwords), `keyboardType`, and `multiline`.
 - [Textarea](https://canvas.nannier.com/ai/4.7.2/components/textarea.md): Multi-line input, with character count, with toolbar.
 - [Toast](https://canvas.nannier.com/ai/4.7.2/components/toast.md): A transient notification card. Render a `<Toast>` directly, or drive them imperatively: mount a `<ToastProvider>` near your app root and call `toast(...)` from the `useToast()` hook to enqueue auto-dismissing toasts that stack over the app.
 - [Tooltip](https://canvas.nannier.com/ai/4.7.2/components/tooltip.md): Small floating helper text on hover or focus.

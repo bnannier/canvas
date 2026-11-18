@@ -8,9 +8,10 @@ row automatically collapses into a menu button opening a dropdown of the same
 links (the active one checkmarked), so links never clip off a phone screen;
 `active` and `onSelect` keep their contract in both renderings.
 <!-- only: web -->
-The menu button
-leads the bar, ahead of the logo and brand, where Material 3's top app bar puts
-its navigation icon.
+At phone and tablet widths up to 1024px, the brand sits in a capsule and the
+circular menu button sits at the trailing edge. In glass mode the capsule and
+button each float above the page. On wider windows a bar inside a narrow
+container still collapses its links into a leading menu.
 <!-- /only -->
 <!-- only: ios -->
 The menu button leads the bar, ahead of the logo and brand.
@@ -22,7 +23,7 @@ Pass `scrolls` to keep every link at every width instead: the bar's content row
 then pans sideways inside the bar, with no scroll indicator, and the links never
 fold into the menu. `onMenu` still replaces the links when both are passed.
 
-On the web the bar is the v4 hand-off's: 56px tall with a 16px gutter, 32px
+On desktop web the bar is the v4 hand-off's: 56px tall with a 16px gutter, 32px
 capsule links in the interface face, the active one (and a hovered one) on the
 `secondary` fill. `floating` lifts it as a pill on the stronger hairline with the
 md shade.
@@ -59,6 +60,9 @@ controls (a search button, icon buttons), ahead of `actionLabel` and `avatar`.
 `links` is optional, so a console topbar with no middle nav renders neither the
 links row nor the menu button that stands in for it.
 
+Pass `onBack` to show a leading Back button on a nested screen and use `brand`
+for its title. `backLabel` and `menuLabel` set the accessible control names.
+
 ## Usage
 
 ```tsx
@@ -86,8 +90,9 @@ links row nor the menu button that stands in for it.
 
 ### Compact
 
-`compact` is the density axis's one member: the tight bar, 44px with a 5px inset
-and 2px between every item on the web (a shorter bar with tighter gaps natively).
+`compact` tightens the bar to 44px with a 5px inset and 2px between items on
+desktop web and reduces spacing on native. On mobile web `scrolls` retains
+the compact layout with all links visible in a horizontal scroller.
 
 ```tsx
 <Navbar compact floating brand="Canvas" links={["Docs", "Components", "Templates"]} />
@@ -116,7 +121,8 @@ only while the links row is on the bar.
 ### Links with destinations
 
 `hrefs` gives the links their destinations, by index. On the web each becomes a real
-anchor, so middle-click and open-in-new-tab work, while a plain click still selects
+anchor in both the bar and the collapsed menu. Middle-click and open-in-new-tab work,
+while a plain click selects
 the link and calls `onSelect` with the press event (call `event.preventDefault()`
 there to route on the client). A modifier or middle click is left to the browser.
 Natively `hrefs` is ignored and `onSelect` does the navigating.
@@ -143,15 +149,20 @@ as Material 3's top app bar does.
 A framed bar (`bordered`, `floating`)
 keeps its frame over `bare`.
 
+<!-- only: web -->
+On mobile web, a nested page title gains a page-color fade behind it when
+content scrolls beneath the bar and `bare` is dropped. The glass controls
+keep their separate surfaces.
+<!-- /only -->
+
 ```tsx
 <Navbar bare brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
 ```
 
 ### App menu
 
-An app with more destinations than a bar can hold (a component catalog, a settings
-tree) passes `onMenu`: the bar leads with a menu button at every width and the app
-opens its own navigation, such as a Drawer of grouped sections. It replaces `links`.
+An app with more destinations than a bar can hold can use `onMenu` to open its
+own navigation, such as a Drawer of grouped sections. It replaces `links`.
 
 ```tsx
 <Stateful initial={false}>
@@ -249,17 +260,10 @@ opens its own navigation, such as a Drawer of grouped sections. It replaces `lin
 
 ### Mobile
 
-**Do** — Collapse the links into a hamburger and keep only the logo and avatar in the bar.
+**Do** — Use Navbar's built-in menu so the links collapse and the logo and avatar stay visible.
 
 ```tsx
-<Card flat flush style={{ overflow: "hidden" }}>
-  <Row alignCenter snug pad style={{ height: 56 }}>
-    <Button ghost iconLeft={<Icon menu muted size={18} />} accessibilityLabel="Open menu" />
-    <Typography small semibold>Canvas</Typography>
-    <Column grow />
-    <Avatar small src="/rachel-chen.jpg" name="RC" />
-  </Row>
-</Card>
+<Navbar brand="Canvas" brandContent={<Icon layers />} links={["Dashboard", "Users", "Settings"]} avatar="RC" />
 ```
 
 **Don't** — A full horizontal nav at phone width wraps onto a second row and crowds out the logo.

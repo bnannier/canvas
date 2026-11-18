@@ -5,17 +5,50 @@ import { panelTransform, type CollagePanel, type CollagePanelId } from "./librar
 export const SHOWCASE_MOTION = { duration: 1350, travel: 210 } as const;
 export interface ShowcaseFlight { slot: number; from: number; to: number; direction: number }
 
-export function chooseReplacement(selected: readonly number[], counts: readonly number[], previousSlot: number, random = Math.random, minimumVariant = 0): ShowcaseFlight | null {
-  const options = counts.map((count, slot) => Array.from({ length: count }, (_, variant) => variant)
-    .filter(variant => variant >= minimumVariant && variant !== selected[slot]));
-  const eligible = options.flatMap((choices, slot) => choices.length ? [slot] : []);
-  const candidates = eligible.length > 1 ? eligible.filter(slot => slot !== previousSlot) : eligible;
-  if (!candidates.length) return null;
-  const slot = candidates[Math.min(candidates.length - 1, Math.floor(random() * candidates.length))]!;
-  const from = selected[slot] ?? 0;
-  const choices = options[slot]!;
-  const to = choices[Math.min(choices.length - 1, Math.floor(random() * choices.length))]!;
-  return { slot, from, to, direction: random() < 0.5 ? -1 : 1 };
+/** Shuffle both locations and their specimens so random choices cannot starve
+ * a location or keep replaying a small subset of its samples. */
+export class HeroShowcaseSequence {
+  private slots: number[] = [];
+  private variants = new Map<number, { count: number; queue: number[] }>();
+
+  constructor(private random = Math.random) {}
+
+  private shuffle(values: number[]) {
+    for (let i = values.length - 1; i > 0; i--) {
+      const j = Math.floor(this.random() * (i + 1));
+      [values[i], values[j]] = [values[j]!, values[i]!];
+    }
+    return values;
+  }
+
+  next(selected: readonly number[], counts: readonly number[], previousSlot: number): ShowcaseFlight | null {
+    // Variant zero is the opening artwork, never a later replacement.
+    const eligible = counts.flatMap((count, slot) => count > 2 || (count === 2 && selected[slot] !== 1) ? [slot] : []);
+    this.slots = this.slots.filter(slot => eligible.includes(slot));
+    if (!this.slots.length) this.slots = this.shuffle([...eligible]);
+    if (!this.slots.length) return null;
+    // Only a cycle boundary can repeat a location. Swap the first draw with
+    // another location, keeping the full shuffled cycle intact.
+    if (this.slots.at(-1) === previousSlot && this.slots.length > 1) {
+      const other = this.slots.findIndex(slot => slot !== previousSlot);
+      const last = this.slots.length - 1;
+      [this.slots[other], this.slots[last]] = [this.slots[last]!, this.slots[other]!];
+    }
+    const slot = this.slots.pop()!;
+    const from = selected[slot] ?? 0;
+    const count = counts[slot]!;
+    let pool = this.variants.get(slot);
+    if (!pool || pool.count !== count || !pool.queue.length) {
+      pool = { count, queue: this.shuffle(Array.from({ length: count - 1 }, (_, i) => i + 1)) };
+      this.variants.set(slot, pool);
+    }
+    if (pool.queue.at(-1) === from && pool.queue.length > 1) {
+      const other = pool.queue.findIndex(variant => variant !== from);
+      const last = pool.queue.length - 1;
+      [pool.queue[other], pool.queue[last]] = [pool.queue[last]!, pool.queue[other]!];
+    }
+    return { slot, from, to: pool.queue.pop()!, direction: this.random() < 0.5 ? -1 : 1 };
+  }
 }
 
 /** The sign names the arrival side; departure travels to the opposite side. */

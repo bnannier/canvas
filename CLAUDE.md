@@ -125,7 +125,13 @@ the visual authority above. Regenerate its reference images locally with
    restored the pre-v4 mobile-web navigation. At widths up to 1024 px, use a
    page-title top bar with the Canvas mark on tab roots and Back on nested routes,
    a Menu action, a Home/Components/Utilities/Search bottom tab bar, and the
-   navigation drawer with appearance controls. Use the current v4
+   navigation drawer with appearance controls. On 2026-11-17 the owner refined
+   the shared mobile-web Navbar to an iOS-inspired brand capsule and separate
+   circular Back/Menu controls over a transparent row. Their scoped browser
+   glass follows the native regular-glass reference recorded in
+   `tools/native/liquid-motion.md` (`ios-navigation-glass-2026`); unbacked nested
+   titles gain a scroll-edge fade. Desktop and native material stay unchanged.
+   Use the current v4
    kit skins, measured chrome clearances, safe-area insets, and a stable route tree
    across resizing. The footer closes every page and the grain covers the shell;
    the rooms are `docs/src/data/rooms.ts`. Native keeps its tab bar and header.

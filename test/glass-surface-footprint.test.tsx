@@ -121,7 +121,6 @@ const HOSTS: { name: string; node: ReactNode }[] = [
   { name: "MediaObject (bordered)", node: <MediaObject testID="host" bordered title="Release notes" description="Version 2" /> },
   { name: "Calendar", node: <Calendar testID="host" /> },
   { name: "Command", node: <Command testID="host" items={[{ label: "Open" }]} /> },
-  { name: "Navbar", node: <Navbar testID="host" title="Canvas" /> },
   { name: "Sidebar", node: <Sidebar testID="host" items={[{ label: "Inbox" }]} /> },
   { name: "DataTable", node: <DataTable testID="host" columns={[{ key: "name", header: "Name" }]} rows={[{ name: "Ada" }]} /> },
 ];
@@ -140,6 +139,27 @@ describe("every kit GlassSurface keeps its solid insets and lays its material on
       expect(material, "material").not.toBeNull();
       expect(SIDES.map((side) => material!.style.getPropertyValue(side))).toEqual(["0px", "0px", "0px", "0px"]);
     });
+  }
+});
+
+it("Navbar's pane covers the stable host's whole solid footprint", async () => {
+  const navbar = <Navbar testID="host" brand="Canvas" />;
+  const { getByTestId, rerender } = await renderIn("solid", navbar);
+  const host = getByTestId("host");
+  const solidInsets = insetsOf(host);
+  rerender(<ThemeProvider light glass>{navbar}</ThemeProvider>);
+  await waitFor(() => expect(materialOf(host.firstElementChild!)).not.toBeNull());
+
+  expect(getByTestId("host")).toBe(host);
+  expect(insetsOf(host), "insets").toEqual(solidInsets);
+  expect(bordersOf(host), "border").toEqual(ZERO);
+  // The pane fills the bar's padding box. Its nested material fills the pane itself.
+  const pane = host.firstElementChild as HTMLElement;
+  expect(bordersOf(pane)).toEqual(ZERO);
+  for (const layer of [pane, materialOf(pane)!]) {
+    const style = getComputedStyle(layer);
+    expect(style.position).toBe("absolute");
+    expect(SIDES.map((side) => style.getPropertyValue(side))).toEqual(["0px", "0px", "0px", "0px"]);
   }
 });
 

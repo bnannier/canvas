@@ -7,7 +7,6 @@ import {
   Container,
   Divider,
   Grid,
-  Icon,
   Row,
   Pressable,
   Typography,
@@ -15,7 +14,6 @@ import {
   View,
   useTheme,
   useMeasuredWidth,
-  useReducedMotion,
 } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
@@ -84,8 +82,6 @@ export function LibraryHero() {
   const platformsBox = useRef<NativeView>(null);
   const panels = useHeroPanels();
   const alternatives = useHeroShowcasePanels();
-  const [showcasePaused, setShowcasePaused] = useState(false);
-  const reduced = useReducedMotion();
   const { width, onLayout } = useMeasuredWidth();
   // Match Grid's two 460 px tiles and its broad (48 px) gap.
   const stacked = width > 0 && width < HERO_GRID.minTileWidth * 2 + 48;
@@ -133,12 +129,7 @@ export function LibraryHero() {
               {heroStats(COMPONENTS.length).map((stat) => <Typography key={stat} caption mono muted singleLeading>{stat}</Typography>)}
             </Row>
           </Column></HeroEntrance>
-          <Column snug>
-            <HeroCollage testID="library-collage" panels={panels} alternatives={alternatives} paused={showcasePaused} fit={stacked} />
-            {!reduced && <Row end><Button ghost small accessibilityLabel={showcasePaused ? "Resume component showcase" : "Pause component showcase"}
-              iconLeft={showcasePaused ? <Icon play /> : <Icon pause />}
-              onPress={() => setShowcasePaused(value => !value)}>{showcasePaused ? "Resume" : "Pause"}</Button></Row>}
-          </Column>
+          <HeroCollage testID="library-collage" panels={panels} alternatives={alternatives} fit={stacked} />
         </Grid>
       </View>
     </AuroraFrame>

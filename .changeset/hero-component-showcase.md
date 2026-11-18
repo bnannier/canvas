@@ -2,6 +2,10 @@
 "@nannier/canvas": patch
 ---
 
-Expand the homepage hero with individual component demonstrations, including all 27 chart types in the center, that randomly replace one another, preserving its perspective and pointer-follow motion. Each completed entrance starts a replacement in a different location immediately. Side components enter from their own edge and exit across the scene; center charts can enter from either side. Use a taller Sparkline in the surrounding rotation. Add pause/resume and honor live Reduced Motion.
+Expand the homepage hero to showcase all 93 included components, with Layout and Foundations excluded. Keep all 27 charts and other large specimens in the center, including Skeleton, with compact surrounding controls and a taller Sparkline. Shuffle locations and samples without early repeats, and start each arrival as the previous one finishes. Preserve directional flights, pointer-follow perspective, and overflow.
+
+Keep decorative overlay samples out of the page’s Escape stack. Pause decorative Spinners independently, honor live Reduced Motion, and avoid flashing retired specimens between flights. Fit the collage to current specimen measurements so temporary responsive layouts cannot leave permanent empty space.
+
+Remove the hero playback controls and replace the draft-message and release-details samples with compact note and workspace examples. Raw TextInput values now use the theme foreground by default so they remain readable in dark mode, while explicit field colors retain precedence.
 
 Use the component-name-first page-title format, such as “Button - Canvas”.

@@ -7,6 +7,26 @@ import type { DocsUsageException } from "./component-usage.ts";
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   ...V4_PRESENTATION_EXCEPTIONS,
   {
+    file: "docs/src/brand/hero-showcase-forms-navigation.tsx", owner: "HeroFormNavigationSpecimen", tag: "View", attribute: "style", keys: ["width"], occurrences: 1,
+    reason: "The decorative TextInput sample needs a definite small scene footprint; this unpainted wrapper only supplies bounds.",
+  },
+  {
+    file: "docs/src/brand/hero-showcase-overlays.tsx", owner: "HeroOverlaySpecimen", tag: "View", attribute: "style", keys: ["height"], occurrences: 2,
+    reason: "Embedded ActionSheet and Drawer examples need finite local viewport heights inside the large hero position.",
+  },
+  {
+    file: "docs/src/brand/hero-showcase-overlays.tsx", owner: "HeroOverlaySpecimen", tag: "OverlayProvider", attribute: "style", keys: ["justifyContent", "minHeight"], occurrences: 1,
+    reason: "Contain the actual Tooltip in the decorative hero specimen instead of placing its portal over the page.",
+  },
+  {
+    file: "docs/src/brand/hero-showcase-data.tsx", owner: "WorkflowSpecimen", tag: "View", attribute: "style", keys: ["height", "overflow"], occurrences: 1,
+    reason: "Bound the actual FlowEditor preview to the central illustration slot without changing its internal minimum viewport.",
+  },
+  {
+    file: "docs/src/brand/hero-showcase-data.tsx", owner: "WorkflowSpecimen", tag: "View", attribute: "style", keys: ["height", "transform", "transformOrigin", "width"], occurrences: 1,
+    reason: "Scale the complete FlowEditor artwork uniformly to the central footprint, preserving the real kit component.",
+  },
+  {
     file: "docs/src/brand/hero-showcase-panels.tsx", owner: "ShowcaseSlot", tag: "View", attribute: "style", keys: ["width"], occurrences: 1,
     reason: "Owner-requested rotating homepage illustration (2026-11-17): a definite scene slot bounds actual kit controls before the whole perspective collage scales to its container. The wrapper paints nothing and never changes a control skin.",
   },

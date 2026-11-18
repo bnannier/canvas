@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.7.2
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: ae83e97d5ef24a47d3c97180f43a6e5f00f907c93539fcc79e31cbb2094c3d46
+Source SHA-256: b86d4b118f8515fc19be59e1bcae8cad191db1b1135cafa375586435c1b4d640
 
 Source: `src/atoms/dropdown/dropdown.md`
 Human reference: https://canvas.nannier.com/components/dropdown
@@ -40,6 +40,9 @@ adds a muted footer. `menuWidth` and `maxHeight` bound the scrolling menu.
 Pass `anchorRef` to use an existing trigger without adding another control or
 layout wrapper; `accessibilityLabel` names the menu independently of its heading.
 Checked choices use browser menu-radio semantics and the native radio trait.
+An item with `href` renders as a real anchor on the web. `onSelect` receives the
+press event so a client-side router can call `event.preventDefault()` before routing.
+Modifier and middle clicks leave selection to the browser's link behavior.
 
 ## Usage
 
@@ -386,7 +389,7 @@ item draws a trailing chevron, the hint that its `onSelect` opens another menu.
 | inline | boolean \| undefined | no | false | Draw the menu open and in flow under the trigger instead of floating it over the page: a specimen of the menu for a docs page or an empty state. The trigger reads as expanded and the press is inert, a row still fires `onSelect`, and nothing dismisses the card, so `open` and `onOpenChange` have no effect. `alignEnd` lines the card up with the trigger's trailing edge, as it does for the floating card. |
 | open | boolean \| undefined | no | false | Controlled open state. Omit for uncontrolled (the trigger opens/closes it). |
 | onOpenChange | ((open: boolean) => void) \| undefined | no |  | Fired when the open state changes (trigger press, select, etc.). |
-| onSelect | ((item: DropdownItem, index: number) => void) \| undefined | no |  | Fired with the selected item and its index when a row is pressed. |
+| onSelect | ((item: DropdownItem, index: number, event?: GestureResponderEvent) => void) \| undefined | no |  | Fired with the selected item, its index, and the press event when available. |
 | testID | string \| undefined | no |  | E2E hook forwarded to the root element. |
 | style | StyleProp<ViewStyle> | no |  | Outer layout composition only (width/flex within a parent), never a restyle hook. |
 

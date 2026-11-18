@@ -109,6 +109,18 @@ describe("fontStyle", () => {
 });
 
 describe("the themed primitives", () => {
+  it("keeps raw input ink readable when the theme changes without overriding a field's own ink", () => {
+    const fields = <><TextInput accessibilityLabel="Note" value="A quick note" /><TextInput accessibilityLabel="Custom ink" style={{ color: "#123456" }} /></>;
+    const { rerender } = render(<ThemeProvider light solid>{fields}</ThemeProvider>);
+    const channels = (color: string) => color.startsWith("#")
+      ? color.slice(1).match(/.{2}/g)!.map(value => parseInt(value, 16))
+      : color.match(/[\d.]+/g)!.slice(0, 3).map(Number);
+    expect(channels(getComputedStyle(screen.getByRole("textbox", { name: "Note" })).color)).toEqual(channels(colorsFor("violet", "light").foreground));
+    rerender(<ThemeProvider dark solid>{fields}</ThemeProvider>);
+    expect(channels(getComputedStyle(screen.getByRole("textbox", { name: "Note" })).color)).toEqual(channels(colorsFor("violet", "dark").foreground));
+    expect(channels(getComputedStyle(screen.getByRole("textbox", { name: "Custom ink" })).color)).toEqual(channels("#123456"));
+  });
+
   it("render every kit label in the registered face, from ThemeProvider fonts alone", () => {
     render(
       <ThemeProvider fonts={FACES}>

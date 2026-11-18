@@ -1,12 +1,27 @@
 import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
-import { chooseReplacement, entryDirection, flightFrame } from "../docs/src/brand/hero-showcase-motion";
+import { HeroShowcaseSequence, entryDirection, flightFrame } from "../docs/src/brand/hero-showcase-motion";
+import { COMPONENTS } from "../docs/src/core/data/components";
 
-const samples = [0, 0.2, 0.49, 0.5, 0.8, 0.999999];
-const randomSequence = (...values: number[]) => {
-  let index = 0;
-  return () => values[index++ % values.length]!;
-};
+it("covers the included component checklist and excludes Layout and Foundations", () => {
+  const source = (file: string) => readFileSync(new URL(`../docs/src/brand/${file}.tsx`, import.meta.url), "utf8");
+  const literals = (text: string) => Array.from(text.matchAll(/"([a-z-]+)"/g), match => match[1]!);
+  const list = (file: string, name: string) => literals(source(file).match(new RegExp(`export const ${name} = \\[([\\s\\S]*?)\\] as const`))?.[1] ?? "");
+  const aliases: Record<string, string> = {
+    segments: "button-group", otp: "input-otp", avatars: "avatar", "badge-group": "badge",
+    stacked: "stacked-bar", create: "button", favorite: "button", export: "button", launch: "button", "avatar-menu": "avatar", bookmark: "button",
+  };
+  const controls = literals(source("hero-showcase-panels").match(/export const HERO_SURROUNDING_KINDS = \{([\s\S]*?)\} as const/)?.[1] ?? "").map(kind => aliases[kind] ?? kind);
+  const covered = new Set([
+    ...list("hero-showcase-charts", "HERO_CHART_KINDS"),
+    ...list("hero-showcase-data", "HERO_DATA_KINDS"),
+    ...list("hero-showcase-overlays", "HERO_OVERLAY_KINDS"),
+    ...list("hero-showcase-forms-navigation", "HERO_FORM_NAV_CENTER"),
+    ...list("hero-showcase-forms-navigation", "HERO_FORM_NAV_SMALL"),
+    ...controls, "skeleton",
+  ]);
+  expect([...covered].sort()).toEqual(COMPONENTS.filter(component => component.section !== "Layout" && component.section !== "Foundations").map(component => component.slug).sort());
+});
 
 it("gives each chart export exactly one center specimen", () => {
   const chartIndex = readFileSync(new URL("../src/charts/index.ts", import.meta.url), "utf8");
@@ -20,72 +35,60 @@ it("gives each chart export exactly one center specimen", () => {
   expect(specimenSlugs).toEqual(chartSlugs);
 });
 
-describe("individual hero replacements", () => {
-  it("can retire the opening artwork so every later arrival demonstrates a live component", () => {
-    for (const from of [0, 1, 2, 3, 4]) for (const draw of samples) {
-      const flight = chooseReplacement([from], [5], -1, () => draw, 1)!;
-      expect(flight.to).toBeGreaterThanOrEqual(1);
-      expect(flight.to).toBeLessThan(5);
-      expect(flight.to).not.toBe(from);
-    }
-    expect(chooseReplacement([1], [2], -1, () => 0, 1)).toBeNull();
-  });
-  it("replaces exactly one item with a different compatible variant, without changing its neighbours", () => {
-    const pools = [
-      ["revenue chart", "bar chart", "gauge"],
-      ["tabs", "input", "breadcrumb", "OTP"],
-      ["avatar", "badge"],
-      ["switch"],
-    ];
-    const counts = pools.map(pool => pool.length);
-    const selected = Object.freeze([1, 2, 0, 0]);
-    const reached = new Set<number>();
-    for (const slotDraw of samples) for (const variantDraw of samples) {
-      const flight = chooseReplacement(selected, counts, -1, randomSequence(slotDraw, variantDraw, 0));
-      expect(flight).not.toBeNull();
-      if (!flight) throw new Error("The fixture has eligible replacements");
-      expect(flight.from).toBe(selected[flight.slot]!);
-      expect(flight.to).not.toBe(flight.from);
-      expect(pools[flight.slot]![flight.to]).toBeDefined();
-      reached.add(flight.slot);
-      const next = selected.map((value, slot) => slot === flight.slot ? flight.to : value);
-      expect(next.filter((value, slot) => value !== selected[slot])).toHaveLength(1);
-    }
-    expect([...reached].sort()).toEqual([0, 1, 2]);
-    expect(selected).toEqual([1, 2, 0, 0]);
-  });
-
-  it("can reach every alternate variant and both directions without repeating the last slot", () => {
-    const selected = [0, 1, 2, 3];
-    const reached = new Map<number, Set<number>>();
-    const directions = new Set<number>();
-    for (const slotDraw of samples) for (const variantDraw of samples) for (const directionDraw of [0, 0.999999]) {
-      const flight = chooseReplacement(selected, [4, 4, 4, 4], 1, randomSequence(slotDraw, variantDraw, directionDraw));
-      if (!flight) throw new Error("The fixture has eligible replacements");
-      expect(flight.slot).not.toBe(1);
-      expect(flight.to).not.toBe(selected[flight.slot]);
-      const variants = reached.get(flight.slot) ?? new Set<number>();
-      variants.add(flight.to);
-      reached.set(flight.slot, variants);
-      directions.add(flight.direction);
-    }
-    for (const slot of [0, 2, 3]) expect([...reached.get(slot)!].sort()).toEqual([0, 1, 2, 3].filter(value => value !== selected[slot]));
-    expect([...directions].sort()).toEqual([-1, 1]);
-  });
-
-  it("keeps a sole eligible position rotating, including when it was the previous position", () => {
-    for (const draw of samples) {
-      const flight = chooseReplacement([0, 1, 0], [1, 3, 0], 1, () => draw);
-      expect(flight?.slot).toBe(1);
-      expect(flight?.from).toBe(1);
-      expect([0, 2]).toContain(flight!.to);
+describe("shuffled hero replacements", () => {
+  it("visits every location and every specimen before repeating a cycle", () => {
+    for (const seed of [1, 17, 421]) {
+      let state = seed;
+      const sequence = new HeroShowcaseSequence(() => {
+        state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+        return state / 0x100000000;
+      });
+      const counts = [61, 9, 9, 10, 11, 9];
+      const selected = counts.map(() => 0);
+      const visits = counts.map(() => [] as number[]);
+      const positions: number[] = [];
+      let previous = -1;
+      for (let i = 0; i < 6 * 60 * 2; i++) {
+        const flight = sequence.next(selected, counts, previous)!;
+        expect(flight.slot).not.toBe(previous);
+        expect(flight.from).toBe(selected[flight.slot]!);
+        expect(flight.to).not.toBe(flight.from);
+        expect(flight.to).toBeGreaterThan(0);
+        expect(flight.to).toBeLessThan(counts[flight.slot]!);
+        positions.push(flight.slot);
+        visits[flight.slot]!.push(flight.to);
+        selected[flight.slot] = flight.to;
+        previous = flight.slot;
+      }
+      for (let i = 0; i < positions.length; i += 6) {
+        expect([...positions.slice(i, i + 6)].sort()).toEqual([0, 1, 2, 3, 4, 5]);
+      }
+      for (const [slot, variants] of visits.entries()) {
+        const poolSize = counts[slot]! - 1;
+        for (let i = 0; i + poolSize <= variants.length; i += poolSize) {
+          expect(new Set(variants.slice(i, i + poolSize)).size).toBe(poolSize);
+        }
+      }
     }
   });
 
-  it("does not schedule a flight without an alternate specimen", () => {
-    const shouldNotDraw = () => { throw new Error("No random choice is needed"); };
-    expect(chooseReplacement([], [], -1, shouldNotDraw)).toBeNull();
-    expect(chooseReplacement([0, 0], [1, 0], 0, shouldNotDraw)).toBeNull();
+  it("handles an empty pool and retires a sole opening specimen", () => {
+    const sequence = new HeroShowcaseSequence(() => 0);
+    expect(sequence.next([], [], -1)).toBeNull();
+    expect(sequence.next([0, 0], [1, 0], -1)).toBeNull();
+    expect(sequence.next([0, 0, 0], [1, 2, 0], -1)).toMatchObject({ slot: 1, from: 0, to: 1 });
+    expect(sequence.next([0, 1, 0], [1, 2, 0], 1)).toBeNull();
+  });
+
+  it("continues rotating when only one location has alternatives", () => {
+    const sequence = new HeroShowcaseSequence(() => 0.999);
+    let selected = 0;
+    for (let i = 0; i < 10; i++) {
+      const flight = sequence.next([selected], [3], 0)!;
+      expect(flight.slot).toBe(0);
+      expect(flight.to).not.toBe(selected);
+      selected = flight.to;
+    }
   });
 });
 

@@ -1,7 +1,8 @@
-// Web material host (and the fallback for a platform without its own host): Dark
-// Factory's plain frost. A backdrop blur with no saturation shift, the layer's tint painted
-// over it, and a 1px inset hairline; no refraction and no specular highlight. Every number is in
-// web-frost.ts, the tuned table. Only decoration changes when appearance does. Android
+// Web material host (and the fallback for a platform without its own host): v4's
+// backdrop blur and saturation, layer tint, and inset hairline. Separately floating
+// mobile navigation controls have a scoped directional-rim treatment, calibrated
+// against iOS regular glass. Neither browser treatment implements native lensing.
+// Values live in web-frost.ts and web-navigation-glass.ts. Android
 // and iOS are their own files (glass-surface.android.tsx: the native capture and
 // expo-blur frost; glass-surface.ios.tsx: Liquid Glass and frost), so a web material
 // change never reaches a native build.
@@ -10,6 +11,8 @@ import { FrostView, requiresBlurTarget } from "./material-runtime.js";
 import { frostedKindOf } from "./material-resolution.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 import { WEB_FROST, webBackdrop, webRimColor } from "./web-frost.js";
+import { useNavigationGlass } from "./navigation-glass.js";
+import { WEB_NAVIGATION_GLASS } from "./web-navigation-glass.js";
 import {
   GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, frostMethodProps, materialFill, surfaceIntensity,
   type GlassSurfaceProps,
@@ -22,9 +25,9 @@ export type { GlassLayer, GlassSurfaceProps } from "./glass-surface-props.js";
  * The host every kit glass surface renders through (a Card, a Dialog, a Popover's card, the
  * Navbar, an option list and the rest), painting its layer's material behind its children.
  *
- * On the web the material is Dark Factory's plain frost (a 24 px backdrop blur with no
- * saturation shift, the layer's tint painted over it, so the blur samples the page and never
- * the surface's own fill, and a 1 px inset hairline). On iOS 26 and later it is
+ * On the web the material is v4 frost (a 20 px saturated backdrop blur and a layer tint
+ * over it, so the blur samples the page and never the surface's own fill). Floating mobile
+ * navigation controls use the scoped neutral wash and directional rim. On iOS 26 and later it is
  * Apple's Liquid Glass through expo-glass-effect for the functional, control and dense
  * layers, and expo-blur's frost with a specular rim for content and static surfaces and
  * before iOS 26. On Android 12 and later in an Expo build that links Canvas's native
@@ -58,8 +61,12 @@ export function GlassSurface(props: GlassSurfaceProps) {
   // only Android's frost needs a target (glass-surface.android.tsx), so the shared
   // resolution never finds one to require.
   const { theme, material: resolved } = useMaterialResolution(props);
+  const navigation = useNavigationGlass();
   const { layer = "functional", sheer, style, clear } = props;
   const solid = resolved.renderer === "solid";
+  const scheme = theme.dark ? "dark" : "light";
+  const navigationLook = navigation && !solid && Platform.OS === "web" && props.floating && layer === "functional"
+    && !clear && props.tint == null && props.brand == null ? WEB_NAVIGATION_GLASS[scheme] : null;
   const frame = frostedKindOf(props);
   if (frame != null && !solid && Platform.OS === "web") {
     // The frame paints its tint over its own backdrop filter.
@@ -72,9 +79,8 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const translucent = sheer && layer === "content";
   const fill = materialFill(style, props.stateBorder);
   const blur = clear ? WEB_FROST.clearBlur : WEB_FROST.blur;
-  const frost = blur > 0 ? webBackdrop(blur) : undefined;
-  const scheme = theme.dark ? "dark" : "light";
-  const rim: ViewStyle = { ...fill, boxShadow: `inset 0 0 0 ${WEB_FROST.rimWidth}px ${webRimColor(layer, scheme, theme.tokens.border)}` };
+  const frost = navigationLook ? `blur(${WEB_NAVIGATION_GLASS.blur}px) saturate(${WEB_NAVIGATION_GLASS.saturation})` : blur > 0 ? webBackdrop(blur) : undefined;
+  const rim: ViewStyle = { ...fill, boxShadow: navigationLook?.rim ?? `inset 0 0 0 ${WEB_FROST.rimWidth}px ${webRimColor(layer, scheme, theme.tokens.border)}` };
   // The fill: the layer's tint, a `tint` wash or a solved `brand` colour (`frostFill`). It
   // paints OVER the blur, as the hand-off's glass paints its background over its own filtered
   // backdrop. A backdrop filter samples everything painted before it, so a fill beneath it was
@@ -84,7 +90,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   // fill composites on the blurred page alone. A platform without its own host, which frosts
   // through a native blur, takes the same order, as every native frost does.
   const web = Platform.OS === "web";
-  const tintLayer = <View style={[fill, { backgroundColor: frostFill(theme, props), opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
+  const tintLayer = <View style={[fill, { backgroundColor: navigationLook?.tint ?? frostFill(theme, props), opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
   // A platform without its own host and without a browser's backdrop filter frosts
   // through expo-blur when it is installed; the web never reaches that branch.
   const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
@@ -93,7 +99,8 @@ export function GlassSurface(props: GlassSurfaceProps) {
       ? frost ? <View style={[fill, { backdropFilter: frost, WebkitBackdropFilter: frost } as ViewStyle]} /> : null
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget)} style={fill} /> : null}
     {tintLayer}
-    <View style={rim} />
+    <View style={rim} testID={navigationLook ? "glass-navigation-optics" : undefined} />
   </>;
-  return <GlassBox {...props} style={contrastStyle(theme, style, props.stateBorder)} solid={solid} material={material} />;
+  const paintedStyle = navigationLook ? [style, { boxShadow: navigationLook.shadow }] : style;
+  return <GlassBox {...props} style={contrastStyle(theme, paintedStyle, props.stateBorder)} solid={solid} material={material} />;
 }

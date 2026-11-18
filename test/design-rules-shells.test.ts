@@ -140,6 +140,7 @@ describe("viewport reads", () => {
     "src/style/anchored-overlay.tsx": "an open anchored card that offers a sheet becomes one at the phone form factor (design-language item 5, overlays become sheets on phones; the owner's AO-6 decision, 2026-10-10)",
     "src/style/in-view.ts": "whether an element has scrolled into the window",
     "src/organisms/sidebar/sidebar.shared.tsx": "the Sidebar becomes a drawer over the WINDOW at its drawer breakpoint",
+    "src/organisms/navbars/navbars.tsx": "the app-level Navbar uses mobile web chrome on phones and tablets",
     "src/organisms/filter-panel/filter-panel.shared.tsx": "the FilterPanel becomes a drawer over the WINDOW at its drawer breakpoint",
     "src/organisms/dialog/dialog.shared.tsx": "a workspace dialog sizes its window-level chrome to the safe-area-bounded viewport",
     "src/atoms/typography/typography.shared.tsx": "the hand-off's fluid headlines (`hero`, `pageTitle`) are sized in vw, a share of the window, as its pages' `clamp(min, N vw, max)` sets them",

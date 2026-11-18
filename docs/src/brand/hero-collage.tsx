@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState } from "react-native";
-import Animated, { cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated";
+import Animated, { cancelAnimation, Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated";
 import { View, useReducedMotion, useHoverCapable } from "@nannier/canvas";
 import { COLLAGE, HERO_MOTION, panelTransform, projectCss, stackBounds, type CollagePanel, type CollagePanelId } from "./library-hero-look";
 import { inertProps } from "../../../src/style/inert";
-import { chooseReplacement, entryDirection, flightFrame, flyingPanelTransform, SHOWCASE_MOTION, type ShowcaseFlight } from "./hero-showcase-motion";
+import { HeroShowcaseSequence, entryDirection, flightFrame, flyingPanelTransform, SHOWCASE_MOTION, type ShowcaseFlight } from "./hero-showcase-motion";
 import { ShowcaseActivity } from "./hero-showcase-activity";
 
 // A brand illustration: the v4 hand-off's Library hero collage (decision P5-T1, the
@@ -22,39 +22,51 @@ const SEED_WIDTH = 648;
 const NO_ALTERNATIVES = {};
 
 const BACK_TO_FRONT = [...COLLAGE.panels].sort((a, b) => a.z - b.z);
+type ActiveShowcaseFlight = ShowcaseFlight & { start: number };
 
 function Panel({ panel, width, x, y, children, onSize, variant, selected, flight, progress, running }: {
   panel: CollagePanel; width: number; x: SharedValue<number>; y: SharedValue<number>; children: ReactNode;
-  onSize: (id: CollagePanelId, width: number, height: number) => void;
-  variant: number; selected: number; flight: ShowcaseFlight | null; progress: SharedValue<number>; running: boolean;
+  onSize: (id: CollagePanelId, variant: number, width: number, height: number) => void;
+  variant: number; selected: number; flight: ActiveShowcaseFlight | null; progress: SharedValue<number>; running: boolean;
 }) {
   const moving = flight != null && (variant === flight.from || variant === flight.to);
+  // Reanimated subscribes to captured shared values even when a worklet branches around them.
+  const flightProgress = moving ? progress : null;
   const visible = variant === selected || (flight != null && variant === flight.to);
   const motion = useAnimatedStyle(() => {
-    if (!moving || !flight) return { opacity: variant === selected ? 1 : 0, transform: panelTransform(panel, width, [x.value, y.value, 3]) };
-    const frame = flightFrame(progress.value, variant === flight.to, flight.direction);
+    if (!flightProgress || !flight) return { opacity: variant === selected ? 1 : 0, transform: panelTransform(panel, width, [x.value, y.value, 3]) };
+    const frame = flightFrame(flightProgress.value - flight.start, variant === flight.to, flight.direction);
     return { opacity: frame.opacity, transform: flyingPanelTransform(panel, width, [x.value, y.value, 3], frame.distance) };
   });
-  return <Animated.View testID={`library-panel-${panel.id}${variant ? `-${variant}` : ""}`} onLayout={({ nativeEvent: { layout } }) => onSize(panel.id, layout.width, layout.height)} style={[{
+  return <Animated.View testID={`library-panel-${panel.id}${variant ? `-${variant}` : ""}`} onLayout={({ nativeEvent: { layout } }) => onSize(panel.id, variant, layout.width, layout.height)} style={[{
     position: "absolute", left: panel.x, top: panel.y,
     ...(panel.width != null ? { width: panel.width } : null), transformOrigin: [0, 0, 0],
   }, motion]}><ShowcaseActivity.Provider value={visible && running}>{children}</ShowcaseActivity.Provider></Animated.View>;
 }
 
-export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, paused = false, testID, fit = false }: {
+export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, testID, fit = false }: {
   panels: Record<CollagePanelId, ReactNode>; alternatives?: Partial<Record<CollagePanelId, readonly ReactNode[]>>;
-  paused?: boolean; testID?: string; fit?: boolean;
+  testID?: string; fit?: boolean;
 }) {
   const [width, setWidth] = useState(SEED_WIDTH);
-  const [sizes, setSizes] = useState<Partial<Record<CollagePanelId, [number, number]>>>({});
-  const onSize = useCallback((id: CollagePanelId, w: number, h: number) => {
-    // Reserve the union of every specimen up front. Replacements and their
-    // demonstrations never change the hero's height or its mouse coordinate space.
-    setSizes(prev => {
-      const next: [number, number] = [Math.max(prev[id]?.[0] ?? 0, w), Math.max(prev[id]?.[1] ?? 0, h)];
-      return prev[id]?.[0] === next[0] && prev[id]?.[1] === next[1] ? prev : { ...prev, [id]: next };
+  const [specimenSizes, setSpecimenSizes] = useState<Record<string, [number, number]>>({});
+  const onSize = useCallback((id: CollagePanelId, variant: number, w: number, h: number) => {
+    const key = `${id}-${variant}`;
+    setSpecimenSizes(prev => {
+      return prev[key]?.[0] === w && prev[key]?.[1] === h ? prev : { ...prev, [key]: [w, h] };
     });
   }, []);
+  // Reserve the union of the current specimen measurements, not their largest
+  // historical size: a responsive component's initial stacked layout can be
+  // taller than its settled layout and must not leave a permanent blank region.
+  const sizes = useMemo(() => {
+    const result: Partial<Record<CollagePanelId, [number, number]>> = {};
+    for (const panel of BACK_TO_FRONT) {
+      const measured = Object.entries(specimenSizes).filter(([key]) => key.startsWith(`${panel.id}-`)).map(([, size]) => size);
+      if (measured.length) result[panel.id] = [Math.max(...measured.map(size => size[0])), Math.max(...measured.map(size => size[1]))];
+    }
+    return result;
+  }, [specimenSizes]);
   // Fit the complete illustration into its measured column, keeping the authored
   // panel geometry and perspective in one coordinate system on every platform.
   const narrow = fit || width < SEED_WIDTH - 1;
@@ -82,10 +94,12 @@ export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, paused = f
     const subscription = AppState.addEventListener("change", state => setForeground(state === "active"));
     return () => subscription.remove();
   }, []);
-  const running = !reduced && !paused && foreground;
+  const running = !reduced && foreground;
   const [selected, setSelected] = useState(() => BACK_TO_FRONT.map(() => 0));
-  const [flight, setFlight] = useState<ShowcaseFlight | null>(null);
+  const [flight, setFlight] = useState<ActiveShowcaseFlight | null>(null);
   const previousSlot = useRef(-1);
+  const sequence = useRef<HeroShowcaseSequence | null>(null);
+  if (!sequence.current) sequence.current = new HeroShowcaseSequence();
   const progress = useSharedValue(0);
   const counts = useMemo(() => BACK_TO_FRONT.map(panel => (alternatives[panel.id]?.length ?? 0) + 1), [alternatives]);
   useEffect(() => {
@@ -94,16 +108,19 @@ export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, paused = f
       // Let the page's opening entrance finish once; each later replacement
       // starts immediately after the previous flight in a different position.
       const timer = setTimeout(() => {
-        progress.value = 0;
         // The authored starting illustration yields to live demonstrations;
         // every later arrival comes from the animated specimen pool.
-        const next = chooseReplacement(selected, counts, previousSlot.current, Math.random, 1);
-        setFlight(next ? { ...next, direction: entryDirection(BACK_TO_FRONT[next.slot]!.id, next.direction) } : null);
+        const next = sequence.current!.next(selected, counts, previousSlot.current);
+        // Keep the clock monotonic: an old worklet stays at its finished frame
+        // while React installs the next flight, instead of flashing its old item.
+        setFlight(next ? { ...next, start: progress.value, direction: entryDirection(BACK_TO_FRONT[next.slot]!.id, next.direction) } : null);
       }, previousSlot.current < 0 ? HERO_MOTION.rise : 0);
       return () => clearTimeout(timer);
     }
-    const remaining = SHOWCASE_MOTION.duration * (1 - progress.value);
-    progress.value = withTiming(1, { duration: remaining, easing: Easing.linear });
+    const remaining = SHOWCASE_MOTION.duration * (1 - (progress.value - flight.start));
+    // The live Canvas preference gates this effect; Reanimated's system flag
+    // is cached at startup and otherwise cannot resume a newly enabled preview.
+    progress.value = withTiming(flight.start + 1, { duration: remaining, easing: Easing.linear, reduceMotion: ReduceMotion.Never });
     const timer = setTimeout(() => {
       previousSlot.current = flight.slot;
       setSelected(prev => prev.map((value, slot) => slot === flight.slot ? flight.to : value));
@@ -116,6 +133,8 @@ export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, paused = f
     cancelAnimation(progress);
     progress.value = 0;
     setFlight(null);
+    previousSlot.current = -1;
+    sequence.current = new HeroShowcaseSequence();
     setSelected(BACK_TO_FRONT.map(() => 0));
   }, [reduced, progress]);
   const x = useSharedValue<number>(COLLAGE.rotate[0]);
@@ -129,7 +148,7 @@ export function HeroCollage({ panels, alternatives = NO_ALTERNATIVES, paused = f
       const bounds = stackBounds(canvasWidth, [x.value, y.value, 3]);
       const nx = Math.max(-1, Math.min(1, ((event.clientX - windowLeft - offset) / scale + left - bounds.left - bounds.width / 2) / bounds.width));
       const ny = Math.max(-1, Math.min(1, ((event.clientY - windowTop) / scale + top - bounds.top - bounds.height / 2) / bounds.height));
-      const config = { duration: HERO_MOTION.tilt, easing: Easing.bezier(...HERO_MOTION.entrance) };
+      const config = { duration: HERO_MOTION.tilt, easing: Easing.bezier(...HERO_MOTION.entrance), reduceMotion: ReduceMotion.Never };
       x.value = withTiming(14 - ny * 8, config);
       y.value = withTiming(-22 + nx * 10, config);
     });

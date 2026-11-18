@@ -137,15 +137,16 @@ export interface CanvasTextInputProps extends TextInputProps {
   systemFocus?: boolean;
 }
 /**
- * React Native's TextInput with the theme's registered typefaces applied. Kit fields
+ * React Native's TextInput with the theme's foreground and registered typefaces applied. Kit fields
  * (Input, Textarea, Select) build on it; reach for them first.
  */
 export const TextInput = forwardRef<RNTextInput, CanvasTextInputProps>(function TextInput({ style, systemFocus, onLayout, ...rest }, ref) {
   // The anatomy part: the editing node itself (the hand-off's Native input).
   const inputPart = useAnatomyPart("Native input");
+  const { tokens } = useTheme();
   const ring = useFocusRingStyle();
   const font = useFontStyle(style);
-  // The ring goes first in the list so a field's own outline style wins.
-  const themed = useMemo(() => systemFocus ? font : [ring, font], [ring, font, systemFocus]);
+  // Raw inputs need readable ink in either scheme. A field's own ink and outline win.
+  const themed = useMemo(() => [{ color: tokens.foreground }, !systemFocus && ring, font], [tokens.foreground, ring, font, systemFocus]);
   return <RNTextInput ref={withPartRef(inputPart, ref)} {...rest} onLayout={withPartLayout(inputPart, onLayout)} style={themed} />;
 });

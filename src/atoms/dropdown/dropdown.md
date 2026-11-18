@@ -32,6 +32,9 @@ adds a muted footer. `menuWidth` and `maxHeight` bound the scrolling menu.
 Pass `anchorRef` to use an existing trigger without adding another control or
 layout wrapper; `accessibilityLabel` names the menu independently of its heading.
 Checked choices use browser menu-radio semantics and the native radio trait.
+An item with `href` renders as a real anchor on the web. `onSelect` receives the
+press event so a client-side router can call `event.preventDefault()` before routing.
+Modifier and middle clicks leave selection to the browser's link behavior.
 
 ## Usage
 
