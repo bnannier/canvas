@@ -37,12 +37,27 @@ test.describe("App shell", () => {
     await expect(page.getByTestId("smoke-package-version")).toHaveText(identity.packageVersion);
   });
 
-  test("the menu leads the bar and lists the journeys and every tier", async ({ page }) => {
+  test("the menu follows the responsive navbar layout and lists the journeys and every tier", async ({ page }) => {
     await page.goto("/");
     const menu = page.getByRole("button", { name: "Navigation menu" });
-    const brand = page.getByText("Canvas Smoke Test").first();
-    const [menuBox, brandBox] = [await menu.boundingBox(), await brand.boundingBox()];
-    expect(menuBox!.x).toBeLessThan(brandBox!.x);
+    const brand = page.getByText("Canvas Smoke Test", { exact: true }).first();
+    const mobile = page.viewportSize()!.width <= 1024;
+    await expect(async () => {
+      const [menuBox, brandBox] = await Promise.all([menu.boundingBox(), brand.boundingBox()]);
+      if (!menuBox || !brandBox) throw new Error("The navbar brand and menu must both be visible.");
+      const menuCenter = menuBox.y + menuBox.height / 2;
+      const brandCenter = brandBox.y + brandBox.height / 2;
+      expect(Math.abs(menuCenter - brandCenter)).toBeLessThanOrEqual(0.5);
+      if (mobile) {
+        expect(brandBox.x + brandBox.width).toBeLessThan(menuBox.x);
+        expect(menuBox.width).toBeCloseTo(44);
+        expect(menuBox.height).toBeCloseTo(44);
+        const radius = await menu.evaluate((node) => parseFloat(getComputedStyle(node).borderTopLeftRadius));
+        expect(radius).toBeGreaterThanOrEqual(22);
+      } else {
+        expect(menuBox.x + menuBox.width).toBeLessThan(brandBox.x);
+      }
+    }).toPass({ timeout: 10_000 });
     await menu.click();
     const drawer = page.getByRole("dialog", { name: "Smoke test menu" });
     await expect(drawer.getByRole("button", { name: /^Journeys/ })).toBeVisible();
