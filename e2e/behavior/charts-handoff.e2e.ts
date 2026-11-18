@@ -39,10 +39,35 @@ test("the chart hero animates and live Reduced Motion restores the hand-off's st
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await gotoDocs(page, "/charts");
-  const line = page.getByTestId("section-hero").locator('path[stroke-dasharray="420"]');
+  const hero = page.getByTestId("section-hero");
+  const line = hero.locator('path[stroke-dasharray="420"]');
   await expect(line).toHaveCount(1);
   const before = await line.getAttribute("stroke-dashoffset");
   await expect.poll(() => line.getAttribute("stroke-dashoffset"), { timeout: 7500 }).not.toBe(before);
+
+  const geometry = await hero.evaluate(node => new Promise<{
+    minRadius: number; maxRadius: number; minDash: number; arcs: number;
+  }>(resolve => {
+    const dot = node.querySelector('circle[cx="300"]')!;
+    const arcs = Array.from(node.querySelectorAll("circle[stroke-dasharray]"));
+    let minRadius = Infinity, maxRadius = -Infinity, minDash = Infinity;
+    const start = performance.now();
+    const sample = () => {
+      const radius = Number(dot.getAttribute("r"));
+      minRadius = Math.min(minRadius, radius);
+      maxRadius = Math.max(maxRadius, radius);
+      for (const arc of arcs) minDash = Math.min(minDash, Number.parseFloat(arc.getAttribute("stroke-dasharray")!));
+      // Cover a full cycle so the exit spring is sampled regardless of load time.
+      if (performance.now() - start < 6100) requestAnimationFrame(sample);
+      else resolve({ minRadius, maxRadius, minDash, arcs: arcs.length });
+    };
+    requestAnimationFrame(sample);
+  }));
+  expect(geometry.arcs).toBe(2);
+  expect(geometry.minRadius).toBeGreaterThanOrEqual(0);
+  expect(geometry.maxRadius).toBeGreaterThan(4.5);
+  expect(geometry.minDash).toBe(0);
+
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(line).toHaveAttribute("stroke-dashoffset", "420");
   const samples = await line.evaluate(node => new Promise<string[]>(resolve => {

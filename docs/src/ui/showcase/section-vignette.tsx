@@ -332,7 +332,12 @@ function Charts({ s }: { s: Scene }) {
       {[20,55,90,125].map(yy=><Line key={yy} x1={0} x2={300} y1={yy} y2={yy} stroke={s.t.border} strokeDasharray="2 4" />)}
       <Motion as={AP} clock={s.clock} d="M0 110L30 96L60 100L90 76L120 82L150 58L180 64L210 40L240 46L270 22L300 28L300 130H0Z" fill={s.t.primary} fillOpacity={.14} rest={{ opacity: 1 }} draw={(time)=>{ "worklet";return {opacity:timeline(time,6000,[0,.3,.5,.88,.98,1],[0,0,1,1,0,0])};}} />
       <Motion as={AP} clock={s.clock} d="M0 110L30 96L60 100L90 76L120 82L150 58L180 64L210 40L240 46L270 22L300 28" fill="none" stroke={s.t.primary} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="420" rest={{ strokeDashoffset: 420, opacity: 1 }} draw={(time)=>{ "worklet";return {strokeDashoffset:timeline(time,6000,[0,.05,.45,.88,.98,1],[420,420,0,0,0,0],SMOOTH),opacity:timeline(time,6000,[0,.88,.98,1],[1,1,0,0],SMOOTH)};}} />
-      <Motion as={AC} clock={s.clock} cx={300} cy={28} fill={s.t.primary} rest={{ r: 4.5 }} draw={(time)=>{ "worklet";return {r:4.5*timeline(time,6000,[0,.44,.52,.88,.98,1],[0,0,1,1,0,0],SPRING)};}} />
+      <Motion as={AC} clock={s.clock} cx={300} cy={28} fill={s.t.primary} rest={{ r: 4.5 }} draw={(time) => {
+        "worklet";
+        const scale = timeline(time, 6000, [0,.44,.52,.88,.98,1], [0,0,1,1,0,0], SPRING);
+        // The hand-off scales around the center, so a negative scale mirrors the dot.
+        return { r: 4.5 * Math.abs(scale) };
+      }} />
     </G>
     {side&&<>
       <Defs><LinearGradient id={`${s.id}bars`} x1="0" y1="0" x2="0" y2="1"><Stop offset={0} stopColor={s.t["chart-2"]}/><Stop offset={1} stopColor={s.t["chart-2"]} stopOpacity={.3}/></LinearGradient></Defs>
@@ -341,8 +346,16 @@ function Charts({ s }: { s: Scene }) {
       <Pane s={s} x={sx} y={y+(height+14+28)/2} width={sw} height={(height-14-28)/2} radius={16}/>
       <G transform={`translate(${sx+sw/2} ${y+(height+14+28)/2+(height-14-28)/4}) rotate(-90) scale(1.05)`}>
         <Circle r={30} fill="none" stroke={s.t["surface-raised"]} strokeWidth={10}/>
-        <Motion as={AC} clock={s.clock} r={30} fill="none" stroke={s.t.primary} strokeWidth={10} rest={{ strokeDasharray: [0, 189] }} draw={(time)=>{ "worklet";return {strokeDasharray:[timeline(time,6000,[0,.1,.4,.88,.98,1],[0,0,96,96,0,0],SPRING),189]};}}/>
-        <Motion as={AC} clock={s.clock} r={30} fill="none" stroke={s.t["chart-3"]} strokeWidth={10} strokeDashoffset={-100} rest={{ strokeDasharray: [0, 189] }} draw={(time)=>{ "worklet";return {strokeDasharray:[timeline(time,6000,[0,.2,.5,.88,.98,1],[0,0,56,56,0,0],SPRING),189]};}}/>
+        <Motion as={AC} clock={s.clock} r={30} fill="none" stroke={s.t.primary} strokeWidth={10} rest={{ strokeDasharray: [0, 189] }} draw={(time) => {
+          "worklet";
+          const length = timeline(time, 6000, [0,.1,.4,.88,.98,1], [0,0,96,96,0,0], SPRING);
+          return { strokeDasharray: [Math.max(0, length), 189] };
+        }} />
+        <Motion as={AC} clock={s.clock} r={30} fill="none" stroke={s.t["chart-3"]} strokeWidth={10} strokeDashoffset={-100} rest={{ strokeDasharray: [0, 189] }} draw={(time) => {
+          "worklet";
+          const length = timeline(time, 6000, [0,.2,.5,.88,.98,1], [0,0,56,56,0,0], SPRING);
+          return { strokeDasharray: [Math.max(0, length), 189] };
+        }} />
       </G>
     </>}
   </>;
@@ -390,7 +403,12 @@ function Skins({ s }: { s: Scene }) {
       <Motion as={AR} clock={s.clock} width={84} height={28} rx={9} fill={s.t.card} draw={time=>{ "worklet";return {x:px+3+value(time,0,84,168),y:152-(97.2+value(time,40,50,40))/2};}} />
       {PLATFORMS_SHOWN.map((p,i)=><Motion key={p} as={AT} clock={s.clock} x={px+45+i*84} textAnchor="middle" fontFamily={s.fonts.sans} fontSize={12} fontWeight={500} fill={s.t.foreground} draw={time=>{ "worklet";return {y:171-(97.2+value(time,40,50,40))/2};}}>{PLATFORM_LABELS[p]!.label}</Motion>)}
     </>}
-    <Motion as={AR} clock={s.clock} fill={s.t.primary} filter={`url(#${s.id}glow)`} draw={time=>{ "worklet";const width=value(time,150,196,168),height=value(time,40,50,40),sw=value(time,44,51,52);return {x:s.w/2-(width+22+sw)/2,y:rowY-height/2,width,height,rx:Math.min(height/2,value(time,10,999,999))};}} />
+    <Motion as={AR} clock={s.clock} fill={s.t.primary} filter={`url(#${s.id}glow)`} draw={time => {
+      "worklet";
+      const width = value(time, 150, 196, 168), height = value(time, 40, 50, 40), switchWidth = value(time, 44, 51, 52);
+      const radius = Math.max(0, Math.min(height / 2, value(time, 10, 999, 999)));
+      return { x: s.w / 2 - (width + 22 + switchWidth) / 2, y: rowY - height / 2, width, height, rx: radius };
+    }} />
     <Motion as={AT} clock={s.clock} y={rowY+5} textAnchor="middle" fill={s.t["primary-foreground"]} fontSize={15} draw={time=>{ "worklet";const p=native?nativeIndex:timeline(time,9000,[0,.28,.33,.61,.66,.94,1],[0,0,1,1,2,2,0],SPRING);return {x:s.w/2-(22+value(time,44,51,52))/2,fontWeight:p>.5&&p<1.5?"600":"500",fontFamily:p>.5&&p<1.5?"-apple-system,system-ui,sans-serif":p>=1.5?"Roboto,system-ui,sans-serif":s.fonts.sans};}}>Continue</Motion>
     <Motion as={AR} clock={s.clock} rx={999} draw={time=>{ "worklet";const width=value(time,44,51,52),height=value(time,26,31,32),bw=value(time,150,196,168);const green=Math.max(0,Math.min(1,value(time,0,1,0)));return {x:s.w/2+(bw+22-width)/2,y:rowY-height/2,width,height,rx:height/2,fill:interpolateColor(green,[0,1],[s.t.primary,s.t.success])};}} />
     <Motion as={AC} clock={s.clock} cy={rowY} filter={`url(#${s.id}thumb)`} draw={time=>{ "worklet";const sw=value(time,44,51,52),bw=value(time,150,196,168),r=value(time,11,13.5,12),android=Math.max(0,Math.min(1,value(time,0,0,1)));return {cx:s.w/2+(bw+22+sw)/2-2-r,r,fill:interpolateColor(android,[0,1],["#fff",s.t["primary-foreground"]])};}} />

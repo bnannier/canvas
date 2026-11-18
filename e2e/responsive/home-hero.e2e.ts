@@ -1,37 +1,59 @@
+import type { Locator } from "@playwright/test";
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
+
+const PANEL_SELECTOR = '[data-testid^="library-panel-"]';
+
+async function restingCollageFit(collage: Locator) {
+  return collage.evaluate((node, panelSelector) => {
+    const frame = node.getBoundingClientRect();
+    // Reduced Motion leaves the opening panels in place and the other specimens transparent.
+    const panels = Array.from(node.querySelectorAll(panelSelector)).map(panel => ({
+      box: panel.getBoundingClientRect(),
+      visible: Number(getComputedStyle(panel).opacity) > 0,
+    }));
+    const boxes = panels.filter(panel => panel.visible).map(panel => panel.box);
+    const horizontalBounds = (rects: DOMRect[]) => ({
+      left: Math.min(...rects.map(rect => rect.left)),
+      right: Math.max(...rects.map(rect => rect.right)),
+    });
+    const { left, right } = horizontalBounds(boxes);
+    const mounted = horizontalBounds(panels.map(panel => panel.box));
+    const frameCenter = (frame.left + frame.right) / 2;
+    return {
+      visiblePanels: boxes.length,
+      fitsViewportWidth: boxes.every(box => box.width > 0 && box.height > 0 && box.left >= 0 && box.right <= window.innerWidth),
+      fitsColumnWidth: left >= frame.left && right <= frame.right,
+      // The layout centers the full rotation pool. The opening glass panel sits slightly inside that envelope.
+      openingCentered: Math.abs((left + right) / 2 - frameCenter) < 3,
+      allSpecimensCentered: Math.abs((mounted.left + mounted.right) / 2 - frameCenter) < 1,
+      fillsPhoneColumn: (right - left) / frame.width > 0.9,
+    };
+  }, PANEL_SELECTOR);
+}
 
 for (const width of [320, 390, 430, 640, 768, 820, 1024, 1180, 1440]) {
   test(`the homepage hero fits its viewport at ${width}px`, async ({ page }) => {
     await gotoDocs(page, "/", { viewport: { width, height: 900 } });
     const hero = page.getByTestId("library-hero");
-    const panels = hero.locator('[data-testid^="library-panel-"]');
-    await expect(panels).toHaveCount(6);
+    const collage = hero.getByTestId("library-collage");
+    await expect(collage.locator(PANEL_SELECTOR)).toHaveCount(109);
     // The hero clips its decorative glow, so document scrollWidth alone cannot
-    // detect an illustration cut off inside it. Measure every projected panel.
-    await expect.poll(() => panels.evaluateAll((nodes) => nodes.every((node) => {
-      const box = node.getBoundingClientRect();
-      return box.width > 0 && box.left >= 0 && box.right <= window.innerWidth;
-    }))).toBe(true);
+    // detect an illustration cut off inside it. Measure the resting projection.
+    await expect.poll(() => restingCollageFit(collage)).toMatchObject({
+      visiblePanels: 6,
+      fitsViewportWidth: true,
+      ...(width <= 1024 ? { fitsColumnWidth: true, openingCentered: true, allSpecimensCentered: true } : {}),
+      ...(width <= 640 ? { fillsPhoneColumn: true } : {}),
+    });
     await expect.poll(() => page.locator("[data-page-scroll]").evaluate((node) => node.scrollWidth - node.clientWidth)).toBe(0);
-    if (width <= 1024) {
-      await expect.poll(() => page.getByTestId("library-collage").evaluate((node) => {
-        const frame = node.getBoundingClientRect();
-        const boxes = Array.from(node.querySelectorAll('[data-testid^="library-panel-"]')).map(panel => panel.getBoundingClientRect());
-        const left = Math.min(...boxes.map(box => box.left));
-        const right = Math.max(...boxes.map(box => box.right));
-        return (window.innerWidth > 640 || (right - left) / frame.width > 0.9)
-          && left >= frame.left && right <= frame.right
-          && Math.abs((left - frame.left) - (frame.right - right)) < 2;
-      })).toBe(true);
-    }
     if (width <= 640) {
       const bar = await page.locator("[data-shell-mobile-top]").boundingBox();
-      const eyebrow = await hero.getByText(/component library/i).boundingBox();
+      const eyebrow = await hero.getByText(/^Canvas v.+ · Component library$/).boundingBox();
       expect(eyebrow!.y).toBeGreaterThanOrEqual(bar!.y + bar!.height + 16);
       const heading = hero.getByRole("heading", { level: 1 });
       await expect.poll(async () => (await heading.boundingBox())?.x).toBe(24);
-      await expect.poll(async () => (await page.getByTestId("library-collage").boundingBox())!.height).toBeLessThan(580);
+      await expect.poll(async () => (await collage.boundingBox())!.height).toBeLessThan(580);
       const github = hero.getByRole("link", { name: "View Canvas on GitHub" });
       await expect(github).toHaveAttribute("href", "https://github.com/bnannier/canvas");
       await expect(github.locator("svg")).toBeVisible();
@@ -49,10 +71,11 @@ for (const width of [320, 390, 430, 640, 768, 820, 1024, 1180, 1440]) {
 // Rotation and the mobile/desktop shell handoff must update the existing hero,
 // including when its collage column grows beyond the authored 648 px canvas.
 test.describe("the live tablet hero", () => {
-  test.use({ contextOptions: { reducedMotion: "no-preference", hasTouch: true } });
+  test.use({ contextOptions: { reducedMotion: "reduce", hasTouch: true } });
 
-  test("centres its complete collage after portrait and landscape resizes", async ({ page }) => {
+  test("centres its resting collage after portrait and landscape resizes", async ({ page }) => {
     await gotoDocs(page, "/", { viewport: { width: 820, height: 1180 } });
+    const collage = page.getByTestId("library-collage");
     for (const viewport of [
       { width: 820, height: 1180 },
       { width: 1024, height: 768 },
@@ -60,17 +83,9 @@ test.describe("the live tablet hero", () => {
       { width: 768, height: 1024 },
     ]) {
       await page.setViewportSize(viewport);
-      await expect.poll(() => page.getByTestId("library-collage").evaluate((node) => {
-        const frame = node.getBoundingClientRect();
-        const boxes = Array.from(node.querySelectorAll('[data-testid^="library-panel-"]')).map(panel => panel.getBoundingClientRect());
-        const left = Math.min(...boxes.map(box => box.left));
-        const right = Math.max(...boxes.map(box => box.right));
-        const top = Math.min(...boxes.map(box => box.top));
-        const bottom = Math.max(...boxes.map(box => box.bottom));
-        return boxes.length === 6 && left >= frame.left && right <= frame.right
-          && top >= frame.top && bottom <= frame.bottom
-          && Math.abs((left - frame.left) - (frame.right - right)) < 2;
-      })).toBe(true);
+      await expect.poll(() => restingCollageFit(collage), { message: `collage fit at ${viewport.width} × ${viewport.height}` })
+        .toMatchObject({ visiblePanels: 6, fitsViewportWidth: true, fitsColumnWidth: true, openingCentered: true, allSpecimensCentered: true });
+      await expect.poll(() => page.locator("[data-page-scroll]").evaluate(node => node.scrollWidth - node.clientWidth)).toBe(0);
     }
   });
 });

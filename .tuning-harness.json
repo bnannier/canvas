@@ -15,7 +15,8 @@
     "docs/src/ui/showcase/demo-clock.ts",
     "docs/src/sections/layout-motion.tsx",
     "docs/src/sections/overlays.tsx",
-    "docs/src/ui/showcase/demo.tsx"
+    "docs/src/ui/showcase/demo.tsx",
+    "docs/src/ui/showcase/section-vignette.tsx"
   ],
   "references": [
     {

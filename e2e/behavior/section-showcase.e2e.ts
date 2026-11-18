@@ -1,6 +1,17 @@
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
+test("the Skins button keeps a valid corner radius as it springs back to the web shape", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await gotoDocs(page, "/skins");
+  const button = page.getByTestId("section-hero").locator("rect[filter]");
+  await expect(button).toHaveAttribute("width", "168", { timeout: 12_000 });
+  // Sample on each frame since the corner only reaches zero during the return spring.
+  await page.waitForFunction(rect => rect.getAttribute("rx") === "0", await button.elementHandle(), { timeout: 12_000 });
+  await expect(button).toHaveAttribute("rx", "10");
+});
+
 test("Section demos reset for Reduced Motion and preserve reader edits after keyboard takeover", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await gotoDocs(page, "/inputs");

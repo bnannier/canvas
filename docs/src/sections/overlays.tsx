@@ -322,7 +322,9 @@ function PopoverCard() {
   const setFilter = (next: boolean) => demo.setValue((current) => ({ ...current, tip: false, filter: next }));
   return (
     <ShowcaseCard id="c-popover" caption="Tooltip · Dropdown · Popover" stage={{ height: 460, scene: <PopoverScene />, inset: [56, 20, 24, 20], noLabel: true }}>
-      <OverlayProvider viewport>
+      {/* The stage already clips its local outlet. Inherit the window's placement
+          bounds so scrolling the stage offscreen cannot collapse its pinned cards. */}
+      <OverlayProvider>
         <Row stacks grow relaxed>
           <Column grow shrink between alignStart>
             <Row snug alignCenter>
