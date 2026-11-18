@@ -65,24 +65,26 @@ test("native source maps retain exact module-request positions and following cod
 
 test("native watch transforms subsequent changes as well as the initial emit", async () => {
   const dir = compilerFixture();
-  // The dev launcher runs the watcher in its own Bun process. Exercise that
-  // boundary, including real filesystem events, without inheriting the suite's
-  // compiler caches or global timers. The ready message follows watch creation.
+  // Use a separate Bun process like the dev launcher. Poll the real files so
+  // this transformer test also works on hosts with delayed filesystem events.
+  // The ready message follows watch creation and the initial emit.
   write(dir, "watch.ts", `import { watchNative } from ${JSON.stringify(path.resolve(import.meta.dir, "../../scripts/build-native.ts"))};\nwatchNative(${JSON.stringify(path.join(dir, "tsconfig.json"))});\nconsole.log("WATCH_READY");\n`);
-  const watcher = Bun.spawn([process.execPath, path.join(dir, "watch.ts")], { stdout: "pipe", stderr: "pipe" });
-  let output = "";
-  const consume = async (stream: ReadableStream<Uint8Array>) => {
-    const decoder = new TextDecoder();
-    for await (const chunk of stream) output += decoder.decode(chunk, { stream: true });
-  };
-  const streams = Promise.all([consume(watcher.stdout), consume(watcher.stderr)]);
+  // File-backed output keeps compiler diagnostics without depending on Bun's
+  // subprocess pipes. Both files belong to the fixture and its cleanup.
+  const stdout = path.join(dir, "watch.stdout");
+  const stderr = path.join(dir, "watch.stderr");
+  const watcher = Bun.spawn([process.execPath, path.join(dir, "watch.ts")], {
+    env: { ...process.env, TSC_WATCHFILE: "DynamicPriorityPolling" },
+    stdout: Bun.file(stdout),
+    stderr: Bun.file(stderr),
+  });
   const until = async (ready: () => boolean) => {
     const deadline = Date.now() + 10_000;
     while (!ready() && Date.now() < deadline && watcher.exitCode === null) await new Promise((done) => setTimeout(done, 50));
-    expect(ready(), output).toBe(true);
+    expect(ready(), fs.readFileSync(stdout, "utf8") + fs.readFileSync(stderr, "utf8")).toBe(true);
   };
   try {
-    await until(() => output.includes("WATCH_READY"));
+    await until(() => fs.readFileSync(stdout, "utf8").includes("WATCH_READY"));
     const read = () => fs.readFileSync(path.join(dir, "dist/index.js"), "utf8");
     expect(read()).toContain('from "./value"');
     write(dir, "src/index.ts", 'export { value as updated } from "./value.js";\n');
@@ -91,7 +93,6 @@ test("native watch transforms subsequent changes as well as the initial emit", a
   } finally {
     watcher.kill();
     await watcher.exited;
-    await streams;
   }
 }, 25_000);
 
