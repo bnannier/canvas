@@ -241,7 +241,7 @@ test("the staged migration ends route by route, at the audit turn that owns each
   expect(errorsOf(inventory(), manifest(API, { plannedRoutes: { [RETIRED]: PLANNED[RETIRED] } })))
     .toEqual(["PENDING_DOCS stages 1 (fieldWidths) for guides/layout, but PLANNED_ROUTES names no audit turn that lands its docs: give the route the turn that ends it"]);
   expect(errorsOf(inventory(), manifest(API, { plannedRoutes: { ...PLANNED, "guides/layout": { turn: "components/fields" } } })))
-    .toEqual(["PLANNED_ROUTES gives guides/layout to components/fields, which is no checklist under audit/"]);
+    .toEqual(["PLANNED_ROUTES gives guides/layout to components/fields, which is absent from the audit inventory"]);
   // Its turn closes it, and nothing may be staged for a closed route again.
   expect(errorsOf(inventory(), manifest(API, { plannedRoutes: { ...PLANNED, "guides/layout": { turn: "components/field", closed: true } } })))
     .toEqual(["guides/layout is closed (its turn, components/field, landed its docs), but PENDING_DOCS still stages 1 (fieldWidths) for it: document them there"]);

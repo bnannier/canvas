@@ -205,14 +205,12 @@ describe("pageStructureViolations", () => {
   });
 });
 
-// S10 from a checklist on disk: a copy of a real audit checklist (Button's, the format
-// tools/audit/checklists.ts writes) with a run id typed into one sign-off row, in a
-// fixture repo of its own, so the rule is proven on the file a reviewer would edit.
+// S10 reads a self-contained checklist fixture with a signed and an unsigned
+// platform, without depending on historical audit records in the repository.
 describe("the Accessibility section follows the audit's sign-off", () => {
   const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "canvas-docgen-signoff-"));
   afterAll(() => fs.rmSync(fixture, { recursive: true, force: true }));
-  const real = fs.readFileSync(path.join(REPO, "audit/components/button.md"), "utf8");
-  if (!/^\| web \|  \|  \|  \|  \|$/m.test(real)) throw new Error("audit/components/button.md has no blank web sign-off row; point this fixture at an unsigned checklist");
+  const real = "## Sign-off\n\nA platform is signed off when every variant cell for it is ticked, no critical or high finding is open, every medium or low is fixed or carries the owner's decision, and the run id names the after-capture run under `.audit/runs/` that shows it.\n\n| Platform | Run id | Reviewer | Date | Result |\n|---|---|---|---|---|\n| web |  |  |  |  |\n| ios |  |  |  |  |\n| android |  |  |  |  |\n";
   const signed = real.replace(/^\| web \|  \|  \|  \|  \|$/m, "| web | 2026-10-09T12-00-00 | reviewer | 2026-10-09 | pass |");
   fs.mkdirSync(path.join(fixture, "audit/components"), { recursive: true });
   fs.writeFileSync(path.join(fixture, "audit/components/widget.md"), signed);

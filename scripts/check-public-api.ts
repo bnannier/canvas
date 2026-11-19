@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { COMPONENTS } from "../docs/src/core/data/components";
 import { checkPublicApi } from "../tools/api/check";
@@ -8,6 +8,8 @@ import { entryPoints, files, PENDING_DOCS, PLANNED_ROUTES, publicApi } from "../
 import { packedFiles } from "../tools/api/packed";
 import { SNAPSHOT_FILE, surfaceOf } from "../tools/api/snapshot";
 import { materialCoverage } from "../tools/materials/manifest";
+import { foundations } from "../tools/audit/foundations";
+import { pages as auditPages } from "../tools/audit/inventory";
 
 const root = resolve(import.meta.dir, "..");
 const pkg = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as { name: string; exports: Record<string, unknown> };
@@ -23,9 +25,12 @@ for (const [point, shape] of Object.entries(entryPoints)) {
   entryPointFiles[point] = packedFiles(root, directory);
 }
 
-// The audit turns that can end a planned route: every checklist under audit/, by id.
-const auditTurns = new Set(["components", "foundation", "pages"].flatMap((dir) =>
-  readdirSync(resolve(root, "audit", dir)).filter((file) => file.endsWith(".md")).map((file) => `${dir}/${file.slice(0, -3)}`)));
+// Validate planned work against the live inventory, independently of local audit records.
+const auditTurns = new Set([
+  ...COMPONENTS.map((component) => `components/${component.slug}`),
+  ...foundations().map((foundation) => `foundation/${foundation.id}`),
+  ...auditPages().map((page) => `pages/${page.id}`),
+]);
 
 const exports = discoverPublicApi(root);
 if (process.argv.includes("--write-snapshot")) {

@@ -91,7 +91,6 @@
     "check:api": "bun scripts/check-public-api.ts",
     "axes:record": "bun --preload ./tools/rnw-preload.ts tools/axes/record.ts",
     "audit:checklists": "bun tools/audit/checklists.ts --write",
-    "audit:checklists:check": "bun tools/audit/checklists.ts --check",
     "audit:status": "bun tools/audit/status.ts",
     "audit:native": "bun tools/audit/native/run.ts",
     "audit:native:build": "bun tools/audit/native/build.ts",

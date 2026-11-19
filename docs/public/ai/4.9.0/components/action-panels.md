@@ -3,7 +3,7 @@
 Package: @nannier/canvas
 Version: 4.9.0
 Status: source-snapshot (not proof of an npm release)
-Source SHA-256: 0d39227b8a76924dc3703c9a8ff55307b9f954d3da5a65e5387c3b0332550ee5
+Source SHA-256: 35f25b7683e35547fe24ff2c7541500550d72c13c76950cfc9c2f1e3e53ee906
 
 Source: `src/molecules/action-panels/action-panels.md`
 Human reference: https://canvas.nannier.com/components/action-panels

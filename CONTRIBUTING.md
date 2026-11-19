@@ -62,7 +62,6 @@ bun run agent-docs:gen:check # versioned agent reference matches its source
 bun run consumer:gen:check # packaged consumer guidance and recipes match source
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools/plugins -p 'test_*.py' -v
 bun run check:docs-components # handwritten docs use Canvas components
-bun run audit:checklists:check # audit facts match the current inventory
 bun run privacy:gen:check  # generated privacy policy matches its source
 bun run raster:gen:check   # generated native menu glyphs match their source
 bun run designmd:gen:check # generated design reference matches its source

@@ -54,10 +54,8 @@ blob-report/
 # where lookout looks for them.
 .lookout/
 
-# The component audit's captures: runs of screenshots, probes and analysis under
-# .audit/runs/ and the contact sheets and index under .audit/current/. Regenerable
-# and large (a full run is tens of GB), so none of it is committed. What IS committed
-# is audit/ at the repository root: the per-component checklists and the README.
+# Local audit records and generated captures stay out of the source tree in Git.
+/audit/
 .audit/
 
 # Generated plugin submission bundles and local package inputs.
@@ -83,6 +81,4 @@ android/.cxx/
 # design-sync (Claude Design import): staged converter, build output, machine state
 .ds-sync/
 ds-bundle/
-.design-sync/.cache/
-.design-sync/learnings/
-.design-sync/node_modules
+.design-sync/

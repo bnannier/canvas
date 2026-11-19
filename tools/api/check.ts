@@ -191,7 +191,7 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
     else if (plan.closed) errors.push(`${route} is closed (its turn, ${plan.turn}, landed its docs), but PENDING_DOCS still stages ${some(subjects)} for it: document them there`);
   }
   for (const [route, plan] of Object.entries(manifest.plannedRoutes)) {
-    if (!inventory.auditTurns.has(plan.turn)) errors.push(`PLANNED_ROUTES gives ${route} to ${plan.turn}, which is no checklist under audit/`);
+    if (!inventory.auditTurns.has(plan.turn)) errors.push(`PLANNED_ROUTES gives ${route} to ${plan.turn}, which is absent from the audit inventory`);
     if (plan.closed && !inventory.pages.has(route)) errors.push(`PLANNED_ROUTES closes ${route}, which the docs do not serve`);
     if (!plan.closed && !stagedFor.has(route)) errors.push(`Nothing is staged for ${route} any more: its turn (${plan.turn}) closes it in PLANNED_ROUTES (closed: true)`);
   }

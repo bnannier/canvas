@@ -45,7 +45,7 @@ import {
   type PageFacts,
 } from "./facts.ts";
 import { NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, cellId, cellsFor, components, pageCellId, pages, sectionKeys } from "./inventory.ts";
-import { COMPONENT_PLANS, FAMILY_CHECKLISTS, STYLE_LAYER_RENDERABLES, UNIVERSAL_RUBRIC } from "./plan-specifics.ts";
+import { COMPONENT_PLANS, FAMILY_CHECKLISTS, UNIVERSAL_RUBRIC } from "./plan-specifics.ts";
 import { auditStatus, checklistStatus, formatStatus } from "./status.ts";
 import { splitRow } from "./table.ts";
 
@@ -1006,25 +1006,15 @@ describe("findings and sign-off tables", () => {
     expect(real.get("pages/pattern-glass.md")!.has("ios-pages/pattern-glass/mint.solid")).toBe(true);
   });
 
-  it("spells the Status vocabulary exactly as audit/README.md and the seeded prose do", () => {
-    const readme = readFileSync(join(ROOT, "audit/README.md"), "utf8").replace(/\s+/g, " ");
-    const listed = /status \(([^)]*)\)/.exec(readme)?.[1] ?? "";
-    expect([...listed.matchAll(/`([a-z-]+)`/g)].map((m) => m[1])).toEqual([...FINDING_STATUSES]);
-    // The prose every checklist was seeded with, above its findings table.
-    const seeded = /Status: ([^.]*)\./.exec(readFileSync(join(ROOT, "audit/components/button.md"), "utf8"))?.[1] ?? "";
-    expect(seeded.replace(/\([^)]*\)/g, "").split(",").map((w) => w.trim())).toEqual([...FINDING_STATUSES]);
-  });
-
-  it("lists exactly the style-layer renderables with no component page in audit/README.md, as the Foundations tier", () => {
-    const readme = readFileSync(join(ROOT, "audit/README.md"), "utf8").replace(/\s+/g, " ");
-    const names = [...STYLE_LAYER_RENDERABLES];
-    const list = `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-    expect(readme).toContain(
-      `The Foundations tier is the style-layer renderables with no component page of their own, ${list}; and the design tokens the docs' \`tokens/*\` pages document (Tokens).`,
-    );
-    // Derived from the material inventory: the primitives with their own page are not in it.
-    expect(names).toContain("ThemeProvider");
-    expect(names).not.toContain("View");
+  it.skipIf(!hasDist)("spells the Status vocabulary consistently in generated checklists", () => {
+    const dir = temp();
+    try {
+      writeChecklists(dir, sources);
+      const seeded = /Status: ([^.]*)\./.exec(read(dir, "components/button.md"))?.[1] ?? "";
+      expect(seeded.replace(/\([^)]*\)/g, "").split(",").map((word) => word.trim())).toEqual([...FINDING_STATUSES]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("splits a row with no free column strictly", () => {

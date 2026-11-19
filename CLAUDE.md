@@ -35,7 +35,7 @@ destinations: regenerate them from the recorded source when reviewing a change.
 
 The owner explicitly requested the vendored hand-off to look exactly the same, including
 animations, and said to forget the old rules for this new version. That supersedes older
-visual exceptions in this document and `audit/v4-redesign/PLAN.md` wherever they change
+visual exceptions in this document wherever they change
 what the reference renders. Use `tools/v4/handoff/Canvas v4.0.0 Component.dc.html` and its
 imports, plus the other readable pages, as the visual and motion authority. Compare live
 rendered captures at matching viewport, scheme, palette, surface, interaction state and
@@ -58,8 +58,7 @@ preview does not publish a version.
 
 On 2026-10-27 the owner chose the Canvas v4 design hand-off ("Light as material"),
 vendored at `tools/v4/handoff`, to replace the Dark Factory (DF) language of
-2026-09-23. The migration shipped in 4.0.0. The dated decisions and phases are
-recorded in `audit/v4-redesign/PLAN.md`. For current work, use the hand-off and
+2026-09-23. The migration shipped in 4.0.0. For current work, use the hand-off and
 the visual authority above. Regenerate its reference images locally with
 `tools/v4/capture-references.ts` into `.v4-reference/`.
 
