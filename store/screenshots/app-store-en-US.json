@@ -1,0 +1,384 @@
+{
+  "appStoreVersion": "4.9.0",
+  "appReview": {
+    "submissionId": "4df6c1ee-4f9c-4694-849e-245527be9177",
+    "submittedAt": "2026-11-19 00:44 UTC",
+    "statusAtVerification": "Waiting for Review",
+    "verifiedAt": "2026-11-19 00:45:07 UTC",
+    "releaseAutomaticallyAfterApproval": true
+  },
+  "distributionBuild": {
+    "version": "4.9.0",
+    "buildNumber": "17",
+    "appStoreConnectBuildId": "3b364bc1-03bd-4927-85f1-c0ca79a0c24a",
+    "easBuildId": "c4b77d2b-ce05-4458-8f73-3da05066e9e5",
+    "releaseCommit": "f107ead789ff44e68c221e23fce6984a3c807f21"
+  },
+  "locale": "en-US",
+  "bundleIdentifier": "com.nannier.canvas",
+  "capturedOn": "2026-11-18",
+  "runtime": "iOS 27.0 Simulator",
+  "xcode": "27.2",
+  "nativeConfiguration": "Release",
+  "systemAppearance": "Dark",
+  "canvasAppearance": {
+    "scheme": "dark",
+    "palette": "violet",
+    "surface": "glass"
+  },
+  "visualSourceRevision": "301bedd314845576cb90bbaf0ab582c38d05dfdd",
+  "provenance": "Images 02\u201310 are native full-screen captures of the indicated Canvas documentation routes. Their visible source matches the named revision. The local production bundle excludes subsequent QRCode refinements, which are outside these specimens.",
+  "inputState": "Entered hello@example in the real Input demo and dismissed the keyboard to show the invalid address state.",
+  "leadArtwork": {
+    "source": "../artwork/lead-artboard.tsx",
+    "sourceSha256": "a6a3eca14e6019db04bf4af57b06f30273220f9ac065c1ab4c58e0594733c931",
+    "configuration": "Temporary React Native artwork app rendered with the actual Canvas native kit. No changes to the product app or raster compositing.",
+    "tabletLayout": "Wider native composition, same components and typography.",
+    "regeneration": "../artwork/regenerate-lead.md",
+    "packingTool": "../artwork/pack-screenshot.cjs"
+  },
+  "processing": "Opaque alpha channels were removed from direct simulator captures when present. RGB pixels were preserved without compositing or scaling.",
+  "sets": {
+    "ios-medium": {
+      "model": "iPhone 18 Pro",
+      "width": 1206,
+      "height": 2622,
+      "images": [
+        {
+          "order": 1,
+          "file": "ios-medium/iphone-medium-01-lead.png",
+          "subject": "Canvas component library",
+          "route": null,
+          "appIdentifier": "com.nannier.canvas.storeart",
+          "sha256": "c63dd5d8b910ca9c837e491ca796aebc5e6476b650af5fb61b949f68abba2e50",
+          "uploadedFilename": "01-lead.png"
+        },
+        {
+          "order": 2,
+          "file": "ios-medium/iphone-medium-02-pie-chart.png",
+          "subject": "PieChart donut specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-pie-chart",
+          "sha256": "d37976f0dd8af15a1fa4c0f69c6ed8c8a86c6cf18c1079e10ead67aef13ff9be",
+          "uploadedFilename": "08-pie-chart.png"
+        },
+        {
+          "order": 3,
+          "file": "ios-medium/iphone-medium-03-colour.png",
+          "subject": "Foundations colour and Ion spectrum",
+          "route": "/foundations",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-color",
+          "sha256": "e9366a4ef7d5c7db8117480e39340c8405ea4b3f63798954ac71c89ac06a70b7",
+          "uploadedFilename": "02-colour.png"
+        },
+        {
+          "order": 4,
+          "file": "ios-medium/iphone-medium-04-breakpoints.png",
+          "subject": "Layout breakpoints and form factors",
+          "route": "/layout",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-breakpoints",
+          "sha256": "315a9644c266698c012c64d63836e03d98cf104ee34cee46f23948db21b62ed7",
+          "uploadedFilename": "03-breakpoints.png"
+        },
+        {
+          "order": 5,
+          "file": "ios-medium/iphone-medium-05-avatar.png",
+          "subject": "Controls avatars, badge and chip gallery",
+          "route": "/controls",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-avatar",
+          "sha256": "8956f225de8ffd55d9f4e40e1f226a9077eb6c426c22fa02d6563750898ab542",
+          "uploadedFilename": "04-avatar.png"
+        },
+        {
+          "order": 6,
+          "file": "ios-medium/iphone-medium-06-buttons.png",
+          "subject": "Controls button size and shape gallery",
+          "route": "/controls",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-button-sizes",
+          "sha256": "638bc0a746444538b406a03298675aed09f7140b95efee022fb9f1fbefb2e59b",
+          "uploadedFilename": "05-buttons.png"
+        },
+        {
+          "order": 7,
+          "file": "ios-medium/iphone-medium-07-input.png",
+          "subject": "Input states with a fictional invalid address",
+          "route": "/inputs",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-input",
+          "sha256": "6fa213b7842886984a4aaa605f723599a626e54131d0012394c8d3d27cc83cb1",
+          "uploadedFilename": "06-input.png"
+        },
+        {
+          "order": 8,
+          "file": "ios-medium/iphone-medium-08-bar-chart.png",
+          "subject": "Weekly signups bar chart",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "section-demo-signups",
+          "sha256": "f9128691df33ba9cf3ac905ad2027868a9cb709b112fc8dbe2dff231fc1f2ff2",
+          "uploadedFilename": "07-bar-chart.png"
+        },
+        {
+          "order": 9,
+          "file": "ios-medium/iphone-medium-09-radial-bar-chart.png",
+          "subject": "RadialBarChart specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-radial-bar-chart",
+          "sha256": "0ad078db8cdc91f142183fb8e65b3738a0264631bb74bebcecc95383f05dd2cf",
+          "uploadedFilename": "09-radial-bar-chart.png"
+        },
+        {
+          "order": 10,
+          "file": "ios-medium/iphone-medium-10-heatmap.png",
+          "subject": "Calendar Heatmap specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-heatmap",
+          "sha256": "6ff2b4b9e68cc9fab519a63014f2bd77d3cdfbaba8f24d9c9f9a925e642477da",
+          "uploadedFilename": "10-heatmap.png"
+        }
+      ],
+      "appStoreConnect": {
+        "displaySlot": "iPhone with Dynamic Island (medium display)",
+        "required": true,
+        "savedCount": 10,
+        "savedOrderVerifiedAt": "2026-11-19 00:42:18 UTC"
+      }
+    },
+    "ios": {
+      "model": "iPhone 18 Pro Max",
+      "width": 1320,
+      "height": 2868,
+      "images": [
+        {
+          "order": 1,
+          "file": "ios/iphone-6.9-01-lead.png",
+          "subject": "Canvas component library",
+          "route": null,
+          "appIdentifier": "com.nannier.canvas.storeart",
+          "sha256": "c8eadf630c18ecf7d56ea41ae5e88207d03b31a6b3da447afef1cca48fa82ab9",
+          "uploadedFilename": "01-lead.png"
+        },
+        {
+          "order": 2,
+          "file": "ios/iphone-6.9-02-pie-chart.png",
+          "subject": "PieChart donut specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-pie-chart",
+          "sha256": "75fc23858c91d86dfc42233ddbf7d7d9b1a2555dfb7aa60f3e925d1c7dea1c8e",
+          "uploadedFilename": "08-pie-chart.png"
+        },
+        {
+          "order": 3,
+          "file": "ios/iphone-6.9-03-colour.png",
+          "subject": "Foundations colour and Ion spectrum",
+          "route": "/foundations",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-color",
+          "sha256": "79621cbc13410dee23b83cc2ae353e68009ba4b514a2211baf741d80c8d29210",
+          "uploadedFilename": "02-colour.png"
+        },
+        {
+          "order": 4,
+          "file": "ios/iphone-6.9-04-breakpoints.png",
+          "subject": "Layout breakpoints and form factors",
+          "route": "/layout",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-breakpoints",
+          "sha256": "b60aed68d82bc0a959f72b5922397aaa5dfa224a56258503106d64acc40d1105",
+          "uploadedFilename": "03-breakpoints.png"
+        },
+        {
+          "order": 5,
+          "file": "ios/iphone-6.9-05-avatar.png",
+          "subject": "Controls avatars, badge and chip gallery",
+          "route": "/controls",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-avatar",
+          "sha256": "9fb7b0d34b7af7e52b48a6778f0088acb97ad34d9beb960087b20781e7f1cecf",
+          "uploadedFilename": "04-avatar.png"
+        },
+        {
+          "order": 6,
+          "file": "ios/iphone-6.9-06-buttons.png",
+          "subject": "Controls button size and shape gallery",
+          "route": "/controls",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-button-sizes",
+          "sha256": "cea9f1c0c0cfc5f57085c11b97ba9f8582cd236e08b41ce9bbf8298e44f1d9db",
+          "uploadedFilename": "05-buttons.png"
+        },
+        {
+          "order": 7,
+          "file": "ios/iphone-6.9-07-input.png",
+          "subject": "Input states with a fictional invalid address",
+          "route": "/inputs",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-input",
+          "sha256": "2b65676636045af2c2af611326aed819714cea4f1d9306a7e2c16c603e44faaf",
+          "uploadedFilename": "06-input.png"
+        },
+        {
+          "order": 8,
+          "file": "ios/iphone-6.9-08-bar-chart.png",
+          "subject": "Weekly signups bar chart",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "section-demo-signups",
+          "sha256": "f3b129799ce2a35d84dd0dad9f014f381c28a2d5c8a6a37ba69c8089d7329aa8",
+          "uploadedFilename": "07-bar-chart.png"
+        },
+        {
+          "order": 9,
+          "file": "ios/iphone-6.9-09-radial-bar-chart.png",
+          "subject": "RadialBarChart specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-radial-bar-chart",
+          "sha256": "e804a936254d6a0b931083e17319a46b63bbcb340233ec9b8d04b728f2e10149",
+          "uploadedFilename": "09-radial-bar-chart.png"
+        },
+        {
+          "order": 10,
+          "file": "ios/iphone-6.9-10-heatmap.png",
+          "subject": "Calendar Heatmap specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-heatmap",
+          "sha256": "9b59b9dff589385bc11419c78e35ebd43f88200587deb9e7885eae7980b0855b",
+          "uploadedFilename": "10-heatmap.png"
+        }
+      ],
+      "appStoreConnect": {
+        "displaySlot": "iPhone with Dynamic Island (large display)",
+        "required": false,
+        "savedCount": 10,
+        "savedOrderVerifiedAt": "2026-11-19 00:42:18 UTC"
+      }
+    },
+    "ipad": {
+      "model": "iPad Pro 13-inch (M5)",
+      "width": 2064,
+      "height": 2752,
+      "images": [
+        {
+          "order": 1,
+          "file": "ipad/ipad-13-01-lead.png",
+          "subject": "Canvas component library",
+          "route": null,
+          "appIdentifier": "com.nannier.canvas.storeart",
+          "sha256": "49bed65711c222defc901a45cc2e77552664cf92ba11f865a4ed10ac4e71b0ac",
+          "uploadedFilename": "01-lead.png"
+        },
+        {
+          "order": 2,
+          "file": "ipad/ipad-13-02-pie-chart.png",
+          "subject": "PieChart donut specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-pie-chart",
+          "sha256": "d779a5541931162c21441aa03f45a635e1d31930bf4079e55c6828e7a29012bd",
+          "uploadedFilename": "08-pie-chart.png"
+        },
+        {
+          "order": 3,
+          "file": "ipad/ipad-13-03-colour.png",
+          "subject": "Foundations colour and Ion spectrum",
+          "route": "/foundations",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-color",
+          "sha256": "46f1a4161b22fdd7e475783bb48aa3c018287b0f9f5bdc30b74ea2602fde2471",
+          "uploadedFilename": "02-colour.png"
+        },
+        {
+          "order": 4,
+          "file": "ipad/ipad-13-04-breakpoints.png",
+          "subject": "Layout breakpoints and form factors",
+          "route": "/layout",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-breakpoints",
+          "sha256": "9afe125c2d0a3181edc8f4d57ddb0956e755930a87cbda8d7cd43e7c656f7a3a",
+          "uploadedFilename": "03-breakpoints.png"
+        },
+        {
+          "order": 5,
+          "file": "ipad/ipad-13-05-avatar.png",
+          "subject": "Controls avatars, badge and chip gallery",
+          "route": "/controls",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-avatar",
+          "sha256": "7d5569f79c5da09e754599531fd833cb12c1828355763a1b83f12bc9f2f9037a",
+          "uploadedFilename": "04-avatar.png"
+        },
+        {
+          "order": 6,
+          "file": "ipad/ipad-13-06-buttons.png",
+          "subject": "Controls button size and shape gallery",
+          "route": "/controls",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-button-sizes",
+          "sha256": "d810595e21c5c9da8c511fa756eb7e8b0182a01080a6573a09ff7189fab1854d",
+          "uploadedFilename": "05-buttons.png"
+        },
+        {
+          "order": 7,
+          "file": "ipad/ipad-13-07-input.png",
+          "subject": "Input states with a fictional invalid address",
+          "route": "/inputs",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-input",
+          "sha256": "af719ac61e89b978f2189695318d4ff06e3b3bdabe2e0677332fb457872bbec5",
+          "uploadedFilename": "06-input.png"
+        },
+        {
+          "order": 8,
+          "file": "ipad/ipad-13-08-bar-chart.png",
+          "subject": "Weekly signups bar chart",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "section-demo-signups",
+          "sha256": "13dcf695a3b2049fbeabb4022e9430289317d1ed8679b312134749c0daddc075",
+          "uploadedFilename": "07-bar-chart.png"
+        },
+        {
+          "order": 9,
+          "file": "ipad/ipad-13-09-radial-bar-chart.png",
+          "subject": "RadialBarChart specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-radial-bar-chart",
+          "sha256": "da25ac73de978f6337ba3dc2206225abab164710937146fb34793bc1d68f60ff",
+          "uploadedFilename": "09-radial-bar-chart.png"
+        },
+        {
+          "order": 10,
+          "file": "ipad/ipad-13-10-heatmap.png",
+          "subject": "Calendar Heatmap specimen",
+          "route": "/charts",
+          "appIdentifier": "com.nannier.canvas",
+          "specimenTestId": "showcase-c-heatmap",
+          "sha256": "3c6378951fb3b4bc2ed9e0dc5db38c4df2f4cd57344732e932764319fc18f63d",
+          "uploadedFilename": "10-heatmap.png"
+        }
+      ],
+      "appStoreConnect": {
+        "displaySlot": "iPad 13\" display",
+        "required": true,
+        "savedCount": 10,
+        "savedOrderVerifiedAt": "2026-11-19 00:43:35 UTC"
+      }
+    }
+  },
+  "localSimulatorBundleVersion": {
+    "shortVersion": "4.8.0",
+    "build": "1"
+  },
+  "appStoreConnectAppId": "6794454098"
+}

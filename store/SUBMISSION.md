@@ -31,6 +31,43 @@ Console handle review, rollout, and storefront availability.
    Play Console. The `preview` and `development` profiles use EAS internal
    distribution on both platforms. [EAS profiles](../docs/eas.json)
 
+### App Store submission on 19 November 2026
+
+Version 4.9.0 build 17 was submitted at 00:44 UTC. At 00:45 UTC Apple confirmed
+**Waiting for Review**. It will release automatically to all users after
+approval. Version 1.0 remained on the public storefront at submission time.
+[App Review submission](https://appstoreconnect.apple.com/apps/6794454098/distribution/reviewsubmissions/details/4df6c1ee-4f9c-4694-849e-245527be9177)
+
+The English (U.S.) metadata and all three screenshot sets are saved with the
+submission. Reloading App Store Connect confirmed ten screenshots in the
+recorded order in each display slot, with PieChart second.
+[Screenshot manifest](screenshots/app-store-en-US.json)
+
+Deploy published `@nannier/canvas@4.9.0` from release commit
+`f107ead789ff44e68c221e23fce6984a3c807f21` on 19 November at 00:25 UTC.
+Its source was `0567f1dfdb1fcda0ad007c279dd90f607549573a`. The public package
+download and registry integrity were verified. TestFlight 4.8.0 build 16 had a
+native section animation crash; 4.9.0 includes the correction.
+[Deploy run 44419398429](https://github.com/bnannier/canvas/actions/runs/44419398429)
+
+Production builds were queued at 00:25 UTC on 19 November. Apple processed
+the iOS build and accepted it for review. Android's queue acceptance is
+recorded here; Android build and store availability were not independently
+confirmed during this App Store refresh.
+
+| Platform | Version and build | EAS build | Submission ID |
+| --- | --- | --- | --- |
+| iOS | 4.9.0 (17) | [c4b77d2b](https://expo.dev/accounts/bnannier/projects/canvas-docs/builds/c4b77d2b-ce05-4458-8f73-3da05066e9e5) | `81cebf35-5a83-4654-836b-b6fd4846212d` |
+| Android | 4.9.0 (16) | [bbbc21ba](https://expo.dev/accounts/bnannier/projects/canvas-docs/builds/bbbc21ba-6f86-4df0-8035-554385c7301d) | `c25182b3-8ba4-44a3-843b-6ab93237774d` |
+
+All blocking validation passed, including all four browser shards and both iOS
+phone consumer journeys. Advisory native coverage remains incomplete: the iPad
+consumer journey could not find Diagnostics after a deep link; Android phone
+returned an unknown automation error, and Android tablet failed a Work item
+visibility assertion. Both Android geometry suites passed all 15 tests.
+The real docs app's selected showcases were also exercised for the iOS 27
+iPhone and iPad captures recorded in the manifest.
+
 ### Production dispatch on 17 November 2026
 
 Deploy run 44136680404 succeeded for Canvas 4.7.2. EAS accepted both production
@@ -66,12 +103,10 @@ for review.
 
 ### Apple App Store
 
-The current English (U.S.) copy is maintained in
-[app-store/en-US.json](app-store/en-US.json): name, subtitle, promotional text,
-description, keywords, release notes, URLs, and reviewer notes. This is the copy
-prepared on 18 November 2026 for the next App Store submission. Version 4.8.0
-build 16 was available in TestFlight, but native verification found a section
-animation crash; submit the corrected replacement build instead.
+The English (U.S.) copy submitted for 4.9.0 includes the name, subtitle,
+promotional text, description, keywords, release notes, URLs, and reviewer notes.
+Check the listing against the processed build selected for review.
+[Listing copy](app-store/en-US.json)
 
 The refreshed listing describes the 108-component catalog, five accent palettes,
 light and dark appearances, native Liquid Glass on supported systems, and
@@ -151,16 +186,10 @@ Canvas stores no personal information from either check.
 
 ## Notes for App Review
 
-Check the selected binary before submitting. Explain the sample authentication
-forms in the notes and leave sign-in requirements unchecked for an app with no
-account system. Check the App Review contact and copyright fields in App Store
-Connect.
-
-> Canvas is the reference app for the Canvas React Native UI kit. You can open
-> the component catalog immediately and interact with the live native examples.
-> The app has no login or account system. The sample authentication forms
-> demonstrate UI components. Submitting an example does not authenticate the
-> reviewer or unlock any part of the app.
+Check the selected binary before submitting. The `reviewNotes` field explains
+how to review the live examples and what the sample authentication forms do.
+Leave the sign-in requirement unchecked and check the App Review contact and
+copyright fields in App Store Connect. [Reviewer notes](app-store/en-US.json)
 
 Keep sample sign-in screens out of the store screenshots. See the
 [1.0.0 review history](#the-210-rejection-and-the-sign-in-screenshot) for the
@@ -230,15 +259,29 @@ from the Canvas mark with `bun run appicon:gen`. The Play assets are the
 [512×512 icon](assets/play-icon-512.png) and
 [1024×500 feature graphic](assets/play-feature-graphic-1024x500.png).
 
-The July 2026 store artwork includes ten captures per device set. Use a
-current release build when refreshing the listing, and follow the upload
-requirements shown in the store console.
+The 4.9.0 App Store submission uses ten dark, violet, glass screenshots per display
+slot. The lead renders native Canvas components in a dedicated artwork app.
+Slides 02–10 show the Canvas docs app running in Release configuration on the
+iOS 27.0 simulator. The manifest records the visual source revision, routes,
+display slots, verified upload order, and SHA-256 digests.
+[Screenshot manifest](screenshots/app-store-en-US.json)
 
-| Device set | July 2026 artwork |
+The order is lead artwork, PieChart, Colour, Breakpoints, Avatar, Buttons,
+Input, BarChart, RadialBarChart, and Heatmap on all three Apple display sizes.
+
+| Store display slot | Portrait artwork |
 | --- | --- |
-| iPhone 6.9 inch | [1320×2868 captures](screenshots/ios) from the iPhone 17 Pro Max simulator. |
-| iPad 13 inch | [2064×2752 captures](screenshots/ipad) from the iPad Pro simulator. The app supports iPad. |
-| Android phone | [1080×1920 captures](screenshots/android), fitted to 9:16, padded to preserve the tab bar, and flattened to remove the alpha channel. |
+| iPhone with Dynamic Island (medium display) | [1206×2622, iPhone 18 Pro](screenshots/ios-medium) |
+| iPhone with Dynamic Island (large display) | [1320×2868, iPhone 18 Pro Max](screenshots/ios) |
+| iPad 13" display | [2064×2752, iPad Pro 13-inch (M5)](screenshots/ipad) |
+| Android phone | [1080×1920, July 2026 set](screenshots/android), fitted to 9:16 with padding to preserve the tab bar |
+
+For a refresh, confirm the expected screen and interaction state on each device
+before exporting the full-resolution RGB PNG. Inspect the frame for readable
+content, app chrome, and iOS-specific copy. Confirm the count and order in App
+Store Connect after saving and reloading. Before submitting, check the processed
+TestFlight build's version and build number against the release and review its
+native validation results. [Capture and regeneration instructions](artwork/regenerate-lead.md)
 
 ## Initial submission history, July–August 2026
 
@@ -275,9 +318,9 @@ the [release procedure](#release-procedure).
 | Content rights declaration | Recorded as "this app has the necessary rights to its third-party content". |
 | App Review contact | Done, Bobby Nannier, `bobby@nannier.com`, `+14166693676`. |
 | Copyright | Done, `2026 Robert Nannier`. Required to submit, and easy to miss because the field sits well above the Save button. |
-| iPhone 6.9" screenshots | Done, 10 in `store/screenshots/ios` (Apple's max) |
-| iPad 13" screenshots | Done, 10 in `store/screenshots/ipad` |
-| Android phone screenshots | Done, 10 in `store/screenshots/android` |
+| iPhone 6.9" screenshots | Ten images in the July 2026 set. [Final July artwork](https://github.com/bnannier/canvas/tree/86e882c44/store/screenshots/ios) |
+| iPad 13" screenshots | Ten images in the July 2026 set. [Final July artwork](https://github.com/bnannier/canvas/tree/86e882c44/store/screenshots/ipad) |
+| Android phone screenshots | Ten images in the [July 2026 set](screenshots/android). |
 | **iOS submission** | Build 1.0.0 (7) moved to Ready for Distribution after a metadata-only fix. The previous rejections cited 2.1.0, then 2.3.10 and 4.0, then 2.3.10 alone. |
 | **App Store availability** | The [U.S. listing](https://apps.apple.com/us/app/canvas-ui-kit/id6794454098) returned HTTP 200 on 24 Aug 2026 after availability was configured. 148 of 175 territories became available first. The remaining 27 followed the trader declaration. |
 | **EU DSA trader status** | Declared non-trader on 24 Aug 2026. The Business tab recorded the declaration as active for 27 countries. |
@@ -428,9 +471,9 @@ is required**, which is why the resubmission reused build 7.
 What almost certainly tripped it: **App Store screenshot 10 was the Sign-in template**, a
 full-screen card reading "Sign in to Canvas" with email, password, Remember me, Forgot
 password and a Sign in button. An automated pre-review pass reads the screenshots, and
-that one is indistinguishable from a real login wall for an app named Canvas. All three
-platforms carried the same shot; every one is now a DataTable screen instead, which reads
-unmistakably as developer documentation (live sortable table, variant tabs, source code).
+that one is indistinguishable from a real login wall for an app named Canvas.
+All three device sets included that shot in July 2026. The July refresh replaced
+it with a DataTable example showing a sortable table, variant tabs, and source code.
 
 Two rules to keep:
 
